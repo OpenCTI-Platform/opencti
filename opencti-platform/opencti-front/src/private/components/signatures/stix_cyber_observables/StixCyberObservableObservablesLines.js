@@ -123,7 +123,7 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixCyberObservableRelations") {
+        ) @connection(key: "Pagination_stixCyberObservableRelationships") {
           edges {
             node {
               ...StixCyberObservableObservableLine_node

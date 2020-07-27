@@ -94,7 +94,9 @@ const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
-  x_opencti_main_observable_type: Yup.string().required(t('This field is required')),
+  x_opencti_main_observable_type: Yup.string().required(
+    t('This field is required'),
+  ),
   description: Yup.string(),
   detection: Yup.boolean(),
 });

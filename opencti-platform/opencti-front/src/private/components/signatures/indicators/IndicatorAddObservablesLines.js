@@ -87,10 +87,7 @@ class IndicatorAddObservablesLinesContainer extends Component {
 
   toggleStixCyberObservable(stixCyberObservable) {
     const { indicatorId, indicatorObservables } = this.props;
-    const indicatorObservablesIds = map(
-      (n) => n.node.id,
-      indicatorObservables,
-    );
+    const indicatorObservablesIds = map((n) => n.node.id, indicatorObservables);
     const alreadyAdded = indicatorObservablesIds.includes(
       stixCyberObservable.id,
     );
@@ -146,10 +143,7 @@ class IndicatorAddObservablesLinesContainer extends Component {
     const {
       t, classes, data, indicatorObservables,
     } = this.props;
-    const indicatorObservablesIds = map(
-      (n) => n.node.id,
-      indicatorObservables,
-    );
+    const indicatorObservablesIds = map((n) => n.node.id, indicatorObservables);
     const stixCyberObservablesNodes = map(
       (n) => n.node,
       data.stixCyberObservables.edges,

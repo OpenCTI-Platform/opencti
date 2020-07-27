@@ -719,7 +719,7 @@ class Dashboard extends Component {
                                   <div style={inlineStyles.itemAuthor}>
                                     {pathOr(
                                       '',
-                                      ['createdBy', 'node', 'name'],
+                                      ['createdBy', 'name'],
                                       stixDomainObject,
                                     )}
                                   </div>
@@ -818,11 +818,7 @@ class Dashboard extends Component {
                                   }
                                 />
                                 <div style={inlineStyles.itemAuthor}>
-                                  {pathOr(
-                                    '',
-                                    ['createdBy', 'node', 'name'],
-                                    note,
-                                  )}
+                                  {pathOr('', ['createdBy', 'name'], note)}
                                 </div>
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(note.created)}
@@ -898,11 +894,7 @@ class Dashboard extends Component {
                                   }
                                 />
                                 <div style={inlineStyles.itemAuthor}>
-                                  {pathOr(
-                                    '',
-                                    ['createdBy', 'node', 'name'],
-                                    report,
-                                  )}
+                                  {pathOr('', ['createdBy', 'name'], report)}
                                 </div>
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(report.published)}

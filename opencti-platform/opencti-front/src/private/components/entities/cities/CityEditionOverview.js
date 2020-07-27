@@ -132,8 +132,8 @@ class CityEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { city } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], city),
-      value: pathOr(null, ['createdBy', 'node', 'id'], city),
+      label: pathOr(null, ['createdBy', 'name'], city),
+      value: pathOr(null, ['createdBy', 'id'], city),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], city),
     };
 
@@ -211,11 +211,11 @@ class CityEditionOverviewComponent extends Component {
 
   render() {
     const { t, city, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], city) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], city) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], city),
-        value: pathOr(null, ['createdBy', 'node', 'id'], city),
+        label: pathOr(null, ['createdBy', 'name'], city),
+        value: pathOr(null, ['createdBy', 'id'], city),
         relation: pathOr(null, ['createdBy', 'relation', 'id'], city),
       };
     const markingDefinitions = pipe(

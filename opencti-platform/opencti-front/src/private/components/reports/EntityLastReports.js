@@ -173,7 +173,7 @@ class EntityLastReports extends Component {
                             }
                           />
                           <div style={inlineStyles.itemAuthor}>
-                            {pathOr('', ['createdBy', 'node', 'name'], report)}
+                            {pathOr('', ['createdBy', 'name'], report)}
                           </div>
                           <div style={inlineStyles.itemDate}>
                             {nsd(report.published)}

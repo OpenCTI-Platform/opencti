@@ -143,7 +143,10 @@ class KillChainPhaseEditionContainer extends Component {
     const initialValues = over(
       lensProp('x_opencti_order'),
       defaultTo(''),
-      pickAll(['kill_chain_name', 'phase_name', 'x_opencti_order'], killChainPhase),
+      pickAll(
+        ['kill_chain_name', 'phase_name', 'x_opencti_order'],
+        killChainPhase,
+      ),
     );
     return (
       <div>

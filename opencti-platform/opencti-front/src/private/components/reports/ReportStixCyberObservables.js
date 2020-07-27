@@ -175,13 +175,19 @@ ReportStixCyberObservablesComponent.propTypes = {
   history: PropTypes.object,
 };
 
-const ReportStixCyberObservables = createFragmentContainer(ReportStixCyberObservablesComponent, {
-  report: graphql`
-    fragment ReportStixCyberObservables_report on Report {
-      id
-      ...ReportHeader_report
-    }
-  `,
-});
+const ReportStixCyberObservables = createFragmentContainer(
+  ReportStixCyberObservablesComponent,
+  {
+    report: graphql`
+      fragment ReportStixCyberObservables_report on Report {
+        id
+        ...ReportHeader_report
+      }
+    `,
+  },
+);
 
-export default compose(inject18n, withStyles(styles))(ReportStixCyberObservables);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(ReportStixCyberObservables);

@@ -99,7 +99,12 @@ class EntityCampaignsChart extends Component {
 
   renderContent() {
     const {
-      t, md, entityId, relationship_type, variant, inferred,
+      t,
+      md,
+      entityId,
+      relationship_type,
+      variant,
+      inferred,
     } = this.props;
     const campaignsTimeSeriesVariables = {
       objectId: entityId,

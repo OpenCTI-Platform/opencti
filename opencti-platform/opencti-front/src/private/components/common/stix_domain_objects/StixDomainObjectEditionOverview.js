@@ -160,8 +160,8 @@ class StixDomainObjectEditionContainer extends Component {
   handleChangeCreatedBy(name, value) {
     const { stixDomainObject } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixDomainObject),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixDomainObject),
+      label: pathOr(null, ['createdBy', 'name'], stixDomainObject),
+      value: pathOr(null, ['createdBy', 'id'], stixDomainObject),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], stixDomainObject),
     };
 
@@ -272,15 +272,11 @@ class StixDomainObjectEditionContainer extends Component {
       t, classes, handleClose, stixDomainObject,
     } = this.props;
     const { editContext } = stixDomainObject;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixDomainObject) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], stixDomainObject) === null
       ? ''
       : {
-        label: pathOr(
-          null,
-          ['createdBy', 'node', 'name'],
-          stixDomainObject,
-        ),
-        value: pathOr(null, ['createdBy', 'node', 'id'], stixDomainObject),
+        label: pathOr(null, ['createdBy', 'name'], stixDomainObject),
+        value: pathOr(null, ['createdBy', 'id'], stixDomainObject),
       };
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),

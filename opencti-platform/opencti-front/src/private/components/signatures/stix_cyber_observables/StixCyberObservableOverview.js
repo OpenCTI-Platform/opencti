@@ -61,17 +61,6 @@ class StixCyberObservableOverviewComponent extends Component {
           <ItemAuthor
             createdBy={pathOr(null, ['createdBy', 'node'], stixCyberObservable)}
           />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Description')}
-          </Typography>
-          <Markdown
-            className="markdown"
-            source={stixCyberObservable.description}
-          />
         </Paper>
       </div>
     );
@@ -92,14 +81,13 @@ const StixCyberObservableOverview = createFragmentContainer(
       fragment StixCyberObservableOverview_stixCyberObservable on StixCyberObservable {
         id
         entity_type
-        description
         created_at
         updated_at
         createdBy {
-          node {
+          ... on Identity {
             id
-            entity_type
             name
+            entity_type
           }
         }
       }

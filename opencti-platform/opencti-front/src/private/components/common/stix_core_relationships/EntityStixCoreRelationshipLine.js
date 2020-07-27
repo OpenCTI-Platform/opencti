@@ -136,7 +136,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
         relationship_type
         confidence
         start_time
-        end_time
+        stop_time
         description
         inferred
         to {
@@ -144,8 +144,6 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             id
             entity_type
             parent_types
-            name
-            description
             created_at
             updated_at
             objectLabel {
@@ -159,6 +157,8 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
             }
           }
           ... on AttackPattern {
+            name
+            description
             x_mitre_id
             killChainPhases {
               edges {

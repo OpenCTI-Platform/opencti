@@ -197,13 +197,16 @@ ReportStixDomainObjectsComponent.propTypes = {
   history: PropTypes.object,
 };
 
-const ReportStixDomainObjects = createFragmentContainer(ReportStixDomainObjectsComponent, {
-  report: graphql`
-    fragment ReportStixDomainObjects_report on Report {
-      id
-      ...ReportHeader_report
-    }
-  `,
-});
+const ReportStixDomainObjects = createFragmentContainer(
+  ReportStixDomainObjectsComponent,
+  {
+    report: graphql`
+      fragment ReportStixDomainObjects_report on Report {
+        id
+        ...ReportHeader_report
+      }
+    `,
+  },
+);
 
 export default compose(inject18n, withStyles(styles))(ReportStixDomainObjects);

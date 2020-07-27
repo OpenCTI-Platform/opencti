@@ -133,8 +133,8 @@ class ToolEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { tool } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], tool),
-      value: pathOr(null, ['createdBy', 'node', 'id'], tool),
+      label: pathOr(null, ['createdBy', 'name'], tool),
+      value: pathOr(null, ['createdBy', 'id'], tool),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], tool),
     };
 
@@ -252,11 +252,11 @@ class ToolEditionOverviewComponent extends Component {
 
   render() {
     const { t, tool, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], tool) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], tool) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], tool),
-        value: pathOr(null, ['createdBy', 'node', 'id'], tool),
+        label: pathOr(null, ['createdBy', 'name'], tool),
+        value: pathOr(null, ['createdBy', 'id'], tool),
         relation: pathOr(null, ['createdBy', 'relation', 'id'], tool),
       };
     const killChainPhases = pipe(

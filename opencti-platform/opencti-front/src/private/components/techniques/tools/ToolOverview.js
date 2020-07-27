@@ -113,13 +113,13 @@ const ToolOverview = createFragmentContainer(ToolOverviewComponent, {
           }
         }
       }
-              createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
         }
+      }
     }
   `,
 });

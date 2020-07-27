@@ -135,8 +135,8 @@ class RegionEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { region } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], region),
-      value: pathOr(null, ['createdBy', 'node', 'id'], region),
+      label: pathOr(null, ['createdBy', 'name'], region),
+      value: pathOr(null, ['createdBy', 'id'], region),
     };
 
     if (currentCreatedBy.value === null) {
@@ -214,11 +214,11 @@ class RegionEditionOverviewComponent extends Component {
 
   render() {
     const { t, region, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], region) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], region) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], region),
-        value: pathOr(null, ['createdBy', 'node', 'id'], region),
+        label: pathOr(null, ['createdBy', 'name'], region),
+        value: pathOr(null, ['createdBy', 'id'], region),
         relation: pathOr(null, ['createdBy', 'relation', 'id'], region),
       };
     const markingDefinitions = pipe(

@@ -142,8 +142,8 @@ class IndividualEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { individual } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], individual),
-      value: pathOr(null, ['createdBy', 'node', 'id'], individual),
+      label: pathOr(null, ['createdBy', 'name'], individual),
+      value: pathOr(null, ['createdBy', 'id'], individual),
     };
 
     if (currentCreatedBy.value === null) {
@@ -222,11 +222,11 @@ class IndividualEditionOverviewComponent extends Component {
   render() {
     const { t, individual, context } = this.props;
     const external = individual.external === true;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], individual) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], individual) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], individual),
-        value: pathOr(null, ['createdBy', 'node', 'id'], individual),
+        label: pathOr(null, ['createdBy', 'name'], individual),
+        value: pathOr(null, ['createdBy', 'id'], individual),
       };
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),

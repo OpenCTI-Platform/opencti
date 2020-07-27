@@ -141,8 +141,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { intrusionSet } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], intrusionSet),
-      value: pathOr(null, ['createdBy', 'node', 'id'], intrusionSet),
+      label: pathOr(null, ['createdBy', 'name'], intrusionSet),
+      value: pathOr(null, ['createdBy', 'id'], intrusionSet),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], intrusionSet),
     };
 
@@ -219,11 +219,11 @@ class IntrusionSetEditionOverviewComponent extends Component {
 
   render() {
     const { t, intrusionSet, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], intrusionSet) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], intrusionSet) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], intrusionSet),
-        value: pathOr(null, ['createdBy', 'node', 'id'], intrusionSet),
+        label: pathOr(null, ['createdBy', 'name'], intrusionSet),
+        value: pathOr(null, ['createdBy', 'id'], intrusionSet),
         relation: pathOr(
           null,
           ['createdBy', 'relation', 'id'],

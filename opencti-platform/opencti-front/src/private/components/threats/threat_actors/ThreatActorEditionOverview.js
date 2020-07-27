@@ -141,8 +141,8 @@ class ThreatActorEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { threatActor } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], threatActor),
-      value: pathOr(null, ['createdBy', 'node', 'id'], threatActor),
+      label: pathOr(null, ['createdBy', 'name'], threatActor),
+      value: pathOr(null, ['createdBy', 'id'], threatActor),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], threatActor),
     };
 
@@ -226,11 +226,11 @@ class ThreatActorEditionOverviewComponent extends Component {
 
   render() {
     const { t, threatActor, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], threatActor) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], threatActor) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], threatActor),
-        value: pathOr(null, ['createdBy', 'node', 'id'], threatActor),
+        label: pathOr(null, ['createdBy', 'name'], threatActor),
+        value: pathOr(null, ['createdBy', 'id'], threatActor),
         relation: pathOr(
           null,
           ['createdBy', 'relation', 'id'],

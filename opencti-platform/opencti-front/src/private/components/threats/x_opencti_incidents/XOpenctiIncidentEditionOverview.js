@@ -141,8 +141,8 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { xOpenctiIncident } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], xOpenctiIncident),
-      value: pathOr(null, ['createdBy', 'node', 'id'], xOpenctiIncident),
+      label: pathOr(null, ['createdBy', 'name'], xOpenctiIncident),
+      value: pathOr(null, ['createdBy', 'id'], xOpenctiIncident),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], xOpenctiIncident),
     };
 
@@ -220,15 +220,11 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
 
   render() {
     const { t, xOpenctiIncident, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], xOpenctiIncident) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], xOpenctiIncident) === null
       ? ''
       : {
-        label: pathOr(
-          null,
-          ['createdBy', 'node', 'name'],
-          xOpenctiIncident,
-        ),
-        value: pathOr(null, ['createdBy', 'node', 'id'], xOpenctiIncident),
+        label: pathOr(null, ['createdBy', 'name'], xOpenctiIncident),
+        value: pathOr(null, ['createdBy', 'id'], xOpenctiIncident),
         relation: pathOr(
           null,
           ['createdBy', 'relation', 'id'],

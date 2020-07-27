@@ -135,8 +135,8 @@ class CountryEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { country } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], country),
-      value: pathOr(null, ['createdBy', 'node', 'id'], country),
+      label: pathOr(null, ['createdBy', 'name'], country),
+      value: pathOr(null, ['createdBy', 'id'], country),
     };
 
     if (currentCreatedBy.value === null) {
@@ -214,11 +214,11 @@ class CountryEditionOverviewComponent extends Component {
 
   render() {
     const { t, country, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], country) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], country) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], country),
-        value: pathOr(null, ['createdBy', 'node', 'id'], country),
+        label: pathOr(null, ['createdBy', 'name'], country),
+        value: pathOr(null, ['createdBy', 'id'], country),
       };
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),

@@ -140,8 +140,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { stixCyberObservable } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixCyberObservable),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixCyberObservable),
+      label: pathOr(null, ['createdBy', 'name'], stixCyberObservable),
+      value: pathOr(null, ['createdBy', 'id'], stixCyberObservable),
       relation: pathOr(
         null,
         ['createdBy', 'relation', 'id'],
@@ -223,42 +223,27 @@ class StixCyberObservableEditionOverviewComponent extends Component {
 
   render() {
     const { t, stixCyberObservable, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixCyberObservable) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], stixCyberObservable) === null
       ? ''
       : {
-        label: pathOr(
-          null,
-          ['createdBy', 'node', 'name'],
-          stixCyberObservable,
-        ),
-        value: pathOr(
-          null,
-          ['createdBy', 'node', 'id'],
-          stixCyberObservable,
-        ),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          stixCyberObservable,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], stixCyberObservable),
+        value: pathOr(null, ['createdBy', 'id'], stixCyberObservable),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixCyberObservable);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'observable_value',
-        'description',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(stixCyberObservable);
     return (
@@ -285,20 +270,6 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                   context={context}
                   fieldName="observable_value"
                 />
-              }
-            />
-            <Field
-              component={TextField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
               }
             />
             <CreatedByField
@@ -343,7 +314,6 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
       fragment StixCyberObservableEditionOverview_stixCyberObservable on StixCyberObservable {
         id
         observable_value
-        description
         createdBy {
           ... on Identity {
             id

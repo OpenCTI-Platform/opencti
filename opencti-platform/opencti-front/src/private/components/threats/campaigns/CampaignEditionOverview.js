@@ -141,8 +141,8 @@ class CampaignEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { campaign } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], campaign),
-      value: pathOr(null, ['createdBy', 'node', 'id'], campaign),
+      label: pathOr(null, ['createdBy', 'name'], campaign),
+      value: pathOr(null, ['createdBy', 'id'], campaign),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], campaign),
     };
 
@@ -220,11 +220,11 @@ class CampaignEditionOverviewComponent extends Component {
 
   render() {
     const { t, campaign, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], campaign) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], campaign) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], campaign),
-        value: pathOr(null, ['createdBy', 'node', 'id'], campaign),
+        label: pathOr(null, ['createdBy', 'name'], campaign),
+        value: pathOr(null, ['createdBy', 'id'], campaign),
         relation: pathOr(null, ['createdBy', 'relation', 'id'], campaign),
       };
     const killChainPhases = pipe(

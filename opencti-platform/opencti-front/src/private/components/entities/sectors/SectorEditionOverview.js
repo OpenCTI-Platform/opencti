@@ -134,8 +134,8 @@ class SectorEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { sector } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], sector),
-      value: pathOr(null, ['createdBy', 'node', 'id'], sector),
+      label: pathOr(null, ['createdBy', 'name'], sector),
+      value: pathOr(null, ['createdBy', 'id'], sector),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], sector),
     };
 
@@ -257,11 +257,11 @@ class SectorEditionOverviewComponent extends Component {
 
   render() {
     const { t, sector, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], sector) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], sector) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], sector),
-        value: pathOr(null, ['createdBy', 'node', 'id'], sector),
+        label: pathOr(null, ['createdBy', 'name'], sector),
+        value: pathOr(null, ['createdBy', 'id'], sector),
         relation: pathOr(null, ['createdBy', 'relation', 'id'], sector),
       };
     const markingDefinitions = pipe(

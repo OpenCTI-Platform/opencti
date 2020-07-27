@@ -49,7 +49,10 @@ class StixDomainObjectExternalReferences extends Component {
         render={({ props }) => {
           if (props) {
             return (
-              <StixDomainObjectExternalReferencesLines entityId={entityId} data={props} />
+              <StixDomainObjectExternalReferencesLines
+                entityId={entityId}
+                data={props}
+              />
             );
           }
           return (
@@ -104,4 +107,7 @@ StixDomainObjectExternalReferences.propTypes = {
   fld: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectExternalReferences);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixDomainObjectExternalReferences);

@@ -144,8 +144,8 @@ class ReportEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { report } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], report),
-      value: pathOr(null, ['createdBy', 'node', 'id'], report),
+      label: pathOr(null, ['createdBy', 'name'], report),
+      value: pathOr(null, ['createdBy', 'id'], report),
     };
 
     if (currentCreatedBy.value === null) {
@@ -223,11 +223,11 @@ class ReportEditionOverviewComponent extends Component {
 
   render() {
     const { t, report, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], report) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], report) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], report),
-        value: pathOr(null, ['createdBy', 'node', 'id'], report),
+        label: pathOr(null, ['createdBy', 'name'], report),
+        value: pathOr(null, ['createdBy', 'id'], report),
       };
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),

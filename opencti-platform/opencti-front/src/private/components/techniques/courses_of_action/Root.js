@@ -32,7 +32,7 @@ const courseOfActionQuery = graphql`
     courseOfAction(id: $id) {
       id
       name
-      aliases
+      x_opencti_aliases
       ...CourseOfAction_courseOfAction
       ...FileImportViewer_entity
       ...FileExportViewer_entity

@@ -115,13 +115,13 @@ const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {
           }
         }
       }
-              createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
         }
+      }
     }
   `,
 });

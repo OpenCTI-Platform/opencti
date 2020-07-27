@@ -142,8 +142,8 @@ class AttackPatternEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { attackPattern } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], attackPattern),
-      value: pathOr(null, ['createdBy', 'node', 'id'], attackPattern),
+      label: pathOr(null, ['createdBy', 'name'], attackPattern),
+      value: pathOr(null, ['createdBy', 'id'], attackPattern),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], attackPattern),
     };
 
@@ -263,11 +263,11 @@ class AttackPatternEditionOverviewComponent extends Component {
 
   render() {
     const { t, attackPattern, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], attackPattern) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], attackPattern) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], attackPattern),
-        value: pathOr(null, ['createdBy', 'node', 'id'], attackPattern),
+        label: pathOr(null, ['createdBy', 'name'], attackPattern),
+        value: pathOr(null, ['createdBy', 'id'], attackPattern),
         relation: pathOr(
           null,
           ['createdBy', 'relation', 'id'],

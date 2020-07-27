@@ -83,12 +83,12 @@ class EntityStixSightingRelationships extends Component {
     const { entityLink } = this.props;
     // sort only when inferences are disabled or inferences are resolved
     const dataColumns = {
-      negative: {
+      x_opencti_negative: {
         label: 'Status',
         width: '10%',
         isSortable: true,
       },
-      number: {
+      attribute_count: {
         label: 'Count',
         width: '5%',
         isSortable: true,

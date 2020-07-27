@@ -149,8 +149,8 @@ class IndicatorEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { indicator } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], indicator),
-      value: pathOr(null, ['createdBy', 'node', 'id'], indicator),
+      label: pathOr(null, ['createdBy', 'name'], indicator),
+      value: pathOr(null, ['createdBy', 'id'], indicator),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], indicator),
     };
 
@@ -228,11 +228,11 @@ class IndicatorEditionOverviewComponent extends Component {
 
   render() {
     const { t, indicator, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], indicator) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], indicator) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], indicator),
-        value: pathOr(null, ['createdBy', 'node', 'id'], indicator),
+        label: pathOr(null, ['createdBy', 'name'], indicator),
+        value: pathOr(null, ['createdBy', 'id'], indicator),
         relation: pathOr(null, ['createdBy', 'relation', 'id'], indicator),
       };
     const markingDefinitions = pipe(

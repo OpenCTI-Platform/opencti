@@ -209,14 +209,14 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
               entity_type
               observable_value
               objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
+                edges {
+                  node {
+                    id
+                    value
+                    color
+                  }
+                }
+              }
             }
           }
         }

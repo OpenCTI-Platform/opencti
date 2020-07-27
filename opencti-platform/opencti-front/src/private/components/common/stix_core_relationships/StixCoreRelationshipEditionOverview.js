@@ -253,8 +253,8 @@ const StixCoreRelationshipEditionContainer = ({
   };
   const handleChangeCreatedBy = (name, value) => {
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], stixCoreRelationship),
-      value: pathOr(null, ['createdBy', 'node', 'id'], stixCoreRelationship),
+      label: pathOr(null, ['createdBy', 'name'], stixCoreRelationship),
+      value: pathOr(null, ['createdBy', 'id'], stixCoreRelationship),
       relation: pathOr(
         null,
         ['createdBy', 'relation', 'id'],
@@ -319,19 +319,11 @@ const StixCoreRelationshipEditionContainer = ({
       })
       .catch(() => false);
   };
-  const createdBy = pathOr(null, ['createdBy', 'node', 'name'], stixCoreRelationship) === null
+  const createdBy = pathOr(null, ['createdBy', 'name'], stixCoreRelationship) === null
     ? ''
     : {
-      label: pathOr(
-        null,
-        ['createdBy', 'node', 'name'],
-        stixCoreRelationship,
-      ),
-      value: pathOr(
-        null,
-        ['createdBy', 'node', 'id'],
-        stixCoreRelationship,
-      ),
+      label: pathOr(null, ['createdBy', 'name'], stixCoreRelationship),
+      value: pathOr(null, ['createdBy', 'id'], stixCoreRelationship),
     };
   const killChainPhases = pipe(
     pathOr([], ['killChainPhases', 'edges']),

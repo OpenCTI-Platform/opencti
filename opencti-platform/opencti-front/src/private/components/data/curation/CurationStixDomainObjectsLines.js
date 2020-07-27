@@ -96,7 +96,6 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
   query CurationStixDomainObjectsLinesSearchQuery($search: String) {
     stixDomainObjects(search: $search) {
       edges {
-        
         node {
           id
           entity_type
@@ -190,10 +189,10 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
             description
           }
           createdBy {
-          ... on Identity {
-            name
+            ... on Identity {
+              name
+            }
           }
-        }
         }
       }
     }
@@ -229,10 +228,10 @@ export default createPaginationContainer(
               entity_type
               created_at
               createdBy {
-          ... on Identity {
-            name
-          }
-        }
+                ... on Identity {
+                  name
+                }
+              }
               objectMarking {
                 edges {
                   node {

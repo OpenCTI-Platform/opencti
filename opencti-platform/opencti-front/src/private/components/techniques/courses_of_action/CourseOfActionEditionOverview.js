@@ -141,8 +141,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { courseOfAction } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], courseOfAction),
-      value: pathOr(null, ['createdBy', 'node', 'id'], courseOfAction),
+      label: pathOr(null, ['createdBy', 'name'], courseOfAction),
+      value: pathOr(null, ['createdBy', 'id'], courseOfAction),
       relation: pathOr(null, ['createdBy', 'relation', 'id'], courseOfAction),
     };
 
@@ -220,11 +220,11 @@ class CourseOfActionEditionOverviewComponent extends Component {
 
   render() {
     const { t, courseOfAction, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], courseOfAction) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], courseOfAction) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], courseOfAction),
-        value: pathOr(null, ['createdBy', 'node', 'id'], courseOfAction),
+        label: pathOr(null, ['createdBy', 'name'], courseOfAction),
+        value: pathOr(null, ['createdBy', 'id'], courseOfAction),
         relation: pathOr(
           null,
           ['createdBy', 'relation', 'id'],

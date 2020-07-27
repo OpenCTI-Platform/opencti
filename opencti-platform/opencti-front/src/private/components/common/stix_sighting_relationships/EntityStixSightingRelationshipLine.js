@@ -79,20 +79,26 @@ class EntityStixSightingRelationshipLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.negative.width }}
+                style={{ width: dataColumns.x_opencti_negative.width }}
               >
                 <Chip
                   classes={{
-                    root: node.negative ? classes.negative : classes.positive,
+                    root: node.x_opencti_negative
+                      ? classes.negative
+                      : classes.positive,
                   }}
-                  label={node.negative ? t('False positive') : t('Malicious')}
+                  label={
+                    node.x_opencti_negative
+                      ? t('False positive')
+                      : t('Malicious')
+                  }
                 />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.number.width }}
+                style={{ width: dataColumns.attribute_count.width }}
               >
-                {node.number}
+                {node.attribute_count}
               </div>
               <div
                 className={classes.bodyItem}
@@ -159,8 +165,8 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
         id
         entity_type
         parent_types
-        negative
-        number
+        x_opencti_negative
+        attribute_count
         confidence
         first_seen
         last_seen
@@ -171,12 +177,12 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
             id
             entity_type
             parent_types
-            name
-            description
             created_at
             updated_at
           }
           ... on AttackPattern {
+            name
+            description
             x_mitre_id
             killChainPhases {
               edges {
@@ -187,6 +193,74 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
                 }
               }
             }
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on XOpenctiIncident {
+            name
+            description
           }
         }
       }
@@ -212,13 +286,13 @@ class EntityStixSightingRelationshipLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.negative.width }}
+                style={{ width: dataColumns.x_opencti_negative.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.number.width }}
+                style={{ width: dataColumns.attribute_count.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

@@ -148,8 +148,8 @@ class OrganizationEditionOverviewComponent extends Component {
   handleChangeCreatedBy(name, value) {
     const { organization } = this.props;
     const currentCreatedBy = {
-      label: pathOr(null, ['createdBy', 'node', 'name'], organization),
-      value: pathOr(null, ['createdBy', 'node', 'id'], organization),
+      label: pathOr(null, ['createdBy', 'name'], organization),
+      value: pathOr(null, ['createdBy', 'id'], organization),
     };
 
     if (currentCreatedBy.value === null) {
@@ -227,11 +227,11 @@ class OrganizationEditionOverviewComponent extends Component {
 
   render() {
     const { t, organization, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'node', 'name'], organization) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], organization) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'node', 'name'], organization),
-        value: pathOr(null, ['createdBy', 'node', 'id'], organization),
+        label: pathOr(null, ['createdBy', 'name'], organization),
+        value: pathOr(null, ['createdBy', 'id'], organization),
       };
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
