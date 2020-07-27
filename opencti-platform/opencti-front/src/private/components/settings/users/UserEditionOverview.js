@@ -73,7 +73,7 @@ export const userEditionOverviewRolesSearchQuery = graphql`
 const userEditionOverviewAddRole = graphql`
   mutation UserEditionOverviewAddRoleMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: InternalRelationshipAddInput
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {
@@ -195,7 +195,6 @@ class UserEditionOverviewComponent extends Component {
       assoc('roles', userRoles),
       pick([
         'name',
-        'description',
         'user_email',
         'firstname',
         'lastname',

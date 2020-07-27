@@ -35,7 +35,7 @@ const countryQuery = graphql`
     country(id: $id) {
       id
       name
-      aliases
+      x_opencti_aliases
       ...Country_country
       ...CountryReports_country
       ...CountryKnowledge_country

@@ -146,7 +146,6 @@ class ReportEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'node', 'name'], report),
       value: pathOr(null, ['createdBy', 'node', 'id'], report),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], report),
     };
 
     if (currentCreatedBy.value === null) {
@@ -165,7 +164,8 @@ class ReportEditionOverviewComponent extends Component {
         mutation: reportMutationRelationDelete,
         variables: {
           id: this.props.report.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -190,7 +190,6 @@ class ReportEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(report);
 
@@ -215,7 +214,8 @@ class ReportEditionOverviewComponent extends Component {
         mutation: reportMutationRelationDelete,
         variables: {
           id: this.props.report.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -228,19 +228,17 @@ class ReportEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'node', 'name'], report),
         value: pathOr(null, ['createdBy', 'node', 'id'], report),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], report),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(report);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       assoc('published', dateFormat(report.published)),
       pick([
         'name',
@@ -248,9 +246,9 @@ class ReportEditionOverviewComponent extends Component {
         'description',
         'report_types',
         'createdBy',
-        'markingDefinitions',
-        'object_status',
+        'objectMarking',
         'confidence',
+        'x_opencti_report_status',
       ]),
     )(report);
     return (
@@ -346,7 +344,7 @@ class ReportEditionOverviewComponent extends Component {
                         />
                         <Field
                           component={SelectField}
-                          name="object_status"
+                          name="x_opencti_report_status"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
                           label={t('Processing status')}
@@ -355,7 +353,7 @@ class ReportEditionOverviewComponent extends Component {
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="object_status"
+                              fieldName="x_opencti_report_status"
                             />
                           }
                         >

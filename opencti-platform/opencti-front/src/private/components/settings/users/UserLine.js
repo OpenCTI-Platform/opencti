@@ -83,9 +83,9 @@ class UserLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created)}
+                {fd(node.created_at)}
               </div>
             </div>
           }
@@ -116,7 +116,7 @@ const UserLineFragment = createFragmentContainer(UserLineComponent, {
       firstname
       external
       lastname
-      created
+      created_at
     }
   `,
 });
@@ -163,7 +163,7 @@ class UserLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>

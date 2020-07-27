@@ -96,13 +96,15 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.object_status.width }}
+                style={{ width: dataColumns.x_opencti_report_status.width }}
               >
                 <ItemStatus
-                  status={node.object_status}
+                  status={node.x_opencti_report_status}
                   label={t(
                     `report_status_${
-                      node.object_status ? node.object_status : 0
+                      node.x_opencti_report_status
+                        ? node.x_opencti_report_status
+                        : 0
                     }`,
                   )}
                   variant="inList"
@@ -148,13 +150,13 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
     fragment ReportLine_node on Report {
       id
       name
-      object_status
+      published
+      x_opencti_report_status
       createdBy {
         node {
           name
         }
       }
-      published
       objectMarking {
         edges {
           node {

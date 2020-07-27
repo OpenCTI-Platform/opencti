@@ -423,6 +423,7 @@ type User implements BasicObject & InternalObject {
   # User
   user_email: String!
   name: String!
+  description: String
   firstname: String
   lastname: String
   language: String
@@ -431,6 +432,8 @@ type User implements BasicObject & InternalObject {
   capabilities: [Capability]!
   groups: GroupConnection
   token: String
+  created_at: DateTime!
+  updated_at: DateTime!
   # Technical
   editContext: [EditUserContext]
 }
@@ -582,7 +585,7 @@ type Workspace implements BasicObject & InternalObject {
   editContext: [EditUserContext]
 }
 input WorkspaceAddInput {
-  workspace_type: String!
+  workspace_type: String!object_status
   name: String!
   description: String
   clientMutationId: String

@@ -35,7 +35,7 @@ const cityQuery = graphql`
     city(id: $id) {
       id
       name
-      aliases
+      x_opencti_aliases
       ...City_city
       ...CityReports_city
       ...CityKnowledge_city

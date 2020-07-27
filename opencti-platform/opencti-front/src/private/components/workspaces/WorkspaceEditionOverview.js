@@ -4,22 +4,12 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import {
-  assoc,
-  compose,
-  map,
-  pathOr,
-  pipe,
-  pick,
-  difference,
-  head,
-} from 'ramda';
+import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import { SubscriptionFocus } from '../../../components/Subscription';
-import ObjectMarkingField from '../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -72,35 +62,6 @@ export const workspaceEditionOverviewFocus = graphql`
   }
 `;
 
-const workspaceMutationRelationAdd = graphql`
-  mutation WorkspaceEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixMetaRelationshipAddInput
-  ) {
-    workspaceEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...WorkspaceEditionOverview_workspace
-        }
-      }
-    }
-  }
-`;
-
-const workspaceMutationRelationDelete = graphql`
-  mutation WorkspaceEditionOverviewRelationDeleteMutation(
-    $id: ID!
-    $toId: String!
-    $relationship_type: String!
-  ) {
-    workspaceEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...WorkspaceEditionOverview_workspace
-      }
-    }
-  }
-`;
-
 const workspaceValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   published: Yup.date()
@@ -138,58 +99,9 @@ class WorkspaceEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeObjectMarking(name, values) {
-    const { workspace } = this.props;
-    const currentMarkingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(workspace);
-
-    const added = difference(values, currentMarkingDefinitions);
-    const removed = difference(currentMarkingDefinitions, values);
-
-    if (added.length > 0) {
-      commitMutation({
-        mutation: workspaceMutationRelationAdd,
-        variables: {
-          id: this.props.workspace.id,
-          input: {
-            toId: head(added).value,
-            relationship_type: 'object-marking',
-          },
-        },
-      });
-    }
-
-    if (removed.length > 0) {
-      commitMutation({
-        mutation: workspaceMutationRelationDelete,
-        variables: {
-          id: this.props.workspace.id,
-          relationId: head(removed).relationId,
-        },
-      });
-    }
-  }
-
   render() {
     const { t, workspace, context } = this.props;
-    const markingDefinitions = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(workspace);
-    const initialValues = pipe(
-      assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'markingDefinitions']),
-    )(workspace);
+    const initialValues = pick(['name', 'description'], workspace);
     return (
       <div>
         <Formik
@@ -228,17 +140,6 @@ class WorkspaceEditionOverviewComponent extends Component {
                     />
                   }
                 />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={{ marginTop: 20, width: '100%' }}
-                  helpertext={
-                    <SubscriptionFocus
-                      context={context}
-                      fieldname="objectMarking"
-                    />
-                  }
-                  onChange={this.handleChangeObjectMarking.bind(this)}
-                />
               </Form>
             </div>
           )}
@@ -264,15 +165,6 @@ const WorkspaceEditionOverview = createFragmentContainer(
         id
         name
         description
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              definition_type
-            }
-          }
-        }
       }
     `,
   },
