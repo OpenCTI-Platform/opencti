@@ -423,7 +423,7 @@ export const findByTokenUUID = async (tokenValue) => {
       `match $token isa Token;
             $token has internal_id $token_id;
             $token has uuid "${escapeString(tokenValue)}", has revoked false;
-            (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa authorize; 
+            (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; 
             $client has internal_id $client_id;
             get;`,
       ['token', 'client']

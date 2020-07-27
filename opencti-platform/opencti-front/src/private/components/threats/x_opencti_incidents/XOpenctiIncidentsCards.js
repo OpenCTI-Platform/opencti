@@ -7,7 +7,7 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import {
   XOpenctiXOpenctiIncidentCard,
   XOpenctiIncidentCardDummy,
-} from './XOpenctiXOpenctiIncidentCard';
+} from './XOpenctiIncidentCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfCardsToLoad = 50;

@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityXOpenctiIncidentsTableTime from '../threats/x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsTableTime';
-import EntityXOpenctiIncidentsChart from '../threats/x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsChart';
+import EntityXOpenctiIncidentsTableTime from '../threats/x_opencti_incidents/EntityXOpenctiIncidentsTableTime';
+import EntityXOpenctiIncidentsChart from '../threats/x_opencti_incidents/EntityXOpenctiIncidentsChart';
 
 const styles = () => ({
   container: {

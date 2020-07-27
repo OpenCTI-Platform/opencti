@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { xOpenctiIncidentEditionQuery } from './XOpenctiXOpenctiIncidentEdition';
-import XOpenctiIncidentEditionContainer from './XOpenctiXOpenctiIncidentEditionContainer';
+import { xOpenctiIncidentEditionQuery } from './XOpenctiIncidentEdition';
+import XOpenctiIncidentEditionContainer from './XOpenctiIncidentEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,

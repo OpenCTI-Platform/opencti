@@ -7,13 +7,13 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import XOpenctiIncident from './XOpenctiXOpenctiIncident';
-import XOpenctiIncidentReports from './XOpenctiXOpenctiIncidentReports';
-import XOpenctiIncidentKnowledge from './XOpenctiXOpenctiIncidentKnowledge';
+import XOpenctiIncident from './XOpenctiIncident';
+import XOpenctiIncidentReports from './XOpenctiIncidentReports';
+import XOpenctiIncidentKnowledge from './XOpenctiIncidentKnowledge';
 import XOpenctiIncidentObservables from './XOpenctiIncidentObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
-import XOpenctiIncidentPopover from './XOpenctiXOpenctiIncidentPopover';
+import XOpenctiIncidentPopover from './XOpenctiIncidentPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 

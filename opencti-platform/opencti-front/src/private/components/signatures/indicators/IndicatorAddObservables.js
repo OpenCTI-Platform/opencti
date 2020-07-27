@@ -16,7 +16,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import IndicatorAddObservableRefsLines, {
-  indicatorAddObservableRefsLinesQuery,
+  indicatorAddObservablesLinesQuery,
 } from './IndicatorAddObservablesLines';
 import StixCyberObservableCreation from '../stix_cyber_observables/StixCyberObservableCreation';
 
@@ -132,7 +132,7 @@ class IndicatorAddObservables extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={indicatorAddObservableRefsLinesQuery}
+              query={indicatorAddObservablesLinesQuery}
               variables={{
                 search: this.state.search,
                 orderBy: 'created_at',

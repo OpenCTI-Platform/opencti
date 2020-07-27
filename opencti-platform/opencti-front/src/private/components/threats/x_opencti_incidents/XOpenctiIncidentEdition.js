@@ -8,8 +8,8 @@ import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import XOpenctiIncidentEditionContainer from './XOpenctiXOpenctiIncidentEditionContainer';
-import { xOpenctiIncidentEditionOverviewFocus } from './XOpenctiXOpenctiIncidentEditionOverview';
+import XOpenctiIncidentEditionContainer from './XOpenctiIncidentEditionContainer';
+import { xOpenctiIncidentEditionOverviewFocus } from './XOpenctiIncidentEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({

@@ -12,8 +12,8 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import XOpenctiIncidentEditionOverview from './XOpenctiXOpenctiIncidentEditionOverview';
-import XOpenctiIncidentEditionDetails from './XOpenctiXOpenctiIncidentEditionDetails';
+import XOpenctiIncidentEditionOverview from './XOpenctiIncidentEditionOverview';
+import XOpenctiIncidentEditionDetails from './XOpenctiIncidentEditionDetails';
 
 const styles = (theme) => ({
   header: {

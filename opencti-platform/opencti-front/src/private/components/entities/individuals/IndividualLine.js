@@ -56,7 +56,7 @@ class IndividualLineComponent extends Component {
         to={`/dashboard/entities/individuals/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <IndividualOutlined />
+          <PersonOutlined />
         </ListItemIcon>
         <ListItemText
           primary={

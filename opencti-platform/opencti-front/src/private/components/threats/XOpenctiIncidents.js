@@ -15,11 +15,11 @@ import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import XOpenctiIncidentsCards, {
   xOpenctiIncidentsCardsQuery,
-} from './x_opencti_xOpenctiIncidents/XOpenctiXOpenctiIncidentsCards';
+} from './x_opencti_incidents/XOpenctiIncidentsCards';
 import XOpenctiIncidentsLines, {
   xOpenctiIncidentsLinesQuery,
-} from './x_opencti_xOpenctiIncidents/XOpenctiXOpenctiIncidentsLines';
-import XOpenctiIncidentCreation from './x_opencti_xOpenctiIncidents/XOpenctiXOpenctiIncidentCreation';
+} from './x_opencti_incidents/XOpenctiIncidentsLines';
+import XOpenctiIncidentCreation from './x_opencti_incidents/XOpenctiIncidentCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class XOpenctiXOpenctiIncidents extends Component {

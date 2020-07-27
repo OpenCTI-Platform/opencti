@@ -256,7 +256,7 @@ class EntityStixSightingRelationships extends Component {
   }
 }
 
-EntityStixSightingRelationshipRelationships.propTypes = {
+EntityStixSightingRelationships.propTypes = {
   entityId: PropTypes.string,
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,

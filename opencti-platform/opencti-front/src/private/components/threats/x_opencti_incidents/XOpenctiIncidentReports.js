@@ -6,7 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import XOpenctiIncidentPopover from './XOpenctiXOpenctiIncidentPopover';
+import XOpenctiIncidentPopover from './XOpenctiIncidentPopover';
 import Reports from '../../reports/Reports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 

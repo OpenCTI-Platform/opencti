@@ -8,7 +8,7 @@ import graphql from 'babel-plugin-relay/macro';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import StixCyberObservableHeader from './StixCyberObservableHeader';
-import StixCyberObservableRelationCreationFromEntity from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationCreationFromEntity';
+import StixCyberObservableRelationCreationFromEntity from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreationFromEntity';
 import StixCyberObservableObservablesLines, {
   stixCyberObservableObservablesLinesQuery,
 } from './StixCyberObservableObservablesLines';

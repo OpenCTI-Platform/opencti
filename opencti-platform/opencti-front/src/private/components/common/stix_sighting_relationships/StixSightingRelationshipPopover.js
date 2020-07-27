@@ -16,7 +16,7 @@ import { MoreVertOutlined } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import StixSightingRelationshipEdition from './StixSightingRelationshipRelationshipEdition';
+import StixSightingRelationshipEdition from './StixSightingRelationshipEdition';
 
 const styles = (theme) => ({
   container: {

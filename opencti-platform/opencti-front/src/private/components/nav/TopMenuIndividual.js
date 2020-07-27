@@ -4,10 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import {
-  IndividualOutlined,
-  ArrowForwardIosOutlined,
-} from '@material-ui/icons';
+import { PersonOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -59,7 +56,7 @@ class TopMenuIndividual extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <IndividualOutlined className={classes.icon} fontSize="small" />
+          <PersonOutlined className={classes.icon} fontSize="small" />
           {t('Individuals')}
         </Button>
         <ArrowForwardIosOutlined

@@ -13,7 +13,7 @@ import OrganizationPopover from './OrganizationPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenctiIncidentsChart from '../../threats/x_opencti_xOpenctiIncidents/EntityXOpenctiXOpenctiIncidentsChart';
+import EntityXOpenctiIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenctiIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';

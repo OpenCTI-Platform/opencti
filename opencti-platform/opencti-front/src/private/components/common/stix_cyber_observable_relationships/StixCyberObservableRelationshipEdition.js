@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservableRelationEditionOverview from './StixCyberObservableRelationEditionOverview';
+import StixCyberObservableRelationshipEditionOverview from './StixCyberObservableRelationshipEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -64,7 +64,7 @@ class StixCyberObservableRelationshipEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCyberObservableRelationEditionOverview
+                  <StixCyberObservableRelationshipEditionOverview
                     stixDomainObject={stixDomainObject}
                     stixCyberObservableRelationship={
                       props.stixCyberObservableRelationship

@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import {
   XOpenctiXOpenctiIncidentLine,
   XOpenctiIncidentLineDummy,
-} from './XOpenctiXOpenctiIncidentLine';
+} from './XOpenctiIncidentLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
