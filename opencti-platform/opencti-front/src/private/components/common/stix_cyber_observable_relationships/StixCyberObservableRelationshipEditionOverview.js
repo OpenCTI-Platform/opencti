@@ -112,16 +112,15 @@ export const stixCyberObservableRelationshipEditionFocus = graphql`
 `;
 
 const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date()
+  start_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  last_seen: Yup.date()
+  stop_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  role_played: Yup.string(),
 });
 
-class StixCyberObservableRelationEditionContainer extends Component {
+class StixCyberObservableRelationshipEditionContainer extends Component {
   componentDidMount() {
     const sub = requestSubscription({
       subscription,
@@ -179,34 +178,24 @@ class StixCyberObservableRelationEditionContainer extends Component {
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixCyberObservableRelationship);
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixCyberObservableRelationship);
     const initialValues = pipe(
       assoc(
-        'first_seen',
-        dateFormat(stixCyberObservableRelationship.first_seen),
+        'start_time',
+        dateFormat(stixCyberObservableRelationship.start_time),
       ),
-      assoc('last_seen', dateFormat(stixCyberObservableRelationship.last_seen)),
+      assoc('stop_time', dateFormat(stixCyberObservableRelationship.stop_time)),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'weight',
-        'first_seen',
-        'last_seen',
-        'description',
-        'role_played',
-        'killChainPhases',
-        'markingDefinitions',
-      ]),
+      assoc('objectMarking', objectMarking),
+      pick(['start_time', 'stop_time', 'killChainPhases', 'objectMarking']),
     )(stixCyberObservableRelationship);
     const link = stixDomainObject
       ? resolveLink(stixDomainObject.entity_type)
@@ -228,105 +217,50 @@ class StixCyberObservableRelationEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <QueryRenderer
-            query={attributesQuery}
-            variables={{ type: 'role_played' }}
-            render={({ props }) => {
-              if (props && props.attributes) {
-                const rolesPlayedEdges = props.attributes.edges;
-                return (
-                  <Formik
-                    enableReinitialize={true}
-                    initialValues={initialValues}
-                    validationSchema={stixCyberObservableRelationshipValidation(
-                      t,
-                    )}
-                    render={() => (
-                      <Form style={{ margin: '20px 0 20px 0' }}>
-                        <Field
-                          component={SelectField}
-                          name="role_played"
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onChange={this.handleSubmitField.bind(this)}
-                          label={t('Played role')}
-                          fullWidth={true}
-                          containerstyle={{ width: '100%' }}
-                          helpertext={
-                            <SubscriptionFocus
-                              context={editContext}
-                              fieldName="role_played"
-                            />
-                          }
-                        >
-                          {rolesPlayedEdges.map((rolePlayedEdge) => (
-                            <MenuItem
-                              key={rolePlayedEdge.node.value}
-                              value={rolePlayedEdge.node.value}
-                            >
-                              {rolePlayedEdge.node.value}
-                            </MenuItem>
-                          ))}
-                        </Field>
-                        <Field
-                          component={DatePickerField}
-                          name="first_seen"
-                          label={t('First seen')}
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
-                          fullWidth={true}
-                          style={{ marginTop: 20 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              context={editContext}
-                              fieldName="first_seen"
-                            />
-                          }
-                        />
-                        <Field
-                          component={DatePickerField}
-                          name="last_seen"
-                          label={t('Last seen')}
-                          invalidDateMessage={t(
-                            'The value must be a date (YYYY-MM-DD)',
-                          )}
-                          fullWidth={true}
-                          style={{ marginTop: 20 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              context={editContext}
-                              fieldName="last_seen"
-                            />
-                          }
-                        />
-                        <Field
-                          component={TextField}
-                          name="description"
-                          label={t('Description')}
-                          fullWidth={true}
-                          multiline={true}
-                          rows={4}
-                          style={{ marginTop: 20 }}
-                          onFocus={this.handleChangeFocus.bind(this)}
-                          onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              context={editContext}
-                              fieldName="description"
-                            />
-                          }
-                        />
-                      </Form>
-                    )}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
+          <Formik
+            enableReinitialize={true}
+            initialValues={initialValues}
+            validationSchema={stixCyberObservableRelationshipValidation(t)}
+            render={() => (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Field
+                  component={DatePickerField}
+                  name="start_time"
+                  label={t('Start time')}
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="start_time"
+                    />
+                  }
+                />
+                <Field
+                  component={DatePickerField}
+                  name="stop_time"
+                  label={t('Stop time')}
+                  invalidDateMessage={t(
+                    'The value must be a date (YYYY-MM-DD)',
+                  )}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onSubmit={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                      context={editContext}
+                      fieldName="stop_time"
+                    />
+                  }
+                />
+              </Form>
+            )}
           />
           {stixDomainObject ? (
             <Button
@@ -369,26 +303,14 @@ StixCyberObservableRelationshipEditionContainer.propTypes = {
 };
 
 const StixCyberObservableRelationshipEditionFragment = createFragmentContainer(
-  StixCyberObservableRelationEditionContainer,
+  StixCyberObservableRelationshipEditionContainer,
   {
     stixCyberObservableRelationship: graphql`
       fragment StixCyberObservableRelationshipEditionOverview_stixCyberObservableRelationship on StixCyberObservableRelationship {
         id
-        weight
-        first_seen
-        last_seen
-        description
+        start_time
+        stop_time
         relationship_type
-        role_played
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-              definition_type
-            }
-          }
-        }
         editContext {
           name
           focusOn

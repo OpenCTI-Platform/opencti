@@ -585,7 +585,7 @@ type Workspace implements BasicObject & InternalObject {
   editContext: [EditUserContext]
 }
 input WorkspaceAddInput {
-  workspace_type: String!object_status
+  workspace_type: String!
   name: String!
   description: String
   clientMutationId: String
@@ -4937,6 +4937,8 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   relationship_type: String!
   start_time: DateTime
   stop_time: DateTime
+  # Technical
+  editContext: [EditUserContext]
 }
 input StixCyberObservableRelationshipAddInput {
   stix_id: String

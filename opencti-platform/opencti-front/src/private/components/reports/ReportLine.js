@@ -153,8 +153,10 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
       published
       x_opencti_report_status
       createdBy {
-        node {
+        ... on Identity {
+          id
           name
+          entity_type
         }
       }
       objectMarking {
@@ -162,7 +164,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           node {
             id
             definition
-            color
+            x_opencti_color
           }
         }
       }

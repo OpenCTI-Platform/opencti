@@ -50,7 +50,7 @@ const styles = (theme) => ({
 });
 
 export const indicatorMutationRelationAdd = graphql`
-  mutation IndicatorAddObservableRefsLinesRelationAddMutation(
+  mutation IndicatorAddObservablesLinesRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
   ) {
@@ -66,7 +66,7 @@ export const indicatorMutationRelationAdd = graphql`
 `;
 
 export const indicatorMutationRelationDelete = graphql`
-  mutation IndicatorAddObservableRefsLinesRelationDeleteMutation(
+  mutation IndicatorAddObservablesLinesRelationDeleteMutation(
     $id: ID!
     $toId: String!
     $relationship_type: String!
@@ -79,19 +79,19 @@ export const indicatorMutationRelationDelete = graphql`
   }
 `;
 
-class IndicatorAddObservableRefsLinesContainer extends Component {
+class IndicatorAddObservablesLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
   }
 
   toggleStixCyberObservable(stixCyberObservable) {
-    const { indicatorId, indicatorObservableRefs } = this.props;
-    const indicatorObservableRefsIds = map(
+    const { indicatorId, indicatorObservables } = this.props;
+    const indicatorObservablesIds = map(
       (n) => n.node.id,
-      indicatorObservableRefs,
+      indicatorObservables,
     );
-    const alreadyAdded = indicatorObservableRefsIds.includes(
+    const alreadyAdded = indicatorObservablesIds.includes(
       stixCyberObservable.id,
     );
 
@@ -99,7 +99,7 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
       const existingStixCyberObservable = head(
         filter(
           (n) => n.node.id === stixCyberObservable.id,
-          indicatorObservableRefs,
+          indicatorObservables,
         ),
       );
       commitMutation({
@@ -144,11 +144,11 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, indicatorObservableRefs,
+      t, classes, data, indicatorObservables,
     } = this.props;
-    const indicatorObservableRefsIds = map(
+    const indicatorObservablesIds = map(
       (n) => n.node.id,
-      indicatorObservableRefs,
+      indicatorObservables,
     );
     const stixCyberObservablesNodes = map(
       (n) => n.node,
@@ -187,7 +187,7 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
               >
                 <List classes={{ root: classes.list }}>
                   {stixCyberObservables[type].map((stixCyberObservable) => {
-                    const alreadyAdded = indicatorObservableRefsIds.includes(
+                    const alreadyAdded = indicatorObservablesIds.includes(
                       stixCyberObservable.id,
                     );
                     return (
@@ -228,9 +228,9 @@ class IndicatorAddObservableRefsLinesContainer extends Component {
   }
 }
 
-IndicatorAddObservableRefsLinesContainer.propTypes = {
+IndicatorAddObservablesLinesContainer.propTypes = {
   indicatorId: PropTypes.string,
-  indicatorObservableRefs: PropTypes.array,
+  indicatorObservables: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -238,15 +238,15 @@ IndicatorAddObservableRefsLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const indicatorAddObservableRefsLinesQuery = graphql`
-  query IndicatorAddObservableRefsLinesQuery(
+export const indicatorAddObservablesLinesQuery = graphql`
+  query IndicatorAddObservablesLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    ...IndicatorAddObservableRefsLines_data
+    ...IndicatorAddObservablesLines_data
       @arguments(
         search: $search
         count: $count
@@ -257,11 +257,11 @@ export const indicatorAddObservableRefsLinesQuery = graphql`
   }
 `;
 
-const IndicatorAddObservableRefsLines = createPaginationContainer(
-  IndicatorAddObservableRefsLinesContainer,
+const IndicatorAddObservablesLines = createPaginationContainer(
+  IndicatorAddObservablesLinesContainer,
   {
     data: graphql`
-      fragment IndicatorAddObservableRefsLines_data on Query
+      fragment IndicatorAddObservablesLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
 
@@ -310,11 +310,11 @@ const IndicatorAddObservableRefsLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: indicatorAddObservableRefsLinesQuery,
+    query: indicatorAddObservablesLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(IndicatorAddObservableRefsLines);
+)(IndicatorAddObservablesLines);

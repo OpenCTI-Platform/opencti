@@ -17,7 +17,7 @@ import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import IndicatorAddObservableRefsLines, {
   indicatorAddObservableRefsLinesQuery,
-} from './IndicatorAddObservableRefsLines';
+} from './IndicatorAddObservablesLines';
 import StixCyberObservableCreation from '../stix_cyber_observables/StixCyberObservableCreation';
 
 const styles = (theme) => ({
@@ -67,7 +67,7 @@ const styles = (theme) => ({
   },
 });
 
-class IndicatorAddObservableRefs extends Component {
+class IndicatorAddObservables extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -191,7 +191,7 @@ class IndicatorAddObservableRefs extends Component {
   }
 }
 
-IndicatorAddObservableRefs.propTypes = {
+IndicatorAddObservables.propTypes = {
   indicatorId: PropTypes.string,
   indicatorObservableRefs: PropTypes.array,
   classes: PropTypes.object,
@@ -202,4 +202,4 @@ IndicatorAddObservableRefs.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(IndicatorAddObservableRefs);
+)(IndicatorAddObservables);

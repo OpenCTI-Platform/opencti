@@ -39,9 +39,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const indicatorRefPopoverDeletionMutation = graphql`
-  mutation IndicatorRefPopoverDeletionMutation($id: ID!, $relationId: ID!) {
-    indicatorEdit(id: $id) {
+const indicatorObservablePopoverDeletionMutation = graphql`
+  mutation IndicatorObservablePopoverDeletionMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationship(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...IndicatorObservables_indicator
       }
@@ -49,7 +53,7 @@ const indicatorRefPopoverDeletionMutation = graphql`
   }
 `;
 
-class IndicatorRefPopover extends Component {
+class IndicatorObservablePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -80,10 +84,11 @@ class IndicatorRefPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: indicatorRefPopoverDeletionMutation,
+      mutation: indicatorObservablePopoverDeletionMutation,
       variables: {
         id: this.props.indicatorId,
-        relationId: this.props.relationId,
+        toId: this.props.observableId,
+        relationship_type: 'based-on',
       },
       onCompleted: () => {
         this.handleCloseDelete();
@@ -141,10 +146,9 @@ class IndicatorRefPopover extends Component {
   }
 }
 
-IndicatorRefPopover.propTypes = {
+IndicatorObservablePopover.propTypes = {
   indicatorId: PropTypes.string,
-  entityId: PropTypes.string,
-  relationId: PropTypes.string,
+  observableId: PropTypes.string,
   secondaryRelationId: PropTypes.string,
   isRelation: PropTypes.bool,
   paginationOptions: PropTypes.object,
@@ -152,4 +156,7 @@ IndicatorRefPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(IndicatorRefPopover);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(IndicatorObservablePopover);
