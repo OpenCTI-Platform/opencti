@@ -268,7 +268,7 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
   },
 );
 
-export const EntityStixSightingRelationshipRelationshipLine = compose(
+export const EntityStixSightingRelationshipLine = compose(
   inject18n,
   withStyles(styles),
 )(EntityStixSightingRelationshipLineFragment);

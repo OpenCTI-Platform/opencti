@@ -9,7 +9,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {
-  Domain, Individual, Map, AccountBalance,
+  DomainOutlined, PersonOutlined, MapOutlined, AccountBalanceOutlined,
 } from '@material-ui/icons';
 import { Gauge, SourcePull, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
@@ -71,7 +71,7 @@ class OrganizationKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Domain />
+              <DomainOutlined />
             </ListItemIcon>
             <ListItemText
               primary={t('Sectors')}
@@ -89,7 +89,7 @@ class OrganizationKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Map />
+              <MapOutlined />
             </ListItemIcon>
             <ListItemText
               primary={t('Location')}
@@ -107,7 +107,7 @@ class OrganizationKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <AccountBalance />
+              <AccountBalanceOutlined />
             </ListItemIcon>
             <ListItemText
               primary={t('Organizations')}
@@ -125,7 +125,7 @@ class OrganizationKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Individual />
+              <PersonOutlined />
             </ListItemIcon>
             <ListItemText
               primary={t('Individuals')}

@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
-  IndividualOutlined,
+  PersonOutlined,
   AccountBalanceOutlined,
   FlagOutlined,
   DomainOutlined,
@@ -143,7 +143,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <IndividualOutlined className={classes.icon} fontSize="small" />
+          <PersonOutlined className={classes.icon} fontSize="small" />
           {t('Individuals')}
         </Button>
       </div>

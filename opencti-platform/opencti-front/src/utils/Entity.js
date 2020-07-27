@@ -19,7 +19,7 @@ export const resolveLink = (type) => {
       return '/dashboard/entities/cities';
     case 'organization':
       return '/dashboard/entities/organizations';
-    case 'user':
+    case 'individual':
       return '/dashboard/entities/individuals';
     case 'threat-actor':
       return '/dashboard/threats/threat_actors';

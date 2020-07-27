@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
   FlagOutlined,
-  IndividualOutlined,
+  PersonOutlined,
   AccountBalanceOutlined,
   DomainOutlined,
   PublicOutlined,
@@ -67,9 +67,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'xOpenctiIncident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'user':
-      return (
-        <IndividualOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
     case 'organization':
       return (
         <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
