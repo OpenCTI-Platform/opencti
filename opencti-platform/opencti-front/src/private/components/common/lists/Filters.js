@@ -62,26 +62,26 @@ class Filters extends Component {
   searchEntities(filterKey, event) {
     const { t } = this.props;
     switch (filterKey) {
-      case 'labels':
-        fetchQuery(labelsSearchQuery, {
+      case 'createdBy':
+        fetchQuery(identityCreationIdentitiesSearchQuery, {
+          types: ['User', 'Organization'],
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
           const entities = pipe(
-            pathOr([], ['labels', 'edges']),
+            pathOr([], ['identities', 'edges']),
             map((n) => ({
-              label: n.node.value,
+              label: n.node.name,
               value: n.node.id,
-              type: 'label',
-              color: n.node.color,
+              type: n.node.entity_type,
             })),
           )(data);
           this.setState({
-            entities: { labels: union(this.state.entities, entities) },
+            entities: { createdBy: union(this.state.entities, entities) },
           });
         });
         break;
-      case 'markingDefinitions':
+      case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
@@ -102,22 +102,22 @@ class Filters extends Component {
           });
         });
         break;
-      case 'createdBy':
-        fetchQuery(identityCreationIdentitiesSearchQuery, {
-          types: ['User', 'Organization'],
+      case 'labelledBy':
+        fetchQuery(labelsSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
           const entities = pipe(
-            pathOr([], ['identities', 'edges']),
+            pathOr([], ['objectLabel', 'edges']),
             map((n) => ({
-              label: n.node.name,
+              label: n.node.value,
               value: n.node.id,
-              type: n.node.entity_type,
+              type: 'label',
+              color: n.node.color,
             })),
           )(data);
           this.setState({
-            entities: { createdBy: union(this.state.entities, entities) },
+            entities: { labels: union(this.state.entities, entities) },
           });
         });
         break;

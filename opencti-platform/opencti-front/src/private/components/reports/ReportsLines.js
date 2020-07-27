@@ -105,11 +105,13 @@ export default createPaginationContainer(
               id
               name
               published
-              createdBy {
-                node {
-                  name
-                }
-              }
+            createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
               objectMarking {
                 edges {
                   node {

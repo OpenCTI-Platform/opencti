@@ -64,10 +64,10 @@ export const entityStixCyberObservablesLinesQuery = graphql`
     $fromId: String
     $toTypes: [String]
     $relationship_type: String
-    $firstSeenStart: DateTime
-    $firstSeenStop: DateTime
-    $lastSeenStart: DateTime
-    $lastSeenStop: DateTime
+    $startTimeStart: DateTime
+    $startTimeStop: DateTime
+    $stopTimeStart: DateTime
+    $stopTimeStop: DateTime
     $confidences: [Int]
     $count: Int!
     $cursor: ID
@@ -80,10 +80,10 @@ export const entityStixCyberObservablesLinesQuery = graphql`
         fromId: $fromId
         toTypes: $toTypes
         relationship_type: $relationship_type
-        firstSeenStart: $firstSeenStart
-        firstSeenStop: $firstSeenStop
-        lastSeenStart: $lastSeenStart
-        lastSeenStop: $lastSeenStop
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
         confidences: $confidences
         count: $count
         cursor: $cursor
@@ -103,10 +103,10 @@ export default createPaginationContainer(
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
           relationship_type: { type: "String" }
-          firstSeenStart: { type: "DateTime" }
-          firstSeenStop: { type: "DateTime" }
-          lastSeenStart: { type: "DateTime" }
-          lastSeenStop: { type: "DateTime" }
+          startTimeStart: { type: "DateTime" }
+          startTimeStop: { type: "DateTime" }
+          stopTimeStart: { type: "DateTime" }
+          stopTimeStop: { type: "DateTime" }
           confidences: { type: "[Int]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
@@ -121,10 +121,10 @@ export default createPaginationContainer(
           fromId: $fromId
           toTypes: $toTypes
           relationship_type: $relationship_type
-          firstSeenStart: $firstSeenStart
-          firstSeenStop: $firstSeenStop
-          lastSeenStart: $lastSeenStart
-          lastSeenStop: $lastSeenStop
+          startTimeStart: $startTimeStart
+          startTimeStop: $startTimeStop
+          stopTimeStart: $stopTimeStart
+          stopTimeStop: $stopTimeStop
           confidences: $confidences
           first: $count
           after: $cursor
@@ -162,10 +162,10 @@ export default createPaginationContainer(
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
         relationship_type: fragmentVariables.relationship_type,
-        firstSeenStart: fragmentVariables.firstSeenStart,
-        firstSeenStop: fragmentVariables.firstSeenStop,
-        lastSeenStart: fragmentVariables.lastSeenStart,
-        lastSeenStop: fragmentVariables.lastSeenStop,
+        startTimeStart: fragmentVariables.startTimeStart,
+        startTimeStop: fragmentVariables.startTimeStop,
+        stopTimeStart: fragmentVariables.stopTimeStart,
+        stopTimeStop: fragmentVariables.stopTimeStop,
         confidences: fragmentVariables.confidences,
         count,
         cursor,

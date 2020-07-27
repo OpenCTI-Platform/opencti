@@ -165,13 +165,16 @@ const dashboardLastReportsQuery = graphql`
           description
           published
           createdBy {
-            node {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
@@ -199,17 +202,90 @@ const dashboardLastStixDomainObjectsQuery = graphql`
         node {
           id
           entity_type
-          name
-          description
           updated_at
+          ... on AttackPattern {
+            name
+            description
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on XOpenctiIncident {
+            name
+            description
+          }
           createdBy {
-            node {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
@@ -230,43 +306,83 @@ const dashboardLastNotesQuery = graphql`
       edges {
         node {
           id
-          name
+          attribute_abstract
           created
           createdBy {
-            node {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
           }
-          objectRefs {
+          objects {
             edges {
               node {
-                id
-                entity_type
-              }
-            }
-          }
-          observableRefs {
-            edges {
-              node {
-                id
-                entity_type
-              }
-            }
-          }
-          relationRefs {
-            edges {
-              node {
-                id
-                from {
+                ... on BasicObject {
                   id
                   entity_type
+                }
+                ... on AttackPattern {
+                  name
+                }
+                ... on Campaign {
+                  name
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                }
+                ... on ThreatActor {
+                  name
+                }
+                ... on Tool {
+                  name
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on XOpenctiIncident {
+                  name
                 }
               }
             }
@@ -293,11 +409,11 @@ const dashboardLastObservablesQuery = graphql`
           id
           entity_type
           observable_value
-          description
           created_at
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
@@ -678,8 +794,8 @@ class Dashboard extends Component {
                                 note.relationRefs.edges[0].node.id
                               }`;
                             }
-                            const markingDefinition = head(
-                              pathOr([], ['markingDefinitions', 'edges'], note),
+                            const objectMarking = head(
+                              pathOr([], ['objectMarking', 'edges'], note),
                             );
                             return (
                               <ListItem
@@ -719,10 +835,10 @@ class Dashboard extends Component {
                                     paddingRight: 20,
                                   }}
                                 >
-                                  {markingDefinition ? (
+                                  {objectMarking ? (
                                     <ItemMarking
-                                      key={markingDefinition.node.id}
-                                      label={markingDefinition.node.definition}
+                                      key={objectMarking.node.id}
+                                      label={objectMarking.node.definition}
                                       variant="inList"
                                     />
                                   ) : (
@@ -758,12 +874,8 @@ class Dashboard extends Component {
                         <List>
                           {props.reports.edges.map((reportEdge) => {
                             const report = reportEdge.node;
-                            const markingDefinition = head(
-                              pathOr(
-                                [],
-                                ['markingDefinitions', 'edges'],
-                                report,
-                              ),
+                            const objectMarking = head(
+                              pathOr([], ['objectMarking', 'edges'], report),
                             );
                             return (
                               <ListItem
@@ -803,10 +915,10 @@ class Dashboard extends Component {
                                     paddingRight: 20,
                                   }}
                                 >
-                                  {markingDefinition ? (
+                                  {objectMarking ? (
                                     <ItemMarking
-                                      key={markingDefinition.node.id}
-                                      label={markingDefinition.node.definition}
+                                      key={objectMarking.node.id}
+                                      label={objectMarking.node.definition}
                                       variant="inList"
                                     />
                                   ) : (
@@ -843,10 +955,10 @@ class Dashboard extends Component {
                           {props.stixCyberObservables.edges.map(
                             (stixCyberObservableEdge) => {
                               const stixCyberObservable = stixCyberObservableEdge.node;
-                              const markingDefinition = head(
+                              const objectMarking = head(
                                 pathOr(
                                   [],
-                                  ['markingDefinitions', 'edges'],
+                                  ['objectMarking', 'edges'],
                                   stixCyberObservable,
                                 ),
                               );
@@ -886,12 +998,10 @@ class Dashboard extends Component {
                                       paddingRight: 20,
                                     }}
                                   >
-                                    {markingDefinition ? (
+                                    {objectMarking ? (
                                       <ItemMarking
-                                        key={markingDefinition.node.id}
-                                        label={
-                                          markingDefinition.node.definition
-                                        }
+                                        key={objectMarking.node.id}
+                                        label={objectMarking.node.definition}
                                         variant="inList"
                                       />
                                     ) : (

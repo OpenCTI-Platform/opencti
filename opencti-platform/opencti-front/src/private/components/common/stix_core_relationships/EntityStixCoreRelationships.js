@@ -112,7 +112,7 @@ class EntityStixCoreRelationships extends Component {
         width: '15%',
         isSortable: true,
       },
-      weight: {
+      confidence: {
         label: 'Confidence level',
         width: '15%',
         isSortable: true,

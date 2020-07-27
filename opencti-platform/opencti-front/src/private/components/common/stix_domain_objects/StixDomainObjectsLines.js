@@ -284,14 +284,14 @@ const StixDomainObjectsLines = createPaginationContainer(
               description
               ... on StixEntity {
                 objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
+                  edges {
+                    node {
+                      id
+                      value
+                      color
+                    }
+                  }
+                }
               }
             }
           }

@@ -198,8 +198,8 @@ class IntrusionSets extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labels',
-          'markingDefinitions',
+          'labelledBy',
+          'markedBy',
           'created_start_date',
           'created_end_date',
           'createdBy',

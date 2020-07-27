@@ -114,16 +114,11 @@ export const reportKnowledgeGraphtMutationRelationAdd = graphql`
 export const reportKnowledgeGraphtMutationRelationDelete = graphql`
   mutation ReportKnowledgeGraphRelationDeleteMutation(
     $id: ID!
-    $toId: String
-    $relationship_type: String
-    $relationId: ID
+    $toId: String!
+    $relationship_type: String!
   ) {
     reportEdit(id: $id) {
-      relationDelete(
-        relationId: $relationId
-        toId: $toId
-        relationship_type: $relationship_type
-      ) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...ReportKnowledgeGraph_report
       }
     }

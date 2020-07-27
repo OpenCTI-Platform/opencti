@@ -110,7 +110,7 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
@@ -155,7 +155,7 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
         }
       }
       published
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id
@@ -164,15 +164,12 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
           }
         }
       }
-      labels {
+      objectLabel {
         edges {
           node {
             id
             value
             color
-          }
-          relation {
-            id
           }
         }
       }
