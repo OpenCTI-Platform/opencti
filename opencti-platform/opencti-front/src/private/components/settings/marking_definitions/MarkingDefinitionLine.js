@@ -73,15 +73,15 @@ class MarkingDefinitionLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_order.width }}
+                style={{ width: dataColumns.x_opencti_color.width }}
               >
-                {node.color}
+                {node.x_opencti_color}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.x_opencti_order.width }}
               >
-                {node.level}
+                {node.x_opencti_order}
               </div>
               <div
                 className={classes.bodyItem}

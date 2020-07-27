@@ -110,7 +110,7 @@ type QueueArguments {
   config: String
 }
 type QueueMetrics {
-  name: String
+  name: String!
   arguments: QueueArguments
   messages: Int
   messages_ready: Int
@@ -288,7 +288,7 @@ type FileMetadata {
 }
 type File {
   id: ID!
-  name: String
+  name: String!
   size: Int
   lastModified: DateTime
   lastModifiedSinceMin: Int
@@ -323,7 +323,7 @@ interface InternalObject {
 
 ############## Settings
 type Provider {
-  name: String
+  name: String!
   type: String
   provider: String
 }
@@ -3817,7 +3817,7 @@ type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & Sti
   created: DateTime!
   modified: DateTime!
   # XOpenctiIncident
-  name: String
+  name: String!
   description: String
   aliases: [String]
   first_seen: DateTime
