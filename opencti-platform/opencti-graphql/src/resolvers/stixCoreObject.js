@@ -1,6 +1,7 @@
 import {
   createdBy,
   findById,
+  findAll,
   markingDefinitions,
   reports,
   notes,
@@ -17,6 +18,7 @@ import { convertDataToStix } from '../database/stix';
 const stixCoreObjectResolvers = {
   Query: {
     stixCoreObject: (_, { id }) => findById(id),
+    stixCoreObjects: (_, args) => findAll(args),
   },
   StixCoreObject: {
     // eslint-disable-next-line

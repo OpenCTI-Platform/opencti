@@ -176,7 +176,7 @@ class IndividualCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={individualValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

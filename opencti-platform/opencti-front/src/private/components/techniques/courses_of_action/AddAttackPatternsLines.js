@@ -28,7 +28,7 @@ const styles = (theme) => ({
 
 const addAattackPatternsLinesMutationRelationAdd = graphql`
   mutation AddAttackPatternsLinesRelationAddMutation(
-    $input: StixMetaRelationshipAddInput
+    $input: StixCoreRelationshipAddInput
   ) {
     stixCoreRelationshipAdd(input: $input) {
       from {
@@ -83,9 +83,7 @@ class AddAttackPatternsLinesContainer extends Component {
       const input = {
         relationship_type: 'mitigates',
         fromId: courseOfActionId,
-        fromRole: 'mitigation',
         toId: attackPattern.id,
-        toRole: 'problem',
       };
       commitMutation({
         mutation: addAattackPatternsLinesMutationRelationAdd,

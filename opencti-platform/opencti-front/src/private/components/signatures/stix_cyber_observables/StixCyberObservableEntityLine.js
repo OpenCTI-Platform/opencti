@@ -186,6 +186,8 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
             id
             entity_type
             parent_types
+          }
+          ... on StixObject {
             created_at
             updated_at
           }
@@ -269,6 +271,8 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 id
                 entity_type
                 parent_types
+              }
+              ... on StixObject {
                 created_at
                 updated_at
               }
@@ -352,6 +356,8 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
                 id
                 entity_type
                 parent_types
+              }
+              ... on StixObject {
                 created_at
                 updated_at
               }

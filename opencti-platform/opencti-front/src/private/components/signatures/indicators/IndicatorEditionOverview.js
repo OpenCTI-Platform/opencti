@@ -373,7 +373,10 @@ class IndicatorEditionOverviewComponent extends Component {
               containerstyle={{ marginTop: 20 }}
               onChange={this.handleSubmitField.bind(this)}
               helperText={
-                <SubscriptionFocus context={context} fieldName="x_opencti_detection" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_detection"
+                />
               }
             />
           </Form>
@@ -398,12 +401,12 @@ const IndicatorEditionOverview = createFragmentContainer(
       fragment IndicatorEditionOverview_indicator on Indicator {
         id
         name
+        description
         pattern
         valid_from
         valid_until
-        score
-        description
-        detection
+        x_opencti_score
+        x_opencti_detection
         createdBy {
           ... on Identity {
             id

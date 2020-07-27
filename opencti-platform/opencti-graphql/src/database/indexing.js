@@ -5,7 +5,7 @@ import { find, getSingleValueNumber } from './grakn';
 import { elCreateIndexes, elDeleteIndexes, elIndexElements } from './elasticSearch';
 import { logger } from '../config/conf';
 import {
-  ABSTRACT_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_OBJECT,
   ENTITY_TYPE_CAPABILITY,
@@ -15,10 +15,9 @@ import {
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_WORKSPACE,
-  RELATION_MEMBERSHIP,
+  RELATION_MEMBER_OF,
   RELATION_PERMISSION,
-  RELATION_SIGHTING_NEGATIVE,
-  RELATION_SIGHTING_POSITIVE,
+  STIX_SIGHTING_RELATIONSHIP,
 } from '../utils/idGenerator';
 
 const GROUP_NUMBER = 200; // Pagination size for query
@@ -103,12 +102,12 @@ const index = async () => {
   await indexElement(ENTITY_TYPE_WORKSPACE);
   await indexElement(ABSTRACT_STIX_DOMAIN_OBJECT);
   await indexElement(ABSTRACT_STIX_META_OBJECT);
-  await indexElement(ABSTRACT_CYBER_OBSERVABLE);
+  await indexElement(ABSTRACT_STIX_CYBER_OBSERVABLE);
 
   // 04. Handle every entity subbing relation
   // migrate - Not needed, migration related.
   // authorize - Not needed, authentication
-  await indexElement(RELATION_MEMBERSHIP, true);
+  await indexElement(RELATION_MEMBER_OF, true);
   await indexElement(RELATION_PERMISSION, true);
   await indexElement('stix_relation', true, 'entity', 'entity');
   await indexElement('stix_relation', true, 'entity', 'relation');
@@ -116,8 +115,7 @@ const index = async () => {
   await indexElement('stix_observable_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);
-  await indexElement(RELATION_SIGHTING_POSITIVE, true);
-  await indexElement(RELATION_SIGHTING_NEGATIVE, true);
+  await indexElement(STIX_SIGHTING_RELATIONSHIP, true);
 };
 
 export default index;

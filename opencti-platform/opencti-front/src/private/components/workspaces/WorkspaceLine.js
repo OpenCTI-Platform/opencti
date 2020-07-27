@@ -83,7 +83,7 @@ class WorkspaceLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.marking.width }}
               >
-                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}

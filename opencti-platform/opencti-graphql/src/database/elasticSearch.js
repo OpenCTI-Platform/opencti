@@ -286,7 +286,10 @@ export const elCount = (indexName, options = {}) => {
     const should = types.map((typeValue) => {
       return {
         bool: {
-          should: [{ match_phrase: { 'entity_type.keyword': typeValue } }],
+          should: [
+            { match_phrase: { 'entity_type.keyword': typeValue } },
+            { match_phrase: { 'parent_types.keyword': typeValue } },
+          ],
           minimum_should_match: 1,
         },
       };
@@ -419,7 +422,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       query: {
         bool: {
           must: filters,
-          should: [{ match_phrase: { entity_type: type } }],
+          should: [{ match_phrase: { relationship_type: type } }, { match_phrase: { parent_types: type } }],
           minimum_should_match: 1,
         },
       },
@@ -493,7 +496,10 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
             [
               {
                 bool: {
-                  should: [{ match_phrase: { entity_type: type } }],
+                  should: [
+                    { match_phrase: { 'entity_type.keyword': type } },
+                    { match_phrase: { 'parent_types.keyword': type } },
+                  ],
                   minimum_should_match: 1,
                 },
               },

@@ -102,13 +102,13 @@ const ReportOverview = createFragmentContainer(ReportOverviewComponent, {
       published
       modified
       report_types
-              createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
         }
+      }
     }
   `,
 });

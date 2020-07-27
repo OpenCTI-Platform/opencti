@@ -7,7 +7,7 @@ import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { ReportEntityLine, ReportEntityLineDummy } from './ReportEntityLine';
 import { setNumberOfElements } from '../../../utils/Number';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import ReportAddObjectRefs from './ReportAddObjectRefs';
+import ReportAddObjects from './ReportAddObjects';
 
 const nbOfRowsToLoad = 50;
 
@@ -37,11 +37,11 @@ class ReportEntitiesLines extends Component {
           loadMore={relay.loadMore.bind(this)}
           hasMore={relay.hasMore.bind(this)}
           isLoading={relay.isLoading.bind(this)}
-          dataList={pathOr([], ['objectRefs', 'edges'], report)}
+          dataList={pathOr([], ['objects', 'edges'], report)}
           paginationOptions={paginationOptions}
           globalCount={pathOr(
             nbOfRowsToLoad,
-            ['objectRefs', 'pageInfo', 'globalCount'],
+            ['objects', 'pageInfo', 'globalCount'],
             report,
           )}
           LineComponent={
@@ -52,9 +52,9 @@ class ReportEntitiesLines extends Component {
           nbOfRowsToLoad={nbOfRowsToLoad}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ReportAddObjectRefs
+          <ReportAddObjects
             reportId={propOr(null, 'id', report)}
-            reportObjectRefs={pathOr([], ['objectRefs', 'edges'], report)}
+            reportObjectRefs={pathOr([], ['objects', 'edges'], report)}
             paginationOptions={paginationOptions}
             withPadding={true}
           />
@@ -113,17 +113,19 @@ export default createPaginationContainer(
           filters: { type: "[StixDomainObjectsFiltering]" }
         ) {
         id
-        objectRefs(
+        objects(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_objectRefs") {
+        ) @connection(key: "Pagination_objects") {
           edges {
             node {
-              id
+              ... on BasicObject {
+                id
+              }
               ...ReportEntityLine_node
             }
           }
@@ -139,7 +141,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.report && props.report.objectRefs;
+      return props.report && props.report.objects;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {

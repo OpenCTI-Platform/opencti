@@ -24,7 +24,7 @@ export const ABSTRACT_STIX_OBJECT = 'Stix-Object';
 export const ABSTRACT_STIX_META_OBJECT = 'Stix-Meta-Object';
 export const ABSTRACT_STIX_CORE_OBJECT = 'Stix-Core-Object';
 export const ABSTRACT_STIX_DOMAIN_OBJECT = 'Stix-Domain-Object';
-export const ABSTRACT_CYBER_OBSERVABLE = 'Stix-Cyber-Observable';
+export const ABSTRACT_STIX_CYBER_OBSERVABLE = 'Stix-Cyber-Observable';
 export const ABSTRACT_INTERNAL_OBJECT = 'Internal-Object';
 // endregion
 
@@ -211,6 +211,7 @@ export const isStixRelationship = (type) =>
   isStixSightingRelationship(type) ||
   isStixCyberObservableRelationship(type) ||
   isStixMetaRelationship(type);
+export const isBasicRelationship = (type) => isInternalRelationship(type) || isStixRelationship(type);
 // ------------------------------------------------------
 
 // ENTITIES --------------------------------------------
@@ -388,6 +389,7 @@ export const isStixCyberObservable = (type) => includes(type, STIX_CYBER_OBSERVA
 // endregion
 export const isStixCoreObject = (type) => isStixDomainObject(type) || isStixCyberObservable(type);
 export const isStixObject = (type) => isStixCoreObject(type) || isStixMetaObject(type);
+export const isBasicObject = (type) => isInternalObject(type) || isStixObject(type);
 // ------------------------------------------------------
 
 // region utils
@@ -418,7 +420,7 @@ export const parents = (type) => {
     return [ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
   }
   if (isStixCyberObservable(type)) {
-    return [ABSTRACT_CYBER_OBSERVABLE, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
+    return [ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
   }
   if (isStixMetaObject(type)) {
     return [ABSTRACT_STIX_META_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_BASIC_OBJECT];
@@ -612,4 +614,63 @@ export const generateStandardId = (type, data) => {
   if (isStixCoreRelationship(type)) return generateStixCoreRelationshipId(type, data);
   if (isStixMetaRelationship(type)) return generateStixMetaRelationshipId(type, data);
   throw DatabaseError(`Cant generate an id for ${type}`);
+};
+
+export const getParentTypes = (type) => {
+  const parentTypes = [];
+  if (isBasicObject(type)) {
+    parentTypes.push(ABSTRACT_BASIC_OBJECT);
+    if (isInternalObject(type)) {
+      parentTypes.push(ABSTRACT_INTERNAL_OBJECT);
+      return parentTypes;
+    }
+    if (isStixObject(type)) {
+      parentTypes.push(ABSTRACT_STIX_OBJECT);
+      if (isStixMetaObject(type)) {
+        parentTypes.push(ABSTRACT_STIX_META_OBJECT);
+        return parentTypes;
+      }
+      if (isStixCoreObject(type)) {
+        parentTypes.push(ABSTRACT_STIX_CORE_OBJECT);
+        if (isStixDomainObject(type)) {
+          parentTypes.push(ABSTRACT_STIX_DOMAIN_OBJECT);
+          if (isStixDomainObjectContainer(type)) {
+            parentTypes.push(ENTITY_TYPE_CONTAINER);
+          }
+          if (isStixDomainObjectIdentity(type)) {
+            parentTypes.push(ENTITY_TYPE_IDENTITY);
+          }
+          if (isStixDomainObjectLocation(type)) {
+            parentTypes.push(ENTITY_TYPE_LOCATION);
+          }
+          return parentTypes;
+        }
+        if (isStixCyberObservable(type)) {
+          parentTypes.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
+          return parentTypes;
+        }
+      }
+    }
+  }
+  if (isBasicRelationship(type)) {
+    parentTypes.push(ABSTRACT_BASIC_RELATIONSHIP);
+    if (isInternalRelationship(type)) {
+      parentTypes.push(ABSTRACT_INTERNAL_RELATIONSHIP);
+      return parentTypes;
+    }
+    if (isStixRelationship(type)) {
+      parentTypes.push(ABSTRACT_STIX_RELATIONSHIP);
+      if (isStixMetaRelationship(type)) {
+        parentTypes.push(ABSTRACT_STIX_META_RELATIONSHIP);
+      }
+      if (isStixCoreRelationship(type)) {
+        parentTypes.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
+      }
+      if (isStixCyberObservableRelationship(type)) {
+        parentTypes.push(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
+      }
+      return parentTypes;
+    }
+  }
+  throw DatabaseError(`Type ${type} not supported`);
 };

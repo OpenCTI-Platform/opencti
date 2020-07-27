@@ -1,10 +1,11 @@
-import { assoc, dissoc, pipe } from 'ramda';
+import { assoc, dissoc, map, pipe } from 'ramda';
 import {
   createRelation,
   deleteRelationById,
   escapeString,
   findWithConnectedRelations,
   internalLoadEntityById,
+  listEntities,
   loadWithConnectedRelations,
 } from '../database/grakn';
 import { findAll as relationFindAll } from './stixCoreRelationship';
@@ -30,7 +31,28 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ABSTRACT_STIX_CORE_OBJECT,
 } from '../utils/idGenerator';
+
+export const findAll = async (args) => {
+  const noTypes = !args.types || args.types.length === 0;
+  const entityTypes = noTypes ? [ABSTRACT_STIX_CORE_OBJECT] : args.types;
+  const finalArgs = assoc('parentType', ABSTRACT_STIX_CORE_OBJECT, args);
+  let data = await listEntities(entityTypes, ['name', 'aliases'], finalArgs);
+  data = assoc(
+    'edges',
+    map(
+      (n) => ({
+        cursor: n.cursor,
+        node: pipe(dissoc('user_email'), dissoc('password'))(n.node),
+        relation: n.relation,
+      }),
+      data.edges
+    ),
+    data
+  );
+  return data;
+};
 
 export const findById = async (stixCoreObjectId) => {
   let data = await internalLoadEntityById(stixCoreObjectId);

@@ -11,7 +11,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ABSTRACT_CYBER_OBSERVABLE, ENTITY_TYPE_X_OPENCTI_INCIDENT, RELATION_RELATED_TO } from '../utils/idGenerator';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_X_OPENCTI_INCIDENT, RELATION_RELATED_TO } from '../utils/idGenerator';
 
 export const findById = (incidentId) => {
   return loadEntityById(incidentId, 'Incident');
@@ -36,7 +36,7 @@ export const observables = (reportId) => {
   return findWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_X_OPENCTI_INCIDENT}; 
     $rel(${RELATION_RELATED_TO}_from:$from, ${RELATION_RELATED_TO}_to:$to) isa ${RELATION_RELATED_TO};
-    $from isa ${ABSTRACT_CYBER_OBSERVABLE};
+    $from isa ${ABSTRACT_STIX_CYBER_OBSERVABLE};
     $to has internal_id_key "${escapeString(reportId)}"; get;`,
     'from',
     { extraRelKey: 'rel' }

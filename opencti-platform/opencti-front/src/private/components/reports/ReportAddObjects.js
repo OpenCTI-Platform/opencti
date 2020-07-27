@@ -15,9 +15,9 @@ import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
-import ReportAddObjectRefsLines, {
-  reportAddObjectRefsLinesQuery,
-} from './ReportAddObjectRefsLines';
+import ReportAddObjectsLines, {
+  reportAddObjectsLinesQuery,
+} from './ReportAddObjectsLines';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 
 const styles = (theme) => ({
@@ -68,7 +68,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportAddObjectRefs extends Component {
+class ReportAddObjects extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -95,7 +95,7 @@ class ReportAddObjectRefs extends Component {
       withPadding,
       defaultCreatedBy,
       defaultMarkingDefinition,
-      reportObjectRefs,
+      reportObjects,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -142,7 +142,7 @@ class ReportAddObjectRefs extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={reportAddObjectRefsLinesQuery}
+              query={reportAddObjectsLinesQuery}
               variables={{
                 search: this.state.search,
                 orderBy: 'created_at',
@@ -152,12 +152,12 @@ class ReportAddObjectRefs extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <ReportAddObjectRefsLines
+                    <ReportAddObjectsLines
                       reportId={reportId}
                       data={props}
                       paginationOptions={this.props.paginationOptions}
                       knowledgeGraph={knowledgeGraph}
-                      reportObjectRefs={reportObjectRefs}
+                      reportObjects={reportObjects}
                     />
                   );
                 }
@@ -205,7 +205,7 @@ class ReportAddObjectRefs extends Component {
   }
 }
 
-ReportAddObjectRefs.propTypes = {
+ReportAddObjects.propTypes = {
   reportId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -215,7 +215,7 @@ ReportAddObjectRefs.propTypes = {
   withPadding: PropTypes.bool,
   defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinition: PropTypes.object,
-  reportObjectRefs: PropTypes.array,
+  reportObjects: PropTypes.array,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportAddObjectRefs);
+export default compose(inject18n, withStyles(styles))(ReportAddObjects);

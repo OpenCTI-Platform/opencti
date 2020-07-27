@@ -96,6 +96,7 @@ import {
   generateInternalId,
   ABSTRACT_BASIC_RELATIONSHIP,
   isStixCyberObservableRelationship,
+  getParentTypes,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -500,7 +501,8 @@ const loadConcept = async (tx, concept, args = {}) => {
         assoc('index_version', '1.0'),
         assoc('grakn_id', concept.id),
         assoc('id', transform.internal_id),
-        assoc('base_type', conceptBaseType)
+        assoc('base_type', conceptBaseType),
+        assoc('parent_types', getParentTypes(transform.entity_type))
       )(transform);
     })
     .then(async (entityData) => {

@@ -148,13 +148,13 @@ class StixDomainObjectKillChainLinesComponent extends Component {
     )(data.stixCoreRelationships.edges);
     const stixCoreRelationships = pipe(
       map((n) => n.node),
-      map((n) => assoc('firstSeenYear', yearFormat(n.first_seen), n)),
-      map((n) => assoc('lastSeenYear', yearFormat(n.last_seen), n)),
+      map((n) => assoc('startTimeYear', yearFormat(n.start_time), n)),
+      map((n) => assoc('stopTimeYear', yearFormat(n.stop_time), n)),
       map((n) => assoc(
         'years',
-        n.firstSeenYear === n.lastSeenYear
-          ? n.firstSeenYear
-          : `${n.firstSeenYear} - ${n.lastSeenYear}`,
+        n.startTimeYear === n.stopTimeYear
+          ? n.startTimeYear
+          : `${n.startTimeYear} - ${n.stopTimeYear}`,
         n,
       )),
       map((n) => assoc(
@@ -359,8 +359,8 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
             node {
               id
               description
-              first_seen
-              last_seen
+              start_time
+              stop_time
               inferred
               to {
                 ... on BasicObject {

@@ -13,7 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
-import ReportRefPopover from './ReportRefPopover';
+import ReportRefPopover from './ReportObjectPopover';
 
 const styles = (theme) => ({
   item: {
@@ -86,7 +86,7 @@ class ReportObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdBy', 'node', 'name'], node)}
+                {pathOr('', ['createdBy', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -96,9 +96,9 @@ class ReportObservableLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -146,11 +146,13 @@ const ReportObservableLineFragment = createFragmentContainer(
         entity_type
         created_at
         createdBy {
-          node {
+          ... on Identity {
+            id
             name
+            entity_type
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -206,7 +208,7 @@ class ReportObservableLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

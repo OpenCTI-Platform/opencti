@@ -32,7 +32,7 @@ const styles = (theme) => ({
 const groupMutationRelationAdd = graphql`
   mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: InternalRelationshipAddInput
   ) {
     groupEdit(id: $id) {
       relationAdd(input: $input) {
@@ -66,10 +66,8 @@ class GroupEditionPermissionsComponent extends Component {
         variables: {
           id: this.props.group.id,
           input: {
-            fromRole: 'allowed',
             toId: markingDefinitionId,
-            toRole: 'allow',
-            through: 'permission',
+            relationship_type: 'grants',
           },
         },
       });
@@ -160,15 +158,6 @@ const GroupEditionPermissions = createFragmentContainer(
     group: graphql`
       fragment GroupEditionPermissions_group on Group {
         id
-        permissions {
-          edges {
-            node {
-              id
-              definition
-              definition_type
-            }
-          }
-        }
       }
     `,
   },

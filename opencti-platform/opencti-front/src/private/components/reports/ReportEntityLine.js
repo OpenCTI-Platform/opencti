@@ -13,7 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
 import ItemIcon from '../../../components/ItemIcon';
-import ReportRefPopover from './ReportRefPopover';
+import ReportObjectPopover from './ReportObjectPopover';
 import { resolveLink } from '../../../utils/Entity';
 
 const styles = (theme) => ({
@@ -87,7 +87,7 @@ class ReportEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdBy', 'node', 'name'], node)}
+                {pathOr('', ['createdBy', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -97,9 +97,9 @@ class ReportEntityLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -114,11 +114,11 @@ class ReportEntityLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <ReportRefPopover
+          <ReportObjectPopover
             reportId={reportId}
             toId={node.id}
-            relationship_type="object_refs"
-            paginationKey="Pagination_objectRefs"
+            relationship_type="object"
+            paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}
           />
         </ListItemSecondaryAction>
@@ -143,15 +143,70 @@ const ReportEntityLineFragment = createFragmentContainer(
     node: graphql`
       fragment ReportEntityLine_node on StixDomainObject {
         id
-        name
         entity_type
         created_at
+        ... on AttackPattern {
+          name
+        }
+        ... on Campaign {
+          name
+        }
+        ... on CourseOfAction {
+          name
+        }
+        ... on Individual {
+          name
+        }
+        ... on Organization {
+          name
+        }
+        ... on Sector {
+          name
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+        }
+        ... on Position {
+          name
+        }
+        ... on City {
+          name
+        }
+        ... on Country {
+          name
+        }
+        ... on Region {
+          name
+        }
+        ... on Malware {
+          name
+        }
+        ... on ThreatActor {
+          name
+        }
+        ... on Tool {
+          name
+        }
+        ... on Vulnerability {
+          name
+        }
+        ... on XOpenctiIncident {
+          name
+        }
         createdBy {
-          node {
+          ... on Identity {
+            id
             name
+            entity_type
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -207,7 +262,7 @@ class ReportEntityLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

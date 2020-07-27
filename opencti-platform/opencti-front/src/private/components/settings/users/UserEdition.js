@@ -49,10 +49,8 @@ const styles = (theme) => ({
 
 const subscription = graphql`
   subscription UserEditionSubscription($id: ID!) {
-    stixDomainObject(id: $id) {
-      ... on User {
-        ...UserEdition_user
-      }
+    user(id: $id) {
+      ...UserEdition_user
     }
   }
 `;

@@ -32,16 +32,16 @@ import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { generateFileExportName, upload } from '../database/minio';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
-import { ABSTRACT_CYBER_OBSERVABLE, isStixCyberObservable, RELATION_OBJECT } from '../utils/idGenerator';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, isStixCyberObservable, RELATION_OBJECT } from '../utils/idGenerator';
 
 export const findById = (stixCyberObservableId) => {
-  return loadEntityById(stixCyberObservableId, ABSTRACT_CYBER_OBSERVABLE);
+  return loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? [ABSTRACT_CYBER_OBSERVABLE] : args.types;
-  const finalArgs = assoc('parentType', ABSTRACT_CYBER_OBSERVABLE, args);
+  const entityTypes = noTypes ? [ABSTRACT_STIX_CYBER_OBSERVABLE] : args.types;
+  const finalArgs = assoc('parentType', ABSTRACT_STIX_CYBER_OBSERVABLE, args);
   return listEntities(entityTypes, ['standard_id'], finalArgs);
 };
 

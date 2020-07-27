@@ -106,7 +106,7 @@ class EntityIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 {take(
                   1,
@@ -238,7 +238,7 @@ class EntityIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>

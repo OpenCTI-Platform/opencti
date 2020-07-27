@@ -40,26 +40,21 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-export const reportRefPopoverDeletionMutation = graphql`
-  mutation ReportRefPopoverDeletionMutation(
+export const reportObjectPopoverDeletionMutation = graphql`
+  mutation ReportObjectPopoverDeletionMutation(
     $id: ID!
-    $relationId: ID
-    $toId: String
-    $relationship_type: String
+    $toId: String!
+    $relationship_type: String!
   ) {
     reportEdit(id: $id) {
-      relationDelete(
-        relationId: $relationId
-        toId: $toId
-        relationship_type: $relationship_type
-      ) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         id
       }
     }
   }
 `;
 
-class ReportRefPopover extends Component {
+class ReportObjectPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -91,19 +86,17 @@ class ReportRefPopover extends Component {
     const {
       reportId,
       toId,
-      relationId,
-      relationship_type,
+      relationshipType,
       paginationKey,
       paginationOptions,
     } = this.props;
     this.setState({ deleting: true });
     commitMutation({
-      mutation: reportRefPopoverDeletionMutation,
+      mutation: reportObjectPopoverDeletionMutation,
       variables: {
         id: reportId,
         toId,
-        relationId,
-        relationship_type,
+        relationship_type: relationshipType,
       },
       updater: (store) => {
         if (toId) {
@@ -171,15 +164,14 @@ class ReportRefPopover extends Component {
   }
 }
 
-ReportRefPopover.propTypes = {
+ReportObjectPopover.propTypes = {
   reportId: PropTypes.string,
   toId: PropTypes.string,
-  relationId: PropTypes.string,
-  relationship_type: PropTypes.string,
+  relationshipType: PropTypes.string,
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportRefPopover);
+export default compose(inject18n, withStyles(styles))(ReportObjectPopover);

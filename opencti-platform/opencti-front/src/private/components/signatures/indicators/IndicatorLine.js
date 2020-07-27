@@ -100,9 +100,9 @@ class IndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -212,7 +212,7 @@ class IndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

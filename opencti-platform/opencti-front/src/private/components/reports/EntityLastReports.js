@@ -89,11 +89,13 @@ const entityLastReportsQuery = graphql`
           description
           published
           createdBy {
-            node {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
                 definition
