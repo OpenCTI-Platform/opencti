@@ -15,7 +15,12 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixDomainEntities } from './stixDomainObject';
 import { findById as findIdentityById } from './identity';
-import { ENTITY_TYPE_CONTAINER_REPORT, RELATION_CREATED_BY, RELATION_OBJECT } from '../utils/idGenerator';
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+} from '../utils/idGenerator';
 
 export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;
@@ -34,7 +39,6 @@ export const findAll = async (args) => {
 export const objects = (reportId, args) => {
   const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
-  // TODO @Julien : possible to have a method findAllStixCoreObjectOrStixRelationship?
   return findAllStixDomainEntities(finalArgs);
 };
 
@@ -45,7 +49,6 @@ export const reportContainsStixCoreObjectOrStixRelationship = async (reportId, o
       { key: 'internal_id', values: [objectId] },
     ],
   };
-  // TODO @Julien : possible to have a method findAllStixCoreObjectOrStixRelationship?
   const stixCoreObjectsOrStixRelationships = await findAllStixDomainEntities(args);
   return stixCoreObjectsOrStixRelationships.edges.length > 0;
 };
@@ -158,6 +161,6 @@ export const addReport = async (user, report) => {
     assoc('source_confidence_level', propOr(sourceConfidenceLevel, 'source_confidence_level', report))
   )(report);
   const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

@@ -91,8 +91,8 @@ import {
   generateInternalId,
   ABSTRACT_BASIC_RELATIONSHIP,
   isStixCyberObservableRelationship,
-  getParentTypes,
-} from '../utils/idGenerator';
+  getParentTypes, isBasicObject, isBasicRelationship
+} from "../utils/idGenerator";
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 
@@ -1085,8 +1085,12 @@ const loadRelationByStixId = async (id, type, args = {}) => {
   if (!useCache()) return elLoadByStixId(id, type);
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa ${type}; { $rel has internal_id "${eid}"; } 
-    or { $rel has standard_id "${eid}"; }
-    or { $x has stix_ids "${eid}";}; get;`;
+  or { $rel has standard_id "${eid}"; }
+  or { $rel has stix_ids "${eid}";};
+  $rel has internal_id $rel_id;
+  $from has internal_id $rel_from_id;
+  $to has internal_id $rel_to_id;
+  get;`;
   const element = await load(query, ['rel'], args);
   return element ? element.rel : null;
 };
@@ -1095,15 +1099,20 @@ export const loadRelationById = async (id, type, args = {}) => {
   if (isStixId(id)) return loadRelationByStixId(id, type, args);
   if (!useCache()) return elLoadById(id, type);
   const eid = escapeString(id);
-  const query = `match $rel($from, $to) isa ${type}, has internal_id "${eid}"; get;`;
+  const query = `match $rel($from, $to) isa ${type}, has internal_id "${eid}";
+  $rel has internal_id $rel_id;
+  $from has internal_id $rel_from_id;
+  $to has internal_id $rel_to_id;
+  get;`;
   const element = await load(query, ['rel'], args);
   return element ? element.rel : null;
 };
 
 export const loadById = async (id, type, args = {}) => {
   if (!useCache()) return elLoadById(id);
-  if (isStixDomainObject(type) || isInternalObject(type)) return loadEntityById(id, type, args);
-  return loadRelationById(id, type, args);
+  if (isBasicObject(type)) return loadEntityById(id, type, args);
+  if (isBasicRelationship(type)) return loadRelationById(id, type, args);
+  throw FunctionalError(`Type ${type} is unkown.`);
 };
 // endregion
 
@@ -1875,10 +1884,10 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
 const getElementsRelated = async (targetId, elements = [], options = {}) => {
   const eid = escapeString(targetId);
   const read = `match $from has internal_id "${eid}"; 
-    $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}; 
+    $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}, has internal_id $rel_id;
     $from has internal_id $rel_from_id;
     $to has internal_id $rel_to_id;
-    $rel has internal_id $rel_id; get;`;
+    get;`;
   const connectedRelations = await find(read, ['rel'], options);
   const connectedRelationsIds = map((r) => ({ id: r.rel.id, relDependency: true }), connectedRelations);
   elements.push(...connectedRelationsIds);
@@ -1963,7 +1972,10 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   const etoId = escapeString(toId);
   const read = `match $from has internal_id "${efromId}"; 
     $to has internal_id "${etoId}"; 
-    $rel($from, $to) isa ${relationshipType}; get;`;
+    $rel($from, $to) isa ${relationshipType}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map((r) => r.rel.id, relationsToDelete);
   for (let i = 0; i < relationsIds.length; i += 1) {

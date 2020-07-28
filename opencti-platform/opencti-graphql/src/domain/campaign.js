@@ -9,7 +9,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_CAMPAIGN } from '../utils/idGenerator';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CAMPAIGN } from '../utils/idGenerator';
 
 export const findById = (campaignId) => {
   return loadEntityById(campaignId, ENTITY_TYPE_CAMPAIGN);
@@ -36,5 +36,5 @@ export const addCampaign = async (user, campaign) => {
     assoc('last_seen', isNil(campaign.last_seen) ? new Date(UNTIL_END) : campaign.last_seen)
   )(campaign);
   const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

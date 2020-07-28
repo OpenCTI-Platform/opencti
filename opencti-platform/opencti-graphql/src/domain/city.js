@@ -7,7 +7,12 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY, RELATION_LOCATED_AT } from '../utils/idGenerator';
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  RELATION_LOCATED_AT,
+} from '../utils/idGenerator';
 
 export const findById = (cityId) => {
   return loadEntityById(cityId, ENTITY_TYPE_LOCATION_CITY);
@@ -21,7 +26,8 @@ export const country = (cityId) => {
   return loadWithConnectedRelations(
     `match $to isa ${ENTITY_TYPE_LOCATION_COUNTRY}; 
     $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-    $from has internal_id "${escapeString(cityId)}"; get; offset 0; limit 1;`,
+    $from has internal_id "${escapeString(cityId)}"; 
+    get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => (data ? data.node : undefined));
@@ -29,5 +35,5 @@ export const country = (cityId) => {
 
 export const addCity = async (user, city) => {
   const created = await createEntity(user, city, ENTITY_TYPE_LOCATION_CITY);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

@@ -13,6 +13,7 @@ import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStix
 import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
 import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
+import stixMetaRelationshipResolvers from '../resolvers/stixMetaRelationship';
 import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
 import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelationship';
 import stixCyberObservableRelationResolvers from '../resolvers/stixCyberObservableRelationship';
@@ -109,6 +110,8 @@ const createSchema = () => {
     xOpenctiIncidentResolvers,
     // STIX CYBER OBSERVABLE ENTITIES
     stixCyberObservableResolvers,
+    // STIX META RELATIONSHIPS
+    stixMetaRelationshipResolvers,
     // STIX CORE RELATIONSHIPS
     stixCoreRelationshipResolvers,
     // STIX SIGHTING RELATIONSHIPS

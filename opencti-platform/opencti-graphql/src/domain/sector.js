@@ -9,7 +9,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_IDENTITY_SECTOR, RELATION_PART_OF } from '../utils/idGenerator';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY_SECTOR, RELATION_PART_OF } from '../utils/idGenerator';
 
 export const findById = (sectorId) => {
   return loadEntityById(sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
@@ -51,5 +51,5 @@ export const isSubSector = async (sectorId, args) => {
 
 export const addSector = async (user, sector) => {
   const created = await createEntity(user, sector, ENTITY_TYPE_IDENTITY_SECTOR);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

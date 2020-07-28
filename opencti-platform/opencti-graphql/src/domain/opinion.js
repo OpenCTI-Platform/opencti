@@ -14,7 +14,12 @@ import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixDomainEntities } from './stixDomainObject';
-import { ENTITY_TYPE_CONTAINER_OPINION, RELATION_CREATED_BY, RELATION_OBJECT } from '../utils/idGenerator';
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+} from '../utils/idGenerator';
 
 export const findById = (opinionId) => {
   return loadEntityById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -121,6 +126,6 @@ export const opinionsDistributionByEntity = async (args) => {
 // region mutations
 export const addOpinion = async (user, opinion) => {
   const created = await createEntity(user, opinion, ENTITY_TYPE_CONTAINER_OPINION);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

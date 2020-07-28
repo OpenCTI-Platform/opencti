@@ -1,11 +1,10 @@
 import { loadById } from '../database/grakn';
-import { ForbiddenAccess } from '../config/errors';
-import { isStixObject, isStixRelationship } from '../utils/idGenerator';
+import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../utils/idGenerator';
 
 export const findById = async (id) => {
-  const data = await loadById(id);
-  if (!data) return data;
-  if (!isStixObject(data.type)) throw ForbiddenAccess();
-  if (!isStixRelationship(data.type)) throw ForbiddenAccess();
+  let data = await loadById(id, ABSTRACT_STIX_OBJECT);
+  if (!data) {
+    data = await loadById(id, ABSTRACT_STIX_RELATIONSHIP);
+  }
   return data;
 };

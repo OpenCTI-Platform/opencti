@@ -2,7 +2,7 @@ import { assoc, pipe, isNil } from 'ramda';
 import { createEntity, listEntities, loadEntityById, FROM_START, UNTIL_END } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_INTRUSION_SET } from '../utils/idGenerator';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_INTRUSION_SET } from '../utils/idGenerator';
 
 export const findById = (intrusionSetId) => {
   return loadEntityById(intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
@@ -18,5 +18,5 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     assoc('last_seen', isNil(intrusionSet.last_seen) ? new Date(UNTIL_END) : intrusionSet.last_seen)
   )(intrusionSet);
   const created = await createEntity(user, intrusionSetToCreate, ENTITY_TYPE_INTRUSION_SET);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

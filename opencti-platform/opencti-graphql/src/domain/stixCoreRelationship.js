@@ -3,24 +3,27 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteRelationById,
+  deleteRelationsByFromAndTo,
   escapeString,
   executeWrite,
   findWithConnectedRelations,
   getRelationInferredById,
   internalLoadEntityById,
   listRelations,
+  loadEntityById,
   loadRelationById,
   loadWithConnectedRelations,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess } from '../config/errors';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { buildPagination, INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import {
   isStixId,
   isInternalId,
   isStixCoreRelationship,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -35,6 +38,9 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
+  isStixMetaRelationship,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
@@ -172,13 +178,8 @@ export const stixRelations = (stixCoreObjectId, args) => {
 
 // region mutations
 export const addStixCoreRelationship = async (user, stixCoreRelationship, reversedReturn = false) => {
-  // We force the created by ref if not specified
-  let input = stixCoreRelationship;
-  if (!stixCoreRelationship.createdBy) {
-    input = assoc('createdBy', user.id, stixCoreRelationship);
-  }
-  const created = await createRelation(user, input, { reversedReturn });
-  return notify(BUS_TOPICS.StixCoreRelationship.ADDED_TOPIC, created, user);
+  const created = await createRelation(user, stixCoreRelationship, { reversedReturn });
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 
 export const stixCoreRelationshipDelete = async (user, stixCoreRelationshipId) => {
@@ -190,26 +191,41 @@ export const stixCoreRelationshipEditField = (user, stixCoreRelationshipId, inpu
     return updateAttribute(user, stixCoreRelationshipId, 'stix_relation', input, wTx);
   }).then(async () => {
     const stixCoreRelationship = await loadRelationById(stixCoreRelationshipId, 'stix_relation');
-    return notify(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC, stixCoreRelationship, user);
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
   });
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {
-  const data = await internalLoadEntityById(stixCoreRelationshipId);
-  if (!isStixCoreRelationship(data.type) || !input.relationship_type) {
-    throw ForbiddenAccess();
+  const stixCoreRelationship = await internalLoadEntityById(stixCoreRelationshipId);
+  if (!stixCoreRelationship) {
+    throw FunctionalError('Cannot add the relation, stix-core-relationship cannot be found.');
+  }
+  if (!isStixMetaRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', stixCoreRelationshipId, input);
   return createRelation(user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC, relationData, user);
+    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 
-export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelationshipId, relationId) => {
-  await deleteRelationById(user, relationId, 'stix_relation_embedded');
-  const data = await loadRelationById(stixCoreRelationshipId, 'stix_relation');
-  return notify(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC, data, user);
+export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelationshipId, toId, relationshipType) => {
+  const stixCoreRelationship = await loadEntityById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  if (!stixCoreRelationship) {
+    throw FunctionalError('Cannot delete the relation, stix-core-relationship cannot be found.');
+  }
+  if (!isStixMetaRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(
+    user,
+    stixCoreRelationshipId,
+    toId,
+    relationshipType,
+    ABSTRACT_STIX_META_RELATIONSHIP
+  );
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
 };
 // endregion
 
@@ -217,14 +233,14 @@ export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelations
 export const stixCoreRelationshipCleanContext = (user, stixCoreRelationshipId) => {
   delEditContext(user, stixCoreRelationshipId);
   return loadRelationById(stixCoreRelationshipId, 'stix_relation').then((stixCoreRelationship) =>
-    notify(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC, stixCoreRelationship, user)
+    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
   );
 };
 
 export const stixCoreRelationshipEditContext = (user, stixCoreRelationshipId, input) => {
   setEditContext(user, stixCoreRelationshipId, input);
   return loadRelationById(stixCoreRelationshipId, 'stix_relation').then((stixCoreRelationship) =>
-    notify(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC, stixCoreRelationship, user)
+    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
   );
 };
 // endregion

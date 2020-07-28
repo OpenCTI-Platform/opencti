@@ -187,5 +187,5 @@ export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, relat
     throw ForbiddenAccess();
   }
   await deleteRelationById(user, relationId, ABSTRACT_STIX_META_OBJECT);
-  return notify(BUS_TOPICS.stixCoreObject.EDIT_TOPIC, stixDomainObject, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixDomainObject, user);
 };

@@ -20,7 +20,7 @@ export const findAll = (args) => {
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
   const created = await createEntity(user, markingDefinition, ENTITY_TYPE_MARKING_DEFINITION);
-  return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
 
 export const markingDefinitionDelete = (user, markingDefinitionId) =>
@@ -31,20 +31,20 @@ export const markingDefinitionEditField = (user, markingDefinitionId, input) => 
     return updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, wTx);
   }).then(async () => {
     const markingDefinition = await loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
-    return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user);
+    return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
   });
 };
 
 export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {
   await delEditContext(user, markingDefinitionId);
   return loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
+    notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };
 
 export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
   await setEditContext(user, markingDefinitionId, input);
   return loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
+    notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };

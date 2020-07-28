@@ -14,7 +14,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixDomainEntities } from './stixDomainObject';
-import { ENTITY_TYPE_CONTAINER_NOTE, RELATION_CREATED_BY, RELATION_OBJECT } from '../utils/idGenerator';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CONTAINER_NOTE, RELATION_CREATED_BY, RELATION_OBJECT } from "../utils/idGenerator";
 
 export const findById = (noteId) => {
   return loadEntityById(noteId, ENTITY_TYPE_CONTAINER_NOTE);
@@ -116,6 +116,6 @@ export const notesDistributionByEntity = async (args) => {
 // region mutations
 export const addNote = async (user, note) => {
   const created = await createEntity(user, note, ENTITY_TYPE_CONTAINER_NOTE);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 // endregion

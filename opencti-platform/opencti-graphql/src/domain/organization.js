@@ -8,7 +8,12 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR, RELATION_PART_OF } from '../utils/idGenerator';
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  RELATION_PART_OF,
+} from '../utils/idGenerator';
 
 export const findById = (organizationId) => {
   return loadEntityById(organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
@@ -30,5 +35,5 @@ export const sectors = (organizationId) => {
 
 export const addOrganization = async (user, organization) => {
   const created = await createEntity(user, organization, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

@@ -7,7 +7,12 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_LOCATION_POSITION, ENTITY_TYPE_LOCATION_CITY, RELATION_LOCATED_AT } from '../utils/idGenerator';
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_LOCATION_POSITION,
+  ENTITY_TYPE_LOCATION_CITY,
+  RELATION_LOCATED_AT,
+} from '../utils/idGenerator';
 
 export const findById = (positionId) => {
   return loadEntityById(positionId, ENTITY_TYPE_LOCATION_POSITION);
@@ -29,5 +34,5 @@ export const city = (positionId) => {
 
 export const addPosition = async (user, position) => {
   const created = await createEntity(user, position, ENTITY_TYPE_LOCATION_POSITION);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
