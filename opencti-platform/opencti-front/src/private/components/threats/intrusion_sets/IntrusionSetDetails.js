@@ -32,7 +32,7 @@ class IntrusionSetDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={intrusionSet.labels}
+            labels={intrusionSet.objectLabel}
             id={intrusionSet.id}
           />
           <Typography

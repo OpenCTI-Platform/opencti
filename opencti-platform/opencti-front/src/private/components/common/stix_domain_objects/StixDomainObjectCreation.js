@@ -371,7 +371,7 @@ class StixDomainObjectCreation extends Component {
                 description: '',
                 aliases: '',
                 createdBy: '',
-                labels: [],
+                objectLabel: [],
                 objectMarking: [],
               }}
               validationSchema={stixDomainObjectValidation(t)}
@@ -488,7 +488,7 @@ class StixDomainObjectCreation extends Component {
                 type: defaultCreatedBy.entity_type,
               }
               : '',
-            labels: [],
+            objectLabel: [],
             markingDefinitions: defaultMarkingDefinition
               ? [
                 {

@@ -93,9 +93,12 @@ export const findAll = (args) => {
 
 export const groups = (userId) => {
   return findWithConnectedRelations(
-    `match $to isa Group; $rel(${RELATION_MEMBER_OF}_from:$from, ${RELATION_MEMBER_OF}_to:$to) isa ${RELATION_MEMBER_OF};
-   $from isa User, has internal_id "${escapeString(userId)}";
-   get;`,
+    `match $to isa Group, has internal_id $to_id; 
+    $rel(${RELATION_MEMBER_OF}_from:$from, ${RELATION_MEMBER_OF}_to:$to) isa ${RELATION_MEMBER_OF}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from isa User, has internal_id "${escapeString(userId)}";
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -107,21 +110,25 @@ export const token = (userId, args, context) => {
     throw ForbiddenAccess();
   }
   return loadWithConnectedRelations(
-    `match $x isa Token;
-    $rel(${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$x) isa ${RELATION_AUTHORIZED_BY};
-    $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`,
-    'x',
+    `match $to isa Token, has internal_id $to_id;
+    $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from has internal_id "${escapeString(userId)}"; 
+    get; offset 0; limit 1;`,
+    'to',
     { extraRelKey: 'rel' }
   ).then((result) => (result ? result.node.uuid : result));
 };
 
 const internalGetToken = async (userId) => {
-  const query = `match $x isa Token; $x has internal_id $x_id;
-  $rel(${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$x) isa ${RELATION_AUTHORIZED_BY};
+  const query = `match $to isa Token; $to has internal_id $to_id;
+  $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY};
   $rel has internal_id $rel_id;
-  $x has internal_id $rel_from_id; 
-  $client has internal_id $rel_to_id;
-  $client has internal_id "${escapeString(userId)}"; get; offset 0; limit 1;`;
+  $to has internal_id $rel_from_id; 
+  $from has internal_id $rel_to_id;
+  $from has internal_id "${escapeString(userId)}"; 
+  get; offset 0; limit 1;`;
   return loadWithConnectedRelations(query, 'x', { extraRelKey: 'rel' }).then((result) => result && result.node);
 };
 
@@ -139,7 +146,8 @@ const clearUserTokenCache = (userId) => {
 export const getRoles = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id "${escapeString(userId)}";
-            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE}; 
+            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE};
+            $role has internal_id $role_id;
             get;`,
     ['role']
   );
@@ -151,6 +159,7 @@ export const getCapabilities = async (userId) => {
     `match $client isa User, has internal_id "${escapeString(userId)}";
             (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE}; 
             (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
+            $capability has internal_id $capability_id;
             get;`,
     ['capability']
   );
@@ -201,7 +210,7 @@ export const roleRemoveCapability = async (user, roleId, capabilityName) => {
   await executeWrite(async (wTx) => {
     const query = `match $rel(${RELATION_HAS_CAPABILITY}_from: $from, ${RELATION_HAS_CAPABILITY}_to: $to) isa ${RELATION_HAS_CAPABILITY}; 
             $from isa Role, has internal_id "${escapeString(roleId)}"; 
-            $to isa Capability, has name $name; { $name contains "${escapeString(capabilityName)}";}; 
+            $to isa Capability, has name $name; { $name contains "${escapeString(capabilityName)}";};
             delete $rel;`;
     await wTx.query(query, { infer: false });
   });

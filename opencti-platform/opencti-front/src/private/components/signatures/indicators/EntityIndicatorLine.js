@@ -89,7 +89,7 @@ class EntityIndicatorLineComponent extends Component {
               >
                 <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.to.labels}
+                  labels={node.to.objectLabel}
                 />
               </div>
               <div

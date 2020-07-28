@@ -177,7 +177,7 @@ class IntrusionSetCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={intrusionSetValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

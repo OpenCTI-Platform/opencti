@@ -324,7 +324,7 @@ class CurationToolBar extends Component {
                             variant="inList"
                           />
                           ),
-                          element.markingDefinitions.edges,
+                          element.objectMarking.edges,
                         )
                       ) : (
                       <ItemMarking label="TLP:WHITE" variant="inList" />
@@ -404,7 +404,7 @@ class CurationToolBar extends Component {
                     label={markingDefinition.node.definition}
                   />
                   ),
-                  keptElement.markingDefinitions.edges,
+                  keptElement.objectMarking.edges,
                 )
               ) : (
               <ItemMarking label="TLP:WHITE" />

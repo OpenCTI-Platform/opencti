@@ -38,7 +38,7 @@ class CourseOfActionDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={courseOfAction.labels}
+            labels={courseOfAction.objectLabel}
             id={courseOfAction.id}
           />
           <Typography

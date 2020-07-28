@@ -137,7 +137,7 @@ class StixCyberObservablesContainer extends Component {
                     />
                     <ListItemSecondaryAction>
                       <StixCoreObjectLabels
-                        labels={stixCyberObservable.labels}
+                        labels={stixCyberObservable.objectLabel}
                         variant="inSearch"
                       />
                     </ListItemSecondaryAction>

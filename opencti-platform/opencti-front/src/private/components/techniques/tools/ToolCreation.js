@@ -177,7 +177,7 @@ class ToolCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
                 killChainPhases: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={toolValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

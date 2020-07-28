@@ -143,7 +143,6 @@ class ThreatActorEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], threatActor),
       value: pathOr(null, ['createdBy', 'id'], threatActor),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], threatActor),
     };
 
     if (currentCreatedBy.value === null) {
@@ -152,10 +151,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.threatActor.id,
           input: {
-            fromRole: 'so',
-            toRole: 'creator',
             toId: value.value,
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
@@ -164,7 +161,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         mutation: threatActorMutationRelationDelete,
         variables: {
           id: this.props.threatActor.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -173,10 +171,8 @@ class ThreatActorEditionOverviewComponent extends Component {
           variables: {
             id: this.props.threatActor.id,
             input: {
-              fromRole: 'so',
-              toRole: 'creator',
               toId: value.value,
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -191,7 +187,6 @@ class ThreatActorEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
 
@@ -204,10 +199,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.threatActor.id,
           input: {
-            fromRole: 'so',
-            toRole: 'marking',
             toId: head(added).value,
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -218,7 +211,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         mutation: threatActorMutationRelationDelete,
         variables: {
           id: this.props.threatActor.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -231,38 +225,31 @@ class ThreatActorEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], threatActor),
         value: pathOr(null, ['createdBy', 'id'], threatActor),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          threatActor,
-        ),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(threatActor);
     return (

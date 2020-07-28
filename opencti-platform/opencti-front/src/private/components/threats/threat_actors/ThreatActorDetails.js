@@ -31,7 +31,7 @@ class ThreatActorDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={threatActor.labels}
+            labels={threatActor.objectLabel}
             id={threatActor.id}
           />
           <Typography

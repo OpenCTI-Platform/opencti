@@ -32,7 +32,7 @@ class ObjectMarkingField extends Component {
           {
             label: defaultMarkingDefinition.definition,
             value: defaultMarkingDefinition.id,
-            color: defaultMarkingDefinition.color,
+            color: defaultMarkingDefinition.x_opencti_color,
           },
         ]
         : [],
@@ -44,11 +44,11 @@ class ObjectMarkingField extends Component {
       search: event && event.target.value !== 0 ? event.target.value : '',
     }).then((data) => {
       const markingDefinitions = pipe(
-        pathOr([], ['objectMarking', 'edges']),
+        pathOr([], ['markingDefinitions', 'edges']),
         map((n) => ({
           label: n.node.definition,
           value: n.node.id,
-          color: n.node.color,
+          color: n.node.x_opencti_color,
         })),
       )(data);
       this.setState({ markingDefinitions });

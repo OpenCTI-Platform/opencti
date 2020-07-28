@@ -35,7 +35,7 @@ class OrganizationOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {organization.markingDefinitions.edges.length > 0 ? (
+          {organization.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class OrganizationOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              organization.markingDefinitions.edges,
+              organization.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

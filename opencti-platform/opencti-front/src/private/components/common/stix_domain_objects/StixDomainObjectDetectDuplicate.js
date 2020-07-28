@@ -156,7 +156,7 @@ class StixDomainObjectDetectDuplicate extends Component {
                                 variant="inList"
                               />
                               ),
-                              element.node.markingDefinitions.edges,
+                              element.node.objectMarking.edges,
                             )
                           ) : (
                           <ItemMarking label="TLP:WHITE" variant="inList" />

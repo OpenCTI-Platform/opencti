@@ -153,7 +153,7 @@ class StixDomainObjectsContainer extends Component {
                           />
                           <ListItemSecondaryAction>
                             <StixCoreObjectLabels
-                              labels={stixDomainObject.labels}
+                              labels={stixDomainObject.objectLabel}
                               variant="inSearch"
                             />
                           </ListItemSecondaryAction>
@@ -178,7 +178,7 @@ class StixDomainObjectsContainer extends Component {
                         />
                         <ListItemSecondaryAction>
                           <StixCoreObjectLabels
-                            labels={stixDomainObject.labels}
+                            labels={stixDomainObject.objectLabel}
                             variant="inSearch"
                           />
                         </ListItemSecondaryAction>

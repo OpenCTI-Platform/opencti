@@ -226,7 +226,7 @@ class StixCyberObservableCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
                 createIndicator: false,
               }}
               validationSchema={stixCyberObservableValidation(t)}

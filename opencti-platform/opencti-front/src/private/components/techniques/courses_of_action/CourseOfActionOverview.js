@@ -35,7 +35,7 @@ class CourseOfActionOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {courseOfAction.markingDefinitions.edges.length > 0 ? (
+          {courseOfAction.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class CourseOfActionOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              courseOfAction.markingDefinitions.edges,
+              courseOfAction.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

@@ -115,7 +115,7 @@ class StixCyberObservableLabels extends Component {
     this.state = {
       openAdd: false,
       openCreate: false,
-      labels: [],
+      objectLabel: [],
       labelInput: '',
     };
   }

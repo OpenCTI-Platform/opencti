@@ -38,7 +38,7 @@ class IndicatorDetailsComponent extends Component {
           <pre>{indicator.pattern}</pre>
           <div style={{ marginTop: 20 }}>
             <StixDomainObjectLabels
-              labels={indicator.labels}
+              labels={indicator.objectLabel}
               id={indicator.id}
             />
           </div>

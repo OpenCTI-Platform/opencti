@@ -198,7 +198,7 @@ class ReportCreation extends Component {
                           report_types: '',
                           createdBy: '',
                           objectMarking: [],
-                          labels: [],
+                          objectLabel: [],
                         }}
                         validationSchema={reportValidation(t)}
                         onSubmit={this.onSubmit.bind(this)}

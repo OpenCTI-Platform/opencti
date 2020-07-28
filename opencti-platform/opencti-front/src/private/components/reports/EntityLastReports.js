@@ -120,7 +120,7 @@ class EntityLastReports extends Component {
     } = this.props;
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
-    if (entityId) filters.push({ key: 'knowledgeContains', values: [entityId] });
+    if (entityId) filters.push({ key: 'objectContains', values: [entityId] });
     if (stixCyberObservableId) {
       filters.push({
         key: 'observablesContains',

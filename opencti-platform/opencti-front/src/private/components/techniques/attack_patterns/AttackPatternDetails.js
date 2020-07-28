@@ -45,7 +45,7 @@ class AttackPatternDetailsComponent extends Component {
             style={{ marginBottom: 20 }}
           />
           <StixDomainObjectLabels
-            labels={attackPattern.labels}
+            labels={attackPattern.objectLabel}
             id={attackPattern.id}
           />
           <Typography

@@ -326,7 +326,7 @@ class StixCoreRelationshipContainer extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Marking')}
               </Typography>
-              {stixCoreRelationship.markingDefinitions.edges.length > 0 ? (
+              {stixCoreRelationship.objectMarking.edges.length > 0 ? (
                 map(
                   (markingDefinition) => (
                     <ItemMarking
@@ -334,7 +334,7 @@ class StixCoreRelationshipContainer extends Component {
                       label={markingDefinition.node.definition}
                     />
                   ),
-                  stixCoreRelationship.markingDefinitions.edges,
+                  stixCoreRelationship.objectMarking.edges,
                 )
               ) : (
                 <ItemMarking label="TLP:WHITE" />

@@ -16,18 +16,25 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, INDEX_STIX_RELATIONSHIPS } from '../database/utils';
+import { buildPagination, INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import {
   isStixId,
   isInternalId,
   isStixCoreRelationship,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_CONTAINER_REPORT,
   RELATION_CREATED_BY,
   RELATION_OBJECT,
-  ENTITY_TYPE_LABEL,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
@@ -49,81 +56,110 @@ export const stixCoreRelationshipsNumber = (args) => {
     finalArgs = args.type ? assoc('types', [args.type], args) : assoc('types', ['stix_relation'], args);
   }
   return {
-    count: elCount(INDEX_STIX_RELATIONSHIPS, finalArgs),
-    total: elCount(INDEX_STIX_RELATIONSHIPS, dissoc('endDate', finalArgs)),
+    count: elCount(INDEX_STIX_CORE_RELATIONSHIPS, finalArgs),
+    total: elCount(INDEX_STIX_CORE_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
 
-export const createdBy = (stixCoreObjectId) => {
+export const createdBy = (stixCoreRelationshipId) => {
   return loadWithConnectedRelations(
-    `match $to isa Identity; $rel(creator:$to, so:$from) isa ${RELATION_CREATED_BY};
-   $from has internal_id "${escapeString(stixCoreObjectId)}"; get; offset 0; limit 1;`,
+    `match $to isa ${ENTITY_TYPE_IDENTITY}; 
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to: $to) isa ${RELATION_CREATED_BY};
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from has internal_id "${escapeString(stixCoreRelationshipId)}"; 
+    get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
   );
 };
-export const reports = (stixCoreObjectId) => {
+
+export const reports = (stixCoreRelationshipId) => {
   return findWithConnectedRelations(
-    `match $to isa Report; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
+    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT}, has internal_id $from_id;
+    $rel(${RELATION_OBJECT}_from:$from ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $to has internal_id "${escapeString(stixCoreRelationshipId)}";
+    get;`,
+    'from',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
+};
+
+export const notes = (stixCoreRelationshipId) => {
+  return findWithConnectedRelations(
+    `match $from isa ${ENTITY_TYPE_CONTAINER_NOTE}, has internal_id $from_id; 
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $to has internal_id "${escapeString(stixCoreRelationshipId)}";
+    get;`,
+    'from',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
+};
+
+export const opinions = (stixCoreRelationshipId) => {
+  return findWithConnectedRelations(
+    `match $from isa ${ENTITY_TYPE_CONTAINER_OPINION}, has internal_id $from_id;
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $to has internal_id "${escapeString(stixCoreRelationshipId)}";
+    get;`,
+    'from',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
+};
+
+export const labels = (stixCoreRelationshipId) => {
+  return findWithConnectedRelations(
+    `match $to isa ${ENTITY_TYPE_LABEL}, has internal_id $to_id; 
+    $rel(${RELATION_OBJECT_LABEL}_from:$from, ${RELATION_OBJECT_LABEL}_to:$to) isa ${RELATION_OBJECT_LABEL}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from has internal_id "${escapeString(stixCoreRelationshipId)}";
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const notes = (stixCoreObjectId) => {
+export const markingDefinitions = (stixCoreRelationshipId) => {
   return findWithConnectedRelations(
-    `match $to isa Note; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
+    `match $to isa ${ENTITY_TYPE_MARKING_DEFINITION}, has internal_id $to_id;
+    $rel(${RELATION_OBJECT_MARKING}_from:$from, ${RELATION_OBJECT_MARKING}_to:$to) isa ${RELATION_OBJECT_MARKING}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from has internal_id "${escapeString(stixCoreRelationshipId)}"; 
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const opinions = (stixCoreObjectId) => {
+export const killChainPhases = (stixCoreRelationshipId) => {
   return findWithConnectedRelations(
-    `match $to isa Opinion; $rel(knowledge_aggregation:$to, so:$from) isa ${RELATION_OBJECT};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
+    `match $to isa ${ENTITY_TYPE_KILL_CHAIN_PHASE}, has internal_id $to_id;
+    $rel(${RELATION_KILL_CHAIN_PHASE}_from:$from, ${RELATION_KILL_CHAIN_PHASE}_to:$to) isa ${RELATION_KILL_CHAIN_PHASE}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from has internal_id "${escapeString(stixCoreRelationshipId)}";
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const labels = (stixCoreObjectId) => {
+export const externalReferences = (stixCoreRelationshipId) => {
   return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_LABEL}; $rel(tagging:$to, so:$from) isa ${RELATION_OBJECT_LABEL};
-   $from has internal_id "${escapeString(stixCoreObjectId)}";
-   get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
-};
-
-export const markingDefinitions = (stixCoreObjectId) => {
-  return findWithConnectedRelations(
-    `match $to isa Marking-Definition; $rel(marking:$to, so:$from) isa ${RELATION_OBJECT_MARKING};
-   $from has internal_id "${escapeString(stixCoreObjectId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
-};
-
-export const killChainPhases = (stixDomainObjectId) => {
-  return findWithConnectedRelations(
-    `match $to isa Kill-Chain-Phase; $rel(kill_chain_phase:$to, phase_belonging:$from) isa ${RELATION_KILL_CHAIN_PHASE};
-    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
-};
-
-export const externalReferences = (stixDomainObjectId) => {
-  return findWithConnectedRelations(
-    `match $to isa External-Reference; $rel(external_reference:$to, so:$from) isa ${RELATION_EXTERNAL_REFERENCE};
-    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
+    `match $to isa ${ENTITY_TYPE_EXTERNAL_REFERENCE}, has internal_id $to_id;
+    $rel(${RELATION_EXTERNAL_REFERENCE}_from:$from, ${RELATION_EXTERNAL_REFERENCE}_to:$to) isa ${RELATION_EXTERNAL_REFERENCE}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from has internal_id "${escapeString(stixCoreRelationshipId)}";
+    get;`,
     'to',
     { extraRelKey: 'rel' }
   ).then((data) => buildPagination(0, 0, data, data.length));
@@ -131,7 +167,7 @@ export const externalReferences = (stixDomainObjectId) => {
 
 export const stixRelations = (stixCoreObjectId, args) => {
   const finalArgs = assoc('fromId', stixCoreObjectId, args);
-  return relationFindAll(finalArgs);
+  return findAll(finalArgs);
 };
 
 // region mutations

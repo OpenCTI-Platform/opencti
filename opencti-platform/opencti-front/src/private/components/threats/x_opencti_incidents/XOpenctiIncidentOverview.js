@@ -35,7 +35,7 @@ class XOpenctiIncidentOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {xOpenctiIncident.markingDefinitions.edges.length > 0 ? (
+          {xOpenctiIncident.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class XOpenctiIncidentOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              xOpenctiIncident.markingDefinitions.edges,
+              xOpenctiIncident.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

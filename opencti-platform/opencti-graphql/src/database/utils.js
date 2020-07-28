@@ -9,17 +9,19 @@ import {
   isStixRelationship,
   isStixObject,
   isStixCyberObservableRelationship,
-  isStixMetaRelationship,
-} from '../utils/idGenerator';
+  isStixMetaRelationship, isStixMetaObject, isStixDomainObject
+} from "../utils/idGenerator";
 import { DatabaseError } from '../config/errors';
 
 // Entities
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
-export const INDEX_STIX_OBJECTS = 'opencti_stix_objects';
+export const INDEX_STIX_META_OBJECTS = 'opencti_stix_meta_objects';
+export const INDEX_STIX_DOMAIN_OBJECTS = 'opencti_stix_domain_objects';
 export const INDEX_STIX_CYBER_OBSERVABLES = 'opencti_stix_cyber_observables';
 // Relations
 export const INDEX_INTERNAL_RELATIONSHIPS = 'opencti_internal_relationships';
-export const INDEX_STIX_RELATIONSHIPS = 'opencti_stix_relationships';
+export const INDEX_STIX_CORE_RELATIONSHIPS = 'opencti_stix_core_relationships';
+export const INDEX_STIX_SIGHTING_RELATIONSHIPS = 'opencti_stix_sighting_relationships';
 export const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_observable_relationships';
 export const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
 
@@ -93,8 +95,9 @@ export const buildPagination = (first, offset, instances, globalCount) => {
 export const inferIndexFromConceptType = (conceptType) => {
   // Entities
   if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;
+  if (isStixMetaObject(conceptType)) return INDEX_STIX_META_OBJECTS;
+  if (isStixDomainObject(conceptType)) return INDEX_STIX_DOMAIN_OBJECTS;
   if (isStixCyberObservable(conceptType)) return INDEX_STIX_CYBER_OBSERVABLES;
-  if (isStixObject(conceptType)) return INDEX_STIX_OBJECTS;
   // Relations
   if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONSHIPS;
   if (isStixCyberObservableRelationship(conceptType)) return INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS;

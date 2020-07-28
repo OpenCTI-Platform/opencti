@@ -49,14 +49,7 @@ import {
   TYPE_DUPLICATE_ENTRY,
 } from '../config/errors';
 import conf, { logger } from '../config/conf';
-import {
-  buildPagination,
-  fillTimeSeries,
-  INDEX_STIX_OBJECTS,
-  INDEX_STIX_RELATIONSHIPS,
-  inferIndexFromConceptType,
-  utcDate,
-} from './utils';
+import { buildPagination, fillTimeSeries, inferIndexFromConceptType, utcDate } from './utils';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -72,6 +65,8 @@ import {
   useCache,
   REL_INDEX_PREFIX,
   virtualTypes,
+  ENTITIES_INDICES,
+  RELATIONSHIPS_INDICES,
 } from './elasticSearch';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, EVENT_TYPE_UPDATE_REMOVE, sendLog } from './rabbitmq';
 import {
@@ -783,7 +778,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id';
   const supportedByCache = !unsupportedOrdering && !unSupportedRelations;
   if (useCache(args) && supportedByCache) {
-    return elPaginate(INDEX_STIX_OBJECTS, assoc('types', entityTypes, args));
+    return elPaginate(ENTITIES_INDICES, assoc('types', entityTypes, args));
   }
   logger.debug(`[GRAKN] ListEntities on Grakn, supportedByCache: ${supportedByCache}`);
 
@@ -863,7 +858,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
   return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, false, args.noCache);
 };
-export const listRelations = async (relationship_type, args) => {
+export const listRelations = async (relationshipType, args) => {
   const searchFields = ['name', 'description'];
   const {
     first = 1000,
@@ -893,7 +888,7 @@ export const listRelations = async (relationship_type, args) => {
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
   // Handle relation type(s)
-  const relationToGet = relationship_type || 'stix_relation';
+  const relationToGet = relationshipType || 'stix_relation';
   // 0 - Check if we can support the query by Elastic
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id';
   // Search is not supported because its only search on the relation to.
@@ -929,7 +924,7 @@ export const listRelations = async (relationship_type, args) => {
       assoc('filters', finalFilters),
       assoc('relationsMap', relationsMap)
     )(args);
-    return elPaginate(INDEX_STIX_RELATIONSHIPS, paginateArgs);
+    return elPaginate(RELATIONSHIPS_INDICES, paginateArgs);
   }
   // 1- If not, use Grakn
   const queryFromTypes = fromTypesFilter
@@ -1114,7 +1109,7 @@ export const loadById = async (id, type, args = {}) => {
 
 // region Indexer
 const reindexAttributeValue = async (queryType, type, value) => {
-  const index = queryType === 'relation' ? INDEX_STIX_RELATIONSHIPS : INDEX_STIX_OBJECTS;
+  const index = queryType === 'relation' ? RELATIONSHIPS_INDICES : ENTITIES_INDICES;
   const readQuery = `match $x isa ${queryType}, has ${escape(type)} $a; $a "${escapeString(value)}"; get;`;
   logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: readQuery });
   const elementIds = await executeRead(async (rTx) => {
@@ -1191,11 +1186,11 @@ export const timeSeriesEntities = async (entityType, filters, options) => {
 export const timeSeriesRelations = async (options) => {
   // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, operation, relationship_type, field, interval } = options;
+  const { startDate, endDate, operation, relationship_type: relationshipType, field, interval } = options;
   const { fromId, noCache = false, inferred = false } = options;
   // Check if can be supported by ES
   let histogramData;
-  const entityType = relationship_type ? escape(relationship_type) : 'stix_relation';
+  const entityType = relationshipType ? escape(relationshipType) : 'stix_relation';
   if (!noCache && operation === 'count' && inferred === false) {
     const filters = [];
     if (fromId) filters.push({ isRelation: false, type: 'connections.internal_id', value: fromId });
@@ -1232,9 +1227,9 @@ export const distributionEntities = async (entityType, filters = [], options) =>
 export const distributionRelations = async (options) => {
   const { fromId, field, operation } = options; // Mandatory fields
   const { limit = 50, order, noCache = false, inferred = false } = options;
-  const { startDate, endDate, relationship_type, toTypes = [] } = options;
+  const { startDate, endDate, relationship_type: relationshipType, toTypes = [] } = options;
   let distributionData;
-  const entityType = relationship_type ? escape(relationship_type) : 'stix_relation';
+  const entityType = relationshipType ? escape(relationshipType) : 'stix_relation';
   // Using elastic can only be done if the distribution is a count on types
   if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
     distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
@@ -1740,7 +1735,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   // Complete with eventual relations (will eventually update the index)
   if (isStixCoreObject(type)) {
     postOperations.push(
-      addCreatedBy(user, internalId, entity.createdBy || user.id, opts),
+      addCreatedBy(user, internalId, entity.createdBy, opts),
       addMarkingDefs(user, internalId, entity.objectMarking, opts),
       addLabels(user, internalId, entity.objectLabel, opts), // Embedded in same execution.
       addKillChains(user, internalId, entity.killChainPhases, opts), // Embedded in same execution.
@@ -1959,7 +1954,7 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   }
   return relationId;
 };
-export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationship_type, scopeType) => {
+export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType) => {
   /* istanbul ignore if */
   if (isNil(scopeType)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
@@ -1968,7 +1963,7 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   const etoId = escapeString(toId);
   const read = `match $from has internal_id "${efromId}"; 
     $to has internal_id "${etoId}"; 
-    $rel($from, $to) isa ${relationship_type}; get;`;
+    $rel($from, $to) isa ${relationshipType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
   const relationsIds = map((r) => r.rel.id, relationsToDelete);
   for (let i = 0; i < relationsIds.length; i += 1) {
@@ -1990,7 +1985,6 @@ export const deleteAttributeById = async (id) => {
 /**
  * Load any grakn relation with base64 id containing the query pattern.
  * @param id
- * @param options
  * @returns {Promise}
  */
 export const getRelationInferredById = async (id) => {

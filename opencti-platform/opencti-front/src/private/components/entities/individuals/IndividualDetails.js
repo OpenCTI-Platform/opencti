@@ -38,7 +38,7 @@ class IndividualDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={individual.labels}
+            labels={individual.objectLabel}
             id={individual.id}
           />
           <Typography

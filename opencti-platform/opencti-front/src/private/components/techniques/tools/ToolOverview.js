@@ -35,7 +35,7 @@ class ToolOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {tool.markingDefinitions.edges.length > 0 ? (
+          {tool.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class ToolOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              tool.markingDefinitions.edges,
+              tool.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

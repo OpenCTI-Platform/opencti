@@ -174,7 +174,7 @@ class CampaignCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={campaignValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

@@ -46,7 +46,7 @@ class OrganizationDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={organization.labels}
+            labels={organization.objectLabel}
             id={organization.id}
           />
           <Typography

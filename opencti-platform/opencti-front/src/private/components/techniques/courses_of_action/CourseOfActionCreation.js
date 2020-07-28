@@ -188,7 +188,7 @@ class CourseOfActionCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={courseOfActionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

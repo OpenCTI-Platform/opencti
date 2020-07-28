@@ -205,7 +205,7 @@ class IndicatorCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
                 detection: false,
               }}
               validationSchema={indicatorValidation(t)}

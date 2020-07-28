@@ -165,7 +165,7 @@ class XOpenctiXOpenctiIncidentCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={xOpenctiIncidentValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

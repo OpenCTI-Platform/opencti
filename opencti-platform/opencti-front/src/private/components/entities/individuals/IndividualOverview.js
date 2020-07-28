@@ -35,7 +35,7 @@ class IndividualOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {individual.markingDefinitions.edges.length > 0 ? (
+          {individual.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class IndividualOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              individual.markingDefinitions.edges,
+              individual.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

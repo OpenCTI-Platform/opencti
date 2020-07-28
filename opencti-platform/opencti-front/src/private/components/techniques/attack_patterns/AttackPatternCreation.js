@@ -179,7 +179,7 @@ class AttackPatternCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
                 killChainPhases: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={attackPatternValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

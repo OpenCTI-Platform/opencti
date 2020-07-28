@@ -34,7 +34,7 @@ class ToolDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels labels={tool.labels} id={tool.id} />
+          <StixDomainObjectLabels labels={tool.objectLabel} id={tool.id} />
           <Typography
             variant="h3"
             gutterBottom={true}

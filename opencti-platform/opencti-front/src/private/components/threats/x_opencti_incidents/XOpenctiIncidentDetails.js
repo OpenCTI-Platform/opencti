@@ -33,7 +33,7 @@ class XOpenctiIncidentDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={xOpenctiIncident.labels}
+            labels={xOpenctiIncident.objectLabel}
             id={xOpenctiIncident.id}
           />
           <Typography

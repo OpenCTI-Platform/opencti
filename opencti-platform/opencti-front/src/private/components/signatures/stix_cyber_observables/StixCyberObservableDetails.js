@@ -35,7 +35,7 @@ class StixCyberObservableDetailsComponent extends Component {
           <pre>{stixCyberObservable.observable_value}</pre>
           <div style={{ marginTop: 20 }}>
             <StixCyberObservableLabels
-              labels={stixCyberObservable.labels}
+              labels={stixCyberObservable.objectLabel}
               id={stixCyberObservable.id}
             />
           </div>

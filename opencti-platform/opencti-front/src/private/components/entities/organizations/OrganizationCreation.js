@@ -182,7 +182,7 @@ class OrganizationCreation extends Component {
                 x_opencti_organization_type: 'other',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={organizationValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

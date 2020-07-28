@@ -35,7 +35,7 @@ class CampaignOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {campaign.markingDefinitions.edges.length > 0 ? (
+          {campaign.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class CampaignOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              campaign.markingDefinitions.edges,
+              campaign.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

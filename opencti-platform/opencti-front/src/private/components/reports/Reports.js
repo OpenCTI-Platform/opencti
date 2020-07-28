@@ -194,7 +194,7 @@ class Reports extends Component {
       });
     }
     if (authorId) finalFilters.push({ key: 'createdBy', values: [authorId] });
-    if (objectId) finalFilters.push({ key: 'knowledgeContains', values: [objectId] });
+    if (objectId) finalFilters.push({ key: 'objectContains', values: [objectId] });
     const paginationOptions = {
       filters: finalFilters,
       search: searchTerm,

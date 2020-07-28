@@ -163,7 +163,7 @@ class ThreatActorCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
-                labels: [],
+                objectLabel: [],
               }}
               validationSchema={threatActorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

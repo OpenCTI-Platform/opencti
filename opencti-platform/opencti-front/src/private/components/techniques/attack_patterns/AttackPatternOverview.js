@@ -35,7 +35,7 @@ class AttackPatternOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {attackPattern.markingDefinitions.edges.length > 0 ? (
+          {attackPattern.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class AttackPatternOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              attackPattern.markingDefinitions.edges,
+              attackPattern.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

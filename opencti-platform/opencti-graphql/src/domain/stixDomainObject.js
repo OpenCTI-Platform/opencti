@@ -27,7 +27,7 @@ import { noteContainsStixCoreObjectOrStixRelationship } from './note';
 import { reportContainsStixCoreObjectOrStixRelationship } from './report';
 import { addStixCoreRelationship, findAll as findAllStixRelations } from './stixCoreRelationship';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
-import { INDEX_STIX_OBJECTS } from '../database/utils';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixCoreObject';
 import {
   ENTITY_TYPE_USER,
@@ -86,8 +86,8 @@ export const stixDomainObjectsTimeSeries = (args) => {
 };
 
 export const stixDomainObjectsNumber = (args) => ({
-  count: elCount(INDEX_STIX_OBJECTS, args),
-  total: elCount(INDEX_STIX_OBJECTS, dissoc('endDate', args)),
+  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, args),
+  total: elCount(INDEX_STIX_DOMAIN_OBJECTS, dissoc('endDate', args)),
 });
 // endregion
 

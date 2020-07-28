@@ -35,7 +35,7 @@ class IntrusionSetOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {intrusionSet.markingDefinitions.edges.length > 0 ? (
+          {intrusionSet.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class IntrusionSetOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              intrusionSet.markingDefinitions.edges,
+              intrusionSet.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />

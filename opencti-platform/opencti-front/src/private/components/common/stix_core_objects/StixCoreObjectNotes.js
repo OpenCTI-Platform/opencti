@@ -12,7 +12,7 @@ class StixCoreObjectNotes extends Component {
     const {
       t, entityId, inputType, marginTop,
     } = this.props;
-    let filter = 'knowledgeContains';
+    let filter = 'objectContains';
     if (inputType === 'observableRefs') {
       filter = 'observablesContains';
     }

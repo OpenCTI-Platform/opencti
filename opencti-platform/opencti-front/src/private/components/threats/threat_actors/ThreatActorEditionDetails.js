@@ -310,6 +310,62 @@ class ThreatActorEditionDetailsComponent extends Component {
                   </MenuItem>
                 </Field>
                 <Field
+                    component={SelectField}
+                    name="personal_motivations"
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onChange={this.handleSubmitField.bind(this)}
+                    label={t('Personal motivations')}
+                    fullWidth={true}
+                    multiple={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
+                    helpertext={
+                      <SubscriptionFocus
+                          context={context}
+                          fieldName="personal_motivations"
+                      />
+                    }
+                >
+                  <MenuItem key="none" value="">
+                    {t('None')}
+                  </MenuItem>
+                  <MenuItem key="accidental" value="accidental">
+                    {t('motivation_accidental')}
+                  </MenuItem>
+                  <MenuItem key="coercion" value="coercion">
+                    {t('motivation_coercion')}
+                  </MenuItem>
+                  <MenuItem key="dominance" value="dominance">
+                    {t('motivation_dominance')}
+                  </MenuItem>
+                  <MenuItem key="ideology" value="ideology">
+                    {t('motivation_ideology')}
+                  </MenuItem>
+                  <MenuItem key="notoriety" value="notoriety">
+                    {t('motivation_notoriety')}
+                  </MenuItem>
+                  <MenuItem
+                      key="organizational-gain"
+                      value="organizational-gain"
+                  >
+                    {t('motivation_organizational-gain')}
+                  </MenuItem>
+                  <MenuItem key="individualal-gain" value="individualal-gain">
+                    {t('motivation_individualal-gain')}
+                  </MenuItem>
+                  <MenuItem
+                      key="individualal-satisfaction"
+                      value="individualal-satisfaction"
+                  >
+                    {t('motivation_individualal-satisfaction')}
+                  </MenuItem>
+                  <MenuItem key="revenge" value="revenge">
+                    {t('motivation_revenge')}
+                  </MenuItem>
+                  <MenuItem key="unpredictable" value="unpredictable">
+                    {t('motivation_unpredictable')}
+                  </MenuItem>
+                </Field>
+                <Field
                   component={TextField}
                   name="goals"
                   label={t('Goals (1 / line)')}

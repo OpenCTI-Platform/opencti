@@ -35,7 +35,7 @@ class ThreatActorOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {threatActor.markingDefinitions.edges.length > 0 ? (
+          {threatActor.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class ThreatActorOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              threatActor.markingDefinitions.edges,
+              threatActor.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
