@@ -25,10 +25,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
-import {
-  resolveRoles,
-  resolveRelationsTypes,
-} from '../../../../utils/Relation';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';

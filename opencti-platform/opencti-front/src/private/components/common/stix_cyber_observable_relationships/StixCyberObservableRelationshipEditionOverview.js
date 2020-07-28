@@ -9,7 +9,6 @@ import {
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import { Close } from '@material-ui/icons';
@@ -19,18 +18,13 @@ import { resolveLink } from '../../../../utils/Entity';
 import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
-  QueryRenderer,
   requestSubscription,
 } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
 } from '../../../../components/Subscription';
-import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   header: {

@@ -8,9 +8,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, Work } from '@material-ui/icons';
-import { compose, pathOr, take } from 'ramda';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
-import ItemMarking from '../../../components/ItemMarking';
 
 const styles = (theme) => ({
   item: {

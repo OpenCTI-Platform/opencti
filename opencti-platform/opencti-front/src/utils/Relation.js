@@ -126,38 +126,3 @@ export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
     ? relationsTypesMapping[`${fromType}_${toType}`]
     : [];
 };
-
-export const resolveRoles = (type) => {
-  switch (type) {
-    case 'targets':
-      return { fromRole: 'source', toRole: 'target' };
-    case 'uses':
-      return { fromRole: 'user', toRole: 'usage' };
-    case 'attributed-to':
-      return { fromRole: 'attribution', toRole: 'origin' };
-    case 'variant-of':
-      return { fromRole: 'variation', toRole: 'original' };
-    case 'gathering':
-      return { fromRole: 'part_of', toRole: 'gather' };
-    case 'related-to':
-      return { fromRole: 'relate_from', toRole: 'relate_to' };
-    case 'localization':
-      return { fromRole: 'localized', toRole: 'location' };
-    case 'comes-after':
-      return { fromRole: 'coming_from', toRole: 'coming_after' };
-    case 'drops':
-      return { fromRole: 'dropping', toRole: 'dropped' };
-    case 'indicates':
-      return { fromRole: 'indicator', toRole: 'characterize' };
-    case 'linked':
-      return { fromRole: 'link_from', toRole: 'link_to' };
-    case 'resolves':
-      return { fromRole: 'resolving', toRole: 'resolved' };
-    case 'belongs':
-      return { fromRole: 'belonging_to', toRole: 'belonged_to' };
-    case 'corresponds':
-      return { fromRole: 'correspond_from', toRole: 'correspond_to' };
-    default:
-      return { fromRole: '', toRole: '' };
-  }
-};
