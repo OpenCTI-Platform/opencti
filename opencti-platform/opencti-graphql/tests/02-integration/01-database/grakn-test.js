@@ -1135,9 +1135,9 @@ describe('Grakn entities distribution through relation', () => {
       fromId: 'fab6fa99-b07f-4278-86b4-b674edf60877',
       field: 'name',
       operation: 'count',
-      relationship_type: 'object_refs',
+      relationshipType: 'object_refs',
       toType: 'Report',
-      remoterelationship_type: 'created_by_ref',
+      remoteRelationshipType: 'created_by_ref',
     };
     const distribution = await distributionEntitiesThroughRelations(options);
     expect(distribution.length).toEqual(1);

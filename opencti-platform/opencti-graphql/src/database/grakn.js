@@ -292,9 +292,9 @@ const getAliasInternalIdFilter = (query, alias) => {
   const keyVars = Array.from(query.matchAll(reg));
   return keyVars.length > 0 ? last(head(keyVars)) : undefined;
 };
-const extractRelationAlias = (alias, role, oppositeAlias, relationship_type) => {
+const extractRelationAlias = (alias, role, oppositeAlias, relationshipType) => {
   const variables = [];
-  const oppositeRole = role.endsWith('_from') ? `${relationship_type}_to` : `${relationship_type}_from`;
+  const oppositeRole = role.endsWith('_from') ? `${relationshipType}_to` : `${relationshipType}_from`;
   // Control the role specified in the query.
   variables.push({ role, alias, forceNatural: false });
   variables.push({ role: oppositeRole, alias: oppositeAlias, forceNatural: false });
@@ -310,7 +310,7 @@ export const extractQueryVars = (query) => {
   const relationsVars = Array.from(query.matchAll(/\(([a-z_\-\s:$]+),([a-z_\-\s:$]+)\)[\s]*isa[\s]*([a-z_-]+)/g));
   const roles = flatten(
     map((r) => {
-      const [, left, right, relationship_type] = r;
+      const [, left, right, relationshipType] = r;
       const [leftRole, leftAlias] = includes(':', left) ? left.trim().split(':') : [null, left];
       const [rightRole, rightAlias] = includes(':', right) ? right.trim().split(':') : [null, right];
       const lAlias = leftAlias.trim().replace('$', '');
@@ -327,11 +327,11 @@ export const extractQueryVars = (query) => {
       // If no filtering, roles must be fully specified or not specified.
       // If missing left role
       if (leftRole === null && rightRole !== null) {
-        return extractRelationAlias(rAlias, rightRole, lAlias, relationship_type);
+        return extractRelationAlias(rAlias, rightRole, lAlias, relationshipType);
       }
       // If missing right role
       if (leftRole !== null && rightRole === null) {
-        return extractRelationAlias(lAlias, leftRole, rAlias, relationship_type);
+        return extractRelationAlias(lAlias, leftRole, rAlias, relationshipType);
       }
       // Else, we have both or nothing
       const roleForRight = rightRole ? rightRole.trim() : undefined;
@@ -523,7 +523,7 @@ const loadConcept = async (tx, concept, args = {}) => {
                 const useAlias = explanationAlias.get(roleLabel) || alias;
                 return {
                   [useAlias]: null, // With be use lazily
-                  [`${useAlias}Id`]: roleTargetId,
+                  [`${useAlias}Id`]: args[`${useAlias}Id`],
                   [`${useAlias}Role`]: roleLabel,
                   [`${useAlias}Type`]: conceptFromMap.type,
                 };
@@ -536,10 +536,10 @@ const loadConcept = async (tx, concept, args = {}) => {
           return head(roleItem)
             .label()
             .then(async (roleLabel) => {
-              const useAlias = `${conceptType}_${roleLabel}`;
+              const [, useAlias] = roleLabel.split('_');
               return {
                 [useAlias]: null, // With be use lazily
-                [`${useAlias}Id`]: roleTargetId,
+                [`${useAlias}Id`]: args[`${useAlias}Id`],
                 [`${useAlias}Role`]: roleLabel,
                 [`${useAlias}Type`]: roleType,
               };
@@ -1266,10 +1266,10 @@ export const distributionRelations = async (options) => {
 };
 export const distributionEntitiesThroughRelations = async (options) => {
   const { limit = 10, order, inferred = false } = options;
-  const { relationship_type, remoterelationship_type, toType, fromId, field, operation } = options;
-  let query = `match $rel($from, $to) isa ${relationship_type}; $to isa ${toType};`;
+  const { relationshipType, remoteRelationshipType, toType, fromId, field, operation } = options;
+  let query = `match $rel($from, $to) isa ${relationshipType}; $to isa ${toType};`;
   query += `$from has internal_id "${escapeString(fromId)}";`;
-  query += `$rel2($to, $to2) isa ${remoterelationship_type};`;
+  query += `$rel2($to, $to2) isa ${remoteRelationshipType};`;
   query += `$to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
   const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   // Take a maximum amount of distribution depending on the ordering.

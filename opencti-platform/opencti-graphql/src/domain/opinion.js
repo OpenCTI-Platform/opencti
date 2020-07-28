@@ -110,10 +110,10 @@ export const opinionsDistributionByEntity = async (args) => {
   const { objectId, field } = args;
   if (field.includes('.')) {
     const options = pipe(
-      assoc('relationship_type', RELATION_OBJECT),
+      assoc('relationshipType', RELATION_OBJECT),
       assoc('toType', ENTITY_TYPE_CONTAINER_OPINION),
       assoc('field', field.split('.')[1]),
-      assoc('remoterelationship_type', field.split('.')[0]),
+      assoc('remoteRelationshipType', field.split('.')[0]),
       assoc('fromId', objectId)
     )(args);
     return distributionEntitiesThroughRelations(options);
