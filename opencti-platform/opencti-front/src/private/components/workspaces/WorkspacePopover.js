@@ -109,7 +109,7 @@ class WorkspacePopover extends Component {
     const { classes, t, workspaceId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true" style={{ marginTop: 1 }}>
           <MoreVert />
         </IconButton>
         <Menu

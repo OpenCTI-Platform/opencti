@@ -6,11 +6,12 @@ import {
   isInternalRelationship,
   isStixCyberObservable,
   isStixCoreRelationship,
-  isStixRelationship,
-  isStixObject,
   isStixCyberObservableRelationship,
-  isStixMetaRelationship, isStixMetaObject, isStixDomainObject
-} from "../utils/idGenerator";
+  isStixMetaRelationship,
+  isStixMetaObject,
+  isStixDomainObject,
+  isStixSightingRelationship,
+} from '../utils/idGenerator';
 import { DatabaseError } from '../config/errors';
 
 // Entities
@@ -100,9 +101,10 @@ export const inferIndexFromConceptType = (conceptType) => {
   if (isStixCyberObservable(conceptType)) return INDEX_STIX_CYBER_OBSERVABLES;
   // Relations
   if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONSHIPS;
+  if (isStixCoreRelationship(conceptType)) return INDEX_STIX_CORE_RELATIONSHIPS;
+  if (isStixSightingRelationship(conceptType)) return INDEX_STIX_SIGHTING_RELATIONSHIPS;
   if (isStixCyberObservableRelationship(conceptType)) return INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS;
   if (isStixMetaRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
-  if (isStixRelationship(conceptType)) return INDEX_STIX_RELATIONSHIPS;
 
   throw DatabaseError(`Cant find index for type ${conceptType}`);
 };
@@ -138,7 +140,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   let fromType;
   let toValue;
   let toType;
-  let torelationship_type;
+  let toRelationshipType;
   if (eventExtraData && eventExtraData.from) {
     fromValue = extractEntityMainValue(eventExtraData.from);
     fromType = eventExtraData.from.entity_type;
@@ -146,7 +148,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   if (eventExtraData && eventExtraData.to) {
     toValue = extractEntityMainValue(eventExtraData.to);
     toType = eventExtraData.to.entity_type;
-    torelationship_type = eventExtraData.to.entity_type;
+    toRelationshipType = eventExtraData.to.entity_type;
   }
   const name = extractEntityMainValue(eventData);
   let message = '';
@@ -167,7 +169,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
     if (eventType === 'update') {
       message += `\`${eventData.entity_type}\` with the value \`${toValue}\`.`;
     } else if (toType === 'stix_relation') {
-      message += `relation \`${torelationship_type}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
+      message += `relation \`${toRelationshipType}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
     } else {
       message += `\`${toType}\` with value \`${toValue}\`.`;
     }

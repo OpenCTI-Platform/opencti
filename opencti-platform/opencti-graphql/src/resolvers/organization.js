@@ -34,7 +34,8 @@ const organizationResolvers = {
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainObjectDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
     organizationAdd: (_, { input }, { user }) => addOrganization(user, input),
   },

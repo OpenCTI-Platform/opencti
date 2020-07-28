@@ -108,6 +108,7 @@ class ThreatActorEditionDetailsComponent extends Component {
         'resource_level',
         'primary_motivation',
         'secondary_motivations',
+        'personal_motivations',
         'goals',
       ],
       threatActor,

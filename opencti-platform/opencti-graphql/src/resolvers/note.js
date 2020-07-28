@@ -77,8 +77,8 @@ const noteResolvers = {
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ relationId, toId, relationship_type }) =>
-        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationship_type),
+      relationDelete: ({ relationId, toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationshipType),
     }),
     noteAdd: (_, { input }, { user }) => addNote(user, input),
   },

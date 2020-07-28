@@ -2,11 +2,11 @@ import { withFilter } from 'graphql-subscriptions';
 import { assoc } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
-  addstixDomainObject,
   findAll,
   findById,
   stixDomainObjectsNumber,
   stixDomainObjectsTimeSeries,
+  addStixDomainObject,
   stixDomainObjectAddRelation,
   stixDomainObjectAddRelations,
   stixDomainObjectCleanContext,
@@ -71,15 +71,15 @@ const stixDomainObjectResolvers = {
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixDomainObjectAddRelations(user, id, input),
-      relationDelete: ({ relationId, toId, relationship_type }) =>
-        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationship_type),
+      relationDelete: ({ relationId, toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationshipType),
       importPush: ({ file }) => stixDomainObjectImportPush(user, null, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, null, id, file),
       mergeEntities: ({ stixDomainObjectsIds, alias }) => stixDomainObjectMerge(user, id, stixDomainObjectsIds, alias),
     }),
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
-    stixDomainObjectAdd: (_, { input }, { user }) => addstixDomainObject(user, input),
+    stixDomainObjectAdd: (_, { input }, { user }) => addStixDomainObject(user, input),
     stixDomainObjectsExportAsk: (_, args) => stixDomainObjectExportAsk(args),
     stixDomainObjectsExportPush: (_, { type, file, context, listArgs }, { user }) =>
       stixDomainObjectExportPush(user, type, null, file, context, listArgs),

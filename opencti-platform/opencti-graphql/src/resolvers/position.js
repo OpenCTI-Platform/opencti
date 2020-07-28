@@ -30,7 +30,8 @@ const positionResolvers = {
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainObjectDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
     positionAdd: (_, { input }, { user }) => addPosition(user, input),
   },

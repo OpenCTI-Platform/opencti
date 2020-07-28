@@ -35,7 +35,8 @@ const infrastructureResolvers = {
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainObjectDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
     infrastructureAdd: (_, { input }, { user }) => addInfrastructure(user, input),
   },

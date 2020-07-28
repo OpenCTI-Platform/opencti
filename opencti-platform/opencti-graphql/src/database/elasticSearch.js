@@ -99,8 +99,8 @@ export const virtualTypes = [
 ];
 
 export const REL_INDEX_PREFIX = 'rel_';
-export const INDEX_WORK_JOBS = 'work_jobs_index';
-export const INDEX_LOGS = 'opencti_logs';
+export const INDEX_JOBS = 'opencti_jobs';
+export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_to`,
   `${RELATION_OBJECT_MARKING}_to`,
@@ -117,9 +117,9 @@ export const DATA_INDICES = [
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
-  INDEX_WORK_JOBS,
+  INDEX_JOBS,
 ];
-export const PLATFORM_INDICES = [INDEX_LOGS, ...DATA_INDICES];
+export const PLATFORM_INDICES = [INDEX_HISTORY, ...DATA_INDICES];
 export const ENTITIES_INDICES = [
   INDEX_INTERNAL_OBJECTS,
   INDEX_STIX_META_OBJECTS,
@@ -218,35 +218,10 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
                   },
                 ],
                 properties: {
-                  created_at_month: {
-                    type: 'date',
-                    format: 'strict_year_month',
-                    ignore_malformed: true,
-                  },
-                  first_seen_month: {
-                    type: 'date',
-                    format: 'strict_year_month',
-                    ignore_malformed: true,
-                  },
-                  last_seen_month: {
-                    type: 'date',
-                    format: 'strict_year_month',
-                    ignore_malformed: true,
-                  },
-                  expiration_month: {
-                    type: 'date',
-                    format: 'strict_year_month',
-                    ignore_malformed: true,
-                  },
-                  published_month: {
-                    type: 'date',
-                    format: 'strict_year_month',
-                    ignore_malformed: true,
-                  },
-                  object_status: {
+                  confidence: {
                     type: 'integer',
                   },
-                  confidence: {
+                  x_opencti_report_status: {
                     type: 'integer',
                   },
                 },
@@ -423,7 +398,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
     });
   }
   const query = {
-    index: INDEX_STIX_RELATIONSHIPS,
+    index: RELATIONSHIPS_INDICES,
     body: {
       size: 10000,
       query: {
