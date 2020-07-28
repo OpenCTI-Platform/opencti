@@ -91,8 +91,10 @@ import {
   generateInternalId,
   ABSTRACT_BASIC_RELATIONSHIP,
   isStixCyberObservableRelationship,
-  getParentTypes, isBasicObject, isBasicRelationship
-} from "../utils/idGenerator";
+  getParentTypes,
+  isBasicObject,
+  isBasicRelationship,
+} from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 
@@ -871,7 +873,7 @@ export const listRelations = async (relationshipType, args) => {
   } = args;
   let useInference = inferred;
   const { filters = [], search, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
-  const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, weights = [] } = args;
+  const { startTimeStart, startTimeStop, stopTimeStart, stopTimeStop, confidences = [] } = args;
 
   // Use $from, $to only if fromId or toId specified.
   // Else, just ask for the relation only.
@@ -888,7 +890,7 @@ export const listRelations = async (relationshipType, args) => {
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
   // Handle relation type(s)
-  const relationToGet = relationshipType || 'stix_relation';
+  const relationToGet = relationshipType || 'stix-core-relationship';
   // 0 - Check if we can support the query by Elastic
   const unsupportedOrdering = isRelationOrderBy && last(orderBy.split('.')) !== 'internal_id';
   // Search is not supported because its only search on the relation to.
@@ -913,12 +915,11 @@ export const listRelations = async (relationshipType, args) => {
     }
     if (fromTypes && fromTypes.length > 0) finalFilters.push({ key: 'connections.type', values: fromTypes });
     if (toTypes && toTypes.length > 0) finalFilters.push({ key: 'connections.type', values: toTypes });
-    if (firstSeenStart) finalFilters.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
-    if (firstSeenStop) finalFilters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
-    if (lastSeenStart) finalFilters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
-    if (lastSeenStop) finalFilters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
-    if (lastSeenStop) finalFilters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
-    if (weights && weights.length > 0) finalFilters.push({ key: 'weight', values: [weights] });
+    if (startTimeStart) finalFilters.push({ key: 'start_time', values: [startTimeStart], operator: 'gt' });
+    if (startTimeStop) finalFilters.push({ key: 'start_time', values: [startTimeStop], operator: 'lt' });
+    if (stopTimeStart) finalFilters.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
+    if (stopTimeStop) finalFilters.push({ key: 'stop_time', values: [stopTimeStop], operator: 'lt' });
+    if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
     const paginateArgs = pipe(
       assoc('types', [relationToGet]),
       assoc('filters', finalFilters),
@@ -976,25 +977,25 @@ export const listRelations = async (relationshipType, args) => {
   }
   if (fromId) attributesFilters.push(`$from has internal_id "${escapeString(fromId)}";`);
   if (toId) attributesFilters.push(`$to has internal_id "${escapeString(toId)}";`);
-  if (firstSeenStart || firstSeenStop) {
+  if (startTimeStart || startTimeStop) {
     attributesFields.push(`$rel has first_seen $fs;`);
-    if (firstSeenStart) attributesFilters.push(`$fs > ${prepareDate(firstSeenStart)};`);
-    if (firstSeenStop) attributesFilters.push(`$fs < ${prepareDate(firstSeenStop)};`);
+    if (startTimeStart) attributesFilters.push(`$fs > ${prepareDate(startTimeStart)};`);
+    if (startTimeStop) attributesFilters.push(`$fs < ${prepareDate(startTimeStop)};`);
   }
-  if (lastSeenStart || lastSeenStop) {
+  if (stopTimeStart || stopTimeStop) {
     attributesFields.push(`$rel has last_seen $ls;`);
-    if (lastSeenStart) attributesFilters.push(`$ls > ${prepareDate(lastSeenStart)};`);
-    if (lastSeenStop) attributesFilters.push(`$ls < ${prepareDate(lastSeenStop)};`);
+    if (stopTimeStart) attributesFilters.push(`$ls > ${prepareDate(stopTimeStart)};`);
+    if (stopTimeStop) attributesFilters.push(`$ls < ${prepareDate(stopTimeStop)};`);
   }
-  if (weights && weights.length > 0) {
+  if (confidences && confidences.length > 0) {
     attributesFields.push(`$rel has weight $weight;`);
     // eslint-disable-next-line prettier/prettier
     attributesFilters.push(
       pipe(
-        map((e) => `{ $weight == ${e}; }`),
+        map((e) => `{ $confidence == ${e}; }`),
         join(' or '),
         concat(__, ';')
-      )(weights)
+      )(confidences)
     );
   }
   const relationRef = relationFilter ? 'relationRef' : null;
@@ -1150,7 +1151,7 @@ const buildAggregationQuery = (entityType, filters, options) => {
         const toRole = to ? `${to}:` : '';
         const dateRange =
           start && end
-            ? `$rel_${type} has first_seen $fs; $fs > ${prepareDate(start)}; $fs < ${prepareDate(end)};`
+            ? `$rel_${type} has start_time $fs; $fs > ${prepareDate(start)}; $fs < ${prepareDate(end)};`
             : '';
         const relation = `$rel_${type}(${fromRole}$from, ${toRole}$${type}_to) isa ${type};`;
         return `${relation} ${dateRange} $${type}_to has internal_id "${eValue}";`;
@@ -1253,7 +1254,7 @@ export const distributionRelations = async (options) => {
     } $from has internal_id "${escapeString(fromId)}";
     ${
       startDate && endDate
-        ? `$rel has first_seen $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
+        ? `$rel has start_time $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
     }
       $to has ${escape(field)} $g; get; group $g; ${escape(operation)};`;

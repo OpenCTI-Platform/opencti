@@ -52,11 +52,11 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/dashboard/threats/xOpenctiIncidents"
+          path="/dashboard/threats/incidents"
           component={XOpenctiIncidents}
         />
         <BoundaryRoute
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId"
+          path="/dashboard/threats/incidents/:incidentId"
           render={(routeProps) => (
             <RootXOpenctiIncident {...routeProps} me={me} />
           )}

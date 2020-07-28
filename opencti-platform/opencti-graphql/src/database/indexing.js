@@ -16,7 +16,6 @@ import {
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_WORKSPACE,
   RELATION_MEMBER_OF,
-  RELATION_PERMISSION,
   STIX_SIGHTING_RELATIONSHIP,
 } from '../utils/idGenerator';
 
@@ -108,7 +107,6 @@ const index = async () => {
   // migrate - Not needed, migration related.
   // authorize - Not needed, authentication
   await indexElement(RELATION_MEMBER_OF, true);
-  await indexElement(RELATION_PERMISSION, true);
   await indexElement('stix_relation', true, 'entity', 'entity');
   await indexElement('stix_relation', true, 'entity', 'relation');
   await indexElement('stix_relation', true, 'relation', 'relation');

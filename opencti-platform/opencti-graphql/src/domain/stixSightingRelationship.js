@@ -45,7 +45,7 @@ export const stixSightingRelationshipsNumber = (args) => ({
 // region mutations
 export const addstixSightingRelationship = async (user, stixSightingRelationship, reversedReturn = false) => {
   const created = await createRelation(user, stixSightingRelationship, { reversedReturn });
-  return notify(BUS_TOPICS.StixSightingRelationship.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
   return deleteRelationById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
@@ -55,7 +55,7 @@ export const stixSightingRelationshipEditField = (user, stixSightingRelationship
     return updateAttribute(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP, input, wTx);
   }).then(async () => {
     const stixSightingRelationship = await loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-    return notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, stixSightingRelationship, user);
+    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
   });
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
@@ -65,14 +65,14 @@ export const stixSightingRelationshipAddRelation = async (user, stixSightingRela
   }
   const finalInput = assoc('fromId', stixSightingRelationshipId, input);
   return createRelation(user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, relationData, user);
+    notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
 export const stixSightingRelationshipDeleteRelation = async (user, stixSightingRelationshipId, relationId) => {
   await deleteRelationById(user, relationId, STIX_SIGHTING_RELATIONSHIP);
   const data = await loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-  return notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, data, user);
+  return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, data, user);
 };
 // endregion
 
@@ -80,13 +80,13 @@ export const stixSightingRelationshipDeleteRelation = async (user, stixSightingR
 export const stixSightingRelationshipCleanContext = (user, stixSightingRelationshipId) => {
   delEditContext(user, stixSightingRelationshipId);
   return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
-    notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, stixSightingRelationship, user)
+    notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user)
   );
 };
 export const stixSightingRelationshipEditContext = (user, stixSightingRelationshipId, input) => {
   setEditContext(user, stixSightingRelationshipId, input);
   return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
-    notify(BUS_TOPICS.StixSightingRelationship.EDIT_TOPIC, stixSightingRelationship, user)
+    notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user)
   );
 };
 // endregion

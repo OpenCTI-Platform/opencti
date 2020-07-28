@@ -66,9 +66,9 @@ export const individualsLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: UsersOrdering
+    $orderBy: IndividualsOrdering
     $orderMode: OrderingMode
-    $filters: [UsersFiltering]
+    $filters: [IndividualsFiltering]
   ) {
     ...IndividualsLines_data
       @arguments(

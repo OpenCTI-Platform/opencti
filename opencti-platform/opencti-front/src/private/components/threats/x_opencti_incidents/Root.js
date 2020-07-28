@@ -71,7 +71,7 @@ class RootXOpenctiIncident extends Component {
     const {
       me,
       match: {
-        params: { xOpenctiIncidentId },
+        params: { incidentId },
       },
     } = this.props;
     return (
@@ -79,14 +79,14 @@ class RootXOpenctiIncident extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={xOpenctiIncidentQuery}
-          variables={{ id: xOpenctiIncidentId }}
+          variables={{ id: incidentId }}
           render={({ props }) => {
             if (props && props.xOpenctiIncident) {
               return (
                 <div>
                   <Route
                     exact
-                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId"
+                    path="/dashboard/threats/incidents/:incidentId"
                     render={(routeProps) => (
                       <XOpenctiIncident
                         {...routeProps}
@@ -96,7 +96,7 @@ class RootXOpenctiIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/reports"
+                    path="/dashboard/threats/incidents/:incidentId/reports"
                     render={(routeProps) => (
                       <XOpenctiIncidentReports
                         {...routeProps}
@@ -106,15 +106,15 @@ class RootXOpenctiIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge"
+                    path="/dashboard/threats/incidents/:incidentId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/threats/xOpenctiIncidents/${xOpenctiIncidentId}/knowledge/overview`}
+                        to={`/dashboard/threats/incidents/${incidentId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge"
+                    path="/dashboard/threats/incidents/:incidentId/knowledge"
                     render={(routeProps) => (
                       <XOpenctiIncidentKnowledge
                         {...routeProps}
@@ -123,7 +123,7 @@ class RootXOpenctiIncident extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/observables"
+                    path="/dashboard/threats/incidents/:incidentId/observables"
                     render={(routeProps) => (
                       <XOpenctiIncidentObservables
                         {...routeProps}
@@ -133,7 +133,7 @@ class RootXOpenctiIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/files"
+                    path="/dashboard/threats/incidents/:incidentId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -142,7 +142,7 @@ class RootXOpenctiIncident extends Component {
                         />
                         <FileManager
                           {...routeProps}
-                          id={xOpenctiIncidentId}
+                          id={incidentId}
                           connectorsExport={props.connectorsForExport}
                           entity={props.xOpenctiIncident}
                         />
@@ -151,7 +151,7 @@ class RootXOpenctiIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/history"
+                    path="/dashboard/threats/incidents/:incidentId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -160,7 +160,7 @@ class RootXOpenctiIncident extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={xOpenctiIncidentId}
+                          entityId={incidentId}
                         />
                       </React.Fragment>
                     )}

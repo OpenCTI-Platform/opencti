@@ -54,7 +54,7 @@ class XOpenctiIncidentLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/threats/xOpenctiIncidents/${node.id}`}
+        to={`/dashboard/threats/incidents/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Fire />
