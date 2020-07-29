@@ -129,8 +129,8 @@ class IndicatorCreation extends Component {
     const adaptedValues = evolve(
       {
         createdBy: path(['value']),
-        markingDefinitions: pluck('value'),
-        labels: pluck('value'),
+        objectMarking: pluck('value'),
+        objectLabel: pluck('value'),
       },
       values,
     );

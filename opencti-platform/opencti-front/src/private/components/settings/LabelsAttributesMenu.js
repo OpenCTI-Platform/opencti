@@ -53,16 +53,6 @@ class LabelsAttributesMenu extends Component {
           >
             <ListItemText primary={t('Report types')} />
           </MenuItem>
-          <MenuItem
-            component={Link}
-            to={'/dashboard/settings/attributes/role_played'}
-            selected={
-              location.pathname === '/dashboard/settings/attributes/role_played'
-            }
-            dense={false}
-          >
-            <ListItemText primary={t('Observables roles')} />
-          </MenuItem>
         </MenuList>
       </Drawer>
     );

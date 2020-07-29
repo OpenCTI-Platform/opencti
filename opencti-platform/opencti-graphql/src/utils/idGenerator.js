@@ -449,6 +449,9 @@ export const parents = (type) => {
 // endregion
 
 // region entities
+const labelId = (type, data) => {
+  return uuid({ type, value: data.value });
+};
 const externalReferenceId = (type, data) => {
   let referenceKey = data;
   if (data.url) {
@@ -492,8 +495,6 @@ const generateInternalObjectUUID = (type, entity) => {
       return uuid({ type, user_email: entity.user_email });
     case ENTITY_TYPE_SETTINGS:
       return OPENCTI_PLATFORM_UUID;
-    case ENTITY_TYPE_LABEL:
-      return uuid({ type, value: entity.value });
     case ENTITY_TYPE_TOKEN:
       return uuid({ type, uuid: entity.uuid });
     case ENTITY_TYPE_WORKSPACE:
@@ -504,14 +505,16 @@ const generateInternalObjectUUID = (type, entity) => {
 };
 const generateStixDomainObjectUUID = (type, data) => {
   switch (type) {
+    case ENTITY_TYPE_MARKING_DEFINITION:
+      return markingDefinitionId(type, data);
+    case ENTITY_TYPE_LABEL:
+      return labelId(type, data);
     case ENTITY_TYPE_EXTERNAL_REFERENCE:
       return externalReferenceId(type, data);
     case ENTITY_TYPE_KILL_CHAIN_PHASE:
       return killChainId(type, data);
     case ENTITY_TYPE_ATTACK_PATTERN:
       return attackPatternId(type, data);
-    case ENTITY_TYPE_MARKING_DEFINITION:
-      return markingDefinitionId(type, data);
     case ENTITY_TYPE_CONTAINER_REPORT:
       return reportId(type, data);
     case ENTITY_TYPE_INDICATOR:

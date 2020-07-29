@@ -760,10 +760,10 @@ const i18n = {
       // Time
       '24h': '24h',
       // Types
-      'entity_threat-actor': 'Acteur',
-      'entity_attack-pattern': 'TTP',
-      'entity_intrusion-set': 'Mode opératoire',
+      'entity_attack-pattern': "Motif d'attaque",
       entity_campaign: 'Campagne',
+      'entity_Threat-Actor': 'Acteur',
+      'entity_intrusion-set': 'Mode opératoire',
       entity_xOpenctiIncident: 'XOpenctiIncident',
       entity_malware: 'Code malveillant',
       entity_tool: 'Outil',

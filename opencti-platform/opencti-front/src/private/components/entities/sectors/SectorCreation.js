@@ -119,7 +119,7 @@ class SectorCreation extends Component {
     const finalValues = evolve(
       {
         createdBy: path(['value']),
-        markingDefinitions: pluck('value'),
+        objectMarking: pluck('value'),
       },
       values,
     );

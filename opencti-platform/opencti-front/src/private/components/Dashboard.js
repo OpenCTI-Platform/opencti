@@ -689,7 +689,7 @@ class Dashboard extends Component {
                               const markingDefinition = head(
                                 pathOr(
                                   [],
-                                  ['markingDefinitions', 'edges'],
+                                  ['objectMarking', 'edges'],
                                   stixDomainObject,
                                 ),
                               );

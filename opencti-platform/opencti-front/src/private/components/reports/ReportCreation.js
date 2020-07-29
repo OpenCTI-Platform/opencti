@@ -117,8 +117,8 @@ class ReportCreation extends Component {
       {
         published: parse(values.published).format(),
         createdBy: path(['value']),
-        markingDefinitions: pluck('value'),
-        labels: pluck('value'),
+        objectMarking: pluck('value'),
+        objectLabel: pluck('value'),
       },
       values,
     );

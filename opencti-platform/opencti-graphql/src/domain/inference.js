@@ -9,10 +9,10 @@ const inferences = {
     rule:
       'AttributionAttributionRule sub rule,\n' +
       '    when {\n' +
-      '      $rel1_attribution_origin(origin: $origin, attribution: $entity) isa attributed-to;\n' +
-      '      $rel2_attribution_origin(origin: $entity, attribution: $subentity) isa attributed-to;\n' +
+      '      $rel1_attribution_origin(attributed-to_from: $origin, attributed-to_to: $entity) isa attributed-to;\n' +
+      '      $rel2_attribution_origin(attributed-to_from: $entity, attributed-to_to: $subentity) isa attributed-to;\n' +
       '    }, then {\n' +
-      '      (origin: $origin, attribution: $subentity) isa attributed-to;\n' +
+      '      (attributed-to_from: $origin, attributed-to_to: $subentity) isa attributed-to;\n' +
       '    };',
     description:
       'This rule can be used to infer the following fact: if an entity A is attributed to an entity B and the entity B is attributed to an entity C, the entity A is also attributed to the entity C.',
