@@ -48,7 +48,7 @@ const entityReportsChartReportsTimeSeriesQuery = graphql`
     reportsTimeSeries(
       objectId: $objectId
       authorId: $authorId
-      reportClass: $reportClass
+      reportType: $reportClass
       field: $field
       operation: $operation
       startDate: $startDate
@@ -87,14 +87,14 @@ class EntityReportsChart extends Component {
 
   render() {
     const {
-      t, md, classes, entityId, authorId, reportClass,
+      t, md, classes, entityId, authorId, reportType,
     } = this.props;
     let reportsTimeSeriesVariables;
     if (authorId) {
       reportsTimeSeriesVariables = {
         authorId,
         objectId: null,
-        reportClass: reportClass || null,
+        reportType: reportType || null,
         field: 'published',
         operation: 'count',
         startDate: monthsAgo(this.state.period),
@@ -105,7 +105,7 @@ class EntityReportsChart extends Component {
       reportsTimeSeriesVariables = {
         authorId: null,
         objectId: entityId,
-        reportClass: reportClass || null,
+        reportType: reportType || null,
         field: 'published',
         operation: 'count',
         startDate: monthsAgo(this.state.period),
@@ -242,7 +242,7 @@ EntityReportsChart.propTypes = {
   entityId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
+  reportType: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
   history: PropTypes.object,

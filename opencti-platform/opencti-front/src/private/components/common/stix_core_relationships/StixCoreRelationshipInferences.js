@@ -181,7 +181,6 @@ StixCoreRelationshipInferences.propTypes = {
   to: PropTypes.object,
   engine: PropTypes.object,
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
 };

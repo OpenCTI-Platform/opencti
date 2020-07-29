@@ -67,7 +67,7 @@ class CourseOfActionComponent extends Component {
           <Grid item={true} xs={4}>
             <EntityStixCoreRelationshipsPie
               entityId={courseOfAction.id}
-              entityType="Stix-Domain-Entity"
+              entityType="Stix-Domain-Object"
               field="entity_type"
             />
           </Grid>

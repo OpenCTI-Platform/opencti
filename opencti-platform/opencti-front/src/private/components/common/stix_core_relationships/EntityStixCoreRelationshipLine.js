@@ -87,16 +87,16 @@ class EntityStixCoreRelationshipLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.last_seen)}
+                {node.inferred ? '-' : nsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
-                  level={node.inferred ? 99 : node.weight}
+                  level={node.inferred ? 99 : node.confidence}
                   variant="inList"
                 />
               </div>
@@ -296,7 +296,7 @@ class EntityStixCoreRelationshipLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.confidence.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

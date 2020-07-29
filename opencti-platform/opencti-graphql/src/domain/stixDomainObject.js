@@ -73,9 +73,7 @@ export const findById = async (stixDomainObjectId) => {
 
 // region time series
 export const reportsTimeSeries = (stixDomainObjectId, args) => {
-  const filters = [
-    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: RELATION_OBJECT, value: stixDomainObjectId },
-  ];
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixDomainObjectId }];
   return timeSeriesEntities('Report', filters, args);
 };
 export const stixDomainObjectsTimeSeries = (args) => {

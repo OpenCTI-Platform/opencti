@@ -559,6 +559,8 @@ const i18n = {
       'Last seen': 'Dernière observation',
       'First obs.': 'Première obs.',
       'Last obs.': 'Dernière obs.',
+      'Start time': "Début d'obs.",
+      'Stop time': "Fin d'obs.",
       Confirmation: 'Confirmation',
       'Kill chain': 'Kill chain',
       'This feature is not available yet.':

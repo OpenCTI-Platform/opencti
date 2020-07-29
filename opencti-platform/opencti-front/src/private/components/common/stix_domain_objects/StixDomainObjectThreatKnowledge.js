@@ -296,13 +296,13 @@ class StixDomainObjectThreatKnowledge extends Component {
           <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
             <EntityReportsPie
               entityId={stixDomainObjectId}
-              field="created_by_ref.name"
+              field="created-by.name"
             />
           </Grid>
           <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
             <EntityStixCoreRelationshipsRadar
               entityId={stixDomainObjectId}
-              entityType="Stix-Domain-Entity"
+              entityType="Stix-Domain-Object"
               title={t('Distribution of relations')}
               field="entity_type"
               inferred={inferred}
@@ -312,7 +312,7 @@ class StixDomainObjectThreatKnowledge extends Component {
             <SimpleEntityStixCoreRelationships
               entityId={stixDomainObjectId}
               relationship_type="related-to"
-              targetEntityTypes={['Stix-Domain-Entity']}
+              targetEntityTypes={['Stix-Domain-Object']}
               entityLink={link}
             />
           </Grid>

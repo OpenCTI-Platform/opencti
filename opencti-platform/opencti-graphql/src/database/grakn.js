@@ -1145,16 +1145,16 @@ const buildAggregationQuery = (entityType, filters, options) => {
   if (endDate) baseQuery = `${baseQuery} $created < ${prepareDate(endDate)};`;
   const filterQuery = pipe(
     map((filterElement) => {
-      const { isRelation, value, from, to, start, end, type } = filterElement;
+      const { isRelation, value, start, end, type } = filterElement;
       const eValue = `${escapeString(value)}`;
       if (isRelation) {
-        const fromRole = from ? `${from}:` : '';
-        const toRole = to ? `${to}:` : '';
+        const fromRole = `${type}_from`;
+        const toRole = `${type}_to`;
         const dateRange =
           start && end
             ? `$rel_${type} has start_time $fs; $fs > ${prepareDate(start)}; $fs < ${prepareDate(end)};`
             : '';
-        const relation = `$rel_${type}(${fromRole}$from, ${toRole}$${type}_to) isa ${type};`;
+        const relation = `$rel_${type}(${fromRole}:$from, ${toRole}:$${type}_to) isa ${type};`;
         return `${relation} ${dateRange} $${type}_to has internal_id "${eValue}";`;
       }
       return `$from has ${type} "${eValue}";`;
@@ -1180,7 +1180,7 @@ const graknTimeSeries = (query, keyRef, valueRef, inferred) => {
   });
 };
 export const timeSeriesEntities = async (entityType, filters, options) => {
-  // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
+  // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
   const { startDate, endDate, operation, field, interval, noCache = false, inferred = false } = options;
   // Check if can be supported by ES
@@ -1195,7 +1195,7 @@ export const timeSeriesEntities = async (entityType, filters, options) => {
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesRelations = async (options) => {
-  // filters: [ { isRelation: true, type: stix_relation, from: 'role', to: 'role', value: uuid } ]
+  // filters: [ { isRelation: true, type: stix_relation, value: uuid }
   //            { isRelation: false, type: report_class, value: string } ]
   const { startDate, endDate, operation, relationship_type: relationshipType, field, interval } = options;
   const { fromId, noCache = false, inferred = false } = options;
@@ -1216,7 +1216,7 @@ export const timeSeriesRelations = async (options) => {
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const distributionEntities = async (entityType, filters = [], options) => {
-  // filters: { isRelation: true, type: stix_relation, start: date, end: date, from: 'role', to: 'role', value: uuid }
+  // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
   const { noCache = false, inferred = false, limit = 10, order = 'asc' } = options;
   const { startDate, endDate, field, operation } = options;
   let distributionData;

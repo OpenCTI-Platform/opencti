@@ -29,7 +29,7 @@ class ThreatActorDetailsComponent extends Component {
         (secondaryMotivation) => t(`motivation_${secondaryMotivation}`),
         threatActor.secondary_motivations,
       )
-      : [];
+      : [t('motivation_unknown')];
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -110,7 +110,7 @@ class ThreatActorDetailsComponent extends Component {
           </Typography>
           <Markdown
             className="markdown"
-            source={`+ ${join('\n\n+ ', threatActor.goals)}`}
+            source={`+ ${join('\n\n+ ', threatActor.goals ? threatActor.goals : [t('Unknown')])}`}
           />
         </Paper>
       </div>

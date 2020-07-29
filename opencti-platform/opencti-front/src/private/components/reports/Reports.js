@@ -175,7 +175,7 @@ class Reports extends Component {
     const {
       displayCreate,
       match: {
-        params: { reportClass },
+        params: { reportType },
       },
       objectId,
       authorId,
@@ -183,8 +183,8 @@ class Reports extends Component {
     const {
       view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
-    const reportFilterClass = reportClass !== 'all' && reportClass !== undefined
-      ? reportClass.replace(/_/g, ' ')
+    const reportFilterClass = reportType !== 'all' && reportType !== undefined
+      ? reportType.replace(/_/g, ' ')
       : '';
     const finalFilters = convertFilters(filters);
     if (reportFilterClass) {

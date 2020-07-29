@@ -478,8 +478,8 @@ const attackPatternId = (type, data) => {
 };
 const reportId = (type, data) => {
   // eslint-disable-next-line camelcase
-  const { name, created_by_ref, published } = data;
-  return uuid({ type, name, created_by_ref, published });
+  const { name, createdBy, published } = data;
+  return uuid({ type, name, createdBy, published });
 };
 const indicatorId = (type, data) => {
   return uuid({ type, pattern: data.indicator_pattern });

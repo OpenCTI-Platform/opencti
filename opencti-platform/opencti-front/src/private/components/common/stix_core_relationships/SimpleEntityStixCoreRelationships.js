@@ -115,7 +115,6 @@ SimpleEntityStixCoreRelationships.propTypes = {
   entityLink: PropTypes.string,
   relationship_type: PropTypes.string,
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,

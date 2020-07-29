@@ -5288,14 +5288,14 @@ type Query {
   reportsTimeSeries(
     objectId: String
     authorId: String
-    reportClass: String
+    reportType: String
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  reportsNumber(reportClass: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  reportsNumber(reportType: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   reportsDistribution(
     objectId: String
     field: String!

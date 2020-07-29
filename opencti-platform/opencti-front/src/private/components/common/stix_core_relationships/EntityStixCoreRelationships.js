@@ -43,7 +43,7 @@ class EntityStixCoreRelationships extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sortBy: 'first_seen',
+      sortBy: 'start_time',
       orderAsc: true,
       searchTerm: '',
       openToType: false,
@@ -103,12 +103,12 @@ class EntityStixCoreRelationships extends Component {
         isSortable: false,
       },
       start_time: {
-        label: 'First obs.',
+        label: 'Start time',
         width: '15%',
         isSortable: true,
       },
-      last_time: {
-        label: 'Last obs.',
+      stop_time: {
+        label: 'Stop time',
         width: '15%',
         isSortable: true,
       },
@@ -212,6 +212,35 @@ class EntityStixCoreRelationships extends Component {
                     )}
                   >
                     <MenuItem value="All">{t('All entities')}</MenuItem>
+                    {includes('Attack-Pattern', targetEntityTypes) ? (
+                      <MenuItem value="Attack-Pattern">
+                        {t('Attack pattern')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Campaign', targetEntityTypes) ? (
+                      <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Note', targetEntityTypes) ? (
+                      <MenuItem value="Note">{t('Note')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Observed-Data', targetEntityTypes) ? (
+                      <MenuItem value="Observed-Data">
+                        {t('Observed data')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Opinion', targetEntityTypes) ? (
+                      <MenuItem value="Opinion">{t('Opinion')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
                     {includes('Region', targetEntityTypes)
                     || includes('Identity', targetEntityTypes) ? (
                       <MenuItem value="Region">{t('Region')}</MenuItem>
@@ -265,11 +294,7 @@ class EntityStixCoreRelationships extends Component {
                     ) : (
                       ''
                     )}
-                    {includes('Campaign', targetEntityTypes) ? (
-                      <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
+
                     {includes('XOpenctiXOpenctiIncident', targetEntityTypes) ? (
                       <MenuItem value="XOpenctiXOpenctiIncident">
                         {t('XOpenctiXOpenctiIncident')}
@@ -291,18 +316,6 @@ class EntityStixCoreRelationships extends Component {
                       <MenuItem value="Vulnerability">
                         {t('Vulnerability')}
                       </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Attack-Pattern', targetEntityTypes) ? (
-                      <MenuItem value="Attack-Pattern">
-                        {t('Attack pattern')}
-                      </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Indicator', targetEntityTypes) ? (
-                      <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
                     ) : (
                       ''
                     )}
@@ -352,7 +365,6 @@ EntityStixCoreRelationships.propTypes = {
   entityLink: PropTypes.string,
   relationshipType: PropTypes.string,
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,

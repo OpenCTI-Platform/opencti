@@ -193,7 +193,7 @@ class StixDomainObjectKnowledge extends Component {
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <EntityStixCoreRelationshipsDonut
               entityId={stixDomainObjectId}
-              entityType="Stix-Domain-Entity"
+              entityType="Stix-Domain-Object"
               title={t('Distribution of relations (including inferred)')}
               field="entity_type"
               inferred={true}
@@ -212,7 +212,7 @@ class StixDomainObjectKnowledge extends Component {
             <SimpleEntityStixCoreRelationships
               entityId={stixDomainObjectId}
               relationship_type="related-to"
-              targetEntityTypes={['Stix-Domain-Entity']}
+              targetEntityTypes={['Stix-Domain-Object']}
               entityLink={link}
             />
           </Grid>

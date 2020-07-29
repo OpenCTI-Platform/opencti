@@ -78,7 +78,7 @@ export const reportsTimeSeriesByEntity = (args) => {
 
 export const reportsTimeSeriesByAuthor = async (args) => {
   const { authorId, reportClass } = args;
-  const filters = [{ isRelation: true, from: 'so', to: 'creator', type: RELATION_CREATED_BY, value: authorId }];
+  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
   if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
   return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
@@ -86,32 +86,23 @@ export const reportsTimeSeriesByAuthor = async (args) => {
 // TODO Migrate to ElasticSearch
 export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
-    $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
-      args.reportClass
-        ? `; 
-    $x has report_class "${escapeString(args.reportClass)}"`
-        : ''
-    } ${
-      args.endDate
-        ? `; 
-    $x has created_at $date;
-    $date < ${prepareDate(args.endDate)};`
-        : ''
-    }
+    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT}, has internal_id $from_id;
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $to has internal_id "${escapeString(args.objectId)}"; 
+    ${args.reportType ? `$to has report_types "${escapeString(args.reportType)};"` : ''}
+    ${args.endDate ? `$to has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
     get;
     count;`
   ),
   total: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
-    $rel(knowledge_aggregation:$x, so:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
-      args.reportClass
-        ? `; 
-    $x has report_class "${escapeString(args.reportClass)}"`
-        : ';'
-    }
+    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT}, has internal_id $from_id;
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $to has internal_id "${escapeString(args.objectId)}";
+    ${args.reportType ? `$x has report_class "${escapeString(args.reportType)};"` : ''}
     get;
     count;`
   ),

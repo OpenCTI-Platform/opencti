@@ -55,7 +55,7 @@ export const stixCyberObservablesNumber = (args) => ({
 // region time series
 export const reportsTimeSeries = (stixCyberObservableId, args) => {
   const filters = [
-    { isRelation: true, from: 'knowledge_aggregation', to: 'so', type: RELATION_OBJECT, value: stixCyberObservableId },
+    { isRelation: true, type: RELATION_OBJECT, value: stixCyberObservableId },
   ];
   return timeSeriesEntities('Report', filters, args);
 };

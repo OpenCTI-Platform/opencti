@@ -261,7 +261,6 @@ EntityStixSightingRelationships.propTypes = {
   targetEntityTypes: PropTypes.array,
   entityLink: PropTypes.string,
   classes: PropTypes.object,
-  reportClass: PropTypes.string,
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,
