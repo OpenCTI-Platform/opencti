@@ -71,7 +71,7 @@ class CampaignKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/campaigns/:campaignId/knowledge/xOpenctiIncidents"
+          path="/dashboard/threats/campaigns/:campaignId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={campaign.id}

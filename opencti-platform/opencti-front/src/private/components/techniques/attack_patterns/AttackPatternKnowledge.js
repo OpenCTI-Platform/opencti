@@ -80,7 +80,7 @@ class AttackPatternKnowledgeComponent extends Component {
 
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/xOpenctiIncidents"
+          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}

@@ -241,27 +241,21 @@ class EntityStixCoreRelationships extends Component {
                     ) : (
                       ''
                     )}
-                    {includes('Region', targetEntityTypes)
+                    {includes('Report', targetEntityTypes) ? (
+                      <MenuItem value="Report">{t('Report')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Course-Of-Action', targetEntityTypes) ? (
+                      <MenuItem value="Course-Of-Action">
+                        {t('Course of action')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('Individual', targetEntityTypes)
                     || includes('Identity', targetEntityTypes) ? (
-                      <MenuItem value="Region">{t('Region')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Country', targetEntityTypes)
-                    || includes('Identity', targetEntityTypes) ? (
-                      <MenuItem value="Country">{t('Country')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('City', targetEntityTypes)
-                    || includes('Identity', targetEntityTypes) ? (
-                      <MenuItem value="City">{t('City')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Sector', targetEntityTypes)
-                    || includes('Identity', targetEntityTypes) ? (
-                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                      <MenuItem value="Individual">{t('Individual')}</MenuItem>
                       ) : (
                         ''
                       )}
@@ -273,16 +267,22 @@ class EntityStixCoreRelationships extends Component {
                       ) : (
                         ''
                       )}
-                    {includes('User', targetEntityTypes)
+                    {includes('Sector', targetEntityTypes)
                     || includes('Identity', targetEntityTypes) ? (
-                      <MenuItem value="User">{t('Individual')}</MenuItem>
+                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Threat-Actor', targetEntityTypes)
-                    || includes('Identity', targetEntityTypes) ? (
-                      <MenuItem value="Threat-Actor">
-                        {t('Threat actor')}
+                    {includes('Indicator', targetEntityTypes)
+                    || includes('Indicator', targetEntityTypes) ? (
+                      <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Infrastructure', targetEntityTypes)
+                    || includes('Infrastructure', targetEntityTypes) ? (
+                      <MenuItem value="Infrastructure">
+                        {t('Infrastructure')}
                       </MenuItem>
                       ) : (
                         ''
@@ -294,16 +294,39 @@ class EntityStixCoreRelationships extends Component {
                     ) : (
                       ''
                     )}
-
-                    {includes('XOpenctiXOpenctiIncident', targetEntityTypes) ? (
-                      <MenuItem value="XOpenctiXOpenctiIncident">
-                        {t('XOpenctiXOpenctiIncident')}
-                      </MenuItem>
+                    {includes('City', targetEntityTypes)
+                    || includes('Location', targetEntityTypes) ? (
+                      <MenuItem value="City">{t('City')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Country', targetEntityTypes)
+                    || includes('Location', targetEntityTypes) ? (
+                      <MenuItem value="Country">{t('Country')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Region', targetEntityTypes)
+                    || includes('Location', targetEntityTypes) ? (
+                      <MenuItem value="Region">{t('Region')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Position', targetEntityTypes)
+                    || includes('Position', targetEntityTypes) ? (
+                      <MenuItem value="Position">{t('Position')}</MenuItem>
+                      ) : (
+                        ''
+                      )}
+                    {includes('Malware', targetEntityTypes) ? (
+                      <MenuItem value="Malware">{t('Malware')}</MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Malware', targetEntityTypes) ? (
-                      <MenuItem value="Malware">{t('Malware')}</MenuItem>
+                    {includes('Threat-Actor', targetEntityTypes) ? (
+                      <MenuItem value="Threat-Actor">
+                        {t('Threat actor')}
+                      </MenuItem>
                     ) : (
                       ''
                     )}
@@ -315,6 +338,13 @@ class EntityStixCoreRelationships extends Component {
                     {includes('Vulnerability', targetEntityTypes) ? (
                       <MenuItem value="Vulnerability">
                         {t('Vulnerability')}
+                      </MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {includes('X-Opencti-Incident', targetEntityTypes) ? (
+                      <MenuItem value="X-Opencti-Incident">
+                        {t('Incident')}
                       </MenuItem>
                     ) : (
                       ''

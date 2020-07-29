@@ -123,10 +123,10 @@ class ThreatActorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/xOpenctiIncidents`}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/xOpenctiIncidents`
+              === `/dashboard/threats/threat_actors/${threatActorId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -135,7 +135,7 @@ class ThreatActorKnowledgeBar extends Component {
               <Fire />
             </ListItemIcon>
             <ListItemText
-              primary={t('XOpenctiIncidents')}
+              primary={t('Incidents')}
               secondary={t('Attributed to this actor')}
             />
           </MenuItem>

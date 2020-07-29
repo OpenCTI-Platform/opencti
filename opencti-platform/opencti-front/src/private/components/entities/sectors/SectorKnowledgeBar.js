@@ -120,10 +120,10 @@ class SectorKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/entities/sectors/${sectorId}/knowledge/xOpenctiIncidents`}
+            to={`/dashboard/entities/sectors/${sectorId}/knowledge/incidents`}
             selected={
               location.pathname
-              === `/dashboard/entities/sectors/${sectorId}/knowledge/xOpenctiIncidents`
+              === `/dashboard/entities/sectors/${sectorId}/knowledge/incidents`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -132,7 +132,7 @@ class SectorKnowledgeBar extends Component {
               <Fire />
             </ListItemIcon>
             <ListItemText
-              primary={t('XOpenctiIncidents')}
+              primary={t('Incidents')}
               secondary={t('Affecting this sector')}
             />
           </MenuItem>

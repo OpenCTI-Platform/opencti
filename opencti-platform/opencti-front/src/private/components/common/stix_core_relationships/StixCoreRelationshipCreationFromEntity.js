@@ -264,14 +264,14 @@ const stixCoreRelationshipCreationFromEntityMutation = graphql`
 
 const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
-  weight: Yup.number()
+  confidence: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
-  first_seen: Yup.date()
+  start_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  last_seen: Yup.date()
+  stop_time: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   description: Yup.string(),
@@ -513,10 +513,9 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         : '';
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      weight: 1,
-      role_played: '',
-      first_seen: dayStartDate(),
-      last_seen: dayStartDate(),
+      confidence: 1,
+      start_time: dayStartDate(),
+      stop_time: dayStartDate(),
       description: '',
       killChainPhases: [],
       objectMarking: [],
@@ -814,11 +813,11 @@ class StixCoreRelationshipCreationFromEntity extends Component {
             query={stixCoreRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
-              if (props && props.stixEntity) {
+              if (props && props.stixDomainObject) {
                 return (
                   <div style={{ height: '100%' }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1 ? this.renderForm(props.stixEntity) : ''}
+                    {step === 1 ? this.renderForm(props.stixDomainObject) : ''}
                   </div>
                 );
               }

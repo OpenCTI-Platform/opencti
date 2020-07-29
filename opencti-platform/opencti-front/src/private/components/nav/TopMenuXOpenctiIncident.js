@@ -58,7 +58,7 @@ class TopMenuXOpenctiIncident extends Component {
           classes={{ root: classes.buttonHome }}
         >
           <Fire className={classes.icon} fontSize="small" />
-          {t('XOpenctiIncidents')}
+          {t('Incidents')}
         </Button>
         <ArrowForwardIosOutlined
           color="inherit"

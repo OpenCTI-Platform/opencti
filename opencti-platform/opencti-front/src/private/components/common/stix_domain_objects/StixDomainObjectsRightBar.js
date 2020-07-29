@@ -192,7 +192,7 @@ class StixDomainObjectsRightBar extends Component {
               disableRipple={true}
               size="small"
             />
-            <ListItemText primary={t('XOpenctiIncidents')} />
+            <ListItemText primary={t('Incidents')} />
           </ListItem>
           <ListItem
             dense={true}
