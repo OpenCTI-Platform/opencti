@@ -61,7 +61,7 @@ class CreatedByField extends Component {
         event && event.target.value !== 0 ? event.target.value : '',
     });
     fetchQuery(identityCreationIdentitiesSearchQuery, {
-      types: ['User', 'Organization'],
+      types: ['Individual', 'Organization'],
       search: event && event.target.value !== 0 ? event.target.value : '',
       first: 10,
     }).then((data) => {

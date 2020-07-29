@@ -6,6 +6,7 @@ import {
   findWithConnectedRelations,
   internalLoadEntityById,
   listEntities,
+  loadEntityById,
   loadWithConnectedRelations,
 } from '../database/grakn';
 import { findAll as relationFindAll } from './stixCoreRelationship';
@@ -38,41 +39,22 @@ export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
   const entityTypes = noTypes ? [ABSTRACT_STIX_CORE_OBJECT] : args.types;
   const finalArgs = assoc('parentType', ABSTRACT_STIX_CORE_OBJECT, args);
-  let data = await listEntities(entityTypes, ['name', 'aliases'], finalArgs);
-  data = assoc(
-    'edges',
-    map(
-      (n) => ({
-        cursor: n.cursor,
-        node: pipe(dissoc('user_email'), dissoc('password'))(n.node),
-        relation: n.relation,
-      }),
-      data.edges
-    ),
-    data
-  );
-  return data;
+  return listEntities(entityTypes, ['name', 'aliases'], finalArgs);
 };
 
-export const findById = async (stixCoreObjectId) => {
-  let data = await internalLoadEntityById(stixCoreObjectId);
-  if (!data) return data;
-  if (!isStixCoreObject(data.type)) throw ForbiddenAccess();
-  data = pipe(dissoc('user_email'), dissoc('password'))(data);
-  return data;
-};
+export const findById = async (stixCoreObjectId) => loadEntityById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
 export const createdBy = (stixCoreObjectId) => {
   return loadWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_IDENTITY}; 
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to: $to) isa ${RELATION_CREATED_BY};
+    `match $to isa ${ENTITY_TYPE_IDENTITY}, has internal_id $to_id;
+    $rel(${RELATION_CREATED_BY}_from:$from, ${RELATION_CREATED_BY}_to: $to) isa ${RELATION_CREATED_BY}, has internal_id $rel_id;
     $from has internal_id $rel_from_id;
     $to has internal_id $rel_to_id;
     $from has internal_id "${escapeString(stixCoreObjectId)}"; 
     get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
-  );
+  ).then((data) => (data ? data.node : null));
 };
 
 export const reports = (stixCoreObjectId) => {

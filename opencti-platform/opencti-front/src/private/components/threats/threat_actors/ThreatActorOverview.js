@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, map } from 'ramda';
+import { compose, propOr, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -72,7 +72,7 @@ class ThreatActorOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], threatActor)}
+            createdBy={propOr(null, 'createdBy', threatActor)}
           />
           <Typography
             variant="h3"

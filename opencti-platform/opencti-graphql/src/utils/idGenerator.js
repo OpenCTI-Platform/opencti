@@ -672,6 +672,5 @@ export const getParentTypes = (type) => {
       return parentTypes;
     }
   }
-  console.log(`Type ${type} not supported`);
   throw DatabaseError(`Type ${type} not supported`);
 };

@@ -50,6 +50,7 @@ import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
 import typeDefs from '../../config/schema/opencti.graphql';
+import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 
 const createSchema = () => {
   const globalResolvers = {
@@ -119,6 +120,7 @@ const createSchema = () => {
     // STIX CYBER OBSERVABLE RELATIONSHIPS
     stixCyberObservableRelationResolvers,
     // ALL
+    organizationOrIndividualResolvers,
     stixObjectOrStixRelationshipResolvers,
   ]);
 

@@ -69,15 +69,15 @@ export const stixCoreRelationshipsNumber = (args) => {
 
 export const createdBy = (stixCoreRelationshipId) => {
   return loadWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_IDENTITY}; 
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to: $to) isa ${RELATION_CREATED_BY};
+    `match $to isa ${ENTITY_TYPE_IDENTITY}, has internal_id $to_id; 
+    $rel(${RELATION_CREATED_BY}_from:$from, ${RELATION_CREATED_BY}_to: $to) isa ${RELATION_CREATED_BY}, has internal_id $rel_id;
     $from has internal_id $rel_from_id;
     $to has internal_id $rel_to_id;
     $from has internal_id "${escapeString(stixCoreRelationshipId)}"; 
     get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
-  );
+  ).then((data) => data.node);
 };
 
 export const reports = (stixCoreRelationshipId) => {

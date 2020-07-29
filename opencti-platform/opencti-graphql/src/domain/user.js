@@ -272,7 +272,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     assoc('external', newUser.external ? newUser.external : false),
     dissoc('roles')
   )(newUser);
-  const userOptions = { noLog: newUser.name === 'admin' };
+  const userOptions = { noLog: true };
   const userCreated = await createEntity(user, userToCreate, ENTITY_TYPE_USER, userOptions);
   // Create token and link it to the user
   const tokenOptions = { noLog: true };

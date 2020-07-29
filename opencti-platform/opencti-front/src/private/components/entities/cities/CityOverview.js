@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -50,7 +50,7 @@ class CityOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor createdBy={pathOr(null, ['createdBy', 'node'], city)} />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', city)} />
           <Typography
             variant="h3"
             gutterBottom={true}

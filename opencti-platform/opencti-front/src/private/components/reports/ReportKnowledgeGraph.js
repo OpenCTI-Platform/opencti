@@ -13,6 +13,7 @@ import {
   includes,
   indexBy,
   prop,
+  propOr,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -877,7 +878,7 @@ class ReportKnowledgeGraphComponent extends Component {
           reportId={report.id}
           reportObjects={report.objects.edges}
           knowledgeGraph={true}
-          defaultCreatedBy={pathOr(null, ['createdBy', 'node'], report)}
+          defaultCreatedBy={propOr(null, 'createdBy', report)}
           defaultMarkingDefinition={
             pathOr([], ['markingDefinitions', 'edges'], report).length > 0
               ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node
@@ -893,7 +894,7 @@ class ReportKnowledgeGraphComponent extends Component {
           weight={report.confidence}
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
-          defaultCreatedBy={pathOr(null, ['createdBy', 'node'], report)}
+          defaultCreatedBy={propOr(null, 'createdBy', report)}
           defaultMarkingDefinition={
             pathOr([], ['markingDefinitions', 'edges'], report).length > 0
               ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -58,7 +58,7 @@ class StixCyberObservableOverviewComponent extends Component {
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdBy={pathOr(null, ['createdBy', 'node'], stixCyberObservable)}
+            createdBy={propOr(null, 'createdBy', stixCyberObservable)}
           />
         </Paper>
       </div>

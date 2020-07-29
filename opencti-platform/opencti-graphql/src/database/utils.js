@@ -165,7 +165,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   }
   if (isStixCoreRelationship(eventData.entity_type)) {
     message += `relation \`${eventData.entity_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
-  } else if (isInternalRelationship(eventData.entity_type)) {
+  } else if (isStixMetaRelationship(eventData.entity_type)) {
     if (eventType === 'update') {
       message += `\`${eventData.entity_type}\` with the value \`${toValue}\`.`;
     } else if (toType === 'stix_relation') {

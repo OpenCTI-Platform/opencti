@@ -1057,11 +1057,13 @@ define
 
   Individual sub Identity,
     has x_opencti_firstname,
-    has x_opencti_lastname;
+    has x_opencti_lastname,
+    plays created-by_to;
 
   Organization sub Identity,
     has x_opencti_organization_type,
     has x_opencti_reliability,
+    plays created-by_to,
     plays part-of_to;
 
   Sector sub Identity,

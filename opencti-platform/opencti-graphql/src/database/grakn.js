@@ -1467,6 +1467,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     assoc('inferred', false),
     // Types
     assoc('entity_type', relationshipType),
+    assoc('parent_types', getParentTypes(relationshipType)),
     assoc('base_type', BASE_TYPE_RELATION)
   )(relationAttributes);
   const postOperations = [];
@@ -1732,7 +1733,11 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     if (lock) await lock.unlock();
   }
   // Transaction succeed, complete the result to send it back
-  const completedData = pipe(assoc('id', internalId), assoc('base_type', BASE_TYPE_ENTITY))(data);
+  const completedData = pipe(
+    assoc('id', internalId),
+    assoc('base_type', BASE_TYPE_ENTITY),
+    assoc('parent_types', getParentTypes(type))
+  )(data);
   // Transaction succeed, index the result
   try {
     await elIndexElements([completedData]);
@@ -1951,10 +1956,11 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   await deleteElementById(relationId, true, options);
   // Send the log if everything fine
   if (!noLog) {
-    const [from, to] = await Promise.all([elLoadById(relation.fromId), elLoadById(relation.toId)]);
+    const from = await elLoadById(relation.fromId);
+    const to = await elLoadById(relation.toId);
     if (isStixMetaRelationship(relation.entity_type)) {
       if (relation.entity_type === RELATION_CREATED_BY) {
-        await sendLog(EVENT_TYPE_UPDATE, user, relation, { from });
+        await sendLog(EVENT_TYPE_UPDATE, user, relation, { from, to });
       } else {
         await sendLog(EVENT_TYPE_UPDATE_REMOVE, user, relation, { from, to });
       }
