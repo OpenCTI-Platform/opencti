@@ -3925,8 +3925,29 @@ interface StixCyberObservable {
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
-  indicators: IndicatorConnection
   observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # Technical
   creator: User
   toStix: String
@@ -3974,8 +3995,29 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
-  indicators: IndicatorConnection
   observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # AutonomousSystem
   number: Int
   name: String
@@ -4041,6 +4083,27 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # Directory
   path: String
   path_enc: String
@@ -4110,6 +4173,27 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # DomainName
   value: String
   # Technical
@@ -4171,6 +4255,27 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # EmailAddr
   value: String
   display_name: String
@@ -4234,6 +4339,27 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # EmailMessage
   is_multipart: Boolean
   attribute_date: DateTime
@@ -4265,7 +4391,7 @@ input EmailMessageAddInput {
   modified: DateTime
   clientMutationId: String
 }
-############## HashedObservables
+############## HashedObservable
 interface HashedObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -4308,7 +4434,28 @@ interface HashedObservable {
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
-  # HashedObservables
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # HashedObservable
   md5: String
   sha1: String
   sha256: String
@@ -4320,7 +4467,1395 @@ interface HashedObservable {
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-
+type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # HashedObservable
+  md5: String
+  sha1: String
+  sha256: String
+  sha512: String
+  # Artifact
+  mime_type: String
+  payload_bin: String
+  url: String
+  encryption_algorithm: String
+  decryption_key: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input ArtifactAddInput {
+  stix_id: String
+  mime_type: String
+  payload_bin: String
+  url: String
+  encryption_algorithm: String
+  decryption_key: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # HashedObservable
+  md5: String
+  sha1: String
+  sha256: String
+  sha512: String
+  # File
+  extensions: String
+  size: String
+  name: String
+  name_enc: String
+  magic_number_hex: String
+  mime_type: String
+  ctime: DateTime
+  mtime: DateTime
+  atime: DateTime
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input StixFileAddInput {
+  stix_id: String
+  extensions: String
+  size: String
+  name: String
+  name_enc: String
+  magic_number_hex: String
+  mime_type: String
+  ctime: DateTime
+  mtime: DateTime
+  atime: DateTime
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # HashedObservable
+  md5: String
+  sha1: String
+  sha256: String
+  sha512: String
+  # X509Certificate
+  is_self_signed: Boolean
+  version: String
+  serial_number: String
+  signature_algorithm: String
+  issuer: String
+  validity_not_before: DateTime
+  validity_not_after: DateTime
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input X509CertificateAddInput {
+  stix_id: String
+  is_self_signed: Boolean
+  version: String
+  serial_number: String
+  signature_algorithm: String
+  issuer: String
+  validity_not_before: DateTime
+  validity_not_after: DateTime
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # IPv4Addr
+  value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input IPv4AddrAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # IPv4Addr
+  value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input IPv6AddrAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # MacAddr
+  value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input MacAddrAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # Mutex
+  name: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input MutexAddInput {
+  stix_id: String
+  name: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # NetworkTraffic
+  extensions: String
+  start: DateTime
+  end: DateTime
+  is_active: Boolean
+  src_port: Int
+  dst_port: Int
+  protocols: [String]
+  src_byte_count: Int
+  dst_byte_count: Int
+  src_packets: Int
+  dst_packets: Int
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input NetworkTrafficAddInput {
+  stix_id: String
+  extensions: String
+  start: DateTime
+  end: DateTime
+  is_active: Boolean
+  src_port: Int
+  dst_port: Int
+  protocols: [String]
+  src_byte_count: Int
+  dst_byte_count: Int
+  src_packets: Int
+  dst_packets: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # Process
+  extensions: [String]
+  is_hidden: Boolean
+  pid: Int
+  created_time: DateTime
+  cwd: String
+  command_line: String
+  environment_variables: [String]
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input ProcessAddInput {
+  stix_id: String
+  extensions: [String]
+  is_hidden: Boolean
+  pid: Int
+  created_time: DateTime
+  cwd: String
+  command_line: String
+  environment_variables: [String]
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # Software
+  name: String
+  cpe: String
+  swid: String
+  languages: [String]
+  vendor: String
+  version: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input SoftwareAddInput {
+  stix_id: String
+  name: String
+  cpe: String
+  swid: String
+  languages: [String]
+  vendor: String
+  version: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # Url
+  value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input UrlAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # UserAccount
+  extensions: [String]
+  user_id: String
+  credential: String
+  account_login: String
+  account_type: String
+  display_name: String
+  is_service_account: Boolean
+  is_privileged: Boolean
+  can_escalate_privs: Boolean
+  is_disabled: Boolean
+  account_created: DateTime
+  account_expires: DateTime
+  credential_last_changed: DateTime
+  account_first_login: DateTime
+  account_last_login: DateTime
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input UserAccountAddInput {
+  stix_id: String
+  extensions: [String]
+  user_id: String
+  credential: String
+  account_login: String
+  account_type: String
+  display_name: String
+  is_service_account: Boolean
+  is_privileged: Boolean
+  can_escalate_privs: Boolean
+  is_disabled: Boolean
+  account_created: DateTime
+  account_expires: DateTime
+  credential_last_changed: DateTime
+  account_first_login: DateTime
+  account_last_login: DateTime
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # WindowsRegistryKey
+  attribute_key: String
+  modified_time: DateTime
+  number_of_subkeys: Int
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input WindowsRegistryKeyAddInput {
+  stix_id: String
+  attribute_key: String
+  modified_time: DateTime
+  number_of_subkeys: Int
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # WindowsRegistryKey
+  name: String
+  data: String
+  data_type: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input WindowsRegistryValueTypeAddInput {
+  stix_id: String
+  name: String
+  data: String
+  data_type: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # X509V3ExtensionsType
+  basic_constraints: String
+  name_constraints: String
+  policy_constraints: String
+  key_usage: String
+  extended_key_usage: String
+  subject_key_identifier: String
+  authority_key_identifier: String
+  subject_alternative_name: String
+  issuer_alternative_name: String
+  subject_directory_attributes: String
+  crl_distribution_points: String
+  inhibit_any_policy: String
+  private_key_usage_period_not_before: DateTime
+  private_key_usage_period_not_after: DateTime
+  certificate_policies: String
+  policy_mappings: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input X509V3ExtensionsTypeAddInput {
+  stix_id: String
+  basic_constraints: String
+  name_constraints: String
+  policy_constraints: String
+  key_usage: String
+  extended_key_usage: String
+  subject_key_identifier: String
+  authority_key_identifier: String
+  subject_alternative_name: String
+  issuer_alternative_name: String
+  subject_directory_attributes: String
+  crl_distribution_points: String
+  inhibit_any_policy: String
+  private_key_usage_period_not_before: DateTime
+  private_key_usage_period_not_after: DateTime
+  certificate_policies: String
+  policy_mappings: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
 type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -4363,7 +5898,28 @@ type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObje
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
-  # CryptographicKey
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # XOpenctiCryptographicKey
   value: String
   # Technical
   creator: User
@@ -4424,7 +5980,28 @@ type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCore
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
-  # CryptocyrrencyWallet
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # XOpenctiCryptocurrencyWallet
   value: String
   # Technical
   creator: User
@@ -4485,6 +6062,27 @@ type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCyb
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # XOpenctiText
   value: String
   # Technical
@@ -4546,6 +6144,27 @@ type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & St
   # StixCyberObservable
   observable_value: String!
   indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
   # XOpenctiUserAgent
   value: String
   # Technical

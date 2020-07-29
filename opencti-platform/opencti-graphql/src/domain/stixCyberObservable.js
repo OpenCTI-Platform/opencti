@@ -1,4 +1,4 @@
-import { assoc, dissoc, invertObj, map, pipe, propOr } from 'ramda';
+import { assoc, dissoc, invertObj, map, pipe, propOr, filter } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -39,10 +39,14 @@ export const findById = (stixCyberObservableId) => {
 };
 
 export const findAll = async (args) => {
-  const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? [ABSTRACT_STIX_CYBER_OBSERVABLE] : args.types;
-  const finalArgs = assoc('parentType', ABSTRACT_STIX_CYBER_OBSERVABLE, args);
-  return listEntities(entityTypes, ['standard_id'], finalArgs);
+  let types = [];
+  if (args.types && args.types.length > 0) {
+    types = filter((type) => isStixCyberObservable(type), args.types);
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
+  }
+  return listEntities(types, ['standard_id'], args);
 };
 
 // region by elastic
@@ -54,9 +58,7 @@ export const stixCyberObservablesNumber = (args) => ({
 
 // region time series
 export const reportsTimeSeries = (stixCyberObservableId, args) => {
-  const filters = [
-    { isRelation: true, type: RELATION_OBJECT, value: stixCyberObservableId },
-  ];
+  const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixCyberObservableId }];
   return timeSeriesEntities('Report', filters, args);
 };
 

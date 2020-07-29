@@ -1,4 +1,4 @@
-import { assoc, dissoc, map, pipe } from 'ramda';
+import { assoc, dissoc, filter, forEach, map, pipe } from 'ramda';
 import {
   createRelation,
   deleteRelationById,
@@ -36,10 +36,14 @@ import {
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
-  const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? [ABSTRACT_STIX_CORE_OBJECT] : args.types;
-  const finalArgs = assoc('parentType', ABSTRACT_STIX_CORE_OBJECT, args);
-  return listEntities(entityTypes, ['name', 'aliases'], finalArgs);
+  let types = [];
+  if (args.types && args.types.length > 0) {
+    types = filter((type) => isStixCoreObject(type), args.types);
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_OBJECT);
+  }
+  return listEntities(types, ['standard_id'], args);
 };
 
 export const findById = async (stixCoreObjectId) => loadEntityById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);

@@ -16,13 +16,12 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { buildPagination, INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import {
   isStixId,
   isInternalId,
-  isStixCoreRelationship,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_IDENTITY,
@@ -40,23 +39,22 @@ import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   isStixMetaRelationship,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
-  return listRelations(propOr('stix_relation', 'relationship_type', args), args);
+  return listRelations(propOr('stix-core-relationship', 'relationship_type', args), args);
 };
 
 export const findById = (stixCoreRelationshipId) => {
   if (!isStixId(stixCoreRelationshipId) && !isInternalId(stixCoreRelationshipId)) {
     return getRelationInferredById(stixCoreRelationshipId);
   }
-  return loadRelationById(stixCoreRelationshipId, 'stix_relation');
+  return loadRelationById(stixCoreRelationshipId, 'stix-core-relationship');
 };
 
 export const stixCoreRelationshipsNumber = (args) => {
   let finalArgs;
-  if (args.type && args.type !== 'stix_relation' && args.type !== 'stix_relation_embedded') {
+  if (args.type && args.type !== 'stix-relation' && args.type !== 'stix_relation_embedded') {
     finalArgs = assoc('relationshipType', args.type, args);
   } else {
     finalArgs = args.type ? assoc('types', [args.type], args) : assoc('types', ['stix_relation'], args);

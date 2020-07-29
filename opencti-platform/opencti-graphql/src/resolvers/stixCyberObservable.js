@@ -56,6 +56,13 @@ const stixCyberObservableResolvers = {
     objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
   StixCyberObservable: {
+    // eslint-disable-next-line no-underscore-dangle
+    __resolveType(obj) {
+      if (obj.entity_type) {
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+      }
+      return 'Unknown';
+    },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
     indicators: (stixCyberObservable) => indicators(stixCyberObservable.id),
     jobs: (stixCyberObservable, args) => workForEntity(stixCyberObservable.id, args),

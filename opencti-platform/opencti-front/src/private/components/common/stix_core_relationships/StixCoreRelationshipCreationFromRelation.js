@@ -595,10 +595,9 @@ class StixCoreRelationshipCreationFromRelation extends Component {
         : '';
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      weight: 1,
-      role_played: '',
-      first_seen: dayStartDate(),
-      last_seen: dayStartDate(),
+      confidence: 20,
+      start_time: dayStartDate(),
+      stop_time: dayStartDate(),
       description: '',
       killChainPhases: [],
       objectMarking: [],
@@ -761,10 +760,11 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                 fullWidth={true}
                 containerstyle={{ marginTop: 20, width: '100%' }}
               >
-                <MenuItem value={1}>{t('Low')}</MenuItem>
-                <MenuItem value={2}>{t('Moderate')}</MenuItem>
-                <MenuItem value={3}>{t('Good')}</MenuItem>
-                <MenuItem value={4}>{t('Strong')}</MenuItem>
+                <MenuItem value={0}>{t('None')}</MenuItem>
+                <MenuItem value={20}>{t('Low')}</MenuItem>
+                <MenuItem value={40}>{t('Moderate')}</MenuItem>
+                <MenuItem value={60}>{t('Good')}</MenuItem>
+                <MenuItem value={80}>{t('Strong')}</MenuItem>
               </Field>
               <Field
                 component={DatePickerField}

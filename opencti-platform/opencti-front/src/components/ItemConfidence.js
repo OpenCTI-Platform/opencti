@@ -65,7 +65,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (confidence >= 85) {
+    if (confidence >= 80) {
       return (
         <Chip
           classes={{ root: style }}
@@ -74,7 +74,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (confidence >= 75) {
+    if (confidence >= 60) {
       return (
         <Chip
           classes={{ root: style }}
@@ -83,7 +83,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (confidence >= 50) {
+    if (confidence >= 40) {
       return (
         <Chip
           classes={{ root: style }}
@@ -92,7 +92,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (confidence >= 15) {
+    if (confidence >= 20) {
       return (
         <Chip
           classes={{ root: style }}
@@ -105,7 +105,7 @@ class ItemConfidence extends Component {
       <Chip
         classes={{ root: style }}
         style={inlineStyles.blue}
-        label={t('Moderate')}
+        label={t('None')}
       />
     );
   }
