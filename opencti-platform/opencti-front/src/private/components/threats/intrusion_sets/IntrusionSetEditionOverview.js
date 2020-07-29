@@ -224,11 +224,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], intrusionSet),
         value: pathOr(null, ['createdBy', 'id'], intrusionSet),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          intrusionSet,
-        ),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -238,7 +233,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
         relationId: n.relation.id,
       })),
     )(intrusionSet);
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -248,13 +243,13 @@ class IntrusionSetEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(intrusionSet);
     return (

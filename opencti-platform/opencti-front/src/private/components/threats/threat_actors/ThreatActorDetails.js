@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, join } from 'ramda';
+import { compose, join, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -24,6 +24,12 @@ const styles = () => ({
 class ThreatActorDetailsComponent extends Component {
   render() {
     const { t, classes, threatActor } = this.props;
+    const secondaryMotivations = threatActor.secondary_motivations
+      ? map(
+        (secondaryMotivation) => t(`motivation_${secondaryMotivation}`),
+        threatActor.secondary_motivations,
+      )
+      : [];
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -91,13 +97,10 @@ class ThreatActorDetailsComponent extends Component {
           >
             {t('Secondary motivations')}
           </Typography>
-          {t(
-            `${
-              threatActor.secondary_motivations
-                ? `motivation_${threatActor.secondary_motivations}`
-                : 'motivation_unknown'
-            }`,
-          )}
+          <Markdown
+            className="markdown"
+            source={`+ ${join('\n\n+ ', secondaryMotivations)}`}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}

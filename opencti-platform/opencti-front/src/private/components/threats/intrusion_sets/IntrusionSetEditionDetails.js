@@ -87,6 +87,12 @@ class IntrusionSetEditionDetailsComponent extends Component {
     const initialValues = pipe(
       assoc('first_seen', dateFormat(intrusionSet.first_seen)),
       assoc('last_seen', dateFormat(intrusionSet.last_seen)),
+      assoc(
+        'secondary_motivations',
+        intrusionSet.secondary_motivations
+          ? intrusionSet.secondary_motivations
+          : [],
+      ),
       pick([
         'first_seen',
         'last_seen',
@@ -221,16 +227,17 @@ class IntrusionSetEditionDetailsComponent extends Component {
             </Field>
             <Field
               component={SelectField}
-              name="secondary_motivation"
+              name="secondary_motivations"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              label={t('Secondary motivation')}
+              label={t('Secondary motivations')}
               fullWidth={true}
+              multiple={true}
               containerstyle={{ width: '100%', marginTop: 20 }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="secondary_motivation"
+                  fieldName="secondary_motivations"
                 />
               }
             >

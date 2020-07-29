@@ -143,7 +143,6 @@ class CampaignEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], campaign),
       value: pathOr(null, ['createdBy', 'id'], campaign),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], campaign),
     };
 
     if (currentCreatedBy.value === null) {
@@ -162,7 +161,8 @@ class CampaignEditionOverviewComponent extends Component {
         mutation: campaignMutationRelationDelete,
         variables: {
           id: this.props.campaign.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -225,17 +225,8 @@ class CampaignEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], campaign),
         value: pathOr(null, ['createdBy', 'id'], campaign),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], campaign),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(campaign);
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -244,15 +235,8 @@ class CampaignEditionOverviewComponent extends Component {
     )(campaign);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'name',
-        'description',
-        'createdBy',
-        'killChainPhases',
-        'markingDefinitions',
-      ]),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(campaign);
     return (
       <Formik

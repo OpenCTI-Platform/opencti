@@ -143,7 +143,6 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], xOpenctiIncident),
       value: pathOr(null, ['createdBy', 'id'], xOpenctiIncident),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], xOpenctiIncident),
     };
 
     if (currentCreatedBy.value === null) {
@@ -162,7 +161,8 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
         mutation: xOpenctiIncidentMutationRelationDelete,
         variables: {
           id: this.props.xOpenctiIncident.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -225,21 +225,15 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], xOpenctiIncident),
         value: pathOr(null, ['createdBy', 'id'], xOpenctiIncident),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          xOpenctiIncident,
-        ),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(xOpenctiIncident);
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -249,13 +243,13 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(xOpenctiIncident);
     return (

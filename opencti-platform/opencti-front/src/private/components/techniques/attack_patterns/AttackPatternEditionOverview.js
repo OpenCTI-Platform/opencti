@@ -188,7 +188,6 @@ class AttackPatternEditionOverviewComponent extends Component {
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
 
@@ -201,10 +200,8 @@ class AttackPatternEditionOverviewComponent extends Component {
         variables: {
           id: this.props.attackPattern.id,
           input: {
-            fromRole: 'phase_belonging',
             toId: head(added).value,
-            toRole: 'kill_chain_phase',
-            through: 'kill_chain_phases',
+            relationship_type: 'kill-chain-phase',
           },
         },
       });
@@ -269,18 +266,12 @@ class AttackPatternEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], attackPattern),
         value: pathOr(null, ['createdBy', 'id'], attackPattern),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          attackPattern,
-        ),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
     const markingDefinitions = pipe(
@@ -299,7 +290,7 @@ class AttackPatternEditionOverviewComponent extends Component {
         'description',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(attackPattern);
     return (
