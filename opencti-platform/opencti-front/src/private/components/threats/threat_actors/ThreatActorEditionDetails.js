@@ -4,7 +4,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
-import { compose, pick } from 'ramda';
+import {
+  compose, pipe, split, assoc, join, pick,
+} from 'ramda';
 import * as Yup from 'yup';
 import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
@@ -69,7 +71,8 @@ const threatActorValidation = (t) => Yup.object().shape({
   resource_level: Yup.string().required(t('This field is required')),
   primary_motivation: Yup.string().required(t('This field is required')),
   secondary_motivations: Yup.array().required(t('This field is required')),
-  goals: Yup.array(),
+  personal_motivations: Yup.array().required(t('This field is required')),
+  goals: Yup.string(),
 });
 
 class ThreatActorEditionDetailsComponent extends Component {
@@ -86,6 +89,10 @@ class ThreatActorEditionDetailsComponent extends Component {
   }
 
   handleSubmitField(name, value) {
+    let finalValue = value;
+    if (name === 'goals') {
+      finalValue = split('\n', value);
+    }
     threatActorValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -93,7 +100,7 @@ class ThreatActorEditionDetailsComponent extends Component {
           mutation: threatActorMutationFieldPatch,
           variables: {
             id: this.props.threatActor.id,
-            input: { key: name, value },
+            input: { key: name, value: finalValue },
           },
         });
       })
@@ -102,18 +109,27 @@ class ThreatActorEditionDetailsComponent extends Component {
 
   render() {
     const { t, threatActor, context } = this.props;
-    const initialValues = pick(
-      [
+    const initialValues = pipe(
+      assoc(
+        'secondary_motivations',
+        threatActor.secondary_motivations
+          ? threatActor.secondary_motivations
+          : [],
+      ),
+      assoc(
+        'personal_motivations',
+        threatActor.personal_motivations ? threatActor.personal_motivations : [],
+      ),
+      assoc('goals', join('\n', threatActor.goals ? threatActor.goals : [])),
+      pick([
         'sophistication',
         'resource_level',
         'primary_motivation',
         'secondary_motivations',
         'personal_motivations',
         'goals',
-      ],
-      threatActor,
-    );
-
+      ]),
+    )(threatActor);
     return (
       <div>
         <Formik
@@ -311,20 +327,20 @@ class ThreatActorEditionDetailsComponent extends Component {
                   </MenuItem>
                 </Field>
                 <Field
-                    component={SelectField}
-                    name="personal_motivations"
-                    onFocus={this.handleChangeFocus.bind(this)}
-                    onChange={this.handleSubmitField.bind(this)}
-                    label={t('Personal motivations')}
-                    fullWidth={true}
-                    multiple={true}
-                    containerstyle={{ width: '100%', marginTop: 20 }}
-                    helpertext={
-                      <SubscriptionFocus
-                          context={context}
-                          fieldName="personal_motivations"
-                      />
-                    }
+                  component={SelectField}
+                  name="personal_motivations"
+                  onFocus={this.handleChangeFocus.bind(this)}
+                  onChange={this.handleSubmitField.bind(this)}
+                  label={t('Personal motivations')}
+                  fullWidth={true}
+                  multiple={true}
+                  containerstyle={{ width: '100%', marginTop: 20 }}
+                  helpertext={
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="personal_motivations"
+                    />
+                  }
                 >
                   <MenuItem key="none" value="">
                     {t('None')}
@@ -345,8 +361,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                     {t('motivation_notoriety')}
                   </MenuItem>
                   <MenuItem
-                      key="organizational-gain"
-                      value="organizational-gain"
+                    key="organizational-gain"
+                    value="organizational-gain"
                   >
                     {t('motivation_organizational-gain')}
                   </MenuItem>
@@ -354,8 +370,8 @@ class ThreatActorEditionDetailsComponent extends Component {
                     {t('motivation_individualal-gain')}
                   </MenuItem>
                   <MenuItem
-                      key="individualal-satisfaction"
-                      value="individualal-satisfaction"
+                    key="individualal-satisfaction"
+                    value="individualal-satisfaction"
                   >
                     {t('motivation_individualal-satisfaction')}
                   </MenuItem>
@@ -407,6 +423,7 @@ const ThreatActorEditionDetails = createFragmentContainer(
         resource_level
         primary_motivation
         secondary_motivations
+        personal_motivations
         goals
       }
     `,

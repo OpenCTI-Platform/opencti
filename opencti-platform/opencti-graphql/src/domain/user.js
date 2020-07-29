@@ -314,7 +314,7 @@ export const userEditField = (user, userId, input) => {
   const value = key === 'password' ? [bcrypt.hashSync(head(input.value).toString(), 10)] : input.value;
   const finalInput = { key, value };
   return executeWrite((wTx) => {
-    return updateAttribute(user, userId, ENTITY_TYPE_USER, finalInput, wTx, { noLog: key === 'password' });
+    return updateAttribute(user, userId, ENTITY_TYPE_USER, finalInput, wTx, { noLog: true });
   }).then(async () => {
     const userToEdit = await loadEntityById(userId, ENTITY_TYPE_USER);
     return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
@@ -505,3 +505,19 @@ export const initAdmin = async (email, password, tokenValue) => {
     await addUser(SYSTEM_USER, userToCreate, tokenAdmin);
   }
 };
+
+// region context
+export const userCleanContext = async (user, userId) => {
+  await delEditContext(user, userId);
+  return loadEntityById(userId, ENTITY_TYPE_USER).then((userToReturn) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user)
+  );
+};
+
+export const userEditContext = async (user, userId, input) => {
+  await setEditContext(user, userId, input);
+  return loadEntityById(userId, ENTITY_TYPE_USER).then((userToReturn) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user)
+  );
+};
+// endregion

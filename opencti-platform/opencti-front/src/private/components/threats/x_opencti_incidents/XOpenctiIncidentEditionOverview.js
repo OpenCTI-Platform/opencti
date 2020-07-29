@@ -187,7 +187,6 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(xOpenctiIncident);
 
@@ -212,7 +211,8 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
         mutation: xOpenctiIncidentMutationRelationDelete,
         variables: {
           id: this.props.xOpenctiIncident.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -244,7 +244,6 @@ class XOpenctiIncidentEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(xOpenctiIncident);
     const initialValues = pipe(

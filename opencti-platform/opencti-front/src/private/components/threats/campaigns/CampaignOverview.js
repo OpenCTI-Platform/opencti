@@ -71,9 +71,7 @@ class CampaignOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', campaign)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', campaign)} />
           <Typography
             variant="h3"
             gutterBottom={true}

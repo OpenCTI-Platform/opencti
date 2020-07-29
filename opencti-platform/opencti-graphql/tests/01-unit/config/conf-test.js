@@ -1,7 +1,6 @@
 import nconf from '../../../src/config/conf';
 
 test('default configuration keys must exists', () => {
-
   const FROM_START = 0;
   const UNTIL_END = 100000000000000;
   const t1 = new Date(FROM_START);

@@ -178,7 +178,6 @@ class CityEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(city);
 
@@ -203,7 +202,8 @@ class CityEditionOverviewComponent extends Component {
         mutation: cityMutationRelationDelete,
         variables: {
           id: this.props.city.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -223,7 +223,6 @@ class CityEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(city);
     const initialValues = pipe(

@@ -215,7 +215,8 @@ class AttackPatternEditionOverviewComponent extends Component {
         mutation: attackPatternMutationRelationDelete,
         variables: {
           id: this.props.attackPattern.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -228,7 +229,6 @@ class AttackPatternEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
 
@@ -255,7 +255,8 @@ class AttackPatternEditionOverviewComponent extends Component {
         mutation: attackPatternMutationRelationDelete,
         variables: {
           id: this.props.attackPattern.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -287,7 +288,6 @@ class AttackPatternEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
     const initialValues = pipe(

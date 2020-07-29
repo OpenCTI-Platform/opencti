@@ -7,7 +7,12 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION, RELATION_LOCATED_AT } from "../utils/idGenerator";
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_REGION,
+  RELATION_LOCATED_AT,
+} from '../utils/idGenerator';
 
 export const findById = (countryId) => {
   return loadEntityById(countryId, ENTITY_TYPE_LOCATION_COUNTRY);

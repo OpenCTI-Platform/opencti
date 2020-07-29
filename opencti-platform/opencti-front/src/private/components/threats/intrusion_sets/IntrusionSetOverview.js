@@ -71,9 +71,7 @@ class IntrusionSetOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', intrusionSet)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', intrusionSet)} />
           <Typography
             variant="h3"
             gutterBottom={true}

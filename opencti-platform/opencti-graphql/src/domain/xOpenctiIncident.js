@@ -13,6 +13,7 @@ import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
   ENTITY_TYPE_X_OPENCTI_INCIDENT,
   RELATION_RELATED_TO,
 } from '../utils/idGenerator';
@@ -54,5 +55,5 @@ export const addXOpenctiIncident = async (user, incident) => {
     assoc('last_seen', incident.last_seen ? incident.last_seen : currentDate)
   )(incident);
   const created = await createEntity(user, incidentToCreate, ENTITY_TYPE_X_OPENCTI_INCIDENT);
-  return notify(BUS_TOPICS.stixDomainObject.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

@@ -180,7 +180,6 @@ class SectorEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(sector);
 
@@ -205,7 +204,8 @@ class SectorEditionOverviewComponent extends Component {
         mutation: sectorMutationRelationDelete,
         variables: {
           id: this.props.sector.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -249,7 +249,8 @@ class SectorEditionOverviewComponent extends Component {
         mutation: sectorMutationRelationDelete,
         variables: {
           id: this.props.sector.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -269,7 +270,6 @@ class SectorEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(sector);
     const initialValues = pipe(

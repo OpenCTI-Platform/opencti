@@ -145,6 +145,7 @@ export const multipleAttributes = [
   'report_types',
   'threat_actor_types',
   'personal_motivations',
+  'goals',
   'roles',
   'tool_types',
   'received_lines',

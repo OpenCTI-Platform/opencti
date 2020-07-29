@@ -26,9 +26,10 @@ import {
   groups,
   roleEditContext,
   roleCleanContext,
+  userEditContext,
+  userEditCleanContext,
 } from '../domain/user';
 import { logger } from '../config/conf';
-import { stixDomainObjectCleanContext, stixDomainObjectEditContext } from '../domain/stixDomainObject';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
@@ -91,8 +92,8 @@ const userResolvers = {
     userEdit: (_, { id }, { user }) => ({
       delete: () => userDelete(user, id),
       fieldPatch: ({ input }) => userEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(user, id),
+      contextPatch: ({ input }) => userEditContext(user, id, input),
+      contextClean: () => userCleanContext(user, id),
       tokenRenew: () => userRenewToken(user, id),
       removeRole: ({ name }) => removeRole(id, name),
       relationAdd: ({ input }) => userAddRelation(user, id, input),

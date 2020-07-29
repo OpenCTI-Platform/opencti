@@ -143,7 +143,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], intrusionSet),
       value: pathOr(null, ['createdBy', 'id'], intrusionSet),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], intrusionSet),
     };
 
     if (currentCreatedBy.value === null) {
@@ -162,7 +161,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
         mutation: intrusionSetMutationRelationDelete,
         variables: {
           id: this.props.intrusionSet.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -187,7 +187,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(intrusionSet);
     const added = difference(values, currentMarkingDefinitions);
@@ -211,7 +210,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
         mutation: intrusionSetMutationRelationDelete,
         variables: {
           id: this.props.intrusionSet.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -243,7 +243,6 @@ class IntrusionSetEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(intrusionSet);
     const initialValues = pipe(

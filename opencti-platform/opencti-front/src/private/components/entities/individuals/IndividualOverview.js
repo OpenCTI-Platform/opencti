@@ -71,9 +71,7 @@ class IndividualOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', individual)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', individual)} />
           <Typography
             variant="h3"
             gutterBottom={true}

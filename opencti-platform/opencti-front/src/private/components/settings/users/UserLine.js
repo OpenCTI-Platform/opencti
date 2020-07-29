@@ -7,7 +7,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVertOutlined, PersonOutlined, PermIdentityOutlined } from '@material-ui/icons';
+import {
+  MoreVertOutlined,
+  PersonOutlined,
+  PermIdentityOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import UserPopover from './UserPopover';

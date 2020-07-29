@@ -32,7 +32,10 @@ class CampaignDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels labels={campaign.objectLabel} id={campaign.id} />
+          <StixDomainObjectLabels
+            labels={campaign.objectLabel}
+            id={campaign.id}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}

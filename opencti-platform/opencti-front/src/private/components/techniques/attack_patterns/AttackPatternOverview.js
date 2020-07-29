@@ -71,9 +71,7 @@ class AttackPatternOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', attackPattern)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', attackPattern)} />
           <Typography
             variant="h3"
             gutterBottom={true}

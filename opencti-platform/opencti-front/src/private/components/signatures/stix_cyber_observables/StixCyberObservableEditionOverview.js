@@ -190,7 +190,6 @@ class StixCyberObservableEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixCyberObservable);
 
@@ -215,7 +214,8 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         mutation: stixCyberObservableMutationRelationDelete,
         variables: {
           id: this.props.stixCyberObservable.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }

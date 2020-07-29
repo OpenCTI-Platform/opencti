@@ -195,7 +195,6 @@ class IndicatorEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(indicator);
 
@@ -220,7 +219,8 @@ class IndicatorEditionOverviewComponent extends Component {
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: this.props.indicator.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -240,7 +240,6 @@ class IndicatorEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(indicator);
     const initialValues = pipe(

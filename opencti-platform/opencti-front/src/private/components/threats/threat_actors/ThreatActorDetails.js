@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, join } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -105,7 +105,10 @@ class ThreatActorDetailsComponent extends Component {
           >
             {t('Goals')}
           </Typography>
-          <Markdown className="markdown" source={threatActor.goals} />
+          <Markdown
+            className="markdown"
+            source={`+ ${join('\n\n+ ', threatActor.goals)}`}
+          />
         </Paper>
       </div>
     );

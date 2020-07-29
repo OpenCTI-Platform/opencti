@@ -52,11 +52,11 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Marking-Definition':
       return (
-          <CenterFocusStrongOutlined
-              style={style}
-              fontSize={fontSize}
-              role="img"
-          />
+        <CenterFocusStrongOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
       );
     case 'Label':
       return <LabelOutline style={style} fontSize={fontSize} role="img" />;

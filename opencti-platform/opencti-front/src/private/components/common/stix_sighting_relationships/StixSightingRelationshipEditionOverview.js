@@ -189,7 +189,6 @@ const StixSightingRelationshipEditionContainer = ({
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(stixSightingRelationship);
 
@@ -214,7 +213,8 @@ const StixSightingRelationshipEditionContainer = ({
         mutation: stixSightingRelationshipMutationRelationDelete,
         variables: {
           id: stixSightingRelationship.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }

@@ -187,7 +187,6 @@ class CampaignEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(campaign);
 
@@ -212,7 +211,8 @@ class CampaignEditionOverviewComponent extends Component {
         mutation: campaignMutationRelationDelete,
         variables: {
           id: this.props.campaign.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -240,7 +240,6 @@ class CampaignEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(campaign);
     const initialValues = pipe(

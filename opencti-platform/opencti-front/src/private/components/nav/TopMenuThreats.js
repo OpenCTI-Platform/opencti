@@ -101,17 +101,13 @@ class TopMenuThreats extends Component {
           component={Link}
           to="/dashboard/threats/incidents"
           variant={
-            location.pathname.includes(
-              '/dashboard/threats/incidents',
-            )
+            location.pathname.includes('/dashboard/threats/incidents')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes(
-              '/dashboard/threats/incidents',
-            )
+            location.pathname.includes('/dashboard/threats/incidents')
               ? 'primary'
               : 'inherit'
           }

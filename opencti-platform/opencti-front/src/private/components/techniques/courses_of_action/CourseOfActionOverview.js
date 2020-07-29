@@ -71,9 +71,7 @@ class CourseOfActionOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', courseOfAction)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', courseOfAction)} />
           <Typography
             variant="h3"
             gutterBottom={true}

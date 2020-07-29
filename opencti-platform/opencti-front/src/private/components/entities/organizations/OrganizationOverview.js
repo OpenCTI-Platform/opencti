@@ -71,9 +71,7 @@ class OrganizationOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', organization)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', organization)} />
           <Typography
             variant="h3"
             gutterBottom={true}

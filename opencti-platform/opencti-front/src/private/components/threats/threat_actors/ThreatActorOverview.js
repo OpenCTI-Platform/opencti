@@ -71,9 +71,7 @@ class ThreatActorOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', threatActor)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', threatActor)} />
           <Typography
             variant="h3"
             gutterBottom={true}

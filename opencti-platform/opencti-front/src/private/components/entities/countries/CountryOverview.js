@@ -50,9 +50,7 @@ class CountryOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', country)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', country)} />
           <Typography
             variant="h3"
             gutterBottom={true}

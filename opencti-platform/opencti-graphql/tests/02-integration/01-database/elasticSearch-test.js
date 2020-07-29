@@ -275,7 +275,7 @@ describe('Elasticsearch relation reconstruction', () => {
   const buildRelationConcept = (relationship_type) => ({
     internal_id_key: RELATION_ID,
     entity_type: 'relation_embedded',
-    relationship_type: relationship_type,
+    relationship_type,
     connections: [
       {
         internal_id_key: CONN_MALWARE_ID,

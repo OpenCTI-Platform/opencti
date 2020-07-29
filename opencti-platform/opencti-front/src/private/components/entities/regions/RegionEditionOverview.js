@@ -226,7 +226,6 @@ class RegionEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(region);
     const initialValues = pipe(

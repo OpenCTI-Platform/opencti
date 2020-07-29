@@ -187,7 +187,6 @@ class CourseOfActionEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(courseOfAction);
 
@@ -212,7 +211,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
         mutation: courseOfActionMutationRelationDelete,
         variables: {
           id: this.props.courseOfAction.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -236,7 +236,6 @@ class CourseOfActionEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(courseOfAction);
     const initialValues = pipe(

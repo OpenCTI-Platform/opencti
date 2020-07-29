@@ -206,7 +206,8 @@ class ToolEditionOverviewComponent extends Component {
         mutation: toolMutationRelationDelete,
         variables: {
           id: this.props.tool.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -219,7 +220,6 @@ class ToolEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(tool);
 
@@ -244,7 +244,8 @@ class ToolEditionOverviewComponent extends Component {
         mutation: toolMutationRelationDelete,
         variables: {
           id: this.props.tool.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -272,7 +273,6 @@ class ToolEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(tool);
     const initialValues = pipe(

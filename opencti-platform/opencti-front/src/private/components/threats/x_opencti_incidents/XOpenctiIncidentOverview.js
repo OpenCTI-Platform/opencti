@@ -71,9 +71,7 @@ class XOpenctiIncidentOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', xOpenctiIncident)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', xOpenctiIncident)} />
           <Typography
             variant="h3"
             gutterBottom={true}
