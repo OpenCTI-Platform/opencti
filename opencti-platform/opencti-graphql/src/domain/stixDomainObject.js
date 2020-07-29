@@ -32,8 +32,9 @@ import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  isStixMetaRelationship, ABSTRACT_STIX_CORE_RELATIONSHIP
-} from "../utils/idGenerator";
+  isStixMetaRelationship,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+} from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   const noTypes = !args.types || args.types.length === 0;
@@ -250,8 +251,11 @@ export const stixDomainObjectAddRelations = async (user, stixDomainObjectId, inp
   if (!isStixMetaRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
-  const finalInput = map((n) => ({ toId: n, relationship_type: input.relationship_type }), input.toIds);
-  await createRelations(user, stixDomainObjectId, finalInput);
+  const finalInput = map(
+    (n) => ({ fromId: stixDomainObjectId, toId: n, relationship_type: input.relationship_type }),
+    input.toIds
+  );
+  await createRelations(user, finalInput);
   return loadEntityById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((entity) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, entity, user)
   );

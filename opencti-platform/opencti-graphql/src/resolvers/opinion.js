@@ -77,8 +77,8 @@ const opinionResolvers = {
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
-      relationDelete: ({ relationId, toId, relationship_type: relationshipType }) =>
-        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
     opinionAdd: (_, { input }, { user }) => addOpinion(user, input),
   },

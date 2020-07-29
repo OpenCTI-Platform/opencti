@@ -71,8 +71,8 @@ const stixDomainObjectResolvers = {
       contextClean: () => stixDomainObjectCleanContext(user, id),
       relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
       relationsAdd: ({ input }) => stixDomainObjectAddRelations(user, id, input),
-      relationDelete: ({ relationId, toId, relationship_type: relationshipType }) =>
-        stixDomainObjectDeleteRelation(user, id, relationId, toId, relationshipType),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
       importPush: ({ file }) => stixDomainObjectImportPush(user, null, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, null, id, file),

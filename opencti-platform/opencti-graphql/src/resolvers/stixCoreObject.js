@@ -43,7 +43,7 @@ const stixCoreObjectResolvers = {
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({
       relationAdd: ({ input }) => stixCoreObjectAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixCoreObjectDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
     }),
   },
 };

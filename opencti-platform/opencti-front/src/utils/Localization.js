@@ -586,7 +586,7 @@ const i18n = {
       Locations: 'Localisations',
       Location: 'Localisation',
       Signatures: 'Signatures',
-      Individual: 'Individualne',
+      Individual: 'Individu',
       Pattern: 'Motif',
       'Pattern type': 'Type de motif',
       'Indicator pattern': "Motif de l'indicateur",

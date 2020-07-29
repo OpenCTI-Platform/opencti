@@ -11,6 +11,7 @@ import {
 } from '../domain/label';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
+import { ENTITY_TYPE_LABEL } from '../utils/idGenerator';
 
 const labelResolvers = {
   Query: {
@@ -35,7 +36,7 @@ const labelResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         labelEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.Label.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;

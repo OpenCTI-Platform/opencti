@@ -115,7 +115,7 @@ class StixDomainObjectLabels extends Component {
     this.state = {
       openAdd: false,
       openCreate: false,
-      objectLabel: [],
+      labels: [],
       labelInput: '',
     };
   }
