@@ -383,7 +383,7 @@ class OpenCTIConnectorHelper:
             )
             logging.info("Bundle has been sent")
         except (UnroutableError, NackError) as e:
-            logging.error(f"Unable to send bundle, retry...{e}")
+            logging.error("Unable to send bundle, retry...", e)
             self._send_bundle(bundle, entities_types)
 
     def split_stix2_bundle(self, bundle) -> list:
