@@ -211,7 +211,7 @@ class StixDomainObjectKnowledge extends Component {
           <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
             <SimpleEntityStixCoreRelationships
               entityId={stixDomainObjectId}
-              relationship_type="related-to"
+              relationshipType="related-to"
               targetEntityTypes={['Stix-Domain-Object']}
               entityLink={link}
             />

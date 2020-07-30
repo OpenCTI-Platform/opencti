@@ -6409,12 +6409,14 @@ input StixCoreRelationshipAddInput {
   fromId: String!
   toId: String!
   relationship_type: String!
+  description: String
   start_time: DateTime
   stop_time: DateTime
   confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  killChainPhases: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String

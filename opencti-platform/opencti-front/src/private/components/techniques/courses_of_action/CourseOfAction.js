@@ -61,7 +61,7 @@ class CourseOfActionComponent extends Component {
           <Grid item={true} xs={4}>
             <EntityStixCoreRelationshipsChart
               entityId={courseOfAction.id}
-              relationship_type="uses"
+              relationshipType="uses"
             />
           </Grid>
           <Grid item={true} xs={4}>

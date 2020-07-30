@@ -88,7 +88,7 @@ class AttackPatternIndicatorsComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
                 entityId={attackPattern.id}
-                relationship_type="indicates"
+                relationshipType="indicates"
                 entityLink={link}
                 {...routeProps}
               />

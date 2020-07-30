@@ -117,7 +117,7 @@ class ReportStixDomainObjectLineComponent extends Component {
           <ReportObjectPopover
             reportId={reportId}
             toId={node.id}
-            relationship_type="object"
+            relationshipType="object"
             paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}
           />

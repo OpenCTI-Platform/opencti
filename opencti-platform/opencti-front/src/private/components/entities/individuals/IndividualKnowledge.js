@@ -48,7 +48,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={individual.id}
-              stixDomainObjectType="individual"
+              stixDomainObjectType="Individual"
               {...routeProps}
             />
           )}
@@ -59,7 +59,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationship_type="gathering"
+              relationshipType="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={true}
@@ -73,7 +73,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationship_type="localization"
+              relationshipType="localization"
               targetEntityTypes={['City', 'Country', 'Region']}
               entityLink={link}
               creationIsFrom={true}
@@ -87,13 +87,13 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'XOpenctiIncident',
+                'X-Opencti-Incident',
                 'Malware',
               ]}
               entityLink={link}
@@ -108,12 +108,12 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationship_type="attributed-to"
+              relationshipType="attributed-to"
               targetEntityTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'XOpenctiIncident',
+                'X-Opencti-Incident',
                 'Malware',
               ]}
               entityLink={link}

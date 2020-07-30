@@ -764,6 +764,7 @@ const i18n = {
       // Time
       '24h': '24h',
       // Types
+      entity_all: 'Toutes les entités',
       'entity_Attack-Pattern': "Motif d'attaque",
       entity_Campaign: 'Campagne',
       entity_Note: 'Note',
@@ -920,6 +921,7 @@ const i18n = {
       progress: 'In progress',
       Nonee: 'None',
       // Types
+      entity_all: 'All entities',
       'entity_Attack-Pattern': 'Attack Pattern',
       entity_Campaign: 'Campaign',
       entity_Note: 'Note',

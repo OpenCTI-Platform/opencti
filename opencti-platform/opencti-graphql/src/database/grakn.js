@@ -64,7 +64,6 @@ import {
   elUpdate,
   useCache,
   REL_INDEX_PREFIX,
-  virtualTypes,
   ENTITIES_INDICES,
   RELATIONSHIPS_INDICES,
 } from './elasticSearch';
@@ -94,6 +93,8 @@ import {
   getParentTypes,
   isBasicObject,
   isBasicRelationship,
+  ABSTRACT_STIX_RELATIONSHIP,
+  isAbstract,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -373,7 +374,7 @@ export const querySubTypes = async (type, includeParents = false) => {
     );
     const sortByLabel = sortBy(compose(toLower, prop('label')));
     const finalResult = pipe(
-      filter((n) => n.label !== type && (includeParents || !includes(n.label, virtualTypes))),
+      filter((n) => n.label !== type && (includeParents || !isAbstract(n.label))),
       sortByLabel,
       map((n) => ({ node: n }))
     )(result);
@@ -914,8 +915,8 @@ export const listRelations = async (relationshipType, args) => {
       finalFilters.push({ key: 'connections.internal_id', values: [toId] });
       relationsMap.set(toId, { alias: 'to', internalIdKey: toId });
     }
-    if (fromTypes && fromTypes.length > 0) finalFilters.push({ key: 'connections.type', values: fromTypes });
-    if (toTypes && toTypes.length > 0) finalFilters.push({ key: 'connections.type', values: toTypes });
+    if (fromTypes && fromTypes.length > 0) finalFilters.push({ key: 'connections.types', values: fromTypes });
+    if (toTypes && toTypes.length > 0) finalFilters.push({ key: 'connections.types', values: toTypes });
     if (startTimeStart) finalFilters.push({ key: 'start_time', values: [startTimeStart], operator: 'gt' });
     if (startTimeStop) finalFilters.push({ key: 'start_time', values: [startTimeStop], operator: 'lt' });
     if (stopTimeStart) finalFilters.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
@@ -1031,12 +1032,17 @@ export const listRelations = async (relationshipType, args) => {
   const queryAttributesFields = join(' ', attributesFields);
   const queryAttributesFilters = join(' ', attributesFilters);
   const queryRelationsFields = join(' ', relationsFields);
-  const querySource = askForConnections
-    ? `$rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to)`
-    : '$rel';
-  const baseQuery = `match ${querySource} isa ${relationToGet};
-                      ${queryFromTypes} ${queryToTypes} 
-                      ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
+  let baseQuery = `match $rel isa ${relationToGet}, has internal_id $rel_id;
+  ${queryFromTypes} ${queryToTypes}
+  ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
+  if (askForConnections) {
+    baseQuery = `match $rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to) 
+    isa ${relationToGet}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    ${queryFromTypes} ${queryToTypes}
+    ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
+  }
   return listElements(
     baseQuery,
     first,
@@ -1114,7 +1120,7 @@ export const loadById = async (id, type, args = {}) => {
   if (!useCache()) return elLoadById(id);
   if (isBasicObject(type)) return loadEntityById(id, type, args);
   if (isBasicRelationship(type)) return loadRelationById(id, type, args);
-  throw FunctionalError(`Type ${type} is unkown.`);
+  throw FunctionalError(`Type ${type} is unknown.`);
 };
 // endregion
 
@@ -1201,7 +1207,7 @@ export const timeSeriesRelations = async (options) => {
   const { fromId, noCache = false, inferred = false } = options;
   // Check if can be supported by ES
   let histogramData;
-  const entityType = relationshipType ? escape(relationshipType) : 'stix_relation';
+  const entityType = relationshipType ? escape(relationshipType) : 'stix-relationship';
   if (!noCache && operation === 'count' && inferred === false) {
     const filters = [];
     if (fromId) filters.push({ isRelation: false, type: 'connections.internal_id', value: fromId });
@@ -1240,7 +1246,7 @@ export const distributionRelations = async (options) => {
   const { limit = 50, order, noCache = false, inferred = false } = options;
   const { startDate, endDate, relationship_type: relationshipType, toTypes = [] } = options;
   let distributionData;
-  const entityType = relationshipType ? escape(relationshipType) : 'stix_relation';
+  const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_RELATIONSHIP;
   // Using elastic can only be done if the distribution is a count on types
   if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
     distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);

@@ -104,7 +104,7 @@ class ItemConfidence extends Component {
     return (
       <Chip
         classes={{ root: style }}
-        style={inlineStyles.blue}
+        style={inlineStyles.blueGrey}
         label={t('None')}
       />
     );

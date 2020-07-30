@@ -48,7 +48,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={sector.id}
-              stixDomainObjectType="sector"
+              stixDomainObjectType="Sector"
               {...routeProps}
             />
           )}
@@ -59,7 +59,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationship_type="gathering"
+              relationshipType="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,7 +73,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
               creationIsFrom={false}
@@ -87,7 +87,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={['Campaign']}
               entityLink={link}
               creationIsFrom={false}
@@ -101,8 +101,8 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationship_type="targets"
-              targetEntityTypes={['XOpenctiIncident']}
+              relationshipType="targets"
+              targetEntityTypes={['X-Opencti-Incident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}
@@ -115,7 +115,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={false}

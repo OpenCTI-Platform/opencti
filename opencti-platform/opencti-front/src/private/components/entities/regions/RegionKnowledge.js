@@ -48,7 +48,7 @@ class RegionKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={region.id}
-              stixDomainObjectType="region"
+              stixDomainObjectType="Region"
               {...routeProps}
             />
           )}
@@ -59,7 +59,7 @@ class RegionKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={region.id}
-              relationship_type="localization"
+              relationshipType="localization"
               targetEntityTypes={['Country']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,7 +73,7 @@ class RegionKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={region.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',

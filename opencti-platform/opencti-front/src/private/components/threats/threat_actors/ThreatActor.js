@@ -62,7 +62,7 @@ class ThreatActorComponent extends Component {
             <EntityCampaignsChart
               entityId={threatActor.id}
               inferred={true}
-              relationship_type="attributed-to"
+              relationshipType="attributed-to"
             />
           </Grid>
           <Grid item={true} xs={4}>

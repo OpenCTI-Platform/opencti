@@ -48,7 +48,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={city.id}
-              stixDomainObjectType="city"
+              stixDomainObjectType="City"
               {...routeProps}
             />
           )}
@@ -59,7 +59,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationship_type="localization"
+              relationshipType="localization"
               targetEntityTypes={['Country']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,13 +73,13 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'XOpenctiIncident',
+                'X-Opencti-Incident',
                 'Malware',
               ]}
               entityLink={link}

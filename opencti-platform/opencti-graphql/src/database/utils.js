@@ -11,6 +11,7 @@ import {
   isStixMetaObject,
   isStixDomainObject,
   isStixSightingRelationship,
+  isStixRelationship,
 } from '../utils/idGenerator';
 import { DatabaseError } from '../config/errors';
 
@@ -168,7 +169,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   } else if (isStixMetaRelationship(eventData.entity_type)) {
     if (eventType === 'update') {
       message += `\`${eventData.entity_type}\` with the value \`${toValue}\`.`;
-    } else if (toType === 'stix_relation') {
+    } else if (isStixRelationship(toType)) {
       message += `relation \`${toRelationshipType}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
     } else {
       message += `\`${toType}\` with value \`${toValue}\`.`;

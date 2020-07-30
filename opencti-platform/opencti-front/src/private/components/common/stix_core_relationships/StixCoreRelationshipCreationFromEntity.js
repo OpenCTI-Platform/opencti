@@ -478,32 +478,20 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 
   renderForm(sourceEntity) {
     const {
-      t,
-      classes,
-      isFrom,
-      isFromRelation,
-      allowedRelationshipTypes,
+      t, classes, isFrom, allowedRelationshipTypes,
     } = this.props;
     const { targetEntity } = this.state;
-    let fromEntity = sourceEntity;
-    let toEntity = targetEntity;
-    if (
-      !isFrom
-      || (isFromRelation && targetEntity.parent_types.includes('Stix-Observable'))
-    ) {
-      fromEntity = targetEntity;
-      toEntity = sourceEntity;
+    let fromEntity = targetEntity;
+    let toEntity = sourceEntity;
+    if (isFrom) {
+      fromEntity = sourceEntity;
+      toEntity = targetEntity;
     }
     const relationshipTypes = filter(
       (n) => isNil(allowedRelationshipTypes)
         || allowedRelationshipTypes.length === 0
         || allowedRelationshipTypes.includes(n),
-      resolveRelationsTypes(
-        includes('Stix-Observable', fromEntity.parent_types)
-          ? 'observable'
-          : fromEntity.entity_type,
-        toEntity.entity_type,
-      ),
+      resolveRelationsTypes(fromEntity.entity_type, toEntity.entity_type),
     );
     // eslint-disable-next-line no-nested-ternary
     const defaultRelationshipType = head(relationshipTypes)
@@ -569,30 +557,18 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes('Stix-Observable', fromEntity.parent_types)
-                        ? t(`observable_${fromEntity.entity_type}`)
-                        : t(
-                          `entity_${
-                            fromEntity.entity_type === 'stix_relation'
-                              || fromEntity.entity_type === 'stix-relation'
-                              ? fromEntity.parent_types[0]
-                              : fromEntity.entity_type
-                          }`,
-                        )}
+                      {t(fromEntity.entity_type)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
                       {truncate(
-                        /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Observable', fromEntity.parent_types)
+                        includes(
+                          'Stix-Cyber-Observable',
+                          fromEntity.parent_types,
+                        )
                           ? fromEntity.observable_value
-                          : fromEntity.entity_type === 'stix_relation'
-                            || fromEntity.entity_type === 'stix-relation'
-                            ? `${fromEntity.from.name} ${String.fromCharCode(
-                              8594,
-                            )} ${fromEntity.to.name}`
-                            : fromEntity.name,
+                          : fromEntity.name,
                         20,
                       )}
                     </span>
@@ -625,30 +601,15 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes('Stix-Observable', toEntity.parent_types)
-                        ? t(`observable_${toEntity.entity_type}`)
-                        : t(
-                          `entity_${
-                            toEntity.entity_type === 'stix_relation'
-                              || toEntity.entity_type === 'stix-relation'
-                              ? toEntity.parent_types[0]
-                              : toEntity.entity_type
-                          }`,
-                        )}
+                      {t(toEntity.entity_type)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
                       {truncate(
-                        /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Observable', toEntity.parent_types)
+                        includes('Stix-Cyber-Observable', toEntity.parent_types)
                           ? toEntity.observable_value
-                          : toEntity.entity_type === 'stix_relation'
-                            || toEntity.entity_type === 'stix-relation'
-                            ? `${toEntity.from.name} ${String.fromCharCode(
-                              8594,
-                            )} ${toEntity.to.name}`
-                            : toEntity.name,
+                          : toEntity.name,
                         20,
                       )}
                     </span>
@@ -834,7 +795,6 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 StixCoreRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
-  isFromRelation: PropTypes.bool,
   onlyObservables: PropTypes.bool,
   targetEntityTypes: PropTypes.array,
   allowedRelationshipTypes: PropTypes.array,

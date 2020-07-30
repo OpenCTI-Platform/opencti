@@ -1,4 +1,4 @@
-import { assoc, dissoc, propOr } from 'ramda';
+import { assoc, dissoc, filter, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
@@ -39,6 +39,7 @@ import {
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   isStixMetaRelationship,
   ABSTRACT_STIX_META_RELATIONSHIP,
+  isStixCoreRelationship,
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
@@ -53,12 +54,16 @@ export const findById = (stixCoreRelationshipId) => {
 };
 
 export const stixCoreRelationshipsNumber = (args) => {
-  let finalArgs;
-  if (args.type && args.type !== 'stix-relation' && args.type !== 'stix_relation_embedded') {
-    finalArgs = assoc('relationshipType', args.type, args);
-  } else {
-    finalArgs = args.type ? assoc('types', [args.type], args) : assoc('types', ['stix_relation'], args);
+  const types = [];
+  if (args.type) {
+    if (isStixCoreRelationship(args.type)) {
+      types.push(args.type);
+    }
   }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
+  }
+  const finalArgs = assoc('types', types, args);
   return {
     count: elCount(INDEX_STIX_CORE_RELATIONSHIPS, finalArgs),
     total: elCount(INDEX_STIX_CORE_RELATIONSHIPS, dissoc('endDate', finalArgs)),
@@ -181,14 +186,14 @@ export const addStixCoreRelationship = async (user, stixCoreRelationship, revers
 };
 
 export const stixCoreRelationshipDelete = async (user, stixCoreRelationshipId) => {
-  return deleteRelationById(user, stixCoreRelationshipId, 'stix_relation');
+  return deleteRelationById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
 export const stixCoreRelationshipEditField = (user, stixCoreRelationshipId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, stixCoreRelationshipId, 'stix_relation', input, wTx);
+    return updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, wTx);
   }).then(async () => {
-    const stixCoreRelationship = await loadRelationById(stixCoreRelationshipId, 'stix_relation');
+    const stixCoreRelationship = await loadRelationById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
     return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
   });
 };
@@ -211,7 +216,7 @@ export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationship
 export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelationshipId, toId, relationshipType) => {
   const stixCoreRelationship = await loadEntityById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
-    throw FunctionalError('Cannot delete the relation, stix-core-relationship cannot be found.');
+    throw FunctionalError(`Cannot delete the relation, ${ABSTRACT_STIX_CORE_RELATIONSHIP} cannot be found.`);
   }
   if (!isStixMetaRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
@@ -230,14 +235,14 @@ export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelations
 // region context
 export const stixCoreRelationshipCleanContext = (user, stixCoreRelationshipId) => {
   delEditContext(user, stixCoreRelationshipId);
-  return loadRelationById(stixCoreRelationshipId, 'stix_relation').then((stixCoreRelationship) =>
+  return loadRelationById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
   );
 };
 
 export const stixCoreRelationshipEditContext = (user, stixCoreRelationshipId, input) => {
   setEditContext(user, stixCoreRelationshipId, input);
-  return loadRelationById(stixCoreRelationshipId, 'stix_relation').then((stixCoreRelationship) =>
+  return loadRelationById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
   );
 };

@@ -390,6 +390,23 @@ export const isStixCyberObservable = (type) => includes(type, STIX_CYBER_OBSERVA
 export const isStixCoreObject = (type) => isStixDomainObject(type) || isStixCyberObservable(type);
 export const isStixObject = (type) => isStixCoreObject(type) || isStixMetaObject(type);
 export const isBasicObject = (type) => isInternalObject(type) || isStixObject(type);
+// All
+export const ABSTRACT_TYPES = [
+  ABSTRACT_BASIC_OBJECT,
+  ABSTRACT_INTERNAL_OBJECT,
+  ABSTRACT_STIX_OBJECT,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_OBJECT,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP
+]
+export const isAbstract = (type) => includes(type, ABSTRACT_TYPES);
 // ------------------------------------------------------
 
 // region utils

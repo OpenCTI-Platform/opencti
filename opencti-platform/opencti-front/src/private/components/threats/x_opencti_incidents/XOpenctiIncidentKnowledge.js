@@ -25,7 +25,7 @@ const styles = () => ({
 class XOpenctiIncidentKnowledgeComponent extends Component {
   render() {
     const { classes, xOpenctiIncident } = this.props;
-    const link = `/dashboard/threats/xOpenctiIncidents/${xOpenctiIncident.id}/knowledge`;
+    const link = `/dashboard/threats/incidents/${xOpenctiIncident.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -37,7 +37,7 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/relations/:relationId"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
               entityId={xOpenctiIncident.id}
@@ -48,28 +48,26 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/overview"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/overview"
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={xOpenctiIncident.id}
-              stixDomainObjectType="xOpenctiIncident"
+              stixDomainObjectType="X-Opencti-Incident"
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/attribution"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/attribution"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenctiIncident.id}
-              relationship_type="attributed-to"
+              relationshipType="attributed-to"
               targetEntityTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Organization',
-                'User',
               ]}
               entityLink={link}
               creationIsFrom={true}
@@ -79,11 +77,11 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/malwares"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenctiIncident.id}
-              relationship_type="uses"
+              relationshipType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={true}
@@ -93,7 +91,7 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/victimology"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/victimology"
           render={(routeProps) => (
             <StixDomainObjectVictimology
               stixDomainObjectId={xOpenctiIncident.id}
@@ -104,7 +102,7 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/ttp"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/ttp"
           render={(routeProps) => (
             <StixDomainObjectKillChain
               stixDomainObjectId={xOpenctiIncident.id}
@@ -115,11 +113,11 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/tools"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenctiIncident.id}
-              relationship_type="uses"
+              relationshipType="uses"
               targetEntityTypes={['Tool']}
               entityLink={link}
               creationIsFrom={true}
@@ -129,11 +127,11 @@ class XOpenctiIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/knowledge/vulnerabilities"
+          path="/dashboard/threats/incidents/:xOpenctiIncidentId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenctiIncident.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={['Vulnerability']}
               entityLink={link}
               creationIsFrom={true}

@@ -60,7 +60,7 @@ class ToolComponent extends Component {
           <Grid item={true} xs={6}>
             <EntityStixCoreRelationshipsChart
               entityId={tool.id}
-              relationship_type="uses"
+              relationshipType="uses"
             />
           </Grid>
           <Grid item={true} xs={6}>

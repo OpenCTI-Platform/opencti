@@ -48,7 +48,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={country.id}
-              stixDomainObjectType="country"
+              stixDomainObjectType="Country"
               {...routeProps}
             />
           )}
@@ -59,7 +59,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationship_type="localization"
+              relationshipType="located-at"
               targetEntityTypes={['City']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,7 +73,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationship_type="localization"
+              relationshipType="located-at"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={false}
@@ -87,13 +87,13 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'XOpenctiIncident',
+                'X-Opencti-Incident',
                 'Malware',
               ]}
               entityLink={link}

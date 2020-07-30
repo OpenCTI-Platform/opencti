@@ -30,7 +30,7 @@ class VictimologyDistribution extends Component {
             handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
-            relationship_type="targets"
+            relationshipType="targets"
             field="name"
             inferred={inferred}
             startDate={startDate}
@@ -45,7 +45,7 @@ class VictimologyDistribution extends Component {
             handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
-            relationship_type="targets"
+            relationshipType="targets"
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}
@@ -59,7 +59,7 @@ class VictimologyDistribution extends Component {
             handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
-            relationship_type="targets"
+            relationshipType="targets"
             inferred={inferred}
             startDate={startDate}
             endDate={endDate}

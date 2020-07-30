@@ -116,7 +116,7 @@ class ReportStixCyberObservableLineComponent extends Component {
           <ReportRefPopover
             reportId={reportId}
             toId={node.id}
-            relationship_type="observable_refs"
+            relationshipType="observable_refs"
             paginationKey="Pagination_observableRefs"
             paginationOptions={paginationOptions}
           />

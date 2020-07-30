@@ -36,12 +36,13 @@ import {
 import conf, { logger } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import {
-  BASE_TYPE_RELATION,
+  BASE_TYPE_RELATION, getParentTypes, isAbstract,
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+  RELATION_OBJECT_MARKING
+} from "../utils/idGenerator";
+import { isAbstractType } from "graphql";
 
 const dateFields = [
   'created',
@@ -86,16 +87,6 @@ const numericOrBooleanFields = [
   'default_assignation',
   'x_opencti_detection',
   'x_opencti_order',
-];
-export const virtualTypes = [
-  'Identity',
-  'Email',
-  'File',
-  'Windows-Service',
-  'X509-Certificate',
-  'Stix-Domain-Object',
-  'Stix-Domain',
-  'Stix-Observable',
 ];
 
 export const REL_INDEX_PREFIX = 'rel_';
@@ -394,7 +385,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
   });
   for (let index = 0; index < toTypes.length; index += 1) {
     filters.push({
-      match_phrase: { 'connections.type': toTypes[index] },
+      match_phrase: { 'connections.types': toTypes[index] },
     });
   }
   const query = {
@@ -411,7 +402,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       aggs: {
         genres: {
           terms: {
-            field: `connections.type.keyword`,
+            field: `connections.types.keyword`,
             size: 100,
           },
         },
@@ -429,7 +420,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       map((e) => e.types),
       flatten(),
       uniq(),
-      filter((f) => !includes(f, virtualTypes)),
+      filter((f) => !isAbstract(f)),
       map((u) => u.toLowerCase())
     )(data.body.hits.hits);
     const { buckets } = data.body.aggregations.genres;
@@ -526,7 +517,7 @@ const elBuildRelation = (type, connection) => {
     [type]: null,
     [`${type}Id`]: connection.internal_id,
     [`${type}Role`]: connection.role,
-    [`${type}Type`]: connection.type,
+    [`${type}Type`]: head(connection.types),
   };
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
@@ -940,14 +931,12 @@ const prepareIndexing = async (elements) => {
         const [from, to] = await Promise.all([elLoadById(thing.fromId), elLoadById(thing.toId)]);
         connections.push({
           internal_id: from.internal_id,
-          stix_ids: from.stix_ids,
-          type: thing.fromType,
+          types: [thing.fromType, ...getParentTypes(thing.toType)],
           role: thing.fromRole,
         });
         connections.push({
           internal_id: to.internal_id,
-          stix_ids: to.stix_ids,
-          type: thing.toType,
+          types: [thing.toType, ...getParentTypes(thing.toType)],
           role: thing.toRole,
         });
         return pipe(

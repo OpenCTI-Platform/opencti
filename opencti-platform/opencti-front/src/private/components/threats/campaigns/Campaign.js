@@ -61,14 +61,14 @@ class CampaignComponent extends Component {
           <Grid item={true} xs={4}>
             <EntityXOpenctiIncidentsChart
               entityId={campaign.id}
-              relationship_type="attributed-to"
+              relationshipType="attributed-to"
             />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityStixCoreRelationshipsDonut
               entityId={campaign.id}
               entityType="Indicator"
-              relationship_type="indicates"
+              relationshipType="indicates"
               field="x_opencti_main_observable_type"
             />
           </Grid>

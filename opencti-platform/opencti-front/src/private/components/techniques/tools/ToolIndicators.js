@@ -88,7 +88,7 @@ class ToolIndicatorsComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
                 entityId={tool.id}
-                relationship_type="indicates"
+                relationshipType="indicates"
                 entityLink={link}
                 {...routeProps}
               />

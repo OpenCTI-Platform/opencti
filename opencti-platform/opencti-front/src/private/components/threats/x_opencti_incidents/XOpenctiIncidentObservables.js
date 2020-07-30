@@ -65,7 +65,7 @@ class XOpenctiIncidentObservablesComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixCyberObservables
                 entityId={xOpenctiIncident.id}
-                relationship_type="related-to"
+                relationshipType="related-to"
                 entityLink={link}
                 {...routeProps}
               />

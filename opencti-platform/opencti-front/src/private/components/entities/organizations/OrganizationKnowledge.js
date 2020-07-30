@@ -48,7 +48,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={organization.id}
-              stixDomainObjectType="organization"
+              stixDomainObjectType="Organization"
               {...routeProps}
             />
           )}
@@ -59,7 +59,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationship_type="gathering"
+              relationshipType="gathering"
               targetEntityTypes={['Sector']}
               entityLink={link}
               creationIsFrom={true}
@@ -73,7 +73,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationship_type="localization"
+              relationshipType="localization"
               targetEntityTypes={['Region', 'Country', 'City']}
               entityLink={link}
               creationIsFrom={true}
@@ -88,7 +88,7 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               role="gather"
-              relationship_type="gathering"
+              relationshipType="gathering"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={false}
@@ -102,7 +102,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationship_type="gathering"
+              relationshipType="gathering"
               targetEntityTypes={['User']}
               entityLink={link}
               creationIsFrom={false}
@@ -116,7 +116,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationship_type="targets"
+              relationshipType="targets"
               targetEntityTypes={[
                 'Country',
                 'Threat-Actor',
@@ -137,7 +137,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationship_type="attributed-to"
+              relationshipType="attributed-to"
               targetEntityTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',

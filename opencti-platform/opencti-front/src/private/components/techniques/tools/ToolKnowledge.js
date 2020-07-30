@@ -48,7 +48,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={tool.id}
-              stixDomainObjectType="tool"
+              stixDomainObjectType="Tool"
               {...routeProps}
             />
           )}
@@ -59,7 +59,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationship_type="uses"
+              relationshipType="uses"
               targetEntityTypes={['Intrusion-Set']}
               entityLink={link}
               creationIsFrom={false}
@@ -73,7 +73,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationship_type="uses"
+              relationshipType="uses"
               targetEntityTypes={['Campaign']}
               entityLink={link}
               creationIsFrom={false}
@@ -87,7 +87,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationship_type="uses"
+              relationshipType="uses"
               targetEntityTypes={['XOpenctiIncident']}
               entityLink={link}
               creationIsFrom={false}
@@ -101,7 +101,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationship_type="uses"
+              relationshipType="uses"
               targetEntityTypes={['Malware']}
               entityLink={link}
               creationIsFrom={false}
