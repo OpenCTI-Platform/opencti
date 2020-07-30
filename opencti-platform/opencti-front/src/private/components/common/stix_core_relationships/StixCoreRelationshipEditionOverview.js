@@ -255,11 +255,6 @@ const StixCoreRelationshipEditionContainer = ({
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], stixCoreRelationship),
       value: pathOr(null, ['createdBy', 'id'], stixCoreRelationship),
-      relation: pathOr(
-        null,
-        ['createdBy', 'relation', 'id'],
-        stixCoreRelationship,
-      ),
     };
     if (currentCreatedBy.value === null) {
       commitMutation({
@@ -277,7 +272,8 @@ const StixCoreRelationshipEditionContainer = ({
         mutation: stixCoreRelationshipMutationRelationDelete,
         variables: {
           id: stixCoreRelationship.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -340,8 +336,8 @@ const StixCoreRelationshipEditionContainer = ({
     })),
   )(stixCoreRelationship);
   const initialValues = pipe(
-    assoc('start_time', dateFormat(stixCoreRelationship.first_seen)),
-    assoc('stop_time', dateFormat(stixCoreRelationship.last_seen)),
+    assoc('start_time', dateFormat(stixCoreRelationship.start_time)),
+    assoc('stop_time', dateFormat(stixCoreRelationship.stop_time)),
     assoc('createdBy', createdBy),
     assoc('killChainPhases', killChainPhases),
     assoc('objectMarking', objectMarking),
@@ -380,7 +376,7 @@ const StixCoreRelationshipEditionContainer = ({
           initialValues={initialValues}
           validationSchema={stixCoreRelationshipValidation(t)}
         >
-          {(setFieldValue) => (
+          {({ setFieldValue }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={SelectField}
@@ -421,8 +417,8 @@ const StixCoreRelationshipEditionContainer = ({
               />
               <Field
                 component={DatePickerField}
-                name="end_time"
-                label={t('End time')}
+                name="stop_time"
+                label={t('Stop time')}
                 invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 style={{ marginTop: 20 }}
@@ -431,7 +427,7 @@ const StixCoreRelationshipEditionContainer = ({
                 helperText={
                   <SubscriptionFocus
                     context={editContext}
-                    fieldName="end_time"
+                    fieldName="stop_time"
                   />
                 }
               />

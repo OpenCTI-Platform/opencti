@@ -135,7 +135,6 @@ class ToolEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], tool),
       value: pathOr(null, ['createdBy', 'id'], tool),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], tool),
     };
 
     if (currentCreatedBy.value === null) {
@@ -179,7 +178,6 @@ class ToolEditionOverviewComponent extends Component {
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(tool);
 
@@ -258,17 +256,15 @@ class ToolEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], tool),
         value: pathOr(null, ['createdBy', 'id'], tool),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], tool),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(tool);
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -278,13 +274,13 @@ class ToolEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(tool);
     return (

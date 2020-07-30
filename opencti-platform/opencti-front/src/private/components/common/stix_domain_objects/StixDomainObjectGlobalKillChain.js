@@ -139,8 +139,8 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     )(data.stixCoreRelationships.edges);
     const stixCoreRelationships = pipe(
       map((n) => n.node),
-      map((n) => assoc('startTimeYear', yearFormat(n.first_seen), n)),
-      map((n) => assoc('stopTimeYear', yearFormat(n.last_seen), n)),
+      map((n) => assoc('startTimeYear', yearFormat(n.start_time), n)),
+      map((n) => assoc('stopTimeYear', yearFormat(n.stop_time), n)),
       map((n) => assoc(
         'years',
         n.startTimeYear === n.stopTimeYear

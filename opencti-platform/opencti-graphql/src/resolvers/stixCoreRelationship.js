@@ -78,7 +78,8 @@ const stixCoreRelationshipResolvers = {
       contextPatch: ({ input }) => stixCoreRelationshipEditContext(user, id, input),
       contextClean: () => stixCoreRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixCoreRelationshipDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixCoreRelationshipAdd: (_, { input, reversedReturn }, { user }) =>
       addStixCoreRelationship(user, input, reversedReturn),

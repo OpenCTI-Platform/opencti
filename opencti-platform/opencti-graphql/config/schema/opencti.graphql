@@ -6605,12 +6605,14 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
 }
 input StixMetaRelationshipAddInput {
   relationship_type: String!
-  toId: ID!
+  fromId: ID
+  toId: ID
 }
 
 input StixMetaRelationshipsAddInput {
   relationship_type: String! # Will be check by code
-  toIds: [ID]!
+  fromIds: [ID]
+  toIds: [ID]
 }
 
 ### QUERIES
@@ -7379,7 +7381,7 @@ type ExternalReferenceEditMutations {
   contextPatch(input: EditContext): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(fromId: String!, relationship_type: String!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type KillChainPhaseEditMutations {
   delete: ID

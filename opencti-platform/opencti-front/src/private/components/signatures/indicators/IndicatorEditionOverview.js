@@ -151,7 +151,6 @@ class IndicatorEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], indicator),
       value: pathOr(null, ['createdBy', 'id'], indicator),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], indicator),
     };
 
     if (currentCreatedBy.value === null) {
@@ -233,9 +232,8 @@ class IndicatorEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], indicator),
         value: pathOr(null, ['createdBy', 'id'], indicator),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], indicator),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -244,7 +242,7 @@ class IndicatorEditionOverviewComponent extends Component {
     )(indicator);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'pattern',

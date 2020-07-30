@@ -92,7 +92,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (confidence >= 20) {
+    if (confidence >= 1) {
       return (
         <Chip
           classes={{ root: style }}

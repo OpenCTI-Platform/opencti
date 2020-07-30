@@ -80,7 +80,7 @@ export const createdBy = (stixCoreRelationshipId) => {
     get; offset 0; limit 1;`,
     'to',
     { extraRelKey: 'rel' }
-  ).then((data) => data.node);
+  ).then((data) => (data ? data.node : null));
 };
 
 export const reports = (stixCoreRelationshipId) => {

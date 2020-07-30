@@ -223,11 +223,6 @@ const StixSightingRelationshipEditionContainer = ({
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], stixSightingRelationship),
       value: pathOr(null, ['createdBy', 'id'], stixSightingRelationship),
-      relation: pathOr(
-        null,
-        ['createdBy', 'relation', 'id'],
-        stixSightingRelationship,
-      ),
     };
     if (currentCreatedBy.value === null) {
       commitMutation({
@@ -245,7 +240,8 @@ const StixSightingRelationshipEditionContainer = ({
         mutation: stixSightingRelationshipMutationRelationDelete,
         variables: {
           id: stixSightingRelationship.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {

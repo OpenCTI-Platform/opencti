@@ -142,11 +142,6 @@ class StixCyberObservableEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], stixCyberObservable),
       value: pathOr(null, ['createdBy', 'id'], stixCyberObservable),
-      relation: pathOr(
-        null,
-        ['createdBy', 'relation', 'id'],
-        stixCyberObservable,
-      ),
     };
 
     if (currentCreatedBy.value === null) {

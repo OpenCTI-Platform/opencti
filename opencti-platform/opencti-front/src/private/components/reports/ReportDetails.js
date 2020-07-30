@@ -64,7 +64,7 @@ class ReportDetailsComponent extends Component {
           >
             {t('Confidence level')}
           </Typography>
-          <ItemConfidence level={report.confidence} />
+          <ItemConfidence confidence={report.confidence} />
         </Paper>
       </div>
     );

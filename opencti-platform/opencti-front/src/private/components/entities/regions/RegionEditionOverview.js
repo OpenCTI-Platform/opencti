@@ -219,9 +219,8 @@ class RegionEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], region),
         value: pathOr(null, ['createdBy', 'id'], region),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], region),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -230,8 +229,8 @@ class RegionEditionOverviewComponent extends Component {
     )(region);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdBy', 'markingDefinitions']),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(region);
     return (
       <div>

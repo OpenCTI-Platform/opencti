@@ -194,6 +194,7 @@ class StixDomainObjectKnowledge extends Component {
             <EntityStixCoreRelationshipsDonut
               entityId={stixDomainObjectId}
               entityType="Stix-Domain-Object"
+              relationshipType="stix-core-relationship"
               title={t('Distribution of relations (including inferred)')}
               field="entity_type"
               inferred={true}

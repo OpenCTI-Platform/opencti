@@ -96,7 +96,7 @@ class EntityStixCyberObservableLineComponent extends Component {
                 style={{ width: dataColumns.weight.width }}
               >
                 <ItemConfidence
-                  level={node.inferred ? 99 : node.weight}
+                  confidence={node.inferred ? 99 : node.weight}
                   variant="inList"
                 />
               </div>

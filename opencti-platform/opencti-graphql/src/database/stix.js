@@ -61,8 +61,8 @@ export const convertStixCoreRelationshipToStix = (data, extra = null, onlyBase =
     dissoc('entity_type'),
     assoc('type', 'relationship'),
     // Relation IDs
-    assoc('source_ref', extra.from.standard_id),
-    assoc('target_ref', extra.to.standard_id)
+    assoc('source_ref', extra.from ? extra.from.standard_id : null),
+    assoc('target_ref', extra.to ? extra.to.standard_id : null)
   )(data);
   if (onlyBase) {
     return pick(['id', 'type', 'spec_version'], data);
@@ -81,8 +81,8 @@ export const convertStixSightingRelationshipToStix = async (data, extra = null, 
     dissoc('attribute_count'),
     assoc('count', data.attribute_count),
     // Relation IDs
-    assoc('sighting_of_ref', extra.from.standard_id),
-    assoc('where_sighted_refs', [extra.to.standard_id])
+    assoc('sighting_of_ref', extra.from ? extra.from.standard_id : null),
+    assoc('where_sighted_refs', extra.to ? [extra.to.standard_id] : null)
   )(data);
   if (onlyBase) {
     return pick(['id', 'type', 'spec_version'], data);

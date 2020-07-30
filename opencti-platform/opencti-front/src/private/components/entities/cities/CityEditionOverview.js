@@ -134,7 +134,6 @@ class CityEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], city),
       value: pathOr(null, ['createdBy', 'id'], city),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], city),
     };
 
     if (currentCreatedBy.value === null) {
@@ -153,7 +152,8 @@ class CityEditionOverviewComponent extends Component {
         mutation: cityMutationRelationDelete,
         variables: {
           id: this.props.city.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -216,9 +216,8 @@ class CityEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], city),
         value: pathOr(null, ['createdBy', 'id'], city),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], city),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -227,8 +226,8 @@ class CityEditionOverviewComponent extends Component {
     )(city);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdBy', 'markingDefinitions']),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(city);
     return (
       <Formik

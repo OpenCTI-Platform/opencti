@@ -86,7 +86,7 @@ class GroupEditionPermissionsComponent extends Component {
     const { classes, group, t } = this.props;
     const groupMarkingDefinitions = pipe(
       pathOr([], ['permissions', 'edges']),
-      map((n) => ({ id: n.node.id, relation: n.relation.id })),
+      map((n) => ({ id: n.node.id })),
     )(group);
 
     return (

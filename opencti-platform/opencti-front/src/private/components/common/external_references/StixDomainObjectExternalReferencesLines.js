@@ -92,8 +92,9 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
     commitMutation({
       mutation: externalReferenceMutationRelationDelete,
       variables: {
-        id: this.props.entityId,
-        relationId: externalReferenceEdge.relation.id,
+        id: externalReferenceEdge.node.id,
+        fromId: this.props.entityId,
+        relationship_type: 'external-reference',
       },
       updater: (store) => {
         const entity = store.get(this.props.entityId);
@@ -122,15 +123,15 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddExternalReferences
             entityId={entityId}
-            stixDomainObjectExternalReferences={
-              data.stixEntity.externalReferences.edges
+            entityExternalReferences={
+              data.stixDomainObject.externalReferences.edges
             }
           />
         </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>
-            {data.stixEntity.externalReferences.edges.map(
+            {data.stixDomainObject.externalReferences.edges.map(
               (externalReferenceEdge) => {
                 const externalReference = externalReferenceEdge.node;
                 const externalReferenceId = externalReference.external_id

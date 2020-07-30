@@ -458,6 +458,7 @@ define
   uses sub stix-core-relationship,
     relates uses_from,
     relates uses_to,
+    plays kill-chain-phase_from,
     plays indicates_to;
 
   attributed-to sub stix-core-relationship,
@@ -485,6 +486,7 @@ define
     relates located-at_to;
 
   indicates sub stix-core-relationship,
+    plays kill-chain-phase_from,
     relates indicates_from,
     relates indicates_to;
 
@@ -535,10 +537,12 @@ define
     relates downloads_to;
 
   drops sub stix-core-relationship,
+    plays kill-chain-phase_from,
     relates drops_from,
     relates drops_to;
 
   exploits sub stix-core-relationship,
+    plays kill-chain-phase_from,
     relates exploits_from,
     relates exploits_to,
     plays indicates_to;
@@ -1190,6 +1194,7 @@ define
     has architecture_execution_envs,
     has implementation_languages,
     has capabilities,
+    plays kill-chain-phase_from,
     plays operating-system_from,
     plays sample_from,
     plays authorized-by_from,

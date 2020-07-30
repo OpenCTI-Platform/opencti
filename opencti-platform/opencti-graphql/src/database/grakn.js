@@ -1873,7 +1873,6 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   if (!currentInstanceData) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
-
   const val = includes(key, multipleAttributes) ? value : head(value);
   // --- 00 Need update?
   if (!forceUpdate && equals(currentInstanceData[key], val)) {

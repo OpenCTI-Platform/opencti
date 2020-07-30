@@ -143,7 +143,6 @@ class CourseOfActionEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], courseOfAction),
       value: pathOr(null, ['createdBy', 'id'], courseOfAction),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], courseOfAction),
     };
 
     if (currentCreatedBy.value === null) {
@@ -225,13 +224,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], courseOfAction),
         value: pathOr(null, ['createdBy', 'id'], courseOfAction),
-        relation: pathOr(
-          null,
-          ['createdBy', 'relation', 'id'],
-          courseOfAction,
-        ),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -240,13 +234,13 @@ class CourseOfActionEditionOverviewComponent extends Component {
     )(courseOfAction);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
         'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(courseOfAction);
     return (

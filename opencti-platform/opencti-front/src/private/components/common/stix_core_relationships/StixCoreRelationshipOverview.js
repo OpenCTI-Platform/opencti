@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
 import {
-  compose, includes, map, pathOr,
+  compose, includes, map, propOr,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
@@ -179,7 +179,6 @@ class StixCoreRelationshipContainer extends Component {
         to.from.id
       }/knowledge/relations`
       : resolveLink(to.entity_type);
-    console.log(paddingRight);
     return (
       <div className={classes.container}>
         <Link to={`${linkFrom}/${from.id}`}>
@@ -367,11 +366,7 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Author')}
               </Typography>
               <ItemAuthor
-                createdBy={pathOr(
-                  null,
-                  ['createdBy', 'node'],
-                  stixCoreRelationship,
-                )}
+                createdBy={propOr(null, 'createdBy', stixCoreRelationship)}
               />
             </Paper>
           </Grid>
@@ -384,7 +379,7 @@ class StixCoreRelationshipContainer extends Component {
                 {t('Confidence level')}
               </Typography>
               <ItemConfidence
-                level={
+                confidence={
                   stixCoreRelationship.inferred
                     ? 99
                     : stixCoreRelationship.confidence
@@ -823,6 +818,60 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             id
             entity_type
             parent_types
+          }
+          ... on AttackPattern {
+            name
+          }
+          ... on Campaign {
+            name
+          }
+          ... on CourseOfAction {
+            name
+          }
+          ... on Individual {
+            name
+          }
+          ... on Organization {
+            name
+          }
+          ... on Sector {
+            name
+          }
+          ... on Indicator {
+            name
+          }
+          ... on Infrastructure {
+            name
+          }
+          ... on IntrusionSet {
+            name
+          }
+          ... on Position {
+            name
+          }
+          ... on City {
+            name
+          }
+          ... on Country {
+            name
+          }
+          ... on Region {
+            name
+          }
+          ... on Malware {
+            name
+          }
+          ... on ThreatActor {
+            name
+          }
+          ... on Tool {
+            name
+          }
+          ... on Vulnerability {
+            name
+          }
+          ... on XOpenctiIncident {
+            name
           }
           ... on StixCyberObservable {
             observable_value

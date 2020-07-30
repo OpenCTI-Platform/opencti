@@ -34,7 +34,8 @@ const externalReferenceResolvers = {
       contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => externalReferenceDeleteRelation(user, id, relationId),
+      relationDelete: ({ fromId, relationship_type: relationshipType }) =>
+        externalReferenceDeleteRelation(user, id, fromId, relationshipType),
     }),
     externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),
   },

@@ -144,7 +144,6 @@ class AttackPatternEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], attackPattern),
       value: pathOr(null, ['createdBy', 'id'], attackPattern),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], attackPattern),
     };
 
     if (currentCreatedBy.value === null) {
@@ -163,7 +162,8 @@ class AttackPatternEditionOverviewComponent extends Component {
         mutation: attackPatternMutationRelationDelete,
         variables: {
           id: this.props.attackPattern.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -213,7 +213,7 @@ class AttackPatternEditionOverviewComponent extends Component {
         variables: {
           id: this.props.attackPattern.id,
           toId: head(removed).value,
-          relationship_type: 'object-marking',
+          relationship_type: 'kill-chain-phase',
         },
       });
     }
@@ -236,12 +236,10 @@ class AttackPatternEditionOverviewComponent extends Component {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.attackPattern.id,
           input: {
-            fromRole: 'so',
-            toId: this.props.attackPattern.id,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            toId: head(added).value,
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -274,7 +272,7 @@ class AttackPatternEditionOverviewComponent extends Component {
         value: n.node.id,
       })),
     )(attackPattern);
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -284,7 +282,7 @@ class AttackPatternEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',

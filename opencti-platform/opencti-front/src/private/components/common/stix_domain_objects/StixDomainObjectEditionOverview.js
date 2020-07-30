@@ -162,7 +162,6 @@ class StixDomainObjectEditionContainer extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], stixDomainObject),
       value: pathOr(null, ['createdBy', 'id'], stixDomainObject),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], stixDomainObject),
     };
 
     if (currentCreatedBy.value === null) {
@@ -181,7 +180,8 @@ class StixDomainObjectEditionContainer extends Component {
         mutation: stixDomainObjectMutationRelationDelete,
         variables: {
           id: stixDomainObject.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {

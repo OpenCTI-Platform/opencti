@@ -45,7 +45,7 @@ class StixDomainObjectExternalReferences extends Component {
     return (
       <QueryRenderer
         query={stixDomainObjectExternalReferencesLinesQuery}
-        variables={{ entityId, count: 200 }}
+        variables={{ id: entityId, count: 200 }}
         render={({ props }) => {
           if (props) {
             return (

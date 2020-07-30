@@ -136,7 +136,6 @@ class SectorEditionOverviewComponent extends Component {
     const currentCreatedBy = {
       label: pathOr(null, ['createdBy', 'name'], sector),
       value: pathOr(null, ['createdBy', 'id'], sector),
-      relation: pathOr(null, ['createdBy', 'relation', 'id'], sector),
     };
 
     if (currentCreatedBy.value === null) {
@@ -218,7 +217,6 @@ class SectorEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.name,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(sector);
 
@@ -263,9 +261,8 @@ class SectorEditionOverviewComponent extends Component {
       : {
         label: pathOr(null, ['createdBy', 'name'], sector),
         value: pathOr(null, ['createdBy', 'id'], sector),
-        relation: pathOr(null, ['createdBy', 'relation', 'id'], sector),
       };
-    const markingDefinitions = pipe(
+    const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
@@ -274,8 +271,8 @@ class SectorEditionOverviewComponent extends Component {
     )(sector);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
-      assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdBy', 'markingDefinitions']),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(sector);
     return (
       <Formik
