@@ -101,6 +101,7 @@ import {
   ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_SETTINGS,
   isDatedInternalObject,
+  RELATION_EXTERNAL_REFERENCE,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -1558,6 +1559,26 @@ const addLabels = async (user, internalId, labelIds, opts = {}) => {
   }
   return labels;
 };
+const addExternalReference = async (user, fromInternalId, externalReferenceId, opts = {}) => {
+  if (!externalReferenceId) return undefined;
+  const input = {
+    fromId: fromInternalId,
+    toId: externalReferenceId,
+    relationship_type: RELATION_EXTERNAL_REFERENCE,
+  };
+  return createRelationRaw(user, input, opts);
+};
+const addExternalReferences = async (user, internalId, externalReferenceIds, opts = {}) => {
+  if (!externalReferenceIds || isEmpty(externalReferenceIds)) return undefined;
+  const externalReferences = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < externalReferenceIds.length; i += 1) {
+    // eslint-disable-next-line no-await-in-loop
+    const externalReference = await addExternalReference(user, internalId, externalReferenceIds[i], opts);
+    externalReferences.push(externalReference);
+  }
+  return externalReferences;
+};
 const addKillChain = async (user, fromInternalId, killChainId, opts = {}) => {
   if (!killChainId) return undefined;
   const input = {
@@ -1657,6 +1678,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     dissoc('objectMarking'),
     dissoc('objectLabel'),
     dissoc('killChainPhases'),
+    dissoc('externalReferences'),
     dissoc('object')
   )(entity);
   // Default attributes
@@ -1771,6 +1793,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
       addMarkingDefs(user, internalId, entity.objectMarking, opts),
       addLabels(user, internalId, entity.objectLabel, opts), // Embedded in same execution.
       addKillChains(user, internalId, entity.killChainPhases, opts), // Embedded in same execution.
+      addExternalReferences(user, internalId, entity.externalReferences, opts),
       addObjects(user, internalId, entity.object, opts)
     );
   }
