@@ -103,12 +103,24 @@ class AttackPatternEditionDetailsComponent extends Component {
   render() {
     const { t, attackPattern, context } = this.props;
     const initialValues = pipe(
-      assoc('platform', propOr([], 'platform', attackPattern)),
       assoc(
-        'required_permission',
-        propOr([], 'required_permission', attackPattern),
+        'x_mitre_platforms',
+        propOr([], 'x_mitre_platforms', attackPattern),
       ),
-      pick(['x_mitre_id', 'platform', 'required_permission']),
+      assoc(
+        'x_mitre_permissions_required',
+        propOr([], 'x_mitre_permissions_required', attackPattern),
+      ),
+      assoc(
+        'x_mitre_detection',
+        propOr('', 'x_mitre_detection', attackPattern),
+      ),
+      pick([
+        'x_mitre_id',
+        'x_mitre_platforms',
+        'x_mitre_permissions_required',
+        'x_mitre_detection',
+      ]),
     )(attackPattern);
 
     return (
@@ -133,7 +145,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             />
             <Field
               component={SelectField}
-              name="platform"
+              name="x_mitre_platforms"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -141,7 +153,10 @@ class AttackPatternEditionDetailsComponent extends Component {
               fullWidth={true}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="platform" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_mitre_platforms"
+                />
               }
             >
               <MenuItem value="Android">{t('Android')}</MenuItem>
@@ -151,7 +166,7 @@ class AttackPatternEditionDetailsComponent extends Component {
             </Field>
             <Field
               component={SelectField}
-              name="required_permission"
+              name="x_mitre_permissions_required"
               multiple={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -161,13 +176,24 @@ class AttackPatternEditionDetailsComponent extends Component {
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="required_permission"
+                  fieldName="x_mitre_permissions_required"
                 />
               }
             >
               <MenuItem value="User">User</MenuItem>
               <MenuItem value="Administrator">Administrator</MenuItem>
             </Field>
+            <Field
+                component={TextField}
+                name="x_mitre_detection"
+                label={t('Detection')}
+                fullWidth={true}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus context={context} fieldName="x_mitre_detection" />
+                }
+            />
           </Form>
         )}
       </Formik>

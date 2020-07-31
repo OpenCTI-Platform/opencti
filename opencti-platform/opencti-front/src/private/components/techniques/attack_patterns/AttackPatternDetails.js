@@ -88,7 +88,7 @@ class AttackPatternDetailsComponent extends Component {
             {t('Platforms')}
           </Typography>
           <List>
-            {propOr([], 'platform', attackPattern).map((platform) => (
+            {propOr([], 'x_mitre_platforms', attackPattern).map((platform) => (
               <ListItem key={platform} dense={true} divider={true}>
                 <ListItemIcon>
                   <SettingsApplications />
@@ -105,7 +105,7 @@ class AttackPatternDetailsComponent extends Component {
             {t('Required permissions')}
           </Typography>
           <List>
-            {propOr([], 'required_permission', attackPattern).map(
+            {propOr([], 'x_mitre_permissions_required', attackPattern).map(
               (permission) => (
                 <ListItem key={permission} dense={true} divider={true}>
                   <ListItemIcon>

@@ -101,7 +101,8 @@ const STIX_CORE_RELATIONSHIPS = [
   RELATION_PART_OF,
   RELATION_SUBTECHNIQUE_OF,
 ];
-export const isStixCoreRelationship = (type) => includes(type, STIX_CORE_RELATIONSHIPS);
+export const isStixCoreRelationship = (type) =>
+  includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion
 
 // region STIX SIGHTING RELATIONSHIP
@@ -123,8 +124,11 @@ const STIX_INTERNAL_META_RELATIONSHIPS = [
   RELATION_KILL_CHAIN_PHASE,
 ];
 export const isStixMetaRelationship = (type) =>
-  includes(type, STIX_META_RELATIONSHIPS) || includes(type, STIX_INTERNAL_META_RELATIONSHIPS);
-export const isStixInternalMetaRelationship = (type) => includes(type, STIX_INTERNAL_META_RELATIONSHIPS);
+  includes(type, STIX_META_RELATIONSHIPS) ||
+  includes(type, STIX_INTERNAL_META_RELATIONSHIPS) ||
+  type === ABSTRACT_STIX_META_RELATIONSHIP;
+export const isStixInternalMetaRelationship = (type) =>
+  includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 // endregion
 
 // region STIX CYBER OBSERVABLE RELATIONSHIP
@@ -248,7 +252,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_WORKSPACE,
 ];
-export const isInternalObject = (type) => includes(type, INTERNAL_OBJECTS);
+export const isInternalObject = (type) => includes(type, INTERNAL_OBJECTS) || type === ABSTRACT_INTERNAL_OBJECT;
 export const isDatedInternalObject = (type) => includes(type, DATED_INTERNAL_OBJECTS);
 // endregion
 
@@ -264,7 +268,7 @@ const STIX_META_OBJECT = [
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
 ];
-export const isStixMetaObject = (type) => includes(type, STIX_META_OBJECT);
+export const isStixMetaObject = (type) => includes(type, STIX_META_OBJECT) || type === ABSTRACT_STIX_META_OBJECT;
 // endregion
 
 // region STIX DOMAIN OBJECT
@@ -300,20 +304,23 @@ const STIX_DOMAIN_OBJECT_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
 ];
-export const isStixDomainObjectContainer = (type) => includes(type, STIX_DOMAIN_OBJECT_CONTAINERS);
+export const isStixDomainObjectContainer = (type) =>
+  includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
 const STIX_DOMAIN_OBJECT_IDENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
 ];
-export const isStixDomainObjectIdentity = (type) => includes(type, STIX_DOMAIN_OBJECT_IDENTITIES);
+export const isStixDomainObjectIdentity = (type) =>
+  includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
 const STIX_DOMAIN_OBJECT_LOCATIONS = [
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_LOCATION_POSITION,
 ];
-export const isStixDomainObjectLocation = (type) => includes(type, STIX_DOMAIN_OBJECT_LOCATIONS);
+export const isStixDomainObjectLocation = (type) =>
+  includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
 
 const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -339,7 +346,7 @@ const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_VULNERABILITY,
   ENTITY_TYPE_X_OPENCTI_INCIDENT,
 ];
-export const isStixDomainObject = (type) => includes(type, STIX_DOMAIN_OBJECTS);
+export const isStixDomainObject = (type) => includes(type, STIX_DOMAIN_OBJECTS) || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 // endregion
 
 // region STIX CYBER OBSERVABLE
@@ -395,11 +402,13 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   ENTITY_X509_V3_EXTENSIONS_TYPE,
 ];
-export const isStixCyberObservable = (type) => includes(type, STIX_CYBER_OBSERVABLES);
+export const isStixCyberObservable = (type) =>
+  includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 // endregion
-export const isStixCoreObject = (type) => isStixDomainObject(type) || isStixCyberObservable(type);
-export const isStixObject = (type) => isStixCoreObject(type) || isStixMetaObject(type);
-export const isBasicObject = (type) => isInternalObject(type) || isStixObject(type);
+export const isStixCoreObject = (type) =>
+  isStixDomainObject(type) || isStixCyberObservable(type) || type === ABSTRACT_STIX_CORE_OBJECT;
+export const isStixObject = (type) => isStixCoreObject(type) || isStixMetaObject(type) || type === ABSTRACT_STIX_OBJECT;
+export const isBasicObject = (type) => isInternalObject(type) || isStixObject(type) || type === ABSTRACT_BASIC_OBJECT;
 // All
 export const ABSTRACT_TYPES = [
   ABSTRACT_BASIC_OBJECT,

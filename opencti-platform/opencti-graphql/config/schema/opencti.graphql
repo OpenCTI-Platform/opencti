@@ -1055,8 +1055,8 @@ input StixDomainObjectAddInput {
 
 ############## AttackPatterns
 enum AttackPatternsOrdering {
-  external_id
   name
+  x_mitre_id
   created
   modified
   created_at
@@ -1158,6 +1158,8 @@ input AttackPatternAddInput {
   name: String! @constraint(minLength: 3)
   description: String!
   aliases: [String]
+  revoked: Boolean
+  lang: String
   confidence: Int
   x_mitre_platforms: [String]
   x_mitre_permissions_required: [String]
@@ -1273,6 +1275,8 @@ input CampaignAddInput {
   name: String! @constraint(minLength: 3)
   description: String!
   aliases: [String]
+  revoked: Boolean
+  lang: String
   confidence: Int
   first_seen: DateTime
   last_seen: DateTime
@@ -1452,6 +1456,8 @@ input NoteAddInput {
   attribute_abstract: String
   content: String! @constraint(minLength: 3)
   authors: [String]
+  revoked: Boolean
+  lang: String
   confidence: Int
   createdBy: String
   objectMarking: [String]
@@ -1573,6 +1579,8 @@ input ObservedDataAddInput {
   first_observed: DateTime
   last_observed: DateTime
   number_observed: Int
+  revoked: Boolean
+  lang: String
   confidence: Int
   createdBy: String
   objectMarking: [String]
@@ -1692,6 +1700,8 @@ input OpinionAddInput {
   opinion: String
   explanation: String
   graph_data: String
+  revoked: Boolean
+  lang: String
   confidence: Int
   createdBy: String
   objectMarking: [String]
@@ -1818,6 +1828,9 @@ input ReportAddInput {
   published: DateTime
   report_types: [String]
   x_opencti_report_status: Int
+  revoked: Boolean
+  lang: String
+  confidence: Int
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -1910,7 +1923,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   description: String
   x_opencti_aliases: [String]
   attackPatterns: AttackPatternConnection
-
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -1923,6 +1935,8 @@ input CourseOfActionAddInput {
   name: String! @constraint(minLength: 3)
   description: String!
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
