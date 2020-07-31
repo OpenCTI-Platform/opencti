@@ -226,7 +226,16 @@ export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
-
+const DATED_INTERNAL_OBJECTS = [
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_TOKEN,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_USER,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_WORKSPACE,
+];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_MIGRATION_STATUS,
@@ -240,6 +249,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_WORKSPACE,
 ];
 export const isInternalObject = (type) => includes(type, INTERNAL_OBJECTS);
+export const isDatedInternalObject = (type) => includes(type, DATED_INTERNAL_OBJECTS);
 // endregion
 
 // region STIX META OBJECT
@@ -407,8 +417,8 @@ export const ABSTRACT_TYPES = [
   ABSTRACT_STIX_RELATIONSHIP,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP
-]
+  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
+];
 export const isAbstract = (type) => includes(type, ABSTRACT_TYPES);
 // ------------------------------------------------------
 

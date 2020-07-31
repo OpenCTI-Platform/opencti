@@ -17,7 +17,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING, STIX_SIGHTING_RELATIONSHIP } from "../utils/idGenerator";
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -66,7 +66,7 @@ const stixSightingRelationshipResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         stixSightingRelationshipEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.stixSightingRelationship.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;

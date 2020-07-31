@@ -303,6 +303,7 @@ class StixDomainObjectThreatKnowledge extends Component {
             <EntityStixCoreRelationshipsRadar
               entityId={stixDomainObjectId}
               entityType="Stix-Domain-Object"
+              relationshipType="stix-core-relationship"
               title={t('Distribution of relations')}
               field="entity_type"
               inferred={inferred}

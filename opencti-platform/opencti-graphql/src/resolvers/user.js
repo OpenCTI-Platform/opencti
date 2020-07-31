@@ -1,4 +1,5 @@
 import { filter } from 'ramda';
+import { withFilter } from 'graphql-subscriptions';
 import {
   addUser,
   findAll,
@@ -27,13 +28,15 @@ import {
   roleEditContext,
   roleCleanContext,
   userEditContext,
-  userEditCleanContext,
+  userCleanContext,
 } from '../domain/user';
-import { logger } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
-import { fetchEditContext } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
+import withCancel from '../graphql/subscriptionWrapper';
+import { ENTITY_TYPE_USER } from '../utils/idGenerator';
 
 const userResolvers = {
   Query: {
@@ -49,6 +52,7 @@ const userResolvers = {
     roles: (user) => getRoles(user.id),
     capabilities: (user) => getCapabilities(user.id),
     token: (user, args, context) => token(user.id, args, context),
+    editContext: (user) => fetchEditContext(user.id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
@@ -101,6 +105,24 @@ const userResolvers = {
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     userAdd: (_, { input }, { user }) => addUser(user, input),
+  },
+  Subscription: {
+    user: {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
+        userEditContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC),
+          (payload) => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id && payload.instance.id === id;
+          }
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          userCleanContext(user, id);
+        });
+      },
+    },
   },
 };
 

@@ -129,7 +129,7 @@ const internalGetToken = async (userId) => {
   $from has internal_id $rel_to_id;
   $from has internal_id "${escapeString(userId)}"; 
   get; offset 0; limit 1;`;
-  return loadWithConnectedRelations(query, 'x', { extraRelKey: 'rel' }).then((result) => result && result.node);
+  return loadWithConnectedRelations(query, 'to', { extraRelKey: 'rel' }).then((result) => result && result.node);
 };
 
 const internalGetTokenByUUID = async (tokenUUID) => {
@@ -175,6 +175,8 @@ export const getRoleCapabilities = async (roleId) => {
   const data = await find(
     `match $role isa Role, has internal_id "${escapeString(roleId)}";
             (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
+            $role has internal_id $role_id;
+            $capability has internal_id $capability_id;
             get;`,
     ['capability']
   );

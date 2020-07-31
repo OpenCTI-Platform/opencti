@@ -30,6 +30,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
 } from '../utils/idGenerator';
 
 const stixDomainObjectResolvers = {
@@ -90,7 +91,7 @@ const stixDomainObjectResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         stixDomainObjectEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.stixDomainObject.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;

@@ -51,7 +51,7 @@ class MarkingDefinitionLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon
-          style={{ color: node.color }}
+          style={{ color: node.x_opencti_color }}
           classes={{ root: classes.itemIcon }}
         >
           <CenterFocusStrong />

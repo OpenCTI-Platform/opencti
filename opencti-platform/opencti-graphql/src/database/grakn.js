@@ -95,6 +95,12 @@ import {
   isBasicRelationship,
   ABSTRACT_STIX_RELATIONSHIP,
   isAbstract,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_USER,
+  ENTITY_TYPE_TOKEN,
+  ENTITY_TYPE_SETTINGS,
+  isDatedInternalObject,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -1659,6 +1665,10 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   // Internal-Object
   if (isInternalObject(type)) {
     data = assoc('standard_id', standardId, data);
+  }
+  // Some internal objects have dates
+  if (isDatedInternalObject(type)) {
+    data = pipe(assoc('created_at', today), assoc('updated_at', today))(data);
   }
   // Stix-Object
   if (isStixObject(type)) {

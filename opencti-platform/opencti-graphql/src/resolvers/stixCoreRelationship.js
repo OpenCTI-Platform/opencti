@@ -25,11 +25,12 @@ import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUF
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
 import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+  RELATION_OBJECT_MARKING
+} from "../utils/idGenerator";
 import { creator } from '../domain/log';
 
 const stixCoreRelationshipResolvers = {
@@ -90,7 +91,7 @@ const stixCoreRelationshipResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         stixCoreRelationshipEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.StixCoreRelationship.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;

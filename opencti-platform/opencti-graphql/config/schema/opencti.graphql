@@ -7295,6 +7295,7 @@ type Query {
 
 type Subscription {
   settings(id: ID!): Settings @auth(for: [SETTINGS])
+  group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
   user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
   label(id: ID!): Label @auth(for: [SETTINGS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])

@@ -28,6 +28,7 @@ import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
 import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
   RELATION_CREATED_BY,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
@@ -95,7 +96,7 @@ const stixCyberObservableResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         stixCyberObservableEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.StixCyberObservable.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;

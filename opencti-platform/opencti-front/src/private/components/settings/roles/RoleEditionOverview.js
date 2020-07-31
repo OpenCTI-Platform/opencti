@@ -148,10 +148,8 @@ const RoleEditionOverviewComponent = ({
         variables: {
           id: roleId,
           input: {
-            fromRole: 'position',
             toId: capability.id,
-            toRole: 'capability',
-            through: 'role_capability',
+            relationship_type: 'role_capability',
           },
         },
       });

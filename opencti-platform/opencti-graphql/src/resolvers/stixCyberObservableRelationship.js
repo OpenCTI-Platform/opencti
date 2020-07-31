@@ -12,6 +12,7 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { loadById } from '../database/grakn';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from "../utils/idGenerator";
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {
@@ -42,7 +43,7 @@ const stixCyberObservableRelationshipResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         stixCyberObservableRelationshipEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.StixCyberObservableRelationship.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
