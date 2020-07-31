@@ -164,10 +164,8 @@ class UserEditionOverviewComponent extends Component {
         variables: {
           id: user.id,
           input: {
-            fromRole: 'client',
-            toRole: 'position',
             toId: head(added).id,
-            through: 'user_role',
+            relationship_type: 'has-role',
           },
         },
       });

@@ -1692,7 +1692,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   // STIX-Domain-Object
   if (isStixDomainObject(type)) {
     data = pipe(
-      assoc('revoked', false),
+      assoc('revoked', isNil(data.revoked) ? false : data.revoked),
       assoc('confidence', isNil(data.confidence) ? 0 : data.confidence),
       assoc('lang', isNil(data.lang) ? 'en' : data.lang),
       assoc('created', isNil(entity.created) ? today : entity.created),

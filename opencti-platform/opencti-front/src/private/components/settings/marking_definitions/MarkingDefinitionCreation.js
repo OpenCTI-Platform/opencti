@@ -105,9 +105,9 @@ class MarkingDefinitionCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(assoc('level', parseInt(values.level, 10)))(
-      values,
-    );
+    const finalValues = pipe(
+      assoc('x_opencti_order', parseInt(values.x_opencti_order, 10)),
+    )(values);
     commitMutation({
       mutation: markingDefinitionMutation,
       variables: {
@@ -172,8 +172,8 @@ class MarkingDefinitionCreation extends Component {
               initialValues={{
                 definition_type: '',
                 definition: '',
-                color: '',
-                level: '',
+                x_opencti_color: '',
+                x_opencti_order: '',
               }}
               validationSchema={markingDefinitionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}

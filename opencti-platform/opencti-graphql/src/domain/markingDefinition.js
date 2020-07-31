@@ -1,3 +1,4 @@
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -19,7 +20,15 @@ export const findAll = (args) => {
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const created = await createEntity(user, markingDefinition, ENTITY_TYPE_MARKING_DEFINITION);
+  const created = await createEntity(
+    user,
+    assoc(
+      'x_opencti_color',
+      markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff',
+      markingDefinition
+    ),
+    ENTITY_TYPE_MARKING_DEFINITION
+  );
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
 

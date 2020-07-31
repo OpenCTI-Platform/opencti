@@ -393,14 +393,8 @@ enum UsersOrdering {
 }
 enum UsersFilter {
   name
-  confidence
   entity_type
-  created
-  modified
   created_at
-  createdBy
-  objectMarking
-  objectLabel
 }
 input UsersFiltering {
   key: UsersFilter!
@@ -443,6 +437,7 @@ input UserAddInput {
   password: String
   firstname: String
   lastname: String
+  description: String
   language: String
   roles: [ID]
 }
@@ -966,6 +961,7 @@ enum StixDomainObjectsOrdering {
 }
 enum StixDomainObjectsFilter {
   name
+  aliases
   created
   modified
   created_at
@@ -2034,13 +2030,15 @@ interface Identity {
   editContext: [EditUserContext]
 }
 input IdentityAddInput {
+  type: IdentityType!
   stix_id: String
   name: String!
   description: String
   contact_information: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   aliases: [String]
-  type: IdentityType!
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -2153,6 +2151,8 @@ input IndividualAddInput {
   x_opencti_firstname: String
   x_opencti_lastname: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -2272,6 +2272,8 @@ input OrganizationAddInput {
   aliases: [String]
   contact_information: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   x_opencti_organization_type: String
   x_opencti_reliability: OrganizationReliability
   createdBy: String
@@ -2387,6 +2389,8 @@ input SectorAddInput {
   aliases: [String]
   contact_information: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -2520,6 +2524,8 @@ input IndicatorAddInput {
   valid_from: DateTime
   valid_until: DateTime
   confidence: Int
+  revoked: Boolean
+  lang: String
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String!
@@ -2639,6 +2645,8 @@ input InfrastructureAddInput {
   first_seen: DateTime
   last_seen: DateTime
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -2755,6 +2763,8 @@ input IntrusionSetAddInput {
   primary_motivation: String
   secondary_motivations: [String]
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -2924,6 +2934,8 @@ input PositionAddInput {
   street_address: String
   postal_code: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
@@ -3037,6 +3049,8 @@ input CityAddInput {
   longitude: Float
   precision: Float
   confidence: Int
+  revoked: Boolean
+  lang: String
   x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
@@ -3145,6 +3159,8 @@ input CountryAddInput {
   description: String
   aliases: [String]
   confidence: Int
+  revoked: Boolean
+  lang: String
   x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
@@ -3255,6 +3271,8 @@ input RegionAddInput {
   description: String
   contact_information: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   x_opencti_aliases: [String]
   createdBy: String
   objectMarking: [String]
@@ -3358,10 +3376,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   is_family: Boolean
   first_seen: DateTime
   last_seen: DateTime
-  goals: [String]
-  resource_level: String
-  primary_motivation: String
-  secondary_motivations: [String]
+  architecture_execution_envs: [String]
+  implementation_languages: [String]
+  capabilities: [String]
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
@@ -3378,7 +3395,14 @@ input MalwareAddInput {
   malware_types: [String]
   aliases: [String]
   is_family: Boolean
+  first_seen: DateTime
+  last_seen: DateTime
+  architecture_execution_envs: [String]
+  implementation_languages: [String]
+  capabilities: [String]
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3503,6 +3527,8 @@ input ThreatActorAddInput {
   secondary_motivations: [String]
   personal_motivations: [String]
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3611,6 +3637,8 @@ input ToolAddInput {
   aliases: [String]
   tool_version: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3728,6 +3756,8 @@ input VulnerabilityAddInput {
   x_opencti_integrity_impact: String
   x_opencti_availability_impact: String
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -3836,6 +3866,8 @@ input XOpenctiIncidentAddInput {
   name: String! @constraint(minLength: 3)
   description: String!
   confidence: Int
+  revoked: Boolean
+  lang: String
   objective: String
   first_seen: DateTime
   last_seen: DateTime
@@ -6413,6 +6445,8 @@ input StixCoreRelationshipAddInput {
   start_time: DateTime
   stop_time: DateTime
   confidence: Int
+  revoked: Boolean
+  lang: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
