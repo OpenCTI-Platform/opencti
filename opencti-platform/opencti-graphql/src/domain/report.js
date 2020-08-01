@@ -42,7 +42,7 @@ export const objects = (reportId, args) => {
   return findAllStixDomainEntities(finalArgs);
 };
 
-export const reportContainsThing = async (reportId, thingId) => {
+export const reportContainsStixObjectOrStixRelationship = async (reportId, thingId) => {
   const args = {
     filters: [
       { key: 'internal_id', values: [reportId] },

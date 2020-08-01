@@ -115,12 +115,12 @@ class Reports extends Component {
         width: '10%',
         isSortable: true,
       },
-      object_status: {
+      x_opencti_report_status: {
         label: 'Status',
         width: '10%',
         isSortable: true,
       },
-      marking: {
+      objectMarking: {
         label: 'Marking',
         width: '15%',
         isSortable: false,
@@ -145,10 +145,10 @@ class Reports extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'object_status',
-          'labels',
+          'x_opencti_report_status',
+          'labelledBy',
           'createdBy',
-          'markingDefinitions',
+          'markedBy',
           'published_start_date',
           'published_end_date',
         ]}

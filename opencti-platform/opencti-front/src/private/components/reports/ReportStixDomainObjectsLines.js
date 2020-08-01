@@ -78,15 +78,15 @@ ReportStixDomainObjectsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const ReportStixDomainObjectsLinesQuery = graphql`
+export const reportStixDomainObjectsLinesQuery = graphql`
   query ReportStixDomainObjectsLinesQuery(
     $id: String!
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixDomainObjectsOrdering
+    $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixDomainObjectsFiltering]
+    $filters: [StixObjectOrStixRelationshipsFiltering]
   ) {
     report(id: $id) {
       ...ReportStixDomainObjectsLines_report
@@ -111,9 +111,9 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: "name" }
+          orderBy: { type: "StixObjectOrStixRelationshipsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixCoreObjectsFiltering]" }
+          filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
         ) {
         id
         objects(
@@ -163,6 +163,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: ReportStixDomainObjectsLinesQuery,
+    query: reportStixDomainObjectsLinesQuery,
   },
 );

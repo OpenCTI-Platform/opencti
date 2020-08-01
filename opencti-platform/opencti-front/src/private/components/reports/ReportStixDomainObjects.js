@@ -10,7 +10,7 @@ import { QueryRenderer } from '../../../relay/environment';
 import ReportHeader from './ReportHeader';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportStixDomainObjectsLines, {
-  ReportStixDomainObjectsLinesQuery,
+  reportStixDomainObjectsLinesQuery,
 } from './ReportStixDomainObjectsLines';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -164,7 +164,7 @@ class ReportStixDomainObjectsComponent extends Component {
           numberOfElements={numberOfElements}
         >
           <QueryRenderer
-            query={ReportStixDomainObjectsLinesQuery}
+            query={reportStixDomainObjectsLinesQuery}
             variables={{ id: report.id, count: 25, ...paginationOptions }}
             render={({ props }) => (
               <ReportStixDomainObjectsLines

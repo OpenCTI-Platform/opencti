@@ -55,8 +55,8 @@ class ReportComponent extends Component {
           <Grid item={true} xs={6}>
             <EntityStixCoreRelationshipsDonut
               entityId={report.id}
-              entityType="Stix-Observable"
-              relationshipType="observable_refs"
+              entityType="Stix-Cyber-Observable"
+              relationshipType="object"
               field="entity_type"
               height={150}
             />
@@ -65,7 +65,7 @@ class ReportComponent extends Component {
             <EntityStixCoreRelationshipsDonut
               entityId={report.id}
               entityType="Stix-Domain-Object"
-              relationshipType="object-ref"
+              relationshipType="object"
               field="entity_type"
               height={150}
             />

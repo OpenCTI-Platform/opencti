@@ -1805,9 +1805,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objects(
     first: Int
     after: ID
-    orderBy: StixCoreObjectsOrdering
+    orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixCoreObjectsFiltering]
+    filters: [StixObjectOrStixRelationshipsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -6315,6 +6315,7 @@ input InternalRelationshipAddInput {
 
 ######## STIX RELATIONSHIPS
 enum StixObjectOrStixRelationshipsOrdering {
+  name
   created_at
   updated_at
   createdBy
@@ -6453,6 +6454,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   inferred: Boolean
+  spec_version: String!
   # StixCoreRelationship
   relationship_type: String!
   description: String
@@ -6575,6 +6577,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
+  spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   inferred: Boolean
@@ -6660,6 +6663,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
+  spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   inferred: Boolean
@@ -6697,6 +6701,7 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   # StixRelationship
   standard_id: String!
   stix_ids: [String]
+  spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   inferred: Boolean

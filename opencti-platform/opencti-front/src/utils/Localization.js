@@ -765,6 +765,7 @@ const i18n = {
       '24h': '24h',
       // Types
       entity_all: 'Toutes les entités',
+      'entity_Stix-Domain-Object': 'Entité',
       'entity_Attack-Pattern': "Motif d'attaque",
       entity_Campaign: 'Campagne',
       entity_Note: 'Note',
@@ -922,6 +923,7 @@ const i18n = {
       Nonee: 'None',
       // Types
       entity_all: 'All entities',
+      'entity_Stix-Domain-Object': 'Entity',
       'entity_Attack-Pattern': 'Attack Pattern',
       entity_Campaign: 'Campaign',
       entity_Note: 'Note',
