@@ -59,7 +59,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="gathering"
+              relationshipType="part-of"
               targetEntityTypes={['Sector']}
               entityLink={link}
               creationIsFrom={true}
@@ -88,7 +88,7 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               role="gather"
-              relationshipType="gathering"
+              relationshipType="part-of"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={false}
@@ -102,7 +102,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="gathering"
+              relationshipType="part-of"
               targetEntityTypes={['User']}
               entityLink={link}
               creationIsFrom={false}

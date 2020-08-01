@@ -59,7 +59,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationshipType="gathering"
+              relationshipType="part-of"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={true}

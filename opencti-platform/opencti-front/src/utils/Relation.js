@@ -136,8 +136,8 @@ const relationsTypesMapping = {
   City_Country: ['located-at'],
   Position_City: ['located-at'],
   // TODO Observables
-  observable_organization: ['gathering'],
-  observable_user: ['gathering'],
+  observable_organization: ['part-of'],
+  observable_user: ['part-of'],
   observable_city: ['localization'],
   observable_country: ['localization'],
   observable_region: ['localization'],

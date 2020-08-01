@@ -1,3 +1,4 @@
+import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -53,6 +54,10 @@ export const isSubRegion = async (regionId, args) => {
 };
 
 export const addRegion = async (user, region) => {
-  const created = await createEntity(user, region, ENTITY_TYPE_LOCATION_REGION);
+  const created = await createEntity(
+    user,
+    assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_REGION, region),
+    ENTITY_TYPE_LOCATION_REGION
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

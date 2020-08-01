@@ -59,7 +59,7 @@ class SectorKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={sector.id}
-              relationshipType="gathering"
+              relationshipType="part-of"
               targetEntityTypes={['Organization']}
               entityLink={link}
               creationIsFrom={false}

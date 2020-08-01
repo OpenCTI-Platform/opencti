@@ -102,7 +102,7 @@ export const itemColor = (type, dark) => {
     case 'attributed-to':
     case 'variant-of':
     case 'localization':
-    case 'gathering':
+    case 'part-of':
     case 'drops':
       if (dark) {
         return '#616161';

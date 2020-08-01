@@ -1,4 +1,4 @@
-import { assoc, dissoc } from 'ramda';
+import { pipe, assoc, dissoc } from 'ramda';
 import { createEntity, listEntities, loadEntityById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -16,7 +16,7 @@ export const findAll = async (args) => {
 };
 
 export const addIdentity = async (user, identity) => {
-  const identityToCreate = dissoc('type', identity);
+  const identityToCreate = pipe(assoc('x_opencti_identity_type', identity.type), dissoc('type', identity))(identity);
   const created = await createEntity(user, identityToCreate, identity.type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

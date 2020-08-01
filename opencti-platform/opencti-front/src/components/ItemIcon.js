@@ -148,7 +148,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'attributed-to':
     case 'variant-of':
     case 'localization':
-    case 'gathering':
+    case 'part-of':
     case 'drops':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:

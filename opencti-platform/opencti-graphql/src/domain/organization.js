@@ -1,3 +1,4 @@
+import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -34,6 +35,10 @@ export const sectors = (organizationId) => {
 };
 
 export const addOrganization = async (user, organization) => {
-  const created = await createEntity(user, organization, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  const created = await createEntity(
+    user,
+    assoc('x_opencti_identity_type', ENTITY_TYPE_IDENTITY_ORGANIZATION, organization),
+    ENTITY_TYPE_IDENTITY_ORGANIZATION
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

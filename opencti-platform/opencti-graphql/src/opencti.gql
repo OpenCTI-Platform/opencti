@@ -169,6 +169,8 @@ define
   x_opencti_attack_vector sub attribute, datatype string;
   x_opencti_integrity_impact sub attribute, datatype string;
   x_opencti_availability_impact sub attribute, datatype string;
+  x_opencti_identity_type sub attribute, datatype string;
+  x_opencti_location_type sub attribute, datatype string;
 
   # STIX Cyber Observables
   mime_type sub attribute, datatype string;
@@ -1053,6 +1055,7 @@ define
     has description,
     has aliases,
     has contact_information,
+    has x_opencti_identity_type,
     plays located-at_from,
     plays part-of_from,
     plays targets_to,
@@ -1162,6 +1165,7 @@ define
     has longitude,
     has precision,
     has x_opencti_aliases,
+    has x_opencti_location_type,
     plays located-at_from,
     plays located-at_to,
     plays originates-from_to,

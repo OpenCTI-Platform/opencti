@@ -232,7 +232,7 @@ class SectorEditionOverviewComponent extends Component {
             fromRole: 'part_of',
             toId: this.props.sector.id,
             toRole: 'gather',
-            through: 'gathering',
+            through: 'part-of',
             first_seen: now(),
             last_seen: now(),
             weight: 4,
