@@ -57,7 +57,7 @@ class ReportStixDomainObjectsLines extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportAddObjects
             reportId={propOr(null, 'id', report)}
-            reportObjectRefs={pathOr([], ['objects', 'edges'], report)}
+            reportObjects={pathOr([], ['objects', 'edges'], report)}
             paginationOptions={paginationOptions}
             withPadding={true}
           />
@@ -82,6 +82,7 @@ export const reportStixDomainObjectsLinesQuery = graphql`
   query ReportStixDomainObjectsLinesQuery(
     $id: String!
     $search: String
+    $types: [String]
     $count: Int!
     $cursor: ID
     $orderBy: StixObjectOrStixRelationshipsOrdering
@@ -92,6 +93,7 @@ export const reportStixDomainObjectsLinesQuery = graphql`
       ...ReportStixDomainObjectsLines_report
         @arguments(
           search: $search
+          types: $types
           count: $count
           cursor: $cursor
           orderBy: $orderBy
@@ -108,6 +110,7 @@ export default createPaginationContainer(
     report: graphql`
       fragment ReportStixDomainObjectsLines_report on Report
         @argumentDefinitions(
+          types: { type: "[String]" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
@@ -117,6 +120,7 @@ export default createPaginationContainer(
         ) {
         id
         objects(
+          types: $types
           search: $search
           first: $count
           after: $cursor
@@ -158,6 +162,7 @@ export default createPaginationContainer(
         count,
         cursor,
         search: fragmentVariables.search,
+        types: fragmentVariables.types,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,

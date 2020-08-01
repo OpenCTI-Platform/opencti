@@ -1341,9 +1341,9 @@ interface Container {
   objects(
     first: Int
     after: ID
-    orderBy: StixCoreObjectsOrdering
+    orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixCoreObjectsFiltering]
+    filters: [StixObjectOrStixRelationshipsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1435,9 +1435,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objects(
     first: Int
     after: ID
-    orderBy: StixCoreObjectsOrdering
+    orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixCoreObjectsFiltering]
+    filters: [StixObjectOrStixRelationshipsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1559,9 +1559,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objects(
     first: Int
     after: ID
-    orderBy: StixCoreObjectsOrdering
+    orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixCoreObjectsFiltering]
+    filters: [StixObjectOrStixRelationshipsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]
@@ -1679,9 +1679,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objects(
     first: Int
     after: ID
-    orderBy: StixCoreObjectsOrdering
+    orderBy: StixObjectOrStixRelationshipsOrdering
     orderMode: OrderingMode
-    filters: [StixCoreObjectsFiltering]
+    filters: [StixObjectOrStixRelationshipsFiltering]
     filterMode: FilterMode
     search: String
     types: [String]

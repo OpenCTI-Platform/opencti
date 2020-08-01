@@ -75,9 +75,9 @@ export const reportStixCyberObservablesLinesQuery = graphql`
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixCyberObservablesOrdering
+    $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCyberObservablesFiltering]
+    $filters: [StixObjectOrStixRelationshipsFiltering]
   ) {
     report(id: $id) {
       ...ReportStixCyberObservablesLines_report
@@ -104,9 +104,9 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: "name" }
+          orderBy: { type: "StixObjectOrStixRelationshipsOrdering", defaultValue: "name" }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixCoreObjectsFiltering]" }
+          filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
         ) {
         id
         objects(

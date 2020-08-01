@@ -140,11 +140,9 @@ class ReportStixDomainObjectsComponent extends Component {
         isSortable: false,
       },
     };
-    const filters = [
-      { key: 'entity_type', values: stixDomainObjectsTypes, operator: 'match' },
-    ];
     const paginationOptions = {
-      filters,
+      types: stixDomainObjectsTypes,
+      filters: null,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',

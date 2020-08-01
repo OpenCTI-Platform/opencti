@@ -327,7 +327,7 @@ class ReportKnowledgeGraphComponent extends Component {
       this.props.engine.repaintCanvas();
     }
 
-    if (this.props.report.graph_data !== prevProps.report.graph_data) {
+    if (this.props.report.x_opencti_graph_data !== prevProps.report.x_opencti_graph_data) {
       this.updateView();
     }
   }
@@ -341,11 +341,11 @@ class ReportKnowledgeGraphComponent extends Component {
     // decode graph data if any
     let graphData = {};
     if (
-      this.props.report.graph_data
-      && this.props.report.graph_data.length > 0
+      this.props.report.x_opencti_graph_data
+      && this.props.report.x_opencti_graph_data.length > 0
     ) {
       graphData = JSON.parse(
-        Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'),
+        Buffer.from(this.props.report.x_opencti_graph_data, 'base64').toString('ascii'),
       );
     }
 
@@ -461,11 +461,11 @@ class ReportKnowledgeGraphComponent extends Component {
     // decode graph data if any
     let graphData = {};
     if (
-      this.props.report.graph_data
-      && this.props.report.graph_data.length > 0
+      this.props.report.x_opencti_graph_data
+      && this.props.report.x_opencti_graph_data.length > 0
     ) {
       graphData = JSON.parse(
-        Buffer.from(this.props.report.graph_data, 'base64').toString('ascii'),
+        Buffer.from(this.props.report.x_opencti_graph_data, 'base64').toString('ascii'),
       );
     }
 
@@ -502,7 +502,7 @@ class ReportKnowledgeGraphComponent extends Component {
       mutation: reportMutationFieldPatch,
       variables: {
         id: this.props.report.id,
-        input: { key: 'graph_data', value: graphData },
+        input: { key: 'x_opencti_graph_data', value: graphData },
       },
     });
   }
@@ -930,7 +930,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
       fragment ReportKnowledgeGraph_report on Report {
         id
         name
-        graph_data
+        x_opencti_graph_data
         published
         confidence
         createdBy {
