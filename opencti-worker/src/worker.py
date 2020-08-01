@@ -106,7 +106,7 @@ class Consumer(threading.Thread):
             token = data["token"]
         try:
             content = base64.b64decode(data["content"]).decode("utf-8")
-            types = data["entities_types"] if "entities_types" in data else []
+            types = data["entities_types"] if "entities_types" in data and len(data["entity_types"]) > 0 else None
             update = data["update"] if "update" in data else False
             if token:
                 self.api.set_token(token)

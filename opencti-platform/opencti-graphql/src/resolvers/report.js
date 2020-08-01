@@ -9,7 +9,7 @@ import {
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
   reportsTimeSeriesByEntity,
-  reportContainsStixCoreObjectOrStixRelationship,
+  reportContainsStixObjectOrStixRelationship,
 } from '../domain/report';
 import {
   stixDomainObjectAddRelation,
@@ -52,8 +52,8 @@ const reportResolvers = {
       }
       return [];
     },
-    reportObjectContains: (_, args) => {
-      return reportContainsStixCoreObjectOrStixRelationship(args.id, args.objectId);
+    reportContainsStixObjectOrStixRelationship: (_, args) => {
+      return reportContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   ReportsOrdering: {

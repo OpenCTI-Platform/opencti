@@ -1,4 +1,4 @@
-import { assoc, includes, dissoc, invertObj, isNil, map, pathOr, pipe, propOr } from 'ramda';
+import { assoc, includes, dissoc, invertObj, isNil, map, pathOr, pipe, propOr, filter } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -33,27 +33,18 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   isStixMetaRelationship,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  isStixDomainObject,
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
-  const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? [ABSTRACT_STIX_CORE_OBJECT] : args.types;
-  const finalArgs = assoc('parentType', ABSTRACT_STIX_DOMAIN_OBJECT, args);
-  let data = await listEntities(entityTypes, ['name', 'aliases'], finalArgs);
-  data = assoc(
-    'edges',
-    map(
-      (n) => ({
-        cursor: n.cursor,
-        node: pipe(dissoc('user_email'), dissoc('password'))(n.node),
-        relation: n.relation,
-      }),
-      data.edges
-    ),
-    data
-  );
-  return data;
+  let types = [];
+  if (args.types && args.types.length > 0) {
+    types = filter((type) => isStixDomainObject(type), args.types);
+  }
+  if (types.length === 0) {
+    types.push(ABSTRACT_STIX_CORE_OBJECT);
+  }
+  return listEntities(types, ['standard_id'], args);
 };
 
 // eslint-disable-next-line no-unused-vars

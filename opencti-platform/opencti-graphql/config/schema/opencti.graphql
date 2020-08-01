@@ -572,7 +572,7 @@ type Workspace implements BasicObject & InternalObject {
   workspace_type: String!
   name: String!
   description: String
-  graph_data: String
+  x_opencti_graph_data: String
   workspace_data: String
   created_at: DateTime!
   updated_at: DateTime!
@@ -693,7 +693,7 @@ enum LabelsFilter {
   markedBy
 }
 input LabelsFiltering {
-  key: MarkingDefinitionsFilter!
+  key: LabelsFilter!
   values: [String]
   operator: String
 }
@@ -1703,7 +1703,7 @@ input OpinionAddInput {
   description: String!
   opinion: String
   explanation: String
-  graph_data: String
+  x_opencti_graph_data: String
   revoked: Boolean
   lang: String
   confidence: Int
@@ -1817,7 +1817,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   description: String
   report_types: [String]
   published: DateTime
-  graph_data: String
+  x_opencti_graph_data: String
   x_opencti_report_status: Int
   # Technical
   creator: User
@@ -1830,8 +1830,9 @@ input ReportAddInput {
   stix_id: String
   name: String! @constraint(minLength: 3)
   description: String
-  published: DateTime
+  published: DateTime!
   report_types: [String]
+  x_opencti_graph_data: String
   x_opencti_report_status: Int
   revoked: Boolean
   lang: String
@@ -7023,7 +7024,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  reportObjectContains(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
   courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
   coursesOfAction(
     first: Int

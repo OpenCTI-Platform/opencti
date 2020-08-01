@@ -13,7 +13,7 @@ define
   updated_at sub attribute, datatype date;
   name sub attribute, datatype string;
   description sub attribute, datatype string;
-  graph_data sub attribute, datatype string;
+  x_opencti_graph_data sub attribute, datatype string;
   issuer sub attribute, datatype string;
   revoked sub attribute, datatype boolean;
 
@@ -893,7 +893,7 @@ define
     has workspace_type,
     has name,
     has description,
-    has graph_data,
+    has x_opencti_graph_data,
     has workspace_data,
     has created_at,
     has created_at_day,
@@ -1037,7 +1037,7 @@ define
     has published_day,
     has published_year,
     has published_month,
-    has graph_data;
+    has x_opencti_graph_data;
 
   Course-Of-Action sub Stix-Domain-Object,
     has name,

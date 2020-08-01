@@ -1,4 +1,4 @@
-import { assoc, dissoc, filter, forEach, map, pipe } from 'ramda';
+import { assoc, filter } from 'ramda';
 import {
   createRelation,
   deleteRelationById,

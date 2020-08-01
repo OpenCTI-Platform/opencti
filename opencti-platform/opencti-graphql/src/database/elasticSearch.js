@@ -36,13 +36,14 @@ import {
 import conf, { logger } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import {
-  BASE_TYPE_RELATION, getParentTypes, isAbstract,
+  BASE_TYPE_RELATION,
+  getParentTypes,
+  isAbstract,
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from "../utils/idGenerator";
-import { isAbstractType } from "graphql";
+  RELATION_OBJECT_MARKING,
+} from '../utils/idGenerator';
 
 const dateFields = [
   'created',

@@ -42,15 +42,15 @@ export const objects = (reportId, args) => {
   return findAllStixDomainEntities(finalArgs);
 };
 
-export const reportContainsStixCoreObjectOrStixRelationship = async (reportId, objectId) => {
+export const reportContainsThing = async (reportId, thingId) => {
   const args = {
     filters: [
-      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [reportId] },
-      { key: 'internal_id', values: [objectId] },
+      { key: 'internal_id', values: [reportId] },
+      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  const stixCoreObjectsOrStixRelationships = await findAllStixDomainEntities(args);
-  return stixCoreObjectsOrStixRelationships.edges.length > 0;
+  const reportFound = await findAll(args);
+  return reportFound.edges.length > 0;
 };
 
 // region series
@@ -128,28 +128,28 @@ export const reportsDistributionByEntity = async (args) => {
 // region mutations
 export const addReport = async (user, report) => {
   // Get the reliability of the author
-  let sourceConfidenceLevel = 1;
+  let confidence = 20;
   if (report.createdBy) {
     const identity = await findIdentityById(report.createdBy);
     if (identity.reliability) {
       switch (identity.reliability) {
         case 'A':
-          sourceConfidenceLevel = 4;
+          confidence = 80;
           break;
         case 'B':
-          sourceConfidenceLevel = 3;
+          confidence = 60;
           break;
         case 'C':
-          sourceConfidenceLevel = 2;
+          confidence = 40;
           break;
         default:
-          sourceConfidenceLevel = 1;
+          confidence = 20;
       }
     }
   }
   const finalReport = pipe(
-    assoc('object_status', propOr(STATUS_STATUS_NEW, 'object_status', report)),
-    assoc('source_confidence_level', propOr(sourceConfidenceLevel, 'source_confidence_level', report))
+    assoc('x_opencti_report_status', propOr(STATUS_STATUS_NEW, 'x_opencti_report_status', report)),
+    assoc('confidence', propOr(confidence, 'confidence', report))
   )(report);
   const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

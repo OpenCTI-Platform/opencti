@@ -95,11 +95,6 @@ import {
   isBasicRelationship,
   ABSTRACT_STIX_RELATIONSHIP,
   isAbstract,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_USER,
-  ENTITY_TYPE_TOKEN,
-  ENTITY_TYPE_SETTINGS,
   isDatedInternalObject,
   RELATION_EXTERNAL_REFERENCE,
 } from '../utils/idGenerator';
