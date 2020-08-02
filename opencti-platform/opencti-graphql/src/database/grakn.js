@@ -67,7 +67,14 @@ import {
   ENTITIES_INDICES,
   RELATIONSHIPS_INDICES,
 } from './elasticSearch';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE, EVENT_TYPE_UPDATE_REMOVE, sendLog } from './rabbitmq';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_UPDATE,
+  EVENT_TYPE_UPDATE_ADD,
+  EVENT_TYPE_UPDATE_REMOVE,
+  sendLog,
+} from './rabbitmq';
 import {
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
@@ -1488,12 +1495,12 @@ const createRelationRaw = async (user, input, opts = {}) => {
   postOperations.push(elIndexElements([createdRel]));
   // 05. Send logs
   if (!noLog) {
-    // TODO JRI HELP SAM
-    // if (entityType === TYPE_RELATION_EMBEDDED) {
-    //   const eventType = relationshipType === RELATION_CREATED_BY ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD;
-    //   postOperations.push(sendLog(eventType, user, createdRel, { from, to }));
-    // }
-    // postOperations.push(sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to }));
+    if (isStixMetaRelationship(relationshipType)) {
+      const eventType = relationshipType === RELATION_CREATED_BY ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD;
+      postOperations.push(sendLog(eventType, user, createdRel, { from, to }));
+    } else {
+      postOperations.push(sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to }));
+    }
   }
   await Promise.all(postOperations);
   // 06. Return result if no need to reverse the relations from and to

@@ -24,7 +24,7 @@ const styles = () => ({
 class XOpenCTIIncidentDetailsComponent extends Component {
   render() {
     const {
-      fld, t, classes, XOpenCTIIncident,
+      fld, t, classes, xOpenCTIIncident,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -33,8 +33,8 @@ class XOpenCTIIncidentDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={XOpenCTIIncident.objectLabel}
-            id={XOpenCTIIncident.id}
+            labels={xOpenCTIIncident.objectLabel}
+            id={xOpenCTIIncident.id}
           />
           <Typography
             variant="h3"
@@ -43,7 +43,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          <ItemCreator creator={XOpenCTIIncident.creator} />
+          <ItemCreator creator={xOpenCTIIncident.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -51,7 +51,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
           >
             {t('First seen')}
           </Typography>
-          {fld(XOpenCTIIncident.first_seen)}
+          {fld(xOpenCTIIncident.first_seen)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -59,7 +59,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
           >
             {t('Last seen')}
           </Typography>
-          {fld(XOpenCTIIncident.last_seen)}
+          {fld(xOpenCTIIncident.last_seen)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -67,7 +67,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
           >
             {t('Objective')}
           </Typography>
-          <Markdown className="markdown" source={XOpenCTIIncident.objective} />
+          <Markdown className="markdown" source={xOpenCTIIncident.objective} />
         </Paper>
       </div>
     );
@@ -75,7 +75,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
 }
 
 XOpenCTIIncidentDetailsComponent.propTypes = {
-  XOpenCTIIncident: PropTypes.object,
+  xOpenCTIIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
@@ -84,8 +84,8 @@ XOpenCTIIncidentDetailsComponent.propTypes = {
 const XOpenCTIXOpenCTIIncidentDetails = createFragmentContainer(
   XOpenCTIIncidentDetailsComponent,
   {
-    XOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentDetails_XOpenCTIIncident on XOpenCTIIncident {
+    xOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentDetails_xOpenCTIIncident on XOpenCTIIncident {
         id
         first_seen
         last_seen

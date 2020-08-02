@@ -28,11 +28,11 @@ const styles = () => ({
 
 class XOpenCTIIncidentComponent extends Component {
   render() {
-    const { classes, XOpenCTIIncident } = this.props;
+    const { classes, xOpenCTIIncident } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          stixDomainObject={XOpenCTIIncident}
+          stixDomainObject={xOpenCTIIncident}
           PopoverComponent={<XOpenCTIIncidentPopover />}
         />
         <Grid
@@ -41,16 +41,16 @@ class XOpenCTIIncidentComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={3}>
-            <XOpenCTIIncidentOverview XOpenCTIIncident={XOpenCTIIncident} />
+            <XOpenCTIIncidentOverview xOpenCTIIncident={xOpenCTIIncident} />
           </Grid>
           <Grid item={true} xs={3}>
-            <XOpenCTIIncidentDetails XOpenCTIIncident={XOpenCTIIncident} />
+            <XOpenCTIIncidentDetails xOpenCTIIncident={xOpenCTIIncident} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={XOpenCTIIncident.id} />
+            <EntityLastReports entityId={xOpenCTIIncident.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={XOpenCTIIncident.id} />
+        <StixCoreObjectNotes entityId={xOpenCTIIncident.id} />
         <Grid
           container={true}
           spacing={3}
@@ -59,18 +59,18 @@ class XOpenCTIIncidentComponent extends Component {
         >
           <Grid item={true} xs={6}>
             <EntityStixCoreRelationshipsDonut
-              entityId={XOpenCTIIncident.id}
+              entityId={xOpenCTIIncident.id}
               entityType="Stix-Observable"
               relationshipType="related-to"
               field="entity_type"
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityReportsChart entityId={XOpenCTIIncident.id} />
+            <EntityReportsChart entityId={xOpenCTIIncident.id} />
           </Grid>
         </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <XOpenCTIIncidentEdition XOpenCTIIncidentId={XOpenCTIIncident.id} />
+          <XOpenCTIIncidentEdition XOpenCTIIncidentId={xOpenCTIIncident.id} />
         </Security>
       </div>
     );
@@ -78,7 +78,7 @@ class XOpenCTIIncidentComponent extends Component {
 }
 
 XOpenCTIIncidentComponent.propTypes = {
-  XOpenCTIIncident: PropTypes.object,
+  xOpenCTIIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
@@ -86,13 +86,13 @@ XOpenCTIIncidentComponent.propTypes = {
 const XOpenCTIXOpenCTIIncident = createFragmentContainer(
   XOpenCTIIncidentComponent,
   {
-    XOpenCTIIncident: graphql`
-      fragment XOpenCTIIncident_XOpenCTIIncident on XOpenCTIIncident {
+    xOpenCTIIncident: graphql`
+      fragment XOpenCTIIncident_xOpenCTIIncident on XOpenCTIIncident {
         id
         name
         aliases
-        ...XOpenCTIIncidentOverview_XOpenCTIIncident
-        ...XOpenCTIIncidentDetails_XOpenCTIIncident
+        ...XOpenCTIIncidentOverview_xOpenCTIIncident
+        ...XOpenCTIIncidentDetails_xOpenCTIIncident
       }
     `,
   },

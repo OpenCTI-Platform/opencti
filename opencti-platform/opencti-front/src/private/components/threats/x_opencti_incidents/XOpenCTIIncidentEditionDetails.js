@@ -47,7 +47,7 @@ const XOpenCTIIncidentMutationFieldPatch = graphql`
   ) {
     xOpenCTIIncidentEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...XOpenCTIIncidentEditionDetails_XOpenCTIIncident
+        ...XOpenCTIIncidentEditionDetails_xOpenCTIIncident
       }
     }
   }
@@ -171,15 +171,15 @@ XOpenCTIIncidentEditionDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  XOpenCTIIncident: PropTypes.object,
+  xOpenCTIIncident: PropTypes.object,
   context: PropTypes.array,
 };
 
 const XOpenCTIXOpenCTIIncidentEditionDetails = createFragmentContainer(
   XOpenCTIIncidentEditionDetailsComponent,
   {
-    XOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentEditionDetails_XOpenCTIIncident on XOpenCTIIncident {
+    xOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentEditionDetails_xOpenCTIIncident on XOpenCTIIncident {
         id
         first_seen
         last_seen

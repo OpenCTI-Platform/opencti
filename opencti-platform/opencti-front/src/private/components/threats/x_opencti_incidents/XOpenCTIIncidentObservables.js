@@ -87,8 +87,8 @@ XOpenCTIIncidentObservablesComponent.propTypes = {
 const XOpenCTIIncidentObservables = createFragmentContainer(
   XOpenCTIIncidentObservablesComponent,
   {
-    XOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentObservables_XOpenCTIIncident on XOpenCTIIncident {
+    xOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentObservables_xOpenCTIIncident on XOpenCTIIncident {
         id
         name
         aliases

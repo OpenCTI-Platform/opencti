@@ -19,7 +19,7 @@ import {
 } from '../utils/idGenerator';
 
 export const findById = (incidentId) => {
-  return loadEntityById(incidentId, 'Incident');
+  return loadEntityById(incidentId, ENTITY_TYPE_X_OPENCTI_INCIDENT);
 };
 
 export const findAll = (args) => {

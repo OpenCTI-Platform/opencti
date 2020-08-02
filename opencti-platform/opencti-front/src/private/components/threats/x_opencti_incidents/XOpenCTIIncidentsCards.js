@@ -30,10 +30,10 @@ class XOpenCTIXOpenCTIIncidentsCards extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['XOpenCTIIncidents', 'edges'], this.props.data)}
+        dataList={pathOr([], ['xOpenCTIIncidents', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfCardsToLoad,
-          ['XOpenCTIIncidents', 'pageInfo', 'globalCount'],
+          ['xOpenCTIIncidents', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         CardComponent={<XOpenCTIXOpenCTIIncidentCard />}

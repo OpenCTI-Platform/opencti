@@ -155,7 +155,7 @@ class XOpenCTIXOpenCTIIncidentCreation extends Component {
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">
-              {t('Create an XOpenCTIIncident')}
+              {t('Create an incident')}
             </Typography>
           </div>
           <div className={classes.container}>

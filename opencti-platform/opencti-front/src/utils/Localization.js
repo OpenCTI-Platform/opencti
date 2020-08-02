@@ -664,8 +664,8 @@ const i18n = {
       '[Victimology] Distribution': '[Victimologie] Répartition',
       '[Victimology] Timeseries': '[Victimologie] Séries temporelles',
       '[Campaigns] Timeseries': '[Campagnes] Séries temporelles',
-      '[XOpenCTIIncidents] Timeseries':
-        '[XOpenCTIIncidents] Séries temporelles',
+      '[Incidents] Timeseries':
+        '[Incidents] Séries temporelles',
       '[TTPs] Distribution': '[TTPs] Répartition',
       '[Killchain] Tactics and procedures':
         '[Killchain] Tactiques et procédures',
@@ -742,8 +742,8 @@ const i18n = {
         "Explorer les campagnes d'attaques des données à travers le temps et les entités impliquées.",
       'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.':
         'Explorer les techniques, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
-      'Explore the kill chains of entities through time and other contextual information like campaigns or XOpenCTIIncidents.':
-        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les x_opencti_XOpenCTIIncidents.",
+      'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.':
+        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les incidents.",
       'Explore the vulnerabilities used by entities through time and kill chain phases.':
         'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.':

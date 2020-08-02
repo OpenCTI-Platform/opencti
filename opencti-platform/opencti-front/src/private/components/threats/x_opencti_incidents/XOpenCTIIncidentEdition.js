@@ -35,7 +35,7 @@ const styles = (theme) => ({
 export const XOpenCTIIncidentEditionQuery = graphql`
   query XOpenCTIIncidentEditionContainerQuery($id: String!) {
     xOpenCTIIncident(id: $id) {
-      ...XOpenCTIIncidentEditionContainer_XOpenCTIIncident
+      ...XOpenCTIIncidentEditionContainer_xOpenCTIIncident
     }
   }
 `;
@@ -62,7 +62,7 @@ class XOpenCTIXOpenCTIIncidentEdition extends Component {
   }
 
   render() {
-    const { classes, XOpenCTIIncidentId } = this.props;
+    const { classes, xOpenCTIIncidentId } = this.props;
     return (
       <div>
         <Fab
@@ -81,12 +81,12 @@ class XOpenCTIXOpenCTIIncidentEdition extends Component {
         >
           <QueryRenderer
             query={XOpenCTIIncidentEditionQuery}
-            variables={{ id: XOpenCTIIncidentId }}
+            variables={{ id: xOpenCTIIncidentId }}
             render={({ props }) => {
               if (props) {
                 return (
                   <XOpenCTIIncidentEditionContainer
-                    XOpenCTIIncident={props.XOpenCTIIncident}
+                    xOpenCTIIncident={props.xOpenCTIIncident}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
@@ -101,7 +101,7 @@ class XOpenCTIXOpenCTIIncidentEdition extends Component {
 }
 
 XOpenCTIXOpenCTIIncidentEdition.propTypes = {
-  XOpenCTIIncidentId: PropTypes.string,
+  xOpenCTIIncidentId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

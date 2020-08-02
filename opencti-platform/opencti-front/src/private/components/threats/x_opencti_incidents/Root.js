@@ -21,8 +21,8 @@ const subscription = graphql`
   subscription RootXOpenCTIIncidentSubscription($id: ID!) {
     stixDomainObject(id: $id) {
       ... on XOpenCTIIncident {
-        ...XOpenCTIIncident_XOpenCTIIncident
-        ...XOpenCTIIncidentEditionContainer_XOpenCTIIncident
+        ...XOpenCTIIncident_xOpenCTIIncident
+        ...XOpenCTIIncidentEditionContainer_xOpenCTIIncident
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -36,10 +36,10 @@ const XOpenCTIIncidentQuery = graphql`
       id
       name
       aliases
-      ...XOpenCTIIncident_XOpenCTIIncident
-      ...XOpenCTIIncidentReports_XOpenCTIIncident
-      ...XOpenCTIIncidentKnowledge_XOpenCTIIncident
-      ...XOpenCTIIncidentObservables_XOpenCTIIncident
+      ...XOpenCTIIncident_xOpenCTIIncident
+      ...XOpenCTIIncidentReports_xOpenCTIIncident
+      ...XOpenCTIIncidentKnowledge_xOpenCTIIncident
+      ...XOpenCTIIncidentObservables_xOpenCTIIncident
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -81,7 +81,7 @@ class RootXOpenCTIIncident extends Component {
           query={XOpenCTIIncidentQuery}
           variables={{ id: incidentId }}
           render={({ props }) => {
-            if (props && props.XOpenCTIIncident) {
+            if (props && props.xOpenCTIIncident) {
               return (
                 <div>
                   <Route
@@ -90,7 +90,7 @@ class RootXOpenCTIIncident extends Component {
                     render={(routeProps) => (
                       <XOpenCTIIncident
                         {...routeProps}
-                        XOpenCTIIncident={props.XOpenCTIIncident}
+                        xOpenCTIIncident={props.xOpenCTIIncident}
                       />
                     )}
                   />
@@ -100,7 +100,7 @@ class RootXOpenCTIIncident extends Component {
                     render={(routeProps) => (
                       <XOpenCTIIncidentReports
                         {...routeProps}
-                        XOpenCTIIncident={props.XOpenCTIIncident}
+                        xOpenCTIIncident={props.xOpenCTIIncident}
                       />
                     )}
                   />
@@ -118,7 +118,7 @@ class RootXOpenCTIIncident extends Component {
                     render={(routeProps) => (
                       <XOpenCTIIncidentKnowledge
                         {...routeProps}
-                        XOpenCTIIncident={props.XOpenCTIIncident}
+                        xOpenCTIIncident={props.xOpenCTIIncident}
                       />
                     )}
                   />
@@ -127,7 +127,7 @@ class RootXOpenCTIIncident extends Component {
                     render={(routeProps) => (
                       <XOpenCTIIncidentObservables
                         {...routeProps}
-                        XOpenCTIIncident={props.XOpenCTIIncident}
+                        xOpenCTIIncident={props.xOpenCTIIncident}
                       />
                     )}
                   />
@@ -137,14 +137,14 @@ class RootXOpenCTIIncident extends Component {
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
-                          stixDomainObject={props.XOpenCTIIncident}
+                          stixDomainObject={props.xOpenCTIIncident}
                           PopoverComponent={<XOpenCTIIncidentPopover />}
                         />
                         <FileManager
                           {...routeProps}
                           id={incidentId}
                           connectorsExport={props.connectorsForExport}
-                          entity={props.XOpenCTIIncident}
+                          entity={props.xOpenCTIIncident}
                         />
                       </React.Fragment>
                     )}
@@ -155,7 +155,7 @@ class RootXOpenCTIIncident extends Component {
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
-                          stixDomainObject={props.XOpenCTIIncident}
+                          stixDomainObject={props.xOpenCTIIncident}
                           PopoverComponent={<XOpenCTIIncidentPopover />}
                         />
                         <StixCoreObjectHistory

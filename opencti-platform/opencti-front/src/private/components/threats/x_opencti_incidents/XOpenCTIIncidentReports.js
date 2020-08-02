@@ -42,7 +42,7 @@ class XOpenCTIIncidentReportsComponent extends Component {
 
   render() {
     const { withPadding } = this.state;
-    const { classes, XOpenCTIIncident } = this.props;
+    const { classes, xOpenCTIIncident } = this.props;
     return (
       <div
         className={
@@ -50,12 +50,12 @@ class XOpenCTIIncidentReportsComponent extends Component {
         }
       >
         <StixDomainObjectHeader
-          stixDomainObject={XOpenCTIIncident}
+          stixDomainObject={xOpenCTIIncident}
           PopoverComponent={<XOpenCTIIncidentPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports
-            objectId={XOpenCTIIncident.id}
+            objectId={xOpenCTIIncident.id}
             onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
             }
           />
@@ -66,7 +66,7 @@ class XOpenCTIIncidentReportsComponent extends Component {
 }
 
 XOpenCTIIncidentReportsComponent.propTypes = {
-  XOpenCTIIncident: PropTypes.object,
+  xOpenCTIIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
@@ -74,8 +74,8 @@ XOpenCTIIncidentReportsComponent.propTypes = {
 const XOpenCTIXOpenCTIIncidentReports = createFragmentContainer(
   XOpenCTIIncidentReportsComponent,
   {
-    XOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentReports_XOpenCTIIncident on XOpenCTIIncident {
+    xOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentReports_xOpenCTIIncident on XOpenCTIIncident {
         id
         name
         aliases

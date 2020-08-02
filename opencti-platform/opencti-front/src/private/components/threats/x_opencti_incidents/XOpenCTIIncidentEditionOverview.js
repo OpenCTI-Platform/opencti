@@ -54,7 +54,7 @@ const XOpenCTIIncidentMutationFieldPatch = graphql`
   ) {
     xOpenCTIIncidentEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...XOpenCTIIncidentEditionOverview_XOpenCTIIncident
+        ...XOpenCTIIncidentEditionOverview_xOpenCTIIncident
       }
     }
   }
@@ -81,7 +81,7 @@ const XOpenCTIIncidentMutationRelationAdd = graphql`
     xOpenCTIIncidentEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...XOpenCTIIncidentEditionOverview_XOpenCTIIncident
+          ...XOpenCTIIncidentEditionOverview_xOpenCTIIncident
         }
       }
     }
@@ -96,7 +96,7 @@ const XOpenCTIIncidentMutationRelationDelete = graphql`
   ) {
     xOpenCTIIncidentEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...XOpenCTIIncidentEditionOverview_XOpenCTIIncident
+        ...XOpenCTIIncidentEditionOverview_xOpenCTIIncident
       }
     }
   }
@@ -219,12 +219,12 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, XOpenCTIIncident, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], XOpenCTIIncident) === null
+    const { t, xOpenCTIIncidentId, context } = this.props;
+    const createdBy = pathOr(null, ['createdBy', 'name'], xOpenCTIIncidentId) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], XOpenCTIIncident),
-        value: pathOr(null, ['createdBy', 'id'], XOpenCTIIncident),
+        label: pathOr(null, ['createdBy', 'name'], xOpenCTIIncidentId),
+        value: pathOr(null, ['createdBy', 'id'], xOpenCTIIncidentId),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -232,14 +232,14 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
       })),
-    )(XOpenCTIIncident);
+    )(xOpenCTIIncidentId);
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
-    )(XOpenCTIIncident);
+    )(xOpenCTIIncidentId);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
@@ -251,7 +251,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
         'killChainPhases',
         'objectMarking',
       ]),
-    )(XOpenCTIIncident);
+    )(xOpenCTIIncidentId);
     return (
       <Formik
         enableReinitialize={true}
@@ -317,15 +317,15 @@ XOpenCTIIncidentEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  XOpenCTIIncident: PropTypes.object,
+  xOpenCTIIncidentId: PropTypes.object,
   context: PropTypes.array,
 };
 
 const XOpenCTIXOpenCTIIncidentEditionOverview = createFragmentContainer(
   XOpenCTIIncidentEditionOverviewComponent,
   {
-    XOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentEditionOverview_XOpenCTIIncident on XOpenCTIIncident {
+    xOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentEditionOverview_xOpenCTIIncident on XOpenCTIIncident {
         id
         name
         description

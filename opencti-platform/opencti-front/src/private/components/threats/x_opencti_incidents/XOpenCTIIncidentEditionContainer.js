@@ -57,9 +57,9 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, XOpenCTIIncident,
+      t, classes, handleClose, xOpenCTIIncidentId,
     } = this.props;
-    const { editContext } = XOpenCTIIncident;
+    const { editContext } = xOpenCTIIncidentId;
     return (
       <div>
         <div className={classes.header}>
@@ -71,7 +71,7 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an XOpenCTIIncident')}
+            {t('Update an incident')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
@@ -88,13 +88,13 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
           </AppBar>
           {this.state.currentTab === 0 && (
             <XOpenCTIIncidentEditionOverview
-              XOpenCTIIncident={XOpenCTIIncident}
+                xOpenCTIIncidentId={xOpenCTIIncidentId}
               context={editContext}
             />
           )}
           {this.state.currentTab === 1 && (
             <XOpenCTIIncidentEditionDetails
-              XOpenCTIIncident={XOpenCTIIncident}
+                xOpenCTIIncidentId={xOpenCTIIncidentId}
               context={editContext}
             />
           )}
@@ -107,7 +107,7 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
 XOpenCTIXOpenCTIIncidentEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  XOpenCTIIncident: PropTypes.object,
+  xOpenCTIIncidentId: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
@@ -115,11 +115,11 @@ XOpenCTIXOpenCTIIncidentEditionContainer.propTypes = {
 const XOpenCTIIncidentEditionContainerFragment = createFragmentContainer(
   XOpenCTIXOpenCTIIncidentEditionContainer,
   {
-    XOpenCTIIncident: graphql`
-      fragment XOpenCTIIncidentEditionContainer_XOpenCTIIncident on XOpenCTIIncident {
+    xOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentEditionContainer_xOpenCTIIncident on XOpenCTIIncident {
         id
-        ...XOpenCTIIncidentEditionOverview_XOpenCTIIncident
-        ...XOpenCTIIncidentEditionDetails_XOpenCTIIncident
+        ...XOpenCTIIncidentEditionOverview_xOpenCTIIncident
+        ...XOpenCTIIncidentEditionDetails_xOpenCTIIncident
         editContext {
           name
           focusOn
