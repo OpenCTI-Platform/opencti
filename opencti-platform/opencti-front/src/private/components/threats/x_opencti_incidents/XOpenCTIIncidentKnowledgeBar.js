@@ -37,7 +37,7 @@ const styles = (theme) => ({
 class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
   render() {
     const {
-      t, location, classes, XOpenCTIIncidentId,
+      t, location, classes, xOpenCTIIncidentId,
     } = this.props;
     return (
       <Drawer
@@ -49,10 +49,10 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/overview`}
+            to={`/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/overview`}
             selected={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/overview`
+              === `/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/overview`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -67,10 +67,10 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/attribution`}
+            to={`/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/attribution`}
             selected={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/attribution`
+              === `/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/attribution`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -85,10 +85,10 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/victimology`}
+            to={`/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/victimology`}
             selected={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/victimology`
+              === `/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/victimology`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -103,10 +103,10 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/malwares`}
+            to={`/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/malwares`}
             selected={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/malwares`
+              === `/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/malwares`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -121,10 +121,10 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/ttp`}
+            to={`/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/ttp`}
             selected={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/ttp`
+              === `/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/ttp`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -139,10 +139,10 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/tools`}
+            to={`/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/tools`}
             selected={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/tools`
+              === `/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/tools`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -157,10 +157,10 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/vulnerabilities`}
+            to={`/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/vulnerabilities`}
             selected={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge/vulnerabilities`
+              === `/dashboard/threats/incidents/${xOpenCTIIncidentId}/knowledge/vulnerabilities`
             }
             dense={false}
             classes={{ root: classes.item }}
@@ -180,7 +180,7 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
 }
 
 XOpenCTIXOpenCTIIncidentKnowledgeBar.propTypes = {
-  XOpenCTIIncidentId: PropTypes.string,
+  xOpenCTIIncidentId: PropTypes.string,
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,

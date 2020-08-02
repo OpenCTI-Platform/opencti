@@ -187,7 +187,7 @@ const TopBar = ({
             ''
           )}
           {location.pathname.includes(
-            '/dashboard/threats/x_opencti_XOpenCTIIncidents/',
+            '/dashboard/threats/incidents/',
           ) ? (
             <TopMenuXOpenCTIIncident />
             ) : (

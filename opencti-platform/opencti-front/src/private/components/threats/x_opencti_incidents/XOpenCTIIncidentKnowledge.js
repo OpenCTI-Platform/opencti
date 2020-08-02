@@ -33,7 +33,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           PopoverComponent={<XOpenCTIIncidentPopover />}
         />
         <XOpenCTIIncidentKnowledgeBar
-          XOpenCTIIncidentId={xOpenCTIIncident.id}
+          xOpenCTIIncidentId={xOpenCTIIncident.id}
         />
         <Route
           exact

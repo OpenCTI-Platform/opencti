@@ -43,7 +43,7 @@ class TopMenuXOpenCTIIncident extends Component {
       t,
       location,
       match: {
-        params: { XOpenCTIIncidentId },
+        params: { incidentId },
       },
       classes,
     } = this.props;
@@ -51,7 +51,7 @@ class TopMenuXOpenCTIIncident extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/threats/XOpenCTIIncidents"
+          to="/dashboard/threats/incidents"
           variant="contained"
           size="small"
           color="inherit"
@@ -66,17 +66,15 @@ class TopMenuXOpenCTIIncident extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}`}
+          to={`/dashboard/threats/incidents/${incidentId}`}
           variant={
-            location.pathname
-            === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}`
+            location.pathname === `/dashboard/threats/incidents/${incidentId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}`
+            location.pathname === `/dashboard/threats/incidents/${incidentId}`
               ? 'primary'
               : 'inherit'
           }
@@ -86,10 +84,10 @@ class TopMenuXOpenCTIIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge`}
+          to={`/dashboard/threats/incidents/${incidentId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge`,
+              `/dashboard/threats/incidents/${incidentId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -97,7 +95,7 @@ class TopMenuXOpenCTIIncident extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/knowledge`,
+              `/dashboard/threats/incidents/${incidentId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -108,17 +106,17 @@ class TopMenuXOpenCTIIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/reports`}
+          to={`/dashboard/threats/incidents/${incidentId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/reports`
+            === `/dashboard/threats/incidents/${incidentId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/reports`
+            === `/dashboard/threats/incidents/${incidentId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -128,10 +126,10 @@ class TopMenuXOpenCTIIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/observables`}
+          to={`/dashboard/threats/incidents/${incidentId}/observables`}
           variant={
             location.pathname.includes(
-              `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/observables`,
+              `/dashboard/threats/incidents/${incidentId}/observables`,
             )
               ? 'contained'
               : 'text'
@@ -139,7 +137,7 @@ class TopMenuXOpenCTIIncident extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/observables`,
+              `/dashboard/threats/incidents/${incidentId}/observables`,
             )
               ? 'primary'
               : 'inherit'
@@ -151,17 +149,17 @@ class TopMenuXOpenCTIIncident extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/files`}
+            to={`/dashboard/threats/incidents/${incidentId}/files`}
             variant={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/files`
+              === `/dashboard/threats/incidents/${incidentId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/files`
+              === `/dashboard/threats/incidents/${incidentId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -172,17 +170,17 @@ class TopMenuXOpenCTIIncident extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/history`}
+          to={`/dashboard/threats/incidents/${incidentId}/history`}
           variant={
             location.pathname
-            === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/history`
+            === `/dashboard/threats/incidents/${incidentId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncidentId}/history`
+            === `/dashboard/threats/incidents/${incidentId}/history`
               ? 'primary'
               : 'inherit'
           }
