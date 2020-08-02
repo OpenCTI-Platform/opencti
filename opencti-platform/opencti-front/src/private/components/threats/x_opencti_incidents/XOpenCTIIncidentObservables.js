@@ -7,7 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import XOpenctiIncidentPopover from './XOpenctiIncidentPopover';
+import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityStixCyberObservables from '../../signatures/stix_cyber_observables/EntityStixCyberObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
@@ -30,41 +30,41 @@ const styles = () => ({
   },
 });
 
-class XOpenctiIncidentObservablesComponent extends Component {
+class XOpenCTIIncidentObservablesComponent extends Component {
   render() {
-    const { classes, xOpenctiIncident, location } = this.props;
-    const link = `/dashboard/threats/xOpenctiIncidents/${xOpenctiIncident.id}/observables`;
+    const { classes, XOpenCTIIncident, location } = this.props;
+    const link = `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncident.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/xOpenctiIncidents/${xOpenctiIncident.id}/observables/relations/`,
+            `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncident.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
         <StixDomainObjectHeader
-          stixDomainObject={xOpenctiIncident}
-          PopoverComponent={<XOpenctiIncidentPopover />}
+          stixDomainObject={XOpenCTIIncident}
+          PopoverComponent={<XOpenCTIIncidentPopover />}
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/observables/relations/:relationId"
+          path="/dashboard/threats/XOpenCTIIncidents/:XOpenCTIIncidentId/observables/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
-              entityId={xOpenctiIncident.id}
+              entityId={XOpenCTIIncident.id}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/threats/xOpenctiIncidents/:xOpenctiIncidentId/observables"
+          path="/dashboard/threats/XOpenCTIIncidents/:XOpenCTIIncidentId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixCyberObservables
-                entityId={xOpenctiIncident.id}
+                entityId={XOpenCTIIncident.id}
                 relationshipType="related-to"
                 entityLink={link}
                 {...routeProps}
@@ -77,18 +77,18 @@ class XOpenctiIncidentObservablesComponent extends Component {
   }
 }
 
-XOpenctiIncidentObservablesComponent.propTypes = {
-  xOpenctiIncident: PropTypes.object,
+XOpenCTIIncidentObservablesComponent.propTypes = {
+  XOpenCTIIncident: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const XOpenctiIncidentObservables = createFragmentContainer(
-  XOpenctiIncidentObservablesComponent,
+const XOpenCTIIncidentObservables = createFragmentContainer(
+  XOpenCTIIncidentObservablesComponent,
   {
-    xOpenctiIncident: graphql`
-      fragment XOpenctiIncidentObservables_xOpenctiIncident on XOpenctiIncident {
+    XOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentObservables_XOpenCTIIncident on XOpenCTIIncident {
         id
         name
         aliases
@@ -101,4 +101,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(XOpenctiIncidentObservables);
+)(XOpenCTIIncidentObservables);

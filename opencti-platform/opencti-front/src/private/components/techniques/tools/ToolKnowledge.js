@@ -88,7 +88,7 @@ class ToolKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationshipType="uses"
-              targetEntityTypes={['XOpenctiIncident']}
+              targetEntityTypes={['XOpenCTIIncident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

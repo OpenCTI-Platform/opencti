@@ -183,7 +183,7 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
-          ... on XOpenctiIncident {
+          ... on XOpenCTIIncident {
             name
             aliases
             description

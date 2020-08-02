@@ -201,8 +201,8 @@ class ExploreAddWidget extends Component {
                     <MenuItem value="CampaignsTimeseries">
                       {t('[Campaigns] Timeseries')}
                     </MenuItem>
-                    <MenuItem value="XOpenctiIncidentsTimeseries">
-                      {t('[XOpenctiIncidents] Timeseries')}
+                    <MenuItem value="XOpenCTIIncidentsTimeseries">
+                      {t('[XOpenCTIIncidents] Timeseries')}
                     </MenuItem>
                     <MenuItem value="AttackPatternsDistribution">
                       {t('[TTPs] Distribution')}

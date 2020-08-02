@@ -599,7 +599,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Vulnerability {
                   name
                 }
-                ... on XOpenctiIncident {
+                ... on XOpenCTIIncident {
                   name
                 }
                 ... on StixCyberObservable {
@@ -668,7 +668,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Vulnerability {
                   name
                 }
-                ... on XOpenctiIncident {
+                ... on XOpenCTIIncident {
                   name
                 }
                 ... on StixCyberObservable {
@@ -735,7 +735,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Vulnerability {
                       name
                     }
-                    ... on XOpenctiIncident {
+                    ... on XOpenCTIIncident {
                       name
                     }
                   }
@@ -799,7 +799,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Vulnerability {
                       name
                     }
-                    ... on XOpenctiIncident {
+                    ... on XOpenCTIIncident {
                       name
                     }
                   }
@@ -870,7 +870,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Vulnerability {
             name
           }
-          ... on XOpenctiIncident {
+          ... on XOpenCTIIncident {
             name
           }
           ... on StixCyberObservable {
@@ -937,7 +937,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenctiIncident {
+              ... on XOpenCTIIncident {
                 name
               }
             }
@@ -1001,7 +1001,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenctiIncident {
+              ... on XOpenCTIIncident {
                 name
               }
             }
@@ -1069,7 +1069,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Vulnerability {
             name
           }
-          ... on XOpenctiIncident {
+          ... on XOpenCTIIncident {
             name
           }
           ... on StixCyberObservable {
@@ -1138,7 +1138,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenctiIncident {
+              ... on XOpenCTIIncident {
                 name
               }
               ... on StixCyberObservable {
@@ -1207,7 +1207,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenctiIncident {
+              ... on XOpenCTIIncident {
                 name
               }
               ... on StixCyberObservable {

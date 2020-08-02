@@ -183,12 +183,12 @@ class StixDomainObjectsRightBar extends Component {
             button={true}
             onClick={handleToggleStixDomainObjectType.bind(
               this,
-              'XOpenctiIncident',
+              'XOpenCTIIncident',
             )}
             classes={{ root: classes.item }}
           >
             <Checkbox
-              checked={stixDomainObjectsTypes.includes('XOpenctiIncident')}
+              checked={stixDomainObjectsTypes.includes('XOpenCTIIncident')}
               disableRipple={true}
               size="small"
             />

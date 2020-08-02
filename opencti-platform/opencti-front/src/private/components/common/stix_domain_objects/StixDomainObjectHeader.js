@@ -116,7 +116,7 @@ const stixDomainObjectMutation = graphql`
         ... on Tool {
           aliases
         }
-        ... on XOpenctiIncident {
+        ... on XOpenCTIIncident {
           aliases
         }
       }

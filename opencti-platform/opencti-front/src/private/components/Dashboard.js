@@ -271,7 +271,7 @@ const dashboardLastStixDomainObjectsQuery = graphql`
             name
             description
           }
-          ... on XOpenctiIncident {
+          ... on XOpenCTIIncident {
             name
             description
           }
@@ -381,7 +381,7 @@ const dashboardLastNotesQuery = graphql`
                 ... on Vulnerability {
                   name
                 }
-                ... on XOpenctiIncident {
+                ... on XOpenCTIIncident {
                   name
                 }
               }
@@ -668,7 +668,7 @@ class Dashboard extends Component {
                       'Threat-Actor',
                       'Intrusion-Set',
                       'Campaign',
-                      'XOpenctiIncident',
+                      'XOpenCTIIncident',
                       'Malware',
                       'Attack-Pattern',
                       'Course-of-Action',

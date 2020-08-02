@@ -230,7 +230,7 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
           name
           description
         }
-        ... on XOpenctiIncident {
+        ... on XOpenCTIIncident {
           name
           aliases
           description

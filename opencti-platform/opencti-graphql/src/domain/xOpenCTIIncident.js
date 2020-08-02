@@ -27,12 +27,12 @@ export const findAll = (args) => {
 };
 
 // region time series
-export const xOpenctiIncidentsTimeSeriesByEntity = async (args) => {
+export const xOpenCTIIncidentsTimeSeriesByEntity = async (args) => {
   const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }];
   return timeSeriesEntities(ENTITY_TYPE_X_OPENCTI_INCIDENT, filters, args);
 };
 
-export const xOpenctiIncidentsTimeSeries = (args) => {
+export const xOpenCTIIncidentsTimeSeries = (args) => {
   return timeSeriesEntities(ENTITY_TYPE_X_OPENCTI_INCIDENT, [], args);
 };
 // endregion
@@ -48,7 +48,7 @@ export const observables = (reportId) => {
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const addXOpenctiIncident = async (user, incident) => {
+export const addXOpenCTIIncident = async (user, incident) => {
   const currentDate = now();
   const incidentToCreate = pipe(
     assoc('first_seen', incident.first_seen ? incident.first_seen : currentDate),

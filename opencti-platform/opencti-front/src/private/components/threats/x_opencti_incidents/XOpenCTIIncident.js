@@ -6,10 +6,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import XOpenctiIncidentOverview from './XOpenctiIncidentOverview';
-import XOpenctiIncidentDetails from './XOpenctiIncidentDetails';
-import XOpenctiIncidentEdition from './XOpenctiIncidentEdition';
-import XOpenctiIncidentPopover from './XOpenctiIncidentPopover';
+import XOpenCTIIncidentOverview from './XOpenCTIIncidentOverview';
+import XOpenCTIIncidentDetails from './XOpenCTIIncidentDetails';
+import XOpenCTIIncidentEdition from './XOpenCTIIncidentEdition';
+import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
@@ -26,14 +26,14 @@ const styles = () => ({
   },
 });
 
-class XOpenctiIncidentComponent extends Component {
+class XOpenCTIIncidentComponent extends Component {
   render() {
-    const { classes, xOpenctiIncident } = this.props;
+    const { classes, XOpenCTIIncident } = this.props;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
-          stixDomainObject={xOpenctiIncident}
-          PopoverComponent={<XOpenctiIncidentPopover />}
+          stixDomainObject={XOpenCTIIncident}
+          PopoverComponent={<XOpenCTIIncidentPopover />}
         />
         <Grid
           container={true}
@@ -41,16 +41,16 @@ class XOpenctiIncidentComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={3}>
-            <XOpenctiIncidentOverview xOpenctiIncident={xOpenctiIncident} />
+            <XOpenCTIIncidentOverview XOpenCTIIncident={XOpenCTIIncident} />
           </Grid>
           <Grid item={true} xs={3}>
-            <XOpenctiIncidentDetails xOpenctiIncident={xOpenctiIncident} />
+            <XOpenCTIIncidentDetails XOpenCTIIncident={XOpenCTIIncident} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={xOpenctiIncident.id} />
+            <EntityLastReports entityId={XOpenCTIIncident.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={xOpenctiIncident.id} />
+        <StixCoreObjectNotes entityId={XOpenCTIIncident.id} />
         <Grid
           container={true}
           spacing={3}
@@ -59,43 +59,43 @@ class XOpenctiIncidentComponent extends Component {
         >
           <Grid item={true} xs={6}>
             <EntityStixCoreRelationshipsDonut
-              entityId={xOpenctiIncident.id}
+              entityId={XOpenCTIIncident.id}
               entityType="Stix-Observable"
               relationshipType="related-to"
               field="entity_type"
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityReportsChart entityId={xOpenctiIncident.id} />
+            <EntityReportsChart entityId={XOpenCTIIncident.id} />
           </Grid>
         </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <XOpenctiIncidentEdition xOpenctiIncidentId={xOpenctiIncident.id} />
+          <XOpenCTIIncidentEdition XOpenCTIIncidentId={XOpenCTIIncident.id} />
         </Security>
       </div>
     );
   }
 }
 
-XOpenctiIncidentComponent.propTypes = {
-  xOpenctiIncident: PropTypes.object,
+XOpenCTIIncidentComponent.propTypes = {
+  XOpenCTIIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const XOpenctiXOpenctiIncident = createFragmentContainer(
-  XOpenctiIncidentComponent,
+const XOpenCTIXOpenCTIIncident = createFragmentContainer(
+  XOpenCTIIncidentComponent,
   {
-    xOpenctiIncident: graphql`
-      fragment XOpenctiIncident_xOpenctiIncident on XOpenctiIncident {
+    XOpenCTIIncident: graphql`
+      fragment XOpenCTIIncident_XOpenCTIIncident on XOpenCTIIncident {
         id
         name
         aliases
-        ...XOpenctiIncidentOverview_xOpenctiIncident
-        ...XOpenctiIncidentDetails_xOpenctiIncident
+        ...XOpenCTIIncidentOverview_XOpenCTIIncident
+        ...XOpenCTIIncidentDetails_XOpenCTIIncident
       }
     `,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(XOpenctiXOpenctiIncident);
+export default compose(inject18n, withStyles(styles))(XOpenCTIXOpenCTIIncident);

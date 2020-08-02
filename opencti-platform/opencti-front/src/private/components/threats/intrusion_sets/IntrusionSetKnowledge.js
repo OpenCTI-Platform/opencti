@@ -101,7 +101,7 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['XOpenctiIncident']}
+              targetEntityTypes={['XOpenCTIIncident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

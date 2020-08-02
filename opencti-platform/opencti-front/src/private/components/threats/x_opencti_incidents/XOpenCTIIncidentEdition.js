@@ -8,8 +8,8 @@ import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import XOpenctiIncidentEditionContainer from './XOpenctiIncidentEditionContainer';
-import { xOpenctiIncidentEditionOverviewFocus } from './XOpenctiIncidentEditionOverview';
+import XOpenCTIIncidentEditionContainer from './XOpenCTIIncidentEditionContainer';
+import { XOpenCTIIncidentEditionOverviewFocus } from './XOpenCTIIncidentEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -32,15 +32,15 @@ const styles = (theme) => ({
   },
 });
 
-export const xOpenctiIncidentEditionQuery = graphql`
-  query XOpenctiIncidentEditionContainerQuery($id: String!) {
-    xOpenctiIncident(id: $id) {
-      ...XOpenctiIncidentEditionContainer_xOpenctiIncident
+export const XOpenCTIIncidentEditionQuery = graphql`
+  query XOpenCTIIncidentEditionContainerQuery($id: String!) {
+    xOpenCTIIncident(id: $id) {
+      ...XOpenCTIIncidentEditionContainer_XOpenCTIIncident
     }
   }
 `;
 
-class XOpenctiXOpenctiIncidentEdition extends Component {
+class XOpenCTIXOpenCTIIncidentEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -52,9 +52,9 @@ class XOpenctiXOpenctiIncidentEdition extends Component {
 
   handleClose() {
     commitMutation({
-      mutation: xOpenctiIncidentEditionOverviewFocus,
+      mutation: XOpenCTIIncidentEditionOverviewFocus,
       variables: {
-        id: this.props.xOpenctiIncidentId,
+        id: this.props.XOpenCTIIncidentId,
         input: { focusOn: '' },
       },
     });
@@ -62,7 +62,7 @@ class XOpenctiXOpenctiIncidentEdition extends Component {
   }
 
   render() {
-    const { classes, xOpenctiIncidentId } = this.props;
+    const { classes, XOpenCTIIncidentId } = this.props;
     return (
       <div>
         <Fab
@@ -80,13 +80,13 @@ class XOpenctiXOpenctiIncidentEdition extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={xOpenctiIncidentEditionQuery}
-            variables={{ id: xOpenctiIncidentId }}
+            query={XOpenCTIIncidentEditionQuery}
+            variables={{ id: XOpenCTIIncidentId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <XOpenctiIncidentEditionContainer
-                    xOpenctiIncident={props.xOpenctiIncident}
+                  <XOpenCTIIncidentEditionContainer
+                    XOpenCTIIncident={props.XOpenCTIIncident}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
@@ -100,8 +100,8 @@ class XOpenctiXOpenctiIncidentEdition extends Component {
   }
 }
 
-XOpenctiXOpenctiIncidentEdition.propTypes = {
-  xOpenctiIncidentId: PropTypes.string,
+XOpenCTIXOpenCTIIncidentEdition.propTypes = {
+  XOpenCTIIncidentId: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -110,4 +110,4 @@ XOpenctiXOpenctiIncidentEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenctiXOpenctiIncidentEdition);
+)(XOpenCTIXOpenCTIIncidentEdition);

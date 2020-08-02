@@ -342,8 +342,8 @@ class EntityStixCoreRelationships extends Component {
                     ) : (
                       ''
                     )}
-                    {includes('X-Opencti-Incident', targetEntityTypes) ? (
-                      <MenuItem value="X-Opencti-Incident">
+                    {includes('X-OpenCTI-Incident', targetEntityTypes) ? (
+                      <MenuItem value="X-OpenCTI-Incident">
                         {t('Incident')}
                       </MenuItem>
                     ) : (

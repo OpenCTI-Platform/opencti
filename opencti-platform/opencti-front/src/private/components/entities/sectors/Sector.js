@@ -14,7 +14,7 @@ import SectorPopover from './SectorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenctiIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenctiIncidentsChart';
+import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
@@ -67,7 +67,7 @@ class SectorComponent extends Component {
             <EntityCampaignsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityXOpenctiIncidentsChart entityId={sector.id} />
+            <EntityXOpenCTIIncidentsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={sector.id} />

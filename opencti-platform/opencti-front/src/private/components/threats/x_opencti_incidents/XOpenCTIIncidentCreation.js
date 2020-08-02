@@ -64,15 +64,15 @@ const styles = (theme) => ({
   },
 });
 
-const xOpenctiIncidentMutation = graphql`
-  mutation XOpenctiIncidentCreationMutation($input: XOpenctiIncidentAddInput!) {
-    xOpenctiIncidentAdd(input: $input) {
-      ...XOpenctiIncidentLine_node
+const XOpenCTIIncidentMutation = graphql`
+  mutation XOpenCTIIncidentCreationMutation($input: XOpenCTIIncidentAddInput!) {
+    xOpenCTIIncidentAdd(input: $input) {
+      ...XOpenCTIIncidentLine_node
     }
   }
 `;
 
-const xOpenctiIncidentValidation = (t) => Yup.object().shape({
+const XOpenCTIIncidentValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
@@ -80,7 +80,7 @@ const xOpenctiIncidentValidation = (t) => Yup.object().shape({
     .required(t('This field is required')),
 });
 
-class XOpenctiXOpenctiIncidentCreation extends Component {
+class XOpenCTIXOpenCTIIncidentCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -101,16 +101,16 @@ class XOpenctiXOpenctiIncidentCreation extends Component {
       assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
-      mutation: xOpenctiIncidentMutation,
+      mutation: XOpenCTIIncidentMutation,
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('xOpenctiIncidentAdd');
+        const payload = store.getRootField('xOpenCTIIncidentAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const conn = ConnectionHandler.getConnection(
           store.get(store.getRoot().getDataID()),
-          'Pagination_xOpenctiIncidents',
+          'Pagination_xOpenCTIIncidents',
           this.props.paginationOptions,
         );
         ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -155,7 +155,7 @@ class XOpenctiXOpenctiIncidentCreation extends Component {
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">
-              {t('Create an xOpenctiIncident')}
+              {t('Create an XOpenCTIIncident')}
             </Typography>
           </div>
           <div className={classes.container}>
@@ -167,7 +167,7 @@ class XOpenctiXOpenctiIncidentCreation extends Component {
                 objectMarking: [],
                 objectLabel: [],
               }}
-              validationSchema={xOpenctiIncidentValidation(t)}
+              validationSchema={XOpenCTIIncidentValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
@@ -184,7 +184,7 @@ class XOpenctiXOpenctiIncidentCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['XOpenctiIncident']}
+                    detectDuplicate={['XOpenCTIIncident']}
                   />
                   <Field
                     component={TextField}
@@ -239,7 +239,7 @@ class XOpenctiXOpenctiIncidentCreation extends Component {
   }
 }
 
-XOpenctiXOpenctiIncidentCreation.propTypes = {
+XOpenCTIXOpenCTIIncidentCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -249,4 +249,4 @@ XOpenctiXOpenctiIncidentCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenctiXOpenctiIncidentCreation);
+)(XOpenCTIXOpenCTIIncidentCreation);

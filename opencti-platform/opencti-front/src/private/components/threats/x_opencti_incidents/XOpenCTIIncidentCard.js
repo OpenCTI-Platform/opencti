@@ -82,7 +82,7 @@ const styles = (theme) => ({
   },
 });
 
-class XOpenctiIncidentCardComponent extends Component {
+class XOpenCTIIncidentCardComponent extends Component {
   render() {
     const {
       t, fsd, classes, node, onLabelClick,
@@ -92,7 +92,7 @@ class XOpenctiIncidentCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/xOpenctiIncidents/${node.id}`}
+          to={`/dashboard/threats/XOpenCTIIncidents/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}
@@ -124,7 +124,7 @@ class XOpenctiIncidentCardComponent extends Component {
   }
 }
 
-XOpenctiIncidentCardComponent.propTypes = {
+XOpenCTIIncidentCardComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -132,11 +132,11 @@ XOpenctiIncidentCardComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const XOpenctiIncidentCardFragment = createFragmentContainer(
-  XOpenctiIncidentCardComponent,
+const XOpenCTIIncidentCardFragment = createFragmentContainer(
+  XOpenCTIIncidentCardComponent,
   {
     node: graphql`
-      fragment XOpenctiIncidentCard_node on XOpenctiIncident {
+      fragment XOpenCTIIncidentCard_node on XOpenCTIIncident {
         id
         name
         description
@@ -164,12 +164,12 @@ const XOpenctiIncidentCardFragment = createFragmentContainer(
   },
 );
 
-export const XOpenctiXOpenctiIncidentCard = compose(
+export const XOpenCTIXOpenCTIIncidentCard = compose(
   inject18n,
   withStyles(styles),
-)(XOpenctiIncidentCardFragment);
+)(XOpenCTIIncidentCardFragment);
 
-class XOpenctiIncidentCardDummyComponent extends Component {
+class XOpenCTIIncidentCardDummyComponent extends Component {
   render() {
     const { classes } = this.props;
     return (
@@ -204,11 +204,11 @@ class XOpenctiIncidentCardDummyComponent extends Component {
   }
 }
 
-XOpenctiIncidentCardDummyComponent.propTypes = {
+XOpenCTIIncidentCardDummyComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-export const XOpenctiIncidentCardDummy = compose(
+export const XOpenCTIIncidentCardDummy = compose(
   inject18n,
   withStyles(styles),
-)(XOpenctiIncidentCardDummyComponent);
+)(XOpenCTIIncidentCardDummyComponent);

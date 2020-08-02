@@ -46,8 +46,8 @@ const styles = () => ({
   },
 });
 
-const entityXOpenctiIncidentsChartXOpenctiIncidentsTimeSeriesQuery = graphql`
-  query EntityXOpenctiIncidentsChartXOpenctiIncidentsTimeSeriesQuery(
+const entityXOpenCTIIncidentsChartXOpenCTIIncidentsTimeSeriesQuery = graphql`
+  query EntityXOpenCTIIncidentsChartXOpenCTIIncidentsTimeSeriesQuery(
     $objectId: String
     $field: String!
     $operation: StatsOperation!
@@ -57,7 +57,7 @@ const entityXOpenctiIncidentsChartXOpenctiIncidentsTimeSeriesQuery = graphql`
     $relationship_type: String!
     $inferred: Boolean
   ) {
-    xOpenctiIncidentsTimeSeries(
+    xOpenCTIIncidentsTimeSeries(
       objectId: $objectId
       field: $field
       operation: $operation
@@ -73,7 +73,7 @@ const entityXOpenctiIncidentsChartXOpenctiIncidentsTimeSeriesQuery = graphql`
   }
 `;
 
-class EntityXOpenctiXOpenctiIncidentsChart extends Component {
+class EntityXOpenCTIXOpenCTIIncidentsChart extends Component {
   constructor(props) {
     super(props);
     this.state = { period: 36, interval: 2 };
@@ -106,7 +106,7 @@ class EntityXOpenctiXOpenctiIncidentsChart extends Component {
       variant,
       inferred,
     } = this.props;
-    const xOpenctiIncidentsTimeSeriesVariables = {
+    const XOpenCTIIncidentsTimeSeriesVariables = {
       objectId: entityId,
       field: 'first_seen',
       operation: 'count',
@@ -118,17 +118,17 @@ class EntityXOpenctiXOpenctiIncidentsChart extends Component {
     };
     return (
       <QueryRenderer
-        query={entityXOpenctiIncidentsChartXOpenctiIncidentsTimeSeriesQuery}
-        variables={xOpenctiIncidentsTimeSeriesVariables}
+        query={entityXOpenCTIIncidentsChartXOpenCTIIncidentsTimeSeriesQuery}
+        variables={XOpenCTIIncidentsTimeSeriesVariables}
         render={({ props }) => {
-          if (props && props.xOpenctiIncidentsTimeSeries) {
+          if (props && props.XOpenCTIIncidentsTimeSeries) {
             return (
               <ResponsiveContainer
                 height={variant === 'explore' ? '90%' : 280}
                 width="100%"
               >
                 <LineChart
-                  data={props.xOpenctiIncidentsTimeSeries}
+                  data={props.XOpenCTIIncidentsTimeSeries}
                   margin={{
                     top: 20,
                     right: 50,
@@ -205,7 +205,7 @@ class EntityXOpenctiXOpenctiIncidentsChart extends Component {
             gutterBottom={true}
             style={{ float: 'left', padding: '10px 0 0 10px' }}
           >
-            {title || t('XOpenctiIncidents')}
+            {title || t('XOpenCTIIncidents')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
             <IconButton
@@ -226,7 +226,7 @@ class EntityXOpenctiXOpenctiIncidentsChart extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || t('XOpenctiIncidents')}
+          {title || t('XOpenCTIIncidents')}
         </Typography>
         <div style={{ float: 'right', marginTop: -5 }}>
           <Chip
@@ -266,7 +266,7 @@ class EntityXOpenctiXOpenctiIncidentsChart extends Component {
   }
 }
 
-EntityXOpenctiXOpenctiIncidentsChart.propTypes = {
+EntityXOpenCTIXOpenCTIIncidentsChart.propTypes = {
   variant: PropTypes.string,
   title: PropTypes.string,
   entityId: PropTypes.string,
@@ -283,4 +283,4 @@ EntityXOpenctiXOpenctiIncidentsChart.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityXOpenctiXOpenctiIncidentsChart);
+)(EntityXOpenCTIXOpenCTIIncidentsChart);

@@ -93,7 +93,7 @@ class CountryKnowledgeComponent extends Component {
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'X-Opencti-Incident',
+                'X-OpenCTI-Incident',
                 'Malware',
               ]}
               entityLink={link}

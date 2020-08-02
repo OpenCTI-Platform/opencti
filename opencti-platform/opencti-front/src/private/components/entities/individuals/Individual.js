@@ -15,7 +15,7 @@ import IndividualPopover from './IndividualPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenctiIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenctiIncidentsChart';
+import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
@@ -138,7 +138,7 @@ class IndividualComponent extends Component {
             <EntityCampaignsChart entityId={individual.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityXOpenctiIncidentsChart entityId={individual.id} />
+            <EntityXOpenCTIIncidentsChart entityId={individual.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={individual.id} />

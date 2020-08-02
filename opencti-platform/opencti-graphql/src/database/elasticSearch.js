@@ -396,7 +396,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       query: {
         bool: {
           must: filters,
-          should: [{ match_phrase: { relationship_type: type } }, { match_phrase: { parent_types: type } }],
+          should: [{ match_phrase: { relationship_type: type } }, { match_phrase: { entity_type: type } }],
           minimum_should_match: 1,
         },
       },

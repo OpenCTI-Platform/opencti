@@ -351,8 +351,6 @@ export const isStixDomainObject = (type) => includes(type, STIX_DOMAIN_OBJECTS) 
 
 // region STIX CYBER OBSERVABLE
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
-export const ENTITY_CRYPTOGRAPHIC_KEY = 'Cryptographic-Key';
-export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet';
 export const ENTITY_DIRECTORY = 'Directory';
 export const ENTITY_DOMAIN_NAME = 'Domain-Name';
 export const ENTITY_EMAIL_ADDR = 'Email-Addr';
@@ -375,9 +373,11 @@ export const ENTITY_TEXT = 'text';
 export const ENTITY_WINDOWS_REGISTRY_KEY = 'Windows-Registry-Key';
 export const ENTITY_WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type';
 export const ENTITY_X509_V3_EXTENSIONS_TYPE = 'X509-V3-Extensions-Type';
+export const ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY = 'X-OpenCTI-Cryptographic-Key';
+export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet';
 const STIX_CYBER_OBSERVABLES = [
   ENTITY_AUTONOMOUS_SYSTEM,
-  ENTITY_CRYPTOGRAPHIC_KEY,
+  ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY,
   ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
@@ -563,25 +563,10 @@ const generateStixDomainObjectUUID = (type, data) => {
   }
 };
 const generateStixCyberObservableUUID = (type, data) => {
-  // TODO
-  return uuidv4();
-};
-const generateInternalObjectId = (type, data) => {
-  const prefix = convertEntityTypeToStixType(type);
-  const id = generateInternalObjectUUID(type, data);
-  return `${prefix}--${id}`;
-};
-const generateStixDomainObjectId = (type, data) => {
-  const prefix = convertEntityTypeToStixType(type);
-  const id = generateStixDomainObjectUUID(type, data);
-  return `${prefix}--${id}`;
-};
-const generateStixCyberObservableId = (type, data) => {
-  const prefix = convertEntityTypeToStixType(type);
-  const id = generateStixCyberObservableUUID(type, data);
   switch (type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
-    case ENTITY_CRYPTOGRAPHIC_KEY:
+      return uuid({ type, name: data.number });
+    case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY:
     case ENTITY_CRYPTOGRAPHIC_WALLET:
     case ENTITY_DIRECTORY:
     case ENTITY_DOMAIN_NAME:
@@ -605,10 +590,25 @@ const generateStixCyberObservableId = (type, data) => {
     case ENTITY_WINDOWS_REGISTRY_KEY:
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
     case ENTITY_X509_V3_EXTENSIONS_TYPE:
-      return `${prefix}--${id}`;
+      return uuidv4();
     default:
       throw DatabaseError(`Cant generate an id for ${type}`);
   }
+};
+const generateInternalObjectId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateInternalObjectUUID(type, data);
+  return `${prefix}--${id}`;
+};
+const generateStixDomainObjectId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateStixDomainObjectUUID(type, data);
+  return `${prefix}--${id}`;
+};
+const generateStixCyberObservableId = (type, data) => {
+  const prefix = convertEntityTypeToStixType(type);
+  const id = generateStixCyberObservableUUID(type, data);
+  return `${prefix}--${id}`;
 };
 // endregion
 

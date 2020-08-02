@@ -87,7 +87,7 @@ class Filters extends Component {
           first: 10,
         }).then((data) => {
           const entities = pipe(
-            pathOr([], ['objectMarking', 'edges']),
+            pathOr([], ['markingDefinitions', 'edges']),
             map((n) => ({
               label: n.node.definition,
               value: n.node.id,
@@ -108,7 +108,7 @@ class Filters extends Component {
           first: 10,
         }).then((data) => {
           const entities = pipe(
-            pathOr([], ['objectLabel', 'edges']),
+            pathOr([], ['labels', 'edges']),
             map((n) => ({
               label: n.node.value,
               value: n.node.id,

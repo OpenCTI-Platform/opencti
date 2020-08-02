@@ -1,11 +1,11 @@
 import {
-  addXOpenctiIncident,
+  addXOpenCTIIncident,
   findAll,
   findById,
-  xOpenctiIncidentsTimeSeries,
-  xOpenctiIncidentsTimeSeriesByEntity,
+  xOpenCTIIncidentsTimeSeries,
+  xOpenCTIIncidentsTimeSeriesByEntity,
   observables,
-} from '../domain/xOpenctiIncident';
+} from '../domain/xOpenCTIIncident';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -17,32 +17,32 @@ import {
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
-const xOpenctiIncidentResolvers = {
+const xOpenCTIIncidentResolvers = {
   Query: {
-    xOpenctiIncident: (_, { id }) => findById(id),
-    xOpenctiIncidents: (_, args) => findAll(args),
-    xOpenctiIncidentsTimeSeries: (_, args) => {
+    xOpenCTIIncident: (_, { id }) => findById(id),
+    xOpenCTIIncidents: (_, args) => findAll(args),
+    xOpenCTIIncidentsTimeSeries: (_, args) => {
       if (args.objectId && args.objectId.length > 0) {
-        return xOpenctiIncidentsTimeSeriesByEntity(args);
+        return xOpenCTIIncidentsTimeSeriesByEntity(args);
       }
-      return xOpenctiIncidentsTimeSeries(args);
+      return xOpenCTIIncidentsTimeSeries(args);
     },
   },
-  XOpenctiIncidentsOrdering: {
+  XOpenCTIIncidentsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
     objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
-  XOpenctiIncidentsFilter: {
+  XOpenCTIIncidentsFilter: {
     // eslint-disable-next-line no-undef
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
-  XOpenctiIncident: {
+  XOpenCTIIncident: {
     observables: (incident) => observables(incident.id),
   },
   Mutation: {
-    xOpenctiIncidentEdit: (_, { id }, { user }) => ({
+    xOpenCTIIncidentEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),
       fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
       contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
@@ -51,8 +51,8 @@ const xOpenctiIncidentResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
-    xOpenctiIncidentAdd: (_, { input }, { user }) => addXOpenctiIncident(user, input),
+    xOpenCTIIncidentAdd: (_, { input }, { user }) => addXOpenCTIIncident(user, input),
   },
 };
 
-export default xOpenctiIncidentResolvers;
+export default xOpenCTIIncidentResolvers;

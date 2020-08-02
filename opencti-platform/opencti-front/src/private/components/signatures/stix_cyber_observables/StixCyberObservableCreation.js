@@ -97,10 +97,10 @@ const stixCyberObservableMutation = graphql`
     $DomainName: DomainNameAddInput
     $EmailAddr: EmailAddrAddInput
     $EmailMessage: EmailMessageAddInput
-    $XOpenctiCryptographicKey: XOpenctiCryptographicKeyAddInput
-    $XOpenctiCryptocurrencyWallet: XOpenctiCryptocurrencyWalletAddInput
-    $XOpenctiText: XOpenctiTextAddInput
-    $XOpenctiUserAgent: XOpenctiUserAgentAddInput
+    $XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
+    $XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
+    $XOpenCTIText: XOpenCTITextAddInput
+    $XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -109,10 +109,10 @@ const stixCyberObservableMutation = graphql`
       DomainName: $DomainName
       EmailAddr: $EmailAddr
       EmailMessage: $EmailMessage
-      XOpenctiCryptographicKey: $XOpenctiCryptographicKey
-      XOpenctiCryptocurrencyWallet: $XOpenctiCryptocurrencyWallet
-      XOpenctiText: $XOpenctiText
-      XOpenctiUserAgent: $XOpenctiUserAgent
+      XOpenCTICryptographicKey: $XOpenCTICryptographicKey
+      XOpenCTICryptocurrencyWallet: $XOpenCTICryptocurrencyWallet
+      XOpenCTIText: $XOpenCTIText
+      XOpenCTIUserAgent: $XOpenCTIUserAgent
     ) {
       ...StixCyberObservableLine_node
     }

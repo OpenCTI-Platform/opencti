@@ -28,7 +28,7 @@ import ExploreUpdateWidget from './ExploreUpdateWidget';
 import VictimologyDistribution from './VictimologyDistribution';
 import VictimologyTimeseries from './VictimologyTimeseries';
 import CampaignsTimeseries from './CampaignsTimeseries';
-import XOpenctiIncidentsTimeseries from './XOpenctiIncidentsTimeseries';
+import XOpenCTIIncidentsTimeseries from './XOpenCTIIncidentsTimeseries';
 import AttackPatternsDistribution from './AttackPatternsDistribution';
 import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 
@@ -269,10 +269,10 @@ class WorkspaceExploreSpaceComponent extends Component {
                     />
                   </div>
                 );
-              case 'XOpenctiIncidentsTimeseries':
+              case 'XOpenCTIIncidentsTimeseries':
                 return (
                   <div key={widget.id} data-grid={widget.layout}>
-                    <XOpenctiIncidentsTimeseries
+                    <XOpenCTIIncidentsTimeseries
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
                       inferred={workspaceData.config.inferred}

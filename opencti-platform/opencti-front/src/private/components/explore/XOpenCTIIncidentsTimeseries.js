@@ -3,8 +3,8 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityXOpenctiIncidentsTableTime from '../threats/x_opencti_incidents/EntityXOpenctiIncidentsTableTime';
-import EntityXOpenctiIncidentsChart from '../threats/x_opencti_incidents/EntityXOpenctiIncidentsChart';
+import EntityXOpenCTIIncidentsTableTime from '../threats/x_opencti_incidents/EntityXOpenCTIIncidentsTableTime';
+import EntityXOpenCTIIncidentsChart from '../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 
 const styles = () => ({
   container: {
@@ -12,13 +12,13 @@ const styles = () => ({
   },
 });
 
-class XOpenctiIncidentsTimeseries extends Component {
+class XOpenCTIIncidentsTimeseries extends Component {
   render() {
     const { configuration, handleOpenConfig } = this.props;
     switch (configuration.graph_type) {
       case 'table':
         return (
-          <EntityXOpenctiIncidentsTableTime
+          <EntityXOpenCTIIncidentsTableTime
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -28,7 +28,7 @@ class XOpenctiIncidentsTimeseries extends Component {
         );
       case 'line':
         return (
-          <EntityXOpenctiIncidentsChart
+          <EntityXOpenCTIIncidentsChart
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -38,7 +38,7 @@ class XOpenctiIncidentsTimeseries extends Component {
         );
       default:
         return (
-          <EntityXOpenctiIncidentsChart
+          <EntityXOpenCTIIncidentsChart
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
@@ -50,7 +50,7 @@ class XOpenctiIncidentsTimeseries extends Component {
   }
 }
 
-XOpenctiIncidentsTimeseries.propTypes = {
+XOpenCTIIncidentsTimeseries.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
   inferred: PropTypes.bool,
@@ -63,4 +63,4 @@ XOpenctiIncidentsTimeseries.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(XOpenctiIncidentsTimeseries);
+)(XOpenCTIIncidentsTimeseries);

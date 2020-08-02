@@ -266,7 +266,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on XOpenctiIncident {
+          ... on XOpenCTIIncident {
             name
             description
           }
@@ -323,7 +323,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenctiIncident {
+              ... on XOpenCTIIncident {
                 name
               }
             }
@@ -379,7 +379,7 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on Vulnerability {
                 name
               }
-              ... on XOpenctiIncident {
+              ... on XOpenCTIIncident {
                 name
               }
             }

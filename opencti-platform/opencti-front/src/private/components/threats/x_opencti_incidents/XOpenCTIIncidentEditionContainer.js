@@ -12,8 +12,8 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import XOpenctiIncidentEditionOverview from './XOpenctiIncidentEditionOverview';
-import XOpenctiIncidentEditionDetails from './XOpenctiIncidentEditionDetails';
+import XOpenCTIIncidentEditionOverview from './XOpenCTIIncidentEditionOverview';
+import XOpenCTIIncidentEditionDetails from './XOpenCTIIncidentEditionDetails';
 
 const styles = (theme) => ({
   header: {
@@ -45,7 +45,7 @@ const styles = (theme) => ({
   },
 });
 
-class XOpenctiXOpenctiIncidentEditionContainer extends Component {
+class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { currentTab: 0 };
@@ -57,9 +57,9 @@ class XOpenctiXOpenctiIncidentEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, xOpenctiIncident,
+      t, classes, handleClose, XOpenCTIIncident,
     } = this.props;
-    const { editContext } = xOpenctiIncident;
+    const { editContext } = XOpenCTIIncident;
     return (
       <div>
         <div className={classes.header}>
@@ -71,7 +71,7 @@ class XOpenctiXOpenctiIncidentEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an xOpenctiIncident')}
+            {t('Update an XOpenCTIIncident')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
@@ -87,14 +87,14 @@ class XOpenctiXOpenctiIncidentEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <XOpenctiIncidentEditionOverview
-              xOpenctiIncident={xOpenctiIncident}
+            <XOpenCTIIncidentEditionOverview
+              XOpenCTIIncident={XOpenCTIIncident}
               context={editContext}
             />
           )}
           {this.state.currentTab === 1 && (
-            <XOpenctiIncidentEditionDetails
-              xOpenctiIncident={xOpenctiIncident}
+            <XOpenCTIIncidentEditionDetails
+              XOpenCTIIncident={XOpenCTIIncident}
               context={editContext}
             />
           )}
@@ -104,22 +104,22 @@ class XOpenctiXOpenctiIncidentEditionContainer extends Component {
   }
 }
 
-XOpenctiXOpenctiIncidentEditionContainer.propTypes = {
+XOpenCTIXOpenCTIIncidentEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  xOpenctiIncident: PropTypes.object,
+  XOpenCTIIncident: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };
 
-const XOpenctiIncidentEditionContainerFragment = createFragmentContainer(
-  XOpenctiXOpenctiIncidentEditionContainer,
+const XOpenCTIIncidentEditionContainerFragment = createFragmentContainer(
+  XOpenCTIXOpenCTIIncidentEditionContainer,
   {
-    xOpenctiIncident: graphql`
-      fragment XOpenctiIncidentEditionContainer_xOpenctiIncident on XOpenctiIncident {
+    XOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentEditionContainer_XOpenCTIIncident on XOpenCTIIncident {
         id
-        ...XOpenctiIncidentEditionOverview_xOpenctiIncident
-        ...XOpenctiIncidentEditionDetails_xOpenctiIncident
+        ...XOpenCTIIncidentEditionOverview_XOpenCTIIncident
+        ...XOpenCTIIncidentEditionDetails_XOpenCTIIncident
         editContext {
           name
           focusOn
@@ -132,4 +132,4 @@ const XOpenctiIncidentEditionContainerFragment = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenctiIncidentEditionContainerFragment);
+)(XOpenCTIIncidentEditionContainerFragment);

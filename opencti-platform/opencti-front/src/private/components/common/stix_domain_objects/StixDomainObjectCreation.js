@@ -145,7 +145,7 @@ const stixDomainObjectCreationMutation = graphql`
         name
         description
       }
-      ... on XOpenctiIncident {
+      ... on XOpenCTIIncident {
         name
         description
       }
@@ -273,9 +273,9 @@ class StixDomainObjectCreation extends Component {
             ''
           )}
         {targetEntityTypes === undefined
-        || targetEntityTypes.includes('XOpenctiXOpenctiIncident') ? (
-          <MenuItem value="XOpenctiXOpenctiIncident">
-            {t('XOpenctiXOpenctiIncident')}
+        || targetEntityTypes.includes('XOpenCTIXOpenCTIIncident') ? (
+          <MenuItem value="XOpenCTIXOpenCTIIncident">
+            {t('XOpenCTIXOpenCTIIncident')}
           </MenuItem>
           ) : (
             ''

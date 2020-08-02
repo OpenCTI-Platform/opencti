@@ -43,7 +43,7 @@ export const resolveLink = (type) => {
       return '/dashboard/ttps/tools';
     case 'Vulnerability':
       return '/dashboard/entities/vulnerabilities';
-    case 'xOpenctiIncident':
+    case 'XOpenCTIIncident':
       return '/dashboard/threats/incidents';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':

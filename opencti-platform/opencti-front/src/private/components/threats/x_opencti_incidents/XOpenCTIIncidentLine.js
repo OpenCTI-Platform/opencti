@@ -43,7 +43,7 @@ const styles = (theme) => ({
   },
 });
 
-class XOpenctiIncidentLineComponent extends Component {
+class XOpenCTIIncidentLineComponent extends Component {
   render() {
     const {
       fd, classes, dataColumns, node, onLabelClick,
@@ -101,7 +101,7 @@ class XOpenctiIncidentLineComponent extends Component {
   }
 }
 
-XOpenctiIncidentLineComponent.propTypes = {
+XOpenCTIIncidentLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -109,11 +109,11 @@ XOpenctiIncidentLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const XOpenctiIncidentLineFragment = createFragmentContainer(
-  XOpenctiIncidentLineComponent,
+const XOpenCTIIncidentLineFragment = createFragmentContainer(
+  XOpenCTIIncidentLineComponent,
   {
     node: graphql`
-      fragment XOpenctiIncidentLine_node on XOpenctiIncident {
+      fragment XOpenCTIIncidentLine_node on XOpenCTIIncident {
         id
         name
         created
@@ -140,12 +140,12 @@ const XOpenctiIncidentLineFragment = createFragmentContainer(
   },
 );
 
-export const XOpenctiXOpenctiIncidentLine = compose(
+export const XOpenCTIXOpenCTIIncidentLine = compose(
   inject18n,
   withStyles(styles),
-)(XOpenctiIncidentLineFragment);
+)(XOpenCTIIncidentLineFragment);
 
-class XOpenctiIncidentLineDummyComponent extends Component {
+class XOpenCTIIncidentLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -191,12 +191,12 @@ class XOpenctiIncidentLineDummyComponent extends Component {
   }
 }
 
-XOpenctiIncidentLineDummyComponent.propTypes = {
+XOpenCTIIncidentLineDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const XOpenctiIncidentLineDummy = compose(
+export const XOpenCTIIncidentLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(XOpenctiIncidentLineDummyComponent);
+)(XOpenCTIIncidentLineDummyComponent);

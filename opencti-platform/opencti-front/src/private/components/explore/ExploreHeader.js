@@ -146,7 +146,7 @@ const ExploreHeader = createFragmentContainer(ExploreHeaderComponent, {
         name
         description
       }
-      ... on XOpenctiIncident {
+      ... on XOpenCTIIncident {
         name
         aliases
         description

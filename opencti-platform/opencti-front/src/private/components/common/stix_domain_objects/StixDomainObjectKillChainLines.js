@@ -432,7 +432,7 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
                 ... on Vulnerability {
                   name
                 }
-                ... on XOpenctiIncident {
+                ... on XOpenCTIIncident {
                   name
                 }
               }

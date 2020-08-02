@@ -85,7 +85,7 @@ class AttackPatternKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
               relationshipType="uses"
-              targetEntityTypes={['XOpenctiIncident']}
+              targetEntityTypes={['XOpenCTIIncident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

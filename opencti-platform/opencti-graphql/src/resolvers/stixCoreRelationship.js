@@ -29,8 +29,8 @@ import {
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from "../utils/idGenerator";
+  RELATION_OBJECT_MARKING,
+} from '../utils/idGenerator';
 import { creator } from '../domain/log';
 
 const stixCoreRelationshipResolvers = {

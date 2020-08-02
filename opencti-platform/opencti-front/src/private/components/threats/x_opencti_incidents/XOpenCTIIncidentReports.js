@@ -6,7 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import XOpenctiIncidentPopover from './XOpenctiIncidentPopover';
+import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
 import Reports from '../../reports/Reports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
@@ -34,7 +34,7 @@ const styles = (theme) => ({
   },
 });
 
-class XOpenctiIncidentReportsComponent extends Component {
+class XOpenCTIIncidentReportsComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { withPadding: false };
@@ -42,7 +42,7 @@ class XOpenctiIncidentReportsComponent extends Component {
 
   render() {
     const { withPadding } = this.state;
-    const { classes, xOpenctiIncident } = this.props;
+    const { classes, XOpenCTIIncident } = this.props;
     return (
       <div
         className={
@@ -50,12 +50,12 @@ class XOpenctiIncidentReportsComponent extends Component {
         }
       >
         <StixDomainObjectHeader
-          stixDomainObject={xOpenctiIncident}
-          PopoverComponent={<XOpenctiIncidentPopover />}
+          stixDomainObject={XOpenCTIIncident}
+          PopoverComponent={<XOpenCTIIncidentPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Reports
-            objectId={xOpenctiIncident.id}
+            objectId={XOpenCTIIncident.id}
             onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
             }
           />
@@ -65,17 +65,17 @@ class XOpenctiIncidentReportsComponent extends Component {
   }
 }
 
-XOpenctiIncidentReportsComponent.propTypes = {
-  xOpenctiIncident: PropTypes.object,
+XOpenCTIIncidentReportsComponent.propTypes = {
+  XOpenCTIIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const XOpenctiXOpenctiIncidentReports = createFragmentContainer(
-  XOpenctiIncidentReportsComponent,
+const XOpenCTIXOpenCTIIncidentReports = createFragmentContainer(
+  XOpenCTIIncidentReportsComponent,
   {
-    xOpenctiIncident: graphql`
-      fragment XOpenctiIncidentReports_xOpenctiIncident on XOpenctiIncident {
+    XOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentReports_XOpenCTIIncident on XOpenCTIIncident {
         id
         name
         aliases
@@ -87,4 +87,4 @@ const XOpenctiXOpenctiIncidentReports = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(XOpenctiXOpenctiIncidentReports);
+)(XOpenCTIXOpenCTIIncidentReports);

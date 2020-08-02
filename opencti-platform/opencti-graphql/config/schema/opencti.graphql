@@ -433,7 +433,7 @@ type User implements BasicObject & InternalObject {
 }
 input UserAddInput {
   user_email: String @constraint(minLength: 5, format: "email")
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   password: String
   firstname: String
   lastname: String
@@ -1155,7 +1155,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
 }
 input AttackPatternAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
   revoked: Boolean
@@ -1273,7 +1273,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 input CampaignAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
   revoked: Boolean
@@ -1456,7 +1456,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 input NoteAddInput {
   stix_id: String
   attribute_abstract: String
-  content: String! @constraint(minLength: 3)
+  content: String! @constraint(minLength: 2)
   authors: [String]
   revoked: Boolean
   lang: String
@@ -1828,7 +1828,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 input ReportAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String
   published: DateTime!
   report_types: [String]
@@ -1939,7 +1939,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
 }
 input CourseOfActionAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   x_opencti_aliases: [String]
   confidence: Int
@@ -2170,7 +2170,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
 }
 input IndividualAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
   contact_information: String
@@ -2295,7 +2295,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 input OrganizationAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
   contact_information: String
@@ -2414,7 +2414,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 input SectorAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
   contact_information: String
@@ -2551,7 +2551,7 @@ input IndicatorAddInput {
   pattern_type: String!
   pattern_version: String
   pattern: String!
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String
   valid_from: DateTime
   valid_until: DateTime
@@ -2672,7 +2672,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
 }
 input InfrastructureAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String
   infrastructure_types: [String]
   first_seen: DateTime
@@ -2787,7 +2787,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
 }
 input IntrusionSetAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
   first_seen: DateTime
@@ -3024,7 +3024,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
 }
 input PositionAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String
   latitude: Float
   longitude: Float
@@ -3142,7 +3142,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 input CityAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String
   latitude: Float
   longitude: Float
@@ -3255,7 +3255,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 input CountryAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String
   aliases: [String]
   confidence: Int
@@ -3368,7 +3368,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
 }
 input RegionAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String
   contact_information: String
   confidence: Int
@@ -3492,7 +3492,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 input MalwareAddInput {
   internal_id_key: String
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   malware_types: [String]
   aliases: [String]
@@ -3617,7 +3617,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
 }
 input ThreatActorAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
   threat_actor_types: [String]
@@ -3736,9 +3736,10 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
 }
 input ToolAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   aliases: [String]
+  tool_types: [String]
   tool_version: String
   confidence: Int
   revoked: Boolean
@@ -3853,7 +3854,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
 }
 input VulnerabilityAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   x_opencti_base_score: Int
   x_opencti_base_severity: String
@@ -3872,8 +3873,8 @@ input VulnerabilityAddInput {
   clientMutationId: String
 }
 
-############## XOpenctiIncident
-enum XOpenctiIncidentsOrdering {
+############## XOpenCTIIncident
+enum XOpenCTIIncidentsOrdering {
   name
   first_seen
   last_seen
@@ -3884,7 +3885,7 @@ enum XOpenctiIncidentsOrdering {
   objectMarking
   objectLabel
 }
-enum XOpenctiIncidentsFilter {
+enum XOpenCTIIncidentsFilter {
   name
   aliases
   created
@@ -3894,20 +3895,20 @@ enum XOpenctiIncidentsFilter {
   markedBy
   labelledBy
 }
-input XOpenctiIncidentsFiltering {
-  key: XOpenctiIncidentsFilter!
+input XOpenCTIIncidentsFiltering {
+  key: XOpenCTIIncidentsFilter!
   values: [String]
   operator: String
 }
-type XOpenctiIncidentConnection {
+type XOpenCTIIncidentConnection {
   pageInfo: PageInfo!
-  edges: [XOpenctiIncidentEdge]
+  edges: [XOpenCTIIncidentEdge]
 }
-type XOpenctiIncidentEdge {
+type XOpenCTIIncidentEdge {
   cursor: String!
-  node: XOpenctiIncident!
+  node: XOpenCTIIncident!
 }
-type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
+type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -3952,7 +3953,7 @@ type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & Sti
   lang: String
   created: DateTime!
   modified: DateTime!
-  # XOpenctiIncident
+  # XOpenCTIIncident
   name: String!
   description: String
   aliases: [String]
@@ -3967,9 +3968,9 @@ type XOpenctiIncident implements BasicObject & StixObject & StixCoreObject & Sti
   toStix: String
   editContext: [EditUserContext]
 }
-input XOpenctiIncidentAddInput {
+input XOpenCTIIncidentAddInput {
   stix_id: String
-  name: String! @constraint(minLength: 3)
+  name: String! @constraint(minLength: 2)
   description: String!
   confidence: Int
   revoked: Boolean
@@ -6013,7 +6014,7 @@ input X509V3ExtensionsTypeAddInput {
   modified: DateTime
   clientMutationId: String
 }
-type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6076,7 +6077,7 @@ type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObje
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
-  # XOpenctiCryptographicKey
+  # XOpenCTICryptographicKey
   value: String
   # Technical
   creator: User
@@ -6085,7 +6086,7 @@ type XOpenctiCryptographicKey implements BasicObject & StixObject & StixCoreObje
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenctiCryptographicKeyAddInput {
+input XOpenCTICryptographicKeyAddInput {
   stix_id: String
   value: String
   createdBy: String
@@ -6096,7 +6097,7 @@ input XOpenctiCryptographicKeyAddInput {
   modified: DateTime
   clientMutationId: String
 }
-type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6159,7 +6160,7 @@ type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCore
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
-  # XOpenctiCryptocurrencyWallet
+  # XOpenCTICryptocurrencyWallet
   value: String
   # Technical
   creator: User
@@ -6168,7 +6169,7 @@ type XOpenctiCryptocurrencyWallet implements BasicObject & StixObject & StixCore
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenctiCryptocurrencyWalletAddInput {
+input XOpenCTICryptocurrencyWalletAddInput {
   stix_id: String
   value: String
   createdBy: String
@@ -6179,7 +6180,7 @@ input XOpenctiCryptocurrencyWalletAddInput {
   modified: DateTime
   clientMutationId: String
 }
-type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6242,7 +6243,7 @@ type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCyb
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
-  # XOpenctiText
+  # XOpenCTIText
   value: String
   # Technical
   creator: User
@@ -6251,7 +6252,7 @@ type XOpenctiText implements BasicObject & StixObject & StixCoreObject & StixCyb
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenctiTextAddInput {
+input XOpenCTITextAddInput {
   stix_id: String
   value: String
   createdBy: String
@@ -6262,7 +6263,7 @@ input XOpenctiTextAddInput {
   modified: DateTime
   clientMutationId: String
 }
-type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -6325,7 +6326,7 @@ type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & St
     filterMode: FilterMode
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
-  # XOpenctiUserAgent
+  # XOpenCTIUserAgent
   value: String
   # Technical
   creator: User
@@ -6334,7 +6335,7 @@ type XOpenctiUserAgent implements BasicObject & StixObject & StixCoreObject & St
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
-input XOpenctiUserAgentAddInput {
+input XOpenCTIUserAgentAddInput {
   stix_id: String
   value: String
   createdBy: String
@@ -6437,7 +6438,7 @@ union StixObjectOrStixRelationship =
   | ThreatActor
   | Tool
   | Vulnerability
-  | XOpenctiIncident ## Six Cyber Observables
+  | XOpenCTIIncident ## Six Cyber Observables
   | AutonomousSystem
   | Directory
   | DomainName
@@ -7286,18 +7287,18 @@ type Query {
     search: String
     toStix: Boolean
   ): VulnerabilityConnection @auth(for: [KNOWLEDGE])
-  xOpenctiIncident(id: String): XOpenctiIncident @auth(for: [KNOWLEDGE])
-  xOpenctiIncidents(
+  xOpenCTIIncident(id: String): XOpenCTIIncident @auth(for: [KNOWLEDGE])
+  xOpenCTIIncidents(
     first: Int
     after: ID
-    orderBy: XOpenctiIncidentsOrdering
+    orderBy: XOpenCTIIncidentsOrdering
     orderMode: OrderingMode
-    filters: [XOpenctiIncidentsFiltering]
+    filters: [XOpenCTIIncidentsFiltering]
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): XOpenctiIncidentConnection @auth(for: [KNOWLEDGE])
-  xOpenctiIncidentsTimeSeries(
+  ): XOpenCTIIncidentConnection @auth(for: [KNOWLEDGE])
+  xOpenCTIIncidentsTimeSeries(
     objectId: String
     field: String!
     operation: StatsOperation!
@@ -7786,13 +7787,13 @@ type VulnerabilityEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
 }
-type XOpenctiIncidentEditMutations {
+type XOpenCTIIncidentEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: EditInput): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  fieldPatch(input: EditInput): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX CYBER OBSERVABLE ENTITIES
@@ -7962,8 +7963,8 @@ type Mutation {
   toolEdit(id: ID!): ToolEditMutations
   vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
-  xOpenctiIncidentAdd(input: XOpenctiIncidentAddInput): XOpenctiIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  xOpenctiIncidentEdit(id: ID!): XOpenctiIncidentEditMutations
+  xOpenCTIIncidentAdd(input: XOpenCTIIncidentAddInput): XOpenCTIIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  xOpenCTIIncidentEdit(id: ID!): XOpenCTIIncidentEditMutations
 
   ######## STIX CYBER OBSERVABLE ENTITIES
   stixCyberObservableAdd(
@@ -7973,10 +7974,10 @@ type Mutation {
     DomainName: DomainNameAddInput
     EmailAddr: EmailAddrAddInput
     EmailMessage: EmailMessageAddInput
-    XOpenctiCryptographicKey: XOpenctiCryptographicKeyAddInput
-    XOpenctiCryptocurrencyWallet: XOpenctiCryptocurrencyWalletAddInput
-    XOpenctiText: XOpenctiTextAddInput
-    XOpenctiUserAgent: XOpenctiUserAgentAddInput
+    XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
+    XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
+    XOpenCTIText: XOpenCTITextAddInput
+    XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(

@@ -26,7 +26,7 @@ import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuSector from './TopMenuSector';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuCampaign from './TopMenuCampaign';
-import TopMenuXOpenctiIncident from './TopMenuXOpenctiIncident';
+import TopMenuXOpenCTIIncident from './TopMenuXOpenCTIIncident';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuTechniques from './TopMenuTechniques';
 import TopMenuAttackPattern from './TopMenuAttackPattern';
@@ -187,9 +187,9 @@ const TopBar = ({
             ''
           )}
           {location.pathname.includes(
-            '/dashboard/threats/x_opencti_xOpenctiIncidents/',
+            '/dashboard/threats/x_opencti_XOpenCTIIncidents/',
           ) ? (
-            <TopMenuXOpenctiIncident />
+            <TopMenuXOpenCTIIncident />
             ) : (
               ''
             )}

@@ -292,7 +292,7 @@ const StixSightingRelationshipCreationFromEntityStixDomainObjectsLines = createP
                 name
                 description
               }
-              ... on XOpenctiIncident {
+              ... on XOpenCTIIncident {
                 name
                 description
               }

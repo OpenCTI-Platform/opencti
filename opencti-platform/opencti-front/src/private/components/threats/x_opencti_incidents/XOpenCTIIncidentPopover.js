@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { xOpenctiIncidentEditionQuery } from './XOpenctiIncidentEdition';
-import XOpenctiIncidentEditionContainer from './XOpenctiIncidentEditionContainer';
+import { XOpenCTIIncidentEditionQuery } from './XOpenCTIIncidentEdition';
+import XOpenCTIIncidentEditionContainer from './XOpenCTIIncidentEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -47,15 +47,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const XOpenctiIncidentPopoverDeletionMutation = graphql`
-  mutation XOpenctiIncidentPopoverDeletionMutation($id: ID!) {
-    xOpenctiIncidentEdit(id: $id) {
+const XOpenCTIIncidentPopoverDeletionMutation = graphql`
+  mutation XOpenCTIIncidentPopoverDeletionMutation($id: ID!) {
+    xOpenCTIIncidentEdit(id: $id) {
       delete
     }
   }
 `;
 
-class XOpenctiXOpenctiIncidentPopover extends Component {
+class XOpenCTIXOpenCTIIncidentPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,7 +86,7 @@ class XOpenctiXOpenctiIncidentPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: XOpenctiIncidentPopoverDeletionMutation,
+      mutation: XOpenCTIIncidentPopoverDeletionMutation,
       variables: {
         id: this.props.id,
       },
@@ -94,7 +94,7 @@ class XOpenctiXOpenctiIncidentPopover extends Component {
         this.setState({ deleting: false });
         this.handleClose();
         this.props.history.push(
-          '/dashboard/threats/x_opencti_xOpenctiIncidents',
+          '/dashboard/threats/x_opencti_XOpenCTIIncidents',
         );
       },
     });
@@ -143,7 +143,7 @@ class XOpenctiXOpenctiIncidentPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this xOpenctiIncident?')}
+              {t('Do you want to delete this XOpenCTIIncident?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -170,14 +170,14 @@ class XOpenctiXOpenctiIncidentPopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={xOpenctiIncidentEditionQuery}
+            query={XOpenCTIIncidentEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {
                 // Done
                 return (
-                  <XOpenctiIncidentEditionContainer
-                    xOpenctiIncident={props.xOpenctiIncident}
+                  <XOpenCTIIncidentEditionContainer
+                    XOpenCTIIncident={props.XOpenCTIIncident}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -191,7 +191,7 @@ class XOpenctiXOpenctiIncidentPopover extends Component {
   }
 }
 
-XOpenctiXOpenctiIncidentPopover.propTypes = {
+XOpenCTIXOpenCTIIncidentPopover.propTypes = {
   id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -202,4 +202,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(XOpenctiXOpenctiIncidentPopover);
+)(XOpenCTIXOpenCTIIncidentPopover);

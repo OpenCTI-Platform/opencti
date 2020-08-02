@@ -255,7 +255,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
                 ... on Vulnerability {
                   name
                 }
-                ... on XOpenctiIncident {
+                ... on XOpenCTIIncident {
                   name
                 }
               }
@@ -319,7 +319,7 @@ const SimpleEntityStixCoreRelationshipsLines = createPaginationContainer(
                 ... on Vulnerability {
                   name
                 }
-                ... on XOpenctiIncident {
+                ... on XOpenCTIIncident {
                   name
                 }
               }

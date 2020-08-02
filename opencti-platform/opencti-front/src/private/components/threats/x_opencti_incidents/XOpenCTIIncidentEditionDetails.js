@@ -40,25 +40,25 @@ const styles = (theme) => ({
   },
 });
 
-const xOpenctiIncidentMutationFieldPatch = graphql`
-  mutation XOpenctiIncidentEditionDetailsFieldPatchMutation(
+const XOpenCTIIncidentMutationFieldPatch = graphql`
+  mutation XOpenCTIIncidentEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: EditInput!
   ) {
-    xOpenctiIncidentEdit(id: $id) {
+    xOpenCTIIncidentEdit(id: $id) {
       fieldPatch(input: $input) {
-        ...XOpenctiIncidentEditionDetails_xOpenctiIncident
+        ...XOpenCTIIncidentEditionDetails_XOpenCTIIncident
       }
     }
   }
 `;
 
-const xOpenctiIncidentEditionDetailsFocus = graphql`
-  mutation XOpenctiIncidentEditionDetailsFocusMutation(
+const XOpenCTIIncidentEditionDetailsFocus = graphql`
+  mutation XOpenCTIIncidentEditionDetailsFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    xOpenctiIncidentEdit(id: $id) {
+    xOpenCTIIncidentEdit(id: $id) {
       contextPatch(input: $input) {
         id
       }
@@ -66,7 +66,7 @@ const xOpenctiIncidentEditionDetailsFocus = graphql`
   }
 `;
 
-const xOpenctiIncidentValidation = (t) => Yup.object().shape({
+const XOpenCTIIncidentValidation = (t) => Yup.object().shape({
   first_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -76,12 +76,12 @@ const xOpenctiIncidentValidation = (t) => Yup.object().shape({
   objective: Yup.string(),
 });
 
-class XOpenctiIncidentEditionDetailsComponent extends Component {
+class XOpenCTIIncidentEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
-      mutation: xOpenctiIncidentEditionDetailsFocus,
+      mutation: XOpenCTIIncidentEditionDetailsFocus,
       variables: {
-        id: this.props.xOpenctiIncident.id,
+        id: this.props.XOpenCTIIncident.id,
         input: {
           focusOn: name,
         },
@@ -90,13 +90,13 @@ class XOpenctiIncidentEditionDetailsComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    xOpenctiIncidentValidation(this.props.t)
+    XOpenCTIIncidentValidation(this.props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
-          mutation: xOpenctiIncidentMutationFieldPatch,
+          mutation: XOpenCTIIncidentMutationFieldPatch,
           variables: {
-            id: this.props.xOpenctiIncident.id,
+            id: this.props.XOpenCTIIncident.id,
             input: { key: name, value },
           },
         });
@@ -105,18 +105,18 @@ class XOpenctiIncidentEditionDetailsComponent extends Component {
   }
 
   render() {
-    const { t, xOpenctiIncident, context } = this.props;
+    const { t, XOpenCTIIncident, context } = this.props;
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(xOpenctiIncident.first_seen)),
-      assoc('last_seen', dateFormat(xOpenctiIncident.last_seen)),
+      assoc('first_seen', dateFormat(XOpenCTIIncident.first_seen)),
+      assoc('last_seen', dateFormat(XOpenCTIIncident.last_seen)),
       pick(['first_seen', 'last_seen', 'objective']),
-    )(xOpenctiIncident);
+    )(XOpenCTIIncident);
 
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={xOpenctiIncidentValidation(t)}
+        validationSchema={XOpenCTIIncidentValidation(t)}
         onSubmit={() => true}
       >
         {() => (
@@ -167,19 +167,19 @@ class XOpenctiIncidentEditionDetailsComponent extends Component {
   }
 }
 
-XOpenctiIncidentEditionDetailsComponent.propTypes = {
+XOpenCTIIncidentEditionDetailsComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  xOpenctiIncident: PropTypes.object,
+  XOpenCTIIncident: PropTypes.object,
   context: PropTypes.array,
 };
 
-const XOpenctiXOpenctiIncidentEditionDetails = createFragmentContainer(
-  XOpenctiIncidentEditionDetailsComponent,
+const XOpenCTIXOpenCTIIncidentEditionDetails = createFragmentContainer(
+  XOpenCTIIncidentEditionDetailsComponent,
   {
-    xOpenctiIncident: graphql`
-      fragment XOpenctiIncidentEditionDetails_xOpenctiIncident on XOpenctiIncident {
+    XOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentEditionDetails_XOpenCTIIncident on XOpenCTIIncident {
         id
         first_seen
         last_seen
@@ -192,4 +192,4 @@ const XOpenctiXOpenctiIncidentEditionDetails = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenctiXOpenctiIncidentEditionDetails);
+)(XOpenCTIXOpenCTIIncidentEditionDetails);

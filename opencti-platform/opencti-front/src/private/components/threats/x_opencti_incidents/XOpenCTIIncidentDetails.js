@@ -21,10 +21,10 @@ const styles = () => ({
   },
 });
 
-class XOpenctiIncidentDetailsComponent extends Component {
+class XOpenCTIIncidentDetailsComponent extends Component {
   render() {
     const {
-      fld, t, classes, xOpenctiIncident,
+      fld, t, classes, XOpenCTIIncident,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -33,8 +33,8 @@ class XOpenctiIncidentDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <StixDomainObjectLabels
-            labels={xOpenctiIncident.objectLabel}
-            id={xOpenctiIncident.id}
+            labels={XOpenCTIIncident.objectLabel}
+            id={XOpenCTIIncident.id}
           />
           <Typography
             variant="h3"
@@ -43,7 +43,7 @@ class XOpenctiIncidentDetailsComponent extends Component {
           >
             {t('Creator')}
           </Typography>
-          <ItemCreator creator={xOpenctiIncident.creator} />
+          <ItemCreator creator={XOpenCTIIncident.creator} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -51,7 +51,7 @@ class XOpenctiIncidentDetailsComponent extends Component {
           >
             {t('First seen')}
           </Typography>
-          {fld(xOpenctiIncident.first_seen)}
+          {fld(XOpenCTIIncident.first_seen)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -59,7 +59,7 @@ class XOpenctiIncidentDetailsComponent extends Component {
           >
             {t('Last seen')}
           </Typography>
-          {fld(xOpenctiIncident.last_seen)}
+          {fld(XOpenCTIIncident.last_seen)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -67,25 +67,25 @@ class XOpenctiIncidentDetailsComponent extends Component {
           >
             {t('Objective')}
           </Typography>
-          <Markdown className="markdown" source={xOpenctiIncident.objective} />
+          <Markdown className="markdown" source={XOpenCTIIncident.objective} />
         </Paper>
       </div>
     );
   }
 }
 
-XOpenctiIncidentDetailsComponent.propTypes = {
-  xOpenctiIncident: PropTypes.object,
+XOpenCTIIncidentDetailsComponent.propTypes = {
+  XOpenCTIIncident: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const XOpenctiXOpenctiIncidentDetails = createFragmentContainer(
-  XOpenctiIncidentDetailsComponent,
+const XOpenCTIXOpenCTIIncidentDetails = createFragmentContainer(
+  XOpenCTIIncidentDetailsComponent,
   {
-    xOpenctiIncident: graphql`
-      fragment XOpenctiIncidentDetails_xOpenctiIncident on XOpenctiIncident {
+    XOpenCTIIncident: graphql`
+      fragment XOpenCTIIncidentDetails_XOpenCTIIncident on XOpenCTIIncident {
         id
         first_seen
         last_seen
@@ -111,4 +111,4 @@ const XOpenctiXOpenctiIncidentDetails = createFragmentContainer(
 export default compose(
   inject18n,
   withStyles(styles),
-)(XOpenctiXOpenctiIncidentDetails);
+)(XOpenCTIXOpenCTIIncidentDetails);
