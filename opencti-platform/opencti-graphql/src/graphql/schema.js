@@ -25,6 +25,7 @@ import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
 import organizationResolvers from '../resolvers/organization';
 import sectorResolvers from '../resolvers/sector';
+import locationResolvers from '../resolvers/location';
 import cityResolvers from '../resolvers/city';
 import countryResolvers from '../resolvers/country';
 import regionResolvers from '../resolvers/region';
@@ -103,6 +104,7 @@ const createSchema = () => {
     infrastructureResolvers,
     intrusionSetResolvers,
     // Locations
+    locationResolvers,
     cityResolvers,
     countryResolvers,
     regionResolvers,

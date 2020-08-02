@@ -2809,6 +2809,49 @@ input IntrusionSetAddInput {
 }
 
 ############## Locations
+enum LocationsOrdering {
+  name
+  latitude
+  longitude
+  created
+  modified
+  created_at
+  updated_at
+  objectMarking
+  objectLabel
+}
+enum LocationsFilter {
+  entity_type
+  name
+  x_opencti_aliases
+  confidence
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+}
+input LocationsFiltering {
+  key: LocationsFilter!
+  values: [String]
+  operator: String
+}
+type LocationConnection {
+  pageInfo: PageInfo!
+  edges: [LocationEdge]
+}
+type LocationEdge {
+  cursor: String!
+  node: Location!
+}
+enum LocationType {
+  City
+  Country
+  Region
+  Position
+}
 interface Location {
   id: ID! # internal_id
   standard_id: String!
@@ -2861,6 +2904,26 @@ interface Location {
   longitude: Float
   precision: Float
   x_opencti_aliases: [String]
+}
+input LocationAddInput {
+  type: LocationType!
+  stix_id: String
+  name: String!
+  description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
+  x_opencti_aliases: [String]
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  clientMutationId: String
+  created: DateTime
+  modified: DateTime
 }
 
 ################ Positions
@@ -7123,6 +7186,18 @@ type Query {
     toStix: Boolean
   ): IntrusionSetConnection @auth(for: [KNOWLEDGE])
   # Locations
+  location(id: String!): Location @auth(for: [KNOWLEDGE])
+  locations(
+    first: Int
+    after: ID
+    types: [String]
+    orderBy: LocationsOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: [LocationsFiltering]
+    filterMode: FilterMode
+    toStix: Boolean
+  ): LocationConnection @auth(for: [KNOWLEDGE])
   city(id: String): City @auth(for: [KNOWLEDGE])
   cities(
     first: Int
@@ -7639,6 +7714,14 @@ type IntrusionSetEditMutations {
   relationDelete(toId: String!, relationship_type: String!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 ############### Locations
+type LocationEditMutations {
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  fieldPatch(input: EditInput): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextPatch(input: EditContext): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  contextClean: Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+}
 type CityEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   fieldPatch(input: EditInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -7861,6 +7944,8 @@ type Mutation {
   intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   intrusionSetEdit(id: ID!): IntrusionSetEditMutations
   ############### Locations
+  locationAdd(input: IdentityAddInput): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  locationEdit(id: ID!): LocationEditMutations
   cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
   cityEdit(id: ID!): CityEditMutations
   countryAdd(input: CountryAddInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
