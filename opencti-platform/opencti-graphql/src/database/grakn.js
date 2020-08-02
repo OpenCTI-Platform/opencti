@@ -1455,6 +1455,10 @@ const createRelationRaw = async (user, input, opts = {}) => {
       }
     });
   } catch (err) {
+    if (err.name === TYPE_DUPLICATE_ENTRY) {
+      logger.warn(err.message, { input, ...err.data });
+      return loadRelationById(err.data.id, relationshipType);
+    }
     // Lock cant be acquired after 5 sec, assume relation already exists.
     if (err.name === 'LockError') {
       throw DuplicateEntryError('Relation already exists (redis)', { id: internalId });
@@ -1648,14 +1652,14 @@ export const createRelations = async (user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-export const createEntity = async (user, entity, type, opts = {}) => {
+export const createEntity = async (user, input, type, opts = {}) => {
   const { noLog = false } = opts;
   // We need to check existing dependencies
   // Except, Labels and KillChains that are embedded in same execution.
   const idsToResolve = [];
-  if (entity.createdBy) idsToResolve.push({ id: entity.createdBy });
-  forEach((marking) => idsToResolve.push({ id: marking }), entity.markingDefinitions || []);
-  forEach((object) => idsToResolve.push({ id: object }), entity.objects || []);
+  if (input.createdBy) idsToResolve.push({ id: input.createdBy });
+  forEach((marking) => idsToResolve.push({ id: marking }), input.markingDefinitions || []);
+  forEach((object) => idsToResolve.push({ id: object }), input.objects || []);
   const elemPromise = (ref) => internalLoadEntityById(ref.id).then((e) => ({ ref, available: e !== null }));
   const checkIds = await Promise.all(map(elemPromise, idsToResolve));
   const notResolvedElements = filter((c) => !c.available, checkIds);
@@ -1663,8 +1667,8 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     throw MissingReferenceError({ input: map((n) => n.ref, notResolvedElements) });
   }
   // Generate the internal id
-  const internalId = entity.internal_id || generateInternalId();
-  const standardId = generateStandardId(type, entity);
+  const internalId = input.internal_id || generateInternalId();
+  const standardId = generateStandardId(type, input);
   // Complete with identifiers
   const today = now();
   // Dissoc additional data
@@ -1675,7 +1679,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
     dissoc('killChainPhases'),
     dissoc('externalReferences'),
     dissoc('object')
-  )(entity);
+  )(input);
   // Default attributes
   // Basic-Object
   data = pipe(assoc('internal_id', internalId), assoc('entity_type', type))(data);
@@ -1691,7 +1695,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   if (isStixObject(type)) {
     data = pipe(
       assoc('standard_id', standardId),
-      assoc('stix_ids', isNil(entity.stix_id) ? [] : [entity.stix_id]),
+      assoc('stix_ids', isNil(input.stix_id) ? [] : [input.stix_id]),
       dissoc('stix_id'),
       assoc('spec_version', STIX_SPEC_VERSION),
       assoc('created_at', today),
@@ -1701,8 +1705,8 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   // Stix-Meta-Object
   if (isStixMetaObject(type)) {
     data = pipe(
-      assoc('created', isNil(entity.created) ? today : entity.created),
-      assoc('modified', isNil(entity.modified) ? today : entity.modified)
+      assoc('created', isNil(input.created) ? today : input.created),
+      assoc('modified', isNil(input.modified) ? today : input.modified)
     )(data);
   }
   // STIX-Core-Object
@@ -1712,8 +1716,8 @@ export const createEntity = async (user, entity, type, opts = {}) => {
       assoc('revoked', isNil(data.revoked) ? false : data.revoked),
       assoc('confidence', isNil(data.confidence) ? 0 : data.confidence),
       assoc('lang', isNil(data.lang) ? 'en' : data.lang),
-      assoc('created', isNil(entity.created) ? today : entity.created),
-      assoc('modified', isNil(entity.modified) ? today : entity.modified)
+      assoc('created', isNil(input.created) ? today : input.created),
+      assoc('modified', isNil(input.modified) ? today : input.modified)
     )(data);
   }
   // Add the additional fields for dates (day, month, year)
@@ -1747,19 +1751,19 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(internalId);
-    // Create the entity
+    // Create the input
     await executeWrite(async (wTx) => {
       logger.debug(`[GRAKN - infer: false] createEntity`, { query });
       await wTx.query(query);
     });
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
-      logger.warn(err.message, { input: entity, ...err.data });
+      logger.warn(err.message, { input, ...err.data });
       return loadEntityById(err.data.id, type);
     }
-    // Lock cant be acquired after 5 sec, assume entity already exists.
+    // Lock cant be acquired after 5 sec, assume input already exists.
     if (err.name === 'LockError') {
-      logger.warn('Entity already exists (Redis)', { input: entity, ...err.data });
+      logger.warn('Entity already exists (Redis)', { input, ...err.data });
       return loadEntityById(internalId, type);
     }
     throw err;
@@ -1776,7 +1780,7 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   try {
     await elIndexElements([completedData]);
   } catch (err) {
-    throw DatabaseError('Cannot index entity', { error: err, data: completedData });
+    throw DatabaseError('Cannot index input', { error: err, data: completedData });
   }
   const postOperations = [];
   // Send creation log
@@ -1784,12 +1788,12 @@ export const createEntity = async (user, entity, type, opts = {}) => {
   // Complete with eventual relations (will eventually update the index)
   if (isStixCoreObject(type)) {
     postOperations.push(
-      addCreatedBy(user, internalId, entity.createdBy, opts),
-      addMarkingDefs(user, internalId, entity.objectMarking, opts),
-      addLabels(user, internalId, entity.objectLabel, opts), // Embedded in same execution.
-      addKillChains(user, internalId, entity.killChainPhases, opts), // Embedded in same execution.
-      addExternalReferences(user, internalId, entity.externalReferences, opts),
-      addObjects(user, internalId, entity.object, opts)
+      addCreatedBy(user, internalId, input.createdBy, opts),
+      addMarkingDefs(user, internalId, input.objectMarking, opts),
+      addLabels(user, internalId, input.objectLabel, opts), // Embedded in same execution.
+      addKillChains(user, internalId, input.killChainPhases, opts), // Embedded in same execution.
+      addExternalReferences(user, internalId, input.externalReferences, opts),
+      addObjects(user, internalId, input.object, opts)
     );
   }
   await Promise.all(postOperations);

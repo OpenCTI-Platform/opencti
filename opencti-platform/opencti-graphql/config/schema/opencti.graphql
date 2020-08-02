@@ -2041,6 +2041,7 @@ interface Identity {
   created: DateTime!
   modified: DateTime!
   # Identity
+  identity_class: String!
   name: String!
   description: String
   aliases: [String]
@@ -2152,6 +2153,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   created: DateTime!
   modified: DateTime!
   # Identity
+  identity_class: String!
   name: String!
   description: String
   aliases: [String]
@@ -2275,6 +2277,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   created: DateTime!
   modified: DateTime!
   # Identity
+  identity_class: String!
   name: String!
   description: String
   aliases: [String]
@@ -2393,6 +2396,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   created: DateTime!
   modified: DateTime!
   # Identity
+  identity_class: String!
   name: String!
   description: String
   aliases: [String]

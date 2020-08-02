@@ -15,7 +15,7 @@ export const findAll = (args) => {
 export const addIndividual = async (user, individual) => {
   const created = await createEntity(
     user,
-    assoc('x_opencti_identity_type', ENTITY_TYPE_IDENTITY_INDIVIDUAL, individual),
+    assoc('identity_class', ENTITY_TYPE_IDENTITY_INDIVIDUAL.toLowerCase(), individual),
     ENTITY_TYPE_IDENTITY_INDIVIDUAL
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

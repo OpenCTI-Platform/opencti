@@ -11,8 +11,8 @@
       "labels": ["identity"],
       "created": "2020-02-23T23:40:53.575Z",
       "modified": "2020-02-27T08:45:39.351Z",
-      "x_opencti_organization_class": null,
       "x_opencti_identity_type": "organization",
+      "x_opencti_organization_class": null,
       "x_opencti_id": "c79e5d9f-4321-4174-b120-7cd9342ec88a"
     },
     {

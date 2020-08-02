@@ -10,11 +10,11 @@ import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { buildPagination } from '../database/utils';
 import {
-  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
-  RELATION_PART_OF,
-} from '../utils/idGenerator';
+  RELATION_PART_OF
+} from "../utils/idGenerator";
 
 export const findById = (organizationId) => {
   return loadEntityById(organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
@@ -37,7 +37,7 @@ export const sectors = (organizationId) => {
 export const addOrganization = async (user, organization) => {
   const created = await createEntity(
     user,
-    assoc('x_opencti_identity_type', ENTITY_TYPE_IDENTITY_ORGANIZATION, organization),
+    assoc('identity_class', ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), organization),
     ENTITY_TYPE_IDENTITY_ORGANIZATION
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
