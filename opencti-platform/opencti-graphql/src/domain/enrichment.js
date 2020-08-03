@@ -3,6 +3,7 @@ import { map } from 'ramda';
 import { connectorsFor } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../utils/idGenerator';
 
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 
@@ -15,7 +16,7 @@ export const askEnrich = async (observableId, scope) => {
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(connector, 'Stix-Observable', observableId).then(({ job, work }) => {
+      return createWork(connector, ABSTRACT_STIX_CYBER_OBSERVABLE, observableId).then(({ job, work }) => {
         return { connector, job, work };
       });
     }, targetConnectors)

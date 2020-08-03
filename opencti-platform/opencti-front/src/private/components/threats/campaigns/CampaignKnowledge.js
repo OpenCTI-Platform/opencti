@@ -76,7 +76,7 @@ class CampaignKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={campaign.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['XOpenCTIIncident']}
+              targetEntityTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               creationIsFrom={false}
               {...routeProps}

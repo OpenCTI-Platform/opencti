@@ -25,10 +25,7 @@ export const findAll = async (args) => {
 };
 
 export const addLocation = async (user, location) => {
-  const locationToCreate = pipe(
-    assoc('x_opencti_location_type', location.type),
-    dissoc('type', location)
-  )(location);
+  const locationToCreate = pipe(assoc('x_opencti_location_type', location.type), dissoc('type'))(location);
   const created = await createEntity(user, locationToCreate, location.type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

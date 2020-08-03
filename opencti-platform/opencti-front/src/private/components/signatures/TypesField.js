@@ -25,7 +25,7 @@ class TypesField extends Component {
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesSubTypesQuery}
-        variables={{ type: 'Stix-Observable' }}
+        variables={{ type: 'Stix-Cyber-Observable' }}
         render={({ props }) => {
           if (props && props.subTypes) {
             const subTypesEdges = props.subTypes.edges;

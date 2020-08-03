@@ -368,17 +368,17 @@ export const ENTITY_PROCESS = 'Process';
 export const ENTITY_SOFTWARE = 'Software';
 export const ENTITY_URL = 'Url';
 export const ENTITY_USER_ACCOUNT = 'User-Account';
-export const ENTITY_USER_AGENT = 'User-Agent';
-export const ENTITY_TEXT = 'text';
 export const ENTITY_WINDOWS_REGISTRY_KEY = 'Windows-Registry-Key';
 export const ENTITY_WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type';
 export const ENTITY_X509_V3_EXTENSIONS_TYPE = 'X509-V3-Extensions-Type';
 export const ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY = 'X-OpenCTI-Cryptographic-Key';
-export const ENTITY_CRYPTOGRAPHIC_WALLET = 'Cryptocurrency-Wallet';
+export const ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET = 'X-OpenCTI-Cryptocurrency-Wallet';
+export const ENTITY_X_OPENCTI_HOSTNAME = 'X-OpenCTI-Hostname';
+export const ENTITY_X_OPENCTI_TEXT = 'X-OpenCTI-Text';
+export const ENTITY_X_OPENCTI_USER_AGENT = 'X-OpenCTI-User-Agent';
+
 const STIX_CYBER_OBSERVABLES = [
   ENTITY_AUTONOMOUS_SYSTEM,
-  ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY,
-  ENTITY_CRYPTOGRAPHIC_WALLET,
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
@@ -396,11 +396,14 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_SOFTWARE,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
-  ENTITY_USER_AGENT,
-  ENTITY_TEXT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   ENTITY_X509_V3_EXTENSIONS_TYPE,
+  ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY,
+  ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET,
+  ENTITY_X_OPENCTI_HOSTNAME,
+  ENTITY_X_OPENCTI_USER_AGENT,
+  ENTITY_X_OPENCTI_TEXT,
 ];
 export const isStixCyberObservable = (type) =>
   includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
@@ -566,8 +569,6 @@ const generateStixCyberObservableUUID = (type, data) => {
   switch (type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
       return uuid({ type, name: data.number });
-    case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY:
-    case ENTITY_CRYPTOGRAPHIC_WALLET:
     case ENTITY_DIRECTORY:
     case ENTITY_DOMAIN_NAME:
     case ENTITY_EMAIL_ADDR:
@@ -585,11 +586,14 @@ const generateStixCyberObservableUUID = (type, data) => {
     case ENTITY_SOFTWARE:
     case ENTITY_URL:
     case ENTITY_USER_ACCOUNT:
-    case ENTITY_USER_AGENT:
-    case ENTITY_TEXT:
     case ENTITY_WINDOWS_REGISTRY_KEY:
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
     case ENTITY_X509_V3_EXTENSIONS_TYPE:
+    case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY:
+    case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET:
+    case ENTITY_X_OPENCTI_HOSTNAME:
+    case ENTITY_X_OPENCTI_TEXT:
+    case ENTITY_X_OPENCTI_USER_AGENT:
       return uuidv4();
     default:
       throw DatabaseError(`Cant generate an id for ${type}`);

@@ -25,10 +25,11 @@ export const findAll = async (args) => {
 };
 
 export const addIdentity = async (user, identity) => {
-  const identityToCreate = pipe(
-    assoc('identity_class', identity.type.toLowerCase()),
-    dissoc('type', identity)
-  )(identity);
+  let identityClass = identity.type.toLowerCase();
+  if (identityClass === 'sector') {
+    identityClass = 'class';
+  }
+  const identityToCreate = pipe(assoc('identity_class', identityClass), dissoc('type'))(identity);
   const created = await createEntity(user, identityToCreate, identity.type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

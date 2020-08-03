@@ -14,7 +14,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../utils/idGenerator';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../utils/idGenerator';
 
 export const findAll = (args) =>
   stixCoreRelationshipFindAll(
@@ -30,7 +30,10 @@ export const findById = (stixCyberObservableRelationshipId) => {
 
 // region mutations
 export const addStixCyberObservableRelationship = async (user, input, reversedReturn = false) => {
-  const finalInput = pipe(assoc('fromType', 'Stix-Observable'), assoc('toType', 'Stix-Observable'))(input);
+  const finalInput = pipe(
+    assoc('fromType', ABSTRACT_STIX_CYBER_OBSERVABLE),
+    assoc('toType', ABSTRACT_STIX_CYBER_OBSERVABLE)
+  )(input);
   const created = await createRelation(user, finalInput, {
     reversedReturn,
     isStixCyberObservableRelationship: true,

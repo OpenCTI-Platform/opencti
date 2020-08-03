@@ -150,7 +150,7 @@ class StixCyberObservables extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Stix-Observable"
+        exportEntityType="Stix-Cyber-Observable"
         exportContext={null}
         keyword={searchTerm}
         filters={filters}

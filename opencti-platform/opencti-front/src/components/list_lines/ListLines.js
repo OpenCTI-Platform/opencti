@@ -307,7 +307,7 @@ class ListLines extends Component {
           {children}
         </List>
         {typeof handleToggleExports === 'function'
-        && exportEntityType !== 'Stix-Observable' ? (
+        && exportEntityType !== 'Stix-Cyber-Observable' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixDomainObjectsExports
               open={openExports}
@@ -321,7 +321,7 @@ class ListLines extends Component {
             ''
           )}
         {typeof handleToggleExports === 'function'
-        && exportEntityType === 'Stix-Observable' ? (
+        && exportEntityType === 'Stix-Cyber-Observable' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixObservablesExports
               open={openExports}

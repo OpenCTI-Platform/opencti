@@ -1543,6 +1543,9 @@ define
   X-OpenCTI-Cryptocurrency-Wallet sub Stix-Cyber-Observable,
     has value;
 
+  X-OpenCTI-Hostname sub Stix-Cyber-Observable,
+    has value;
+
   X-OpenCTI-Text sub Stix-Cyber-Observable,
     has value;
 

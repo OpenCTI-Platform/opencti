@@ -962,6 +962,7 @@ enum StixDomainObjectsOrdering {
 enum StixDomainObjectsFilter {
   name
   aliases
+  x_opencti_aliases
   created
   modified
   created_at
@@ -2553,6 +2554,7 @@ input IndicatorAddInput {
   pattern: String!
   name: String! @constraint(minLength: 2)
   description: String
+  indicator_types: [String]
   valid_from: DateTime
   valid_until: DateTime
   confidence: Int
@@ -2561,6 +2563,7 @@ input IndicatorAddInput {
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String!
+  killChainPhases: [String]
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -8044,7 +8047,7 @@ type Mutation {
   intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   intrusionSetEdit(id: ID!): IntrusionSetEditMutations
   ############### Locations
-  locationAdd(input: IdentityAddInput): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  locationAdd(input: LocationAddInput): Location @auth(for: [KNOWLEDGE_KNUPDATE])
   locationEdit(id: ID!): LocationEditMutations
   cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
   cityEdit(id: ID!): CityEditMutations

@@ -1385,6 +1385,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   // stix-core-relationship
   if (isStixCoreRelationship(relationshipType)) {
     relationAttributes.relationship_type = relationshipType;
+    relationAttributes.description = input.description;
     relationAttributes.start_time = isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
@@ -1410,6 +1411,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   }
   // stix-sighting-relationship
   if (isStixSightingRelationship(relationshipType)) {
+    relationAttributes.description = input.description;
     relationAttributes.first_seen = isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
     relationAttributes.last_seen = isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
     /* istanbul ignore if */

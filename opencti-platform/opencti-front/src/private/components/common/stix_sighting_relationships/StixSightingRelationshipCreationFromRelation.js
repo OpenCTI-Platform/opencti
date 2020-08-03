@@ -467,7 +467,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
       types: targetEntityTypes
-        ? filter((n) => n !== 'Stix-Observable', targetEntityTypes)
+        ? filter((n) => n !== 'Stix-Cyber-Observable', targetEntityTypes)
         : null,
       orderBy: 'created_at',
       orderMode: 'desc',
@@ -622,7 +622,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes('Stix-Observable', fromEntity.parent_types)
+                      {includes('Stix-Cyber-Observable', fromEntity.parent_types)
                         ? t(`observable_${fromEntity.entity_type}`)
                         : t(
                           `entity_${
@@ -638,7 +638,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
                     <span className={classes.name}>
                       {truncate(
                         /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Observable', fromEntity.parent_types)
+                        includes('Stix-Cyber-Observable', fromEntity.parent_types)
                           ? fromEntity.observable_value
                           : fromEntity.entity_type === 'stix_relation'
                             || fromEntity.entity_type === 'stix-relation'
@@ -678,7 +678,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes('Stix-Observable', toEntity.parent_types)
+                      {includes('Stix-Cyber-Observable', toEntity.parent_types)
                         ? t(`observable_${toEntity.entity_type}`)
                         : t(
                           `entity_${
@@ -694,7 +694,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
                     <span className={classes.name}>
                       {truncate(
                         /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Observable', toEntity.parent_types)
+                        includes('Stix-Cyber-Observable', toEntity.parent_types)
                           ? toEntity.observable_value
                           : toEntity.entity_type === 'stix_relation'
                             || toEntity.entity_type === 'stix-relation'

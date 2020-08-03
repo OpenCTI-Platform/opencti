@@ -202,12 +202,5 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
 };
 
 export const observables = (indicatorId) => {
-  return findWithConnectedRelations(
-    `match $from isa Indicator; $rel(observables_aggregation:$from, soo:$to) isa ${RELATION_BASED_ON};
-    $to isa Stix-Observable;
-    $from has internal_id "${escapeString(indicatorId)}";
-    get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return []
 };

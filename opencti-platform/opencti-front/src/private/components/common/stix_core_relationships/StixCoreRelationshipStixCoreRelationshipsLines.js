@@ -70,7 +70,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                 const stixCoreRelationship = stixCoreRelationshipEdge.node;
                 const link = `${resolveLink(
                   stixCoreRelationship.to.parent_types.includes(
-                    'Stix-Observable',
+                    'Stix-Cyber-Observable',
                   )
                     ? 'observable'
                     : stixCoreRelationship.to.entity_type,
@@ -90,14 +90,14 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                     <ListItemText
                       primary={
                         stixCoreRelationship.to.parent_types.includes(
-                          'Stix-Observable',
+                          'Stix-Cyber-Observable',
                         )
                           ? stixCoreRelationship.to.observable_value
                           : stixCoreRelationship.to.name
                       }
                       secondary={
                         stixCoreRelationship.to.parent_types.includes(
-                          'Stix-Observable',
+                          'Stix-Cyber-Observable',
                         )
                           ? t(
                             `observable_${stixCoreRelationship.to.entity_type}`,

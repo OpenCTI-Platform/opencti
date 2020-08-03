@@ -16,7 +16,7 @@ class EntityStixCyberObservables extends Component {
     this.state = {
       sortBy: null,
       orderAsc: false,
-      targetEntityTypes: ['Stix-Observable'],
+      targetEntityTypes: ['Stix-Cyber-Observable'],
       view: 'lines',
     };
   }
@@ -30,14 +30,14 @@ class EntityStixCyberObservables extends Component {
       this.setState({
         targetEntityTypes:
           filter((t) => t !== type, this.state.targetEntityTypes).length === 0
-            ? ['Stix-Observable']
+            ? ['Stix-Cyber-Observable']
             : filter((t) => t !== type, this.state.targetEntityTypes),
       });
     } else {
       this.setState({
         targetEntityTypes: append(
           type,
-          filter((t) => t !== 'Stix-Observable', this.state.targetEntityTypes),
+          filter((t) => t !== 'Stix-Cyber-Observable', this.state.targetEntityTypes),
         ),
       });
     }
@@ -116,7 +116,7 @@ class EntityStixCyberObservables extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
-          targetEntityTypes={['Stix-Observable']}
+          targetEntityTypes={['Stix-Cyber-Observable']}
           allowedRelationshipTypes={[relationship_type]}
           onlyObservables={true}
           isFrom={false}

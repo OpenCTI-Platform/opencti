@@ -204,7 +204,7 @@ class StixCoreRelationshipContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {includes('Stix-Observable', from.parent_types)
+                {includes('Stix-Cyber-Observable', from.parent_types)
                   ? t(`observable_${from.entity_type}`)
                   : t(
                     `entity_${
@@ -220,7 +220,7 @@ class StixCoreRelationshipContainer extends Component {
               <span className={classes.name}>
                 {truncate(
                   /* eslint-disable-next-line no-nested-ternary */
-                  includes('Stix-Observable', from.parent_types)
+                  includes('Stix-Cyber-Observable', from.parent_types)
                     ? from.observable_value
                     : from.entity_type === 'stix_relation'
                       || from.entity_type === 'stix-relation'
@@ -285,7 +285,7 @@ class StixCoreRelationshipContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {includes('Stix-Observable', to.parent_types)
+                {includes('Stix-Cyber-Observable', to.parent_types)
                   ? t(`observable_${to.entity_type}`)
                   : t(
                     `entity_${
@@ -301,7 +301,7 @@ class StixCoreRelationshipContainer extends Component {
               <span className={classes.name}>
                 {truncate(
                   /* eslint-disable-next-line no-nested-ternary */
-                  includes('Stix-Observable', to.parent_types)
+                  includes('Stix-Cyber-Observable', to.parent_types)
                     ? to.observable_value
                     : to.entity_type === 'stix_relation'
                       || to.entity_type === 'stix-relation'

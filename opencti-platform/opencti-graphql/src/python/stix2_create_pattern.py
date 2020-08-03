@@ -3,9 +3,10 @@ import json
 
 from stix2 import ObjectPath, EqualityComparisonExpression, ObservationExpression
 
-OPENCTISTIX2 = {
-    'autonomous-system': {'type': 'autonomous-system', 'path': ['number'], 'transform': {'operation': 'remove_string', 'value': 'AS'}},
-    'mac-addr': {'type': 'mac-addr', 'path': ['value']},
+PATTERN_MAPPING = {
+    'Autonomous-System': ['number'],
+    'Directory': ['path'],
+    'Mac-Addr': ['value'],
     'domain': {'type': 'domain-name', 'path': ['value']},
     'ipv4-addr': {'type': 'ipv4-addr', 'path': ['value']},
     'ipv6-addr': {'type': 'ipv6-addr', 'path': ['value']},
@@ -44,12 +45,8 @@ def main():
 
     observable_type = sys.argv[1]
     observable_value = sys.argv[2]
-    if observable_type in OPENCTISTIX2:
-        if 'transform' in OPENCTISTIX2[observable_type]:
-            if OPENCTISTIX2[observable_type]['transform']['operation'] == 'remove_string':
-                observable_value = observable_value.replace(OPENCTISTIX2[observable_type]['transform']['value'], '')
-
-        lhs = ObjectPath(OPENCTISTIX2[observable_type]['type'], OPENCTISTIX2[observable_type]['path'])
+    if observable_type in PATTERN_MAPPING:
+        lhs = ObjectPath(observable_type.lower(), PATTERN_MAPPING[observable_type])
         ece = ObservationExpression(EqualityComparisonExpression(lhs, observable_value))
         return_data({'status': 'success', 'data': str(ece)})
     else:
