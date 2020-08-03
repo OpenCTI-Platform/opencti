@@ -47,7 +47,7 @@ const observedDataResolvers = {
       return [];
     },
     observedDataContainsStixObjectOrStixRelationship: (_, args) => {
-      return observedDataContainsStixObjectOrStixRelationship(args.id, args.objectId);
+      return observedDataContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   ObservedDatasOrdering: {

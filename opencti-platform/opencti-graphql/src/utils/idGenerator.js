@@ -452,6 +452,8 @@ const convertEntityTypeToStixType = (type) => {
     case ENTITY_TYPE_LOCATION_REGION:
     case ENTITY_TYPE_LOCATION_POSITION:
       return 'location';
+    case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
+      return 'file';
     default:
       return type.toLowerCase();
   }

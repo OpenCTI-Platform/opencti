@@ -42,8 +42,8 @@ export const opinionContainsStixObjectOrStixRelationship = async (opinionId, thi
       { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  const reportFound = await findAll(args);
-  return reportFound.edges.length > 0;
+  const opinionFound = await findAll(args);
+  return opinionFound.edges.length > 0;
 };
 
 // region series

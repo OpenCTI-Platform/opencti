@@ -2,7 +2,6 @@ import { filter, head, isEmpty, isNil, includes } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql';
 import nconf from 'nconf';
 import { logger } from '../config/conf';
-import { labels } from '../domain/stixCoreObject';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;

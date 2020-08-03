@@ -26,7 +26,7 @@ export const findById = (observedDataId) => {
 };
 
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_OBSERVED_DATA], ['name', 'attribute_abstract', 'content'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_OBSERVED_DATA], ['standard_id'], args);
 };
 
 // All entities
@@ -43,8 +43,8 @@ export const observedDataContainsStixObjectOrStixRelationship = async (observedD
       { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  const reportFound = await findAll(args);
-  return reportFound.edges.length > 0;
+  const observedDataFound = await findAll(args);
+  return observedDataFound.edges.length > 0;
 };
 
 // region series

@@ -21,7 +21,7 @@ import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
-import { noteContainsStixCoreObjectOrStixRelationship } from './note';
+import { noteContainsStixObjectOrStixRelationship } from './note';
 import { reportContainsStixObjectOrStixRelationship } from './report';
 import { addStixCoreRelationship, findAll as findAllStixRelations } from './stixCoreRelationship';
 import { FunctionalError } from '../config/errors';
@@ -357,7 +357,7 @@ export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomain
       return Promise.all(
         stixDomainObjectNotes.edges.map(async (noteEdge) => {
           const note = noteEdge.node;
-          const alreadyInNote = await noteContainsStixCoreObjectOrStixRelationship(note.id, stixDomainObjectId);
+          const alreadyInNote = await noteContainsStixObjectOrStixRelationship(note.id, stixDomainObjectId);
           if (!alreadyInNote) {
             return stixDomainObjectAddRelation(user, note.id, {
               toId: stixDomainObjectId,

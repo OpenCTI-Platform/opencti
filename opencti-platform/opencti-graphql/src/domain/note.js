@@ -43,8 +43,8 @@ export const noteContainsStixObjectOrStixRelationship = async (noteId, thingId) 
       { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  const reportFound = await findAll(args);
-  return reportFound.edges.length > 0;
+  const noteFound = await findAll(args);
+  return noteFound.edges.length > 0;
 };
 
 // region series

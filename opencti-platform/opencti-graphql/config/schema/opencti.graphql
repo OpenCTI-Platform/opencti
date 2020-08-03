@@ -1700,11 +1700,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
 }
 input OpinionAddInput {
   stix_id: String
-  name: String!
-  description: String!
-  opinion: String
+  opinion: String!
   explanation: String
-  x_opencti_graph_data: String
+  authors: String
   revoked: Boolean
   lang: String
   confidence: Int

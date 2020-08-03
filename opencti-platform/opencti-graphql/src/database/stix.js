@@ -7,17 +7,28 @@ import {
   isStixSightingRelationship,
   isStixInternalMetaRelationship,
   RELATION_CREATED_BY,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
 } from '../utils/idGenerator';
 
 export const STIX_SPEC_VERSION = '2.1';
 
 export const buildStixData = (entityData, onlyBase = false) => {
+  let type = entityData.entity_type;
+  if (isStixDomainObjectIdentity(type)) {
+    type = 'Identity';
+  } else if (isStixDomainObjectLocation(type)) {
+    type = 'Location';
+  } else if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+    type = 'File';
+  }
   const finalData = pipe(
     dissoc('standard_id'),
     dissoc('internal_id'),
     assoc('id', entityData.standard_id),
     dissoc('entity_type'),
-    assoc('type', entityData.entity_type.toLowerCase()),
+    assoc('type', type.toLowerCase()),
     // Reserved keywords in Grakn
     dissoc('attribute_abstract'),
     assoc('abstract', entityData.attribute_abstract),
