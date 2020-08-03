@@ -5,18 +5,18 @@ import stix2
 from stix2.pattern_visitor import create_pattern_object
 
 PATTERN_MAPPING = {
-    'directory:path': {type: 'Directory', attribute: 'value'},
-    'file:hashes.md5': {type: 'StixFile', attribute: 'md5'},
-    'file:hashes.sha1': {type: 'StixFile', attribute: 'sha1'},
-    'file:hashes.sha256': {type: 'StixFile', attribute: 'sha256'},
-    'file:hashes.sha512': {type: 'StixFile', attribute: 'sha512'},
-    'file:name': {type: 'StixFile', attribute: 'name'},
-    'ipv4-addr:value': {type: 'IPv4-Addr', attribute: 'value'},
-    'ipv6-addr:value': {type: 'IPv6-Addr', attribute: 'value'},
-    'domain-name:value': {type: 'Domain-Name', attribute: 'value'},
-    'url:value': {type: 'Url', attribute: 'value'},
-    'email-addr:value': {type: 'Email-Addr', attribute: 'value'},
-    'email-message:body': {type: 'Email-Message', attribute: 'body'},
+    "directory:path": {type: "Directory", attribute: "value"},
+    "file:hashes.md5": {type: "StixFile", attribute: "md5"},
+    "file:hashes.sha1": {type: "StixFile", attribute: "sha1"},
+    "file:hashes.sha256": {type: "StixFile", attribute: "sha256"},
+    "file:hashes.sha512": {type: "StixFile", attribute: "sha512"},
+    "file:name": {type: "StixFile", attribute: "name"},
+    "ipv4-addr:value": {type: "IPv4-Addr", attribute: "value"},
+    "ipv6-addr:value": {type: "IPv6-Addr", attribute: "value"},
+    "domain-name:value": {type: "Domain-Name", attribute: "value"},
+    "url:value": {type: "Url", attribute: "value"},
+    "email-addr:value": {type: "Email-Addr", attribute: "value"},
+    "email-message:body": {type: "Email-Message", attribute: "body"},
 }
 
 
@@ -28,29 +28,44 @@ def return_data(data):
 
 def main():
     if len(sys.argv) <= 1:
-        return_data({'status': 'error', 'message': 'Missing argument to the Python script'})
+        return_data(
+            {"status": "error", "message": "Missing argument to the Python script"}
+        )
 
-    if sys.argv[1] == 'check':
-        return_data({'status': 'success'})
+    if sys.argv[1] == "check":
+        return_data({"status": "success"})
 
     indicator_type = None
     indicator_value = None
     pattern = create_pattern_object(sys.argv[1])
-    if pattern.operand.operator == '=':
+    if pattern.operand.operator == "=":
         # get the object type (here 'file') and check that it is a standard observable type
         object_type = pattern.operand.lhs.object_type_name
         if object_type in stix2.OBJ_MAP_OBSERVABLE:
             # get the left hand side as string and use it for looking up the correct OpenCTI name
-            lhs = str(pattern.operand.lhs).lower()  # this is "file:hashes.md5" from the reference pattern
+            lhs = str(
+                pattern.operand.lhs
+            ).lower()  # this is "file:hashes.md5" from the reference pattern
             if lhs in PATTERN_MAPPING:
                 # the type and value can now be set
                 observable_type = PATTERN_MAPPING[lhs].type
                 observable_attribute = PATTERN_MAPPING[lhs].attribute
                 observable_value = pattern.operand.rhs.value
     if indicator_type is not None and indicator_value is not None:
-        return_data({'status': 'success', 'data': [{'type': observable_type, 'attribute': observable_attribute, 'value': observable_value}]})
+        return_data(
+            {
+                "status": "success",
+                "data": [
+                    {
+                        "type": observable_type,
+                        "attribute": observable_attribute,
+                        "value": observable_value,
+                    }
+                ],
+            }
+        )
     else:
-        return_data({'status': 'unknown', 'data': None})
+        return_data({"status": "unknown", "data": None})
 
 
 if __name__ == "__main__":
