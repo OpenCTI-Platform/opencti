@@ -1,7 +1,7 @@
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
-  addstixSightingRelationship,
+  addStixSightingRelationship,
   findAll,
   findById,
   stixSightingRelationshipAddRelation,
@@ -58,7 +58,7 @@ const stixSightingRelationshipResolvers = {
       relationDelete: ({ relationId }) => stixSightingRelationshipDeleteRelation(user, id, relationId),
     }),
     stixSightingRelationshipAdd: (_, { input, reversedReturn }, { user }) =>
-      addstixSightingRelationship(user, input, reversedReturn),
+      addStixSightingRelationship(user, input, reversedReturn),
   },
   Subscription: {
     stixSightingRelationship: {

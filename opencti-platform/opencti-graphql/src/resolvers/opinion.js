@@ -9,7 +9,7 @@ import {
   opinionsTimeSeries,
   opinionsTimeSeriesByAuthor,
   opinionsTimeSeriesByEntity,
-  opinionContainsStixCoreObjectOrStixRelationship,
+  opinionContainsStixObjectOrStixRelationship,
 } from '../domain/opinion';
 import {
   stixDomainObjectAddRelation,
@@ -52,8 +52,8 @@ const opinionResolvers = {
       }
       return [];
     },
-    opinionObjectContains: (_, args) => {
-      return opinionContainsStixCoreObjectOrStixRelationship(args.id, args.objectId);
+    opinionContainsStixObjectOrStixRelationship: (_, args) => {
+      return opinionContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   OpinionsOrdering: {

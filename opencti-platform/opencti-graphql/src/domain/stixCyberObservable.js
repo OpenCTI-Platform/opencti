@@ -34,13 +34,15 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { generateFileExportName, upload } from '../database/minio';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
 import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_FILE,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
   ENTITY_MUTEX,
   ENTITY_NETWORK_TRAFFIC,
@@ -51,9 +53,10 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   ENTITY_X509_V3_EXTENSIONS_TYPE,
-  isStixCyberObservable, isStixMetaRelationship,
-  RELATION_OBJECT
-} from "../utils/idGenerator";
+  isStixCyberObservable,
+  isStixMetaRelationship,
+  RELATION_OBJECT,
+} from '../utils/idGenerator';
 
 export const findById = (stixCyberObservableId) => {
   return loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -120,7 +123,7 @@ export const observableValue = (stixCyberObservable) => {
       return (
         stixCyberObservable.md5 || stixCyberObservable.sha1 || stixCyberObservable.sha256 || stixCyberObservable.sha512
       );
-    case ENTITY_HASHED_OBSERVABLE_FILE:
+    case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
       return (
         stixCyberObservable.md5 || stixCyberObservable.sha1 || stixCyberObservable.sha256 || stixCyberObservable.sha512
       );
@@ -170,26 +173,20 @@ export const addStixCyberObservable = async (user, args) => {
           dissoc('internal_id'),
           dissoc('stix_id'),
           dissoc('observable_value'),
-          assoc('name', stixCyberObservable.observable_value),
-          assoc(
-            'description',
-            stixCyberObservable.description
-              ? stixCyberObservable.description
-              : `Simple indicator of observable {${stixCyberObservable.observable_value}}`
-          ),
-          assoc('indicator_pattern', pattern),
+          assoc('name', observableValue(created)),
+          assoc('description', `Simple indicator of observable {${observableValue(created)}}`),
           assoc('pattern_type', 'stix'),
-          assoc('main_observable_type', stixCyberObservable.type),
-          assoc('valid_from', stixCyberObservable.observable_date ? stixCyberObservable.observable_date : now()),
-          assoc('observableRefs', [created.id])
-        )(observableToCreate);
+          assoc('pattern', pattern),
+          assoc('x_opencti_main_observable_type', created.entity_type),
+          assoc('basedOn', [created.id])
+        )(args[graphQLType]);
         await addIndicator(user, indicatorToCreate, false);
       }
     } catch (err) {
       logger.info(`Cannot create indicator`, { error: err });
     }
   }
-  return notify(BUS_TOPICS.StixCyberObservable.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].ADDED_TOPIC, created, user);
 };
 
 export const stixCyberObservableDelete = async (user, stixCyberObservableId) => {
@@ -237,7 +234,13 @@ export const stixCyberObservableDeleteRelation = async (user, stixCyberObservabl
   if (!isStixMetaRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(user, stixCyberObservableId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
+  await deleteRelationsByFromAndTo(
+    user,
+    stixCyberObservableId,
+    toId,
+    relationshipType,
+    ABSTRACT_STIX_META_RELATIONSHIP
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 
@@ -352,7 +355,9 @@ const askJobExports = async (
  */
 export const stixCyberObservableExportAsk = async (args) => {
   const { format, stixCyberObservableId = null, exportType = null, maxMarkingDefinition = null, context = null } = args;
-  const entity = stixCyberObservableId ? await loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE) : null;
+  const entity = stixCyberObservableId
+    ? await loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
+    : null;
   const workList = await askJobExports(format, entity, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
   return map((w) => workToExportFile(w.work), workList);

@@ -1,4 +1,15 @@
-import { addObservedData, findAll, findById } from '../domain/observedData';
+import {
+  addObservedData,
+  findAll,
+  findById,
+  observedDataContainsStixObjectOrStixRelationship,
+  observedDatasDistributionByEntity,
+  observedDatasNumber,
+  observedDatasNumberByEntity,
+  observedDatasTimeSeries,
+  observedDatasTimeSeriesByAuthor,
+  observedDatasTimeSeriesByEntity,
+} from '../domain/observedData';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -14,6 +25,30 @@ const observedDataResolvers = {
   Query: {
     observedData: (_, { id }) => findById(id),
     observedDatas: (_, args) => findAll(args),
+    observedDatasTimeSeries: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return observedDatasTimeSeriesByEntity(args);
+      }
+      if (args.authorId && args.authorId.length > 0) {
+        return observedDatasTimeSeriesByAuthor(args);
+      }
+      return observedDatasTimeSeries(args);
+    },
+    observedDatasNumber: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return observedDatasNumberByEntity(args);
+      }
+      return observedDatasNumber(args);
+    },
+    observedDatasDistribution: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return observedDatasDistributionByEntity(args);
+      }
+      return [];
+    },
+    observedDataContainsStixObjectOrStixRelationship: (_, args) => {
+      return observedDataContainsStixObjectOrStixRelationship(args.id, args.objectId);
+    },
   },
   ObservedDatasOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,

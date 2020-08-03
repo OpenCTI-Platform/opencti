@@ -32,26 +32,18 @@ export const findAll = async (args) => {
 export const objects = (noteId, args) => {
   const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const finalArgs = assoc('filters', append({ key, values: [noteId] }, propOr([], 'filters', args)), args);
-  // TODO @Julien : possible to have a method findAllStixCoreObjectOrStixRelationship?
   return findAllStixDomainEntities(finalArgs);
 };
 
-export const opinionContainsStixCoreObjectOrStixRelationship = async (noteId, objectId) => {
+export const opinionContainsStixObjectOrStixRelationship = async (opinionId, thingId) => {
   const args = {
     filters: [
-      {
-        key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-        values: [noteId],
-      },
-      {
-        key: 'internal_id',
-        values: [objectId],
-      },
+      { key: 'internal_id', values: [opinionId] },
+      { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  // TODO @Julien : possible to have a method findAllStixCoreObjectOrStixRelationship?
-  const stixCoreObjectsOrStixRelationships = await findAllStixDomainEntities(args);
-  return stixCoreObjectsOrStixRelationships.edges.length > 0;
+  const reportFound = await findAll(args);
+  return reportFound.edges.length > 0;
 };
 
 // region series

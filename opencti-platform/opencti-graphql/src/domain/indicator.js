@@ -24,6 +24,7 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ENTITY_TYPE_INDICATOR,
   RELATION_BASED_ON,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
 } from '../utils/idGenerator';
 import { askEnrich } from './enrichment';
 
@@ -102,11 +103,11 @@ const computeValidUntil = async (indicator) => {
   const ttlPattern = `${markingDefinition}-${isKillChainPhaseDelivery}`;
   let ttl = OpenCTITimeToLive.default[ttlPattern];
   const mainObservableType =
-    indicator.main_observable_type && indicator.main_observable_type.includes('File')
+    indicator.x_opencti_main_observable_type && indicator.x_opencti_main_observable_type.includes('File')
       ? 'File'
-      : indicator.main_observable_type;
-  if (mainObservableType && includes(indicator.main_observable_type, OpenCTITimeToLive)) {
-    ttl = OpenCTITimeToLive[indicator.main_observable_type][ttlPattern];
+      : indicator.x_opencti_main_observable_type;
+  if (mainObservableType && includes(indicator.x_opencti_main_observable_type, OpenCTITimeToLive)) {
+    ttl = OpenCTITimeToLive[indicator.x_opencti_main_observable_type][ttlPattern];
   }
   const validUntil = validFrom.add(ttl, 'days');
   return validUntil.toDate();
@@ -120,11 +121,14 @@ export const findAll = (args) => {
 };
 
 export const addIndicator = async (user, indicator, createObservables = true) => {
-  if (!isStixCyberObservable(indicator.main_observable_type)) {
-    throw FunctionalError(`Observable type ${indicator.main_observable_type} is not supported.`);
+  if (
+    indicator.x_opencti_main_observable_type !== 'Unknown' &&
+    !isStixCyberObservable(indicator.x_opencti_main_observable_type)
+  ) {
+    throw FunctionalError(`Observable type ${indicator.x_opencti_main_observable_type} is not supported.`);
   }
   // check indicator syntax
-  const check = await checkIndicatorSyntax(indicator.pattern_type.toLowerCase(), indicator.indicator_pattern);
+  const check = await checkIndicatorSyntax(indicator.pattern_type.toLowerCase(), indicator.pattern);
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
@@ -141,13 +145,16 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   const observablesToEnrich = [];
   if (createObservables && indicator.pattern_type === 'stix') {
     try {
-      // TODO CHANGE AND EXTRACT OBSERVABLE DIFFERENTLY
-      const observables = await extractObservables(indicator.indicator_pattern);
+      const observables = await extractObservables(indicator.pattern);
       if (observables && observables.length > 0) {
         observablesToLink = await Promise.all(
           observables.map(async (observable) => {
-            // TODO GENERATE THE ID
-            const internalId = generateStandardId(indicator.main_observable_type, observable);
+            const internalId = generateStandardId(
+              indicator.x_opencti_main_observable_type === 'Unknown'
+                ? ABSTRACT_STIX_CYBER_OBSERVABLE
+                : indicator.x_opencti_main_observable_type,
+              observable
+            );
             const checkObservable = findStixCyberObservableById(internalId);
             if (isNil(checkObservable)) {
               const stixCyberObservable = pipe(
@@ -166,9 +173,6 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
                 dissoc('created'),
                 dissoc('modified')
               )(indicatorToCreate);
-              // CREATE THE OBSERVABLE
-              // TODO MAP THE DATA
-              // concat(stixCyberObservable, observable.data)
               const createdStixCyberObservable = await createEntity(user, stixCyberObservable, observable.type);
               observablesToEnrich.push({ id: createdStixCyberObservable.id, type: observable.type });
               return createdStixCyberObservable.id;
@@ -181,12 +185,10 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
       logger.info(`Cannot create observable`, { error: err });
     }
   }
-
   if (indicatorToCreate.basedOn) {
     observablesToLink = concat(indicatorToCreate.basedOn, observablesToLink);
   }
   const created = await createEntity(user, indicatorToCreate, ENTITY_TYPE_INDICATOR);
-  // TODO CREATE BASED ON RELATIONSHIPS
   await Promise.all(
     observablesToLink.map((observableToLink) => {
       const input = { fromId: created.id, toId: observableToLink, relationship_type: 'based-on' };
@@ -202,5 +204,5 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
 };
 
 export const observables = (indicatorId) => {
-  return []
+  return [];
 };

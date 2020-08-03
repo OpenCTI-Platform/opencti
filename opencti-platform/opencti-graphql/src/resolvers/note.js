@@ -3,13 +3,13 @@ import {
   findAll,
   findById,
   objects,
+  noteContainsStixObjectOrStixRelationship,
   notesDistributionByEntity,
   notesNumber,
   notesNumberByEntity,
   notesTimeSeries,
   notesTimeSeriesByAuthor,
   notesTimeSeriesByEntity,
-  noteContainsStixCoreObjectOrStixRelationship,
 } from '../domain/note';
 import {
   stixDomainObjectAddRelation,
@@ -52,8 +52,8 @@ const noteResolvers = {
       }
       return [];
     },
-    noteObjectContains: (_, args) => {
-      return noteContainsStixCoreObjectOrStixRelationship(args.id, args.objectId);
+    noteContainsStixObjectOrStixRelationship: (_, args) => {
+      return noteContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   NotesOrdering: {

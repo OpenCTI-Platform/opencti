@@ -965,6 +965,7 @@ define
     plays duplicate-of_from,
     plays derived-from_from,
     plays related-to_from,
+    plays stix-sighting-relationship_from,
     plays duplicate-of_to,
     plays derived-from_to,
     plays related-to_to;
@@ -1059,6 +1060,7 @@ define
     has identity_class,
     plays located-at_from,
     plays part-of_from,
+    plays stix-sighting-relationship_to,
     plays targets_to,
     plays attributed-to_to,
     plays impersonates_to;
@@ -1168,6 +1170,7 @@ define
     has x_opencti_aliases,
     has x_opencti_location_type,
     plays located-at_from,
+    plays stix-sighting-relationship_to,
     plays located-at_to,
     plays originates-from_to,
     plays targets_to;
@@ -1311,6 +1314,7 @@ define
    # STIX Cyber Observables Entities
   Stix-Cyber-Observable sub Stix-Core-Object,
     abstract,
+    plays stix-sighting-relationship_from,
     plays consists-of_to,
     plays based-on_to;
 
@@ -1382,7 +1386,7 @@ define
     plays raw-email_to,
     plays body-raw_to;
 
-  File sub Hashed-Observable,
+  StixFile sub Hashed-Observable,
     has extensions,
     has size,
     has name,

@@ -6780,9 +6780,11 @@ input StixSightingRelationshipAddInput {
   first_seen: DateTime
   last_seen: DateTime
   attribute_count: Int!
-  x_opencti_negative: Boolean
+  x_opencti_negative: Boolean!
+  confidence: Int
   createdBy: String
   objectMarking: [String]
+  objectLabel: [String]
   externalReferences: [String]
   created: DateTime
   modified: DateTime
@@ -7111,8 +7113,8 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  noteObjectContains(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
-  observedData(id: String): Opinion @auth(for: [KNOWLEDGE])
+  noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  observedData(id: String): ObservedData @auth(for: [KNOWLEDGE])
   observedDatas(
     first: Int
     after: ID
@@ -7140,7 +7142,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  observedDatasObjectContains(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  observedDataContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
   opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
   opinions(
     first: Int
@@ -7169,7 +7171,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  opinionObjectContains(id: String!, objectId: String!): Boolean @auth(for: [KNOWLEDGE])
+  opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
   report(id: String): Report @auth(for: [KNOWLEDGE])
   reports(
     first: Int
@@ -7495,10 +7497,10 @@ type Query {
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     search: String
     filters: [StixSightingRelationshipsFiltering]
     filterMode: FilterMode

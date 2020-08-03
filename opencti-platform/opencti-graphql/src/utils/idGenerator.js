@@ -357,7 +357,7 @@ export const ENTITY_EMAIL_ADDR = 'Email-Addr';
 export const ENTITY_EMAIL_MESSAGE = 'Email-Message';
 export const ENTITY_EMAIL_MIME_PART_TYPE = 'Email-Mime-Part-Type';
 export const ENTITY_HASHED_OBSERVABLE_ARTIFACT = 'Artifact';
-export const ENTITY_HASHED_OBSERVABLE_FILE = 'File';
+export const ENTITY_HASHED_OBSERVABLE_STIX_FILE = 'StixFile';
 export const ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE = 'X509-Certificate';
 export const ENTITY_IPV4_ADDR = 'IPv4-Addr';
 export const ENTITY_IPV6_ADDR = 'IPv6-Addr';
@@ -385,7 +385,7 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_EMAIL_MESSAGE,
   ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
-  ENTITY_HASHED_OBSERVABLE_FILE,
+  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
@@ -524,7 +524,7 @@ const reportId = (type, data) => {
   return uuid({ type, name, createdBy, published });
 };
 const indicatorId = (type, data) => {
-  return uuid({ type, pattern: data.indicator_pattern });
+  return uuid({ type, pattern: data.pattern });
 };
 const generateInternalObjectUUID = (type, entity) => {
   switch (type) {
@@ -575,7 +575,7 @@ const generateStixCyberObservableUUID = (type, data) => {
     case ENTITY_EMAIL_MESSAGE:
     case ENTITY_EMAIL_MIME_PART_TYPE:
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-    case ENTITY_HASHED_OBSERVABLE_FILE:
+    case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
     case ENTITY_IPV4_ADDR:
     case ENTITY_IPV6_ADDR:
@@ -596,7 +596,7 @@ const generateStixCyberObservableUUID = (type, data) => {
     case ENTITY_X_OPENCTI_USER_AGENT:
       return uuidv4();
     default:
-      throw DatabaseError(`Cant generate an id for ${type}`);
+      return uuidv4();
   }
 };
 const generateInternalObjectId = (type, data) => {
@@ -643,6 +643,15 @@ const generateStixMetaRelationshipId = (type, data) => {
   const id = generateStixMetaRelationshipUUID(type, data);
   return `relationship-meta--${id}`;
 };
+const generateStixSightingRelationshipUUID = (prefix, data) => {
+  // eslint-disable-next-line camelcase
+  const { fromId, toId } = data;
+  return uuid({ from: fromId, to: toId });
+};
+const generateStixSightingRelationshipId = (type, data) => {
+  const id = generateStixSightingRelationshipUUID(type, data);
+  return `sighting--${id}`;
+};
 // endregion
 
 export const generateInternalId = () => {
@@ -659,6 +668,7 @@ export const generateStandardId = (type, data) => {
   if (isInternalRelationship(type)) return generateInternalRelationshipId(type, data);
   if (isStixCoreRelationship(type)) return generateStixCoreRelationshipId(type, data);
   if (isStixMetaRelationship(type)) return generateStixMetaRelationshipId(type, data);
+  if (isStixSightingRelationship(type)) return generateStixSightingRelationshipId(type, data);
   throw DatabaseError(`Cant generate an id for ${type}`);
 };
 

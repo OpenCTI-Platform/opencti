@@ -43,8 +43,12 @@ export const stixSightingRelationshipsNumber = (args) => ({
 });
 
 // region mutations
-export const addstixSightingRelationship = async (user, stixSightingRelationship, reversedReturn = false) => {
-  const created = await createRelation(user, stixSightingRelationship, { reversedReturn });
+export const addStixSightingRelationship = async (user, stixSightingRelationship, reversedReturn = false) => {
+  const created = await createRelation(
+    user,
+    assoc('relationship_type', STIX_SIGHTING_RELATIONSHIP, stixSightingRelationship),
+    { reversedReturn }
+  );
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
