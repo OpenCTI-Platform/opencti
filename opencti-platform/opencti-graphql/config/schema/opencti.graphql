@@ -8093,6 +8093,7 @@ type Mutation {
     XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
     XOpenCTIText: XOpenCTITextAddInput
     XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
+    createIndicator: Boolean
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(

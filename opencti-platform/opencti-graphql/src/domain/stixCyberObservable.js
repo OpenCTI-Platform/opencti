@@ -102,24 +102,14 @@ export const addStixCyberObservable = async (user, args) => {
   if (!args[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
-  args[graphQLType]
-  const observableValue = stixCyberObservable.observable_value.trim();
   const observableSyntaxResult = checkObservableSyntax(args.type, args);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError(
-      `Observable ${stixCyberObservable.observable_value} of type ${stixCyberObservable.type} is not correctly formatted.`,
-      { observableSyntaxResult }
-    );
+    throw FunctionalError(`Observable of type ${args.type} is not correctly formatted.`, { observableSyntaxResult });
   }
-  const observableToCreate = pipe(
-    assoc('observable_value', observableValue),
-    dissoc('type'),
-    dissoc('createIndicator')
-  )(stixCyberObservable);
-  const created = await createEntity(user, observableToCreate, stixCyberObservable.type);
-  await askEnrich(created.id, stixCyberObservable.type);
+  const created = await createEntity(user, args[graphQLType], args.type);
+  await askEnrich(created.id, args.type);
   // create the linked indicator
-  if (stixCyberObservable.createIndicator) {
+  if (args.createIndicator) {
     try {
       const pattern = await createStixPattern(created.entity_type, created.observable_value);
       if (pattern) {
