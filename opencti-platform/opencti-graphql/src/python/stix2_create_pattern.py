@@ -6,33 +6,26 @@ from stix2 import ObjectPath, EqualityComparisonExpression, ObservationExpressio
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],
     "Directory": ["path"],
+    "Domain-Name": ["value"],
+    "Email-Addr": ["value"],
+    "File_md5": ["hashes", "MD5"],
+    "File_sha1": ["hashes", "SHA1"],
+    "File_sha256": ["hashes", "SHA256"],
+    "File_sha512": ["hashes", "SHA512"],
+    "Email-Message_Body": ["body"],
+    "Email-Message_Subject": ["subject"],
+    "Email-Mime-Part-Type": ["body"],
+    "IPv4-Addr": ["value"],
+    "IPv6-Addr": ["value"],
     "Mac-Addr": ["value"],
-    "domain": {"type": "domain-name", "path": ["value"]},
-    "ipv4-addr": {"type": "ipv4-addr", "path": ["value"]},
-    "ipv6-addr": {"type": "ipv6-addr", "path": ["value"]},
-    "url": {"type": "url", "path": ["value"]},
-    "email-address": {"type": "email-addr", "path": ["value"]},
-    "email-subject": {"type": "email-message", "path": ["subject"]},
-    "mutex": {"type": "mutex", "path": ["name"]},
-    "file-name": {"type": "file", "path": ["name"]},
-    "file-path": {"type": "file", "path": ["name"]},
-    "file-md5": {"type": "file", "path": ["hashes", "MD5"]},
-    "file-sha1": {"type": "file", "path": ["hashes", "SHA1"]},
-    "file-sha256": {"type": "file", "path": ["hashes", "SHA256"]},
-    "directory": {"type": "directory", "path": ["path"]},
-    "registry-key": {"type": "windows-registry-key", "path": ["key"]},
-    "registry-key-value": {"type": "windows-registry-value-type", "path": ["data"]},
-    "pdb-path": {"type": "file", "path": ["name"]},
-    "windows-service-name": {"type": "windows-service-ext", "path": ["service_name"]},
-    "windows-service-display-name": {
-        "type": "windows-service-ext",
-        "path": ["display_name"],
-    },
-    "x509-certificate-issuer": {"type": "x509-certificate", "path": ["issuer"]},
-    "x509-certificate-serial-number": {
-        "type": "x509-certificate",
-        "path": ["serial_number"],
-    },
+    "Mutex": ["name"],
+    "Network-Traffic": ["dst_port"],
+    "Process": ["pid"],
+    "Software": ["name"],
+    "Url": ["value"],
+    "User-Account": ["acount_login"],
+    "Windows-Registry-Key": ["key"],
+    "Windows-Registry-Value-Type": ["name"],
 }
 
 
@@ -54,7 +47,12 @@ def main():
     observable_type = sys.argv[1]
     observable_value = sys.argv[2]
     if observable_type in PATTERN_MAPPING:
-        lhs = ObjectPath(observable_type.lower(), PATTERN_MAPPING[observable_type])
+        lhs = ObjectPath(
+            observable_type.lower()
+            if "_" not in observable_type
+            else observable_type.split("_")[0].lower(),
+            PATTERN_MAPPING[observable_type],
+        )
         ece = ObservationExpression(EqualityComparisonExpression(lhs, observable_value))
         return_data({"status": "success", "data": str(ece)})
     else:

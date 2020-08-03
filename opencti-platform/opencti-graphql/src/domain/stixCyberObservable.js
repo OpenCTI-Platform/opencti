@@ -54,6 +54,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   ENTITY_X509_V3_EXTENSIONS_TYPE,
   isStixCyberObservable,
+  isStixCyberObservableHashedObservable,
   isStixMetaRelationship,
   RELATION_OBJECT,
 } from '../utils/idGenerator';
@@ -171,7 +172,17 @@ export const addStixCyberObservable = async (user, args) => {
       if (entityType === 'StixFile') {
         entityType = 'File';
       }
-      const pattern = await createStixPattern(entityType, observableValue(created));
+      let key = entityType;
+      if (isStixCyberObservableHashedObservable(created.entity_type)) {
+        if (created.sha256) {
+          key = `${entityType}_sha256`;
+        } else if (created.sha1) {
+          key = `${entityType}_sha1`;
+        } else if (created.md5) {
+          key = `${entityType}_md5`;
+        }
+      }
+      const pattern = await createStixPattern(key, observableValue(created));
       if (pattern) {
         const indicatorToCreate = pipe(
           dissoc('internal_id'),
