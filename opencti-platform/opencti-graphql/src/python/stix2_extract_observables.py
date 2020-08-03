@@ -5,18 +5,18 @@ import stix2
 from stix2.pattern_visitor import create_pattern_object
 
 PATTERN_MAPPING = {
-    "directory:path": {type: "Directory", attribute: "value"},
-    "file:hashes.md5": {type: "StixFile", attribute: "md5"},
-    "file:hashes.sha1": {type: "StixFile", attribute: "sha1"},
-    "file:hashes.sha256": {type: "StixFile", attribute: "sha256"},
-    "file:hashes.sha512": {type: "StixFile", attribute: "sha512"},
-    "file:name": {type: "StixFile", attribute: "name"},
-    "ipv4-addr:value": {type: "IPv4-Addr", attribute: "value"},
-    "ipv6-addr:value": {type: "IPv6-Addr", attribute: "value"},
-    "domain-name:value": {type: "Domain-Name", attribute: "value"},
-    "url:value": {type: "Url", attribute: "value"},
-    "email-addr:value": {type: "Email-Addr", attribute: "value"},
-    "email-message:body": {type: "Email-Message", attribute: "body"},
+    "directory:path": {"type": "Directory", "attribute": "value"},
+    "file:hashes.md5": {"type": "StixFile", "attribute": "md5"},
+    "file:hashes.sha1": {"type": "StixFile", "attribute": "sha1"},
+    "file:hashes.sha256": {"type": "StixFile", "attribute": "sha256"},
+    "file:hashes.sha512": {"type": "StixFile", "attribute": "sha512"},
+    "file:name": {"type": "StixFile", "attribute": "name"},
+    "ipv4-addr:value": {"type": "IPv4-Addr", "attribute": "value"},
+    "ipv6-addr:value": {"type": "IPv6-Addr", "attribute": "value"},
+    "domain-name:value": {"type": "Domain-Name", "attribute": "value"},
+    "url:value": {"type": "Url", "attribute": "value"},
+    "email-addr:value": {"type": "Email-Addr", "attribute": "value"},
+    "email-message:body": {"type": "Email-Message", "attribute": "body"},
 }
 
 
@@ -48,10 +48,10 @@ def main():
             ).lower()  # this is "file:hashes.md5" from the reference pattern
             if lhs in PATTERN_MAPPING:
                 # the type and value can now be set
-                observable_type = PATTERN_MAPPING[lhs].type
-                observable_attribute = PATTERN_MAPPING[lhs].attribute
+                observable_type = PATTERN_MAPPING[lhs]["type"]
+                observable_attribute = PATTERN_MAPPING[lhs]["attribute"]
                 observable_value = pattern.operand.rhs.value
-    if indicator_type is not None and indicator_value is not None:
+    if observable_type is not None and observable_value is not None:
         return_data(
             {
                 "status": "success",

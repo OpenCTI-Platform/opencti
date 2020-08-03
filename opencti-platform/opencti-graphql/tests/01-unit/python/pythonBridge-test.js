@@ -22,7 +22,8 @@ test('Check domain pattern', async () => {
   const check = await extractObservables("[domain-name:value = 'smbc.jp-bankq.com']");
   expect(check).not.toBeNull();
   expect(check.length).toEqual(1);
-  expect(head(check).type).toEqual('Domain');
+  expect(head(check).type).toEqual('Domain-Name');
+  expect(head(check).attribute).toEqual('value');
   expect(head(check).value).toEqual('smbc.jp-bankq.com');
 });
 
@@ -32,7 +33,8 @@ test('Check hash pattern', async () => {
   );
   expect(check).not.toBeNull();
   expect(check.length).toEqual(1);
-  expect(head(check).type).toEqual('File-SHA256');
+  expect(head(check).type).toEqual('StixFile');
+  expect(head(check).attribute).toEqual('sha256');
   expect(head(check).value).toEqual('e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88');
 });
 
@@ -44,9 +46,6 @@ test('Check createStixPattern bad pattern', async () => {
 });
 
 test('Check createStixPattern hash', async () => {
-  const check = await createStixPattern(
-    'file-sha256',
-    'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88'
-  );
+  const check = await createStixPattern('File', 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88');
   expect(check).toEqual("[file:hashes.SHA256 = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']");
 });

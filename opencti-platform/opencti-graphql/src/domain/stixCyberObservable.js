@@ -167,7 +167,11 @@ export const addStixCyberObservable = async (user, args) => {
   // create the linked indicator
   if (args.createIndicator) {
     try {
-      const pattern = await createStixPattern(created.entity_type, observableValue(created));
+      let entityType = created.entity_type;
+      if (entityType === 'StixFile') {
+        entityType = 'File';
+      }
+      const pattern = await createStixPattern(entityType, observableValue(created));
       if (pattern) {
         const indicatorToCreate = pipe(
           dissoc('internal_id'),
