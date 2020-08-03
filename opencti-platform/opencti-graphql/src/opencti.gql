@@ -1045,6 +1045,7 @@ define
     has name,
     has description,
     has x_opencti_aliases,
+    plays mitigates_from,
     plays investigates_from,
     plays migrates_from,
     plays remediates_from;

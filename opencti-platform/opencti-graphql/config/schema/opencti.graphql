@@ -4159,7 +4159,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # AutonomousSystem
-  number: Int
+  number: Int!
   name: String
   rir: String
   # Technical
@@ -4171,7 +4171,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
 }
 input AutonomousSystemAddInput {
   stix_id: String
-  number: Int
+  number: Int!
   name: String
   rir: String
   createdBy: String
@@ -4246,7 +4246,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # Directory
-  path: String
+  path: String!
   path_enc: String
   ctime: DateTime
   mtime: DateTime
@@ -4260,7 +4260,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
 }
 input DirectoryAddInput {
   stix_id: String
-  path: String
+  path: String!
   path_enc: String
   ctime: DateTime
   mtime: DateTime
@@ -4337,7 +4337,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # DomainName
-  value: String
+  value: String!
   # Technical
   creator: User
   toStix: String
@@ -4347,7 +4347,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
 }
 input DomainNameAddInput {
   stix_id: String
-  value: String
+  value: String!
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -4419,7 +4419,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # EmailAddr
-  value: String
+  value: String!
   display_name: String
   # Technical
   creator: User
@@ -4430,7 +4430,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
 }
 input EmailAddrAddInput {
   stix_id: String
-  value: String
+  value: String!
   display_name: String
   createdBy: String
   objectMarking: [String]
@@ -4527,6 +4527,93 @@ input EmailMessageAddInput {
   subject: String
   received_lines: [String]
   body: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
+type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # EmailMimePartType
+  body: String
+  content_type: String
+  content_disposition: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input EmailMimePartTypeAddInput {
+  stix_id: String
+  body: String
+  content_type: String
+  content_disposition: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -4694,6 +4781,10 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input ArtifactAddInput {
   stix_id: String
+  md5: String
+  sha1: String
+  sha256: String
+  sha512: String
   mime_type: String
   payload_bin: String
   url: String
@@ -4794,6 +4885,10 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input StixFileAddInput {
   stix_id: String
+  md5: String
+  sha1: String
+  sha256: String
+  sha512: String
   extensions: String
   size: String
   name: String
@@ -4896,6 +4991,10 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
 }
 input X509CertificateAddInput {
   stix_id: String
+  md5: String
+  sha1: String
+  sha256: String
+  sha512: String
   is_self_signed: Boolean
   version: String
   serial_number: String
@@ -7974,6 +8073,22 @@ type Mutation {
     DomainName: DomainNameAddInput
     EmailAddr: EmailAddrAddInput
     EmailMessage: EmailMessageAddInput
+    EmailMimePartType: EmailMimePartTypeAddInput
+    Artifact: ArtifactAddInput
+    StixFile: StixFileAddInput
+    X509Certificate: X509CertificateAddInput
+    IPv4Addr: IPv4AddrAddInput
+    IPv6Addr: IPv6AddrAddInput
+    MacAddr: MacAddrAddInput
+    Mutex: MutexAddInput
+    NetworkTraffic: NetworkTrafficAddInput
+    Process: ProcessAddInput
+    Software: SoftwareAddInput
+    Url: UrlAddInput
+    UserAccount: UserAccountAddInput
+    WindowsRegistryKey: WindowsRegistryKeyAddInput
+    WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
+    X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
     XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
     XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
     XOpenCTIText: XOpenCTITextAddInput

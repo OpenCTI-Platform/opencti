@@ -94,12 +94,17 @@ export const observableValue = (stixCyberObservable) => {
   return stixCyberObservable.value;
 };
 
-export const addStixCyberObservable = async (user, stixCyberObservable) => {
-  if (!isStixCyberObservable(stixCyberObservable.type)) {
-    throw FunctionalError(`Observable type ${stixCyberObservable.type} is not supported.`);
+export const addStixCyberObservable = async (user, args) => {
+  if (!isStixCyberObservable(args.type)) {
+    throw FunctionalError(`Observable type ${args.type} is not supported.`);
   }
+  const graphQLType = args.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
+  if (!args[graphQLType]) {
+    throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
+  }
+  args[graphQLType]
   const observableValue = stixCyberObservable.observable_value.trim();
-  const observableSyntaxResult = checkObservableSyntax(stixCyberObservable.type.toLowerCase(), observableValue);
+  const observableSyntaxResult = checkObservableSyntax(args.type, args);
   if (observableSyntaxResult !== true) {
     throw FunctionalError(
       `Observable ${stixCyberObservable.observable_value} of type ${stixCyberObservable.type} is not correctly formatted.`,
