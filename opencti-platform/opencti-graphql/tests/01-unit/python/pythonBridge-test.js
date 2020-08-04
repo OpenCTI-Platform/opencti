@@ -29,7 +29,7 @@ test('Check domain pattern', async () => {
 
 test('Check hash pattern', async () => {
   const check = await extractObservables(
-    "[file:hashes.SHA256 = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']"
+    "[file:hashes.'SHA-256' = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']"
   );
   expect(check).not.toBeNull();
   expect(check.length).toEqual(1);
@@ -41,7 +41,7 @@ test('Check hash pattern', async () => {
 test('Check createStixPattern bad pattern', async () => {
   let check = await createStixPattern('TYPE', 'VALUE');
   expect(check).toBeNull();
-  check = await createStixPattern('file-Sha256', 'c2d6908fe0d2ad04713');
+  check = await createStixPattern('File_shaa256', 'c2d6908fe0d2ad04713');
   expect(check).toBeNull();
 });
 
@@ -50,5 +50,5 @@ test('Check createStixPattern hash', async () => {
     'File_sha256',
     'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88'
   );
-  expect(check).toEqual("[file:hashes.SHA256 = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']");
+  expect(check).toEqual("[file:hashes.'SHA-256' = 'e9b45212395f4c2d6908fe0d2ad04713fae3dee8aaacfd52b3f89de7fdb54b88']");
 });

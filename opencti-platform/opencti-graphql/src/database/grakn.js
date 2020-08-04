@@ -858,7 +858,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
   const queryAttributesFields = join(' ', attributesFields);
   const queryAttributesFilters = join(' ', attributesFilters);
   const queryRelationsFields = join(' ', relationsFields);
-  const headType = entityTypes.length === 1 ? head(entityTypes) : 'entity';
+  const headType = entityTypes.length === 1 ? head(entityTypes) : 'Basic-Object';
   const extraTypes =
     entityTypes.length > 1
       ? pipe(
@@ -867,7 +867,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
           concat(__, ';')
         )(entityTypes)
       : '';
-  const baseQuery = `match $elem isa ${headType}; ${extraTypes} ${queryRelationsFields} 
+  const baseQuery = `match $elem isa ${headType}, has internal_id $elem_id; ${extraTypes} ${queryRelationsFields} 
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
   return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, false, args.noCache);
 };
@@ -989,17 +989,17 @@ export const listRelations = async (relationshipType, args) => {
   if (fromId) attributesFilters.push(`$from has internal_id "${escapeString(fromId)}";`);
   if (toId) attributesFilters.push(`$to has internal_id "${escapeString(toId)}";`);
   if (startTimeStart || startTimeStop) {
-    attributesFields.push(`$rel has first_seen $fs;`);
+    attributesFields.push(`$rel has start_time $fs;`);
     if (startTimeStart) attributesFilters.push(`$fs > ${prepareDate(startTimeStart)};`);
     if (startTimeStop) attributesFilters.push(`$fs < ${prepareDate(startTimeStop)};`);
   }
   if (stopTimeStart || stopTimeStop) {
-    attributesFields.push(`$rel has last_seen $ls;`);
+    attributesFields.push(`$rel has stop_time $ls;`);
     if (stopTimeStart) attributesFilters.push(`$ls > ${prepareDate(stopTimeStart)};`);
     if (stopTimeStop) attributesFilters.push(`$ls < ${prepareDate(stopTimeStop)};`);
   }
   if (confidences && confidences.length > 0) {
-    attributesFields.push(`$rel has weight $weight;`);
+    attributesFields.push(`$rel has confidence $confidence;`);
     // eslint-disable-next-line prettier/prettier
     attributesFilters.push(
       pipe(
@@ -1041,9 +1041,10 @@ export const listRelations = async (relationshipType, args) => {
   const queryAttributesFields = join(' ', attributesFields);
   const queryAttributesFilters = join(' ', attributesFilters);
   const queryRelationsFields = join(' ', relationsFields);
-  let baseQuery = `match $rel isa ${relationToGet}, has internal_id $rel_id;
-  ${queryFromTypes} ${queryToTypes}
-  ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
+  let baseQuery = `match $rel($from, $to) isa ${relationToGet}, has internal_id $rel_id; 
+  $from has internal_id $rel_from_id; 
+  $to has internal_id $rel_to_id; 
+  ${queryFromTypes} ${queryToTypes} ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
   if (askForConnections) {
     baseQuery = `match $rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to) 
     isa ${relationToGet}, has internal_id $rel_id;

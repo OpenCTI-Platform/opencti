@@ -381,7 +381,7 @@ const STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES = [
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
-]
+];
 const STIX_CYBER_OBSERVABLES = [
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -410,7 +410,8 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_X_OPENCTI_USER_AGENT,
   ENTITY_X_OPENCTI_TEXT,
 ];
-export const isStixCyberObservableHashedObservable = (type) => includes(type, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
+export const isStixCyberObservableHashedObservable = (type) =>
+  includes(type, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
 export const isStixCyberObservable = (type) =>
   includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 // endregion
@@ -578,33 +579,70 @@ const generateStixCyberObservableUUID = (type, data) => {
     case ENTITY_AUTONOMOUS_SYSTEM:
       return uuid({ type, name: data.number });
     case ENTITY_DIRECTORY:
+      return uuid({ type, value: data.value });
     case ENTITY_DOMAIN_NAME:
+      return uuid({ type, value: data.value });
     case ENTITY_EMAIL_ADDR:
+      return uuid({ type, value: data.value });
     case ENTITY_EMAIL_MESSAGE:
+      return uuidv4();
     case ENTITY_EMAIL_MIME_PART_TYPE:
+      return uuidv4();
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
+      if (!data.md5 && !data.sha1 && !data.sha256) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, hash: data.md5 || data.sha1 || data.sha256 });
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
+      if (!data.md5 && !data.sha1 && !data.sha256) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, hash: data.md5 || data.sha1 || data.sha256 });
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
+      if (!data.md5 && !data.sha1 && !data.sha256) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, hash: data.md5 || data.sha1 || data.sha256 });
     case ENTITY_IPV4_ADDR:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_IPV6_ADDR:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_MAC_ADDR:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_MUTEX:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_NETWORK_TRAFFIC:
+      return uuidv4();
     case ENTITY_PROCESS:
+      return uuidv4();
     case ENTITY_SOFTWARE:
+      return uuidv4();
     case ENTITY_URL:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_USER_ACCOUNT:
+      return uuidv4();
     case ENTITY_WINDOWS_REGISTRY_KEY:
+      return uuidv4();
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
+      return uuidv4();
     case ENTITY_X509_V3_EXTENSIONS_TYPE:
+      return uuidv4();
     case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY:
+      if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET:
+      if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_X_OPENCTI_HOSTNAME:
+      if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_X_OPENCTI_TEXT:
+      if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
+      return uuid({ type, value: data.value });
     case ENTITY_X_OPENCTI_USER_AGENT:
-      return uuidv4();
+      if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
+      return uuid({ type, value: data.value });
     default:
-      return uuidv4();
+      throw DatabaseError(`Unknown observable type`);
   }
 };
 const generateInternalObjectId = (type, data) => {

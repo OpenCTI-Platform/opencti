@@ -176,10 +176,7 @@ export const addStixCyberObservable = async (user, args) => {
   // create the linked indicator
   if (args.createIndicator) {
     try {
-      let entityType = created.entity_type;
-      if (entityType === 'StixFile') {
-        entityType = 'File';
-      }
+      const entityType = created.entity_type;
       let key = entityType;
       if (isStixCyberObservableHashedObservable(created.entity_type)) {
         if (created.sha256) {

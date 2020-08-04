@@ -154,29 +154,30 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
         observablesToLink = await Promise.all(
           observables.map(async (observable) => {
             indicatorToCreate = assoc('x_opencti_main_observable_type', observable.type, indicatorToCreate);
-            const standardId = generateStandardId(observable.type, observable);
+            const stixCyberObservable = pipe(
+              dissoc('internal_id'),
+              dissoc('standard_id'),
+              dissoc('stix_ids'),
+              dissoc('stix_id'),
+              dissoc('confidence'),
+              dissoc('x_opencti_main_observable_type'),
+              dissoc('x_opencti_score'),
+              dissoc('x_opencti_detection'),
+              dissoc('indicator_types'),
+              dissoc('valid_from'),
+              dissoc('valid_until'),
+              dissoc('pattern_type'),
+              dissoc('pattern_version'),
+              dissoc('pattern'),
+              dissoc('name'),
+              dissoc('description'),
+              dissoc('created'),
+              dissoc('modified'),
+              assoc(observable.attribute, observable.value)
+            )(indicatorToCreate);
+            const standardId = generateStandardId(observable.type, stixCyberObservable);
             const currentObservable = await findStixCyberObservableById(standardId);
             if (!currentObservable) {
-              const stixCyberObservable = pipe(
-                dissoc('internal_id'),
-                dissoc('standard_id'),
-                dissoc('stix_ids'),
-                dissoc('confidence'),
-                dissoc('x_opencti_main_observable_type'),
-                dissoc('x_opencti_score'),
-                dissoc('x_opencti_detection'),
-                dissoc('indicator_types'),
-                dissoc('valid_from'),
-                dissoc('valid_until'),
-                dissoc('pattern_type'),
-                dissoc('pattern_version'),
-                dissoc('pattern'),
-                dissoc('name'),
-                dissoc('description'),
-                dissoc('created'),
-                dissoc('modified'),
-                assoc(observable.attribute, observable.value)
-              )(indicatorToCreate);
               const createdStixCyberObservable = await createEntity(user, stixCyberObservable, observable.type);
               observablesToEnrich.push({ id: createdStixCyberObservable.id, type: observable.type });
               return createdStixCyberObservable.id;

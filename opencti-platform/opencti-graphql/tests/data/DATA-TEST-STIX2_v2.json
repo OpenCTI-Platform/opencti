@@ -309,7 +309,7 @@
       "labels": ["indicator"],
       "description": "CMSTAR Variants Identified in Phishing Campaign",
       "pattern_type": "stix",
-      "pattern": "[file:hashes.SHA256 = '2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957']",
+      "pattern": "[file:hashes.'SHA-256' = '2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957']",
       "valid_from": "2017-09-28T20:25:13.000Z",
       "valid_until": "2018-09-28T20:25:13.000Z",
       "created": "2020-02-25T22:25:17.453Z",
@@ -318,9 +318,9 @@
       "object_marking_refs": ["marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"]
     },
     {
+      "id": "sighting--579a46af-a339-400d-809e-b92101fe7de8",
       "type": "sighting",
       "spec_version": "2.1",
-      "id": "579a46af-a339-400d-809e-b92101fe7de8",
       "created": "2016-08-06T20:08:31.000Z",
       "modified": "2016-09-06T20:08:31.000Z",
       "sighting_of_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf",

@@ -80,7 +80,7 @@ describe('Elasticsearch document loader', () => {
       internal_id: internalId,
       standard_id: standardId,
       name: 'Germany - Maze - October 2019',
-      parent_types: ['Campaign', 'Stix-Domain-Object', 'Stix-Core-Object', 'Stix-Objec', 'Basic-Object'],
+      parent_types: ['Campaign', 'Stix-Domain-Object', 'Stix-Core-Object', 'Stix-Object', 'Basic-Object'],
     };
     const indexedData = await elIndex('test_index', documentBody);
     expect(indexedData).toEqual(documentBody);
@@ -180,7 +180,7 @@ describe('Elasticsearch computation', () => {
       'stix-core-relationship',
       '2020-02-29T00:00:00Z',
       new Date().getTime(),
-      ['Stix-Domain-Object'], //
+      ['Stix-Domain-Object'],
       intrusionSet.internal_id
     );
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
@@ -390,7 +390,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(ENTITIES_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(90);
+    expect(data.edges.length).toEqual(92);
     const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('ENTITY');
@@ -405,7 +405,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(ENTITIES_INDICES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(60);
+    expect(data.edges.length).toEqual(62);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -453,7 +453,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(84); // The 4 Default TLP Marking definitions + 1
+    expect(data.edges.length).toEqual(86); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
@@ -528,14 +528,14 @@ describe('Elasticsearch pagination', () => {
   it('should relation paginate everything', async () => {
     let data = await elPaginate(RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(151);
+    expect(data.edges.length).toEqual(165);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(151);
+    expect(data.length).toEqual(165);
     filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');

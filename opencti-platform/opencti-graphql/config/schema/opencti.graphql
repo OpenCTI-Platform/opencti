@@ -6280,6 +6280,89 @@ input XOpenCTICryptocurrencyWalletAddInput {
   modified: DateTime
   clientMutationId: String
 }
+type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  stix_ids: [String]
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # StixCoreObject
+  createdBy: OrganizationOrIndividual
+  objectMarking: MarkingDefinitionConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports: ReportConnection
+  notes: NoteConnection
+  opinions: OpinionConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCoreRelationshipConnection
+  # StixCyberObservable
+  observable_value: String!
+  indicators: IndicatorConnection
+  stixCyberObservableRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: String
+    inferred: Boolean
+    toId: String
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    weights: [Int]
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    forceNatural: Boolean
+  ): StixCyberObservableRelationshipConnection
+  # XOpenCTIHostname
+  value: String
+  # Technical
+  creator: User
+  toStix: String
+  editContext: [EditUserContext]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+}
+input XOpenCTIHostnameAddInput {
+  stix_id: String
+  value: String
+  createdBy: String
+  objectMarking: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  clientMutationId: String
+}
 type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -6543,7 +6626,28 @@ union StixObjectOrStixRelationship =
   | Directory
   | DomainName
   | EmailAddr
-  | EmailMessage ### Stix Relationships
+  | EmailMessage
+  | EmailMimePartType
+  | Artifact
+  | StixFile
+  | X509Certificate
+  | IPv4Addr
+  | IPv6Addr
+  | MacAddr
+  | Mutex
+  | NetworkTraffic
+  | Process
+  | Software
+  | Url
+  | UserAccount
+  | WindowsRegistryKey
+  | WindowsRegistryValueType
+  | X509V3ExtensionsType
+  | XOpenCTICryptographicKey
+  | XOpenCTICryptocurrencyWallet
+  | XOpenCTIHostname
+  | XOpenCTIText
+  | XOpenCTIUserAgent ### Stix Relationships
   | StixCoreRelationship
   | StixMetaRelationship
   | StixSightingRelationship
@@ -7111,7 +7215,8 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+    @auth(for: [KNOWLEDGE])
   observedData(id: String): ObservedData @auth(for: [KNOWLEDGE])
   observedDatas(
     first: Int
@@ -7140,7 +7245,8 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  observedDataContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  observedDataContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+    @auth(for: [KNOWLEDGE])
   opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
   opinions(
     first: Int
@@ -7169,7 +7275,8 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+    @auth(for: [KNOWLEDGE])
   report(id: String): Report @auth(for: [KNOWLEDGE])
   reports(
     first: Int
@@ -7199,7 +7306,8 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+    @auth(for: [KNOWLEDGE])
   courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
   coursesOfAction(
     first: Int
@@ -8094,6 +8202,7 @@ type Mutation {
     X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
     XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
     XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
+    XOpenCTIHostname: XOpenCTIHostnameAddInput
     XOpenCTIText: XOpenCTITextAddInput
     XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
     createIndicator: Boolean

@@ -6,10 +6,10 @@ from stix2.pattern_visitor import create_pattern_object
 
 PATTERN_MAPPING = {
     "directory:path": {"type": "Directory", "attribute": "value"},
-    "file:hashes.md5": {"type": "StixFile", "attribute": "md5"},
-    "file:hashes.sha1": {"type": "StixFile", "attribute": "sha1"},
-    "file:hashes.sha256": {"type": "StixFile", "attribute": "sha256"},
-    "file:hashes.sha512": {"type": "StixFile", "attribute": "sha512"},
+    "file:hashes.'MD5'": {"type": "StixFile", "attribute": "md5"},
+    "file:hashes.'SHA-1'": {"type": "StixFile", "attribute": "sha1"},
+    "file:hashes.'SHA-256'": {"type": "StixFile", "attribute": "sha256"},
+    "file:hashes.'SHA-512'": {"type": "StixFile", "attribute": "sha512"},
     "file:name": {"type": "StixFile", "attribute": "name"},
     "ipv4-addr:value": {"type": "IPv4-Addr", "attribute": "value"},
     "ipv6-addr:value": {"type": "IPv6-Addr", "attribute": "value"},
@@ -44,10 +44,10 @@ def main():
         object_type = pattern.operand.lhs.object_type_name
         if object_type in stix2.OBJ_MAP_OBSERVABLE:
             # get the left hand side as string and use it for looking up the correct OpenCTI name
-            lhs = str(
-                pattern.operand.lhs
-            ).lower()  # this is "file:hashes.md5" from the reference pattern
+            lhs = str(pattern.operand.lhs)
+            print(lhs)
             if lhs in PATTERN_MAPPING:
+                print(pattern.operand.rhs)
                 # the type and value can now be set
                 observable_type = PATTERN_MAPPING[lhs]["type"]
                 observable_attribute = PATTERN_MAPPING[lhs]["attribute"]
