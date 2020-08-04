@@ -207,16 +207,14 @@ describe('Region resolver standard behavior', () => {
       variables: {
         id: regionInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.regionEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.regionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     regionMarkingDefinitionRelationId =
-      queryResult.data.regionEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.regionEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in region', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -242,7 +240,7 @@ describe('Region resolver standard behavior', () => {
         relationId: regionMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.regionEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.regionEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should region deleted', async () => {
     const DELETE_QUERY = gql`

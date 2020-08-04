@@ -246,16 +246,14 @@ describe('Incident resolver standard behavior', () => {
       variables: {
         id: incidentInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.incidentEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.incidentEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     incidentMarkingDefinitionRelationId =
-      queryResult.data.incidentEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.incidentEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in incident', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -281,7 +279,7 @@ describe('Incident resolver standard behavior', () => {
         relationId: incidentMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.incidentEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.incidentEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should incident deleted', async () => {
     const DELETE_QUERY = gql`

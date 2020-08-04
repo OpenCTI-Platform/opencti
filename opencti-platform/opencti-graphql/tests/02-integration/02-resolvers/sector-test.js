@@ -207,16 +207,14 @@ describe('Sector resolver standard behavior', () => {
       variables: {
         id: sectorInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.sectorEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     sectorMarkingDefinitionRelationId =
-      queryResult.data.sectorEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in sector', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -242,7 +240,7 @@ describe('Sector resolver standard behavior', () => {
         relationId: sectorMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.sectorEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.sectorEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should sector deleted', async () => {
     const DELETE_QUERY = gql`

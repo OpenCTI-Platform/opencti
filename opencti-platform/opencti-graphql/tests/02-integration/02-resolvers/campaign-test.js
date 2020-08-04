@@ -227,16 +227,14 @@ describe('Campaign resolver standard behavior', () => {
       variables: {
         id: campaignInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.campaignEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.campaignEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     campaignMarkingDefinitionRelationId =
-      queryResult.data.campaignEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.campaignEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in campaign', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -262,7 +260,7 @@ describe('Campaign resolver standard behavior', () => {
         relationId: campaignMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.campaignEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.campaignEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should campaign deleted', async () => {
     const DELETE_QUERY = gql`

@@ -186,16 +186,14 @@ describe('Organization resolver standard behavior', () => {
       variables: {
         id: organizationInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.organizationEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.organizationEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     organizationMarkingDefinitionRelationId =
-      queryResult.data.organizationEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.organizationEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in organization', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -221,7 +219,7 @@ describe('Organization resolver standard behavior', () => {
         relationId: organizationMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.organizationEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.organizationEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should organization deleted', async () => {
     const DELETE_QUERY = gql`

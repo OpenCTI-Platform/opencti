@@ -178,16 +178,14 @@ describe('Tool resolver standard behavior', () => {
       variables: {
         id: toolInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.toolEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.toolEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     toolMarkingDefinitionRelationId =
-      queryResult.data.toolEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.toolEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in tool', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -213,7 +211,7 @@ describe('Tool resolver standard behavior', () => {
         relationId: toolMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.toolEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.toolEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should tool deleted', async () => {
     const DELETE_QUERY = gql`

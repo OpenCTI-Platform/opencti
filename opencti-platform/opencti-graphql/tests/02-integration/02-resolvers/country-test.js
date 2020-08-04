@@ -181,16 +181,14 @@ describe('Country resolver standard behavior', () => {
       variables: {
         id: countryInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.countryEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.countryEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     countryMarkingDefinitionRelationId =
-      queryResult.data.countryEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.countryEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in country', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -216,7 +214,7 @@ describe('Country resolver standard behavior', () => {
         relationId: countryMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.countryEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.countryEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should country deleted', async () => {
     const DELETE_QUERY = gql`

@@ -409,16 +409,14 @@ describe('Report resolver standard behavior', () => {
       variables: {
         id: reportInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.reportEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.reportEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     reportMarkingDefinitionRelationId =
-      queryResult.data.reportEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.reportEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in report', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -444,7 +442,7 @@ describe('Report resolver standard behavior', () => {
         relationId: reportMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.reportEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.reportEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should report deleted', async () => {
     const DELETE_QUERY = gql`

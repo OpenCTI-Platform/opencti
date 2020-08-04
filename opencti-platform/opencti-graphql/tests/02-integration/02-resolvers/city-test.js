@@ -182,16 +182,14 @@ describe('City resolver standard behavior', () => {
       variables: {
         id: cityInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.cityEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.cityEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     cityMarkingDefinitionRelationId =
-      queryResult.data.cityEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.cityEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in city', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -217,7 +215,7 @@ describe('City resolver standard behavior', () => {
         relationId: cityMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.cityEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.cityEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should city deleted', async () => {
     const DELETE_QUERY = gql`

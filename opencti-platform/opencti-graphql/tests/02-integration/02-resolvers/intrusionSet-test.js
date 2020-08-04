@@ -60,7 +60,7 @@ describe('Intrusion set resolver standard behavior', () => {
     const INTRUSION_SET_TO_CREATE = {
       input: {
         name: 'Intrusion set',
-        stix_id_key: intrusionSetStixId,
+        stix_id: intrusionSetStixId,
         description: 'Intrusion set description',
       },
     };
@@ -168,16 +168,14 @@ describe('Intrusion set resolver standard behavior', () => {
       variables: {
         id: intrusionSetInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     intrusionSetMarkingDefinitionRelationId =
-      queryResult.data.intrusionSetEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in intrusion set', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -203,7 +201,7 @@ describe('Intrusion set resolver standard behavior', () => {
         relationId: intrusionSetMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.intrusionSetEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should intrusion set deleted', async () => {
     const DELETE_QUERY = gql`

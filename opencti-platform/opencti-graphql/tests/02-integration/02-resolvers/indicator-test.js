@@ -54,7 +54,7 @@ describe('Indicator resolver standard behavior', () => {
           id
           name
           description
-          observableRefs {
+          observables {
             edges {
               node {
                 id
@@ -68,7 +68,7 @@ describe('Indicator resolver standard behavior', () => {
     const INDICATOR_TO_CREATE = {
       input: {
         name: 'Indicator',
-        stix_id_key: indicatorStixId,
+        stix_id: indicatorStixId,
         description: 'Indicator description',
         indicator_pattern: "[domain-name:value = 'www.payah.rest']",
         pattern_type: 'stix',
@@ -165,9 +165,6 @@ describe('Indicator resolver standard behavior', () => {
                     node {
                       id
                     }
-                    relation {
-                      id
-                    }
                   }
                 }
               }
@@ -181,16 +178,14 @@ describe('Indicator resolver standard behavior', () => {
       variables: {
         id: indicatorInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.indicatorEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.indicatorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     indicatorMarkingDefinitionRelationId =
-      queryResult.data.indicatorEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.indicatorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in indicator', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -216,7 +211,7 @@ describe('Indicator resolver standard behavior', () => {
         relationId: indicatorMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.indicatorEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.indicatorEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should indicator deleted', async () => {
     const DELETE_QUERY = gql`

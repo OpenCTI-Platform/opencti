@@ -2,16 +2,16 @@ import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 
 const LIST_QUERY = gql`
-  query stixObservables(
+  query stixCyberObservables(
     $first: Int
     $after: ID
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
-    $filters: [StixObservablesFiltering]
+    $filters: [StixCyberObservablesFiltering]
     $filterMode: FilterMode
     $search: String
   ) {
-    stixObservables(
+    stixCyberObservables(
       first: $first
       after: $after
       orderBy: $orderBy
@@ -32,8 +32,8 @@ const LIST_QUERY = gql`
 `;
 
 const READ_QUERY = gql`
-  query stixObservable($id: String!) {
-    stixObservable(id: $id) {
+  query stixCyberObservable($id: String!) {
+    stixCyberObservable(id: $id) {
       id
       observable_value
       description
@@ -42,53 +42,53 @@ const READ_QUERY = gql`
   }
 `;
 
-describe('StixObservable resolver standard behavior', () => {
-  let stixObservableInternalId;
-  let stixObservableMarkingDefinitionRelationId;
-  const stixObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
-  it('should stixObservable created', async () => {
+describe('StixCyberObservable resolver standard behavior', () => {
+  let stixCyberObservableInternalId;
+  let stixCyberObservableMarkingDefinitionRelationId;
+  const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
+  it('should stixCyberObservable created', async () => {
     const CREATE_QUERY = gql`
-      mutation StixObservableAdd($input: StixObservableAddInput) {
-        stixObservableAdd(input: $input) {
+      mutation StixCyberObservableAdd($input: StixCyberObservableAddInput) {
+        stixCyberObservableAdd(input: $input) {
           id
           observable_value
           description
         }
       }
     `;
-    // Create the stixObservable
+    // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       input: {
         type: 'IPv4-Addr',
         observable_value: '8.8.8.8',
-        stix_id_key: stixObservableStixId,
-        description: 'StixObservable description',
+        stix_id_key: stixCyberObservableStixId,
+        description: 'StixCyberObservable description',
       },
     };
-    const stixObservable = await queryAsAdmin({
+    const stixCyberObservable = await queryAsAdmin({
       query: CREATE_QUERY,
       variables: STIX_OBSERVABLE_TO_CREATE,
     });
-    expect(stixObservable).not.toBeNull();
-    expect(stixObservable.data.stixObservableAdd).not.toBeNull();
-    expect(stixObservable.data.stixObservableAdd.observable_value).toEqual('8.8.8.8');
-    stixObservableInternalId = stixObservable.data.stixObservableAdd.id;
+    expect(stixCyberObservable).not.toBeNull();
+    expect(stixCyberObservable.data.stixCyberObservableAdd).not.toBeNull();
+    expect(stixCyberObservable.data.stixCyberObservableAdd.observable_value).toEqual('8.8.8.8');
+    stixCyberObservableInternalId = stixCyberObservable.data.stixCyberObservableAdd.id;
   });
-  it('should stixObservable loaded by internal id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixObservableInternalId } });
+  it('should stixCyberObservable loaded by internal id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableInternalId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.stixObservable).not.toBeNull();
-    expect(queryResult.data.stixObservable.id).toEqual(stixObservableInternalId);
-    expect(queryResult.data.stixObservable.toStix.length).toBeGreaterThan(5);
+    expect(queryResult.data.stixCyberObservable).not.toBeNull();
+    expect(queryResult.data.stixCyberObservable.id).toEqual(stixCyberObservableInternalId);
+    expect(queryResult.data.stixCyberObservable.toStix.length).toBeGreaterThan(5);
   });
-  it('should list stixObservables', async () => {
+  it('should list stixCyberObservables', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.stixObservables.edges.length).toEqual(7);
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(7);
   });
-  it('should update stixObservable', async () => {
+  it('should update stixCyberObservable', async () => {
     const UPDATE_QUERY = gql`
-      mutation StixObservableEdit($id: ID!, $input: EditInput!) {
-        stixObservableEdit(id: $id) {
+      mutation StixCyberObservableEdit($id: ID!, $input: EditInput!) {
+        stixCyberObservableEdit(id: $id) {
           fieldPatch(input: $input) {
             id
             description
@@ -98,14 +98,14 @@ describe('StixObservable resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: stixObservableInternalId, input: { key: 'description', value: ['StixObservable - test'] } },
+      variables: { id: stixCyberObservableInternalId, input: { key: 'description', value: ['StixCyberObservable - test'] } },
     });
-    expect(queryResult.data.stixObservableEdit.fieldPatch.description).toEqual('StixObservable - test');
+    expect(queryResult.data.stixCyberObservableEdit.fieldPatch.description).toEqual('StixCyberObservable - test');
   });
-  it('should context patch stixObservable', async () => {
+  it('should context patch stixCyberObservable', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation StixObservableEdit($id: ID!, $input: EditContext) {
-        stixObservableEdit(id: $id) {
+      mutation StixCyberObservableEdit($id: ID!, $input: EditContext) {
+        stixCyberObservableEdit(id: $id) {
           contextPatch(input: $input) {
             id
           }
@@ -114,14 +114,14 @@ describe('StixObservable resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: stixObservableInternalId, input: { focusOn: 'description' } },
+      variables: { id: stixCyberObservableInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.stixObservableEdit.contextPatch.id).toEqual(stixObservableInternalId);
+    expect(queryResult.data.stixCyberObservableEdit.contextPatch.id).toEqual(stixCyberObservableInternalId);
   });
-  it('should context clean stixObservable', async () => {
+  it('should context clean stixCyberObservable', async () => {
     const CONTEXT_PATCH_QUERY = gql`
-      mutation StixObservableEdit($id: ID!) {
-        stixObservableEdit(id: $id) {
+      mutation StixCyberObservableEdit($id: ID!) {
+        stixCyberObservableEdit(id: $id) {
           contextClean {
             id
           }
@@ -130,18 +130,18 @@ describe('StixObservable resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: CONTEXT_PATCH_QUERY,
-      variables: { id: stixObservableInternalId },
+      variables: { id: stixCyberObservableInternalId },
     });
-    expect(queryResult.data.stixObservableEdit.contextClean.id).toEqual(stixObservableInternalId);
+    expect(queryResult.data.stixCyberObservableEdit.contextClean.id).toEqual(stixCyberObservableInternalId);
   });
-  it('should add relation in stixObservable', async () => {
+  it('should add relation in stixCyberObservable', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation StixObservableEdit($id: ID!, $input: RelationAddInput!) {
-        stixObservableEdit(id: $id) {
+      mutation StixCyberObservableEdit($id: ID!, $input: RelationAddInput!) {
+        stixCyberObservableEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
-              ... on StixObservable {
+              ... on StixCyberObservable {
                 markingDefinitions {
                   edges {
                     node {
@@ -161,23 +161,21 @@ describe('StixObservable resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: stixObservableInternalId,
+        id: stixCyberObservableInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.stixObservableEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    stixObservableMarkingDefinitionRelationId =
-      queryResult.data.stixObservableEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.stixCyberObservableEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
+    stixCyberObservableMarkingDefinitionRelationId =
+      queryResult.data.stixCyberObservableEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
-  it('should delete relation in stixObservable', async () => {
+  it('should delete relation in stixCyberObservable', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation StixObservableEdit($id: ID!, $relationId: ID!) {
-        stixObservableEdit(id: $id) {
+      mutation StixCyberObservableEdit($id: ID!, $relationId: ID!) {
+        stixCyberObservableEdit(id: $id) {
           relationDelete(relationId: $relationId) {
             id
             markingDefinitions {
@@ -194,11 +192,11 @@ describe('StixObservable resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
       variables: {
-        id: stixObservableInternalId,
-        relationId: stixObservableMarkingDefinitionRelationId,
+        id: stixCyberObservableInternalId,
+        relationId: stixCyberObservableMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.stixObservableEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.stixCyberObservableEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should add observable in note', async () => {
     const CREATE_QUERY = gql`
@@ -217,7 +215,7 @@ describe('StixObservable resolver standard behavior', () => {
         name: 'Note',
         description: 'Note description',
         content: 'Test content',
-        observableRefs: [stixObservableInternalId],
+        observableRefs: [stixCyberObservableInternalId],
       },
     };
     const note = await queryAsAdmin({
@@ -254,22 +252,22 @@ describe('StixObservable resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).toBeNull();
   });
-  it('should stixObservable deleted', async () => {
+  it('should stixCyberObservable deleted', async () => {
     const DELETE_QUERY = gql`
-      mutation stixObservableDelete($id: ID!) {
-        stixObservableEdit(id: $id) {
+      mutation stixCyberObservableDelete($id: ID!) {
+        stixCyberObservableEdit(id: $id) {
           delete
         }
       }
     `;
-    // Delete the stixObservable
+    // Delete the stixCyberObservable
     await queryAsAdmin({
       query: DELETE_QUERY,
-      variables: { id: stixObservableInternalId },
+      variables: { id: stixCyberObservableInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixObservableStixId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixCyberObservableStixId } });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.stixObservable).toBeNull();
+    expect(queryResult.data.stixCyberObservable).toBeNull();
   });
 });

@@ -185,16 +185,14 @@ describe('Person resolver standard behavior', () => {
       variables: {
         id: personInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.personEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.personEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     personMarkingDefinitionRelationId =
-      queryResult.data.personEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.personEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in person', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -220,7 +218,7 @@ describe('Person resolver standard behavior', () => {
         relationId: personMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.personEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.personEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should person deleted', async () => {
     const DELETE_QUERY = gql`

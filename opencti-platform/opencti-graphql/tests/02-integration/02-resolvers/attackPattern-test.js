@@ -74,9 +74,9 @@ describe('AttackPattern resolver standard behavior', () => {
     const ATTACK_PATTERN_TO_CREATE = {
       input: {
         name: 'AttackPattern',
-        stix_id_key: attackPatternStixId,
+        stix_id: attackPatternStixId,
         description: 'AttackPattern description',
-        killChainPhases: ['2a2202bd-1da6-4668-9fc5-ad1017e974bc'],
+        killChainPhases: ['kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'],
       },
     };
     const attackPattern = await queryAsAdmin({
@@ -95,8 +95,8 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPattern.id).toEqual(attackPatternInternalId);
     expect(queryResult.data.attackPattern.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.attackPattern.killChainPhases.edges.length).toEqual(1);
-    expect(queryResult.data.attackPattern.killChainPhases.edges[0].node.id).toEqual(
-      '2a2202bd-1da6-4668-9fc5-ad1017e974bc'
+    expect(queryResult.data.attackPattern.killChainPhases.edges[0].node.standard_id).toEqual(
+      'kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'
     );
   });
   it('should attackPattern loaded by stix id', async () => {
@@ -184,9 +184,6 @@ describe('AttackPattern resolver standard behavior', () => {
                     node {
                       id
                     }
-                    relation {
-                      id
-                    }
                   }
                 }
               }
@@ -200,16 +197,14 @@ describe('AttackPattern resolver standard behavior', () => {
       variables: {
         id: attackPatternInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.attackPatternEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.attackPatternEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     attackPatternMarkingDefinitionRelationId =
-      queryResult.data.attackPatternEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.attackPatternEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in attackPattern', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -235,7 +230,7 @@ describe('AttackPattern resolver standard behavior', () => {
         relationId: attackPatternMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.attackPatternEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.attackPatternEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should attackPattern deleted', async () => {
     const DELETE_QUERY = gql`

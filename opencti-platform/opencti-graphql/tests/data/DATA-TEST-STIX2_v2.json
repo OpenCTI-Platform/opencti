@@ -171,7 +171,7 @@
       "modified": "2020-01-14T14:01:48.288Z",
       "kill_chain_phases": [
         {
-          "id": "kill-chain-phase--4ca3ebcb-2a62-452e-93e6-a90aa1bbefe9",
+          "id": "kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a",
           "kill_chain_name": "mitre-attack",
           "phase_name": "persistence",
           "x_opencti_order": 20

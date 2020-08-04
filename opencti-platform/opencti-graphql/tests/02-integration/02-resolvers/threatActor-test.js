@@ -168,16 +168,14 @@ describe('Threat actor resolver standard behavior', () => {
       variables: {
         id: threatActorInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
           toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.threatActorEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
+    expect(queryResult.data.threatActorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
     threatActorMarkingDefinitionRelationId =
-      queryResult.data.threatActorEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+      queryResult.data.threatActorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in threat actor', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -206,7 +204,7 @@ describe('Threat actor resolver standard behavior', () => {
         relationId: threatActorMarkingDefinitionRelationId,
       },
     });
-    expect(queryResult.data.threatActorEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.threatActorEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should threat actor deleted', async () => {
     const DELETE_QUERY = gql`
