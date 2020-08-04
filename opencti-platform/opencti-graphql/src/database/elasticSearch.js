@@ -377,7 +377,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
   if (haveRange) {
     filters.push({
       range: {
-        first_seen: {
+        start_time: {
           gte: start,
           lte: end,
         },
@@ -398,9 +398,20 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       size: 10000,
       query: {
         bool: {
-          must: filters,
-          should: [{ match_phrase: { parent_types: type } }, { match_phrase: { entity_type: type } }],
-          minimum_should_match: 1,
+          must: concat(
+            [
+              {
+                bool: {
+                  should: [
+                    { match_phrase: { 'entity_type.keyword': type } },
+                    { match_phrase: { 'parent_types.keyword': type } },
+                  ],
+                  minimum_should_match: 1,
+                },
+              },
+            ],
+            filters
+          ),
         },
       },
       aggs: {

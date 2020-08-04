@@ -12,6 +12,7 @@ import {
 import { listenServer, stopServer } from '../../../src/httpServer';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -45,7 +46,7 @@ describe('Minio basic and utils', () => {
     const maxMarking = { definition: 'TLP:RED' };
     const entity = await internalLoadEntityById('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
-    const expectedName = '_TLP:RED_(ExportFileStix)_malware-Paradise Ransomware_all.json';
+    const expectedName = '_TLP:RED_(ExportFileStix)_Malware-Paradise Ransomware_all.json';
     expect(fileExportName).toEqual(expect.stringContaining(expectedName));
   });
   it('should list export name correctly generated', async () => {
@@ -55,14 +56,15 @@ describe('Minio basic and utils', () => {
     const maxMarking = { definition: 'TLP:RED' };
     const entity = null;
     const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
-    const expectedName = '_TLP:RED_(ExportFileStix)_attack-pattern.json';
+    const expectedName = '_TLP:RED_(ExportFileStix)_Attack-Pattern.json';
     expect(fileExportName).toEqual(expect.stringContaining(expectedName));
   });
 });
 
 describe('Minio file listing', () => {
-  const malwareId = 'ab78a62f-4928-4d5a-8740-03f0af9c4330';
-  const exportFileName = '(ExportFileStix)_malware-Paradise Ransomware_all.json';
+  const malware = elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+  const malwareId = malware.internal_id;
+  const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
   const exportFileId = `export/malware/${malwareId}/${exportFileName}`;
   const importFileId = `import/global/${exportFileName}`;
   const importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
@@ -107,7 +109,6 @@ describe('Minio file listing', () => {
     expect(jsonData.objects.length).toEqual(16);
     const user = head(jsonData.objects);
     expect(user.name).toEqual('admin');
-    expect(user.x_opencti_id).toEqual('88ec0c6a-13ce-5e39-b486-354fe4a7084f');
   });
   it('should load file', async () => {
     const file = await loadFile(exportFileId);

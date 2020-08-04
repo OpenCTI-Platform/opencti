@@ -36,11 +36,11 @@ import {
   yearFormat,
 } from '../../../src/database/grakn';
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { INDEX_STIX_OBJECTS, utcDate } from '../../../src/database/utils';
+import { utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { elLoadById, useCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
-import { ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_ORGA, ENTITY_TYPE_REPORT } from '../../../src/utils/idGenerator';
+import { ENTITY_TYPE_CAMPAIGN, RELATION_MITIGATES } from '../../../src/utils/idGenerator';
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {
@@ -75,7 +75,7 @@ describe('Grakn basic and utils', () => {
 describe('Grakn low level commands', () => {
   it('should read transaction handle correctly', async () => {
     const data = await executeRead((rTx) => {
-      return rTx.query(`match $x sub report_class; get;`).then((it) => it.collect());
+      return rTx.query(`match $x sub report_types; get;`).then((it) => it.collect());
     });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(1);
@@ -95,7 +95,7 @@ describe('Grakn low level commands', () => {
     // Create a connector
     const creationData = await executeWrite((wTx) => {
       return wTx
-        .query(`insert $c isa Connector, has internal_id_key "${connectorId}";`) //
+        .query(`insert $c isa Connector, has internal_id "${connectorId}", has standard_id "${connectorId}";`) //
         .then((it) => it.collect());
     });
     expect(creationData).not.toBeNull();
@@ -107,7 +107,7 @@ describe('Grakn low level commands', () => {
     // Delete it
     const deleteData = await executeWrite((wTx) => {
       return wTx
-        .query(`match $c isa Connector, has internal_id_key "${connectorId}"; delete $c;`) //
+        .query(`match $c isa Connector, has internal_id "${connectorId}"; delete $c;`) //
         .then((it) => it.collect());
     });
     expect(deleteData).not.toBeNull();
@@ -137,35 +137,35 @@ describe('Grakn low level commands', () => {
     expect(aggregationMap.get('from').role).toEqual('part_of');
     // Extract var with internal_id specified
     vars = extractQueryVars(
-      'match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering; $from has internal_id_key "ID"; get;'
+      'match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering; $from has internal_id "ID"; get;'
     );
     expect(vars).not.toBeNull();
     expect(vars.length).toEqual(3);
     aggregationMap = new Map(vars.map((i) => [i.alias, i]));
     expect(aggregationMap.get('from').internalIdKey).toEqual('ID');
     // Extract right role reconstruct
-    vars = extractQueryVars('match $to isa Sector; ($from, gather:$to) isa gathering; get;');
+    vars = extractQueryVars('match $to isa Sector; ($from, part-of_to:$to) isa part-of; get;');
     expect(vars).not.toBeNull();
     expect(vars.length).toEqual(2);
     aggregationMap = new Map(vars.map((i) => [i.alias, i]));
-    expect(aggregationMap.get('from').role).toEqual('part_of');
-    expect(aggregationMap.get('to').role).toEqual('gather');
+    expect(aggregationMap.get('from').role).toEqual('part-of_from');
+    expect(aggregationMap.get('to').role).toEqual('part-of_to');
     // Extract left role reconstruct
-    vars = extractQueryVars('match $to isa Sector; (part_of:$from, $to) isa gathering; get;');
+    vars = extractQueryVars('match $to isa Sector; (part-of_from:$from, $to) isa part-of; get;');
     expect(vars.length).toEqual(2);
     aggregationMap = new Map(vars.map((i) => [i.alias, i]));
-    expect(aggregationMap.get('from').role).toEqual('part_of');
-    expect(aggregationMap.get('to').role).toEqual('gather');
+    expect(aggregationMap.get('from').role).toEqual('part-of_from');
+    expect(aggregationMap.get('to').role).toEqual('part-of_to');
   });
   it('should query vars check inconsistency', async () => {
     // Relation is not found
-    let query = 'match $to isa Sector; $rel(part_of:$from, $to) isa undefined; get;';
+    let query = 'match $to isa Sector; $rel(part-of_from:$from, $to) isa undefined; get;';
     expect(() => extractQueryVars(query)).toThrowError();
     // Relation is found, one role is ok, the other is missing
-    query = 'match $to isa Sector; $rel($to, source:$from) isa role_test_missing; get;';
+    query = 'match $to isa Sector; $rel($to, part-of_to:$from) isa role_test_missing; get;';
     expect(() => extractQueryVars(query)).toThrowError();
     // Relation is found but the role specified is not in the map
-    query = 'match $to isa Sector; $rel(sourced:$to, $from) isa role_test_missing; get;';
+    query = 'match $to isa Sector; $rel(part-of_from:$to, $from) isa role_test_missing; get;';
     expect(() => extractQueryVars(query)).toThrowError();
   });
 });
@@ -173,58 +173,58 @@ describe('Grakn low level commands', () => {
 describe('Grakn loaders', () => {
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should load simple query (noCache = %s)', async (noCache) => {
-    const query = 'match $m isa Malware; $m has external_stix_id "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88"; get;';
+    const query = 'match $m isa Malware; $m has stix_ids "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88", has internal_id $m_id; get;';
     const malware = await load(query, ['m'], { noCache });
     expect(malware.m).not.toBeNull();
-    expect(malware.m.external_stix_id).toEqual(['malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88']);
-    expect(malware.m.stix_id_key).toEqual('malware--0de70f14-d9a8-555b-ba1a-834cc27a1166');
+    expect(malware.m.stix_ids).toEqual(['malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88']);
+    expect(malware.m.standard_id).toEqual('malware--a62f1fb7-ea66-570e-a007-ea50efce1606');
   });
   it('should load subTypes values', async () => {
-    const stixObservableSubTypes = await querySubTypes('Stix-Observable');
+    const stixObservableSubTypes = await querySubTypes('Stix-Cyber-Observable');
     expect(stixObservableSubTypes).not.toBeNull();
-    expect(stixObservableSubTypes.edges.length).toEqual(30);
+    expect(stixObservableSubTypes.edges.length).toEqual(27);
     const subTypeLabels = map((e) => e.node.label, stixObservableSubTypes.edges);
     expect(includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
     expect(includes('IPv6-Addr', subTypeLabels)).toBeTruthy();
   });
   it('should load attributes values', async () => {
-    const attrValues = await queryAttributeValues('report_class');
+    const attrValues = await queryAttributeValues('report_types');
     expect(attrValues).not.toBeNull();
     expect(attrValues.edges.length).toEqual(2);
     const valueDefinitions = map((e) => e.node.value, attrValues.edges);
-    expect(includes('Threat Report', valueDefinitions)).toBeTruthy();
-    expect(includes('Internal Report', valueDefinitions)).toBeTruthy();
+    expect(includes('threat-report', valueDefinitions)).toBeTruthy();
+    expect(includes('internal-report', valueDefinitions)).toBeTruthy();
   });
   it('should check attributes exist', async () => {
-    const reportClassExist = await attributeExists('report_class');
+    const reportClassExist = await attributeExists('report_types');
     expect(reportClassExist).toBeTruthy();
     const notExist = await attributeExists('not_an_attribute');
     expect(notExist).not.toBeTruthy();
   });
   it('should check attributes resolve by id', async () => {
-    const attrValues = await queryAttributeValues('report_class');
+    const attrValues = await queryAttributeValues('report_types');
     const aggregationMap = new Map(attrValues.edges.map((i) => [i.node.value, i.node]));
-    const attributeId = aggregationMap.get('Threat Report').id;
+    const attributeId = aggregationMap.get('threat-report').id;
     const attrValue = await queryAttributeValueByGraknId(attributeId);
     expect(attrValue).not.toBeNull();
     expect(attrValue.id).toEqual(attributeId);
-    expect(attrValue.type).toEqual('report_class');
-    expect(attrValue.value).toEqual('Threat Report');
+    expect(attrValue.type).toEqual('report_types');
+    expect(attrValue.value).toEqual('threat-report');
   });
   it('should count accurate', async () => {
     const countObjects = (type) => getSingleValueNumber(`match $c isa ${type}; get; count;`);
     // Entities
     expect(await countObjects('Settings')).toEqual(1);
-    expect(await countObjects('Tag')).toEqual(3);
+    expect(await countObjects('Label')).toEqual(13);
     expect(await countObjects('Connector')).toEqual(0);
     expect(await countObjects('Group')).toEqual(0);
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain')).toEqual(43);
+    expect(await countObjects('Stix-Domain-Object')).toEqual(36);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
-    expect(await countObjects('Stix-Observable')).toEqual(6);
+    expect(await countObjects('Stix-Cyber-Observable')).toEqual(5);
     // Relations
   });
 });
@@ -275,12 +275,12 @@ describe('Grakn attribute updater', () => {
     let relation = await internalLoadEntityById(stixId, null, { noCache });
     expect(relation.weight).toEqual(1);
     let input = { key: 'weight', value: [5] };
-    await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, 'mitigates', input, wTx));
+    await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, input, wTx));
     relation = await internalLoadEntityById(stixId, null, { noCache });
     expect(relation.weight).toEqual(5);
     // Value back to before
     input = { key: 'weight', value: [1] };
-    await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, 'mitigates', input, wTx));
+    await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, input, wTx));
     relation = await internalLoadEntityById(stixId, null, { noCache });
     expect(relation.weight).toEqual(1);
   });
@@ -316,7 +316,7 @@ describe('Grakn entities listing', () => {
     const malware = dataMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     expect(malware.grakn_id).not.toBeNull();
     expect(malware.id).toEqual('ab78a62f-4928-4d5a-8740-03f0af9c4330');
-    expect(malware.internal_id_key).toEqual('ab78a62f-4928-4d5a-8740-03f0af9c4330');
+    expect(malware.internal_id).toEqual('ab78a62f-4928-4d5a-8740-03f0af9c4330');
     expect(malware.created_at_month).not.toBeNull();
     expect(malware.parent_types.length).toEqual(3);
     expect(includes('Malware', malware.parent_types)).toBeTruthy();
@@ -381,7 +381,7 @@ describe('Grakn entities listing', () => {
     // We accept that ElasticSearch is not able to have both direction of the relations
     const forceToNoCache = useCache();
     if (forceToNoCache || noCache) {
-      const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
+      const options = { orderBy: 'rel_localization.internal_id', orderMode: 'desc', noCache };
       const identities = await listEntities(['Identity'], ['name'], options);
       expect(identities.edges.length).toEqual(6);
       const result =
@@ -389,7 +389,7 @@ describe('Grakn entities listing', () => {
       expect(result).toBeTruthy();
       expect(last(identities.edges).node.name).toEqual('Western Europe');
     } else {
-      const options = { orderBy: 'rel_localization.internal_id_key', orderMode: 'desc', noCache };
+      const options = { orderBy: 'rel_localization.internal_id', orderMode: 'desc', noCache };
       const identities = await listEntities(['Identity'], ['name'], options);
       expect(identities.edges.length).toEqual(4);
       // result here could be Western Europe or Hietzing, because rel_localization.internal_key contain 2 values
@@ -411,7 +411,7 @@ describe('Grakn entities listing', () => {
     expect(head(attacks.edges).node.external_stix_id).toEqual(['attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc']);
   });
   it.each(noCacheCases)('should list multiple entities with attribute filters (noCache = %s)', async (noCache) => {
-    const filters = [{ key: `rel_created_by_ref.internal_id_key`, values: ['91649a10-216b-4f79-a2fe-e6549e1b6893'] }];
+    const filters = [{ key: `rel_created_by_ref.internal_id`, values: ['91649a10-216b-4f79-a2fe-e6549e1b6893'] }];
     const options = { filters, noCache };
     const entities = await listEntities(['Attack-Pattern', 'Intrusion-Set'], ['name'], options);
     expect(entities).not.toBeNull();
@@ -420,8 +420,8 @@ describe('Grakn entities listing', () => {
   const relationFilterUseCases = [
     ['name', 'The MITRE Corporation', true],
     ['name', 'The MITRE Corporation', false],
-    ['internal_id_key', '91649a10-216b-4f79-a2fe-e6549e1b6893', true],
-    ['internal_id_key', '91649a10-216b-4f79-a2fe-e6549e1b6893', false],
+    ['internal_id', '91649a10-216b-4f79-a2fe-e6549e1b6893', true],
+    ['internal_id', '91649a10-216b-4f79-a2fe-e6549e1b6893', false],
   ];
   it.each(relationFilterUseCases)(
     'should list entities with ref relation %s=%s filters (noCache = %s)',
@@ -588,7 +588,7 @@ describe('Grakn relations listing', () => {
     const relation = head(stixRelations.edges).node;
     expect(relation.created).toEqual('2020-03-28T02:42:53.582Z');
     const from = await elLoadById(relation.fromId);
-    expect(from.stix_id_key).toEqual('identity--74b0ab18-7cc7-54da-b061-36f6660dde65');
+    expect(from.standard_id).toEqual('identity--74b0ab18-7cc7-54da-b061-36f6660dde65');
     expect(from.external_stix_id).toEqual(['identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f']);
     const to = await elLoadById(relation.toId);
     expect(to.external_stix_id).toEqual(['identity--c017f212-546b-4f21-999d-97d3dc558f7b']);
@@ -613,7 +613,7 @@ describe('Grakn relations listing', () => {
     // "id": "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
     // No relation on it
 
-    const options = { orderBy: 'rel_indicates.internal_id_key', orderMode: 'asc', noCache };
+    const options = { orderBy: 'rel_indicates.internal_id', orderMode: 'asc', noCache };
     const stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
     const first = head(stixRelations.edges).node;
@@ -641,7 +641,7 @@ describe('Grakn relations listing', () => {
     stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(1);
     const relation = head(stixRelations.edges).node;
-    expect(relation.stix_id_key).toEqual('relationship--f1b0a568-2c7d-59b8-a9c4-e585cb1e04fc');
+    expect(relation.standard_id).toEqual('relationship--f1b0a568-2c7d-59b8-a9c4-e585cb1e04fc');
     expect(relation.external_stix_id).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
     expect(relation.fromRole).toEqual('user');
     expect(relation.toRole).toEqual('usage');
@@ -777,7 +777,7 @@ describe('Grakn relations with inferences', () => {
     // Allied Universal > identity--c017f212-546b-4f21-999d-97d3dc558f7b
     const firstSegment = aggregationMap.get('relationship--3541149d-1af6-4688-993c-dc32c7ee3880');
     expect(firstSegment).not.toBeUndefined();
-    expect(firstSegment.internal_id_key).toEqual('36d591b6-54b9-4152-ab89-79c7dad709f7');
+    expect(firstSegment.internal_id).toEqual('36d591b6-54b9-4152-ab89-79c7dad709f7');
     expect(firstSegment.fromRole).toEqual('source');
     expect(firstSegment.toRole).toEqual('target');
     // relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7
@@ -785,7 +785,7 @@ describe('Grakn relations with inferences', () => {
     // Southwire > identity--5a510e41-5cb2-45cc-a191-a4844ea0a141
     const secondSegment = aggregationMap.get('relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7');
     expect(secondSegment).not.toBeUndefined();
-    expect(secondSegment.internal_id_key).toEqual('b7a4d86f-220e-412a-8135-6e9fb9f7b296');
+    expect(secondSegment.internal_id).toEqual('b7a4d86f-220e-412a-8135-6e9fb9f7b296');
     expect(secondSegment.fromRole).toEqual('part_of');
     expect(secondSegment.toRole).toEqual('gather');
     // Disable the rule
@@ -846,7 +846,7 @@ describe('Grakn element loader', () => {
     expect(loadPromise).rejects.toThrow();
     const element = await loadRelationById(stixId, 'uses', { noCache });
     expect(element).not.toBeNull();
-    expect(element.stix_id_key).toEqual('relationship--a8391d03-e8f6-52d7-b2c0-a63df0fbef98');
+    expect(element.standard_id).toEqual('relationship--a8391d03-e8f6-52d7-b2c0-a63df0fbef98');
     expect(element.external_stix_id).toEqual([stixId]);
     expect(element.weight).toEqual(3);
   });
