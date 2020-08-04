@@ -166,9 +166,11 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
                 dissoc('pattern_type'),
                 dissoc('pattern_version'),
                 dissoc('pattern'),
+                dissoc('name'),
+                dissoc('description'),
                 dissoc('created'),
                 dissoc('modified'),
-                assoc(observable.value, observable.attribute)
+                assoc(observable.attribute, observable.value)
               )(indicatorToCreate);
               const createdStixCyberObservable = await createEntity(user, stixCyberObservable, observable.type);
               observablesToEnrich.push({ id: createdStixCyberObservable.id, type: observable.type });

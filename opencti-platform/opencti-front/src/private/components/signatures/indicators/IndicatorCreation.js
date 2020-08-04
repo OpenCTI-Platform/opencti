@@ -92,13 +92,13 @@ const indicatorMutation = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  description: Yup.string(),
   pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
   x_opencti_main_observable_type: Yup.string().required(
     t('This field is required'),
   ),
-  description: Yup.string(),
-  detection: Yup.boolean(),
+  x_opencti_detection: Yup.boolean(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -206,7 +206,7 @@ class IndicatorCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
-                detection: false,
+                x_opencti_detection: false,
               }}
               validationSchema={indicatorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -302,7 +302,7 @@ class IndicatorCreation extends Component {
                   <Field
                     component={SwitchField}
                     type="checkbox"
-                    name="detection"
+                    name="x_opencti_detection"
                     label={t('Detection')}
                     containerstyle={{ marginTop: 20 }}
                   />
