@@ -32,7 +32,7 @@ export const parentSectors = (sectorId) => {
 
 export const subSectors = (sectorId) => {
   return findWithConnectedRelations(
-    `match $from isa ${ENTITY_TYPE_IDENTITY_SECTOR}; 
+    `match $from isa ${ENTITY_TYPE_IDENTITY_SECTOR}, has internal_id $from_id;
     $rel(${RELATION_PART_OF}_from:$from, ${RELATION_PART_OF}_to:$to) isa ${RELATION_PART_OF};
     $to has internal_id "${escapeString(sectorId)}"; get;`,
     'from',

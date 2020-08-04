@@ -12,7 +12,6 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { findById as findKillChainPhaseById } from './killChainPhase';
 import { findById as findStixCyberObservableById } from './stixCyberObservable';
@@ -27,6 +26,7 @@ import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
 } from '../utils/idGenerator';
 import { askEnrich } from './enrichment';
+import { buildPagination } from '../database/utils';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -116,6 +116,7 @@ const computeValidUntil = async (indicator) => {
 export const findById = (indicatorId) => {
   return loadEntityById(indicatorId, ENTITY_TYPE_INDICATOR);
 };
+
 export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_INDICATOR], ['name', 'alias'], args);
 };
@@ -149,14 +150,9 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
       if (observables && observables.length > 0) {
         observablesToLink = await Promise.all(
           observables.map(async (observable) => {
-            const internalId = generateStandardId(
-              indicator.x_opencti_main_observable_type === 'Unknown'
-                ? ABSTRACT_STIX_CYBER_OBSERVABLE
-                : indicator.x_opencti_main_observable_type,
-              observable
-            );
-            const checkObservable = findStixCyberObservableById(internalId);
-            if (isNil(checkObservable)) {
+            const standardId = generateStandardId(observable.type, observable);
+            const currentObservable = await findStixCyberObservableById(standardId);
+            if (!currentObservable) {
               const stixCyberObservable = pipe(
                 dissoc('internal_id'),
                 dissoc('standard_id'),
@@ -171,13 +167,14 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
                 dissoc('pattern_version'),
                 dissoc('pattern'),
                 dissoc('created'),
-                dissoc('modified')
+                dissoc('modified'),
+                assoc(observable.attribute, observable.value)
               )(indicatorToCreate);
               const createdStixCyberObservable = await createEntity(user, stixCyberObservable, observable.type);
               observablesToEnrich.push({ id: createdStixCyberObservable.id, type: observable.type });
               return createdStixCyberObservable.id;
             }
-            return internalId;
+            return currentObservable.id;
           })
         );
       }
@@ -191,7 +188,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   const created = await createEntity(user, indicatorToCreate, ENTITY_TYPE_INDICATOR);
   await Promise.all(
     observablesToLink.map((observableToLink) => {
-      const input = { fromId: created.id, toId: observableToLink, relationship_type: 'based-on' };
+      const input = { fromId: created.id, toId: observableToLink, relationship_type: RELATION_BASED_ON };
       return createRelation(user, input);
     })
   );
@@ -204,5 +201,14 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
 };
 
 export const observables = (indicatorId) => {
-  return [];
+  return findWithConnectedRelations(
+    `match $to isa ${ABSTRACT_STIX_CYBER_OBSERVABLE}, has internal_id $from_id; 
+    $rel(${RELATION_BASED_ON}_from:$from, ${RELATION_BASED_ON}_to:$to) isa ${RELATION_BASED_ON}, has internal_id $rel_id;
+    $from has internal_id $rel_from_id;
+    $to has internal_id $rel_to_id;
+    $from has internal_id "${escapeString(indicatorId)}";
+    get;`,
+    'to',
+    { extraRelKey: 'rel' }
+  ).then((data) => buildPagination(0, 0, data, data.length));
 };

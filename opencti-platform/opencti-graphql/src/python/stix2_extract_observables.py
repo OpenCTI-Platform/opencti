@@ -35,8 +35,9 @@ def main():
     if sys.argv[1] == "check":
         return_data({"status": "success"})
 
-    indicator_type = None
-    indicator_value = None
+    observable_type = None
+    observable_attribute = None
+    observable_value = None
     pattern = create_pattern_object(sys.argv[1])
     if pattern.operand.operator == "=":
         # get the object type (here 'file') and check that it is a standard observable type

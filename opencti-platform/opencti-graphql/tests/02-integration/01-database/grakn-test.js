@@ -252,7 +252,7 @@ describe('Grakn attribute updater', () => {
     const stixId = 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214';
     let campaign = await internalLoadEntityById(stixId, null, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
-    const type = 'Stix-Domain-Entity';
+    const type = 'Stix-Domain-Object';
     let input = { key: 'first_seen', value: ['2020-02-20T08:45:43.366Z'] };
     let update = await executeWrite((wTx) => updateAttribute(ADMIN_USER, campaignId, type, input, wTx));
     expect(update).toEqual(campaignId);
@@ -287,7 +287,7 @@ describe('Grakn attribute updater', () => {
   it.each(noCacheCases)('should update multivalued attribute', async (noCache) => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
     const identityId = '78ef0cb8-4397-4603-86b4-f1d60be7400d';
-    const type = 'Stix-Domain-Entity';
+    const type = 'Stix-Domain-Object';
     let identity = await internalLoadEntityById(stixId, null, { noCache });
     expect(identity.alias.sort()).toEqual(['Computer Incident', 'Incident'].sort());
     let input = { key: 'alias', value: ['Computer', 'Test', 'Grakn'] };
@@ -320,7 +320,7 @@ describe('Grakn entities listing', () => {
     expect(malware.created_at_month).not.toBeNull();
     expect(malware.parent_types.length).toEqual(3);
     expect(includes('Malware', malware.parent_types)).toBeTruthy();
-    expect(includes('Stix-Domain-Entity', malware.parent_types)).toBeTruthy();
+    expect(includes('Stix-Domain-Object', malware.parent_types)).toBeTruthy();
     expect(includes('Stix-Domain', malware.parent_types)).toBeTruthy();
     expect(malware.created).toEqual('2019-09-30T16:38:26.000Z');
     expect(malware.name).toEqual('Paradise Ransomware');
@@ -428,7 +428,7 @@ describe('Grakn entities listing', () => {
     async (field, val, noCache) => {
       const filters = [{ key: `rel_created_by_ref.${field}`, values: [val], toRole: 'creator' }];
       const options = { filters, noCache };
-      const entities = await listEntities(['Stix-Domain-Entity'], ['name'], options);
+      const entities = await listEntities(['Stix-Domain-Object'], ['name'], options);
       expect(entities).not.toBeNull();
       expect(entities.edges.length).toEqual(3);
       const aggregationMap = new Map(entities.edges.map((i) => [head(i.node.external_stix_id), i.node]));
@@ -952,7 +952,7 @@ describe('Grakn entities time series', () => {
       endDate: '2020-04-04T00:00:00.000+01:00',
       noCache,
     };
-    const series = await timeSeriesEntities('Stix-Domain-Entity', [], options);
+    const series = await timeSeriesEntities('Stix-Domain-Object', [], options);
     expect(series.length).toEqual(8);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
@@ -984,7 +984,7 @@ describe('Grakn entities time series', () => {
       endDate: '2020-10-01T00:00:00+02:00',
       noCache,
     };
-    const series = await timeSeriesEntities('Stix-Domain-Entity', filters, options);
+    const series = await timeSeriesEntities('Stix-Domain-Object', filters, options);
     expect(series.length).toEqual(10);
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(1);

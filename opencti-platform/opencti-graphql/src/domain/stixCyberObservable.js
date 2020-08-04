@@ -122,11 +122,19 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.body;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
       return (
-        stixCyberObservable.md5 || stixCyberObservable.sha1 || stixCyberObservable.sha256 || stixCyberObservable.sha512
+        stixCyberObservable.md5 ||
+        stixCyberObservable.sha1 ||
+        stixCyberObservable.sha256 ||
+        stixCyberObservable.sha512 ||
+        stixCyberObservable.payload_bin
       );
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
       return (
-        stixCyberObservable.md5 || stixCyberObservable.sha1 || stixCyberObservable.sha256 || stixCyberObservable.sha512
+        stixCyberObservable.md5 ||
+        stixCyberObservable.sha1 ||
+        stixCyberObservable.sha256 ||
+        stixCyberObservable.sha512 ||
+        stixCyberObservable.name
       );
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
       return stixCyberObservable.subject || stixCyberObservable.issuer;

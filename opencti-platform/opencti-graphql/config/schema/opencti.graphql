@@ -1702,7 +1702,7 @@ input OpinionAddInput {
   stix_id: String
   opinion: String!
   explanation: String
-  authors: String
+  authors: [String]
   revoked: Boolean
   lang: String
   confidence: Int

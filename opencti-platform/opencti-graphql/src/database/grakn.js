@@ -1412,6 +1412,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   // stix-sighting-relationship
   if (isStixSightingRelationship(relationshipType)) {
     relationAttributes.description = isNil(input.description) ? '' : input.description;
+    relationAttributes.attribute_count = isNil(input.attribute_count) ? 1 : input.attribute_count;
     relationAttributes.x_opencti_negative = isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
     relationAttributes.first_seen = isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
     relationAttributes.last_seen = isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
