@@ -2560,7 +2560,7 @@ input IndicatorAddInput {
   lang: String
   x_opencti_score: Int
   x_opencti_detection: Boolean
-  x_opencti_main_observable_type: String!
+  x_opencti_main_observable_type: String
   killChainPhases: [String]
   createdBy: String
   objectMarking: [String]

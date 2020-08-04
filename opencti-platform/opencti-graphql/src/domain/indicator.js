@@ -133,9 +133,12 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
   if (check === false) {
     throw FunctionalError(`Indicator of type ${indicator.pattern_type} is not correctly formatted.`);
   }
-  const indicatorToCreate = pipe(
+  let indicatorToCreate = pipe(
     dissoc('basedOn'),
-    assoc('x_opencti_main_observable_type', indicator.x_opencti_main_observable_type),
+    assoc(
+      'x_opencti_main_observable_type',
+      isNil(indicator.x_opencti_main_observable_type) ? 'Unknown' : indicator.x_opencti_main_observable_type
+    ),
     assoc('x_opencti_score', isNil(indicator.x_opencti_score) ? 50 : indicator.x_opencti_score),
     assoc('x_opencti_detection', isNil(indicator.x_opencti_detection) ? false : indicator.x_opencti_detection),
     assoc('valid_from', isNil(indicator.valid_from) ? now() : indicator.valid_from),
@@ -150,6 +153,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
       if (observables && observables.length > 0) {
         observablesToLink = await Promise.all(
           observables.map(async (observable) => {
+            indicatorToCreate = assoc('x_opencti_main_observable_type', observable.type, indicatorToCreate);
             const standardId = generateStandardId(observable.type, observable);
             const currentObservable = await findStixCyberObservableById(standardId);
             if (!currentObservable) {
@@ -161,6 +165,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
                 dissoc('x_opencti_main_observable_type'),
                 dissoc('x_opencti_score'),
                 dissoc('x_opencti_detection'),
+                dissoc('indicator_types'),
                 dissoc('valid_from'),
                 dissoc('valid_until'),
                 dissoc('pattern_type'),
@@ -204,7 +209,7 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
 
 export const observables = (indicatorId) => {
   return findWithConnectedRelations(
-    `match $to isa ${ABSTRACT_STIX_CYBER_OBSERVABLE}, has internal_id $from_id; 
+    `match $to isa ${ABSTRACT_STIX_CYBER_OBSERVABLE}, has internal_id $to_id; 
     $rel(${RELATION_BASED_ON}_from:$from, ${RELATION_BASED_ON}_to:$to) isa ${RELATION_BASED_ON}, has internal_id $rel_id;
     $from has internal_id $rel_from_id;
     $to has internal_id $rel_to_id;

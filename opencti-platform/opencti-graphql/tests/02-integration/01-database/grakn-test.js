@@ -38,7 +38,7 @@ import {
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
-import { elLoadById, useCache, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
+import { elLoadById, useCache, REL_INDEX_PREFIX, elLoadByStixId } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
 import { ENTITY_TYPE_CAMPAIGN, RELATION_MITIGATES } from '../../../src/utils/idGenerator';
 
@@ -173,7 +173,8 @@ describe('Grakn low level commands', () => {
 describe('Grakn loaders', () => {
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should load simple query (noCache = %s)', async (noCache) => {
-    const query = 'match $m isa Malware; $m has stix_ids "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88", has internal_id $m_id; get;';
+    const query =
+      'match $m isa Malware; $m has stix_ids "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88", has internal_id $m_id; get;';
     const malware = await load(query, ['m'], { noCache });
     expect(malware.m).not.toBeNull();
     expect(malware.m.stix_ids).toEqual(['malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88']);
@@ -215,13 +216,13 @@ describe('Grakn loaders', () => {
     const countObjects = (type) => getSingleValueNumber(`match $c isa ${type}; get; count;`);
     // Entities
     expect(await countObjects('Settings')).toEqual(1);
-    expect(await countObjects('Label')).toEqual(13);
+    expect(await countObjects('Label')).toEqual(7);
     expect(await countObjects('Connector')).toEqual(0);
     expect(await countObjects('Group')).toEqual(0);
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain-Object')).toEqual(36);
+    expect(await countObjects('Stix-Domain-Object')).toEqual(19);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(19);
     expect(await countObjects('Stix-Cyber-Observable')).toEqual(5);
@@ -232,7 +233,8 @@ describe('Grakn loaders', () => {
 describe('Grakn attribute updater', () => {
   const noCacheCases = [[true], [false]];
   it('should update fail for read only attributes', async () => {
-    const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
+    const campaign = await elLoadByStixId('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaignId = campaign.internal_id;
     const input = { key: 'observable_value', value: ['test'] };
     const update = executeWrite((wTx) => {
       return updateAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input, wTx);
@@ -240,7 +242,8 @@ describe('Grakn attribute updater', () => {
     expect(update).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {
-    const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
+    const campaign = await elLoadByStixId('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaignId = campaign.internal_id;
     const input = { key: 'description', value: ['A test campaign'] };
     const update = await executeWrite((wTx) => {
       return updateAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input, wTx);
@@ -248,9 +251,9 @@ describe('Grakn attribute updater', () => {
     expect(update).toEqual(campaignId);
   });
   it.each(noCacheCases)('should update date with dependencies', async (noCache) => {
-    const campaignId = 'fab6fa99-b07f-4278-86b4-b674edf60877';
     const stixId = 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214';
-    let campaign = await internalLoadEntityById(stixId, null, { noCache });
+    let campaign = await internalLoadEntityById(stixId, { noCache });
+    const campaignId = campaign.internal_id;
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     const type = 'Stix-Domain-Object';
     let input = { key: 'first_seen', value: ['2020-02-20T08:45:43.366Z'] };

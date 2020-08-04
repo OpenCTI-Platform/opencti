@@ -1314,6 +1314,7 @@ define
    # STIX Cyber Observables Entities
   Stix-Cyber-Observable sub Stix-Core-Object,
     abstract,
+    has x_opencti_score,
     plays stix-sighting-relationship_from,
     plays consists-of_to,
     plays based-on_to;
