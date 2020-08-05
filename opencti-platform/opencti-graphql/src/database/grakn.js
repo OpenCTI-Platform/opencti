@@ -37,6 +37,8 @@ import {
   type as Rtype,
   uniq,
   uniqBy,
+  values,
+  forEachObjIndexed,
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -432,7 +434,7 @@ export const queryAttributeValueByGraknId = async (id) => {
  * @returns {Promise}
  */
 const loadConcept = async (tx, concept, args = {}) => {
-  const { internalId, relationsMap = new Map(), noCache = false, infer = false } = args;
+  const { internalId, relationsMap = new Map(), infer = false } = args;
   const conceptBaseType = concept.baseType;
   // const types = await conceptTypes(tx, concept);
   const remoteConceptType = await concept.type();
@@ -440,13 +442,13 @@ const loadConcept = async (tx, concept, args = {}) => {
   const index = inferIndexFromConceptType(conceptType);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
-  if (infer === false && noCache === false && !useCache()) {
-    const conceptFromCache = await elLoadById(internalId, relationsMap, [index]);
+  if (useCache(args)) {
+    const conceptFromCache = await elLoadById(internalId, null, relationsMap, [index]);
     if (!conceptFromCache) {
       /* istanbul ignore next */
       logger.info(`[ELASTIC] ${internalId} not indexed yet, loading with Grakn`);
     } else {
-      return conceptFromCache;
+      return assoc('grakn_id', concept.id, conceptFromCache);
     }
   }
   // 02. If not found continue the process.
@@ -573,6 +575,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
         conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
           const concept = answer.map().get(alias);
           if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
+          if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           // If internal id of the element is not directly accessible
           // And the element is part of element needed for the result, ensure the key is asked in the query.
           let conceptInternalId = internalIdKey;
@@ -645,7 +648,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
   // 04. Create map from concepts
   const conceptCache = new Map(map((c) => [c.grakn_id, c], resolvedConcepts));
   // 05. Bind all row to data entities
-  return answers.map((answer) => {
+  const result = answers.map((answer) => {
     const dataPerEntities = plainEntities.map((entity) => {
       const concept = answer.map().get(entity);
       const conceptData = concept && conceptCache.get(concept.id);
@@ -653,6 +656,16 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
     });
     return fromPairs(dataPerEntities);
   });
+  // 06. Filter every relation in double
+  // Grakn can respond with twice the relations (browse in 2 directions)
+  if (result.length > 0) {
+    const firstResult = head(result);
+    const relationTargets = filter((elem) => elem.base_type === 'RELATION', firstResult);
+    if (!isEmpty(relationTargets)) {
+      return uniqBy((u) => u[head(Object.keys(relationTargets))].internal_id, result);
+    }
+  }
+  return result;
 };
 export const find = async (query, entities, findOpts = {}) => {
   // Remove empty values from entities
@@ -670,7 +683,7 @@ export const find = async (query, entities, findOpts = {}) => {
 export const findWithConnectedRelations = async (query, key, options = {}) => {
   const { extraRelKey = null } = options;
   const dataFind = await find(query, [key, extraRelKey], options);
-  return map((t) => ({ node: t[key] }), dataFind);
+  return map((t) => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
 };
 export const loadWithConnectedRelations = (query, key, options = {}) => {
   return findWithConnectedRelations(query, key, options).then((result) => head(result));
@@ -991,17 +1004,17 @@ export const load = async (query, entities, options) => {
 };
 const internalLoadEntityByStixId = async (id, args = {}) => {
   const { type } = args;
-  if (useCache(args)) return elLoadByStixId(id);
-  const queryType = type || 'thing';
+  if (useCache(args)) return elLoadByStixId(id, type);
   const stixId = `${escapeString(id)}`;
-  const query = `match $x isa ${queryType}; { $x has standard_id "${stixId}";} or { $x has stix_ids "${stixId}";}; get;`;
+  const query = `match $x isa ${type || 'thing'}; $x has internal_id $x_id;
+  { $x has standard_id "${stixId}";} or { $x has stix_ids "${stixId}";}; get;`;
   const element = await load(query, ['x'], args);
   return element ? element.x : null;
 };
 export const internalLoadEntityById = async (id, args = {}) => {
   const { type } = args;
   if (isStixId(id)) return internalLoadEntityByStixId(id, args);
-  if (useCache(args)) return elLoadById(id);
+  if (useCache(args)) return elLoadById(id, type);
   const query = `match $x isa ${type || 'thing'}; $x has internal_id "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], args);
   return element ? element.x : null;
@@ -1010,10 +1023,9 @@ export const loadEntityById = async (id, type, args = {}) => {
   if (isNil(type)) throw FunctionalError(`You need to specify a type when loading an entity (id)`);
   return internalLoadEntityById(id, assoc('type', type, args));
 };
-
 const loadRelationByStixId = async (id, type, args = {}) => {
   if (isNil(type)) throw FunctionalError(`You need to specify a type when loading a relation (stix)`);
-  if (!useCache()) return elLoadByStixId(id, type);
+  if (useCache(args)) return elLoadByStixId(id);
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa ${type}; { $rel has internal_id "${eid}"; } 
   or { $rel has standard_id "${eid}"; }
@@ -1028,7 +1040,7 @@ const loadRelationByStixId = async (id, type, args = {}) => {
 export const loadRelationById = async (id, type, args = {}) => {
   if (isNil(type)) throw FunctionalError(`You need to specify a type when loading a relation (id)`);
   if (isStixId(id)) return loadRelationByStixId(id, type, args);
-  if (!useCache()) return elLoadById(id, type);
+  if (useCache(args)) return elLoadById(id, type);
   const eid = escapeString(id);
   const query = `match $rel($from, $to) isa ${type}, has internal_id "${eid}";
   $rel has internal_id $rel_id;
@@ -1038,9 +1050,8 @@ export const loadRelationById = async (id, type, args = {}) => {
   const element = await load(query, ['rel'], args);
   return element ? element.rel : null;
 };
-
 export const loadById = async (id, type, args = {}) => {
-  if (!useCache()) return elLoadById(id);
+  if (useCache(args)) return elLoadById(id);
   if (isBasicObject(type)) return loadEntityById(id, type, args);
   if (isBasicRelationship(type)) return loadRelationById(id, type, args);
   throw FunctionalError(`Type ${type} is unknown.`);

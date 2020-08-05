@@ -127,8 +127,8 @@ export const RELATIONSHIPS_INDICES = [
 ];
 
 export const useCache = (args = {}) => {
-  const { noCache = false } = args;
-  return !noCache && !conf.get('elasticsearch:noQueryCache');
+  const { noCache = false, infer = false } = args;
+  return !infer && !noCache && !conf.get('elasticsearch:noQueryCache');
 };
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
@@ -744,40 +744,27 @@ export const elPaginate = async (indexName, options = {}) => {
       }
     );
 };
-export const elLoadByTerms = async (terms, relationsMap, indices = DATA_INDICES) => {
-  const query = {
-    index: indices,
-    _source_excludes: `${REL_INDEX_PREFIX}*`,
-    body: {
-      query: {
-        bool: {
-          must: map((x) => ({ term: x }), terms),
-        },
-      },
-    },
-  };
-  logger.debug(`[ELASTICSEARCH] loadByTerms`, { query });
-  const data = await el.search(query);
-  const total = data.body.hits.total.value;
-  /* istanbul ignore if */
-  if (total > 1) {
-    throw DatabaseError('Expect only one response', { terms, hits: data.body.hits.hits });
-  }
-  const response = total === 1 ? head(data.body.hits.hits) : null;
-  if (!response) return response;
-  const loadedElement = assoc('_index', response._index, response._source);
-  if (loadedElement.base_type === BASE_TYPE_RELATION) {
-    return elReconstructRelation(loadedElement, relationsMap);
-  }
-  return loadedElement;
-};
-const elInternalLoadById = async (id, elementTypes = ['internal_id'], relationsMap = null, indices = DATA_INDICES) => {
+const elInternalLoadById = async (
+  id,
+  type = null,
+  elementTypes = ['internal_id'],
+  relationsMap = null,
+  indices = DATA_INDICES
+) => {
   //       must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
   const mustTerms = [];
   const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
   const should = { bool: { should: map((term) => ({ term }), idsTermsPerType), minimum_should_match: 1 } };
   mustTerms.push(should);
-
+  if (type) {
+    const shouldType = {
+      bool: {
+        should: [{ match_phrase: { 'entity_type.keyword': type } }, { match_phrase: { 'parent_types.keyword': type } }],
+        minimum_should_match: 1,
+      },
+    };
+    mustTerms.push(shouldType);
+  }
   const query = {
     index: indices,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
@@ -807,11 +794,11 @@ const elInternalLoadById = async (id, elementTypes = ['internal_id'], relationsM
 };
 // endregion
 
-export const elLoadById = (id, relationsMap = null, indices = DATA_INDICES) => {
-  return elInternalLoadById(id, ['internal_id'], relationsMap, indices);
+export const elLoadById = (id, type = null, relationsMap = null, indices = DATA_INDICES) => {
+  return elInternalLoadById(id, type, ['internal_id'], relationsMap, indices);
 };
-export const elLoadByStixId = (id, relationsMap = null, indices = DATA_INDICES) => {
-  return elInternalLoadById(id, ['standard_id', 'stix_ids'], relationsMap, indices);
+export const elLoadByStixId = (id, type = null, relationsMap = null, indices = DATA_INDICES) => {
+  return elInternalLoadById(id, type, ['standard_id', 'stix_ids'], relationsMap, indices);
 };
 export const elBulk = async (args) => {
   return el.bulk(args);

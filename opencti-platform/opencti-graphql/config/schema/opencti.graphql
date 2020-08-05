@@ -930,7 +930,7 @@ interface StixCoreObject {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1019,7 +1019,7 @@ interface StixDomainObject {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1125,7 +1125,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1245,7 +1245,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1324,7 +1324,7 @@ interface Container {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1417,7 +1417,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1540,7 +1540,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1659,7 +1659,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1782,7 +1782,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -1905,7 +1905,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2019,7 +2019,7 @@ interface Identity {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2130,7 +2130,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2253,7 +2253,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2371,7 +2371,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2500,7 +2500,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2631,7 +2631,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2743,7 +2743,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2871,7 +2871,7 @@ interface Location {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -2977,7 +2977,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3096,7 +3096,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3208,7 +3208,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3318,7 +3318,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3439,7 +3439,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3562,7 +3562,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3687,7 +3687,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3803,7 +3803,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -3918,7 +3918,7 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4034,7 +4034,7 @@ interface StixCyberObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4057,7 +4057,7 @@ interface StixCyberObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4102,7 +4102,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4125,7 +4125,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4187,7 +4187,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4210,7 +4210,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4276,7 +4276,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4299,7 +4299,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4356,7 +4356,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4379,7 +4379,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4439,7 +4439,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4462,7 +4462,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4532,7 +4532,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4555,7 +4555,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4618,7 +4618,7 @@ interface HashedObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4641,7 +4641,7 @@ interface HashedObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4691,7 +4691,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4714,7 +4714,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4789,7 +4789,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4812,7 +4812,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4895,7 +4895,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -4918,7 +4918,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -4997,7 +4997,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5020,7 +5020,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5077,7 +5077,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5100,7 +5100,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5158,7 +5158,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5181,7 +5181,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5239,7 +5239,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5262,7 +5262,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5320,7 +5320,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5343,7 +5343,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5421,7 +5421,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5444,7 +5444,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5514,7 +5514,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5537,7 +5537,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5605,7 +5605,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5628,7 +5628,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5686,7 +5686,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5709,7 +5709,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5795,7 +5795,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5818,7 +5818,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5880,7 +5880,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5903,7 +5903,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -5965,7 +5965,7 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -5988,7 +5988,7 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -6076,7 +6076,7 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -6099,7 +6099,7 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -6157,7 +6157,7 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -6180,7 +6180,7 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -6238,7 +6238,7 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -6261,7 +6261,7 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -6319,7 +6319,7 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -6342,7 +6342,7 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
@@ -6400,7 +6400,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
@@ -6423,7 +6423,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    weights: [Int]
+    confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode

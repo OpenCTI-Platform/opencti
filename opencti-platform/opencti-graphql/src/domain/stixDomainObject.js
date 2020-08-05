@@ -55,12 +55,7 @@ export const findAllDuplicates = (args) => {
   return [];
 };
 
-export const findById = async (stixDomainObjectId) => {
-  let data = await loadEntityById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  if (!data) return data;
-  data = pipe(dissoc('user_email'), dissoc('password'))(data);
-  return data;
-};
+export const findById = async (stixDomainObjectId) => loadEntityById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
 
 // region time series
 export const reportsTimeSeries = (stixDomainObjectId, args) => {

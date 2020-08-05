@@ -16,7 +16,6 @@ import {
   elIsAlive,
   elLoadById,
   elLoadByStixId,
-  elLoadByTerms,
   elPaginate,
   elReconstructRelation,
   elVersion,
@@ -86,10 +85,10 @@ describe('Elasticsearch document loader', () => {
     expect(indexedData).toEqual(documentBody);
     const documentWithIndex = assoc('_index', 'test_index', documentBody);
     // Load by internal Id
-    const dataThroughInternal = await elLoadById(internalId, null, ['test_index']);
+    const dataThroughInternal = await elLoadById(internalId, null, null, ['test_index']);
     expect(dataThroughInternal).toEqual(documentWithIndex);
     // Load by stix id
-    const dataThroughStix = await elLoadByStixId(standardId, null, ['test_index']);
+    const dataThroughStix = await elLoadByStixId(standardId, null, null, ['test_index']);
     expect(dataThroughStix).toEqual(documentWithIndex);
     // Try to delete
     await elDeleteByField('test_index', 'internal_id', internalId);
@@ -574,13 +573,6 @@ describe('Elasticsearch reindex', () => {
     const connections = map((c) => c.internal_id, data.connections);
     expect(includes(malwareInternalId, connections)).toBeTruthy(); // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
     expect(includes(attackPatternId, connections)).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
-    // Malware must be find by the relation
-    let terms = [{ 'internal_id.keyword': malwareInternalId }, { 'rel_uses.internal_id.keyword': attackPatternId }];
-    const malwareTest = await elLoadByTerms(terms);
-    expect(malwareTest).not.toBeNull();
-    terms = [{ 'internal_id.keyword': attackPatternId }, { 'rel_uses.internal_id.keyword': malwareInternalId }];
-    const attackPatternTest = await elLoadByTerms(terms);
-    expect(attackPatternTest).not.toBeNull();
   });
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements([{ relationship_type: 'uses' }]);
