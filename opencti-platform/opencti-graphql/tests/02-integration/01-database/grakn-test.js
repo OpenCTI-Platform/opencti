@@ -390,7 +390,7 @@ describe('Grakn entities listing', () => {
     expect(locations.edges.length).toEqual(6);
     const firstResults = ['France'];
     expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
-    const lastResults = ['Western Europe'];
+    const lastResults = ['Western Europe', 'Hietzing'];
     expect(includes(last(locations.edges).node.name, lastResults)).toBeTruthy();
   });
   it.each(noCacheCases)('should list entities with attribute filters (noCache = %s)', async (noCache) => {
@@ -881,7 +881,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
   it.each(noCacheCases)('should entity report attribute updated (noCache = %s)', async (noCache) => {
     let entityTypes = await findAllAttributes({ type: 'report_types' });
     expect(entityTypes).not.toBeNull();
-    // expect(entityTypes.edges.length).toEqual(2);
+    expect(entityTypes.edges.length).toEqual(2);
     let typeMap = new Map(entityTypes.edges.map((i) => [i.node.value, i]));
     const threatReportAttribute = typeMap.get('threat-report');
     expect(threatReportAttribute).not.toBeUndefined();
