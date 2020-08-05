@@ -187,8 +187,8 @@ const styles = (theme) => ({
   },
 });
 
-const stixCoreRelationshipCreationFromRelationFromQuery = graphql`
-  query StixCoreRelationshipCreationFromRelationFromQuery($id: String) {
+const stixCoreRelationshipCreationFromRelationQuery = graphql`
+  query StixCoreRelationshipCreationFromRelationQuery($id: String) {
     stixCoreRelationship(id: $id) {
       id
       entity_type
@@ -196,152 +196,6 @@ const stixCoreRelationshipCreationFromRelationFromQuery = graphql`
       relationship_type
       description
       from {
-        ... on BasicObject {
-          id
-          entity_type
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-        }
-        ... on AttackPattern {
-          name
-        }
-        ... on Campaign {
-          name
-        }
-        ... on CourseOfAction {
-          name
-        }
-        ... on Individual {
-          name
-        }
-        ... on Organization {
-          name
-        }
-        ... on Sector {
-          name
-        }
-        ... on Indicator {
-          name
-        }
-        ... on Infrastructure {
-          name
-        }
-        ... on IntrusionSet {
-          name
-        }
-        ... on Position {
-          name
-        }
-        ... on City {
-          name
-        }
-        ... on Country {
-          name
-        }
-        ... on Region {
-          name
-        }
-        ... on Malware {
-          name
-        }
-        ... on ThreatActor {
-          name
-        }
-        ... on Tool {
-          name
-        }
-        ... on Vulnerability {
-          name
-        }
-        ... on XOpenCTIIncident {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-      }
-      to {
-        ... on BasicObject {
-          id
-          entity_type
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-        }
-        ... on AttackPattern {
-          name
-        }
-        ... on Campaign {
-          name
-        }
-        ... on CourseOfAction {
-          name
-        }
-        ... on Individual {
-          name
-        }
-        ... on Organization {
-          name
-        }
-        ... on Sector {
-          name
-        }
-        ... on Indicator {
-          name
-        }
-        ... on Infrastructure {
-          name
-        }
-        ... on IntrusionSet {
-          name
-        }
-        ... on Position {
-          name
-        }
-        ... on City {
-          name
-        }
-        ... on Country {
-          name
-        }
-        ... on Region {
-          name
-        }
-        ... on Malware {
-          name
-        }
-        ... on ThreatActor {
-          name
-        }
-        ... on Tool {
-          name
-        }
-        ... on Vulnerability {
-          name
-        }
-        ... on XOpenCTIIncident {
-          name
-        }
-        ... on StixCyberObservable {
-          observable_value
-        }
-      }
-    }
-  }
-`;
-
-const stixCoreRelationshipCreationFromRelationToQuery = graphql`
-  query StixCoreRelationshipCreationFromRelationToQuery($id: String) {
-    stixCoreRelationship(id: $id) {
-      id
-      entity_type
-      parent_types
-      relationship_type
-      description
-      to {
         ... on BasicObject {
           id
           entity_type
@@ -693,7 +547,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                   />
                 );
               }
-              return onlyObservables ? (
+              return !targetStixDomainObjectTypes || targetStixDomainObjectTypes.length === 0 ? (
                 this.renderFakeList()
               ) : (
                 <div> &nbsp; </div>
@@ -1072,7 +926,6 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 StixCoreRelationshipCreationFromRelation.propTypes = {
   entityId: PropTypes.string,
   isRelationReversed: PropTypes.bool,
-  onlyObservables: PropTypes.bool,
   targetStixDomainObjectTypes: PropTypes.array,
   allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,

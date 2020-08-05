@@ -722,7 +722,7 @@ export const generateStandardId = (type, data) => {
   if (isInternalRelationship(type)) return generateInternalRelationshipId(type, data);
   if (isStixCoreRelationship(type)) return generateStixCoreRelationshipId(type, data);
   if (isStixMetaRelationship(type)) return generateStixMetaRelationshipId(data);
-  if (isStixSightingRelationship(type)) return generateStixSightingRelationshipId(type, data);
+  if (isStixSightingRelationship(type)) return generateStixSightingRelationshipId(data);
   throw DatabaseError(`Cant generate an id for ${type}`);
 };
 

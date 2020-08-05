@@ -469,8 +469,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                     />
                   );
                 }
-                return targetStixDomainObjectTypes
-                  && targetStixDomainObjectTypes.length === 0 ? (
+                return !targetStixDomainObjectTypes
+                  || targetStixDomainObjectTypes.length === 0 ? (
                     this.renderFakeList()
                   ) : (
                   <div> &nbsp; </div>

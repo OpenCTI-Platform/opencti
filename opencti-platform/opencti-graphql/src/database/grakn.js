@@ -1000,7 +1000,7 @@ const internalLoadEntityByStixId = async (id, args = {}) => {
 };
 export const internalLoadEntityById = async (id, args = {}) => {
   const { type } = args;
-  if (isStixId(id)) return internalLoadEntityByStixId(id, type, args);
+  if (isStixId(id)) return internalLoadEntityByStixId(id, args);
   if (useCache(args)) return elLoadById(id);
   const query = `match $x isa ${type || 'thing'}; $x has internal_id "${escapeString(id)}"; get;`;
   const element = await load(query, ['x'], args);
@@ -1008,7 +1008,7 @@ export const internalLoadEntityById = async (id, args = {}) => {
 };
 export const loadEntityById = async (id, type, args = {}) => {
   if (isNil(type)) throw FunctionalError(`You need to specify a type when loading an entity (id)`);
-  return internalLoadEntityById(id, type, args);
+  return internalLoadEntityById(id, assoc('type', type, args));
 };
 
 const loadRelationByStixId = async (id, type, args = {}) => {

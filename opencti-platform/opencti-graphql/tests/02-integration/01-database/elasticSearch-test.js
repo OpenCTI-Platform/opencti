@@ -320,8 +320,8 @@ describe('Elasticsearch relation reconstruction', () => {
   });
   it('Relation reconstruct with internal_id', async () => {
     const relationMap = new Map();
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
     relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: CONN_MALWARE_ID, role: undefined });
+    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
     const concept = buildRelationConcept('object-marking');
     const relation = elReconstructRelation(concept, relationMap);
     expect(relation.internal_id).toEqual(concept.internal_id);
@@ -332,45 +332,36 @@ describe('Elasticsearch relation reconstruction', () => {
   });
   it('Relation reconstruct with no info', async () => {
     const relationMap = new Map();
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
     relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
+    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
+    const concept = buildRelationConcept('object-marking');
     const relation = elReconstructRelation(concept, relationMap);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from reverse id', async () => {
     const relationMap = new Map();
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
     relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
-    const relation = elReconstructRelation(concept, relationMap);
-    expect(relation.fromId).toEqual(CONN_MARKING_ID);
-    expect(relation.toId).toEqual(CONN_MALWARE_ID);
-  });
-  it('Relation reconstruct from reverse id, forcing natural', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
-    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
+    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: CONN_MARKING_ID, role: undefined });
+    const concept = buildRelationConcept('object-marking');
     const relation = elReconstructRelation(concept, relationMap);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from roles', async () => {
     const relationMap = new Map();
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: CONN_MALWARE_ROLE });
-    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: CONN_MARKING_ROLE });
-    const concept = buildRelationConcept('object_marking_refs');
+    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: CONN_MALWARE_ROLE });
+    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: CONN_MARKING_ROLE });
+    const concept = buildRelationConcept('object-marking');
     const relation = elReconstructRelation(concept, relationMap);
-    expect(relation.fromId).toEqual(CONN_MARKING_ID);
-    expect(relation.toId).toEqual(CONN_MALWARE_ID);
+    expect(relation.fromId).toEqual(CONN_MALWARE_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct fail with bad configuration', async () => {
     const relationMap = new Map();
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: 'bad-to', role: undefined });
     relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
+    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: 'bad-to', role: undefined });
+    const concept = buildRelationConcept('object-marking');
     expect(() => {
       elReconstructRelation(concept, relationMap);
     }).toThrow(Error);
