@@ -187,8 +187,8 @@ const styles = (theme) => ({
   },
 });
 
-const stixCoreRelationshipCreationFromRelationQuery = graphql`
-  query StixCoreRelationshipCreationFromRelationQuery($id: String) {
+const stixCoreRelationshipCreationFromRelationFromQuery = graphql`
+  query StixCoreRelationshipCreationFromRelationFromQuery($id: String) {
     stixCoreRelationship(id: $id) {
       id
       entity_type
@@ -333,13 +333,168 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
   }
 `;
 
-const stixCoreRelationshipCreationFromRelationMutation = graphql`
-  mutation StixCoreRelationshipCreationFromRelationMutation(
+const stixCoreRelationshipCreationFromRelationToQuery = graphql`
+  query StixCoreRelationshipCreationFromRelationToQuery($id: String) {
+    stixCoreRelationship(id: $id) {
+      id
+      entity_type
+      parent_types
+      relationship_type
+      description
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+        ... on AttackPattern {
+          name
+        }
+        ... on Campaign {
+          name
+        }
+        ... on CourseOfAction {
+          name
+        }
+        ... on Individual {
+          name
+        }
+        ... on Organization {
+          name
+        }
+        ... on Sector {
+          name
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+        }
+        ... on Position {
+          name
+        }
+        ... on City {
+          name
+        }
+        ... on Country {
+          name
+        }
+        ... on Region {
+          name
+        }
+        ... on Malware {
+          name
+        }
+        ... on ThreatActor {
+          name
+        }
+        ... on Tool {
+          name
+        }
+        ... on Vulnerability {
+          name
+        }
+        ... on XOpenCTIIncident {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+      }
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+        ... on AttackPattern {
+          name
+        }
+        ... on Campaign {
+          name
+        }
+        ... on CourseOfAction {
+          name
+        }
+        ... on Individual {
+          name
+        }
+        ... on Organization {
+          name
+        }
+        ... on Sector {
+          name
+        }
+        ... on Indicator {
+          name
+        }
+        ... on Infrastructure {
+          name
+        }
+        ... on IntrusionSet {
+          name
+        }
+        ... on Position {
+          name
+        }
+        ... on City {
+          name
+        }
+        ... on Country {
+          name
+        }
+        ... on Region {
+          name
+        }
+        ... on Malware {
+          name
+        }
+        ... on ThreatActor {
+          name
+        }
+        ... on Tool {
+          name
+        }
+        ... on Vulnerability {
+          name
+        }
+        ... on XOpenCTIIncident {
+          name
+        }
+        ... on StixCyberObservable {
+          observable_value
+        }
+      }
+    }
+  }
+`;
+
+const stixCoreRelationshipCreationFromRelationFromMutation = graphql`
+  mutation StixCoreRelationshipCreationFromRelationFromMutation(
     $input: StixCoreRelationshipAddInput!
-    $reversedReturn: Boolean
   ) {
     stixCoreRelationshipAdd(input: $input) {
-      ...EntityStixCoreRelationshipLine_node
+      ...EntityStixCoreRelationshipLineFrom_node
+    }
+  }
+`;
+
+const stixCoreRelationshipCreationFromRelationToMutation = graphql`
+  mutation StixCoreRelationshipCreationFromRelationToMutation(
+    $input: StixCoreRelationshipAddInput!
+  ) {
+    stixCoreRelationshipAdd(input: $input) {
+      ...EntityStixCoreRelationshipLineTo_node
     }
   }
 `;
@@ -389,10 +544,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { isFrom, entityId } = this.props;
+    const { isRelationReversed, entityId } = this.props;
     const { targetEntity } = this.state;
-    const fromEntityId = isFrom ? entityId : targetEntity.id;
-    const toEntityId = isFrom ? targetEntity.id : entityId;
+    const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
+    const toEntityId = isRelationReversed ? entityId : targetEntity.id;
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
@@ -403,7 +558,9 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
-      mutation: stixCoreRelationshipCreationFromRelationMutation,
+      mutation: isRelationReversed
+        ? stixCoreRelationshipCreationFromRelationToMutation
+        : stixCoreRelationshipCreationFromRelationFromMutation,
       variables: { input: finalValues },
       updater: (store) => {
         if (typeof this.props.onCreate !== 'function') {
@@ -462,12 +619,12 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 
   renderSelectEntity() {
     const {
-      classes, t, targetEntityTypes, onlyObservables,
+      classes, t, targetStixDomainObjectTypes,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes
-        ? filter((n) => n !== 'Stix-Cyber-Observable', targetEntityTypes)
+      types: targetStixDomainObjectTypes
+        ? filter((n) => n !== 'Stix-Cyber-Observable', targetStixDomainObjectTypes)
         : null,
       orderBy: 'created_at',
       orderMode: 'desc',
@@ -522,7 +679,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             }
             variables={{
               search: this.state.search,
-              types: targetEntityTypes,
+              types: targetStixDomainObjectTypes,
               count: 50,
               orderBy: 'created_at',
               orderMode: 'desc',
@@ -548,7 +705,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             contextual={true}
             inputValue={this.state.search}
             paginationOptions={stixDomainObjectsPaginationOptions}
-            targetEntityTypes={targetEntityTypes}
+            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
           />
         </div>
       </div>
@@ -559,18 +716,13 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     const {
       t,
       classes,
-      isFrom,
-      isFromRelation,
+      isRelationReversed,
       allowedRelationshipTypes,
     } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
-    if (
-      !isFrom
-      || (isFromRelation
-        && targetEntity.parent_types.includes('Stix-Cyber-Observable'))
-    ) {
+    if (isRelationReversed) {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
     }
@@ -919,10 +1071,9 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 
 StixCoreRelationshipCreationFromRelation.propTypes = {
   entityId: PropTypes.string,
-  isFrom: PropTypes.bool,
-  isFromRelation: PropTypes.bool,
+  isRelationReversed: PropTypes.bool,
   onlyObservables: PropTypes.bool,
-  targetEntityTypes: PropTypes.array,
+  targetStixDomainObjectTypes: PropTypes.array,
   allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

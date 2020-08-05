@@ -16,7 +16,7 @@ class EntityStixCyberObservables extends Component {
     this.state = {
       sortBy: null,
       orderAsc: false,
-      targetEntityTypes: ['Stix-Cyber-Observable'],
+      targetStixDomainObjectTypes: ['Stix-Cyber-Observable'],
       view: 'lines',
     };
   }
@@ -26,20 +26,20 @@ class EntityStixCyberObservables extends Component {
   }
 
   handleToggle(type) {
-    if (this.state.targetEntityTypes.includes(type)) {
+    if (this.state.targetStixDomainObjectTypes.includes(type)) {
       this.setState({
-        targetEntityTypes:
-          filter((t) => t !== type, this.state.targetEntityTypes).length === 0
+        targetStixDomainObjectTypes:
+          filter((t) => t !== type, this.state.targetStixDomainObjectTypes).length === 0
             ? ['Stix-Cyber-Observable']
-            : filter((t) => t !== type, this.state.targetEntityTypes),
+            : filter((t) => t !== type, this.state.targetStixDomainObjectTypes),
       });
     } else {
       this.setState({
-        targetEntityTypes: append(
+        targetStixDomainObjectTypes: append(
           type,
           filter(
             (t) => t !== 'Stix-Cyber-Observable',
-            this.state.targetEntityTypes,
+            this.state.targetStixDomainObjectTypes,
           ),
         ),
       });
@@ -102,15 +102,15 @@ class EntityStixCyberObservables extends Component {
   }
 
   render() {
-    const { entityId, relationship_type } = this.props;
+    const { entityId, relationshipType } = this.props;
     const {
-      view, targetEntityTypes, sortBy, orderAsc,
+      view, targetStixDomainObjectTypes, sortBy, orderAsc,
     } = this.state;
     const paginationOptions = {
       inferred: false,
-      toTypes: targetEntityTypes,
+      toTypes: targetStixDomainObjectTypes,
       fromId: entityId,
-      relationship_type,
+      relationship_type: relationshipType,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
@@ -119,15 +119,14 @@ class EntityStixCyberObservables extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixCoreRelationshipCreationFromEntity
           entityId={entityId}
-          targetEntityTypes={['Stix-Cyber-Observable']}
-          allowedRelationshipTypes={[relationship_type]}
-          onlyObservables={true}
-          isFrom={false}
+          targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
+          allowedRelationshipTypes={[relationshipType]}
+          isRelationReversed={true}
           paddingRight={true}
           paginationOptions={paginationOptions}
         />
         <StixCyberObservablesRightBar
-          types={targetEntityTypes}
+          types={targetStixDomainObjectTypes}
           handleToggle={this.handleToggle.bind(this)}
         />
       </div>
@@ -137,7 +136,7 @@ class EntityStixCyberObservables extends Component {
 
 EntityStixCyberObservables.propTypes = {
   entityId: PropTypes.string,
-  relationship_type: PropTypes.string,
+  relationshipType: PropTypes.string,
   entityLink: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

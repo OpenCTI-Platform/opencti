@@ -203,7 +203,7 @@ class EntityIndicators extends Component {
     const { entityId, relationship_type } = this.props;
     const {
       view,
-      targetEntityTypes,
+      targetStixDomainObjectTypes,
       sortBy,
       orderAsc,
       inferred,
@@ -243,7 +243,7 @@ class EntityIndicators extends Component {
     const paginationOptions = {
       inferred,
       search: searchTerm,
-      toTypes: targetEntityTypes,
+      toTypes: targetStixDomainObjectTypes,
       fromId: entityId,
       relationship_type,
       lastSeenStart: null,
@@ -258,8 +258,8 @@ class EntityIndicators extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
-            isFrom={false}
-            targetEntityTypes={['Indicator']}
+            isRelationReversed={true}
+            targetStixDomainObjectTypes={['Indicator']}
             paginationOptions={paginationOptions}
             openExports={openExports}
             paddingRight={true}

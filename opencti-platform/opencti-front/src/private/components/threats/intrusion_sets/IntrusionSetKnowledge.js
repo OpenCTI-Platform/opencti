@@ -62,9 +62,9 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['Threat-Actor']}
+              targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -87,9 +87,9 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['Campaign']}
+              targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -101,9 +101,9 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['XOpenCTIIncident']}
+              targetStixDomainObjectTypes={['XOpenCTIIncident']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -115,9 +115,9 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="uses"
-              targetEntityTypes={['Malware']}
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -140,9 +140,9 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="uses"
-              targetEntityTypes={['Tool']}
+              targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -154,9 +154,9 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="targets"
-              targetEntityTypes={['Vulnerability']}
+              targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}

@@ -106,7 +106,7 @@ class RootIndicator extends Component {
                         <EntityStixSightingRelationships
                           {...routeProps}
                           entityId={indicatorId}
-                          targetEntityTypes={[
+                          targetStixDomainObjectTypes={[
                             'Region',
                             'Country',
                             'City',

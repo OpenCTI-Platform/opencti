@@ -126,9 +126,6 @@ describe('Group resolver standard behavior', () => {
                     node {
                       id
                     }
-                    relation {
-                      id
-                    }
                   }
                 }
               }

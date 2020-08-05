@@ -251,13 +251,22 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
   }
 `;
 
-const stixCoreRelationshipCreationFromEntityMutation = graphql`
-  mutation StixCoreRelationshipCreationFromEntityMutation(
+const stixCoreRelationshipCreationFromEntityFromMutation = graphql`
+  mutation StixCoreRelationshipCreationFromEntityFromMutation(
     $input: StixCoreRelationshipAddInput!
-    $reversedReturn: Boolean
   ) {
     stixCoreRelationshipAdd(input: $input) {
-      ...EntityStixCoreRelationshipLine_node
+      ...EntityStixCoreRelationshipLineFrom_node
+    }
+  }
+`;
+
+const stixCoreRelationshipCreationFromEntityToMutation = graphql`
+  mutation StixCoreRelationshipCreationFromEntityToMutation(
+    $input: StixCoreRelationshipAddInput!
+  ) {
+    stixCoreRelationshipAdd(input: $input) {
+      ...EntityStixCoreRelationshipLineTo_node
     }
   }
 `;
@@ -307,10 +316,10 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { isFrom, entityId } = this.props;
+    const { isRelationReversed, entityId } = this.props;
     const { targetEntity } = this.state;
-    const fromEntityId = isFrom ? entityId : targetEntity.id;
-    const toEntityId = isFrom ? targetEntity.id : entityId;
+    const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
+    const toEntityId = isRelationReversed ? entityId : targetEntity.id;
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
@@ -321,7 +330,9 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
-      mutation: stixCoreRelationshipCreationFromEntityMutation,
+      mutation: isRelationReversed
+        ? stixCoreRelationshipCreationFromEntityToMutation
+        : stixCoreRelationshipCreationFromEntityFromMutation,
       variables: { input: finalValues },
       updater: (store) => {
         if (typeof this.props.onCreate !== 'function') {
@@ -380,13 +391,14 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 
   renderSelectEntity() {
     const {
-      classes, t, targetEntityTypes, onlyObservables,
+      classes,
+      t,
+      targetStixDomainObjectTypes,
+      targetStixCyberObservableTypes,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes
-        ? filter((n) => n !== 'Stix-Cyber-Observable', targetEntityTypes)
-        : null,
+      types: targetStixDomainObjectTypes,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -413,7 +425,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.containerList}>
-          {!onlyObservables ? (
+          {targetStixDomainObjectTypes
+          && targetStixDomainObjectTypes.length > 0 ? (
             <QueryRenderer
               query={
                 stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery
@@ -431,42 +444,48 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 return this.renderFakeList();
               }}
             />
-          ) : (
-            ''
-          )}
-          <QueryRenderer
-            query={
-              stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery
-            }
-            variables={{
-              search: this.state.search,
-              types: targetEntityTypes,
-              count: 50,
-              orderBy: 'created_at',
-              orderMode: 'desc',
-            }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixCoreRelationshipCreationFromEntityStixCyberObservablesLines
-                    handleSelect={this.handleSelectEntity.bind(this)}
-                    data={props}
-                  />
-                );
+            ) : (
+              ''
+            )}
+          {targetStixCyberObservableTypes
+          && targetStixCyberObservableTypes.length > 0 ? (
+            <QueryRenderer
+              query={
+                stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery
               }
-              return onlyObservables ? (
-                this.renderFakeList()
-              ) : (
-                <div> &nbsp; </div>
-              );
-            }}
-          />
+              variables={{
+                search: this.state.search,
+                types: targetStixCyberObservableTypes,
+                count: 50,
+                orderBy: 'created_at',
+                orderMode: 'desc',
+              }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <StixCoreRelationshipCreationFromEntityStixCyberObservablesLines
+                      handleSelect={this.handleSelectEntity.bind(this)}
+                      data={props}
+                    />
+                  );
+                }
+                return targetStixDomainObjectTypes
+                  && targetStixDomainObjectTypes.length === 0 ? (
+                    this.renderFakeList()
+                  ) : (
+                  <div> &nbsp; </div>
+                  );
+              }}
+            />
+            ) : (
+              ''
+            )}
           <StixDomainObjectCreation
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
             paginationOptions={stixDomainObjectsPaginationOptions}
-            targetEntityTypes={targetEntityTypes}
+            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
           />
         </div>
       </div>
@@ -475,14 +494,17 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 
   renderForm(sourceEntity) {
     const {
-      t, classes, isFrom, allowedRelationshipTypes,
+      t,
+      classes,
+      isRelationReversed,
+      allowedRelationshipTypes,
     } = this.props;
     const { targetEntity } = this.state;
-    let fromEntity = targetEntity;
-    let toEntity = sourceEntity;
-    if (isFrom) {
-      fromEntity = sourceEntity;
-      toEntity = targetEntity;
+    let fromEntity = sourceEntity;
+    let toEntity = targetEntity;
+    if (isRelationReversed) {
+      fromEntity = targetEntity;
+      toEntity = sourceEntity;
     }
     const relationshipTypes = filter(
       (n) => isNil(allowedRelationshipTypes)
@@ -791,9 +813,9 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 
 StixCoreRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
-  isFrom: PropTypes.bool,
-  onlyObservables: PropTypes.bool,
-  targetEntityTypes: PropTypes.array,
+  isRelationReversed: PropTypes.bool,
+  targetStixDomainObjectTypes: PropTypes.array,
+  targetStixCyberObservableObjectTypes: PropTypes.array,
   allowedRelationshipTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

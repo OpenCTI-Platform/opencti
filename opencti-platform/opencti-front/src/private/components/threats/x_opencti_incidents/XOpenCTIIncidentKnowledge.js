@@ -64,9 +64,9 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
+              targetStixDomainObjectTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -78,9 +78,9 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
               relationshipType="uses"
-              targetEntityTypes={['Malware']}
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -114,9 +114,9 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
               relationshipType="uses"
-              targetEntityTypes={['Tool']}
+              targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -128,9 +128,9 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
               relationshipType="targets"
-              targetEntityTypes={['Vulnerability']}
+              targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}

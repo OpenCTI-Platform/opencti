@@ -145,7 +145,7 @@ class StixCyberObservableLinks extends Component {
             <StixCyberObservableRelationCreationFromEntity
               paginationOptions={paginationOptions}
               entityId={stixCyberObservable.id}
-              isFrom={true}
+              isRelationReversed={false}
               variant="inLine"
             />
             <div className="clearfix" />

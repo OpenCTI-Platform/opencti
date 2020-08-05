@@ -5,13 +5,13 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  EntityStixSightingRelationshipLine,
-  EntityStixSightingRelationshipLineDummy,
-} from './EntityStixSightingRelationshipLine';
+  EntityStixCoreRelationshipLineTo,
+  EntityStixCoreRelationshipLineToDummy,
+} from './EntityStixCoreRelationshipLineTo';
 
 const nbOfRowsToLoad = 50;
 
-class EntityStixSightingRelationshipsLines extends Component {
+class EntityStixCoreRelationshipsLinesToTo extends Component {
   render() {
     const {
       initialLoading,
@@ -28,16 +28,16 @@ class EntityStixSightingRelationshipsLines extends Component {
         isLoading={relay.isLoading.bind(this)}
         dataList={pathOr(
           [],
-          ['stixSightingRelationships', 'edges'],
+          ['stixCoreRelationships', 'edges'],
           this.props.data,
         )}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixSightingRelationships', 'pageInfo', 'globalCount'],
+          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<EntityStixSightingRelationshipLine />}
-        DummyLineComponent={<EntityStixSightingRelationshipLineDummy />}
+        LineComponent={<EntityStixCoreRelationshipLineTo />}
+        DummyLineComponent={<EntityStixCoreRelationshipLineToDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
@@ -47,33 +47,37 @@ class EntityStixSightingRelationshipsLines extends Component {
   }
 }
 
-EntityStixSightingRelationshipsLines.propTypes = {
+EntityStixCoreRelationshipsLinesToTo.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  stixSightingRelationships: PropTypes.object,
+  stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
 };
 
-export const entityStixSightingRelationshipsLinesQuery = graphql`
-  query EntityStixSightingRelationshipsLinesPaginationQuery(
-    $fromId: String
-    $toTypes: [String]
+export const entityStixCoreRelationshipsLinesToQuery = graphql`
+  query EntityStixCoreRelationshipsLinesToPaginationQuery(
+    $fromTypes: [String]
+    $toId: String
+    $toRole: String
     $inferred: Boolean
+    $relationship_type: String
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixSightingRelationshipsOrdering
+    $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
   ) {
-    ...EntityStixSightingRelationshipsLines_data
+    ...EntityStixCoreRelationshipsLinesTo_data
       @arguments(
-        fromId: $fromId
-        toTypes: $toTypes
+        fromTypes: $fromTypes
+        toId: $toId
+        toRole: $toRole
         inferred: $inferred
+        relationship_type: $relationship_type
         search: $search
         count: $count
         cursor: $cursor
@@ -84,36 +88,40 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  EntityStixSightingRelationshipsLines,
+  EntityStixCoreRelationshipsLinesToTo,
   {
     data: graphql`
-      fragment EntityStixSightingRelationshipsLines_data on Query
+      fragment EntityStixCoreRelationshipsLinesTo_data on Query
         @argumentDefinitions(
-          fromId: { type: "String" }
-          toTypes: { type: "[String]" }
+          fromTypes: { type: "[String]" }
+          toId: { type: "String" }
+          toRole: { type: "String" }
           inferred: { type: "Boolean" }
+          relationship_type: { type: "String" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           orderBy: {
-            type: "StixSightingRelationshipsOrdering"
-            defaultValue: "first_seen"
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: "start_time"
           }
-          orderMode: { type: "OrderingMode", defaultValue: "desc" }
+          orderMode: { type: "OrderingMode", defaultValue: "asc" }
         ) {
-        stixSightingRelationships(
-          fromId: $fromId
-          toTypes: $toTypes
+        stixCoreRelationships(
+          fromTypes: $fromTypes
+          toId: $toId
+          toRole: $toRole
           inferred: $inferred
+          relationship_type: $relationship_type
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixSightingRelationships") {
+        ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
-              ...EntityStixSightingRelationshipLine_node
+              ...EntityStixCoreRelationshipLineTo_node
             }
           }
           pageInfo {
@@ -128,7 +136,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixSightingRelationships;
+      return props.data && props.data.stixCoreRelationships;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -138,9 +146,11 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        fromId: fragmentVariables.fromId,
-        toTypes: fragmentVariables.toTypes,
+        fromTypes: fragmentVariables.fromTypes,
+        toId: fragmentVariables.toId,
+        toRole: fragmentVariables.toRole,
         inferred: fragmentVariables.inferred,
+        relationship_type: fragmentVariables.relationship_type,
         search: fragmentVariables.search,
         count,
         cursor,
@@ -148,6 +158,6 @@ export default createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: entityStixSightingRelationshipsLinesQuery,
+    query: entityStixCoreRelationshipsLinesToQuery,
   },
 );

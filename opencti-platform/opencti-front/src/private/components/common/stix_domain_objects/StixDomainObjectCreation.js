@@ -224,7 +224,7 @@ class StixDomainObjectCreation extends Component {
   }
 
   renderEntityTypesList() {
-    const { t, targetEntityTypes } = this.props;
+    const { t, targetStixDomainObjectTypes } = this.props;
     return (
       <Field
         component={SelectField}
@@ -233,100 +233,100 @@ class StixDomainObjectCreation extends Component {
         fullWidth={true}
         containerstyle={{ width: '100%' }}
       >
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Organization')
-        || targetEntityTypes.includes('Identity') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Organization')
+        || targetStixDomainObjectTypes.includes('Identity') ? (
           <MenuItem value="Organization">{t('Organization')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Sector')
-        || targetEntityTypes.includes('Identity') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Sector')
+        || targetStixDomainObjectTypes.includes('Identity') ? (
           <MenuItem value="Sector">{t('Sector')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('User')
-        || targetEntityTypes.includes('Identity') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('User')
+        || targetStixDomainObjectTypes.includes('Identity') ? (
           <MenuItem value="User">{t('Individual')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Threat-Actor') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Threat-Actor') ? (
           <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Intrusion-Set') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Intrusion-Set') ? (
           <MenuItem value="Intrusion-Set">{t('Intrusion set')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Campaign') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Campaign') ? (
           <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('XOpenCTIXOpenCTIIncident') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('XOpenCTIXOpenCTIIncident') ? (
           <MenuItem value="XOpenCTIXOpenCTIIncident">
             {t('XOpenCTIXOpenCTIIncident')}
           </MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Malware') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Malware') ? (
           <MenuItem value="Malware">{t('Malware')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Tool') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Tool') ? (
           <MenuItem value="Tool">{t('Tool')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Vulnerability') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Vulnerability') ? (
           <MenuItem value="Vulnerability">{t('Vulnerability')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Attack-Pattern') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Attack-Pattern') ? (
           <MenuItem value="Attack-Pattern">{t('Attack pattern')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Indicator') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Indicator') ? (
           <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('City')
-        || targetEntityTypes.includes('Identity') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('City')
+        || targetStixDomainObjectTypes.includes('Identity') ? (
           <MenuItem value="City">{t('City')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Country')
-        || targetEntityTypes.includes('Identity') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Country')
+        || targetStixDomainObjectTypes.includes('Identity') ? (
           <MenuItem value="Country">{t('Country')}</MenuItem>
           ) : (
             ''
           )}
-        {targetEntityTypes === undefined
-        || targetEntityTypes.includes('Region')
-        || targetEntityTypes.includes('Identity') ? (
+        {targetStixDomainObjectTypes === undefined
+        || targetStixDomainObjectTypes.includes('Region')
+        || targetStixDomainObjectTypes.includes('Identity') ? (
           <MenuItem value="Region">{t('Region')}</MenuItem>
           ) : (
             ''
@@ -336,7 +336,7 @@ class StixDomainObjectCreation extends Component {
   }
 
   renderClassic() {
-    const { t, classes, targetEntityTypes } = this.props;
+    const { t, classes, targetStixDomainObjectTypes } = this.props;
     return (
       <div>
         <Fab
@@ -393,7 +393,7 @@ class StixDomainObjectCreation extends Component {
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
-                    detectDuplicate={targetEntityTypes || []}
+                    detectDuplicate={targetStixDomainObjectTypes || []}
                   />
                   <Field
                     component={TextField}
@@ -462,7 +462,7 @@ class StixDomainObjectCreation extends Component {
       display,
       defaultCreatedBy,
       defaultMarkingDefinition,
-      targetEntityTypes,
+      targetStixDomainObjectTypes,
     } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
@@ -489,12 +489,12 @@ class StixDomainObjectCreation extends Component {
               }
               : '',
             objectLabel: [],
-            markingDefinitions: defaultMarkingDefinition
+            objectMarking: defaultMarkingDefinition
               ? [
                 {
                   label: defaultMarkingDefinition.definition,
                   value: defaultMarkingDefinition.id,
-                  color: defaultMarkingDefinition.color,
+                  color: defaultMarkingDefinition.x_opencti_color,
                 },
               ]
               : [],
@@ -525,7 +525,7 @@ class StixDomainObjectCreation extends Component {
                     label={t('Name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
-                    detectDuplicate={targetEntityTypes || []}
+                    detectDuplicate={targetStixDomainObjectTypes || []}
                   />
                   <Field
                     component={TextField}
@@ -592,7 +592,7 @@ class StixDomainObjectCreation extends Component {
 
 StixDomainObjectCreation.propTypes = {
   paginationOptions: PropTypes.object,
-  targetEntityTypes: PropTypes.array,
+  targetStixDomainObjectTypes: PropTypes.array,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

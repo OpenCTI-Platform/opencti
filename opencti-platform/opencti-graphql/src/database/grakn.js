@@ -670,7 +670,7 @@ export const find = async (query, entities, findOpts = {}) => {
 export const findWithConnectedRelations = async (query, key, options = {}) => {
   const { extraRelKey = null } = options;
   const dataFind = await find(query, [key, extraRelKey], options);
-  return map((t) => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
+  return map((t) => ({ node: t[key] }), dataFind);
 };
 export const loadWithConnectedRelations = (query, key, options = {}) => {
   return findWithConnectedRelations(query, key, options).then((result) => head(result));

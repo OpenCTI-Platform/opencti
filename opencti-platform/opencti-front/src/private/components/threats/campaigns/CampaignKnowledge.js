@@ -62,9 +62,9 @@ class CampaignKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={campaign.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['Identity', 'Intrusion-Set']}
+              targetStixDomainObjectTypes={['Identity', 'Intrusion-Set']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -76,9 +76,9 @@ class CampaignKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={campaign.id}
               relationshipType="attributed-to"
-              targetEntityTypes={['X-OpenCTI-Incident']}
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -90,9 +90,9 @@ class CampaignKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={campaign.id}
               relationshipType="uses"
-              targetEntityTypes={['Malware']}
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -126,9 +126,9 @@ class CampaignKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={campaign.id}
               relationshipType="uses"
-              targetEntityTypes={['Tool']}
+              targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -140,9 +140,9 @@ class CampaignKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={campaign.id}
               relationshipType="targets"
-              targetEntityTypes={['Vulnerability']}
+              targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}

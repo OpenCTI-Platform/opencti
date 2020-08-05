@@ -60,9 +60,9 @@ class SectorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={sector.id}
               relationshipType="part-of"
-              targetEntityTypes={['Organization']}
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -74,9 +74,9 @@ class SectorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={sector.id}
               relationshipType="targets"
-              targetEntityTypes={['Intrusion-Set']}
+              targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -88,9 +88,9 @@ class SectorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={sector.id}
               relationshipType="targets"
-              targetEntityTypes={['Campaign']}
+              targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -102,9 +102,9 @@ class SectorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={sector.id}
               relationshipType="targets"
-              targetEntityTypes={['X-OpenCTI-Incident']}
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -116,9 +116,9 @@ class SectorKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={sector.id}
               relationshipType="targets"
-              targetEntityTypes={['Malware']}
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

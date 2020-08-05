@@ -1040,9 +1040,11 @@ interface StixDomainObject {
 input StixDomainObjectAddInput {
   internal_id_key: String
   stix_id: String
+  name: String
   description: String
   confidence: Int
   aliases: [String]
+  x_opencti_aliases: [String]
   type: String!
   createdBy: String
   objectMarking: [String]

@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, includes } from 'ramda';
+import {
+  compose, includes, pipe, assoc,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
@@ -13,11 +15,14 @@ import Switch from '@material-ui/core/Switch';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
-import EntityStixCoreRelationshipsLines, {
-  entityStixCoreRelationshipsLinesQuery,
-} from './EntityStixCoreRelationshipsLines';
 import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import EntityStixCoreRelationshipsLinesFrom, {
+  entityStixCoreRelationshipsLinesFromQuery,
+} from './EntityStixCoreRelationshipsLinesFrom';
+import EntityStixCoreRelationshipsLinesTo, {
+  entityStixCoreRelationshipsLinesToQuery,
+} from './EntityStixCoreRelationshipsLinesTo';
 
 const styles = (theme) => ({
   container: {
@@ -71,7 +76,7 @@ class EntityStixCoreRelationships extends Component {
 
   handleChangeEntities(event) {
     const { value } = event.target;
-    if (value === 'All' && this.props.targetEntityTypes.length > 1) {
+    if (value === 'All' && this.props.targetStixDomainObjectTypes.length > 1) {
       return this.setState({
         openToType: false,
         toType: 'All',
@@ -89,7 +94,7 @@ class EntityStixCoreRelationships extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
-    const { entityLink } = this.props;
+    const { entityLink, isRelationReversed } = this.props;
     // sort only when inferences are disabled or inferences are resolved
     const dataColumns = {
       name: {
@@ -129,17 +134,30 @@ class EntityStixCoreRelationships extends Component {
         secondaryAction={true}
       >
         <QueryRenderer
-          query={entityStixCoreRelationshipsLinesQuery}
+          query={
+            isRelationReversed
+              ? entityStixCoreRelationshipsLinesToQuery
+              : entityStixCoreRelationshipsLinesFromQuery
+          }
           variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <EntityStixCoreRelationshipsLines
-              data={props}
-              paginationOptions={paginationOptions}
-              entityLink={entityLink}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-            />
-          )}
+          render={({ props }) => (isRelationReversed ? (
+              <EntityStixCoreRelationshipsLinesTo
+                data={props}
+                paginationOptions={paginationOptions}
+                entityLink={entityLink}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+              />
+          ) : (
+              <EntityStixCoreRelationshipsLinesFrom
+                data={props}
+                paginationOptions={paginationOptions}
+                entityLink={entityLink}
+                dataColumns={dataColumns}
+                initialLoading={props === null}
+              />
+          ))
+          }
         />
       </ListLines>
     );
@@ -149,11 +167,11 @@ class EntityStixCoreRelationships extends Component {
     const {
       t,
       classes,
-      targetEntityTypes,
+      targetStixDomainObjectTypes,
       entityId,
       role,
       relationshipType,
-      creationIsFrom,
+      isRelationReversed,
       noBottomBar,
       inference,
     } = this.props;
@@ -168,20 +186,29 @@ class EntityStixCoreRelationships extends Component {
     } = this.state;
 
     // Display types selection when target types are multiple
-    const displayTypes = targetEntityTypes.length > 1 || targetEntityTypes.includes('Identity');
+    const displayTypes = targetStixDomainObjectTypes.length > 1 || targetStixDomainObjectTypes.includes('Identity');
 
     // sort only when inferences are disabled or inferences are resolved
-    const paginationOptions = {
-      fromId: entityId,
-      fromRole: role || null,
-      toTypes: toType === 'All' ? targetEntityTypes : [toType],
+    let paginationOptions = {
       inferred: !!(inferred || inference),
       relationship_type: relationshipType,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-
+    if (isRelationReversed) {
+      paginationOptions = pipe(
+        assoc('fromTypes', toType === 'All' ? targetStixDomainObjectTypes : [toType]),
+        assoc('toId', entityId),
+        assoc('toRole', role || null),
+      )(paginationOptions);
+    } else {
+      paginationOptions = pipe(
+        assoc('fromId', entityId),
+        assoc('fromRole', role || null),
+        assoc('toTypes', toType === 'All' ? targetStixDomainObjectTypes : [toType]),
+      )(paginationOptions);
+    }
     return (
       <div className={classes.container}>
         {!noBottomBar ? (
@@ -212,137 +239,137 @@ class EntityStixCoreRelationships extends Component {
                     )}
                   >
                     <MenuItem value="All">{t('All entities')}</MenuItem>
-                    {includes('Attack-Pattern', targetEntityTypes) ? (
+                    {includes('Attack-Pattern', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Attack-Pattern">
                         {t('Attack pattern')}
                       </MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Campaign', targetEntityTypes) ? (
+                    {includes('Campaign', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Note', targetEntityTypes) ? (
+                    {includes('Note', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Note">{t('Note')}</MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Observed-Data', targetEntityTypes) ? (
+                    {includes('Observed-Data', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Observed-Data">
                         {t('Observed data')}
                       </MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Opinion', targetEntityTypes) ? (
+                    {includes('Opinion', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Opinion">{t('Opinion')}</MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Report', targetEntityTypes) ? (
+                    {includes('Report', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Report">{t('Report')}</MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Course-Of-Action', targetEntityTypes) ? (
+                    {includes('Course-Of-Action', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Course-Of-Action">
                         {t('Course of action')}
                       </MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Individual', targetEntityTypes)
-                    || includes('Identity', targetEntityTypes) ? (
+                    {includes('Individual', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Individual">{t('Individual')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Organization', targetEntityTypes)
-                    || includes('Identity', targetEntityTypes) ? (
+                    {includes('Organization', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Organization">
                         {t('Organization')}
                       </MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Sector', targetEntityTypes)
-                    || includes('Identity', targetEntityTypes) ? (
+                    {includes('Sector', targetStixDomainObjectTypes)
+                    || includes('Identity', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Sector">{t('Sector')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Indicator', targetEntityTypes)
-                    || includes('Indicator', targetEntityTypes) ? (
+                    {includes('Indicator', targetStixDomainObjectTypes)
+                    || includes('Indicator', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Infrastructure', targetEntityTypes)
-                    || includes('Infrastructure', targetEntityTypes) ? (
+                    {includes('Infrastructure', targetStixDomainObjectTypes)
+                    || includes('Infrastructure', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Infrastructure">
                         {t('Infrastructure')}
                       </MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Intrusion-Set', targetEntityTypes) ? (
+                    {includes('Intrusion-Set', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Intrusion-Set">
                         {t('Intrusion set')}
                       </MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('City', targetEntityTypes)
-                    || includes('Location', targetEntityTypes) ? (
+                    {includes('City', targetStixDomainObjectTypes)
+                    || includes('Location', targetStixDomainObjectTypes) ? (
                       <MenuItem value="City">{t('City')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Country', targetEntityTypes)
-                    || includes('Location', targetEntityTypes) ? (
+                    {includes('Country', targetStixDomainObjectTypes)
+                    || includes('Location', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Country">{t('Country')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Region', targetEntityTypes)
-                    || includes('Location', targetEntityTypes) ? (
+                    {includes('Region', targetStixDomainObjectTypes)
+                    || includes('Location', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Region">{t('Region')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Position', targetEntityTypes)
-                    || includes('Position', targetEntityTypes) ? (
+                    {includes('Position', targetStixDomainObjectTypes)
+                    || includes('Position', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Position">{t('Position')}</MenuItem>
                       ) : (
                         ''
                       )}
-                    {includes('Malware', targetEntityTypes) ? (
+                    {includes('Malware', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Malware">{t('Malware')}</MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Threat-Actor', targetEntityTypes) ? (
+                    {includes('Threat-Actor', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Threat-Actor">
                         {t('Threat actor')}
                       </MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Tool', targetEntityTypes) ? (
+                    {includes('Tool', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Tool">{t('Tool')}</MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('Vulnerability', targetEntityTypes) ? (
+                    {includes('Vulnerability', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Vulnerability">
                         {t('Vulnerability')}
                       </MenuItem>
                     ) : (
                       ''
                     )}
-                    {includes('X-OpenCTI-Incident', targetEntityTypes) ? (
+                    {includes('X-OpenCTI-Incident', targetStixDomainObjectTypes) ? (
                       <MenuItem value="X-OpenCTI-Incident">
                         {t('Incident')}
                       </MenuItem>
@@ -376,9 +403,9 @@ class EntityStixCoreRelationships extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
-            isFrom={creationIsFrom}
+            isRelationReversed={isRelationReversed}
             paddingRight={true}
-            targetEntityTypes={targetEntityTypes}
+            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             allowedRelationshipTypes={[relationshipType]}
             paginationOptions={paginationOptions}
           />
@@ -391,14 +418,14 @@ class EntityStixCoreRelationships extends Component {
 EntityStixCoreRelationships.propTypes = {
   entityId: PropTypes.string,
   role: PropTypes.string,
-  targetEntityTypes: PropTypes.array,
+  targetStixDomainObjectTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationshipType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,
-  creationIsFrom: PropTypes.bool,
+  isRelationReversed: PropTypes.bool,
   noBottomBar: PropTypes.bool,
   inference: PropTypes.bool,
 };

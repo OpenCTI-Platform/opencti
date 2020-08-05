@@ -165,9 +165,9 @@ class StixCyberObservableKnowledgeEntities extends Component {
           paginationOptions={paginationOptions}
           entityId={entityId}
           variant="inLine"
-          isFrom={true}
+          isRelationReversed={false}
           paddingRight={true}
-          targetEntityTypes={[
+          targetStixDomainObjectTypes={[
             'Region',
             'Country',
             'City',

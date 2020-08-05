@@ -310,10 +310,10 @@ class StixDomainObjectKillChainLinesComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
-            isFrom={true}
+            isRelationReversed={false}
             paddingRight={true}
             onCreate={this.props.relay.refetch.bind(this)}
-            targetEntityTypes={['Attack-Pattern']}
+            targetStixDomainObjectTypes={['Attack-Pattern']}
             paginationOptions={paginationOptions}
           />
         </Security>

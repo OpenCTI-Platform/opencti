@@ -197,7 +197,7 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
             <Field
               component={TextField}
               name="attribute_abstract"
-              label={t('Anstract')}
+              label={t('Abstract')}
               fullWidth={true}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
@@ -231,7 +231,7 @@ class StixCoreObjectNoteEditionOverviewComponent extends Component {
                   fieldName="objectMarking"
                 />
               }
-              onChange={this.handleChangeobjectMarking.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}

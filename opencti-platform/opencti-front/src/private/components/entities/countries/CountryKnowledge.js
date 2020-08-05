@@ -60,9 +60,9 @@ class CountryKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipType="located-at"
-              targetEntityTypes={['City']}
+              targetStixDomainObjectTypes={['City']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -74,9 +74,9 @@ class CountryKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipType="located-at"
-              targetEntityTypes={['Organization']}
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -88,7 +88,7 @@ class CountryKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={country.id}
               relationshipType="targets"
-              targetEntityTypes={[
+              targetStixDomainObjectTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
@@ -97,7 +97,7 @@ class CountryKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

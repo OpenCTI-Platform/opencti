@@ -354,10 +354,10 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   renderSelectEntity() {
-    const { classes, t, targetEntityTypes } = this.props;
+    const { classes, t, targetStixDomainObjectTypes } = this.props;
     const paginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes,
+      types: targetStixDomainObjectTypes,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -422,7 +422,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             contextual={true}
             inputValue={this.state.search}
             paginationOptions={paginationOptions}
-            targetEntityTypes={targetEntityTypes}
+            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
           />
         </div>
       </div>
@@ -726,7 +726,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
 StixCyberObservableRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
-  targetEntityTypes: PropTypes.array,
+  targetStixDomainObjectTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

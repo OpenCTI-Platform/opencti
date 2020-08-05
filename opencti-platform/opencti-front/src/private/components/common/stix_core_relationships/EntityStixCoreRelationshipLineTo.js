@@ -41,7 +41,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixCoreRelationshipLineComponent extends Component {
+class EntityStixCoreRelationshipLineToComponent extends Component {
   render() {
     const {
       nsd,
@@ -62,7 +62,7 @@ class EntityStixCoreRelationshipLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.to.entity_type} />
+          <ItemIcon type={node.from.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -71,13 +71,13 @@ class EntityStixCoreRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.to.name}
+                {node.from.name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.to.entity_type}`)}
+                {t(`entity_${node.from.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -115,7 +115,7 @@ class EntityStixCoreRelationshipLineComponent extends Component {
   }
 }
 
-EntityStixCoreRelationshipLineComponent.propTypes = {
+EntityStixCoreRelationshipLineToComponent.propTypes = {
   dataColumns: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -125,11 +125,11 @@ EntityStixCoreRelationshipLineComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
-  EntityStixCoreRelationshipLineComponent,
+const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
+  EntityStixCoreRelationshipLineToComponent,
   {
     node: graphql`
-      fragment EntityStixCoreRelationshipLine_node on StixCoreRelationship {
+      fragment EntityStixCoreRelationshipLineTo_node on StixCoreRelationship {
         id
         entity_type
         parent_types
@@ -139,7 +139,7 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
         stop_time
         description
         inferred
-        to {
+        from {
           ... on StixDomainObject {
             id
             entity_type
@@ -322,12 +322,12 @@ const EntityStixCoreRelationshipLineFragment = createFragmentContainer(
   },
 );
 
-export const EntityStixCoreRelationshipLine = compose(
+export const EntityStixCoreRelationshipLineTo = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipLineFragment);
+)(EntityStixCoreRelationshipLineToFragment);
 
-class EntityStixCoreRelationshipLineDummyComponent extends Component {
+class EntityStixCoreRelationshipLineToDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -379,12 +379,12 @@ class EntityStixCoreRelationshipLineDummyComponent extends Component {
   }
 }
 
-EntityStixCoreRelationshipLineDummyComponent.propTypes = {
+EntityStixCoreRelationshipLineToDummyComponent.propTypes = {
   dataColumns: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const EntityStixCoreRelationshipLineDummy = compose(
+export const EntityStixCoreRelationshipLineToDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipLineDummyComponent);
+)(EntityStixCoreRelationshipLineToDummyComponent);

@@ -117,7 +117,7 @@ class RootStixCyberObservable extends Component {
                         <EntityStixSightingRelationships
                           {...routeProps}
                           entityId={observableId}
-                          targetEntityTypes={[
+                          targetStixDomainObjectTypes={[
                             'Region',
                             'Country',
                             'City',

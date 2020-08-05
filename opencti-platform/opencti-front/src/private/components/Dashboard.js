@@ -37,6 +37,7 @@ import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
+import {truncate} from "../../utils/String";
 
 const styles = (theme) => ({
   root: {
@@ -307,6 +308,7 @@ const dashboardLastNotesQuery = graphql`
         node {
           id
           attribute_abstract
+          content
           created
           createdBy {
             ... on Identity {
@@ -780,22 +782,10 @@ class Dashboard extends Component {
                           {props.notes.edges.map((noteEdge) => {
                             const note = noteEdge.node;
                             let noteLink;
-                            if (note.objectRefs.edges.length > 0) {
+                            if (note.objects.edges.length > 0) {
                               noteLink = `${resolveLink(
-                                note.objectRefs.edges[0].node.entity_type,
-                              )}/${note.objectRefs.edges[0].node.id}`;
-                            } else if (note.observableRefs.edges.length > 0) {
-                              noteLink = `${resolveLink(
-                                note.observableRefs.edges[0].node.entity_type,
-                              )}/${note.observableRefs.edges[0].node.id}`;
-                            } else if (note.relationRefs.edges.length > 0) {
-                              noteLink = `${resolveLink(
-                                note.relationRefs.edges[0].node.from.entity_type,
-                              )}/${
-                                note.relationRefs.edges[0].node.from.id
-                              }/knowledge/relations/${
-                                note.relationRefs.edges[0].node.id
-                              }`;
+                                note.objects.edges[0].node.entity_type,
+                              )}/${note.objects.edges[0].node.id}`;
                             }
                             const objectMarking = head(
                               pathOr([], ['objectMarking', 'edges'], note),
@@ -816,7 +806,7 @@ class Dashboard extends Component {
                                 <ListItemText
                                   primary={
                                     <div className={classes.itemText}>
-                                      {note.name}
+                                      {truncate(note.content, 20)}
                                     </div>
                                   }
                                 />

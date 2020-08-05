@@ -326,7 +326,6 @@ const stixSightingRelationshipCreationFromRelationQuery = graphql`
 const stixSightingRelationshipCreationFromRelationMutation = graphql`
   mutation StixSightingRelationshipCreationFromRelationMutation(
     $input: StixSightingRelationshipAddInput!
-    $reversedReturn: Boolean
   ) {
     stixSightingRelationshipAdd(input: $input) {
       ...EntityStixSightingRelationshipLine_node
@@ -456,12 +455,12 @@ class StixSightingRelationshipCreationFromRelation extends Component {
 
   renderSelectEntity() {
     const {
-      classes, t, targetEntityTypes, onlyObservables,
+      classes, t, targetStixDomainObjectTypes, onlyObservables,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes
-        ? filter((n) => n !== 'Stix-Cyber-Observable', targetEntityTypes)
+      types: targetStixDomainObjectTypes
+        ? filter((n) => n !== 'Stix-Cyber-Observable', targetStixDomainObjectTypes)
         : null,
       orderBy: 'created_at',
       orderMode: 'desc',
@@ -516,7 +515,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
             }
             variables={{
               search: this.state.search,
-              types: targetEntityTypes,
+              types: targetStixDomainObjectTypes,
               count: 50,
               orderBy: 'created_at',
               orderMode: 'desc',
@@ -542,7 +541,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
             contextual={true}
             inputValue={this.state.search}
             paginationOptions={stixDomainObjectsPaginationOptions}
-            targetEntityTypes={targetEntityTypes}
+            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
           />
         </div>
       </div>
@@ -875,7 +874,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
 StixSightingRelationshipCreationFromRelation.propTypes = {
   entityId: PropTypes.string,
   isFrom: PropTypes.bool,
-  targetEntityTypes: PropTypes.array,
+  targetStixDomainObjectTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  assoc, compose, includes, pipe, pluck, filter,
+  assoc, compose, includes, pipe, pluck,
 } from 'ramda';
 import * as Yup from 'yup';
 import { withStyles } from '@material-ui/core/styles';
@@ -244,7 +244,6 @@ const stixSightingRelationshipCreationFromEntityQuery = graphql`
 const stixSightingRelationshipCreationFromEntityMutation = graphql`
   mutation StixSightingRelationshipCreationFromEntityMutation(
     $input: StixSightingRelationshipAddInput!
-    $reversedReturn: Boolean
   ) {
     stixSightingRelationshipAdd(input: $input) {
       ...EntityStixSightingRelationshipLine_node
@@ -374,13 +373,14 @@ class StixSightingRelationshipCreationFromEntity extends Component {
 
   renderSelectEntity() {
     const {
-      classes, t, targetEntityTypes, onlyObservables,
+      classes,
+      t,
+      targetStixDomainObjectTypes,
+      targetStixCyberObservableTypes,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
-      types: targetEntityTypes
-        ? filter((n) => n !== 'Stix-Cyber-Observable', targetEntityTypes)
-        : null,
+      types: targetStixDomainObjectTypes,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -407,61 +407,67 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.containerList}>
-          {!onlyObservables ? (
+          {targetStixDomainObjectTypes.length > 0 ? (
+            <div>
+              <QueryRenderer
+                query={
+                  stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
+                }
+                variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
+                render={({ props }) => {
+                  if (props) {
+                    return (
+                      <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
+                        handleSelect={this.handleSelectEntity.bind(this)}
+                        data={props}
+                      />
+                    );
+                  }
+                  return this.renderFakeList();
+                }}
+              />
+              <StixDomainObjectCreation
+                display={this.state.open}
+                contextual={true}
+                inputValue={this.state.search}
+                paginationOptions={stixDomainObjectsPaginationOptions}
+                targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+              />
+            </div>
+          ) : (
+            ''
+          )}
+          {targetStixCyberObservableTypes.length > 0 ? (
             <QueryRenderer
               query={
-                stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
+                stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
               }
-              variables={{ count: 25, ...stixDomainObjectsPaginationOptions }}
+              variables={{
+                search: this.state.search,
+                types: targetStixCyberObservableTypes,
+                count: 50,
+                orderBy: 'created_at',
+                orderMode: 'desc',
+              }}
               render={({ props }) => {
                 if (props) {
                   return (
-                    <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
+                    <StixSightingRelationshipCreationFromEntityStixCyberObservablesLines
                       handleSelect={this.handleSelectEntity.bind(this)}
                       data={props}
                     />
                   );
                 }
-                return this.renderFakeList();
+                return targetStixDomainObjectTypes.length === 0 ? (
+                  this.renderFakeList()
+                ) : (
+                  <div> &nbsp; </div>
+                );
               }}
             />
           ) : (
             ''
           )}
-          <QueryRenderer
-            query={
-              stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
-            }
-            variables={{
-              search: this.state.search,
-              types: targetEntityTypes,
-              count: 50,
-              orderBy: 'created_at',
-              orderMode: 'desc',
-            }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixSightingRelationshipCreationFromEntityStixCyberObservablesLines
-                    handleSelect={this.handleSelectEntity.bind(this)}
-                    data={props}
-                  />
-                );
-              }
-              return onlyObservables ? (
-                this.renderFakeList()
-              ) : (
-                <div> &nbsp; </div>
-              );
-            }}
-          />
-          <StixDomainObjectCreation
-            display={this.state.open}
-            contextual={true}
-            inputValue={this.state.search}
-            paginationOptions={stixDomainObjectsPaginationOptions}
-            targetEntityTypes={targetEntityTypes}
-          />
         </div>
       </div>
     );
@@ -792,8 +798,9 @@ class StixSightingRelationshipCreationFromEntity extends Component {
 
 StixSightingRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
-  isFrom: PropTypes.bool,
-  targetEntityTypes: PropTypes.array,
+  isRelationReversed: PropTypes.bool,
+  targetStixDomainObjectTypes: PropTypes.array,
+  targetStixCyberObservableObjectTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -60,9 +60,9 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipType="part-of"
-              targetEntityTypes={['Sector']}
+              targetStixDomainObjectTypes={['Sector']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -74,9 +74,9 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipType="localization"
-              targetEntityTypes={['Region', 'Country', 'City']}
+              targetStixDomainObjectTypes={['Region', 'Country', 'City']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -89,9 +89,9 @@ class OrganizationKnowledgeComponent extends Component {
               entityId={organization.id}
               role="gather"
               relationshipType="part-of"
-              targetEntityTypes={['Organization']}
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -103,9 +103,9 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipType="part-of"
-              targetEntityTypes={['User']}
+              targetStixDomainObjectTypes={['User']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -117,7 +117,7 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipType="targets"
-              targetEntityTypes={[
+              targetStixDomainObjectTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
@@ -126,7 +126,7 @@ class OrganizationKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -138,7 +138,7 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipType="attributed-to"
-              targetEntityTypes={[
+              targetStixDomainObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -146,7 +146,7 @@ class OrganizationKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

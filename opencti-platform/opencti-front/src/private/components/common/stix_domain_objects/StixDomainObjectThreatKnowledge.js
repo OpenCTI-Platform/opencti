@@ -313,7 +313,7 @@ class StixDomainObjectThreatKnowledge extends Component {
             <SimpleEntityStixCoreRelationships
               entityId={stixDomainObjectId}
               relationshipType="related-to"
-              targetEntityTypes={['Stix-Domain-Object']}
+              targetStixDomainObjectTypes={['Stix-Domain-Object']}
               entityLink={link}
             />
           </Grid>

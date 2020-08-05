@@ -63,10 +63,10 @@ class StixCoreObjectNoteCardComponent extends Component {
           classes={{ root: classes.header }}
           avatar={
             <Avatar className={classes.avatar}>
-              {node.createdBy.node.name.charAt(0)}
+              {node.createdBy.name.charAt(0)}
             </Avatar>
           }
-          title={node.createdBy.node.name}
+          title={node.createdBy.name}
           subheader={
             <span>
               <ClockOutline

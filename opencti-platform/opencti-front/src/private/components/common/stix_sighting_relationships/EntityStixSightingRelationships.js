@@ -69,7 +69,7 @@ class EntityStixSightingRelationships extends Component {
 
   handleChangeEntities(event) {
     const { value } = event.target;
-    if (value === 'All' && this.props.targetEntityTypes.length > 1) {
+    if (value === 'All' && this.props.targetStixDomainObjectTypes.length > 1) {
       return this.setState({
         openToType: false,
         toType: 'All',
@@ -148,7 +148,7 @@ class EntityStixSightingRelationships extends Component {
 
   render() {
     const {
-      t, classes, targetEntityTypes, entityId,
+      t, classes, targetStixDomainObjectTypes, entityId,
     } = this.props;
     const {
       view,
@@ -161,12 +161,12 @@ class EntityStixSightingRelationships extends Component {
     } = this.state;
 
     // Display types selection when target types are multiple
-    const displayTypes = targetEntityTypes.length > 1 || targetEntityTypes.includes('Identity');
+    const displayTypes = targetStixDomainObjectTypes.length > 1 || targetStixDomainObjectTypes.includes('Identity');
 
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
       fromId: entityId,
-      toTypes: toType === 'All' ? targetEntityTypes : [toType],
+      toTypes: toType === 'All' ? targetStixDomainObjectTypes : [toType],
       inferred: inferred && sortBy === null ? inferred : false,
       search: searchTerm,
       orderBy: sortBy,
@@ -202,34 +202,34 @@ class EntityStixSightingRelationships extends Component {
                   )}
                 >
                   <MenuItem value="All">{t('All entities')}</MenuItem>
-                  {includes('Region', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
+                  {includes('Region', targetStixDomainObjectTypes)
+                  || includes('Identity', targetStixDomainObjectTypes) ? (
                     <MenuItem value="Region">{t('Region')}</MenuItem>
                     ) : (
                       ''
                     )}
-                  {includes('Country', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
+                  {includes('Country', targetStixDomainObjectTypes)
+                  || includes('Identity', targetStixDomainObjectTypes) ? (
                     <MenuItem value="Country">{t('Country')}</MenuItem>
                     ) : (
                       ''
                     )}
-                  {includes('City', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
+                  {includes('City', targetStixDomainObjectTypes)
+                  || includes('Identity', targetStixDomainObjectTypes) ? (
                     <MenuItem value="City">{t('City')}</MenuItem>
                     ) : (
                       ''
                     )}
-                  {includes('Organization', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
+                  {includes('Organization', targetStixDomainObjectTypes)
+                  || includes('Identity', targetStixDomainObjectTypes) ? (
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
                     ) : (
                       ''
                     )}
-                  {includes('User', targetEntityTypes)
-                  || includes('Identity', targetEntityTypes) ? (
+                  {includes('User', targetStixDomainObjectTypes)
+                  || includes('Identity', targetStixDomainObjectTypes) ? (
                     <MenuItem value="User">{t('Individual')}</MenuItem>
                     ) : (
                       ''
@@ -245,9 +245,9 @@ class EntityStixSightingRelationships extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixSightingRelationshipCreationFromEntity
             entityId={entityId}
-            isFrom={true}
+            isRelationReversed={false}
             paddingRight={false}
-            targetEntityTypes={targetEntityTypes}
+            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             paginationOptions={paginationOptions}
           />
         </Security>
@@ -258,7 +258,7 @@ class EntityStixSightingRelationships extends Component {
 
 EntityStixSightingRelationships.propTypes = {
   entityId: PropTypes.string,
-  targetEntityTypes: PropTypes.array,
+  targetStixDomainObjectTypes: PropTypes.array,
   entityLink: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

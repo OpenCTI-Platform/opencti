@@ -756,10 +756,10 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
-            isFrom={true}
+            isRelationReversed={false}
             paddingRight={true}
             onCreate={this.props.relay.refetch.bind(this)}
-            targetEntityTypes={['Region', 'Country', 'City']}
+            targetStixDomainObjectTypes={['Region', 'Country', 'City']}
             paginationOptions={paginationOptions}
           />
         </Security>

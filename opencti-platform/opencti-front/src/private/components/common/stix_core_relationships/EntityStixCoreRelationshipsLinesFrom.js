@@ -5,13 +5,13 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  EntityStixCoreRelationshipLine,
-  EntityStixCoreRelationshipLineDummy,
-} from './EntityStixCoreRelationshipLine';
+  EntityStixCoreRelationshipLineFrom,
+  EntityStixCoreRelationshipLineFromDummy,
+} from './EntityStixCoreRelationshipLineFrom';
 
 const nbOfRowsToLoad = 50;
 
-class EntityStixCoreRelationshipsLines extends Component {
+class EntityStixCoreRelationshipsLinesFrom extends Component {
   render() {
     const {
       initialLoading,
@@ -36,8 +36,8 @@ class EntityStixCoreRelationshipsLines extends Component {
           ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<EntityStixCoreRelationshipLine />}
-        DummyLineComponent={<EntityStixCoreRelationshipLineDummy />}
+        LineComponent={<EntityStixCoreRelationshipLineFrom />}
+        DummyLineComponent={<EntityStixCoreRelationshipLineFromDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
@@ -47,7 +47,7 @@ class EntityStixCoreRelationshipsLines extends Component {
   }
 }
 
-EntityStixCoreRelationshipsLines.propTypes = {
+EntityStixCoreRelationshipsLinesFrom.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -58,8 +58,8 @@ EntityStixCoreRelationshipsLines.propTypes = {
   entityLink: PropTypes.string,
 };
 
-export const entityStixCoreRelationshipsLinesQuery = graphql`
-  query EntityStixCoreRelationshipsLinesPaginationQuery(
+export const entityStixCoreRelationshipsLinesFromQuery = graphql`
+  query EntityStixCoreRelationshipsLinesFromPaginationQuery(
     $fromId: String
     $fromRole: String
     $toTypes: [String]
@@ -70,9 +70,8 @@ export const entityStixCoreRelationshipsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $forceNatural: Boolean
   ) {
-    ...EntityStixCoreRelationshipsLines_data
+    ...EntityStixCoreRelationshipsLinesFrom_data
       @arguments(
         fromId: $fromId
         fromRole: $fromRole
@@ -84,16 +83,15 @@ export const entityStixCoreRelationshipsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
-        forceNatural: $forceNatural
       )
   }
 `;
 
 export default createPaginationContainer(
-  EntityStixCoreRelationshipsLines,
+  EntityStixCoreRelationshipsLinesFrom,
   {
     data: graphql`
-      fragment EntityStixCoreRelationshipsLines_data on Query
+      fragment EntityStixCoreRelationshipsLinesFrom_data on Query
         @argumentDefinitions(
           fromId: { type: "String" }
           fromRole: { type: "String" }
@@ -108,7 +106,6 @@ export default createPaginationContainer(
             defaultValue: "start_time"
           }
           orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          forceNatural: { type: "Boolean", defaultValue: false }
         ) {
         stixCoreRelationships(
           fromId: $fromId
@@ -121,11 +118,10 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-          forceNatural: $forceNatural
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
-              ...EntityStixCoreRelationshipLine_node
+              ...EntityStixCoreRelationshipLineFrom_node
             }
           }
           pageInfo {
@@ -160,9 +156,8 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
-        forceNatural: fragmentVariables.forceNatural,
       };
     },
-    query: entityStixCoreRelationshipsLinesQuery,
+    query: entityStixCoreRelationshipsLinesFromQuery,
   },
 );

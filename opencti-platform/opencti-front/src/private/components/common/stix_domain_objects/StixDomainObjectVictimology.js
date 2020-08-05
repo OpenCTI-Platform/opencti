@@ -195,10 +195,10 @@ class StixDomainObjectVictimology extends Component {
         {type === 'individuals' ? (
           <EntityStixCoreRelationships
             entityId={stixDomainObjectId}
-            targetEntityTypes={types}
+            targetStixDomainObjectTypes={types}
             relationshipType="targets"
             noBottomBar={true}
-            creationIsFrom={true}
+            isRelationReversed={false}
             inference={inferred}
           />
         ) : (

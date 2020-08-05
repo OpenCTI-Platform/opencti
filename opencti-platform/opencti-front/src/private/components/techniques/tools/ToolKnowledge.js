@@ -60,9 +60,9 @@ class ToolKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationshipType="uses"
-              targetEntityTypes={['Intrusion-Set']}
+              targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -74,9 +74,9 @@ class ToolKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationshipType="uses"
-              targetEntityTypes={['Campaign']}
+              targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -88,9 +88,9 @@ class ToolKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationshipType="uses"
-              targetEntityTypes={['XOpenCTIIncident']}
+              targetStixDomainObjectTypes={['XOpenCTIIncident']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -102,9 +102,9 @@ class ToolKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationshipType="uses"
-              targetEntityTypes={['Malware']}
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

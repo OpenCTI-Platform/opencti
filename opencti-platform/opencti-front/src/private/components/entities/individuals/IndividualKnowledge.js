@@ -60,9 +60,9 @@ class IndividualKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipType="part-of"
-              targetEntityTypes={['Organization']}
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -74,9 +74,9 @@ class IndividualKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipType="localization"
-              targetEntityTypes={['City', 'Country', 'Region']}
+              targetStixDomainObjectTypes={['City', 'Country', 'Region']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -88,7 +88,7 @@ class IndividualKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipType="targets"
-              targetEntityTypes={[
+              targetStixDomainObjectTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
@@ -97,7 +97,7 @@ class IndividualKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -109,7 +109,7 @@ class IndividualKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={individual.id}
               relationshipType="attributed-to"
-              targetEntityTypes={[
+              targetStixDomainObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
@@ -117,7 +117,7 @@ class IndividualKnowledgeComponent extends Component {
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

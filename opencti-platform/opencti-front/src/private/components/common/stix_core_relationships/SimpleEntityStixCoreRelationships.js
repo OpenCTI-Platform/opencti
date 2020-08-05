@@ -46,11 +46,11 @@ class SimpleEntityStixCoreRelationships extends Component {
       entityId,
       relationshipType,
       entityLink,
-      targetEntityTypes,
+      targetStixDomainObjectTypes,
     } = this.props;
     const paginationOptions = {
       inferred: true,
-      toTypes: targetEntityTypes,
+      toTypes: targetStixDomainObjectTypes,
       fromId: entityId,
       relationship_type: relationshipType,
     };
@@ -111,7 +111,7 @@ class SimpleEntityStixCoreRelationships extends Component {
 
 SimpleEntityStixCoreRelationships.propTypes = {
   entityId: PropTypes.string,
-  targetEntityTypes: PropTypes.array,
+  targetStixDomainObjectTypes: PropTypes.array,
   entityLink: PropTypes.string,
   relationshipType: PropTypes.string,
   classes: PropTypes.object,
