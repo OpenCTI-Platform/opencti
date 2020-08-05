@@ -38,7 +38,7 @@ import {
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
 import { GATHERING_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
-import { elLoadById, useCache, REL_INDEX_PREFIX, elLoadByStixId } from '../../../src/database/elasticSearch';
+import { elLoadById, REL_INDEX_PREFIX, elLoadByStixId } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -388,13 +388,13 @@ describe('Grakn entities listing', () => {
       const locations = await listEntities(['Location'], ['name'], options);
       expect(locations.edges.length).toEqual(6);
       expect(head(locations.edges).node.name).toEqual('France');
-      expect(last(locations.edges).node.name).toEqual('Hietzing');
+      expect(last(locations.edges).node.name).toEqual('Western Europe');
     } else {
       const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
       const locations = await listEntities(['Location'], ['name'], options);
       expect(locations.edges.length).toEqual(6);
       expect(head(locations.edges).node.name).toEqual('France');
-      expect(last(locations.edges).node.name).toEqual('Hietzing');
+      expect(last(locations.edges).node.name).toEqual('Western Europe');
     }
   });
   it.each(noCacheCases)('should list entities with attribute filters (noCache = %s)', async (noCache) => {
@@ -406,7 +406,7 @@ describe('Grakn entities listing', () => {
     const attacks = await listEntities(['Attack-Pattern'], ['name'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
-    expect(head(attacks.edges).node.standard_id).toEqual('attack-pattern--7bb0f472-4a18-51f8-a66f-226fbdc958c7');
+    expect(head(attacks.edges).node.standard_id).toEqual('attack-pattern--b3d981af-e739-5136-9819-660dcac40f61');
     expect(head(attacks.edges).node.stix_ids).toEqual(['attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc']);
   });
   it.each(noCacheCases)('should list multiple entities with attribute filters (noCache = %s)', async (noCache) => {
@@ -543,7 +543,7 @@ describe('Grakn relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixMetaRelationships = await listRelations('stix-meta-relationship', { noCache });
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(145);
+    expect(stixMetaRelationships.edges.length).toEqual(135);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('uses', { noCache, fromRole: 'uses_from', toRole: 'uses_to' });
@@ -674,18 +674,19 @@ describe('Grakn relations listing', () => {
     stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(1);
     const relation = head(stixRelations.edges).node;
-    expect(relation.standard_id).toEqual('relationship--65af2a13-c5a9-52bd-875f-1093e24aafb1');
+    expect(relation.standard_id).toEqual('relationship--94b2c9c4-362a-570e-9b4e-873c7a8385c5');
     expect(relation.stix_ids).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
     expect(relation.fromRole).toEqual('uses_from');
     expect(relation.toRole).toEqual('uses_to');
     expect(relation.created).toEqual('2020-03-01T14:05:16.797Z');
   });
   it.each(noCacheCases)('should list relations with relation filtering on report (noCache = %s)', async (noCache) => {
+    const report = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const relationFilter = {
       relation: 'object',
       fromRole: 'object_from',
       toRole: 'object_to',
-      id: '685aac19-d2f6-4835-a256-0631bb322732',
+      id: report.internal_id,
     };
     const args = { noCache, relationFilter };
     const stixRelations = await listRelations('stix-core-relationship', args);
@@ -717,12 +718,13 @@ describe('Grakn relations listing', () => {
     }
     // Check the specific relation that have been reversed
     const thing = await internalLoadEntityById('ab78a62f-4928-4d5a-8740-03f0af9c4330');
-    const aggregationMap = new Map(stixRelations.edges.map((i) => [head(i.node.external_stix_id), i]));
+    const aggregationMap = new Map(stixRelations.edges.map((i) => [head(i.node.stix_ids), i]));
     const reversedRelation = aggregationMap.get('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
     expect(reversedRelation.fromId).not.toEqual(thing.grakn_id);
   });
   it.each(noCacheCases)('should list relations with search (noCache = %s)', async (noCache) => {
-    const options = { noCache, fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330', search: 'Spear phishing' };
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const options = { noCache, fromId: malware.internal_id, search: 'Spear phishing' };
     const stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
     const relTargets = await Promise.all(map((s) => elLoadById(s.node.toId), stixRelations.edges));
@@ -731,14 +733,14 @@ describe('Grakn relations listing', () => {
       expect(target.name).toEqual(expect.stringContaining('Spear phishing'));
     }
   });
-  it.each(noCacheCases)('should list relations first seen (noCache = %s)', async (noCache) => {
+  it.each(noCacheCases)('should list relations start time (noCache = %s)', async (noCache) => {
     // Uses relations first seen
     // 0 = "2020-02-29T23:00:00.000Z" | 1 = "2020-02-29T23:00:00.000Z" | 2 = "2020-02-28T23:00:00.000Z"
     const options = { noCache, startTimeStart: '2020-02-29T22:00:00.000Z', stopTimeStop: '2020-02-29T23:30:00.000Z' };
     const stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
   });
-  it.each(noCacheCases)('should list relations last seen (noCache = %s)', async (noCache) => {
+  it.each(noCacheCases)('should list relations stop time (noCache = %s)', async (noCache) => {
     // Uses relations last seen
     // 0 = "2020-02-29T23:00:00.000Z" | 1 = "2020-02-29T23:00:00.000Z" | 2 = "2020-02-29T23:00:00.000Z"
     let options = { noCache, startTimeStart: '2020-02-29T23:00:00.000Z', stopTimeStop: '2020-02-29T23:00:00.000Z' };
@@ -748,8 +750,8 @@ describe('Grakn relations listing', () => {
     stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
   });
-  it.each(noCacheCases)('should list relations with weight (noCache = %s)', async (noCache) => {
-    const options = { noCache, weights: [4] };
+  it.each(noCacheCases)('should list relations with confidence (noCache = %s)', async (noCache) => {
+    const options = { noCache, confidences: [4] };
     const stixRelations = await listRelations('indicates', options);
     expect(stixRelations.edges.length).toEqual(1);
   });
@@ -1047,9 +1049,9 @@ describe('Grakn relations time series', () => {
     expect(aggregationMap.get('2020-01-31T23:00:00.000Z')).toEqual(3);
   });
   it.each(noCacheCases)('should relations with fromId time series (noCache = %s)', async (noCache) => {
-    // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c / Paradise Ransomware
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+      fromId: malware.internal_id,
       relationship_type: 'uses',
       field: 'start_time',
       operation: 'count',
@@ -1079,14 +1081,21 @@ describe('Grakn entities distribution', () => {
   });
   it.each(noCacheCases)('should entity distribution filters (noCache = %s)', async (noCache) => {
     // const { startDate, endDate, operation, field, inferred, noCache } = options;
-    // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c > "Paradise Ransomware"
-    const malwareId = 'ab78a62f-4928-4d5a-8740-03f0af9c4330';
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = { field: 'entity_type', operation: 'count', limit: 20, noCache };
     const start = '2020-02-29T22:29:00.000Z';
     const end = '2020-02-29T22:31:00.000Z';
-    const relationFilter = { isRelation: true, type: 'uses', from: 'usage', to: 'user', value: malwareId, start, end };
+    const relationFilter = {
+      isRelation: true,
+      type: 'uses',
+      from: 'usage',
+      to: 'user',
+      value: malware.internal_id,
+      start,
+      end,
+    };
     const filters = [relationFilter];
-    const distribution = await distributionEntities('Stix-Domain', filters, options);
+    const distribution = await distributionEntities('Stix-Domain-Object', filters, options);
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('attack-pattern')).toEqual(1);
@@ -1101,7 +1110,7 @@ describe('Grakn entities distribution', () => {
       endDate: '2018-03-02T00:00:00+01:00',
       noCache,
     };
-    const distribution = await distributionEntities('Stix-Domain', [], options);
+    const distribution = await distributionEntities('Stix-Domain-Object', [], options);
     expect(distribution.length).toEqual(0);
   });
 });
@@ -1118,8 +1127,9 @@ describe('Grakn relations distribution', () => {
   it.each(noCacheCases)('should relation distribution (noCache = %s)', async (noCache) => {
     // const { limit = 50, order, noCache = false, inferred = false } = options;
     // const { startDate, endDate, relationship_type, toTypes, fromId, field, operation } = options;
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+      fromId: malware.internal_id,
       relationship_type: 'uses',
       field: 'entity_type',
       operation: 'count',
@@ -1132,8 +1142,9 @@ describe('Grakn relations distribution', () => {
     expect(aggregationMap.get('intrusion-set')).toEqual(1);
   });
   it.each(noCacheCases)('should relation distribution dates filtered (noCache = %s)', async (noCache) => {
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+      fromId: malware.internal_id,
       field: 'entity_type',
       operation: 'count',
       startDate: '2020-02-28T22:59:00.000Z',
@@ -1146,8 +1157,9 @@ describe('Grakn relations distribution', () => {
     expect(aggregationMap.get('intrusion-set')).toEqual(1);
   });
   it.each(noCacheCases)('should relation distribution filtered by to (noCache = %s)', async (noCache) => {
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
-      fromId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+      fromId: malware.internal_id,
       field: 'entity_type',
       operation: 'count',
       toTypes: ['Attack-Pattern'],
@@ -1160,13 +1172,14 @@ describe('Grakn relations distribution', () => {
   });
 });
 
-describe('Grakn entities distribution through relation', () => {
+describe('Grakn entities distribution through relation', async () => {
   // const { limit = 10, order, inferred = false } = options;
   // const { relationship_type, remoterelationship_type, toType, fromId, field, operation } = options;
   // campaign--92d46985-17a6-4610-8be8-cc70c82ed214
+  const campaign = await elLoadByStixId('ampaign--92d46985-17a6-4610-8be8-cc70c82ed21');
   it('should relation distribution filtered by to (noCache = %s)', async () => {
     const options = {
-      fromId: 'fab6fa99-b07f-4278-86b4-b674edf60877',
+      fromId: campaign.internal_id,
       field: 'name',
       operation: 'count',
       relationshipType: 'object',

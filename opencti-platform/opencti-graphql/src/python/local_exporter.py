@@ -20,7 +20,7 @@ class TestLocalExporter:
         )
         json_bundle = json.dumps(bundle, indent=4)
         # Upload the export inside the entity to ack like an import
-        opencti_api_client.stix_domain_entity.push_entity_export(
+        opencti_api_client.stix_domain_object.push_entity_export(
             self.entity_id, self.file_name, json_bundle
         )
         # Upload it like a simple file to import
@@ -32,7 +32,7 @@ class TestLocalExporter:
         bundle = opencti_api_client.stix2.export_list("malware")
         json_bundle = json.dumps(bundle, indent=4)
         # Upload the export inside the entity to ack like an import
-        opencti_api_client.stix_domain_entity.push_list_export(
+        opencti_api_client.stix_domain_object.push_list_export(
             "malware", self.file_name, json_bundle
         )
         # Upload it like a simple file to import

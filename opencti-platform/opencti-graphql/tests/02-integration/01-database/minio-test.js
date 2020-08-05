@@ -56,7 +56,7 @@ describe('Minio basic and utils', () => {
     const maxMarking = { definition: 'TLP:RED' };
     const entity = null;
     const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
-    const expectedName = '_TLP:RED_(ExportFileStix)_Attack-Pattern.json';
+    const expectedName = '_TLP:RED_(ExportFileStix)_attack-pattern.json';
     expect(fileExportName).toEqual(expect.stringContaining(expectedName));
   });
 });
