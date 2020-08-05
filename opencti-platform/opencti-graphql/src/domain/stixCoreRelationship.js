@@ -1,4 +1,4 @@
-import { assoc, dissoc, filter, propOr } from 'ramda';
+import { assoc, dissoc, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,

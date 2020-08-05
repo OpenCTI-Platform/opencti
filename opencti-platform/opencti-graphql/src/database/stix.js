@@ -64,7 +64,7 @@ const convertStixObjectToStix = (data, onlyBase) => {
   return finalData;
 };
 
-export const convertStixCoreRelationshipToStix = (data, extra = null, onlyBase = true) => {
+export const convertStixCoreRelationshipToStix = (data, extra = {}, onlyBase = true) => {
   const finalData = pipe(
     dissoc('standard_id'),
     dissoc('internal_id'),

@@ -384,21 +384,12 @@ describe('Grakn entities listing', () => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
     // We accept that ElasticSearch is not able to have both direction of the relations
-    if (noCache) {
-      const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
-      const locations = await listEntities(['Location'], ['name'], options);
-      expect(locations.edges.length).toEqual(6);
-      const firstResults = ['France'];
-      expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
-      expect(last(locations.edges).node.name).toEqual('Hietzing');
-    } else {
-      const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
-      const locations = await listEntities(['Location'], ['name'], options);
-      expect(locations.edges.length).toEqual(6);
-      const firstResults = ['France'];
-      expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
-      expect(last(locations.edges).node.name).toEqual('Hietzing');
-    }
+    const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
+    const locations = await listEntities(['Location'], ['name'], options);
+    expect(locations.edges.length).toEqual(6);
+    const firstResults = ['France'];
+    expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
+    expect(last(locations.edges).node.name).toEqual('Hietzing');
   });
   it.each(noCacheCases)('should list entities with attribute filters (noCache = %s)', async (noCache) => {
     const filters = [
@@ -826,11 +817,11 @@ describe('Grakn element loader', () => {
     expect(element.id).toEqual(internalId);
     expect(element.name).toEqual('A demo report for testing purposes');
     // Correct type
-    element = await internalLoadEntityById(internalId, 'Report', { noCache });
+    element = await internalLoadEntityById(internalId, { noCache });
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
     // Wrong type
-    element = await internalLoadEntityById(internalId, 'Malware', { noCache });
+    element = await internalLoadEntityById(internalId, { noCache });
     expect(element).toBeNull();
   });
   it.each(noCacheCases)('should load entity by id (noCache = %s)', async (noCache) => {

@@ -1,10 +1,9 @@
-import { pipe, assoc } from 'ramda';
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
   deleteEntityById,
-  deleteRelationById,
   deleteRelationsByFromAndTo,
   executeWrite,
   internalLoadEntityById,
@@ -14,13 +13,9 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import {
-  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
-  isStixCoreObject,
   isStixMetaRelationship,
-  isStixRelationship,
-  RELATION_EXTERNAL_REFERENCE,
 } from '../utils/idGenerator';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 
@@ -48,7 +43,7 @@ export const externalReferenceAddRelation = async (user, externalReferenceId, in
   if (!data) {
     throw FunctionalError('Cannot add the relation, External Reference cannot be found.');
   }
-  if (data && data.entity_type !== ENTITY_TYPE_EXTERNAL_REFERENCE) {
+  if (data.entity_type !== ENTITY_TYPE_EXTERNAL_REFERENCE) {
     throw ForbiddenAccess();
   }
   if (!isStixMetaRelationship(input.relationship_type)) {

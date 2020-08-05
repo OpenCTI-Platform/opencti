@@ -40,12 +40,12 @@ import { ENTITY_TYPE_USER } from '../utils/idGenerator';
 
 const userResolvers = {
   Query: {
-    user: (_, { id }) => findById(id, { isUser: true }),
-    users: (_, args) => findAll(args, true),
+    user: (_, { id }) => findById(id),
+    users: (_, args) => findAll(args),
     role: (_, { id }) => findRoleById(id),
     roles: (_, args) => findRoles(args),
     capabilities: (_, args) => findCapabilities(args),
-    me: (_, args, { user }) => findById(user.id, { isUser: true }),
+    me: (_, args, { user }) => findById(user.id),
   },
   User: {
     groups: (user) => groups(user.id),

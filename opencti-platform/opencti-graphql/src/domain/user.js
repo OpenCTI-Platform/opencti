@@ -1,4 +1,4 @@
-import { assoc, find as rFind, head, isNil, pipe, map, dissoc, append, flatten, propOr, propEq, includes } from 'ramda';
+import { assoc, find as rFind, head, isNil, pipe, map, dissoc, append, flatten, propEq, includes } from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';

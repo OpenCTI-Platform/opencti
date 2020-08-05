@@ -106,12 +106,7 @@ export const inferIndexFromConceptType = (conceptType) => {
   if (isStixSightingRelationship(conceptType)) return INDEX_STIX_SIGHTING_RELATIONSHIPS;
   if (isStixCyberObservableRelationship(conceptType)) return INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS;
   if (isStixMetaRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
-
   throw DatabaseError(`Cant find index for type ${conceptType}`);
-};
-
-export const isIndexable = (type) => {
-  return inferIndexFromConceptType(type) !== null;
 };
 
 const extractEntityMainValue = (entityData) => {

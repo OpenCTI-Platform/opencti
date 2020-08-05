@@ -1,32 +1,26 @@
 import { assoc, dissoc, invertObj, map, pipe, propOr, filter } from 'ramda';
-import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
   createRelations,
   deleteEntityById,
-  deleteRelationById,
   deleteRelationsByFromAndTo,
   escape,
-  escapeString,
   executeWrite,
-  findWithConnectedRelations,
   listEntities,
   loadEntityById,
-  loadRelationById,
-  now,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import { buildPagination, INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
+import { INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
 import { askEnrich } from './enrichment';
-import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax } from '../utils/syntax';
 import { connectorsForExport } from './connector';

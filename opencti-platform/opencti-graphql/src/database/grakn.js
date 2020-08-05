@@ -493,7 +493,7 @@ const loadConcept = async (tx, concept, args = {}) => {
         assoc('grakn_id', concept.id),
         assoc('id', transform.internal_id),
         assoc('base_type', conceptBaseType),
-        assoc('parent_types', getParentTypes(transform.entity_type))
+        assoc('parent_types', transform.entity_type ? getParentTypes(transform.entity_type) : null)
       )(transform);
     })
     .then(async (entityData) => {
@@ -561,9 +561,8 @@ const getSingleValue = (query, infer = false) => {
 export const getSingleValueNumber = (query, infer = false) => {
   return getSingleValue(query, infer).then((data) => data.number());
 };
-
 const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts = {}) => {
-  const { infer = false, noCache = false, isInferenceQuery = false } = conceptOpts;
+  const { infer = false, noCache = false } = conceptOpts;
   const plainEntities = filter((e) => !isEmpty(e) && !isNil(e), entities);
   if (answers.length === 0) return [];
   // 02. Query concepts and rebind the data
@@ -577,7 +576,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
           // If internal id of the element is not directly accessible
           // And the element is part of element needed for the result, ensure the key is asked in the query.
           let conceptInternalId = internalIdKey;
-          if (!isInferenceQuery && !conceptInternalId && includes(alias, plainEntities)) {
+          if (concept._inferred !== true && !conceptInternalId && includes(alias, plainEntities)) {
             const conceptInternalIdVar = answer.map().get(`${alias}_id`);
             if (!conceptInternalIdVar) {
               throw DatabaseError(`Query must ask for ${alias}_id`, { conceptQueryVars });
@@ -667,7 +666,6 @@ export const find = async (query, entities, findOpts = {}) => {
     return getConcepts(rTx, answers, conceptQueryVars, entities, findOpts);
   });
 };
-
 // TODO Start - Refactor UI to be able to remove these 2 API
 export const findWithConnectedRelations = async (query, key, options = {}) => {
   const { extraRelKey = null } = options;
@@ -677,7 +675,6 @@ export const findWithConnectedRelations = async (query, key, options = {}) => {
 export const loadWithConnectedRelations = (query, key, options = {}) => {
   return findWithConnectedRelations(query, key, options).then((result) => head(result));
 };
-
 const listElements = async (
   baseQuery,
   first,
@@ -1786,16 +1783,13 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
   // eslint-disable-next-line no-nested-ternary
   const typedVal = val === 'true' ? true : val === 'false' ? false : val;
   const updateValueField = { [key]: typedVal };
-
   const currentIndex = inferIndexFromConceptType(instance.entity_type);
-  if (currentIndex) {
-    esOperations.push(
-      elUpdate(currentIndex, instance.internal_id, { doc: updateValueField }).catch(
-        /* istanbul ignore next */ (err) =>
-          logger.error(`[ELASTIC] An error occured during the update of the element ${id}`, { error: err })
-      )
-    );
-  }
+  esOperations.push(
+    elUpdate(currentIndex, instance.internal_id, { doc: updateValueField }).catch(
+      /* istanbul ignore next */ (err) =>
+        logger.error(`[ELASTIC] An error occured during the update of the element ${id}`, { error: err })
+    )
+  );
   if (!noLog && escapedKey !== 'graph_data') {
     esOperations.push(
       sendLog(
@@ -1974,7 +1968,7 @@ export const getRelationInferredById = async (id) => {
       [answerConceptMap],
       extractQueryVars(query), //
       [INFERRED_RELATION_KEY],
-      { noCache: true, isInferenceQuery: true }
+      { noCache: true }
     );
     const relation = head(concepts).rel;
     const explanation = await answerConceptMap.explanation();

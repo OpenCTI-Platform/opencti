@@ -667,9 +667,13 @@ const generateStixCyberObservableId = (type, data) => {
 // endregion
 
 // region relationship
-const generateInternalRelationshipUUID = (prefix, data) => {
-  // TODO ASK JULIEN
-  return uuidv4();
+const generateInternalRelationshipUUID = (type, data) => {
+  switch (type) {
+    case ENTITY_USER_ACCOUNT:
+      return uuid({ type, user_email: data.user_email });
+    default:
+      return uuidv4();
+  }
 };
 const generateInternalRelationshipId = (type, data) => {
   const id = generateInternalRelationshipUUID(type, data);

@@ -1,19 +1,19 @@
 import { assoc, filter } from 'ramda';
 import {
   createRelation,
-  deleteRelationById,
+  deleteRelationById, deleteRelationsByFromAndTo,
   escapeString,
   findWithConnectedRelations,
   internalLoadEntityById,
   listEntities,
   loadEntityById,
-  loadWithConnectedRelations,
-} from '../database/grakn';
+  loadWithConnectedRelations
+} from "../database/grakn";
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { buildPagination } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess } from '../config/errors';
+import { ForbiddenAccess, FunctionalError } from "../config/errors";
 import {
   isStixCoreObject,
   isStixRelationship,
@@ -32,8 +32,8 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ABSTRACT_STIX_CORE_OBJECT,
-} from '../utils/idGenerator';
+  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, isStixMetaRelationship, ABSTRACT_STIX_META_RELATIONSHIP
+} from "../utils/idGenerator";
 
 export const findAll = async (args) => {
   let types = [];
@@ -166,12 +166,14 @@ export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) =
   return createRelation(user, finalInput);
 };
 
-export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, relationId) => {
-  const stixDomainObject = await internalLoadEntityById(stixCoreObjectId);
-  // Check if entity is a real stix domain
-  if (!isStixCoreObject(stixDomainObject.entity_type)) {
-    throw ForbiddenAccess();
+export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId, relationshipType) => {
+  const stixCoreObject = await loadEntityById(stixCoreObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  if (!stixCoreObject) {
+    throw FunctionalError('Cannot delete the relation, Stix-Core-Object cannot be found.');
   }
-  await deleteRelationById(user, relationId, ABSTRACT_STIX_META_OBJECT);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixDomainObject, user);
+  if (!isStixMetaRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObjectId, user);
 };
