@@ -37,8 +37,6 @@ import {
   type as Rtype,
   uniq,
   uniqBy,
-  values,
-  forEachObjIndexed,
 } from 'ramda';
 import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
@@ -434,7 +432,7 @@ export const queryAttributeValueByGraknId = async (id) => {
  * @returns {Promise}
  */
 const loadConcept = async (tx, concept, args = {}) => {
-  const { internalId, relationsMap = new Map(), infer = false } = args;
+  const { internalId, relationsMap = new Map() } = args;
   const conceptBaseType = concept.baseType;
   // const types = await conceptTypes(tx, concept);
   const remoteConceptType = await concept.type();
@@ -574,7 +572,6 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
       const queryVarsToConcepts = await Promise.all(
         conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
           const concept = answer.map().get(alias);
-          if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           // If internal id of the element is not directly accessible
           // And the element is part of element needed for the result, ensure the key is asked in the query.

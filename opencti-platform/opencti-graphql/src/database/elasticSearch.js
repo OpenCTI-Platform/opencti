@@ -32,6 +32,7 @@ import {
   INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
   inferIndexFromConceptType,
+  pascalize,
 } from './utils';
 import conf, { logger } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -368,7 +369,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
   logger.debug(`[ELASTICSEARCH] aggregationCount`, { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.genres;
-    return map((b) => ({ label: b.key, value: b.doc_count }), buckets);
+    return map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
   });
 };
 export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) => {
@@ -440,7 +441,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
     )(data.body.hits.hits);
     const { buckets } = data.body.aggregations.genres;
     const filteredBuckets = filter((b) => includes(b.key, types), buckets);
-    return map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
+    return map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });
 };
 export const elHistogramCount = async (type, field, interval, start, end, filters) => {

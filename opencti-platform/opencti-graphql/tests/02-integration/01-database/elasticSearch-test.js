@@ -116,20 +116,20 @@ describe('Elasticsearch computation', () => {
     // "from", "to" is not use in elastic
     // Aggregate all stix domain by entity type, no filtering
     const malwaresAggregation = await elAggregationCount(
-      'Stix-Object',
+      'Stix-Domain-Object',
       'entity_type',
       undefined, // No start
       undefined, // No end
       [] // No filters
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('malware')).toEqual(2);
-    expect(aggregationMap.get('marking-definition')).toEqual(6);
+    expect(aggregationMap.get('Malware')).toEqual(2);
+    expect(aggregationMap.get('Indicator')).toEqual(3);
   });
   it('should entity aggregation with date accurate', async () => {
     const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresAggregation = await elAggregationCount(
-      'Stix-Object',
+      'Stix-Domain-Object',
       'entity_type',
       '2019-01-01T00:00:00Z',
       new Date(mostRecentMalware.created_at).getTime() - 1,
@@ -137,21 +137,21 @@ describe('Elasticsearch computation', () => {
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
-    expect(aggregationMap.get('malware')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(1);
   });
   it('should entity aggregation with relation accurate', async () => {
     // Aggregate with relation filter on marking definition TLP:RED
     const marking = await elLoadByStixId('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
     const malwaresAggregation = await elAggregationCount(
-      'Stix-Object',
+      'Stix-Domain-Object',
       'entity_type',
       undefined, // No start
       undefined, // No end
-      [{ isRelation: true, type: 'object-marking', value: marking.internal_id }]
+      [{ isRelation: true, type: 'bject-marking', value: marking.internal_id }]
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('malware')).toEqual(1);
-    expect(aggregationMap.get('report')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(1);
+    expect(aggregationMap.get('Report')).toEqual(1);
   });
   it('should relation aggregation accurate', async () => {
     const testingReport = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
@@ -159,19 +159,18 @@ describe('Elasticsearch computation', () => {
       'stix-meta-relationship',
       null,
       null,
-      ['Stix-Object'], //
+      ['Stix-Domain-Object'], //
       testingReport.internal_id
     );
     const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('indicator')).toEqual(3);
-    expect(aggregationMap.get('organization')).toEqual(3);
-    expect(aggregationMap.get('attack-pattern')).toEqual(2);
-    expect(aggregationMap.get('city')).toEqual(1);
-    expect(aggregationMap.get('country')).toEqual(1);
-    expect(aggregationMap.get('intrusion-set')).toEqual(1);
-    expect(aggregationMap.get('malware')).toEqual(1);
-    expect(aggregationMap.get('marking-definition')).toEqual(1);
-    expect(aggregationMap.get('sector')).toEqual(1);
+    expect(aggregationMap.get('Indicator')).toEqual(3);
+    expect(aggregationMap.get('Organization')).toEqual(3);
+    expect(aggregationMap.get('Attack-Pattern')).toEqual(2);
+    expect(aggregationMap.get('City')).toEqual(1);
+    expect(aggregationMap.get('Country')).toEqual(1);
+    expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(1);
+    expect(aggregationMap.get('Sector')).toEqual(1);
   });
   it('should relation aggregation with date accurate', async () => {
     const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
@@ -183,10 +182,10 @@ describe('Elasticsearch computation', () => {
       intrusionSet.internal_id
     );
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('city')).toEqual(1);
-    expect(aggregationMap.get('indicator')).toEqual(1);
-    expect(aggregationMap.get('organization')).toEqual(1);
-    expect(aggregationMap.get('malware')).toEqual(undefined); // Because of date filtering
+    expect(aggregationMap.get('City')).toEqual(1);
+    expect(aggregationMap.get('Indicator')).toEqual(1);
+    expect(aggregationMap.get('Organization')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(undefined); // Because of date filtering
   });
   it('should invalid time histogram fail', async () => {
     const histogramCount = elHistogramCount('Stix-Domain-Object', 'created_at', 'minute', null, null, []);

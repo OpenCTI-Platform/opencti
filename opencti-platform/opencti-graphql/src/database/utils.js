@@ -176,3 +176,9 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
   }
   return message;
 };
+
+export const pascalize = (s) => {
+  return s.replace(/(\w)(\w*)/g, (g0, g1, g2) => {
+    return g1.toUpperCase() + g2.toLowerCase();
+  });
+};
