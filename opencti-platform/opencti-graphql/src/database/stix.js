@@ -133,7 +133,7 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
     return convertStixSightingRelationshipToStix(data, eventExtraData, onlyBase);
   }
   if (isStixMetaRelationship(entityType)) {
-    return convertStixMetaRelationshipToStix(data, eventExtraData, onlyBase);
+    return convertStixMetaRelationshipToStix(data, eventExtraData);
   }
   throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
 };

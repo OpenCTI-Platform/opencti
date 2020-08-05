@@ -804,7 +804,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
       : '';
   const baseQuery = `match $elem isa ${headType}, has internal_id $elem_id; ${extraTypes} ${queryRelationsFields} 
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, false, args.noCache);
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, args.noCache);
 };
 export const listRelations = async (relationshipType, args) => {
   const searchFields = ['name', 'description'];
