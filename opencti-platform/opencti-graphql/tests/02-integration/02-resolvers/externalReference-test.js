@@ -71,7 +71,7 @@ describe('ExternalReference resolver standard behavior', () => {
     // Create the external reference
     const EXTERNAL_REFERENCE_TO_CREATE = {
       input: {
-        stix_id_key: externalReferenceStixId,
+        stix_id: externalReferenceStixId,
         source_name: 'ExternalReference',
         description: 'ExternalReference description',
         url: 'https://www.google.com',
@@ -157,7 +157,7 @@ describe('ExternalReference resolver standard behavior', () => {
   });
   it('should add relation in externalReference', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ExternalReferenceEdit($id: ID!, $input: RelationAddInput!) {
+      mutation ExternalReferenceEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         externalReferenceEdit(id: $id) {
           relationAdd(input: $input) {
             id
@@ -197,9 +197,9 @@ describe('ExternalReference resolver standard behavior', () => {
   });
   it('should delete relation in externalReference', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ExternalReferenceEdit($id: ID!, $relationId: ID!) {
+      mutation ExternalReferenceEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         externalReferenceEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
           }
         }

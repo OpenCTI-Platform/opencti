@@ -64,11 +64,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
               relationshipType="attributed-to"
-              targetEntityTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-              ]}
+              targetEntityTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
               entityLink={link}
               creationIsFrom={true}
               {...routeProps}
@@ -153,7 +149,7 @@ XOpenCTIIncidentKnowledgeComponent.propTypes = {
 const XOpenCTIXOpenCTIIncidentKnowledge = createFragmentContainer(
   XOpenCTIIncidentKnowledgeComponent,
   {
-      xOpenCTIIncident: graphql`
+    xOpenCTIIncident: graphql`
       fragment XOpenCTIIncidentKnowledge_xOpenCTIIncident on XOpenCTIIncident {
         id
         name

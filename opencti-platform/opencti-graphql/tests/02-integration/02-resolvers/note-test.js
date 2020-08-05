@@ -112,7 +112,7 @@ describe('Note resolver standard behavior', () => {
     const NOTE_TO_CREATE = {
       input: {
         name: 'Note',
-        stix_id_key: noteStixId,
+        stix_id: noteStixId,
         description: 'Note description',
         content: 'Test content',
         objectRefs: ['fab6fa99-b07f-4278-86b4-b674edf60877'],
@@ -386,18 +386,15 @@ describe('Note resolver standard behavior', () => {
   });
   it('should add relation in note', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation NoteEdit($id: ID!, $input: RelationAddInput!) {
+      mutation NoteEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         noteEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Note {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -419,16 +416,15 @@ describe('Note resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.noteEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    noteMarkingDefinitionRelationId =
-      queryResult.data.noteEdit.relationAdd.from.objectMarking.edges[0].relation.id;
+    noteMarkingDefinitionRelationId = queryResult.data.noteEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in note', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation NoteEdit($id: ID!, $relationId: ID!) {
+      mutation NoteEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         noteEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

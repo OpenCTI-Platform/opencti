@@ -338,7 +338,7 @@ const stixCoreRelationshipCreationFromRelationMutation = graphql`
     $input: StixCoreRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
-    stixCoreRelationshipAdd(input: $input, reversedReturn: $reversedReturn) {
+    stixCoreRelationshipAdd(input: $input) {
       ...EntityStixCoreRelationshipLine_node
     }
   }
@@ -404,10 +404,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     )(values);
     commitMutation({
       mutation: stixCoreRelationshipCreationFromRelationMutation,
-      variables: {
-        input: finalValues,
-        reversedReturn: !this.props.isFrom,
-      },
+      variables: { input: finalValues },
       updater: (store) => {
         if (typeof this.props.onCreate !== 'function') {
           const payload = store.getRootField('stixCoreRelationshipAdd');
@@ -571,7 +568,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     let toEntity = targetEntity;
     if (
       !isFrom
-      || (isFromRelation && targetEntity.parent_types.includes('Stix-Cyber-Observable'))
+      || (isFromRelation
+        && targetEntity.parent_types.includes('Stix-Cyber-Observable'))
     ) {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
@@ -651,7 +649,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes('Stix-Cyber-Observable', fromEntity.parent_types)
+                      {includes(
+                        'Stix-Cyber-Observable',
+                        fromEntity.parent_types,
+                      )
                         ? t(`observable_${fromEntity.entity_type}`)
                         : t(
                           `entity_${
@@ -667,7 +668,10 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                     <span className={classes.name}>
                       {truncate(
                         /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Cyber-Observable', fromEntity.parent_types)
+                        includes(
+                          'Stix-Cyber-Observable',
+                          fromEntity.parent_types,
+                        )
                           ? fromEntity.observable_value
                           : fromEntity.entity_type === 'stix_relation'
                             || fromEntity.entity_type === 'stix-relation'

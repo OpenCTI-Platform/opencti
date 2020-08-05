@@ -184,15 +184,18 @@ class AttackPatternEditionDetailsComponent extends Component {
               <MenuItem value="Administrator">Administrator</MenuItem>
             </Field>
             <Field
-                component={TextField}
-                name="x_mitre_detection"
-                label={t('Detection')}
-                fullWidth={true}
-                onFocus={this.handleChangeFocus.bind(this)}
-                onSubmit={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="x_mitre_detection" />
-                }
+              component={TextField}
+              name="x_mitre_detection"
+              label={t('Detection')}
+              fullWidth={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onSubmit={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_mitre_detection"
+                />
+              }
             />
           </Form>
         )}

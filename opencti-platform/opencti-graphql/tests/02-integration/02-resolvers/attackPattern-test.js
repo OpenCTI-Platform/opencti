@@ -62,7 +62,6 @@ const READ_QUERY = gql`
 
 describe('AttackPattern resolver standard behavior', () => {
   let attackPatternInternalId;
-  let attackPatternMarkingDefinitionRelationId;
   const attackPatternStixId = 'attack-pattern--7dd8142a-e21b-4a29-b241-e63dac6a23ea';
   it('should attackPattern created', async () => {
     const CREATE_QUERY = gql`
@@ -117,7 +116,7 @@ describe('AttackPattern resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.attackPattern).not.toBeNull();
-    expect(queryResult.data.attackPattern.standard_id).toEqual('attack-pattern--71241c63-ddba-51cd-aa64-0b1d563ef1f0');
+    expect(queryResult.data.attackPattern.standard_id).toEqual('attack-pattern--1a4a0e71-a6f7-5296-879b-d7a532f1435c');
     expect(queryResult.data.attackPattern.coursesOfAction.edges.length).toEqual(1);
     expect(queryResult.data.attackPattern.coursesOfAction.edges[0].node.standard_id).toEqual(
       '326b7708-d4cf-4020-8cd1-9726b99895db'
@@ -178,7 +177,7 @@ describe('AttackPattern resolver standard behavior', () => {
   });
   it('should add relation in attackPattern', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation AttackPatternEdit($id: ID!, $input: RelationAddInput!) {
+      mutation AttackPatternEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         attackPatternEdit(id: $id) {
           relationAdd(input: $input) {
             id
@@ -203,20 +202,18 @@ describe('AttackPattern resolver standard behavior', () => {
       variables: {
         id: attackPatternInternalId,
         input: {
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
         },
       },
     });
     expect(queryResult.data.attackPatternEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    attackPatternMarkingDefinitionRelationId =
-      queryResult.data.attackPatternEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in attackPattern', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation AttackPatternEdit($id: ID!, $relationId: ID!) {
+      mutation AttackPatternEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         attackPatternEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             objectMarking {
               edges {
@@ -234,7 +231,8 @@ describe('AttackPattern resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: attackPatternInternalId,
-        relationId: attackPatternMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.attackPatternEdit.relationDelete.objectMarking.edges.length).toEqual(0);

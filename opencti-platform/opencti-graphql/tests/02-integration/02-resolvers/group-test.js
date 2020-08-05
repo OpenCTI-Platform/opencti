@@ -115,7 +115,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should add relation in group', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation GroupEdit($id: ID!, $input: RelationAddInput!) {
+      mutation GroupEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         groupEdit(id: $id) {
           relationAdd(input: $input) {
             id
@@ -154,9 +154,9 @@ describe('Group resolver standard behavior', () => {
   });
   it('should delete relation in group', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation GroupEdit($id: ID!, $relationId: ID!) {
+      mutation GroupEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         groupEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             permissions {
               edges {

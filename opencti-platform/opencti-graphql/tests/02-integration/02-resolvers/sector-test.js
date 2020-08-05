@@ -75,7 +75,7 @@ describe('Sector resolver standard behavior', () => {
     const SECTOR_TO_CREATE = {
       input: {
         name: 'Sector',
-        stix_id_key: sectorStixId,
+        stix_id: sectorStixId,
         description: 'Sector description',
       },
     };
@@ -180,18 +180,15 @@ describe('Sector resolver standard behavior', () => {
   });
   it('should add relation in sector', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation SectorEdit($id: ID!, $input: RelationAddInput!) {
+      mutation SectorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         sectorEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Sector {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -213,16 +210,15 @@ describe('Sector resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    sectorMarkingDefinitionRelationId =
-      queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
+    sectorMarkingDefinitionRelationId = queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in sector', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation SectorEdit($id: ID!, $relationId: ID!) {
+      mutation SectorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         sectorEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

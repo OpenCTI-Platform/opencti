@@ -17,7 +17,12 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING, STIX_SIGHTING_RELATIONSHIP } from "../utils/idGenerator";
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  STIX_SIGHTING_RELATIONSHIP,
+} from '../utils/idGenerator';
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -57,8 +62,7 @@ const stixSightingRelationshipResolvers = {
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(user, id, input),
       relationDelete: ({ relationId }) => stixSightingRelationshipDeleteRelation(user, id, relationId),
     }),
-    stixSightingRelationshipAdd: (_, { input, reversedReturn }, { user }) =>
-      addStixSightingRelationship(user, input, reversedReturn),
+    stixSightingRelationshipAdd: (_, { input }, { user }) => addStixSightingRelationship(user, input),
   },
   Subscription: {
     stixSightingRelationship: {

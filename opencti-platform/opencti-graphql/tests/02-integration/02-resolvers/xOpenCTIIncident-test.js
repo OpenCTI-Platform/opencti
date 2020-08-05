@@ -95,7 +95,7 @@ describe('Incident resolver standard behavior', () => {
     const INCIDENT_TO_CREATE = {
       input: {
         name: 'Incident',
-        stix_id_key: incidentStixId,
+        stix_id: incidentStixId,
         description: 'Incident description',
         first_seen: '2020-03-24T10:51:20+00:00',
         last_seen: '2020-03-24T10:51:20+00:00',
@@ -219,18 +219,15 @@ describe('Incident resolver standard behavior', () => {
   });
   it('should add relation in incident', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation IncidentEdit($id: ID!, $input: RelationAddInput!) {
+      mutation IncidentEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         incidentEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Incident {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -257,11 +254,11 @@ describe('Incident resolver standard behavior', () => {
   });
   it('should delete relation in incident', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation IncidentEdit($id: ID!, $relationId: ID!) {
+      mutation IncidentEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         incidentEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

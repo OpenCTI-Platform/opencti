@@ -36,7 +36,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
         toId: 'dcbadcd2-9359-48ac-8b86-88e38a092a2b',
         toRole: 'usage',
         relationship_type: 'uses',
-        stix_id_key: stixCoreRelationshipStixId,
+        stix_id: stixCoreRelationshipStixId,
         description: 'StixCoreRelationship description',
       },
     };
@@ -136,18 +136,15 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should add relation in stixCoreRelationship', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!, $input: RelationAddInput!) {
+      mutation StixCoreRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         stixCoreRelationshipEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on StixCoreRelationship {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -174,11 +171,11 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should delete relation in stixCoreRelationship', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation StixCoreRelationshipEdit($id: ID!, $relationId: ID!) {
+      mutation StixCoreRelationshipEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         stixCoreRelationshipEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

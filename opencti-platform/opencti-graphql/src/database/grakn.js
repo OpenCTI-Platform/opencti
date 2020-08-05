@@ -432,7 +432,7 @@ export const queryAttributeValueByGraknId = async (id) => {
  * @returns {Promise}
  */
 const loadConcept = async (tx, concept, args = {}) => {
-  const { internalId, relationsMap = new Map(), noCache = false, infer = false, explanationAlias = new Map() } = args;
+  const { internalId, relationsMap = new Map(), noCache = false, infer = false } = args;
   const conceptBaseType = concept.baseType;
   // const types = await conceptTypes(tx, concept);
   const remoteConceptType = await concept.type();
@@ -504,26 +504,6 @@ const loadConcept = async (tx, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async (roleItem) => {
           const targetRole = last(roleItem).values().next();
-          const roleTargetId = targetRole.value.id;
-          const conceptFromMap = relationsMap.get(roleTargetId);
-          if (conceptFromMap) {
-            const { alias } = conceptFromMap;
-            // eslint-disable-next-line prettier/prettier
-            return head(roleItem)
-              .label()
-              .then(async (roleLabel) => {
-                // For inference rules we cant use the from/to convention
-                // So we need to specify it differently through the relation name.
-                const useAlias = explanationAlias.get(roleLabel) || alias;
-                return {
-                  [useAlias]: null, // With be use lazily
-                  [`${useAlias}Id`]: args[`${useAlias}Id`],
-                  [`${useAlias}Role`]: roleLabel,
-                  [`${useAlias}Type`]: conceptFromMap.type,
-                };
-              });
-          }
-          // Target was not resolved but we can just infer from natural
           const remoteTargetType = await targetRole.value.type();
           const roleType = await remoteTargetType.label();
           // eslint-disable-next-line prettier/prettier
@@ -583,7 +563,7 @@ export const getSingleValueNumber = (query, infer = false) => {
 };
 
 const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts = {}) => {
-  const { infer = false, noCache = false, explanationAlias = new Map() } = conceptOpts;
+  const { infer = false, noCache = false, isInferenceQuery = false } = conceptOpts;
   const plainEntities = filter((e) => !isEmpty(e) && !isNil(e), entities);
   if (answers.length === 0) return [];
   // 02. Query concepts and rebind the data
@@ -597,7 +577,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
           // If internal id of the element is not directly accessible
           // And the element is part of element needed for the result, ensure the key is asked in the query.
           let conceptInternalId = internalIdKey;
-          if (!conceptInternalId && includes(alias, plainEntities)) {
+          if (!isInferenceQuery && !conceptInternalId && includes(alias, plainEntities)) {
             const conceptInternalIdVar = answer.map().get(`${alias}_id`);
             if (!conceptInternalIdVar) {
               throw DatabaseError(`Query must ask for ${alias}_id`, { conceptQueryVars });
@@ -659,7 +639,6 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
         relationsMap: l.relationsMap,
         noCache,
         infer,
-        explanationAlias,
       })
     )
   )(queryConcepts);
@@ -844,9 +823,6 @@ export const listRelations = async (relationshipType, args) => {
   const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
-  if (haveTargetFilters || fromTypesFilter || toTypesFilter || search) {
-    throw DatabaseError('Cant list relation with types filtering or search if from or to id are not specified');
-  }
 
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && includes('.', orderBy);
@@ -964,7 +940,10 @@ export const listRelations = async (relationshipType, args) => {
     // eslint-disable-next-line no-shadow
     const { relation, fromRole: fromRoleFilter, toRole: toRoleFilter, id, relationId } = relationFilter;
     const pEid = escapeString(id);
-    const relationQueryPart = `$${relationRef}(${fromRoleFilter}:$rel, ${toRoleFilter}:$pointer) isa ${relation}; $pointer has internal_id "${pEid}";`;
+    const relationQueryPart = `$${relationRef}(${fromRoleFilter}:$rel, ${toRoleFilter}:$pointer) isa ${relation}, has internal_id $${relationRef}_id;
+    $rel has internal_id ${fromRoleFilter.includes('_from') ? `$${relationRef}_from_id` : `$${relationRef}_to_id`};
+    $pointer has internal_id ${toRoleFilter.includes('_to') ? `$${relationRef}_to_id` : `$${relationRef}_from_id`};
+    $pointer has internal_id "${pEid}";`;
     relationsFields.push(relationQueryPart);
     if (relationId) {
       attributesFilters.push(`$rel has internal_id "${escapeString(relationId)}";`);
@@ -1274,7 +1253,7 @@ const flatAttributesForObject = (data) => {
 // region mutation relation
 const createRelationRaw = async (user, input, opts = {}) => {
   const { fromId, toId, relationship_type: relationshipType } = input;
-  const { reversedReturn = false, noLog = false } = opts;
+  const { noLog = false } = opts;
   // 01. First fix the direction of the relation
   if (!fromId || !toId) throw FunctionalError(`Relation without from or to`, { input });
   if (fromId === toId) {
@@ -1446,17 +1425,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   }
   await Promise.all(postOperations);
   // 06. Return result if no need to reverse the relations from and to
-  if (reversedReturn !== true) return createdRel;
-  // 07. Return result inversed if asked
-  /* istanbul ignore next */
-  return pipe(
-    assoc('fromId', createdRel.toId),
-    assoc('fromRole', createdRel.toRole),
-    assoc('fromType', createdRel.toType),
-    assoc('toId', createdRel.fromId),
-    assoc('toRole', createdRel.fromRole),
-    assoc('toType', createdRel.fromType)
-  )(createdRel);
+  return createdRel;
 };
 const addCreatedBy = async (user, fromInternalId, createdById, opts = {}) => {
   if (!createdById) return undefined;
@@ -1962,10 +1931,10 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   if (isNil(scopeType)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
   }
-  const efromId = escapeString(fromId);
-  const etoId = escapeString(toId);
-  const read = `match $from has internal_id "${efromId}"; 
-    $to has internal_id "${etoId}"; 
+  const fromThing = await internalLoadEntityById(fromId);
+  const toThing = await internalLoadEntityById(toId);
+  const read = `match $from has internal_id "${fromThing.internal_id}"; 
+    $to has internal_id "${toThing.internal_id}"; 
     $rel($from, $to) isa ${relationshipType}, has internal_id $rel_id;
     $from has internal_id $rel_from_id;
     $to has internal_id $rel_to_id;
@@ -2005,7 +1974,7 @@ export const getRelationInferredById = async (id) => {
       [answerConceptMap],
       extractQueryVars(query), //
       [INFERRED_RELATION_KEY],
-      { noCache: true }
+      { noCache: true, isInferenceQuery: true }
     );
     const relation = head(concepts).rel;
     const explanation = await answerConceptMap.explanation();
@@ -2017,16 +1986,8 @@ export const getRelationInferredById = async (id) => {
       const explanationKeys = Array.from(explanationMap.keys());
       const queryVars = map((v) => ({ alias: v }), explanationKeys);
       const explanationRelationKey = last(filter((n) => n.includes(INFERRED_RELATION_KEY), explanationKeys));
-      // Because of multiple relations, we cannot use the from/to alias
-      // So we use the relation name to specify the rel_from_to
-      const [, from, to] = explanationRelationKey.split('_');
-      const fromEntry = [from.replace('-', '_'), 'from'];
-      const toEntry = [to.replace('-', '_'), 'to'];
-      const explanationAlias = new Map([fromEntry, toEntry]);
       // eslint-disable-next-line no-await-in-loop
-      const explanationConcepts = await getConcepts(rTx, [explanationAnswer], queryVars, [explanationRelationKey], {
-        explanationAlias,
-      });
+      const explanationConcepts = await getConcepts(rTx, [explanationAnswer], queryVars, [explanationRelationKey]);
       inferences.push({ node: head(explanationConcepts)[explanationRelationKey] });
     }
     return pipe(assoc('inferences', { edges: inferences }))(relation);

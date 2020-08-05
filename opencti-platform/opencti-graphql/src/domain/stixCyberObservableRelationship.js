@@ -29,16 +29,12 @@ export const findById = (stixCyberObservableRelationshipId) => {
 };
 
 // region mutations
-export const addStixCyberObservableRelationship = async (user, input, reversedReturn = false) => {
+export const addStixCyberObservableRelationship = async (user, input) => {
   const finalInput = pipe(
     assoc('fromType', ABSTRACT_STIX_CYBER_OBSERVABLE),
     assoc('toType', ABSTRACT_STIX_CYBER_OBSERVABLE)
   )(input);
-  const created = await createRelation(user, finalInput, {
-    reversedReturn,
-    isStixCyberObservableRelationship: true,
-    noLog: true,
-  });
+  const created = await createRelation(user, finalInput, { isStixCyberObservableRelationship: true, noLog: true });
   return notify(BUS_TOPICS.StixCyberObservableRelationship.ADDED_TOPIC, created, user);
 };
 

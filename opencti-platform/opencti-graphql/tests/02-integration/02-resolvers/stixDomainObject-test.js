@@ -72,7 +72,7 @@ describe('StixDomainObject resolver standard behavior', () => {
       input: {
         name: 'StixDomainObject',
         type: 'Report',
-        stix_id_key: stixDomainObjectStixId,
+        stix_id: stixDomainObjectStixId,
         description: 'StixDomainObject description',
         tags: ['ebd3398f-2189-4597-b994-5d1ab310d4bc', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
       },
@@ -210,18 +210,15 @@ describe('StixDomainObject resolver standard behavior', () => {
   });
   it('should add relation in stixDomainObject', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation StixDomainObjectEdit($id: ID!, $input: RelationAddInput!) {
+      mutation StixDomainObjectEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         stixDomainObjectEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on StixDomainObject {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -248,11 +245,11 @@ describe('StixDomainObject resolver standard behavior', () => {
   });
   it('should delete relation in stixDomainObject', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation StixDomainObjectEdit($id: ID!, $relationId: ID!) {
+      mutation StixDomainObjectEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         stixDomainObjectEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

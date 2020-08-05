@@ -1,7 +1,7 @@
 import { assoc, map, values } from 'ramda';
 import { executeRead, executeWrite } from '../database/grakn';
 
-export const GATHERING_TARGETS_RULE = '391d08b1-deb5-434f-9a5d-cc2441abd601';
+export const PART_OF_TARGETS_RULE = '391d08b1-deb5-434f-9a5d-cc2441abd601';
 const inferences = {
   'b5c30c61-beb9-4d45-b742-701963ca1f9a': {
     id: 'b5c30c61-beb9-4d45-b742-701963ca1f9a',
@@ -9,10 +9,10 @@ const inferences = {
     rule:
       'AttributionAttributionRule sub rule,\n' +
       '    when {\n' +
-      '      $rel1_attribution_origin(attributed-to_from: $origin, attributed-to_to: $entity) isa attributed-to;\n' +
-      '      $rel2_attribution_origin(attributed-to_from: $entity, attributed-to_to: $subentity) isa attributed-to;\n' +
+      '      $rel1_attributed-to_from_attributed-to_to(attributed-to_from: $subEntity, attributed-to_to: $entity) isa attributed-to;\n' +
+      '      $rel2_attributed-to_from_attributed-to_to(attributed-to_from: $entity, attributed-to_to: $parentEntity) isa attributed-to;\n' +
       '    }, then {\n' +
-      '      (attributed-to_from: $origin, attributed-to_to: $subentity) isa attributed-to;\n' +
+      '      (attributed-to_from: $subEntity, attributed-to_to: $parentEntity) isa attributed-to;\n' +
       '    };',
     description:
       'This rule can be used to infer the following fact: if an entity A is attributed to an entity B and the entity B is attributed to an entity C, the entity A is also attributed to the entity C.',
@@ -73,16 +73,16 @@ const inferences = {
     description:
       'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is located in an entity C, then the entity A also targets the entity C.',
   },
-  [GATHERING_TARGETS_RULE]: {
-    id: GATHERING_TARGETS_RULE,
-    name: 'GatheringTargetsRule',
+  [PART_OF_TARGETS_RULE]: {
+    id: PART_OF_TARGETS_RULE,
+    name: 'PartOfTargetsRule',
     rule:
-      '    GatheringTargetsRule sub rule,\n' +
+      '    PartOfTargetsRule sub rule,\n' +
       '    when {\n' +
-      '      $rel1_part-of_gather(gather: $parent, part_of: $entity) isa gathering;\n' +
-      '      $rel2_source_target(source: $source, target: $entity) isa targets;\n' +
+      '      $rel1_part-of_from_part-of_to(part-of_from: $subEntity, part-of_to: $entity) isa part-of;\n' +
+      '      $rel2_source_target(targets_from: $threat, targets_to: $subEntity) isa targets;\n' +
       '    }, then {\n' +
-      '      (source: $source, target: $parent) isa targets;\n' +
+      '      (targets_from: $threat, targets_to: $entity) isa targets;\n' +
       '    };\n',
     description:
       'This rule can be used to infer the following fact: if an entity A is part of an entity B, and the entity C targets the entity A, then the entity C targets the entity B.',

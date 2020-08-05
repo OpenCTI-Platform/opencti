@@ -327,7 +327,10 @@ class ReportKnowledgeGraphComponent extends Component {
       this.props.engine.repaintCanvas();
     }
 
-    if (this.props.report.x_opencti_graph_data !== prevProps.report.x_opencti_graph_data) {
+    if (
+      this.props.report.x_opencti_graph_data
+      !== prevProps.report.x_opencti_graph_data
+    ) {
       this.updateView();
     }
   }
@@ -345,7 +348,9 @@ class ReportKnowledgeGraphComponent extends Component {
       && this.props.report.x_opencti_graph_data.length > 0
     ) {
       graphData = JSON.parse(
-        Buffer.from(this.props.report.x_opencti_graph_data, 'base64').toString('ascii'),
+        Buffer.from(this.props.report.x_opencti_graph_data, 'base64').toString(
+          'ascii',
+        ),
       );
     }
 
@@ -465,7 +470,9 @@ class ReportKnowledgeGraphComponent extends Component {
       && this.props.report.x_opencti_graph_data.length > 0
     ) {
       graphData = JSON.parse(
-        Buffer.from(this.props.report.x_opencti_graph_data, 'base64').toString('ascii'),
+        Buffer.from(this.props.report.x_opencti_graph_data, 'base64').toString(
+          'ascii',
+        ),
       );
     }
 

@@ -90,7 +90,7 @@ describe('Campaign resolver standard behavior', () => {
     const CAMPAIGN_TO_CREATE = {
       input: {
         name: 'Campaign',
-        stix_id_key: campaignStixId,
+        stix_id: campaignStixId,
         description: 'Campaign description',
         first_seen: '2020-03-24T10:51:20+00:00',
         last_seen: '2020-03-24T10:51:20+00:00',
@@ -203,18 +203,15 @@ describe('Campaign resolver standard behavior', () => {
   });
   it('should add relation in campaign', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $input: RelationAddInput!) {
+      mutation CampaignEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         campaignEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Campaign {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -230,22 +227,20 @@ describe('Campaign resolver standard behavior', () => {
       variables: {
         id: campaignInternalId,
         input: {
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
         },
       },
     });
     expect(queryResult.data.campaignEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    campaignMarkingDefinitionRelationId =
-      queryResult.data.campaignEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in campaign', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $relationId: ID!) {
+      mutation CampaignEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         campaignEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -260,7 +255,8 @@ describe('Campaign resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: campaignInternalId,
-        relationId: campaignMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.campaignEdit.relationDelete.objectMarking.edges.length).toEqual(0);

@@ -75,7 +75,7 @@ describe('Region resolver standard behavior', () => {
     const REGION_TO_CREATE = {
       input: {
         name: 'Region',
-        stix_id_key: regionStixId,
+        stix_id: regionStixId,
         description: 'Region description',
       },
     };
@@ -180,18 +180,15 @@ describe('Region resolver standard behavior', () => {
   });
   it('should add relation in region', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation RegionEdit($id: ID!, $input: RelationAddInput!) {
+      mutation RegionEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         regionEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Region {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -213,16 +210,15 @@ describe('Region resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.regionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    regionMarkingDefinitionRelationId =
-      queryResult.data.regionEdit.relationAdd.from.objectMarking.edges[0].relation.id;
+    regionMarkingDefinitionRelationId = queryResult.data.regionEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in region', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation RegionEdit($id: ID!, $relationId: ID!) {
+      mutation RegionEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         regionEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

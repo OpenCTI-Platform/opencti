@@ -133,7 +133,7 @@ describe('Role resolver standard behavior', () => {
   });
   it('should add relation in role', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation RoleEdit($id: ID!, $input: RelationAddInput!) {
+      mutation RoleEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         roleEdit(id: $id) {
           relationAdd(input: $input) {
             id

@@ -8143,17 +8143,13 @@ type Mutation {
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
-  stixCyberObservableRelationshipAdd(
-    input: StixCyberObservableRelationshipAddInput
-    reversedReturn: Boolean
-  ): StixCyberObservableRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableRelationshipEdit(id: ID!): StixCyberObservableRelationshipEditMutations
     @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX SIGHTING RELATIONSHIPS
-  stixSightingRelationshipAdd(
-    input: StixSightingRelationshipAddInput
-    reversedReturn: Boolean
-  ): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 }

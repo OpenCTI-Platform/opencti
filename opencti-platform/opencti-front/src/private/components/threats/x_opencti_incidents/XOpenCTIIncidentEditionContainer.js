@@ -88,13 +88,13 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
           </AppBar>
           {this.state.currentTab === 0 && (
             <XOpenCTIIncidentEditionOverview
-                xOpenCTIIncidentId={xOpenCTIIncidentId}
+              xOpenCTIIncidentId={xOpenCTIIncidentId}
               context={editContext}
             />
           )}
           {this.state.currentTab === 1 && (
             <XOpenCTIIncidentEditionDetails
-                xOpenCTIIncidentId={xOpenCTIIncidentId}
+              xOpenCTIIncidentId={xOpenCTIIncidentId}
               context={editContext}
             />
           )}

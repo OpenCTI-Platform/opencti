@@ -256,7 +256,7 @@ const stixCoreRelationshipCreationFromEntityMutation = graphql`
     $input: StixCoreRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
-    stixCoreRelationshipAdd(input: $input, reversedReturn: $reversedReturn) {
+    stixCoreRelationshipAdd(input: $input) {
       ...EntityStixCoreRelationshipLine_node
     }
   }
@@ -322,10 +322,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     )(values);
     commitMutation({
       mutation: stixCoreRelationshipCreationFromEntityMutation,
-      variables: {
-        input: finalValues,
-        reversedReturn: !this.props.isFrom,
-      },
+      variables: { input: finalValues },
       updater: (store) => {
         if (typeof this.props.onCreate !== 'function') {
           const payload = store.getRootField('stixCoreRelationshipAdd');

@@ -67,7 +67,7 @@ describe('Organization resolver standard behavior', () => {
     const ORGANIZATION_TO_CREATE = {
       input: {
         name: 'Organization',
-        stix_id_key: organizationStixId,
+        stix_id: organizationStixId,
         description: 'Organization description',
       },
     };
@@ -159,18 +159,15 @@ describe('Organization resolver standard behavior', () => {
   });
   it('should add relation in organization', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: RelationAddInput!) {
+      mutation OrganizationEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         organizationEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Organization {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -197,11 +194,11 @@ describe('Organization resolver standard behavior', () => {
   });
   it('should delete relation in organization', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $relationId: ID!) {
+      mutation OrganizationEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         organizationEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

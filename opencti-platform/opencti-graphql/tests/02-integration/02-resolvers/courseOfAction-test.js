@@ -51,7 +51,6 @@ const READ_QUERY = gql`
 
 describe('CourseOfAction resolver standard behavior', () => {
   let courseOfActionInternalId;
-  let courseOfActionMarkingDefinitionRelationId;
   const courseOfActionStixId = 'course-of-action--1a80c59c-d839-4984-af04-04f3286d8f89';
   it('should courseOfAction created', async () => {
     const CREATE_QUERY = gql`
@@ -67,7 +66,7 @@ describe('CourseOfAction resolver standard behavior', () => {
     const COURSE_OF_ACTION_TO_CREATE = {
       input: {
         name: 'CourseOfAction',
-        stix_id_key: courseOfActionStixId,
+        stix_id: courseOfActionStixId,
         description: 'CourseOfAction description',
       },
     };
@@ -161,18 +160,15 @@ describe('CourseOfAction resolver standard behavior', () => {
   });
   it('should add relation in courseOfAction', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CourseOfActionEdit($id: ID!, $input: RelationAddInput!) {
+      mutation CourseOfActionEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         courseOfActionEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on CourseOfAction {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -194,16 +190,14 @@ describe('CourseOfAction resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.courseOfActionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    courseOfActionMarkingDefinitionRelationId =
-      queryResult.data.courseOfActionEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in courseOfAction', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CourseOfActionEdit($id: ID!, $relationId: ID!) {
+      mutation CourseOfActionEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         courseOfActionEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -218,7 +212,8 @@ describe('CourseOfAction resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: courseOfActionInternalId,
-        relationId: courseOfActionMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.courseOfActionEdit.relationDelete.objectMarking.edges.length).toEqual(0);

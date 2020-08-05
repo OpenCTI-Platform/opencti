@@ -180,8 +180,8 @@ export const stixRelations = (stixCoreObjectId, args) => {
 };
 
 // region mutations
-export const addStixCoreRelationship = async (user, stixCoreRelationship, reversedReturn = false) => {
-  const created = await createRelation(user, stixCoreRelationship, { reversedReturn });
+export const addStixCoreRelationship = async (user, stixCoreRelationship) => {
+  const created = await createRelation(user, stixCoreRelationship);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 

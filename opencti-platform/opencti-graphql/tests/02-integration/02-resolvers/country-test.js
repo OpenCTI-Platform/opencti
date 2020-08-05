@@ -47,7 +47,6 @@ const READ_QUERY = gql`
 
 describe('Country resolver standard behavior', () => {
   let countryInternalId;
-  let countryMarkingDefinitionRelationId;
   const countryStixId = 'identity--93b1ee77-79d0-461d-8096-7c83b7a77646';
   it('should country created', async () => {
     const CREATE_QUERY = gql`
@@ -63,7 +62,7 @@ describe('Country resolver standard behavior', () => {
     const COUNTRY_TO_CREATE = {
       input: {
         name: 'Country',
-        stix_id_key: countryStixId,
+        stix_id: countryStixId,
         description: 'Country description',
       },
     };
@@ -154,18 +153,15 @@ describe('Country resolver standard behavior', () => {
   });
   it('should add relation in country', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CountryEdit($id: ID!, $input: RelationAddInput!) {
+      mutation CountryEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         countryEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Country {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -187,16 +183,14 @@ describe('Country resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.countryEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    countryMarkingDefinitionRelationId =
-      queryResult.data.countryEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in country', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CountryEdit($id: ID!, $relationId: ID!) {
+      mutation CountryEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         countryEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -211,7 +205,8 @@ describe('Country resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: countryInternalId,
-        relationId: countryMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.countryEdit.relationDelete.objectMarking.edges.length).toEqual(0);

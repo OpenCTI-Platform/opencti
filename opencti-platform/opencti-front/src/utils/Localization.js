@@ -664,8 +664,7 @@ const i18n = {
       '[Victimology] Distribution': '[Victimologie] Répartition',
       '[Victimology] Timeseries': '[Victimologie] Séries temporelles',
       '[Campaigns] Timeseries': '[Campagnes] Séries temporelles',
-      '[Incidents] Timeseries':
-        '[Incidents] Séries temporelles',
+      '[Incidents] Timeseries': '[Incidents] Séries temporelles',
       '[TTPs] Distribution': '[TTPs] Répartition',
       '[Killchain] Tactics and procedures':
         '[Killchain] Tactiques et procédures',

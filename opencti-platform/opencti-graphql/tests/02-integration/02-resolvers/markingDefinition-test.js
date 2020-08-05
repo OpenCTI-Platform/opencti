@@ -58,7 +58,7 @@ describe('MarkingDefinition resolver standard behavior', () => {
     // Create the markingDefinition
     const MARKING_DEFINITION_TO_CREATE = {
       input: {
-        stix_id_key: markingDefinitionStixId,
+        stix_id: markingDefinitionStixId,
         definition_type: 'TLP',
         definition: 'TLP:TEST2',
         level: 0,

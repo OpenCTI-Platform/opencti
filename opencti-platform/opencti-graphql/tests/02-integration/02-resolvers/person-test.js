@@ -67,7 +67,7 @@ describe('Person resolver standard behavior', () => {
     const PERSON_TO_CREATE = {
       input: {
         name: 'Person',
-        stix_id_key: personStixId,
+        stix_id: personStixId,
         description: 'Person description',
       },
     };
@@ -158,18 +158,15 @@ describe('Person resolver standard behavior', () => {
   });
   it('should add relation in person', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation PersonEdit($id: ID!, $input: RelationAddInput!) {
+      mutation PersonEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         personEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on User {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -191,16 +188,15 @@ describe('Person resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.personEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    personMarkingDefinitionRelationId =
-      queryResult.data.personEdit.relationAdd.from.objectMarking.edges[0].relation.id;
+    personMarkingDefinitionRelationId = queryResult.data.personEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in person', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation PersonEdit($id: ID!, $relationId: ID!) {
+      mutation PersonEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         personEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

@@ -110,7 +110,7 @@ describe('Report resolver standard behavior', () => {
     const REPORT_TO_CREATE = {
       input: {
         name: 'Report',
-        stix_id_key: reportStixId,
+        stix_id: reportStixId,
         description: 'Report description',
         published: '2020-02-26T00:51:35.000Z',
       },
@@ -142,10 +142,11 @@ describe('Report resolver standard behavior', () => {
       query report($id: String!) {
         report(id: $id) {
           id
-          objectRefs {
+          objects {
             edges {
               node {
                 id
+                standard_id
               }
             }
           }
@@ -382,18 +383,15 @@ describe('Report resolver standard behavior', () => {
   });
   it('should add relation in report', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ReportEdit($id: ID!, $input: RelationAddInput!) {
+      mutation ReportEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         reportEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Report {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -415,16 +413,15 @@ describe('Report resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.reportEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    reportMarkingDefinitionRelationId =
-      queryResult.data.reportEdit.relationAdd.from.objectMarking.edges[0].relation.id;
+    reportMarkingDefinitionRelationId = queryResult.data.reportEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in report', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ReportEdit($id: ID!, $relationId: ID!) {
+      mutation ReportEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         reportEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

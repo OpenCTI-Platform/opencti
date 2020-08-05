@@ -110,7 +110,10 @@ class ThreatActorDetailsComponent extends Component {
           </Typography>
           <Markdown
             className="markdown"
-            source={`+ ${join('\n\n+ ', threatActor.goals ? threatActor.goals : [t('Unknown')])}`}
+            source={`+ ${join(
+              '\n\n+ ',
+              threatActor.goals ? threatActor.goals : [t('Unknown')],
+            )}`}
           />
         </Paper>
       </div>

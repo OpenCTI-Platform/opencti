@@ -537,7 +537,10 @@ class Dashboard extends Component {
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
                   query={dashboardStixCoreRelationshipsNumberQuery}
-                  variables={{ type: 'stix-core-relationship', endDate: dayAgo() }}
+                  variables={{
+                    type: 'stix-core-relationship',
+                    endDate: dayAgo(),
+                  }}
                   render={({ props }) => {
                     if (props && props.stixCoreRelationshipsNumber) {
                       const { total } = props.stixCoreRelationshipsNumber;

@@ -113,7 +113,7 @@ describe('Opinion resolver standard behavior', () => {
     const OPINION_TO_CREATE = {
       input: {
         name: 'Opinion',
-        stix_id_key: opinionStixId,
+        stix_id: opinionStixId,
         description: 'strongly-agree',
         explanation: 'Explanation of the opinion',
       },
@@ -385,18 +385,15 @@ describe('Opinion resolver standard behavior', () => {
   });
   it('should add relation in opinion', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation OpinionEdit($id: ID!, $input: RelationAddInput!) {
+      mutation OpinionEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         opinionEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Opinion {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -423,11 +420,11 @@ describe('Opinion resolver standard behavior', () => {
   });
   it('should delete relation in opinion', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation OpinionEdit($id: ID!, $relationId: ID!) {
+      mutation OpinionEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         opinionEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

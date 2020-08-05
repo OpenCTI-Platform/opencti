@@ -61,7 +61,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       input: {
         type: 'IPv4-Addr',
         observable_value: '8.8.8.8',
-        stix_id_key: stixCyberObservableStixId,
+        stix_id: stixCyberObservableStixId,
         description: 'StixCyberObservable description',
       },
     };
@@ -98,7 +98,10 @@ describe('StixCyberObservable resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: stixCyberObservableInternalId, input: { key: 'description', value: ['StixCyberObservable - test'] } },
+      variables: {
+        id: stixCyberObservableInternalId,
+        input: { key: 'description', value: ['StixCyberObservable - test'] },
+      },
     });
     expect(queryResult.data.stixCyberObservableEdit.fieldPatch.description).toEqual('StixCyberObservable - test');
   });
@@ -136,18 +139,15 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should add relation in stixCyberObservable', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation StixCyberObservableEdit($id: ID!, $input: RelationAddInput!) {
+      mutation StixCyberObservableEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         stixCyberObservableEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on StixCyberObservable {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -174,11 +174,11 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should delete relation in stixCyberObservable', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation StixCyberObservableEdit($id: ID!, $relationId: ID!) {
+      mutation StixCyberObservableEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         stixCyberObservableEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

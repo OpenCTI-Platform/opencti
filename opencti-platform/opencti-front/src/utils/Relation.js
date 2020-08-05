@@ -50,7 +50,12 @@ const relationsTypesMapping = {
   'Indicator_Threat-Actor': ['indicates'],
   Indicator_Tool: ['indicates'],
   'Indicator_Observed-Data': ['based-on'],
-  Infrastructure_Infrastructure: ['communicates-with', 'consists-of', 'controls', 'uses'],
+  Infrastructure_Infrastructure: [
+    'communicates-with',
+    'consists-of',
+    'controls',
+    'uses',
+  ],
   'Infrastructure_IPv4-Addr': ['communicates-with'],
   'Infrastructure_IPv6-Addr': ['communicates-with'],
   'Infrastructure_Domain-Name': ['communicates-with'],

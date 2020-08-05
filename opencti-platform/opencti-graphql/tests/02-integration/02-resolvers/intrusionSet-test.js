@@ -141,18 +141,15 @@ describe('Intrusion set resolver standard behavior', () => {
   });
   it('should add relation in intrusion set', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation IntrusionSetEdit($id: ID!, $input: RelationAddInput!) {
+      mutation IntrusionSetEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         intrusionSetEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on IntrusionSet {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -179,11 +176,11 @@ describe('Intrusion set resolver standard behavior', () => {
   });
   it('should delete relation in intrusion set', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation IntrusionSetEdit($id: ID!, $relationId: ID!) {
+      mutation IntrusionSetEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         intrusionSetEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

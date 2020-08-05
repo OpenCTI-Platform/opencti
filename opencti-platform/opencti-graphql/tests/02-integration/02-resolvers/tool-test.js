@@ -67,7 +67,7 @@ describe('Tool resolver standard behavior', () => {
     const TOOL_TO_CREATE = {
       input: {
         name: 'Tool',
-        stix_id_key: toolStixId,
+        stix_id: toolStixId,
         description: 'Tool description',
         killChainPhases: ['2a2202bd-1da6-4668-9fc5-ad1017e974bc'],
       },
@@ -151,18 +151,15 @@ describe('Tool resolver standard behavior', () => {
   });
   it('should add relation in tool', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ToolEdit($id: ID!, $input: RelationAddInput!) {
+      mutation ToolEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         toolEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Tool {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -184,16 +181,15 @@ describe('Tool resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.toolEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    toolMarkingDefinitionRelationId =
-      queryResult.data.toolEdit.relationAdd.from.objectMarking.edges[0].relation.id;
+    toolMarkingDefinitionRelationId = queryResult.data.toolEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in tool', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ToolEdit($id: ID!, $relationId: ID!) {
+      mutation ToolEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         toolEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

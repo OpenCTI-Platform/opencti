@@ -37,7 +37,10 @@ class EntityStixCyberObservables extends Component {
       this.setState({
         targetEntityTypes: append(
           type,
-          filter((t) => t !== 'Stix-Cyber-Observable', this.state.targetEntityTypes),
+          filter(
+            (t) => t !== 'Stix-Cyber-Observable',
+            this.state.targetEntityTypes,
+          ),
         ),
       });
     }

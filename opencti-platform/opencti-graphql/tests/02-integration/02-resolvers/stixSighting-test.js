@@ -5,7 +5,7 @@ const READ_QUERY = gql`
   query StixSighting($id: String!) {
     stixSighting(id: $id) {
       id
-      stix_id_key
+      stix_id
       description
       toStix
       editContext {
@@ -25,7 +25,7 @@ describe('StixSighting resolver standard behavior', () => {
       mutation StixDomainRelationAdd($input: StixSightingAddInput) {
         stixSightingAdd(input: $input) {
           id
-          stix_id_key
+          stix_id
           description
         }
       }
@@ -49,7 +49,7 @@ describe('StixSighting resolver standard behavior', () => {
     expect(stixDomainEntity.data.stixSightingAdd).not.toBeNull();
     expect(stixDomainEntity.data.stixSightingAdd.description).toEqual('StixSighting description');
     stixSightingInternalId = stixDomainEntity.data.stixSightingAdd.id;
-    stixSightingStixId = stixDomainEntity.data.stixSightingAdd.stix_id_key;
+    stixSightingStixId = stixDomainEntity.data.stixSightingAdd.stix_id;
   });
   it('should stixSighting loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixSightingInternalId } });
@@ -133,18 +133,15 @@ describe('StixSighting resolver standard behavior', () => {
   });
   it('should add relation in stixSighting', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation StixSightingEdit($id: ID!, $input: RelationAddInput!) {
+      mutation StixSightingEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         stixSightingEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on StixSighting {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -171,11 +168,11 @@ describe('StixSighting resolver standard behavior', () => {
   });
   it('should delete relation in stixSighting', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation StixSightingEdit($id: ID!, $relationId: ID!) {
+      mutation StixSightingEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         stixSightingEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id

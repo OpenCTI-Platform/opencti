@@ -186,13 +186,11 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes(
-            '/dashboard/threats/incidents/',
-          ) ? (
+          {location.pathname.includes('/dashboard/threats/incidents/') ? (
             <TopMenuXOpenCTIIncident />
-            ) : (
-              ''
-            )}
+          ) : (
+            ''
+          )}
           {location.pathname.includes('/dashboard/threats/malwares/') ? (
             <TopMenuMalware />
           ) : (

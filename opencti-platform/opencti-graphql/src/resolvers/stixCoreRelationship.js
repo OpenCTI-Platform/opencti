@@ -82,8 +82,7 @@ const stixCoreRelationshipResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
-    stixCoreRelationshipAdd: (_, { input, reversedReturn }, { user }) =>
-      addStixCoreRelationship(user, input, reversedReturn),
+    stixCoreRelationshipAdd: (_, { input }, { user }) => addStixCoreRelationship(user, input),
   },
   Subscription: {
     stixCoreRelationship: {

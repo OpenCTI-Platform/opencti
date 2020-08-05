@@ -80,7 +80,7 @@ describe('User resolver standard behavior', () => {
     const USER_TO_CREATE = {
       input: {
         name: 'User',
-        stix_id_key: userStixId,
+        stix_id: userStixId,
         description: 'User description',
         password: 'user',
         user_email: 'user@mail.com',
@@ -277,7 +277,7 @@ describe('User resolver standard behavior', () => {
     expect(group.data.groupAdd.name).toEqual('Group in user');
     groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: RelationAddInput!) {
+      mutation UserEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         userEdit(id: $id) {
           relationAdd(input: $input) {
             id
@@ -316,9 +316,9 @@ describe('User resolver standard behavior', () => {
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation UserEdit($id: ID!, $relationId: ID!) {
+      mutation UserEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         userEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             groups {
               edges {

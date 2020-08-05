@@ -246,10 +246,7 @@ const stixSightingRelationshipCreationFromEntityMutation = graphql`
     $input: StixSightingRelationshipAddInput!
     $reversedReturn: Boolean
   ) {
-    stixSightingRelationshipAdd(
-      input: $input
-      reversedReturn: $reversedReturn
-    ) {
+    stixSightingRelationshipAdd(input: $input) {
       ...EntityStixSightingRelationshipLine_node
     }
   }
@@ -319,10 +316,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
     )(values);
     commitMutation({
       mutation: stixSightingRelationshipCreationFromEntityMutation,
-      variables: {
-        input: finalValues,
-        reversedReturn: !this.props.isFrom,
-      },
+      variables: { input: finalValues },
       updater: (store) => {
         if (typeof this.props.onCreate !== 'function') {
           const payload = store.getRootField('stixSightingRelationshipAdd');
@@ -540,7 +534,10 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes('Stix-Cyber-Observable', fromEntity.parent_types)
+                      {includes(
+                        'Stix-Cyber-Observable',
+                        fromEntity.parent_types,
+                      )
                         ? t(`observable_${fromEntity.entity_type}`)
                         : t(
                           `entity_${
@@ -556,7 +553,10 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                     <span className={classes.name}>
                       {truncate(
                         /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Cyber-Observable', fromEntity.parent_types)
+                        includes(
+                          'Stix-Cyber-Observable',
+                          fromEntity.parent_types,
+                        )
                           ? fromEntity.observable_value
                           : fromEntity.entity_type === 'stix_relation'
                             || fromEntity.entity_type === 'stix-relation'

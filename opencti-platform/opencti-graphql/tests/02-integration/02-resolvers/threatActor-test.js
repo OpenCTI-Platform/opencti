@@ -60,7 +60,7 @@ describe('Threat actor resolver standard behavior', () => {
     const THREAT_ACTOR_TO_CREATE = {
       input: {
         name: 'Threat actor',
-        stix_id_key: threatActorStixId,
+        stix_id: threatActorStixId,
         description: 'Threat actor description',
       },
     };
@@ -141,18 +141,15 @@ describe('Threat actor resolver standard behavior', () => {
   });
   it('should add relation in threat actor', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ThreatActorEdit($id: ID!, $input: RelationAddInput!) {
+      mutation ThreatActorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         threatActorEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on ThreatActor {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -179,9 +176,9 @@ describe('Threat actor resolver standard behavior', () => {
   });
   it('should delete relation in threat actor', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ThreatActorEdit($id: ID!, $relationId: ID!) {
+      mutation ThreatActorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         threatActorEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             markingDefinitions {
               edges {
