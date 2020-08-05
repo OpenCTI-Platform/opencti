@@ -81,7 +81,7 @@ export const convertStixCoreRelationshipToStix = (data, extra = {}, onlyBase = t
   return finalData;
 };
 
-export const convertStixSightingRelationshipToStix = async (data, extra = null, onlyBase = true) => {
+export const convertStixSightingRelationshipToStix = async (data, extra = {}, onlyBase = true) => {
   const finalData = pipe(
     dissoc('standard_id'),
     dissoc('internal_id'),
@@ -116,7 +116,7 @@ export const convertStixMetaRelationshipToStix = (data, extra) => {
   return finalData;
 };
 
-export const convertDataToStix = async (data, eventType = null, eventExtraData = null) => {
+export const convertDataToStix = async (data, eventType = null, eventExtraData = {}) => {
   if (!data) {
     /* istanbul ignore next */
     throw FunctionalError('No data provided to STIX converter');

@@ -205,7 +205,7 @@ export const removeRole = async (userId, roleName) => {
     await wTx.query(query, { infer: false });
   });
   await clearUserTokenCache(userId);
-  return findById(userId, { isUser: true });
+  return findById(userId);
 };
 
 export const roleRemoveCapability = async (user, roleId, capabilityName) => {

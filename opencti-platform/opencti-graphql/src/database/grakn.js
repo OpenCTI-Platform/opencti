@@ -440,7 +440,7 @@ const loadConcept = async (tx, concept, args = {}) => {
   const index = inferIndexFromConceptType(conceptType);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
-  if (index !== null && infer === false && noCache === false && !useCache()) {
+  if (infer === false && noCache === false && !useCache()) {
     const conceptFromCache = await elLoadById(internalId, relationsMap, [index]);
     if (!conceptFromCache) {
       /* istanbul ignore next */

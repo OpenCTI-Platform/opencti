@@ -14,7 +14,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { buildPagination } from '../database/utils';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_GROUP, RELATION_MEMBER_OF } from '../utils/idGenerator';
+import { ENTITY_TYPE_GROUP, RELATION_MEMBER_OF } from '../utils/idGenerator';
 
 export const findById = (groupId) => {
   return loadEntityById(groupId, ENTITY_TYPE_GROUP);

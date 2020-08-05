@@ -1,19 +1,19 @@
 import { assoc, filter } from 'ramda';
 import {
   createRelation,
-  deleteRelationById, deleteRelationsByFromAndTo,
+  deleteRelationsByFromAndTo,
   escapeString,
   findWithConnectedRelations,
   internalLoadEntityById,
   listEntities,
   loadEntityById,
-  loadWithConnectedRelations
-} from "../database/grakn";
+  loadWithConnectedRelations,
+} from '../database/grakn';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { buildPagination } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess, FunctionalError } from "../config/errors";
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import {
   isStixCoreObject,
   isStixRelationship,
@@ -24,7 +24,6 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
   ENTITY_TYPE_LABEL,
-  ABSTRACT_STIX_META_OBJECT,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_CONTAINER_NOTE,
@@ -32,8 +31,11 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_DOMAIN_OBJECT, isStixMetaRelationship, ABSTRACT_STIX_META_RELATIONSHIP
-} from "../utils/idGenerator";
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  isStixMetaRelationship,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+} from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   let types = [];

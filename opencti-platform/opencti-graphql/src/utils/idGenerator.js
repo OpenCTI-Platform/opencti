@@ -688,22 +688,22 @@ const generateStixCoreRelationshipId = (type, data) => {
   const id = generateStixCoreRelationshipUUID(type, data);
   return `relationship--${id}`;
 };
-const generateStixMetaRelationshipUUID = (prefix, data) => {
+const generateStixMetaRelationshipUUID = (data) => {
   // eslint-disable-next-line camelcase
   const { fromId, toId } = data;
   return uuid({ from: fromId, to: toId });
 };
-const generateStixMetaRelationshipId = (type, data) => {
-  const id = generateStixMetaRelationshipUUID(type, data);
+const generateStixMetaRelationshipId = (data) => {
+  const id = generateStixMetaRelationshipUUID(data);
   return `relationship-meta--${id}`;
 };
-const generateStixSightingRelationshipUUID = (prefix, data) => {
+const generateStixSightingRelationshipUUID = (data) => {
   // eslint-disable-next-line camelcase
   const { fromId, toId } = data;
   return uuid({ from: fromId, to: toId });
 };
-const generateStixSightingRelationshipId = (type, data) => {
-  const id = generateStixSightingRelationshipUUID(type, data);
+const generateStixSightingRelationshipId = (data) => {
+  const id = generateStixSightingRelationshipUUID(data);
   return `sighting--${id}`;
 };
 // endregion
@@ -721,7 +721,7 @@ export const generateStandardId = (type, data) => {
   // Relations
   if (isInternalRelationship(type)) return generateInternalRelationshipId(type, data);
   if (isStixCoreRelationship(type)) return generateStixCoreRelationshipId(type, data);
-  if (isStixMetaRelationship(type)) return generateStixMetaRelationshipId(type, data);
+  if (isStixMetaRelationship(type)) return generateStixMetaRelationshipId(data);
   if (isStixSightingRelationship(type)) return generateStixSightingRelationshipId(type, data);
   throw DatabaseError(`Cant generate an id for ${type}`);
 };
