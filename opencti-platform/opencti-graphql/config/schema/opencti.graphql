@@ -934,7 +934,6 @@ interface StixCoreObject {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # Technical
   creator: User
@@ -1024,7 +1023,6 @@ interface StixDomainObject {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1129,7 +1127,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1250,7 +1247,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1330,7 +1326,6 @@ interface Container {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1424,7 +1419,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1548,7 +1542,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1668,7 +1661,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1792,7 +1784,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -1916,7 +1907,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2031,7 +2021,6 @@ interface Identity {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2143,7 +2132,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2267,7 +2255,6 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2386,7 +2373,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2516,7 +2502,6 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2648,7 +2633,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2761,7 +2745,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2890,7 +2873,6 @@ interface Location {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -2997,7 +2979,6 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3117,7 +3098,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3230,7 +3210,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3341,7 +3320,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3463,7 +3441,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3587,7 +3564,6 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3713,7 +3689,6 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3830,7 +3805,6 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -3946,7 +3920,6 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixDomainObject
   revoked: Boolean!
@@ -4063,7 +4036,6 @@ interface StixCyberObservable {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4087,7 +4059,6 @@ interface StixCyberObservable {
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # Technical
   creator: User
@@ -4133,7 +4104,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4157,7 +4127,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # AutonomousSystem
   number: Int!
@@ -4220,7 +4189,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4244,7 +4212,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # Directory
   path: String!
@@ -4311,7 +4278,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4335,7 +4301,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # DomainName
   value: String!
@@ -4393,7 +4358,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4417,7 +4381,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # EmailAddr
   value: String!
@@ -4478,7 +4441,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4502,7 +4464,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # EmailMessage
   is_multipart: Boolean
@@ -4573,7 +4534,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4597,7 +4557,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # EmailMimePartType
   body: String
@@ -4661,7 +4620,6 @@ interface HashedObservable {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4685,7 +4643,6 @@ interface HashedObservable {
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
   md5: String
@@ -4736,7 +4693,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4760,7 +4716,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
   md5: String
@@ -4836,7 +4791,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4860,7 +4814,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
   md5: String
@@ -4944,7 +4897,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -4968,7 +4920,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
   md5: String
@@ -5048,7 +4999,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5072,7 +5022,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # IPv4Addr
   value: String
@@ -5130,7 +5079,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5154,7 +5102,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # IPv4Addr
   value: String
@@ -5213,7 +5160,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5237,7 +5183,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # MacAddr
   value: String
@@ -5296,7 +5241,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5320,7 +5264,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # Mutex
   name: String
@@ -5379,7 +5322,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5403,7 +5345,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # NetworkTraffic
   extensions: String
@@ -5482,7 +5423,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5506,7 +5446,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # Process
   extensions: [String]
@@ -5577,7 +5516,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5601,7 +5539,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # Software
   name: String
@@ -5670,7 +5607,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5694,7 +5630,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # Url
   value: String
@@ -5753,7 +5688,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5777,7 +5711,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # UserAccount
   extensions: [String]
@@ -5864,7 +5797,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5888,7 +5820,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # WindowsRegistryKey
   attribute_key: String
@@ -5951,7 +5882,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -5975,7 +5905,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # WindowsRegistryKey
   name: String
@@ -6038,7 +5967,6 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -6062,7 +5990,6 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # X509V3ExtensionsType
   basic_constraints: String
@@ -6151,7 +6078,6 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -6175,7 +6101,6 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # XOpenCTICryptographicKey
   value: String
@@ -6234,7 +6159,6 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -6258,7 +6182,6 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # XOpenCTICryptocurrencyWallet
   value: String
@@ -6317,7 +6240,6 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -6341,7 +6263,6 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # XOpenCTIHostname
   value: String
@@ -6400,7 +6321,6 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -6424,7 +6344,6 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # XOpenCTIText
   value: String
@@ -6483,7 +6402,6 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
@@ -6507,7 +6425,6 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCyberObservableRelationshipConnection
   # XOpenCTIUserAgent
   value: String
@@ -6763,7 +6680,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
   ): StixCoreRelationshipConnection
   inferences: StixCoreRelationshipConnection
   killChainPhases: KillChainPhaseConnection
@@ -7562,7 +7478,6 @@ type Query {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
     stix: Boolean
   ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
   stixCoreRelationshipsTimeSeries(
@@ -7610,7 +7525,6 @@ type Query {
     search: String
     filters: [StixSightingRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
     toStix: Boolean
   ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
   stixSightingRelationshipsTimeSeries(
@@ -7655,7 +7569,6 @@ type Query {
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
-    forceNatural: Boolean
     toStix: Boolean
   ): StixCyberObservableRelationshipConnection @auth(for: [KNOWLEDGE])
   stixCyberObservableRelationshipsTimeSeries(

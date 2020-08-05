@@ -543,7 +543,7 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   const to = elBuildRelation('to', toConnection);
   return mergeAll([concept, from, to]);
 };
-export const elReconstructRelation = (concept, relationsMap = null, forceNatural = false) => {
+export const elReconstructRelation = (concept, relationsMap = null) => {
   const { connections } = concept;
   const entityType = concept.entity_type;
   // Need to rebuild the from and the to.
@@ -560,19 +560,19 @@ export const elReconstructRelation = (concept, relationsMap = null, forceNatural
   const queryFrom = Rfind((v) => v.alias === 'from', relationValues);
   const queryTo = Rfind((v) => v.alias === 'to', relationValues);
   // If map contains a key filtering
-  if (queryFrom && queryFrom.internalIdKey && forceNatural !== true) {
+  if (queryFrom && queryFrom.internalIdKey) {
     fromConnection = Rfind((connection) => connection.internal_id === queryFrom.internalIdKey, connections);
     toConnection = Rfind((connection) => connection.internal_id !== queryFrom.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
-  if (queryTo && queryTo.internalIdKey && forceNatural !== true) {
+  if (queryTo && queryTo.internalIdKey) {
     fromConnection = Rfind((connection) => connection.internal_id !== queryTo.internalIdKey, connections);
     toConnection = Rfind((connection) => connection.internal_id === queryTo.internalIdKey, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
   }
   // If map contains a role filtering.
   // Only need to check on one side, the 2 roles are provisioned in this case.
-  if (queryFrom && queryFrom.role && forceNatural !== true) {
+  if (queryFrom && queryFrom.role) {
     fromConnection = Rfind((connection) => connection.role === queryFrom.role, connections);
     toConnection = Rfind((connection) => connection.role === queryTo.role, connections);
     return elMergeRelation(concept, fromConnection, toConnection);
@@ -598,7 +598,6 @@ export const elPaginate = async (indexName, options = {}) => {
     orderBy = null,
     orderMode = 'asc',
     relationsMap = null,
-    forceNatural = false,
     connectionFormat = true, // TODO @Julien Refactor that
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
@@ -713,7 +712,7 @@ export const elPaginate = async (indexName, options = {}) => {
       const dataWithIds = map((n) => {
         const loadedElement = pipe(assoc('id', n._source.internal_id), assoc('_index', n._index))(n._source);
         if (loadedElement.base_type === BASE_TYPE_RELATION) {
-          return elReconstructRelation(loadedElement, relationsMap, forceNatural);
+          return elReconstructRelation(loadedElement, relationsMap);
         }
         if (loadedElement.event_data) {
           return assoc('event_data', JSON.stringify(loadedElement.event_data), loadedElement);

@@ -281,7 +281,7 @@ export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomain
   // 2. Copy the relationships
   await Promise.all(
     stixDomainObjectsIds.map(async (id) => {
-      const relations = await findAllStixRelations({ fromId: id, forceNatural: true });
+      const relations = await findAllStixRelations({ fromId: id });
       return Promise.all(
         relations.edges.map(async (relationEdge) => {
           const relation = relationEdge.node;

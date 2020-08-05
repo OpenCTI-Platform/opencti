@@ -127,22 +127,22 @@ describe('Grakn low level commands', () => {
     expect(queryPromise).rejects.toThrow();
   });
   it('should query vars fully extracted', async () => {
-    let vars = extractQueryVars('match $x sub report_class; get;');
+    let vars = extractQueryVars('match $x sub report_types; get;');
     expect(vars).not.toBeNull();
     expect(vars.length).toEqual(1);
     expect(head(vars).alias).toEqual('x');
     expect(head(vars).role).toBeUndefined();
     expect(head(vars).internalIdKey).toBeUndefined();
     // Extract vars with relation roles
-    vars = extractQueryVars('match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering; get;');
+    vars = extractQueryVars('match $to isa Sector; $rel(xxxx:$from, yyyy:$to) isa part-of; get;');
     expect(vars).not.toBeNull();
     expect(vars.length).toEqual(3);
     let aggregationMap = new Map(vars.map((i) => [i.alias, i]));
-    expect(aggregationMap.get('to').role).toEqual('gather');
-    expect(aggregationMap.get('from').role).toEqual('part_of');
+    expect(aggregationMap.get('from').role).toEqual('xxxx');
+    expect(aggregationMap.get('to').role).toEqual('yyyy');
     // Extract var with internal_id specified
     vars = extractQueryVars(
-      'match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering; $from has internal_id "ID"; get;'
+      'match $to isa Sector; $rel(part-of_from:$from, part-of_to:$to) isa part-of; $from has internal_id "ID"; get;'
     );
     expect(vars).not.toBeNull();
     expect(vars.length).toEqual(3);
@@ -162,16 +162,17 @@ describe('Grakn low level commands', () => {
     expect(aggregationMap.get('from').role).toEqual('part-of_from');
     expect(aggregationMap.get('to').role).toEqual('part-of_to');
   });
-  it('should query vars check inconsistency', async () => {
-    // Relation is not found
-    let query = 'match $to isa Sector; $rel(part-of_from:$from, $to) isa undefined; get;';
-    expect(() => extractQueryVars(query)).toThrowError();
-    // Relation is found, one role is ok, the other is missing
-    query = 'match $to isa Sector; $rel($to, part-of_to:$from) isa role_test_missing; get;';
-    expect(() => extractQueryVars(query)).toThrowError();
-    // Relation is found but the role specified is not in the map
-    query = 'match $to isa Sector; $rel(part-of_from:$to, $from) isa role_test_missing; get;';
-    expect(() => extractQueryVars(query)).toThrowError();
+  it('should throw exception when IDs are not requested', async () => {
+    // rel_id not found
+    let query =
+      'match $rel($from, $to) isa Basic-Relation; $from has internal_id $rel_from_id; $to has internal_id $rel_to_id; get;';
+    expect(find(query, ['rel'])).rejects.toThrow();
+    // from_id not found
+    query = 'match $rel($from, $to) isa Basic-Relation; get;';
+    expect(find(query, ['from'])).rejects.toThrow();
+    // to_id not found
+    query = 'match $rel($from, $to) isa Basic-Relation; get;';
+    expect(find(query, ['to'])).rejects.toThrow();
   });
 });
 
@@ -387,14 +388,16 @@ describe('Grakn entities listing', () => {
       const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
       const locations = await listEntities(['Location'], ['name'], options);
       expect(locations.edges.length).toEqual(6);
-      expect(head(locations.edges).node.name).toEqual('France');
-      expect(last(locations.edges).node.name).toEqual('Western Europe');
+      const firstResults = ['France'];
+      expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
+      expect(last(locations.edges).node.name).toEqual('Hietzing');
     } else {
       const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
       const locations = await listEntities(['Location'], ['name'], options);
       expect(locations.edges.length).toEqual(6);
-      expect(head(locations.edges).node.name).toEqual('France');
-      expect(last(locations.edges).node.name).toEqual('Western Europe');
+      const firstResults = ['France'];
+      expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
+      expect(last(locations.edges).node.name).toEqual('Hietzing');
     }
   });
   it.each(noCacheCases)('should list entities with attribute filters (noCache = %s)', async (noCache) => {
@@ -406,7 +409,7 @@ describe('Grakn entities listing', () => {
     const attacks = await listEntities(['Attack-Pattern'], ['name'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
-    expect(head(attacks.edges).node.standard_id).toEqual('attack-pattern--b3d981af-e739-5136-9819-660dcac40f61');
+    expect(head(attacks.edges).node.standard_id).toEqual('attack-pattern--98a44f20-3428-5b63-9b4f-71f86745af9e');
     expect(head(attacks.edges).node.stix_ids).toEqual(['attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc']);
   });
   it.each(noCacheCases)('should list multiple entities with attribute filters (noCache = %s)', async (noCache) => {
@@ -481,7 +484,7 @@ describe('Grakn relations listing', () => {
       'uses_to'
     ); // Roles with be set according to query specification
   });
-  it.each(noCacheCases)('should find relations inverse roles in grakn (noCache = %s)', async (noCache) => {
+  it.each(noCacheCases)('should find relations with role in Grakn (noCache = %s)', async (noCache) => {
     // Getting everything specifying all roles respect the roles of the query
     const relations = await find(
       'match $rel(uses_from:$from, uses_to:$to) isa uses, has internal_id $rel_id; ' +
@@ -540,10 +543,10 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list relations (noCache = %s)', async (noCache) => {
     const stixCoreRelationships = await listRelations('stix-core-relationship', { noCache });
     expect(stixCoreRelationships).not.toBeNull();
-    expect(stixCoreRelationships.edges.length).toEqual(24);
+    expect(stixCoreRelationships.edges.length).toEqual(noCache ? 48 : 24);
     const stixMetaRelationships = await listRelations('stix-meta-relationship', { noCache });
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(135);
+    expect(stixMetaRelationships.edges.length).toEqual(noCache ? 270 : 135);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('uses', { noCache, fromRole: 'uses_from', toRole: 'uses_to' });
@@ -833,7 +836,8 @@ describe('Grakn element loader', () => {
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should load entity by id - internal (noCache = %s)', async (noCache) => {
     // No type
-    const internalId = '685aac19-d2f6-4835-a256-0631bb322732';
+    const report = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const internalId = report.internal_id;
     let element = await internalLoadEntityById(internalId, { noCache });
     expect(element).not.toBeNull();
     expect(element.id).toEqual(internalId);
@@ -848,7 +852,8 @@ describe('Grakn element loader', () => {
   });
   it.each(noCacheCases)('should load entity by id (noCache = %s)', async (noCache) => {
     // No type
-    const internalId = '685aac19-d2f6-4835-a256-0631bb322732';
+    const report = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const internalId = report.internal_id;
     const loadPromise = loadEntityById(internalId, { noCache });
     expect(loadPromise).rejects.toThrow();
     const element = await loadEntityById(internalId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
@@ -868,7 +873,8 @@ describe('Grakn element loader', () => {
   });
   it.each(noCacheCases)('should load relation by id (noCache = %s)', async (noCache) => {
     // No type
-    const relationId = '209cbdf0-fc5e-47c9-8023-dd724993ae55';
+    const relation = await elLoadByStixId('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
+    const relationId = relation.internal_id;
     const loadPromise = loadRelationById(relationId, { noCache });
     expect(loadPromise).rejects.toThrow();
     const element = await loadRelationById(relationId, 'uses', { noCache });
@@ -993,11 +999,11 @@ describe('Grakn entities time series', () => {
     const aggregationMap = new Map(series.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020-02-29T23:00:00.000Z')).toEqual(1);
   });
-  it.each(noCacheCases)('should first seen relation time series (noCache = %s)', async (noCache) => {
+  it.each(noCacheCases)('should start time relation time series (noCache = %s)', async (noCache) => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
     const filters = [{ isRelation: true, type: 'attributed-to', value: '82316ffd-a0ec-4519-a454-6566f8f5676c' }];
     const options = {
-      field: 'first_seen',
+      field: 'start_time',
       operation: 'count',
       interval: 'month',
       startDate: '2020-01-01T00:00:00+01:00',
@@ -1013,7 +1019,7 @@ describe('Grakn entities time series', () => {
     // const { startDate, endDate, operation, field, interval, inferred = false } = options;
     const filters = [{ type: 'name', value: 'A new campaign' }];
     const options = {
-      field: 'first_seen',
+      field: 'start_time',
       operation: 'count',
       interval: 'month',
       startDate: '2020-01-01T00:00:00+01:00',
@@ -1176,8 +1182,8 @@ describe('Grakn entities distribution through relation', async () => {
   // const { limit = 10, order, inferred = false } = options;
   // const { relationship_type, remoterelationship_type, toType, fromId, field, operation } = options;
   // campaign--92d46985-17a6-4610-8be8-cc70c82ed214
-  const campaign = await elLoadByStixId('ampaign--92d46985-17a6-4610-8be8-cc70c82ed21');
   it('should relation distribution filtered by to (noCache = %s)', async () => {
+    const campaign = await elLoadByStixId('ampaign--92d46985-17a6-4610-8be8-cc70c82ed21');
     const options = {
       fromId: campaign.internal_id,
       field: 'name',

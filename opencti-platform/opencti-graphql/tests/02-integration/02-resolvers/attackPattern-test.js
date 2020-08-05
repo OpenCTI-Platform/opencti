@@ -23,6 +23,7 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
+          standard_id
           name
           description
         }
@@ -35,12 +36,14 @@ const READ_QUERY = gql`
   query attackPattern($id: String!) {
     attackPattern(id: $id) {
       id
+      standard_id
       name
       description
       killChainPhases {
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -48,6 +51,7 @@ const READ_QUERY = gql`
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -65,6 +69,7 @@ describe('AttackPattern resolver standard behavior', () => {
       mutation AttackPatternAdd($input: AttackPatternAddInput) {
         attackPatternAdd(input: $input) {
           id
+          standard_id
           name
           description
         }
@@ -108,13 +113,13 @@ describe('AttackPattern resolver standard behavior', () => {
   it('should attackPattern coursesOfAction be accurate', async () => {
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: 'dcbadcd2-9359-48ac-8b86-88e38a092a2b' },
+      variables: { id: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17' },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.attackPattern).not.toBeNull();
-    expect(queryResult.data.attackPattern.id).toEqual('dcbadcd2-9359-48ac-8b86-88e38a092a2b');
+    expect(queryResult.data.attackPattern.standard_id).toEqual('attack-pattern--71241c63-ddba-51cd-aa64-0b1d563ef1f0');
     expect(queryResult.data.attackPattern.coursesOfAction.edges.length).toEqual(1);
-    expect(queryResult.data.attackPattern.coursesOfAction.edges[0].node.id).toEqual(
+    expect(queryResult.data.attackPattern.coursesOfAction.edges[0].node.standard_id).toEqual(
       '326b7708-d4cf-4020-8cd1-9726b99895db'
     );
   });
@@ -179,10 +184,11 @@ describe('AttackPattern resolver standard behavior', () => {
             id
             from {
               ... on AttackPattern {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
                       id
+                      standard_id
                     }
                   }
                 }
@@ -212,10 +218,11 @@ describe('AttackPattern resolver standard behavior', () => {
         attackPatternEdit(id: $id) {
           relationDelete(relationId: $relationId) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
+                  standard_id
                 }
               }
             }

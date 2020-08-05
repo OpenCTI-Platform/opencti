@@ -23,6 +23,7 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
+          standard_id
           name
           description
         }
@@ -62,6 +63,7 @@ const READ_QUERY = gql`
   query campaign($id: String!) {
     campaign(id: $id) {
       id
+      standard_id
       name
       description
       toStix
@@ -78,6 +80,7 @@ describe('Campaign resolver standard behavior', () => {
       mutation CampaignAdd($input: CampaignAddInput) {
         campaignAdd(input: $input) {
           id
+          standard_id
           name
           description
         }

@@ -303,14 +303,6 @@ const getAliasInternalIdFilter = (query, alias) => {
   const keyVars = Array.from(query.matchAll(reg));
   return keyVars.length > 0 ? last(head(keyVars)) : undefined;
 };
-const extractRelationAlias = (alias, role, oppositeAlias, relationshipType) => {
-  const variables = [];
-  const oppositeRole = role.endsWith('_from') ? `${relationshipType}_to` : `${relationshipType}_from`;
-  // Control the role specified in the query.
-  variables.push({ role, alias, forceNatural: false });
-  variables.push({ role: oppositeRole, alias: oppositeAlias, forceNatural: false });
-  return variables;
-};
 /**
  * Extract all vars from a grakn query
  * @param query
@@ -324,6 +316,10 @@ export const extractQueryVars = (query) => {
       const [, left, right, relationshipType] = r;
       const [leftRole, leftAlias] = includes(':', left) ? left.trim().split(':') : [null, left];
       const [rightRole, rightAlias] = includes(':', right) ? right.trim().split(':') : [null, right];
+      const roleForLeft =
+        leftRole || (rightRole && rightRole.includes('_from') ? `${relationshipType}_to` : `${relationshipType}_from`);
+      const roleForRight =
+        rightRole || (leftRole && leftRole.includes('_to') ? `${relationshipType}_from` : `${relationshipType}_to`);
       const lAlias = leftAlias.trim().replace('$', '');
       const lKeyFilter = getAliasInternalIdFilter(query, lAlias);
       const rAlias = rightAlias.trim().replace('$', '');
@@ -331,25 +327,13 @@ export const extractQueryVars = (query) => {
       // If one filtering key is specified, just return the duo with no roles
       if (lKeyFilter || rKeyFilter) {
         return [
-          { alias: lAlias, internalIdKey: lKeyFilter, forceNatural: false },
-          { alias: rAlias, internalIdKey: rKeyFilter, forceNatural: false },
+          { alias: lAlias, internalIdKey: lKeyFilter },
+          { alias: rAlias, internalIdKey: rKeyFilter },
         ];
       }
-      // If no filtering, roles must be fully specified or not specified.
-      // If missing left role
-      if (leftRole === null && rightRole !== null) {
-        return extractRelationAlias(rAlias, rightRole, lAlias, relationshipType);
-      }
-      // If missing right role
-      if (leftRole !== null && rightRole === null) {
-        return extractRelationAlias(lAlias, leftRole, rAlias, relationshipType);
-      }
-      // Else, we have both or nothing
-      const roleForRight = rightRole ? rightRole.trim() : undefined;
-      const roleForLeft = leftRole ? leftRole.trim() : undefined;
       return [
-        { role: roleForRight, alias: rAlias, forceNatural: roleForRight === undefined },
-        { role: roleForLeft, alias: lAlias, forceNatural: roleForLeft === undefined },
+        { role: roleForLeft.trim(), alias: lAlias },
+        { role: roleForRight.trim(), alias: rAlias },
       ];
     }, relationsVars)
   );
@@ -357,8 +341,7 @@ export const extractQueryVars = (query) => {
     const associatedRole = Rfind((r) => r.alias === v.alias, roles);
     return pipe(
       assoc('internalIdKey', associatedRole ? associatedRole.internalIdKey : v.internalIdKey),
-      assoc('role', associatedRole ? associatedRole.role : undefined),
-      assoc('forceNatural', associatedRole ? associatedRole.forceNatural : undefined)
+      assoc('role', associatedRole ? associatedRole.role : undefined)
     )(v);
   }, varWithKey);
 };
@@ -523,7 +506,7 @@ const loadConcept = async (tx, concept, args = {}) => {
           const targetRole = last(roleItem).values().next();
           const roleTargetId = targetRole.value.id;
           const conceptFromMap = relationsMap.get(roleTargetId);
-          if (conceptFromMap && conceptFromMap.forceNatural !== true) {
+          if (conceptFromMap) {
             const { alias } = conceptFromMap;
             // eslint-disable-next-line prettier/prettier
             return head(roleItem)
@@ -608,7 +591,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
     map(async (answer) => {
       // Create a map useful for relation roles binding
       const queryVarsToConcepts = await Promise.all(
-        conceptQueryVars.map(async ({ alias, role, internalIdKey, forceNatural }) => {
+        conceptQueryVars.map(async ({ alias, role, internalIdKey }) => {
           const concept = answer.map().get(alias);
           if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           // If internal id of the element is not directly accessible
@@ -643,7 +626,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
             internalId: conceptInternalId,
             fromInternalId,
             toInternalId,
-            data: { concept, alias, role, internalIdKey, forceNatural, type },
+            data: { concept, alias, role, internalIdKey, type },
           };
         })
       );
@@ -708,30 +691,8 @@ export const find = async (query, entities, findOpts = {}) => {
 
 // TODO Start - Refactor UI to be able to remove these 2 API
 export const findWithConnectedRelations = async (query, key, options = {}) => {
-  const { extraRelKey = null, forceNatural = false } = options;
-  let dataFind = await find(query, [key, extraRelKey], options);
-  if (forceNatural) {
-    dataFind = map((relation) => {
-      const data = relation[key];
-      if (!data.fromRole.endsWith('_from')) {
-        return assoc(
-          key,
-          pipe(
-            assoc('fromId', data.toId),
-            assoc('fromStixId', data.toStixId),
-            assoc('fromRole', data.toRole),
-            assoc('fromType', data.toType),
-            assoc('toId', data.fromId),
-            assoc('toStixId', data.fromStixId),
-            assoc('toRole', data.fromRole),
-            assoc('toType', data.fromType)
-          )(data),
-          relation
-        );
-      }
-      return relation;
-    }, dataFind);
-  }
+  const { extraRelKey = null } = options;
+  const dataFind = await find(query, [key, extraRelKey], options);
   return map((t) => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
 };
 export const loadWithConnectedRelations = (query, key, options = {}) => {
@@ -747,7 +708,6 @@ const listElements = async (
   queryKey,
   connectedReference,
   inferred,
-  forceNatural,
   noCache
 ) => {
   const countQuery = `${baseQuery} count;`;
@@ -758,7 +718,6 @@ const listElements = async (
   const instancesPromise = await findWithConnectedRelations(query, queryKey, {
     extraRelKey: connectedReference,
     infer: inferred,
-    forceNatural,
     noCache,
   });
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
@@ -873,15 +832,7 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
 };
 export const listRelations = async (relationshipType, args) => {
   const searchFields = ['name', 'description'];
-  const {
-    first = 1000,
-    after,
-    orderBy,
-    orderMode = 'asc',
-    relationFilter,
-    inferred = false,
-    forceNatural = false,
-  } = args;
+  const { first = 1000, after, orderBy, orderMode = 'asc', relationFilter, inferred = false } = args;
   let useInference = inferred;
   const { filters = [], search, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
   const { startTimeStart, startTimeStop, stopTimeStart, stopTimeStop, confidences = [] } = args;
@@ -890,11 +841,10 @@ export const listRelations = async (relationshipType, args) => {
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
   const definedRoles = !isNil(fromRole) || !isNil(toRole);
-  const askForConnections = !isNil(fromId) || !isNil(toId) || definedRoles;
   const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
-  if (askForConnections === false && (haveTargetFilters || fromTypesFilter || toTypesFilter || search)) {
+  if (haveTargetFilters || fromTypesFilter || toTypesFilter || search) {
     throw DatabaseError('Cant list relation with types filtering or search if from or to id are not specified');
   }
 
@@ -1041,30 +991,17 @@ export const listRelations = async (relationshipType, args) => {
   const queryAttributesFields = join(' ', attributesFields);
   const queryAttributesFilters = join(' ', attributesFilters);
   const queryRelationsFields = join(' ', relationsFields);
-  let baseQuery = `match $rel($from, $to) isa ${relationToGet}, has internal_id $rel_id; 
+  const fromRoleQuery =
+    // eslint-disable-next-line no-nested-ternary
+    fromRole && fromRole.length > 0 ? `${fromRole}:` : isAbstract(relationToGet) ? '' : `${relationToGet}_from:`;
+  const toRoleQuery =
+    // eslint-disable-next-line no-nested-ternary
+    toRole && toRole.length > 0 ? `${toRole}:` : isAbstract(relationToGet) ? '' : `${relationToGet}_to:`;
+  const baseQuery = `match $rel(${fromRoleQuery}$from, ${toRoleQuery}$to) isa ${relationToGet}, has internal_id $rel_id; 
   $from has internal_id $rel_from_id; 
   $to has internal_id $rel_to_id; 
   ${queryFromTypes} ${queryToTypes} ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  if (askForConnections) {
-    baseQuery = `match $rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to) 
-    isa ${relationToGet}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    ${queryFromTypes} ${queryToTypes}
-    ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  }
-  return listElements(
-    baseQuery,
-    first,
-    offset,
-    orderBy,
-    orderMode,
-    'rel',
-    relationRef,
-    useInference,
-    forceNatural,
-    args.noCache
-  );
+  return listElements(baseQuery, first, offset, orderBy, orderMode, 'rel', relationRef, useInference, args.noCache);
 };
 // endregion
 

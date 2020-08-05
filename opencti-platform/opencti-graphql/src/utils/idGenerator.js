@@ -577,12 +577,16 @@ const generateStixDomainObjectUUID = (type, data) => {
 const generateStixCyberObservableUUID = (type, data) => {
   switch (type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
+      if (!data.number) throw DatabaseError(`Missing attribute to generate the ID`);
       return uuid({ type, name: data.number });
     case ENTITY_DIRECTORY:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
       return uuid({ type, value: data.value });
     case ENTITY_DOMAIN_NAME:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
       return uuid({ type, value: data.value });
     case ENTITY_EMAIL_ADDR:
+      if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
       return uuid({ type, value: data.value });
     case ENTITY_EMAIL_MESSAGE:
       return uuidv4();
