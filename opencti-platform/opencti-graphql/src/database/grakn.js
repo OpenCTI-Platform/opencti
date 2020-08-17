@@ -1056,22 +1056,27 @@ export const loadById = async (id, type, args = {}) => {
 // endregion
 
 // region Indexer
-const reindexAttributeValue = async (queryType, type, value) => {
-  const index = queryType === 'relation' ? RELATIONSHIPS_INDICES : ENTITIES_INDICES;
-  const readQuery = `match $x isa ${queryType}, has ${escape(type)} $a; $a "${escapeString(value)}"; get;`;
+export const reindexAttributeValue = async (queryType, type, value) => {
+  const index = inferIndexFromConceptType(queryType);
+  const readQuery = `match $x isa ${queryType}, has ${escape(type)} $a, has internal_id $x_id; $a "${escapeString(
+    value
+  )}"; get;`;
   logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: readQuery });
   const elementIds = await executeRead(async (rTx) => {
     const iterator = await rTx.query(readQuery, { infer: false });
     const answer = await iterator.collect();
-    return answer.map((n) => n.get('x').id);
+    return answer.map((n) => n.get('x_id').value());
   });
-  const body = elementIds.flatMap((id) => [{ update: { _index: index, _id: id } }, { doc: { [type]: value } }]);
+  let body;
+  if (includes(type, multipleAttributes)) {
+    body = elementIds.flatMap((id) => [{ update: { _index: index, _id: id } }, { doc: { [type]: [value] } }]);
+  } else {
+    body = elementIds.flatMap((id) => [{ update: { _index: index, _id: id } }, { doc: { [type]: value } }]);
+  }
   if (body.length > 0) {
     await elBulk({ refresh: true, body });
   }
 };
-export const reindexEntityAttribute = (type, value) => reindexAttributeValue('entity', type, value);
-export const reindexRelationAttribute = (type, value) => reindexAttributeValue('relation', type, value);
 // endregion
 
 // region Graphics

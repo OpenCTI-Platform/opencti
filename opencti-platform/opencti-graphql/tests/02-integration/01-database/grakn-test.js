@@ -402,7 +402,7 @@ describe('Grakn entities listing', () => {
     const attacks = await listEntities(['Attack-Pattern'], ['name'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
-    expect(head(attacks.edges).node.standard_id).toEqual('attack-pattern--ba3be5e0-a5fd-566e-80c1-a30076027ce6');
+    expect(head(attacks.edges).node.standard_id).toEqual('attack-pattern--c9d550f1-ae07-504a-8d2f-1d8d82c1ce96');
     expect(head(attacks.edges).node.stix_ids).toEqual(['attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc']);
   });
   it.each(noCacheCases)('should list multiple entities with attribute filters (noCache = %s)', async (noCache) => {
@@ -661,7 +661,7 @@ describe('Grakn relations listing', () => {
     stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(1);
     const relation = head(stixRelations.edges).node;
-    expect(relation.standard_id).toEqual('relationship--38be1b60-0d55-5b73-97c2-a49a3288dda0');
+    expect(relation.standard_id).toEqual('relationship--e4866b30-ecb9-5d06-b46d-f7934b9ef468');
     expect(relation.stix_ids).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
     expect(relation.fromRole).toEqual('uses_from');
     expect(relation.toRole).toEqual('uses_to');
@@ -841,7 +841,7 @@ describe('Grakn element loader', () => {
     expect(loadPromise).rejects.toThrow();
     const element = await loadEntityById(stixId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
     expect(element).not.toBeNull();
-    expect(element.standard_id).toEqual('report--59d5478f-e8b4-5f7e-87a6-41501cb01c61');
+    expect(element.standard_id).toEqual('report--d6ac70dd-e1b5-57c2-83b9-27276b793c29');
     expect(element.name).toEqual('A demo report for testing purposes');
   });
   it.each(noCacheCases)('should load relation by id (noCache = %s)', async (noCache) => {
@@ -861,7 +861,7 @@ describe('Grakn element loader', () => {
     expect(loadPromise).rejects.toThrow();
     const element = await loadRelationById(stixId, 'uses', { noCache });
     expect(element).not.toBeNull();
-    expect(element.standard_id).toEqual('relationship--5c78a506-6852-5114-9ab2-536f82428675');
+    expect(element.standard_id).toEqual('relationship--e5456342-2293-52b9-a462-e1d003f6a82c');
     expect(element.stix_ids).toEqual([stixId]);
     expect(element.confidence).toEqual(3);
   });
@@ -913,45 +913,7 @@ describe('Grakn attribute updated and indexed correctly', () => {
     expect(updatedAttribute).not.toBeNull();
     report = await loadEntityById(stixId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
     expect(report).not.toBeNull();
-    expect(report.report_class).toEqual('threat-report');
-  });
-  it.each(noCacheCases)('should relation report attribute updated (noCache = %s)', async (noCache) => {
-    // Test with relation update
-    let relationshipTypes = await findAllAttributes({ type: 'role_played' });
-    expect(relationshipTypes).not.toBeNull();
-    expect(relationshipTypes.edges.length).toEqual(3);
-    let typeMap = new Map(relationshipTypes.edges.map((i) => [i.node.value, i]));
-    const relationAttribute = typeMap.get('Unknown');
-    expect(relationAttribute).not.toBeUndefined();
-    const attributeGraknId = relationAttribute.node.id;
-    // 01. Get the relation relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b and test if type is "Unknown"
-    const stixId = 'relationship--c32d553c-e22f-40ce-93e6-eb62dd145f3b';
-    let relation = await loadRelationById(stixId, 'indicates', { noCache });
-    expect(relation).not.toBeNull();
-    expect(relation.role_played).toEqual('Unknown');
-    // 02. Update attribute "Unknown" to "For test"
-    const updatedAttribute = await attributeUpdate(attributeGraknId, {
-      type: 'role_played',
-      value: 'Unknown',
-      newValue: 'For test',
-    });
-    expect(updatedAttribute).not.toBeNull();
-    // 03. Get the relation directly and test if type is "For test"
-    relation = await loadRelationById(stixId, 'indicates', { noCache });
-    expect(relation).not.toBeNull();
-    expect(relation.role_played).toEqual('For test');
-    // 04. Back to original configuration
-    relationshipTypes = await findAllAttributes({ type: 'role_played' });
-    expect(relationshipTypes.edges.length).toEqual(3);
-    typeMap = new Map(relationshipTypes.edges.map((i) => [i.node.value, i]));
-    await attributeUpdate(typeMap.get('For test').node.id, {
-      type: 'role_played',
-      value: 'For test',
-      newValue: 'Unknown',
-    });
-    relation = await loadRelationById(stixId, 'indicates', { noCache });
-    expect(relation).not.toBeNull();
-    expect(relation.role_played).toEqual('Unknown');
+    expect(report.report_types).toEqual(['threat-report']);
   });
 });
 
@@ -1067,8 +1029,8 @@ describe('Grakn entities distribution', () => {
     const relationFilter = {
       isRelation: true,
       type: 'uses',
-      from: 'usage',
-      to: 'user',
+      from: 'uses_from',
+      to: 'uses_to',
       value: malware.internal_id,
       start,
       end,
@@ -1077,7 +1039,7 @@ describe('Grakn entities distribution', () => {
     const distribution = await distributionEntities('Stix-Domain-Object', filters, options);
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('Attack-Pattern')).toEqual(1);
+    expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
   });
   it.each(noCacheCases)('should entity distribution with date filtering (noCache = %s)', async (noCache) => {
     // const { startDate, endDate, operation, field, inferred, noCache } = options;

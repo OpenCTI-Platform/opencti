@@ -75,6 +75,7 @@ const attackPatternMutation = graphql`
 
 const attackPatternValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  x_mitre_id: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -175,6 +176,7 @@ class AttackPatternCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
+                x_mitre_id: '',
                 description: '',
                 createdBy: '',
                 objectMarking: [],
@@ -199,6 +201,13 @@ class AttackPatternCreation extends Component {
                     label={t('Name')}
                     fullWidth={true}
                     detectDuplicate={['Attack-Pattern']}
+                  />
+                  <Field
+                      component={TextField}
+                      name="x_mitre_id"
+                      label={t('External ID')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
                   />
                   <Field
                     component={TextField}

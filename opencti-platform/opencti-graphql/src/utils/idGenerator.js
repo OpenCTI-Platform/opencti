@@ -500,40 +500,44 @@ export const parents = (type) => {
 // endregion
 
 // region entities
-const labelId = (type, data) => {
-  return uuid({ type, value: data.value });
+const labelId = (data) => {
+  return uuid({ type: ENTITY_TYPE_LABEL, value: data.value });
 };
-const externalReferenceId = (type, data) => {
+const externalReferenceId = (data) => {
   let referenceKey = data;
   if (data.url) {
-    referenceKey = { type, url: data.url };
+    referenceKey = { type: ENTITY_TYPE_EXTERNAL_REFERENCE, url: data.url };
   } else if (data.source_name && data.external_id) {
-    referenceKey = { type, source_name: data.source_name, external_id: data.external_id };
+    referenceKey = {
+      type: ENTITY_TYPE_EXTERNAL_REFERENCE,
+      source_name: data.source_name,
+      external_id: data.external_id,
+    };
   }
   // Return uuid generated from the full content
   return uuid(referenceKey);
 };
-const killChainId = (type, data) => {
+const killChainId = (data) => {
   const phaseName = data.phase_name.toLowerCase();
   const killChainName = data.kill_chain_name.toLowerCase();
-  return uuid({ type, phaseName, killChainName });
+  return uuid({ type: ENTITY_TYPE_KILL_CHAIN_PHASE, phaseName, killChainName });
 };
-const markingDefinitionId = (type, data) => {
+const markingDefinitionId = (data) => {
   // eslint-disable-next-line camelcase
   const { definition, definition_type } = data;
-  return uuid({ type, definition_type, definition });
+  return uuid({ type: ENTITY_TYPE_MARKING_DEFINITION, definition_type, definition });
 };
-const attackPatternId = (type, data) => {
-  const { name, killChainPhases } = data;
-  return uuid({ type, name, phases: killChainPhases });
+const attackPatternId = (data) => {
+  const { name, x_mitre_id: xMitreId } = data;
+  return uuid({ type: ENTITY_TYPE_ATTACK_PATTERN, name, x_mitre_id: xMitreId });
 };
-const reportId = (type, data) => {
+const reportId = (data) => {
   // eslint-disable-next-line camelcase
   const { name, createdBy, published } = data;
-  return uuid({ type, name, createdBy, published });
+  return uuid({ type: ENTITY_TYPE_CONTAINER_REPORT, name, createdBy, published });
 };
-const indicatorId = (type, data) => {
-  return uuid({ type, pattern: data.pattern });
+const indicatorId = (data) => {
+  return uuid({ type: ENTITY_TYPE_INDICATOR, pattern: data.pattern });
 };
 const generateInternalObjectUUID = (type, entity) => {
   switch (type) {
@@ -557,19 +561,19 @@ const generateInternalObjectUUID = (type, entity) => {
 const generateStixDomainObjectUUID = (type, data) => {
   switch (type) {
     case ENTITY_TYPE_MARKING_DEFINITION:
-      return markingDefinitionId(type, data);
+      return markingDefinitionId(data);
     case ENTITY_TYPE_LABEL:
-      return labelId(type, data);
+      return labelId(data);
     case ENTITY_TYPE_EXTERNAL_REFERENCE:
-      return externalReferenceId(type, data);
+      return externalReferenceId(data);
     case ENTITY_TYPE_KILL_CHAIN_PHASE:
-      return killChainId(type, data);
+      return killChainId(data);
     case ENTITY_TYPE_ATTACK_PATTERN:
-      return attackPatternId(type, data);
+      return attackPatternId(data);
     case ENTITY_TYPE_CONTAINER_REPORT:
-      return reportId(type, data);
+      return reportId(data);
     case ENTITY_TYPE_INDICATOR:
-      return indicatorId(type, data);
+      return indicatorId(data);
     default:
       return uuid({ type, name: data.name });
   }
