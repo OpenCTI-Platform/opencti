@@ -443,7 +443,7 @@ export const isAbstract = (type) => includes(type, ABSTRACT_TYPES);
 
 // region utils
 const uuid = (data) => {
-  const dataHash = JSON.stringify(data).toLowerCase();
+  const dataHash = JSON.stringify(data, Object.keys(data).sort()).toLowerCase();
   return uuidv5(dataHash, OPENCTI_NAMESPACE);
 };
 export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
