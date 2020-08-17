@@ -19,11 +19,11 @@ describe('Database provision', () => {
   it(
     'Should import creation succeed',
     async () => {
-      const httpServer = await listenServer();
+      // const httpServer = await listenServer();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await stopServer(httpServer);
+      // await stopServer(httpServer);
     },
     FIVE_MINUTES
   );
@@ -32,11 +32,11 @@ describe('Database provision', () => {
   it(
     'Should import update succeed',
     async () => {
-      const httpServer = await listenServer();
+      // const httpServer = await listenServer();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await stopServer(httpServer);
+      // await stopServer(httpServer);
     },
     FIVE_MINUTES
   );
@@ -44,11 +44,11 @@ describe('Database provision', () => {
   it(
     'Should worker consume succeed',
     async () => {
-      const httpServer = await listenServer();
+      // const httpServer = await listenServer();
       const execution = await execPython3(PYTHON_PATH, 'local_worker.py', workerOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
-      await stopServer(httpServer);
+      // await stopServer(httpServer);
     },
     FIVE_MINUTES
   );

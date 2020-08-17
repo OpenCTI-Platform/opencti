@@ -85,7 +85,7 @@ describe('Elasticsearch document loader', () => {
     expect(indexedData).toEqual(documentBody);
     const documentWithIndex = assoc('_index', 'test_index', documentBody);
     // Load by internal Id
-    const dataThroughInternal = await elLoadById(internalId, null, null, ['test_index']);
+    const dataThroughInternal = await elLoadById(internalId, null, ['test_index']);
     expect(dataThroughInternal).toEqual(documentWithIndex);
     // Load by stix id
     const dataThroughStix = await elLoadByStixId(standardId, null, ['test_index']);
@@ -517,7 +517,7 @@ describe('Elasticsearch basic loader', () => {
     const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
     const data = await elLoadById(malware.internal_id);
     expect(data).not.toBeNull();
-    expect(data.standard_id).toEqual('malware--2a2c2895-43c2-5df3-bf8a-530f5703f687');
+    expect(data.standard_id).toEqual('malware--a6715816-91f1-58f6-9c07-ca835392dab1');
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
     expect(data.entity_type).toEqual('Malware');

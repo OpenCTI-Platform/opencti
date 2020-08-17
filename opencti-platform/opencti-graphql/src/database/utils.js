@@ -74,9 +74,8 @@ export const buildPagination = (first, offset, instances, globalCount) => {
   const edges = pipe(
     mapObjIndexed((record, key) => {
       const { node } = record;
-      const { relation } = record;
       const nodeOffset = offset + parseInt(key, 10) + 1;
-      return { node, relation, cursor: offsetToCursor(nodeOffset) };
+      return { node, cursor: offsetToCursor(nodeOffset) };
     }),
     values
   )(instances);
