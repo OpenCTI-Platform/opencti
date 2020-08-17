@@ -1,11 +1,5 @@
 import { assoc } from 'ramda';
-import {
-  createEntity,
-  escapeString,
-  listEntities,
-  loadEntityById,
-  loadWithConnectedRelations,
-} from '../database/grakn';
+import { createEntity, escapeString, listEntities, loadEntityById, load } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import {
@@ -23,14 +17,14 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_LOCATION_POSITION], ['name', 'description', 'x_opencti_aliases'], args);
 };
 
-export const city = (positionId) => {
-  return loadWithConnectedRelations(
+export const city = async (positionId) => {
+  const element = await load(
     `match $to isa ${ENTITY_TYPE_LOCATION_CITY}; 
     $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-    $from has internal_id "${escapeString(positionId)}"; get; offset 0; limit 1;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => (data ? data.node : undefined));
+    $from has internal_id "${escapeString(positionId)}"; get;`,
+    ['to']
+  );
+  return element && element.to;
 };
 
 export const addPosition = async (user, position) => {

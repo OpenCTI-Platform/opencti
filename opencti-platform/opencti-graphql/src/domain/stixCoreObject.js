@@ -10,7 +10,6 @@ import {
   listToEntitiesThroughRelation,
   load,
   loadEntityById,
-  loadWithConnectedRelations,
 } from '../database/grakn';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { buildPagination } from '../database/utils';

@@ -638,9 +638,6 @@ export const findWithConnectedRelations = async (query, key, options = {}) => {
   const dataFind = await find(query, [key, extraRelKey], options);
   return R.map((t) => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
 };
-export const loadWithConnectedRelations = (query, key, options = {}) => {
-  return findWithConnectedRelations(query, key, options).then((result) => R.head(result));
-};
 const listElements = async (
   baseQuery,
   first,

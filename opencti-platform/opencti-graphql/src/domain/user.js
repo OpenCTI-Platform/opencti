@@ -33,7 +33,6 @@ import {
   listEntities,
   load,
   loadEntityById,
-  loadWithConnectedRelations,
   now,
   updateAttribute,
 } from '../database/grakn';
@@ -104,32 +103,26 @@ export const groups = (userId) => {
   ).then((data) => buildPagination(0, 0, data, data.length));
 };
 
-export const token = (userId, args, context) => {
+export const token = async (userId, args, context) => {
   const capabilities = map((n) => n.name, context.user.capabilities);
   if (userId !== context.user.id && !includes('SETACCESSES', capabilities) && !includes('BYPASS', capabilities)) {
     throw ForbiddenAccess();
   }
-  return loadWithConnectedRelations(
-    `match $to isa Token, has internal_id $to_id;
-    $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    $from has internal_id "${escapeString(userId)}"; 
-    get; offset 0; limit 1;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((result) => (result ? result.node.uuid : result));
+  const element = await load(
+    `match $to isa Token;
+    $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY};
+    $from has internal_id "${escapeString(userId)}"; get;`,
+    ['to']
+  );
+  return element && element.to;
 };
 
 const internalGetToken = async (userId) => {
-  const query = `match $to isa Token; $to has internal_id $to_id;
+  const query = `match $to isa Token;
   $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY};
-  $rel has internal_id $rel_id;
-  $to has internal_id $rel_from_id; 
-  $from has internal_id $rel_to_id;
-  $from has internal_id "${escapeString(userId)}"; 
-  get; offset 0; limit 1;`;
-  return loadWithConnectedRelations(query, 'to', { extraRelKey: 'rel' }).then((result) => result && result.node);
+  $from has internal_id "${escapeString(userId)}"; get;`;
+  const element = await load(query, ['to']);
+  return element && element.to;
 };
 
 const internalGetTokenByUUID = async (tokenUUID) => {

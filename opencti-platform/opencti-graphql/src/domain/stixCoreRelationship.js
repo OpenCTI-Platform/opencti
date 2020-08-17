@@ -10,9 +10,9 @@ import {
   getRelationInferredById,
   internalLoadEntityById,
   listRelations,
+  load,
   loadEntityById,
   loadRelationById,
-  loadWithConnectedRelations,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -70,17 +70,14 @@ export const stixCoreRelationshipsNumber = (args) => {
   };
 };
 
-export const createdBy = (stixCoreRelationshipId) => {
-  return loadWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_IDENTITY}, has internal_id $to_id; 
-    $rel(${RELATION_CREATED_BY}_from:$from, ${RELATION_CREATED_BY}_to: $to) isa ${RELATION_CREATED_BY}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    $from has internal_id "${escapeString(stixCoreRelationshipId)}"; 
-    get; offset 0; limit 1;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => (data ? data.node : null));
+export const createdBy = async (stixCoreRelationshipId) => {
+  const element = await load(
+    `match $to isa ${ENTITY_TYPE_IDENTITY}; 
+    $rel(${RELATION_CREATED_BY}_from:$from, ${RELATION_CREATED_BY}_to: $to) isa ${RELATION_CREATED_BY};
+    $from has internal_id "${escapeString(stixCoreRelationshipId)}"; get;`,
+    ['to']
+  );
+  return element && element.to;
 };
 
 export const reports = (stixCoreRelationshipId) => {

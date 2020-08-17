@@ -10,8 +10,8 @@ import {
   executeWrite,
   getSingleValueNumber,
   listEntities,
+  load,
   loadEntityById,
-  loadWithConnectedRelations,
   prepareDate,
   updateAttribute,
 } from '../database/grakn';
@@ -29,14 +29,13 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_WORKSPACE], ['name', 'description'], args);
 };
 
-export const ownedBy = (workspaceId) => {
-  return loadWithConnectedRelations(
-    `match $x isa User; 
-    $rel(owner:$x, so:$workspace) isa owned_by; 
-    $workspace has internal_id "${escapeString(workspaceId)}"; get; offset 0; limit 1;`,
-    'x',
-    { extraRelKey: 'rel' }
+export const ownedBy = async (workspaceId) => {
+  const element = await load(
+    `match $x isa User; $rel(owner:$x, so:$workspace) isa owned_by; 
+    $workspace has internal_id "${escapeString(workspaceId)}"; get;`,
+    ['x']
   );
+  return element && element.x;
 };
 
 export const objectRefs = (workspaceId, args) => {
