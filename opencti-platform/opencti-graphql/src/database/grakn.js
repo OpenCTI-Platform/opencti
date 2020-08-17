@@ -586,7 +586,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
           // Do the same for the from and the to
           let toInternalId;
           let fromInternalId;
-          if (includes(alias, plainEntities) && concept.baseType === 'RELATION') {
+          if (concept._inferred !== true && includes(alias, plainEntities) && concept.baseType === 'RELATION') {
             const fromVar = answer.map().get(`${alias}_from_id`);
             if (!fromVar) {
               throw DatabaseError(`Query must ask for ${alias}_from_id`);
@@ -657,7 +657,7 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
   // Grakn can respond with twice the relations (browse in 2 directions)
   if (result.length > 0) {
     const firstResult = head(result);
-    const relationTargets = filter((elem) => elem.base_type === 'RELATION', firstResult);
+    const relationTargets = filter((elem) => elem && elem.base_type === 'RELATION', firstResult);
     if (!isEmpty(relationTargets)) {
       return uniqBy((u) => u[head(Object.keys(relationTargets))].internal_id, result);
     }

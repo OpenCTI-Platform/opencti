@@ -777,7 +777,7 @@ const elInternalLoadById = async (
       },
     },
   };
-  logger.debug(`[ELASTICSEARCH] loadByTerms`, { query });
+  logger.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
   const data = await el.search(query);
   const total = data.body.hits.total.value;
   /* istanbul ignore if */
