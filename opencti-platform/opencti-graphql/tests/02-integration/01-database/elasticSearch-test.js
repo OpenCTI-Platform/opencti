@@ -88,7 +88,7 @@ describe('Elasticsearch document loader', () => {
     const dataThroughInternal = await elLoadById(internalId, null, null, ['test_index']);
     expect(dataThroughInternal).toEqual(documentWithIndex);
     // Load by stix id
-    const dataThroughStix = await elLoadByStixId(standardId, null, null, ['test_index']);
+    const dataThroughStix = await elLoadByStixId(standardId, null, ['test_index']);
     expect(dataThroughStix).toEqual(documentWithIndex);
     // Try to delete
     await elDeleteByField('test_index', 'internal_id', internalId);
@@ -329,40 +329,22 @@ describe('Elasticsearch relation reconstruction', () => {
     expect(relation.toRole).toEqual(CONN_MARKING_ROLE);
   });
   it('Relation reconstruct with no info', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept, relationMap);
+    const relation = elReconstructRelation(concept);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from reverse id', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: CONN_MARKING_ID, role: undefined });
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept, relationMap);
+    const relation = elReconstructRelation(concept);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from roles', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: CONN_MALWARE_ROLE });
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: CONN_MARKING_ROLE });
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept, relationMap);
+    const relation = elReconstructRelation(concept);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.toId).toEqual(CONN_MARKING_ID);
-  });
-  it('Relation reconstruct fail with bad configuration', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: 'bad-to', role: undefined });
-    const concept = buildRelationConcept('object-marking');
-    expect(() => {
-      elReconstructRelation(concept, relationMap);
-    }).toThrow(Error);
   });
 });
 
@@ -399,7 +381,6 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
     // orderBy = null, orderMode = 'asc',
-    // relationsMap = null, forceNatural = false,
     // connectionFormat = true
     const data = await elPaginate(ENTITIES_INDICES, { types: ['Malware'] });
     expect(data).not.toBeNull();

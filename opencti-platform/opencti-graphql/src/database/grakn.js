@@ -62,10 +62,10 @@ import {
   elPaginate,
   elRemoveRelationConnection,
   elUpdate,
-  useCache,
-  REL_INDEX_PREFIX,
   ENTITIES_INDICES,
+  REL_INDEX_PREFIX,
   RELATIONSHIPS_INDICES,
+  useCache,
 } from './elasticSearch';
 import {
   EVENT_TYPE_CREATE,
@@ -76,34 +76,34 @@ import {
   sendLog,
 } from './rabbitmq';
 import {
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
-  generateStandardId,
-  isStixMetaRelationship,
-  isInternalObject,
-  isStixCoreObject,
-  isStixDomainObject,
-  isStixId,
-  isStixCoreRelationship,
-  RELATION_OBJECT_LABEL,
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_MARKING,
-  RELATION_OBJECT,
-  RELATION_KILL_CHAIN_PHASE,
-  isStixObject,
-  isStixMetaObject,
-  isStixSightingRelationship,
-  isStixRelationship,
   generateInternalId,
-  ABSTRACT_BASIC_RELATIONSHIP,
-  isStixCyberObservableRelationship,
+  generateStandardId,
   getParentTypes,
+  isAbstract,
   isBasicObject,
   isBasicRelationship,
-  ABSTRACT_STIX_RELATIONSHIP,
-  isAbstract,
   isDatedInternalObject,
+  isInternalObject,
+  isStixCoreObject,
+  isStixCoreRelationship,
+  isStixCyberObservableRelationship,
+  isStixDomainObject,
+  isStixId,
+  isStixMetaObject,
+  isStixMetaRelationship,
+  isStixObject,
+  isStixRelationship,
+  isStixSightingRelationship,
+  RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
 } from '../utils/idGenerator';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -424,6 +424,12 @@ export const queryAttributeValueByGraknId = async (id) => {
     };
   });
 };
+
+const resolveInternalIdOfConcept = async (tx, conceptId, internalIdAttribute) => {
+  const resolveConcept = await tx.getConcept(conceptId);
+  const roleConceptRemote = await (await resolveConcept.attributes(internalIdAttribute)).collect();
+  return head(roleConceptRemote).value();
+};
 /**
  * Load any grakn instance with internal grakn ID.
  * @param tx the transaction
@@ -432,25 +438,27 @@ export const queryAttributeValueByGraknId = async (id) => {
  * @returns {Promise}
  */
 const loadConcept = async (tx, concept, args = {}) => {
-  const { internalId, relationsMap = new Map() } = args;
+  const { internalId } = args;
   const conceptBaseType = concept.baseType;
   // const types = await conceptTypes(tx, concept);
   const remoteConceptType = await concept.type();
   const conceptType = await remoteConceptType.label();
+  const internalIdAttribute = await tx.getSchemaConcept('internal_id');
   const index = inferIndexFromConceptType(conceptType);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // Very useful for getting every entities through relation query.
   if (useCache(args)) {
-    const conceptFromCache = await elLoadById(internalId, null, relationsMap, [index]);
+    const conceptInternalId = internalId || (await resolveInternalIdOfConcept(tx, concept.id, internalIdAttribute));
+    const conceptFromCache = await elLoadById(conceptInternalId, null, [index]);
     if (!conceptFromCache) {
       /* istanbul ignore next */
-      logger.info(`[ELASTIC] ${internalId} not indexed yet, loading with Grakn`);
+      logger.info(`[ELASTIC] ${conceptInternalId} not indexed yet, loading with Grakn`);
     } else {
+      // Need to associate the grakn id for result rebinding
       return assoc('grakn_id', concept.id, conceptFromCache);
     }
   }
   // 02. If not found continue the process.
-  logger.debug(`[GRAKN - infer: false] getAttributes ${conceptType} ${internalId}`);
   const attributesIterator = await concept.asRemote(tx).attributes();
   const attributes = await attributesIterator.collect();
   const attributesPromises = attributes.map(async (attribute) => {
@@ -489,9 +497,8 @@ const loadConcept = async (tx, concept, args = {}) => {
       )(attributesData);
       return pipe(
         assoc('_index', index),
-        assoc('index_version', '1.0'),
-        assoc('grakn_id', concept.id),
         assoc('id', transform.internal_id),
+        assoc('grakn_id', concept.id),
         assoc('base_type', conceptBaseType),
         assoc('parent_types', transform.entity_type ? getParentTypes(transform.entity_type) : null)
       )(transform);
@@ -504,6 +511,8 @@ const loadConcept = async (tx, concept, args = {}) => {
       const rolesPromises = Promise.all(
         map(async (roleItem) => {
           const targetRole = last(roleItem).values().next();
+          const targetId = targetRole.value.id;
+          const roleInternalId = await resolveInternalIdOfConcept(tx, targetId, internalIdAttribute);
           const remoteTargetType = await targetRole.value.type();
           const roleType = await remoteTargetType.label();
           // eslint-disable-next-line prettier/prettier
@@ -513,7 +522,7 @@ const loadConcept = async (tx, concept, args = {}) => {
               const [, useAlias] = roleLabel.split('_');
               return {
                 [useAlias]: null, // With be use lazily
-                [`${useAlias}Id`]: args[`${useAlias}Id`],
+                [`${useAlias}Id`]: roleInternalId,
                 [`${useAlias}Role`]: roleLabel,
                 [`${useAlias}Type`]: roleType,
               };
@@ -575,53 +584,23 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
           if (!concept || concept.baseType === 'ATTRIBUTE') return undefined; // If specific attributes are used for filtering, ordering, ...
           // If internal id of the element is not directly accessible
           // And the element is part of element needed for the result, ensure the key is asked in the query.
-          let conceptInternalId = internalIdKey;
-          if (concept._inferred !== true && !conceptInternalId && includes(alias, plainEntities)) {
-            const conceptInternalIdVar = answer.map().get(`${alias}_id`);
-            if (!conceptInternalIdVar) {
-              throw DatabaseError(`Query must ask for ${alias}_id`, { conceptQueryVars });
-            }
-            conceptInternalId = conceptInternalIdVar.value();
-          }
-          // Do the same for the from and the to
-          let toInternalId;
-          let fromInternalId;
-          if (concept._inferred !== true && includes(alias, plainEntities) && concept.baseType === 'RELATION') {
-            const fromVar = answer.map().get(`${alias}_from_id`);
-            if (!fromVar) {
-              throw DatabaseError(`Query must ask for ${alias}_from_id`);
-            }
-            fromInternalId = fromVar.value();
-            const toVar = answer.map().get(`${alias}_to_id`);
-            if (!toVar) {
-              throw DatabaseError(`Query must ask for ${alias}_to_id`);
-            }
-            toInternalId = toVar.value();
-          }
           const conceptType = await concept.type();
           const type = await conceptType.label();
           return {
             id: concept.id,
-            internalId: conceptInternalId,
-            fromInternalId,
-            toInternalId,
-            data: { concept, alias, role, internalIdKey, type },
+            internalId: internalIdKey,
+            data: { concept, alias, role, type },
           };
         })
       );
-      const conceptsIndex = filter((e) => e, queryVarsToConcepts);
-      const fetchingConceptsPairs = map((x) => [x.id, x.data], conceptsIndex);
-      const relationsMap = new Map(fetchingConceptsPairs);
       // Fetch every concepts of the answer
+      const conceptsIndex = filter((e) => e, queryVarsToConcepts);
       const requestedConcepts = filter((r) => includes(r.data.alias, entities), conceptsIndex);
       return map((t) => {
-        const { concept } = t.data;
+        const { concept, internalId } = t.data;
         return {
-          internalId: t.internalId,
-          fromId: t.fromInternalId,
-          toId: t.toInternalId,
+          internalId,
           concept,
-          relationsMap,
         };
       }, requestedConcepts);
     }, answers)
@@ -629,23 +608,14 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
   // 03. Fetch every unique concepts
   const uniqConceptsLoading = pipe(
     flatten,
-    uniqBy((e) => e.internalId),
-    map((l) =>
-      loadConcept(tx, l.concept, {
-        internalId: l.internalId,
-        fromId: l.fromId,
-        toId: l.toId,
-        relationsMap: l.relationsMap,
-        noCache,
-        infer,
-      })
-    )
+    uniqBy((e) => e.concept.id),
+    map((l) => loadConcept(tx, l.concept, { internalId: l.internalId, noCache, infer }))
   )(queryConcepts);
   const resolvedConcepts = await Promise.all(uniqConceptsLoading);
   // 04. Create map from concepts
   const conceptCache = new Map(map((c) => [c.grakn_id, c], resolvedConcepts));
   // 05. Bind all row to data entities
-  const result = answers.map((answer) => {
+  return answers.map((answer) => {
     const dataPerEntities = plainEntities.map((entity) => {
       const concept = answer.map().get(entity);
       const conceptData = concept && conceptCache.get(concept.id);
@@ -653,16 +623,6 @@ const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts 
     });
     return fromPairs(dataPerEntities);
   });
-  // 06. Filter every relation in double
-  // Grakn can respond with twice the relations (browse in 2 directions)
-  if (result.length > 0) {
-    const firstResult = head(result);
-    const relationTargets = filter((elem) => elem && elem.base_type === 'RELATION', firstResult);
-    if (!isEmpty(relationTargets)) {
-      return uniqBy((u) => u[head(Object.keys(relationTargets))].internal_id, result);
-    }
-  }
-  return result;
 };
 export const find = async (query, entities, findOpts = {}) => {
   // Remove empty values from entities
@@ -848,14 +808,11 @@ export const listRelations = async (relationshipType, args) => {
         finalFilters.push({ key: `internal_id`, values: [relationId] });
       }
     }
-    const relationsMap = new Map();
     if (fromId) {
       finalFilters.push({ key: 'connections.internal_id', values: [fromId] });
-      relationsMap.set(fromId, { alias: 'from', internalIdKey: fromId });
     }
     if (toId) {
       finalFilters.push({ key: 'connections.internal_id', values: [toId] });
-      relationsMap.set(toId, { alias: 'to', internalIdKey: toId });
     }
     if (fromTypes && fromTypes.length > 0) finalFilters.push({ key: 'connections.types', values: fromTypes });
     if (toTypes && toTypes.length > 0) finalFilters.push({ key: 'connections.types', values: toTypes });
@@ -864,11 +821,7 @@ export const listRelations = async (relationshipType, args) => {
     if (stopTimeStart) finalFilters.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
     if (stopTimeStop) finalFilters.push({ key: 'stop_time', values: [stopTimeStop], operator: 'lt' });
     if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
-    const paginateArgs = pipe(
-      assoc('types', [relationToGet]),
-      assoc('filters', finalFilters),
-      assoc('relationsMap', relationsMap)
-    )(args);
+    const paginateArgs = pipe(assoc('types', [relationToGet]), assoc('filters', finalFilters))(args);
     return elPaginate(RELATIONSHIPS_INDICES, paginateArgs);
   }
   // 1- If not, use Grakn

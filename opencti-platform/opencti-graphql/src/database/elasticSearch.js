@@ -527,7 +527,6 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
 };
 
 // region relation reconstruction
-// relationsMap = [V1324] = { alias, internal_id, role }
 const elBuildRelation = (type, connection) => {
   return {
     [type]: null,
@@ -544,43 +543,11 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   const to = elBuildRelation('to', toConnection);
   return mergeAll([concept, from, to]);
 };
-export const elReconstructRelation = (concept, relationsMap = null) => {
+export const elReconstructRelation = (concept) => {
   const { connections } = concept;
   const entityType = concept.entity_type;
-  // Need to rebuild the from and the to.
-  let toConnection;
-  let fromConnection;
-  if (relationsMap === null || relationsMap.size === 0) {
-    // We dont know anything, force from and to from roles map
-    fromConnection = Rfind((connection) => connection.role === `${entityType}_from`, connections);
-    toConnection = Rfind((connection) => connection.role === `${entityType}_to`, connections);
-    return elMergeRelation(concept, fromConnection, toConnection);
-  }
-  // If map is specified, decide the resolution.
-  const relationValues = Array.from(relationsMap.values());
-  const queryFrom = Rfind((v) => v.alias === 'from', relationValues);
-  const queryTo = Rfind((v) => v.alias === 'to', relationValues);
-  // If map contains a key filtering
-  if (queryFrom && queryFrom.internalIdKey) {
-    fromConnection = Rfind((connection) => connection.internal_id === queryFrom.internalIdKey, connections);
-    toConnection = Rfind((connection) => connection.internal_id !== queryFrom.internalIdKey, connections);
-    return elMergeRelation(concept, fromConnection, toConnection);
-  }
-  if (queryTo && queryTo.internalIdKey) {
-    fromConnection = Rfind((connection) => connection.internal_id !== queryTo.internalIdKey, connections);
-    toConnection = Rfind((connection) => connection.internal_id === queryTo.internalIdKey, connections);
-    return elMergeRelation(concept, fromConnection, toConnection);
-  }
-  // If map contains a role filtering.
-  // Only need to check on one side, the 2 roles are provisioned in this case.
-  if (queryFrom && queryFrom.role) {
-    fromConnection = Rfind((connection) => connection.role === queryFrom.role, connections);
-    toConnection = Rfind((connection) => connection.role === queryTo.role, connections);
-    return elMergeRelation(concept, fromConnection, toConnection);
-  }
-  // If nothing in map to reconstruct
-  fromConnection = Rfind((connection) => connection.role === `${entityType}_from`, connections);
-  toConnection = Rfind((connection) => connection.role === `${entityType}_to`, connections);
+  const fromConnection = Rfind((connection) => connection.role === `${entityType}_from`, connections);
+  const toConnection = Rfind((connection) => connection.role === `${entityType}_to`, connections);
   return elMergeRelation(concept, fromConnection, toConnection);
 };
 // endregion
@@ -598,7 +565,6 @@ export const elPaginate = async (indexName, options = {}) => {
     search = null,
     orderBy = null,
     orderMode = 'asc',
-    relationsMap = null,
     connectionFormat = true, // TODO @Julien Refactor that
   } = options;
   const offset = after ? cursorToOffset(after) : 0;
@@ -713,7 +679,7 @@ export const elPaginate = async (indexName, options = {}) => {
       const dataWithIds = map((n) => {
         const loadedElement = pipe(assoc('id', n._source.internal_id), assoc('_index', n._index))(n._source);
         if (loadedElement.base_type === BASE_TYPE_RELATION) {
-          return elReconstructRelation(loadedElement, relationsMap);
+          return elReconstructRelation(loadedElement);
         }
         if (loadedElement.event_data) {
           return assoc('event_data', JSON.stringify(loadedElement.event_data), loadedElement);
@@ -745,14 +711,7 @@ export const elPaginate = async (indexName, options = {}) => {
       }
     );
 };
-const elInternalLoadById = async (
-  id,
-  type = null,
-  elementTypes = ['internal_id'],
-  relationsMap = null,
-  indices = DATA_INDICES
-) => {
-  //       must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
+const elInternalLoadById = async (id, type = null, elementTypes = ['internal_id'], indices = DATA_INDICES) => {
   const mustTerms = [];
   const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
   const should = { bool: { should: map((term) => ({ term }), idsTermsPerType), minimum_should_match: 1 } };
@@ -789,17 +748,17 @@ const elInternalLoadById = async (
   if (!response) return response;
   const loadedElement = assoc('_index', response._index, response._source);
   if (loadedElement.base_type === BASE_TYPE_RELATION) {
-    return elReconstructRelation(loadedElement, relationsMap);
+    return elReconstructRelation(loadedElement);
   }
   return loadedElement;
 };
 // endregion
 
-export const elLoadById = (id, type = null, relationsMap = null, indices = DATA_INDICES) => {
-  return elInternalLoadById(id, type, ['internal_id'], relationsMap, indices);
+export const elLoadById = (id, type = null, indices = DATA_INDICES) => {
+  return elInternalLoadById(id, type, ['internal_id'], indices);
 };
-export const elLoadByStixId = (id, type = null, relationsMap = null, indices = DATA_INDICES) => {
-  return elInternalLoadById(id, type, ['standard_id', 'stix_ids'], relationsMap, indices);
+export const elLoadByStixId = (id, type = null, indices = DATA_INDICES) => {
+  return elInternalLoadById(id, type, ['standard_id', 'stix_ids'], indices);
 };
 export const elBulk = async (args) => {
   return el.bulk(args);

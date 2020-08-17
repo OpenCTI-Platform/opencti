@@ -104,10 +104,8 @@ export const opinions = (stixCoreObjectId) => {
 
 export const labels = (stixCoreObjectId) => {
   return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_LABEL}, has internal_id $to_id; 
-    $rel(${RELATION_OBJECT_LABEL}_from:$from, ${RELATION_OBJECT_LABEL}_to:$to) isa ${RELATION_OBJECT_LABEL}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
+    `match $to isa ${ENTITY_TYPE_LABEL}; 
+    $rel(${RELATION_OBJECT_LABEL}_from:$from, ${RELATION_OBJECT_LABEL}_to:$to) isa ${RELATION_OBJECT_LABEL};
     $from has internal_id "${escapeString(stixCoreObjectId)}";
     get;`,
     'to',
