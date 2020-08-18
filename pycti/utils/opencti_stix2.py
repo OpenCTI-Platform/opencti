@@ -323,6 +323,9 @@ class OpenCTIStix2:
                         phase_order=kill_chain_phase["x_opencti_order"]
                         if "x_opencti_order" in kill_chain_phase
                         else 0,
+                        stix_id=kill_chain_phase["id"]
+                        if "id" in kill_chain_phase
+                        else None,
                     )
                     self.mapping_cache[
                         kill_chain_phase["kill_chain_name"]
