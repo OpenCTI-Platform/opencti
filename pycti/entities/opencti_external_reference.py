@@ -203,7 +203,9 @@ class ExternalReference:
                     and external_reference_result["source_name"] != source_name
                 ):
                     self.update_field(
-                        id=external_reference_result["id"], key="source_name", value=source_name
+                        id=external_reference_result["id"],
+                        key="source_name",
+                        value=source_name,
                     )
                     external_reference_result["source_name"] = source_name
                 # url
@@ -211,7 +213,9 @@ class ExternalReference:
                     self.opencti.not_empty(url)
                     and external_reference_result["url"] != url
                 ):
-                    self.update_field(id=external_reference_result["id"], key="url", value=url)
+                    self.update_field(
+                        id=external_reference_result["id"], key="url", value=url
+                    )
                     external_reference_result["url"] = url
                 # external_id
                 if (
@@ -219,7 +223,9 @@ class ExternalReference:
                     and external_reference_result["external_id"] != external_id
                 ):
                     self.update_field(
-                        id=external_reference_result["id"], key="external_id", value=external_id
+                        id=external_reference_result["id"],
+                        key="external_id",
+                        value=external_id,
                     )
                     external_reference_result["external_id"] = external_id
                 # description
@@ -228,7 +234,9 @@ class ExternalReference:
                     and external_reference_result["description"] != description
                 ):
                     self.update_field(
-                        id=external_reference_result["id"], key="description", value=description
+                        id=external_reference_result["id"],
+                        key="description",
+                        value=description,
                     )
                     external_reference_result["description"] = description
             return external_reference_result
