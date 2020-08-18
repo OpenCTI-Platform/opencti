@@ -1,12 +1,11 @@
 import moment from 'moment';
-import { assoc, descend, head, includes, map, pipe, prop, sortWith, isNil, dissoc, concat } from 'ramda';
+import { assoc, concat, descend, dissoc, head, includes, isNil, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
 import {
   createEntity,
   createRelation,
-  escapeString,
-  findWithConnectedRelations,
   listEntities,
+  listToEntitiesThroughRelation,
   loadEntityById,
   now,
 } from '../database/grakn';
@@ -18,15 +17,14 @@ import { findById as findStixCyberObservableById } from './stixCyberObservable';
 import { checkIndicatorSyntax, extractObservables } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
 import {
-  isStixCyberObservable,
-  generateStandardId,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ENTITY_TYPE_INDICATOR,
+  generateStandardId,
+  isStixCyberObservable,
   RELATION_BASED_ON,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
 } from '../utils/idGenerator';
 import { askEnrich } from './enrichment';
-import { buildPagination } from '../database/utils';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -209,14 +207,5 @@ export const addIndicator = async (user, indicator, createObservables = true) =>
 };
 
 export const observables = (indicatorId) => {
-  return findWithConnectedRelations(
-    `match $to isa ${ABSTRACT_STIX_CYBER_OBSERVABLE}, has internal_id $to_id; 
-    $rel(${RELATION_BASED_ON}_from:$from, ${RELATION_BASED_ON}_to:$to) isa ${RELATION_BASED_ON}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    $from has internal_id "${escapeString(indicatorId)}";
-    get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(indicatorId, null, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };

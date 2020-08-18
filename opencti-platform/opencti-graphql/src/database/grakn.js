@@ -612,64 +612,47 @@ export const find = async (query, entities, findOpts = {}) => {
   });
 };
 
-export const listToEntitiesThroughRelation = (fromId, relationDefinition, toEntityType) => {
-  const { from, to, type } = relationDefinition;
+export const listToEntitiesThroughRelation = (fromId, fromType, relationType, toEntityType) => {
   return find(
-    `match $to isa ${toEntityType}; $rel(${from}_from:$from, ${to}_to:$to) isa ${type};
+    `match $to isa ${toEntityType}; 
+    $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};
+    ${fromType ? `$from isa ${fromType};` : ''}
     $from has internal_id "${escapeString(fromId)}"; get;`,
     ['to'],
     { paginationKey: 'to' }
   );
 };
 
-export const listFromEntitiesThroughRelation = (toId, relationDefinition, fromEntityType) => {
-  const { from, to, type } = relationDefinition;
+export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType) => {
   return find(
-    `match $from isa ${fromEntityType}; $rel(${from}_from:$from, ${to}_to:$to) isa ${type};
+    `match $from isa ${fromEntityType}; 
+    $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};
+    ${toType ? `$to isa ${toType};` : ''}
     $to has internal_id "${escapeString(toId)}"; get;`,
     ['from'],
     { paginationKey: 'from' }
   );
 };
-
-// TODO Start - Refactor UI to be able to remove these 2 API
-export const findWithConnectedRelations = async (query, key, options = {}) => {
-  const { extraRelKey = null } = options;
-  const dataFind = await find(query, [key, extraRelKey], options);
-  return R.map((t) => ({ node: t[key], relation: t[extraRelKey] }), dataFind);
-};
-const listElements = async (
-  baseQuery,
-  first,
-  offset,
-  orderBy,
-  orderMode,
-  queryKey,
-  connectedReference,
-  inferred,
-  noCache
-) => {
+const listElements = async (baseQuery, elementKey, first, offset, args) => {
+  const { orderBy = null, orderMode = 'asc', inferred = false, noCache = false } = args;
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
   const query = `${baseQuery} ${orderQuery} ${paginateQuery}`;
   const countPromise = getSingleValueNumber(countQuery, inferred);
-  const instancesPromise = await findWithConnectedRelations(query, queryKey, {
-    extraRelKey: connectedReference,
-    infer: inferred,
-    noCache,
-  });
+  const findOpts = { infer: inferred, noCache };
+  const instancesPromise = find(query, [elementKey], findOpts);
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
-    return buildPagination(first, offset, instances, globalCount);
+    const edges = R.map((t) => ({ node: t[elementKey] }), instances);
+    return buildPagination(first, offset, edges, globalCount);
   });
 };
 export const listEntities = async (entityTypes, searchFields, args = {}) => {
   // filters contains potential relations like, mitigates, tagged ...
-  const { first = 1000, after, orderBy, orderMode = 'asc' } = args;
+  const { first = 1000, after, orderBy } = args;
   const { search, filters } = args;
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && R.includes('.', orderBy);
-
   // Define if Elastic can support this query.
   // 01-2 Check the filters
   const validFilters = R.filter((f) => f && f.values.filter((n) => n).length > 0, filters || []);
@@ -767,15 +750,14 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
       : '';
   const baseQuery = `match $elem isa ${headType}, has internal_id $elem_id; ${extraTypes} ${queryRelationsFields} 
                       ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, 'elem', null, false, args.noCache);
+  return listElements(baseQuery, 'elem', first, offset, args);
 };
 export const listRelations = async (relationshipType, args) => {
   const searchFields = ['name', 'description'];
-  const { first = 1000, after, orderBy, orderMode = 'asc', relationFilter, inferred = false } = args;
+  const { first = 1000, after, orderBy, relationFilter, inferred = false } = args;
   let useInference = inferred;
   const { filters = [], search, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
   const { startTimeStart, startTimeStop, stopTimeStart, stopTimeStop, confidences = [] } = args;
-
   // Use $from, $to only if fromId or toId specified.
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
@@ -787,7 +769,6 @@ export const listRelations = async (relationshipType, args) => {
   if (askForConnections === false && (haveTargetFilters || fromTypesFilter || toTypesFilter || search)) {
     throw DatabaseError('Cant list relation with types filtering or search if from or to id are not specified');
   }
-
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && R.includes('.', orderBy);
   // Handle relation type(s)
@@ -929,7 +910,8 @@ export const listRelations = async (relationshipType, args) => {
     : '$rel';
   const baseQuery = `match ${querySource} isa ${relationToGet}; 
   ${queryFromTypes} ${queryToTypes} ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
-  return listElements(baseQuery, first, offset, orderBy, orderMode, 'rel', relationRef, useInference, args.noCache);
+  const listArgs = R.assoc('inferred', useInference, args);
+  return listElements(baseQuery, 'rel', first, offset, listArgs);
 };
 // endregion
 

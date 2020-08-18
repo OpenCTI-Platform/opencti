@@ -1,8 +1,10 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import validator from 'validator';
-import { includes } from 'ramda';
+import * as R from 'ramda';
+import jsonCanonicalize from 'canonicalize';
 import { DatabaseError } from '../config/errors';
 
+export const OASIS_NAMESPACE = '00abedb4-aa42-466c-9c01-fed23315a9b7';
 export const OPENCTI_NAMESPACE = 'b639ff3b-00eb-42ed-aa36-a8dd6f8fb4cf';
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const OPENCTI_PLATFORM_UUID = 'd06053cb-7123-404b-b092-6606411702d2';
@@ -102,7 +104,7 @@ const STIX_CORE_RELATIONSHIPS = [
   RELATION_SUBTECHNIQUE_OF,
 ];
 export const isStixCoreRelationship = (type) =>
-  includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
+  R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion
 
 // region STIX SIGHTING RELATIONSHIP
@@ -124,11 +126,11 @@ const STIX_INTERNAL_META_RELATIONSHIPS = [
   RELATION_KILL_CHAIN_PHASE,
 ];
 export const isStixMetaRelationship = (type) =>
-  includes(type, STIX_META_RELATIONSHIPS) ||
-  includes(type, STIX_INTERNAL_META_RELATIONSHIPS) ||
+  R.includes(type, STIX_META_RELATIONSHIPS) ||
+  R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) ||
   type === ABSTRACT_STIX_META_RELATIONSHIP;
 export const isStixInternalMetaRelationship = (type) =>
-  includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
+  R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
 // endregion
 
 // region STIX CYBER OBSERVABLE RELATIONSHIP
@@ -190,7 +192,7 @@ const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_VALUES,
   RELATION_X509_V3_EXTENSIONS,
 ];
-export const isStixCyberObservableRelationship = (type) => includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
+export const isStixCyberObservableRelationship = (type) => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 // endregion
 
 // region INTERNAL RELATIONSHIP
@@ -208,7 +210,7 @@ const INTERNAL_RELATIONSHIPS = [
   RELATION_HAS_ROLE,
   RELATION_HAS_CAPABILITY,
 ];
-export const isInternalRelationship = (type) => includes(type, INTERNAL_RELATIONSHIPS);
+export const isInternalRelationship = (type) => R.includes(type, INTERNAL_RELATIONSHIPS);
 // endregion
 export const isStixRelationship = (type) =>
   isStixCoreRelationship(type) ||
@@ -252,8 +254,8 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_WORKSPACE,
 ];
-export const isInternalObject = (type) => includes(type, INTERNAL_OBJECTS) || type === ABSTRACT_INTERNAL_OBJECT;
-export const isDatedInternalObject = (type) => includes(type, DATED_INTERNAL_OBJECTS);
+export const isInternalObject = (type) => R.includes(type, INTERNAL_OBJECTS) || type === ABSTRACT_INTERNAL_OBJECT;
+export const isDatedInternalObject = (type) => R.includes(type, DATED_INTERNAL_OBJECTS);
 // endregion
 
 // region STIX META OBJECT
@@ -268,7 +270,7 @@ const STIX_META_OBJECT = [
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_KILL_CHAIN_PHASE,
 ];
-export const isStixMetaObject = (type) => includes(type, STIX_META_OBJECT) || type === ABSTRACT_STIX_META_OBJECT;
+export const isStixMetaObject = (type) => R.includes(type, STIX_META_OBJECT) || type === ABSTRACT_STIX_META_OBJECT;
 // endregion
 
 // region STIX DOMAIN OBJECT
@@ -305,14 +307,14 @@ const STIX_DOMAIN_OBJECT_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_REPORT,
 ];
 export const isStixDomainObjectContainer = (type) =>
-  includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
+  R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
 const STIX_DOMAIN_OBJECT_IDENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
 ];
 export const isStixDomainObjectIdentity = (type) =>
-  includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
+  R.includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
 const STIX_DOMAIN_OBJECT_LOCATIONS = [
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -320,7 +322,7 @@ const STIX_DOMAIN_OBJECT_LOCATIONS = [
   ENTITY_TYPE_LOCATION_POSITION,
 ];
 export const isStixDomainObjectLocation = (type) =>
-  includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
+  R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
 
 const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -346,7 +348,8 @@ const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_VULNERABILITY,
   ENTITY_TYPE_X_OPENCTI_INCIDENT,
 ];
-export const isStixDomainObject = (type) => includes(type, STIX_DOMAIN_OBJECTS) || type === ABSTRACT_STIX_DOMAIN_OBJECT;
+export const isStixDomainObject = (type) =>
+  R.includes(type, STIX_DOMAIN_OBJECTS) || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 // endregion
 
 // region STIX CYBER OBSERVABLE
@@ -411,9 +414,9 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_X_OPENCTI_TEXT,
 ];
 export const isStixCyberObservableHashedObservable = (type) =>
-  includes(type, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
+  R.includes(type, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
 export const isStixCyberObservable = (type) =>
-  includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
+  R.includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 // endregion
 export const isStixCoreObject = (type) =>
   isStixDomainObject(type) || isStixCyberObservable(type) || type === ABSTRACT_STIX_CORE_OBJECT;
@@ -438,14 +441,22 @@ export const ABSTRACT_TYPES = [
   ABSTRACT_STIX_META_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
 ];
-export const isAbstract = (type) => includes(type, ABSTRACT_TYPES);
+export const isAbstract = (type) => R.includes(type, ABSTRACT_TYPES);
 // ------------------------------------------------------
 
 // region utils
-const uuid = (data) => {
-  const dataHash = JSON.stringify(data, Object.keys(data).sort()).toLowerCase();
-  return uuidv5(dataHash, OPENCTI_NAMESPACE);
+const idGen = (data, namespace) => {
+  const filteredData = R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), data);
+  if (R.isEmpty(filteredData)) {
+    // If element have nothing participating to the key, we can only create an uuidv4
+    return uuidv4();
+  }
+  const dataCanonicalize = jsonCanonicalize(filteredData);
+  return uuidv5(dataCanonicalize, namespace);
 };
+const oasisId = (data) => idGen(data, OASIS_NAMESPACE);
+const openctiId = (data) => idGen(data, OPENCTI_NAMESPACE);
+
 export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 export const isInternalId = (id) => validator.isUUID(id);
 const convertEntityTypeToStixType = (type) => {
@@ -501,7 +512,7 @@ export const parents = (type) => {
 
 // region entities
 const labelId = (data) => {
-  return uuid({ type: ENTITY_TYPE_LABEL, value: data.value });
+  return openctiId({ value: data.value });
 };
 const externalReferenceId = (data) => {
   let referenceKey = data;
@@ -515,29 +526,28 @@ const externalReferenceId = (data) => {
     };
   }
   // Return uuid generated from the full content
-  return uuid(referenceKey);
+  return openctiId(referenceKey);
 };
 const killChainId = (data) => {
   const phaseName = data.phase_name.toLowerCase();
   const killChainName = data.kill_chain_name.toLowerCase();
-  return uuid({ type: ENTITY_TYPE_KILL_CHAIN_PHASE, phaseName, killChainName });
+  return openctiId({ phaseName, killChainName });
 };
 const markingDefinitionId = (data) => {
   // eslint-disable-next-line camelcase
   const { definition, definition_type } = data;
-  return uuid({ type: ENTITY_TYPE_MARKING_DEFINITION, definition_type, definition });
+  return openctiId({ definition_type, definition });
 };
 const attackPatternId = (data) => {
   const { name, x_mitre_id: xMitreId } = data;
-  return uuid({ type: ENTITY_TYPE_ATTACK_PATTERN, name, x_mitre_id: xMitreId });
+  return openctiId({ name, x_mitre_id: xMitreId });
 };
 const reportId = (data) => {
-  // eslint-disable-next-line camelcase
-  const { name, createdBy, published } = data;
-  return uuid({ type: ENTITY_TYPE_CONTAINER_REPORT, name, createdBy, published });
+  const { name, published } = data;
+  return openctiId({ name, published: published?.toISOString() });
 };
 const indicatorId = (data) => {
-  return uuid({ type: ENTITY_TYPE_INDICATOR, pattern: data.pattern });
+  return openctiId({ pattern: data.pattern });
 };
 const generateInternalObjectUUID = (type, entity) => {
   switch (type) {
@@ -545,15 +555,15 @@ const generateInternalObjectUUID = (type, entity) => {
     case ENTITY_TYPE_CONNECTOR:
     case ENTITY_TYPE_ROLE:
     case ENTITY_TYPE_GROUP:
-      return uuid({ type, name: entity.name });
+      return openctiId({ name: entity.name });
     case ENTITY_TYPE_USER:
-      return uuid({ type, user_email: entity.user_email });
+      return openctiId({ user_email: entity.user_email });
     case ENTITY_TYPE_SETTINGS:
       return OPENCTI_PLATFORM_UUID;
     case ENTITY_TYPE_TOKEN:
-      return uuid({ type, uuid: entity.uuid });
+      return openctiId({ uuid: entity.uuid });
     case ENTITY_TYPE_WORKSPACE:
-      return uuid({ type, name: entity.name, workspace: entity.workspace_type });
+      return openctiId({ name: entity.name, workspace: entity.workspace_type });
     default:
       throw DatabaseError(`Cant generate internal id for type ${type}`);
   }
@@ -575,48 +585,48 @@ const generateStixDomainObjectUUID = (type, data) => {
     case ENTITY_TYPE_INDICATOR:
       return indicatorId(data);
     default:
-      return uuid({ type, name: data.name });
+      return openctiId({ name: data.name });
   }
 };
 const generateStixCyberObservableUUID = (type, data) => {
   switch (type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
       if (!data.number) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, name: data.number });
+      return oasisId({ name: data.number });
     case ENTITY_DIRECTORY:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_DOMAIN_NAME:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_EMAIL_ADDR:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_EMAIL_MESSAGE:
       return uuidv4();
     case ENTITY_EMAIL_MIME_PART_TYPE:
       return uuidv4();
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
       if (!data.md5 && !data.sha1 && !data.sha256) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, hash: data.md5 || data.sha1 || data.sha256 });
+      return oasisId({ hash: data.md5 || data.sha1 || data.sha256 });
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
       if (!data.md5 && !data.sha1 && !data.sha256) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, hash: data.md5 || data.sha1 || data.sha256 });
+      return oasisId({ hash: data.md5 || data.sha1 || data.sha256 });
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
       if (!data.md5 && !data.sha1 && !data.sha256) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, hash: data.md5 || data.sha1 || data.sha256 });
+      return oasisId({ hash: data.md5 || data.sha1 || data.sha256 });
     case ENTITY_IPV4_ADDR:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_IPV6_ADDR:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_MAC_ADDR:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_MUTEX:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_NETWORK_TRAFFIC:
       return uuidv4();
     case ENTITY_PROCESS:
@@ -625,7 +635,7 @@ const generateStixCyberObservableUUID = (type, data) => {
       return uuidv4();
     case ENTITY_URL:
       if (!data.value) throw DatabaseError(`Missing attribute to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_USER_ACCOUNT:
       return uuidv4();
     case ENTITY_WINDOWS_REGISTRY_KEY:
@@ -636,19 +646,19 @@ const generateStixCyberObservableUUID = (type, data) => {
       return uuidv4();
     case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY:
       if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET:
       if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_X_OPENCTI_HOSTNAME:
       if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_X_OPENCTI_TEXT:
       if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     case ENTITY_X_OPENCTI_USER_AGENT:
       if (!data.value) throw DatabaseError(`Missing attribute value to generate the ID`);
-      return uuid({ type, value: data.value });
+      return oasisId({ value: data.value });
     default:
       throw DatabaseError(`Unknown observable type`);
   }
@@ -674,7 +684,7 @@ const generateStixCyberObservableId = (type, data) => {
 const generateInternalRelationshipUUID = (type, data) => {
   switch (type) {
     case ENTITY_USER_ACCOUNT:
-      return uuid({ type, user_email: data.user_email });
+      return openctiId({ user_email: data.user_email });
     default:
       return uuidv4();
   }
@@ -686,7 +696,7 @@ const generateInternalRelationshipId = (type, data) => {
 const generateStixCoreRelationshipUUID = (prefix, data) => {
   // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type, start_time, stop_time } = data;
-  return uuid({ prefix, fromId, toId, relationship_type, start_time, stop_time });
+  return openctiId({ prefix, fromId, toId, relationship_type, start_time, stop_time });
 };
 const generateStixCoreRelationshipId = (type, data) => {
   const id = generateStixCoreRelationshipUUID(type, data);
@@ -695,7 +705,7 @@ const generateStixCoreRelationshipId = (type, data) => {
 const generateStixMetaRelationshipUUID = (data) => {
   // eslint-disable-next-line camelcase
   const { fromId, toId } = data;
-  return uuid({ from: fromId, to: toId });
+  return openctiId({ from: fromId, to: toId });
 };
 const generateStixMetaRelationshipId = (data) => {
   const id = generateStixMetaRelationshipUUID(data);
@@ -704,7 +714,7 @@ const generateStixMetaRelationshipId = (data) => {
 const generateStixSightingRelationshipUUID = (data) => {
   // eslint-disable-next-line camelcase
   const { fromId, toId } = data;
-  return uuid({ from: fromId, to: toId });
+  return openctiId({ from: fromId, to: toId });
 };
 const generateStixSightingRelationshipId = (data) => {
   const id = generateStixSightingRelationshipUUID(data);

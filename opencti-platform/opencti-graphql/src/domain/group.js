@@ -4,17 +4,15 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  escapeString,
   executeWrite,
-  findWithConnectedRelations,
   listEntities,
+  listFromEntitiesThroughRelation,
   loadEntityById,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { buildPagination } from '../database/utils';
-import { ENTITY_TYPE_GROUP, RELATION_MEMBER_OF } from '../utils/idGenerator';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER, RELATION_MEMBER_OF } from '../utils/idGenerator';
 
 export const findById = (groupId) => {
   return loadEntityById(groupId, ENTITY_TYPE_GROUP);
@@ -25,14 +23,7 @@ export const findAll = (args) => {
 };
 
 export const members = async (groupId) => {
-  return findWithConnectedRelations(
-    `match $from isa User; 
-    $rel(${RELATION_MEMBER_OF}_from:$from, ${RELATION_MEMBER_OF}_to:$to) isa ${RELATION_MEMBER_OF};
-    $to isa Group, has internal_id "${escapeString(groupId)}";
-    get;`,
-    'from',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listFromEntitiesThroughRelation(groupId, ENTITY_TYPE_GROUP, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
 export const addGroup = async (user, group) => {

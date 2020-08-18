@@ -517,7 +517,7 @@ describe('Elasticsearch basic loader', () => {
     const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
     const data = await elLoadById(malware.internal_id);
     expect(data).not.toBeNull();
-    expect(data.standard_id).toEqual('malware--a6715816-91f1-58f6-9c07-ca835392dab1');
+    expect(data.standard_id).toEqual('malware--d684b00b-4088-508c-8e42-f23bf2936fac');
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
     expect(data.entity_type).toEqual('Malware');

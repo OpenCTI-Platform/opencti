@@ -3,7 +3,6 @@ import {
   createRelation,
   deleteRelationsByFromAndTo,
   escapeString,
-  findWithConnectedRelations,
   internalLoadEntityById,
   listEntities,
   listFromEntitiesThroughRelation,
@@ -12,31 +11,30 @@ import {
   loadEntityById,
 } from '../database/grakn';
 import { findAll as relationFindAll } from './stixCoreRelationship';
-import { buildPagination } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
   isStixCoreObject,
+  isStixMetaRelationship,
   isStixRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
   RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  isStixMetaRelationship,
-  ABSTRACT_STIX_META_RELATIONSHIP,
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
@@ -63,61 +61,41 @@ export const createdBy = async (stixCoreObjectId) => {
 };
 
 export const reports = async (stixCoreObjectId) => {
-  const rel = { from: RELATION_OBJECT, to: RELATION_OBJECT, type: RELATION_OBJECT };
-  return listFromEntitiesThroughRelation(stixCoreObjectId, rel, ENTITY_TYPE_CONTAINER_REPORT);
+  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
 export const notes = (stixCoreObjectId) => {
-  return findWithConnectedRelations(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_NOTE}; 
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
-    $to has internal_id "${escapeString(stixCoreObjectId)}"; get;`,
-    'from',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
 export const opinions = (stixCoreObjectId) => {
-  return findWithConnectedRelations(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_OPINION};
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
-    $to has internal_id "${escapeString(stixCoreObjectId)}"; get;`,
-    'from',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
 export const labels = async (stixCoreObjectId) => {
-  const rel = { from: RELATION_OBJECT_LABEL, to: RELATION_OBJECT_LABEL, type: RELATION_OBJECT_LABEL };
-  return listToEntitiesThroughRelation(stixCoreObjectId, rel, ENTITY_TYPE_LABEL);
+  return listToEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
 export const markingDefinitions = (stixCoreObjectId) => {
-  const rel = { from: RELATION_OBJECT_MARKING, to: RELATION_OBJECT_MARKING, type: RELATION_OBJECT_MARKING };
-  return listToEntitiesThroughRelation(stixCoreObjectId, rel, ENTITY_TYPE_MARKING_DEFINITION);
+  return listToEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const killChainPhases = (stixDomainObjectId) => {
-  return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_KILL_CHAIN_PHASE};
-    $rel(${RELATION_KILL_CHAIN_PHASE}_from:$from, ${RELATION_KILL_CHAIN_PHASE}_to:$to) isa ${RELATION_KILL_CHAIN_PHASE};
-    $from has internal_id "${escapeString(stixDomainObjectId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(
+    stixDomainObjectId,
+    null,
+    RELATION_KILL_CHAIN_PHASE,
+    ENTITY_TYPE_KILL_CHAIN_PHASE
+  );
 };
 
 export const externalReferences = (stixDomainObjectId) => {
-  return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_EXTERNAL_REFERENCE}, has internal_id $to_id;
-    $rel(${RELATION_EXTERNAL_REFERENCE}_from:$from, ${RELATION_EXTERNAL_REFERENCE}_to:$to) isa ${RELATION_EXTERNAL_REFERENCE}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    $from has internal_id "${escapeString(stixDomainObjectId)}";
-    get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(
+    stixDomainObjectId,
+    null,
+    RELATION_EXTERNAL_REFERENCE,
+    ENTITY_TYPE_EXTERNAL_REFERENCE
+  );
 };
 
 export const stixCoreRelationships = (stixCoreObjectId, args) => {

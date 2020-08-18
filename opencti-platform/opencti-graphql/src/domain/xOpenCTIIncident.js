@@ -1,16 +1,14 @@
 import { assoc, pipe } from 'ramda';
 import {
   createEntity,
-  escapeString,
-  findWithConnectedRelations,
   listEntities,
+  listToEntitiesThroughRelation,
   loadEntityById,
   now,
   timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -38,14 +36,12 @@ export const xOpenCTIIncidentsTimeSeries = (args) => {
 // endregion
 
 export const observables = (reportId) => {
-  return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_X_OPENCTI_INCIDENT}; 
-    $rel(${RELATION_RELATED_TO}_from:$from, ${RELATION_RELATED_TO}_to:$to) isa ${RELATION_RELATED_TO};
-    $from isa ${ABSTRACT_STIX_CYBER_OBSERVABLE};
-    $to has internal_id_key "${escapeString(reportId)}"; get;`,
-    'from',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(
+    reportId,
+    ABSTRACT_STIX_CYBER_OBSERVABLE,
+    RELATION_RELATED_TO,
+    ENTITY_TYPE_X_OPENCTI_INCIDENT
+  );
 };
 
 export const addXOpenCTIIncident = async (user, incident) => {

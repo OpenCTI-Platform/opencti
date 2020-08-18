@@ -2,14 +2,13 @@ import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
-  findWithConnectedRelations,
   getSingleValueNumber,
   listEntities,
+  listToEntitiesThroughRelation,
   loadEntityById,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION_REGION, RELATION_LOCATED_AT } from '../utils/idGenerator';
 
 export const findById = (regionId) => {
@@ -21,25 +20,11 @@ export const findAll = (args) => {
 };
 
 export const parentRegions = (regionId) => {
-  return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_LOCATION_REGION}; 
-    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-    $from has internal_id "${escapeString(regionId)}";
-     get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const subRegions = (regionId) => {
-  return findWithConnectedRelations(
-    `match $to isa ${ENTITY_TYPE_LOCATION_REGION}; 
-    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-    $from has internal_id "${escapeString(regionId)}"; 
-    get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const isSubRegion = async (regionId, args) => {

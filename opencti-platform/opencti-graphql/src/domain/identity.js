@@ -19,7 +19,7 @@ export const findAll = async (args) => {
     types = filter((type) => isStixDomainObjectIdentity(type), args.types);
   }
   if (types.length === 0) {
-    types.push(ABSTRACT_STIX_CORE_OBJECT);
+    types.push(ENTITY_TYPE_IDENTITY);
   }
   return listEntities(types, ['name', 'description', 'aliases'], args);
 };

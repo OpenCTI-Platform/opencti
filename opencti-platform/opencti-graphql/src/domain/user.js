@@ -1,4 +1,4 @@
-import { assoc, find as rFind, head, isNil, pipe, map, dissoc, append, flatten, propEq, includes } from 'ramda';
+import { append, assoc, dissoc, find as rFind, flatten, head, includes, isNil, map, pipe, propEq } from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
@@ -29,25 +29,25 @@ import {
   escapeString,
   executeWrite,
   find,
-  findWithConnectedRelations,
   listEntities,
+  listToEntitiesThroughRelation,
   load,
   loadEntityById,
   now,
   updateAttribute,
 } from '../database/grakn';
-import { buildPagination } from '../database/utils';
 import {
   ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_USER,
+  generateStandardId,
   OPENCTI_ADMIN_UUID,
   RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
-  generateStandardId,
 } from '../utils/idGenerator';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 
@@ -91,16 +91,7 @@ export const findAll = (args) => {
 };
 
 export const groups = (userId) => {
-  return findWithConnectedRelations(
-    `match $to isa Group, has internal_id $to_id; 
-    $rel(${RELATION_MEMBER_OF}_from:$from, ${RELATION_MEMBER_OF}_to:$to) isa ${RELATION_MEMBER_OF}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    $from isa User, has internal_id "${escapeString(userId)}";
-    get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(userId, ENTITY_TYPE_USER, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
 };
 
 export const token = async (userId, args, context) => {
@@ -114,7 +105,7 @@ export const token = async (userId, args, context) => {
     $from has internal_id "${escapeString(userId)}"; get;`,
     ['to']
   );
-  return element && element.to;
+  return element && element.to.uuid;
 };
 
 const internalGetToken = async (userId) => {
