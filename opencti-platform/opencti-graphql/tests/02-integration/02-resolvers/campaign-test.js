@@ -73,7 +73,6 @@ const READ_QUERY = gql`
 
 describe('Campaign resolver standard behavior', () => {
   let campaignInternalId;
-  let campaignMarkingDefinitionRelationId;
   const campaignStixId = 'campaign--76c42acb-c5d7-4f38-abf2-a8566ac89ac9';
   it('should campaign created', async () => {
     const CREATE_QUERY = gql`
@@ -141,7 +140,7 @@ describe('Campaign resolver standard behavior', () => {
       query: TIMESERIES_QUERY,
       variables: {
         objectId: '82316ffd-a0ec-4519-a454-6566f8f5676c',
-        field: 'first_seen',
+        field: 'start_time',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',

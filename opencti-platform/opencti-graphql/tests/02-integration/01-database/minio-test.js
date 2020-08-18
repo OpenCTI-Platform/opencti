@@ -61,7 +61,7 @@ describe('Minio basic and utils', () => {
   });
 });
 
-describe('Minio file listing', async () => {
+describe('Minio file listing', () => {
   let malwareId;
   let exportFileName;
   let exportFileId;
