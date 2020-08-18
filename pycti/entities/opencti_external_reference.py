@@ -199,8 +199,8 @@ class ExternalReference:
             if update:
                 # source_name
                 if (
-                    self.opencti.not_empty(source_name) and
-                    external_reference_result["source_name"] != source_name
+                    self.opencti.not_empty(source_name)
+                    and external_reference_result["source_name"] != source_name
                 ):
                     self.update_field(
                         id=object_result["id"], key="source_name", value=source_name
@@ -208,26 +208,24 @@ class ExternalReference:
                     external_reference_result["source_name"] = source_name
                 # url
                 if (
-                    self.opencti.not_empty(url) and
-                    external_reference_result["url"] != url
+                    self.opencti.not_empty(url)
+                    and external_reference_result["url"] != url
                 ):
-                    self.update_field(
-                        id=object_result["id"], key="url", value=url
-                    )
+                    self.update_field(id=object_result["id"], key="url", value=url)
                     external_reference_result["url"] = url
                 # external_id
                 if (
-                    self.opencti.not_empty(external_id) and
-                    external_reference_result["external_id"] != external_id
+                    self.opencti.not_empty(external_id)
+                    and external_reference_result["external_id"] != external_id
                 ):
                     self.update_field(
                         id=object_result["id"], key="external_id", value=external_id
                     )
                     external_reference_result["external_id"] = external_id
                 # description
-                if  (
-                    self.opencti.not_empty(description) and
-                    external_reference_result["description"] != description
+                if (
+                    self.opencti.not_empty(description)
+                    and external_reference_result["description"] != description
                 ):
                     self.update_field(
                         id=object_result["id"], key="description", value=description

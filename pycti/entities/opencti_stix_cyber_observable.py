@@ -34,7 +34,7 @@ class StixCyberObservable:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -411,6 +411,11 @@ class StixCyberObservable:
         type = observable_data["type"].capitalize()
         if type.lower() == "file":
             type = "StixFile"
+        elif type.lower() == "ipv4-addr":
+            type = "IPv4-Addr"
+        elif type.lower() == "ipv6-addr":
+            type = "IPv6-Addr"
+
         if type is not None:
             self.opencti.log(
                 "info",
@@ -650,6 +655,336 @@ class StixCyberObservable:
                     else None,
                     "atime": observable_data["atime"]
                     if "atime" in observable_data
+                    else None,
+                }
+            elif type == "X509-Certificate":
+                input_variables["X509Certificate"] = {
+                    "md5": observable_data["hashes"]["MD5"]
+                    if "hashes" in observable_data
+                    and "MD5" in observable_data["hashes"]
+                    else None,
+                    "sha1": observable_data["hashes"]["SHA-1"]
+                    if "hashes" in observable_data
+                    and "SHA-1" in observable_data["hashes"]
+                    else None,
+                    "sha256": observable_data["hashes"]["SHA-256"]
+                    if "hashes" in observable_data
+                    and "SHA-256" in observable_data["hashes"]
+                    else None,
+                    "sha512": observable_data["hashes"]["SHA-512"]
+                    if "hashes" in observable_data
+                    and "SHA-512" in observable_data["hashes"]
+                    else None,
+                    "is_self_signed": observable_data["is_self_signed"]
+                    if "is_self_signed" in observable_data
+                    else False,
+                    "version": observable_data["version"]
+                    if "version" in observable_data
+                    else None,
+                    "serial_number": observable_data["serial_number"]
+                    if "serial_number" in observable_data
+                    else None,
+                    "signature_algorithm": observable_data["signature_algorithm"]
+                    if "signature_algorithm" in observable_data
+                    else None,
+                    "issuer": observable_data["issuer"]
+                    if "issuer" in observable_data
+                    else None,
+                    "validity_not_before": observable_data["validity_not_before"]
+                    if "validity_not_before" in observable_data
+                    else None,
+                    "validity_not_after": observable_data["validity_not_after"]
+                    if "validity_not_after" in observable_data
+                    else None,
+                    "subject": observable_data["subject"]
+                    if "subject" in observable_data
+                    else None,
+                    "subject_public_key_algorithm": observable_data[
+                        "subject_public_key_algorithm"
+                    ]
+                    if "subject_public_key_algorithm" in observable_data
+                    else None,
+                    "subject_public_key_modulus": observable_data[
+                        "subject_public_key_modulus"
+                    ]
+                    if "subject_public_key_modulus" in observable_data
+                    else None,
+                    "subject_public_key_exponent": observable_data[
+                        "subject_public_key_exponent"
+                    ]
+                    if "subject_public_key_exponent" in observable_data
+                    else None,
+                }
+            elif type == "IPv4-Addr":
+                input_variables["IPv4Addr"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "IPv6-Addr":
+                input_variables["IPv6Addr"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "Mac-Addr":
+                input_variables["MacAddr"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "Mutex":
+                input_variables["Mutex"] = {
+                    "name": observable_data["name"]
+                    if "name" in observable_data
+                    else None,
+                }
+            elif type == "Network-Traffic":
+                input_variables["NetworkTraffic"] = {
+                    "extensions": observable_data["extensions"]
+                    if "extensions" in observable_data
+                    else None,
+                    "start": observable_data["start"]
+                    if "start" in observable_data
+                    else None,
+                    "end": observable_data["end"] if "end" in observable_data else None,
+                    "is_active": observable_data["is_active"]
+                    if "is_active" in observable_data
+                    else None,
+                    "src_port": observable_data["src_port"]
+                    if "src_port" in observable_data
+                    else None,
+                    "dst_port": observable_data["dst_port"]
+                    if "dst_port" in observable_data
+                    else None,
+                    "protocols": observable_data["protocols"]
+                    if "protocols" in observable_data
+                    else None,
+                    "src_byte_count": observable_data["src_byte_count"]
+                    if "src_byte_count" in observable_data
+                    else None,
+                    "dst_byte_count": observable_data["dst_byte_count"]
+                    if "dst_byte_count" in observable_data
+                    else None,
+                    "src_packets": observable_data["src_packets"]
+                    if "src_packets" in observable_data
+                    else None,
+                    "dst_packets": observable_data["dst_packets"]
+                    if "dst_packets" in observable_data
+                    else None,
+                }
+            elif type == "Process":
+                input_variables["Process"] = {
+                    "extensions": observable_data["extensions"]
+                    if "extensions" in observable_data
+                    else None,
+                    "is_hidden": observable_data["is_hidden"]
+                    if "is_hidden" in observable_data
+                    else None,
+                    "pid": observable_data["pid"] if "pid" in observable_data else None,
+                    "created_time": observable_data["created_time"]
+                    if "created_time" in observable_data
+                    else None,
+                    "cwd": observable_data["cwd"] if "cwd" in observable_data else None,
+                    "command_line": observable_data["command_line"]
+                    if "command_line" in observable_data
+                    else None,
+                    "environment_variables": observable_data["environment_variables"]
+                    if "environment_variables" in observable_data
+                    else None,
+                }
+            elif type == "Software":
+                input_variables["Software"] = {
+                    "name": observable_data["name"]
+                    if "name" in observable_data
+                    else None,
+                    "cpe": observable_data["cpe"] if "cpe" in observable_data else None,
+                    "swid": observable_data["swid"]
+                    if "swid" in observable_data
+                    else None,
+                    "languages": observable_data["languages"]
+                    if "languages" in observable_data
+                    else None,
+                    "vendor": observable_data["vendor"]
+                    if "vendor" in observable_data
+                    else None,
+                    "version": observable_data["version"]
+                    if "version" in observable_data
+                    else None,
+                }
+            elif type == "Url":
+                input_variables["Url"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "User-Account":
+                input_variables["UserAccount"] = {
+                    "extensions": observable_data["extensions"]
+                    if "extensions" in observable_data
+                    else None,
+                    "user_id": observable_data["user_id"]
+                    if "user_id" in observable_data
+                    else None,
+                    "credential": observable_data["credential"]
+                    if "credential" in observable_data
+                    else None,
+                    "account_login": observable_data["account_login"]
+                    if "account_login" in observable_data
+                    else None,
+                    "account_type": observable_data["account_type"]
+                    if "account_type" in observable_data
+                    else None,
+                    "display_name": observable_data["display_name"]
+                    if "display_name" in observable_data
+                    else None,
+                    "is_service_account": observable_data["is_service_account"]
+                    if "is_service_account" in observable_data
+                    else None,
+                    "is_privileged": observable_data["is_privileged"]
+                    if "is_privileged" in observable_data
+                    else None,
+                    "can_escalate_privs": observable_data["can_escalate_privs"]
+                    if "can_escalate_privs" in observable_data
+                    else None,
+                    "is_disabled": observable_data["is_disabled"]
+                    if "is_disabled" in observable_data
+                    else None,
+                    "account_created": observable_data["account_created"]
+                    if "account_created" in observable_data
+                    else None,
+                    "account_expires": observable_data["account_expires"]
+                    if "account_expires" in observable_data
+                    else None,
+                    "credential_last_changed": observable_data[
+                        "credential_last_changed"
+                    ]
+                    if "credential_last_changed" in observable_data
+                    else None,
+                    "account_first_login": observable_data["account_first_login"]
+                    if "account_first_login" in observable_data
+                    else None,
+                    "account_last_login": observable_data["account_last_login"]
+                    if "account_last_login" in observable_data
+                    else None,
+                }
+            elif type == "Windows-Registry-Key":
+                input_variables["WindowsRegistryKey "] = {
+                    "attribute_key": observable_data["attribute_key"]
+                    if "attribute_key" in observable_data
+                    else None,
+                    "modified_time": observable_data["modified_time"]
+                    if "modified_time" in observable_data
+                    else None,
+                    "number_of_subkeys": observable_data["number_of_subkeys"]
+                    if "number_of_subkeys" in observable_data
+                    else None,
+                }
+            elif type == "Windows-Registry-Value-Type":
+                input_variables["WindowsRegistryKey "] = {
+                    "name": observable_data["name"]
+                    if "name" in observable_data
+                    else None,
+                    "data": observable_data["data"]
+                    if "data" in observable_data
+                    else None,
+                    "data_type": observable_data["data_type"]
+                    if "data_type" in observable_data
+                    else None,
+                }
+            elif type == "X509-V3-Extensions-Type":
+                input_variables["X509V3ExtensionsType "] = {
+                    "basic_constraints": observable_data["basic_constraints"]
+                    if "basic_constraints" in observable_data
+                    else None,
+                    "name_constraints": observable_data["name_constraints"]
+                    if "name_constraints" in observable_data
+                    else None,
+                    "policy_constraints": observable_data["policy_constraints"]
+                    if "policy_constraints" in observable_data
+                    else None,
+                    "key_usage": observable_data["key_usage"]
+                    if "key_usage" in observable_data
+                    else None,
+                    "extended_key_usage": observable_data["extended_key_usage"]
+                    if "extended_key_usage" in observable_data
+                    else None,
+                    "subject_key_identifier": observable_data["subject_key_identifier"]
+                    if "subject_key_identifier" in observable_data
+                    else None,
+                    "authority_key_identifier": observable_data[
+                        "authority_key_identifier"
+                    ]
+                    if "authority_key_identifier" in observable_data
+                    else None,
+                    "subject_alternative_name": observable_data[
+                        "subject_alternative_name"
+                    ]
+                    if "subject_alternative_name" in observable_data
+                    else None,
+                    "issuer_alternative_name": observable_data[
+                        "issuer_alternative_name"
+                    ]
+                    if "issuer_alternative_name" in observable_data
+                    else None,
+                    "subject_directory_attributes": observable_data[
+                        "subject_directory_attributes"
+                    ]
+                    if "subject_directory_attributes" in observable_data
+                    else None,
+                    "crl_distribution_points": observable_data[
+                        "crl_distribution_points"
+                    ]
+                    if "crl_distribution_points" in observable_data
+                    else None,
+                    "inhibit_any_policy": observable_data["inhibit_any_policy"]
+                    if "inhibit_any_policy" in observable_data
+                    else None,
+                    "private_key_usage_period_not_before": observable_data[
+                        "private_key_usage_period_not_before"
+                    ]
+                    if "private_key_usage_period_not_before" in observable_data
+                    else None,
+                    "private_key_usage_period_not_after": observable_data[
+                        "private_key_usage_period_not_after"
+                    ]
+                    if "private_key_usage_period_not_after" in observable_data
+                    else None,
+                    "certificate_policies": observable_data["certificate_policies"]
+                    if "certificate_policies" in observable_data
+                    else None,
+                    "policy_mappings": observable_data["policy_mappings"]
+                    if "policy_mappings" in observable_data
+                    else None,
+                }
+            elif type == "X-OpenCTI-Cryptographic-Key":
+                input_variables["XOpenCTICryptographicKey"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "X-OpenCTI-Cryptocurrency-Wallet":
+                input_variables["XOpenCTICryptocurrencyWallet"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "X-OpenCTI-Hostname":
+                input_variables["XOpenCTIHostname"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "X-OpenCTI-Text":
+                input_variables["XOpenCTIText"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
+                    else None,
+                }
+            elif type == "X-OpenCTI-User-Agent":
+                input_variables["XOpenCTIUserAgent"] = {
+                    "value": observable_data["value"]
+                    if "value" in observable_data
                     else None,
                 }
             result = self.opencti.query(query, input_variables)

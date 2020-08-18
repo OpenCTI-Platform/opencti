@@ -374,7 +374,8 @@ class ObservedData:
             )
         else:
             self.opencti.log(
-                "error", "[opencti_observedData] Missing parameters: content",
+                "error",
+                "[opencti_observedData] Missing parameters: first_observed or last_observed",
             )
 
     """
