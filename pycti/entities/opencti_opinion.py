@@ -2,83 +2,79 @@
 
 import json
 
-from pycti.utils.constants import CustomProperties
-from pycti.utils.opencti_stix2 import SPEC_VERSION
-
 
 class Opinion:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
             id
-            stix_id_key
+            standard_id
             entity_type
-            stix_label
-            name
-            alias
-            description
-            explanation
-            graph_data
-            created
-            modified
+            parent_types
+            spec_version
             created_at
             updated_at
-            createdByRef {
-                node {
+            createdBy {
+                ... on Identity {
                     id
+                    standard_id
                     entity_type
-                    stix_id_key
-                    stix_label
+                    parent_types
+                    spec_version
                     name
-                    alias
+                    aliases
                     description
                     created
                     modified
-                    ... on Organization {
-                        organization_class
-                    }
+                    objectLabel {
+                        edges {
+                            node {
+                                id
+                                value
+                                color
+                            }
+                        }
+                    }                    
                 }
-                relation {
-                    id
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
+                }
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
                 }
             }
-            markingDefinitions {
+            objectMarking {
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         definition_type
                         definition
-                        level
-                        color
                         created
                         modified
-                    }
-                    relation {
-                        id
+                        x_opencti_order
+                        x_opencti_color
                     }
                 }
             }
-            tags {
+            objectLabel {
                 edges {
                     node {
                         id
-                        tag_type
                         value
                         color
                     }
-                    relation {
-                        id
-                    }
                 }
-            }            
+            }
             externalReferences {
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         source_name
                         description
                         url
@@ -87,35 +83,94 @@ class Opinion:
                         created
                         modified
                     }
-                    relation {
-                        id
-                    }
                 }
             }
-            objectRefs {
+            revoked
+            confidence
+            created
+            modified
+            explanation
+            authors
+            opinion
+            objects {
                 edges {
                     node {
-                        id
-                        stix_id_key
-                        entity_type
-                    }
-                }
-            }
-            observableRefs {
-                edges {
-                    node {
-                        id
-                        stix_id_key
-                        entity_type
-                        observable_value
-                    }
-                }
-            }
-            relationRefs {
-                edges {
-                    node {
-                        id
-                        stix_id_key
+                        ... on BasicObject {
+                            id
+                            entity_type
+                            parent_types
+                        }
+                        ... on BasicRelationship {
+                            id
+                            entity_type
+                            parent_types
+                        }
+                        ... on StixObject {
+                            standard_id
+                            spec_version
+                            created_at
+                            updated_at
+                        }
+                        ... on AttackPattern {
+                            name
+                        }
+                        ... on Campaign {
+                            name
+                        }
+                        ... on CourseOfAction {
+                            name
+                        }
+                        ... on Individual {
+                            name
+                        }
+                        ... on Organization {
+                            name
+                        }
+                        ... on Sector {
+                            name
+                        }
+                        ... on Indicator {
+                            name
+                        }
+                        ... on Infrastructure {
+                            name
+                        }
+                        ... on IntrusionSet {
+                            name
+                        }
+                        ... on Position {
+                            name
+                        }
+                        ... on City {
+                            name
+                        }
+                        ... on Country {
+                            name
+                        }
+                        ... on Region {
+                            name
+                        }
+                        ... on Malware {
+                            name
+                        }
+                        ... on ThreatActor {
+                            name
+                        }
+                        ... on Tool {
+                            name
+                        }
+                        ... on Vulnerability {
+                            name
+                        }
+                        ... on XOpenCTIIncident {
+                            name
+                        }                
+                        ... on StixCoreRelationship {
+                            standard_id
+                            spec_version
+                            created_at
+                            updated_at
+                        }
                     }
                 }
             }
@@ -223,103 +278,41 @@ class Opinion:
                 return None
 
     """
-        Read a Opinion object by stix_id or name
-
-        :param type: the Stix-Domain-Entity type
-        :param stix_id_key: the STIX ID of the Stix-Domain-Entity
-        :param name: the name of the Stix-Domain-Entity
-        :return Stix-Domain-Entity object
-    """
-
-    def get_by_stix_id_or_name(self, **kwargs):
-        stix_id_key = kwargs.get("stix_id_key", None)
-        description = kwargs.get("description", None)
-        explanation = kwargs.get("explanation", None)
-        custom_attributes = kwargs.get(explanation, None)
-        object_result = None
-        if stix_id_key is not None:
-            object_result = self.read(
-                id=stix_id_key, customAttributes=custom_attributes
-            )
-        if (
-            object_result is None
-            and description is not None
-            and explanation is not None
-        ):
-            object_result = self.read(
-                filters=[
-                    {"key": "description", "values": [description]},
-                    {"key": "explanation", "values": [explanation]},
-                ],
-                customAttributes=custom_attributes,
-            )
-        return object_result
-
-    """
         Check if a opinion already contains a STIX entity
         
         :return Boolean
     """
 
-    def contains_stix_entity(self, **kwargs):
+    def contains_stix_object_or_stix_relationship(self, **kwargs):
         id = kwargs.get("id", None)
-        entity_id = kwargs.get("entity_id", None)
-        if id is not None and entity_id is not None:
+        stix_object_or_stix_relationship_id = kwargs.get(
+            "stixObjectOrStixRelationshipId", None
+        )
+        if id is not None and stix_object_or_stix_relationship_id is not None:
             self.opencti.log(
                 "info",
-                "Checking Stix-Entity {" + entity_id + "} in Opinion {" + id + "}",
-            )
-            query = """
-                query OpinionContainsStixDomainEntity($id: String!, $objectId: String!) {
-                    opinionContainsStixDomainEntity(id: $id, objectId: $objectId)
-                }
-            """
-            result = self.opencti.query(query, {"id": id, "objectId": entity_id})
-            if result["data"]["opinionContainsStixDomainEntity"]:
-                return True
-            query = """
-                query OpinionContainsStixRelation($id: String!, $objectId: String!) {
-                    opinionContainsStixRelation(id: $id, objectId: $objectId)
-                }
-            """
-            result = self.opencti.query(query, {"id": id, "objectId": entity_id})
-            return result["data"]["opinionContainsStixRelation"]
-        else:
-            self.opencti.log(
-                "error", "[opencti_opinion] Missing parameters: id or entity_id",
-            )
-
-    """
-        Check if a opinion already contains a STIX observable
-
-        :return Boolean
-    """
-
-    def contains_stix_observable(self, **kwargs):
-        id = kwargs.get("id", None)
-        stix_observable_id = kwargs.get("stix_observable_id", None)
-        if id is not None and stix_observable_id is not None:
-            self.opencti.log(
-                "info",
-                "Checking Stix-Observable {"
-                + stix_observable_id
+                "Checking StixObjectOrStixRelationship {"
+                + stix_object_or_stix_relationship_id
                 + "} in Opinion {"
                 + id
                 + "}",
             )
             query = """
-                query OpinionContainsStixObservable($id: String!, $objectId: String!) {
-                    opinionContainsStixObservable(id: $id, objectId: $objectId)
+                query OpinionContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
+                    opinionContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
                 }
             """
             result = self.opencti.query(
-                query, {"id": id, "objectId": stix_observable_id}
+                query,
+                {
+                    "id": id,
+                    "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
+                },
             )
-            return result["data"]["opinionContainsStixObservable"]
+            return result["data"]["opinionContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
-                "error",
-                "[opencti_opinion] Missing parameters: id or stix_observable_id",
+                "error", "[opencti_opinion] Missing parameters: id or entity_id",
             )
 
     """
@@ -330,36 +323,29 @@ class Opinion:
     """
 
     def create_raw(self, **kwargs):
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", None)
-        explanation = kwargs.get("explanation", None)
-        graph_data = kwargs.get("graph_data", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
+        revoked = kwargs.get("revoked", None)
+        confidence = kwargs.get("confidence", None)
+        lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
+        explanation = kwargs.get("explanation", None)
+        authors = kwargs.get("authors", None)
+        opinion = kwargs.get("opinion", None)
 
-        if name is not None and description is not None and explanation is not None:
-            self.opencti.log("info", "Creating Opinion {" + name + "}.")
+        if opinion is not None:
+            self.opencti.log("info", "Creating Opinion {" + opinion + "}.")
             query = """
                 mutation OpinionAdd($input: OpinionAddInput) {
                     opinionAdd(input: $input) {
                         id
-                        stix_id_key
+                        standard_id
                         entity_type
-                        parent_types
-                        observableRefs {
-                            edges {
-                                node {
-                                    id
-                                    stix_id_key
-                                    entity_type
-                                    observable_value
-                                }
-                            }
-                        }                        
+                        parent_types                    
                     }
                 }
             """
@@ -367,24 +353,26 @@ class Opinion:
                 query,
                 {
                     "input": {
-                        "name": name,
-                        "description": description,
-                        "explanation": explanation,
-                        "graph_data": graph_data,
-                        "internal_id_key": id,
-                        "stix_id_key": stix_id_key,
+                        "stix_id": stix_id,
+                        "createdBy": created_by,
+                        "objectMarking": object_marking,
+                        "objectLabel": object_label,
+                        "externalReferences": external_references,
+                        "revoked": revoked,
+                        "confidence": confidence,
+                        "lang": lang,
                         "created": created,
                         "modified": modified,
-                        "createdByRef": created_by_ref,
-                        "markingDefinitions": marking_definitions,
+                        "explanation": explanation,
+                        "authors": authors,
+                        "opinion": opinion,
                     }
                 },
             )
             return self.opencti.process_multiple_fields(result["data"]["opinionAdd"])
         else:
             self.opencti.log(
-                "error",
-                "[opencti_opinion] Missing parameters: name and description and explanation",
+                "error", "[opencti_opinion] Missing parameters: content",
             )
 
     """
@@ -397,105 +385,74 @@ class Opinion:
      """
 
     def create(self, **kwargs):
-        name = kwargs.get("name", None)
-        external_reference_id = kwargs.get("external_reference_id", None)
-        description = kwargs.get("description", None)
-        explanation = kwargs.get("explanation", None)
-        graph_data = kwargs.get("graph_data", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
+        revoked = kwargs.get("revoked", None)
+        confidence = kwargs.get("confidence", None)
+        lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
+        explanation = kwargs.get("explanation", None)
+        authors = kwargs.get("authors", None)
+        opinion = kwargs.get("opinion", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
+            standard_id
             entity_type
-            name
-            description 
-            createdByRef {
-                node {
+            parent_types
+            createdBy {
+                ... on Identity {
                     id
                 }
             }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        stix_id_key
-                        source_name
-                        description
-                        url
-                    }
-                }
-            }            
+            ... on Opinion {
+                explanation
+                authors
+                opinion
+            }
         """
-        object_result = None
-        if external_reference_id is not None:
-            object_result = self.opencti.stix_domain_entity.read(
-                types=["Opinion"],
-                filters=[
-                    {"key": "hasExternalReference", "values": [external_reference_id]}
-                ],
-                customAttributes=custom_attributes,
-            )
-        if (
-            object_result is None
-            and description is not None
-            and explanation is not None
-        ):
-            object_result = self.get_by_stix_id_or_name(
-                stix_id_key=stix_id_key,
-                description=description,
-                explanation=explanation,
-                custom_attributes=custom_attributes,
-            )
+        object_result = self.read(id=stix_id, customAttributes=custom_attributes)
         if object_result is not None:
-            if update or object_result["createdByRefId"] == created_by_ref:
-                if name is not None and object_result["name"] != name:
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                if (
-                    description is not None
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
+            if update or object_result["createdById"] == created_by:
                 if (
                     explanation is not None
                     and object_result["explanation"] != explanation
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="explanation", value=explanation
                     )
                     object_result["explanation"] = explanation
-            if external_reference_id is not None:
-                self.opencti.stix_entity.add_external_reference(
-                    id=object_result["id"], external_reference_id=external_reference_id,
-                )
+                if authors is not None and object_result["authors"] != authors:
+                    self.opencti.stix_domain_object.update_field(
+                        id=object_result["id"], key="authors", value=authors
+                    )
+                    object_result["opinion"] = authors
+                if opinion is not None and object_result["opinion"] != authors:
+                    self.opencti.stix_domain_object.update_field(
+                        id=object_result["id"], key="opinion", value=authors
+                    )
+                    object_result["opinion"] = authors
             return object_result
         else:
             opinion = self.create_raw(
-                name=name,
-                description=description,
-                explanation=explanation,
-                graph_data=graph_data,
-                id=id,
-                stix_id_key=stix_id_key,
+                stix_id=stix_id,
+                createdBy=created_by,
+                objectMarking=object_marking,
+                objectLabel=object_label,
+                externalReferences=external_references,
+                revoked=revoked,
+                confidence=confidence,
+                lang=lang,
                 created=created,
                 modified=modified,
-                createdByRef=created_by_ref,
-                markingDefinitions=marking_definitions,
+                explanation=explanation,
+                authors=authors,
+                opinion=opinion,
             )
-            if external_reference_id is not None:
-                self.opencti.stix_entity.add_external_reference(
-                    id=opinion["id"], external_reference_id=external_reference_id,
-                )
             return opinion
 
     """
@@ -506,70 +463,27 @@ class Opinion:
         :return Boolean
     """
 
-    def add_stix_entity(self, **kwargs):
+    def add_stix_object_or_stix_relationship(self, **kwargs):
         id = kwargs.get("id", None)
-        entity_id = kwargs.get("entity_id", None)
-        if id is not None and entity_id is not None:
-            if self.contains_stix_entity(id=id, entity_id=entity_id):
-                return True
-            self.opencti.log(
-                "info",
-                "Adding Stix-Entity {" + entity_id + "} to Opinion {" + id + "}",
-            )
-            query = """
-               mutation OpinionEdit($id: ID!, $input: RelationAddInput) {
-                   opinionEdit(id: $id) {
-                        relationAdd(input: $input) {
-                            id
-                        }
-                   }
-               }
-            """
-            self.opencti.query(
-                query,
-                {
-                    "id": id,
-                    "input": {
-                        "fromRole": "knowledge_aggregation",
-                        "toId": entity_id,
-                        "toRole": "so",
-                        "through": "object_refs",
-                    },
-                },
-            )
-            return True
-        else:
-            self.opencti.log(
-                "error", "[opencti_opinion] Missing parameters: id and entity_id"
-            )
-            return False
-
-    """
-        Add a Stix-Observable object to Opinion object (observable_refs)
-
-        :param id: the id of the Opinion
-        :param entity_id: the id of the Stix-Observable
-        :return Boolean
-    """
-
-    def add_stix_observable(self, **kwargs):
-        id = kwargs.get("id", None)
-        stix_observable_id = kwargs.get("stix_observable_id", None)
-        if id is not None and stix_observable_id is not None:
-            if self.contains_stix_observable(
-                id=id, stix_observable_id=stix_observable_id
+        stix_object_or_stix_relationship_id = kwargs.get(
+            "stixObjectOrStixRelationshipId", None
+        )
+        if id is not None and stix_object_or_stix_relationship_id is not None:
+            if self.contains_stix_object_or_stix_relationship(
+                id=id,
+                stixObjectOrStixRelationshipId=stix_object_or_stix_relationship_id,
             ):
                 return True
             self.opencti.log(
                 "info",
-                "Adding Stix-Observable {"
-                + stix_observable_id
+                "Adding StixObjectOrStixRelationship {"
+                + stix_object_or_stix_relationship_id
                 + "} to Opinion {"
                 + id
                 + "}",
             )
             query = """
-               mutation OpinionEdit($id: ID!, $input: RelationAddInput) {
+               mutation OpinionEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
                    opinionEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -582,10 +496,8 @@ class Opinion:
                 {
                     "id": id,
                     "input": {
-                        "fromRole": "observables_aggregation",
-                        "toId": stix_observable_id,
-                        "toRole": "soo",
-                        "through": "observable_refs",
+                        "toId": stix_object_or_stix_relationship_id,
+                        "relationship_type": "object",
                     },
                 },
             )
@@ -593,7 +505,7 @@ class Opinion:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_opinion] Missing parameters: id and stix_observable_id",
+                "[opencti_opinion] Missing parameters: id and stix_object_or_stix_relationship_id",
             )
             return False
 
@@ -610,79 +522,38 @@ class Opinion:
         update = kwargs.get("update", False)
         if stix_object is not None:
             return self.create(
+                stix_id=stix_object["id"],
+                createdBy=extras["created_by_id"]
+                if "created_by_id" in extras
+                else None,
+                objectMarking=extras["object_marking_ids"]
+                if "object_marking_ids" in extras
+                else None,
+                objectLabel=extras["object_label_ids"]
+                if "object_label_ids" in extras
+                else [],
+                externalReferences=extras["external_references_ids"]
+                if "external_references_ids" in extras
+                else [],
+                revoked=stix_object["revoked"] if "revoked" in stix_object else None,
+                confidence=stix_object["confidence"]
+                if "confidence" in stix_object
+                else None,
+                lang=stix_object["lang"] if "lang" in stix_object else None,
+                created=stix_object["created"] if "created" in stix_object else None,
+                modified=stix_object["modified"] if "modified" in stix_object else None,
                 explanation=self.opencti.stix2.convert_markdown(
                     stix_object["explanation"]
                 )
                 if "explanation" in stix_object
                 else "",
-                description=self.opencti.stix2.convert_markdown(stix_object["opinion"])
-                if "opinion" in stix_object
+                authors=self.opencti.stix2.convert_markdown(stix_object["authors"])
+                if "authors" in stix_object
                 else "",
-                name=stix_object[CustomProperties.NAME]
-                if CustomProperties.NAME in stix_object
-                else "",
-                graph_data=stix_object[CustomProperties.GRAPH_DATA]
-                if CustomProperties.GRAPH_DATA in stix_object
-                else "",
-                id=stix_object[CustomProperties.ID]
-                if CustomProperties.ID in stix_object
-                else None,
-                stix_id_key=stix_object["id"] if "id" in stix_object else None,
-                created=stix_object["created"] if "created" in stix_object else None,
-                modified=stix_object["modified"] if "modified" in stix_object else None,
-                createdByRef=extras["created_by_ref_id"]
-                if "created_by_ref_id" in extras
-                else None,
-                markingDefinitions=extras["marking_definitions_ids"]
-                if "marking_definitions_ids" in extras
-                else [],
+                opinion=stix_object["opinion"] if "opinion" in stix_object else None,
                 update=update,
             )
         else:
             self.opencti.log(
                 "error", "[opencti_attack_pattern] Missing parameters: stixObject"
-            )
-
-    """
-        Export a Opinion object in STIX2
-
-        :param id: the id of the Opinion
-        :return Opinion object
-    """
-
-    def to_stix2(self, **kwargs):
-        id = kwargs.get("id", None)
-        mode = kwargs.get("mode", "simple")
-        max_marking_definition_entity = kwargs.get(
-            "max_marking_definition_entity", None
-        )
-        entity = kwargs.get("entity", None)
-        if id is not None and entity is None:
-            entity = self.read(id=id)
-        if entity is not None:
-            opinion = dict()
-            opinion["id"] = entity["stix_id_key"]
-            opinion["type"] = "opinion"
-            opinion["spec_version"] = SPEC_VERSION
-            opinion["explanation"] = entity["explanation"]
-            opinion["opinion"] = entity["description"]
-            if self.opencti.not_empty(entity["stix_label"]):
-                opinion["labels"] = entity["stix_label"]
-            else:
-                opinion["labels"] = ["opinion"]
-            opinion["created"] = self.opencti.stix2.format_date(entity["created"])
-            opinion["modified"] = self.opencti.stix2.format_date(entity["modified"])
-            if self.opencti.not_empty(entity["alias"]):
-                opinion[CustomProperties.ALIASES] = entity["alias"]
-            if self.opencti.not_empty(entity["name"]):
-                opinion[CustomProperties.NAME] = entity["name"]
-            if self.opencti.not_empty(entity["graph_data"]):
-                opinion[CustomProperties.GRAPH_DATA] = entity["graph_data"]
-            opinion[CustomProperties.ID] = entity["id"]
-            return self.opencti.stix2.prepare_export(
-                entity, opinion, mode, max_marking_definition_entity
-            )
-        else:
-            self.opencti.log(
-                "error", "[opencti_opinion] Missing parameters: id or entity"
             )

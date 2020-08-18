@@ -49,10 +49,10 @@ relation = opencti_api_client.stix_relation.create(
 print(relation)
 
 # Create the observables (optional)
-observable_1 = opencti_api_client.stix_observable.create(
+observable_1 = opencti_api_client.stix_cyber_observable.create(
     type="Domain", observable_value="www.5z8.info"
 )
-observable_2 = opencti_api_client.stix_observable.create(
+observable_2 = opencti_api_client.stix_cyber_observable.create(
     type="IPv4-Addr", observable_value="198.51.100.1"
 )
 # Create the relation between observables and the indicator

@@ -26,8 +26,8 @@ report = opencti_api_client.report.create(
     name="My new report of my organization",
     description="A report wrote by my organization",
     published=date,
-    report_class="Internal Report",
-    createdByRef=organization["id"],
+    report_types=["internal-report"],
+    createdBy=organization["id"],
 )
 
 # Print

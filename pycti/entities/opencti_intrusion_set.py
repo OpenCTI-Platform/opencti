@@ -2,81 +2,70 @@
 
 import json
 
-from pycti.utils.constants import CustomProperties
-from pycti.utils.opencti_stix2 import SPEC_VERSION
-
 
 class IntrusionSet:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
             id
-            stix_id_key
-            stix_label
+            standard_id
             entity_type
             parent_types
-            name
-            alias
-            description
-            graph_data
-            first_seen
-            last_seen
-            goal
-            sophistication
-            resource_level
-            primary_motivation
-            secondary_motivation
-            created
-            modified
+            spec_version
             created_at
             updated_at
-            createdByRef {
-                node {
+            createdBy {
+                ... on Identity {
                     id
+                    standard_id
                     entity_type
-                    stix_id_key
-                    stix_label
+                    parent_types
+                    spec_version
                     name
-                    alias
+                    aliases
                     description
                     created
                     modified
-                    ... on Organization {
-                        organization_class
-                    }
+                    objectLabel {
+                        edges {
+                            node {
+                                id
+                                value
+                                color
+                            }
+                        }
+                    }                    
                 }
-                relation {
-                    id
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
                 }
-            }            
-            markingDefinitions {
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
+                }
+            }
+            objectMarking {
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         definition_type
                         definition
-                        level
-                        color
                         created
                         modified
-                    }
-                    relation {
-                        id
+                        x_opencti_order
+                        x_opencti_color
                     }
                 }
             }
-            tags {
+            objectLabel {
                 edges {
                     node {
                         id
-                        tag_type
                         value
                         color
-                    }
-                    relation {
-                        id
                     }
                 }
             }
@@ -84,8 +73,8 @@ class IntrusionSet:
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         source_name
                         description
                         url
@@ -94,11 +83,21 @@ class IntrusionSet:
                         created
                         modified
                     }
-                    relation {
-                        id
-                    }
                 }
-            }          
+            }
+            revoked
+            confidence
+            created
+            modified
+            name
+            description
+            aliases
+            first_seen
+            last_seen
+            goals
+            resource_level
+            primary_motivation
+            secondary_motivations      
         """
 
     """
@@ -215,23 +214,25 @@ class IntrusionSet:
     """
 
     def create_raw(self, **kwargs):
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", None)
-        alias = kwargs.get("alias", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        goal = kwargs.get("goal", None)
-        sophistication = kwargs.get("sophistication", None)
-        resource_level = kwargs.get("resource_level", None)
-        primary_motivation = kwargs.get("primary_motivation", None)
-        secondary_motivation = kwargs.get("secondary_motivation", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
+        revoked = kwargs.get("revoked", None)
+        confidence = kwargs.get("confidence", None)
+        lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
-        tags = kwargs.get("tags", None)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", "")
+        aliases = kwargs.get("aliases", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        goals = kwargs.get("goals", None)
+        resource_level = kwargs.get("resource_level", None)
+        primary_motivation = kwargs.get("primary_motivation", None)
+        secondary_motivations = kwargs.get("secondary_motivations", None)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Intrusion-Set {" + name + "}.")
@@ -239,7 +240,7 @@ class IntrusionSet:
                 mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
                     intrusionSetAdd(input: $input) {
                         id
-                        stix_id_key
+                        standard_id
                         entity_type
                         parent_types
                     }
@@ -249,23 +250,25 @@ class IntrusionSet:
                 query,
                 {
                     "input": {
-                        "name": name,
-                        "description": description,
-                        "alias": alias,
-                        "first_seen": first_seen,
-                        "last_seen": last_seen,
-                        "goal": goal,
-                        "sophistication": sophistication,
-                        "resource_level": resource_level,
-                        "primary_motivation": primary_motivation,
-                        "secondary_motivation": secondary_motivation,
-                        "internal_id_key": id,
-                        "stix_id_key": stix_id_key,
+                        "stix_id": stix_id,
+                        "createdBy": created_by,
+                        "objectMarking": object_marking,
+                        "objectLabel": object_label,
+                        "externalReferences": external_references,
+                        "revoked": revoked,
+                        "confidence": confidence,
+                        "lang": lang,
                         "created": created,
                         "modified": modified,
-                        "createdByRef": created_by_ref,
-                        "markingDefinitions": marking_definitions,
-                        "tags": tags,
+                        "name": name,
+                        "description": description,
+                        "aliases": aliases,
+                        "first_seen": first_seen,
+                        "last_seen": last_seen,
+                        "goals": goals,
+                        "resource_level": resource_level,
+                        "primary_motivation": primary_motivation,
+                        "secondary_motivations": secondary_motivations,
                     }
                 },
             )
@@ -286,56 +289,59 @@ class IntrusionSet:
     """
 
     def create(self, **kwargs):
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", None)
-        alias = kwargs.get("alias", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        goal = kwargs.get("goal", None)
-        sophistication = kwargs.get("sophistication", None)
-        resource_level = kwargs.get("resource_level", None)
-        primary_motivation = kwargs.get("primary_motivation", None)
-        secondary_motivation = kwargs.get("secondary_motivation", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
+        revoked = kwargs.get("revoked", None)
+        confidence = kwargs.get("confidence", None)
+        lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
-        tags = kwargs.get("tags", None)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", "")
+        aliases = kwargs.get("aliases", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        goals = kwargs.get("goals", None)
+        resource_level = kwargs.get("resource_level", None)
+        primary_motivation = kwargs.get("primary_motivation", None)
+        secondary_motivations = kwargs.get("secondary_motivations", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
+            standard_id
             entity_type
-            name
-            description 
-            alias
-            createdByRef {
-                node {
+            parent_types
+            createdBy {
+                ... on Identity {
                     id
                 }
-            }               
+            }       
             ... on IntrusionSet {
+                name
+                description
+                aliases    
                 first_seen
                 last_seen
-                goal
-                sophistication
+                goals
                 resource_level
                 primary_motivation
-                secondary_motivation
+                secondary_motivations
             }
         """
-        object_result = self.opencti.stix_domain_entity.get_by_stix_id_or_name(
+        object_result = self.opencti.stix_domain_object.get_by_stix_id_or_name(
             types=["Intrusion-Set"],
-            stix_id_key=stix_id_key,
+            stix_id=stix_id,
             name=name,
             customAttributes=custom_attributes,
         )
         if object_result is not None:
-            if update or object_result["createdByRefId"] == created_by_ref:
+            if update or object_result["createdById"] == created_by:
                 # name
                 if object_result["name"] != name:
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="name", value=name
                     )
                     object_result["name"] = name
@@ -344,57 +350,49 @@ class IntrusionSet:
                     self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="description", value=description
                     )
                     object_result["description"] = description
-                # alias
-                if self.opencti.not_empty(alias) and object_result["alias"] != alias:
-                    if "alias" in object_result:
-                        new_aliases = object_result["alias"] + list(
-                            set(alias) - set(object_result["alias"])
+                # aliases
+                if (
+                    self.opencti.not_empty(aliases)
+                    and object_result["aliases"] != aliases
+                ):
+                    if "aliases" in object_result:
+                        new_aliases = object_result["aliases"] + list(
+                            set(aliases) - set(object_result["aliases"])
                         )
                     else:
-                        new_aliases = alias
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="alias", value=new_aliases
+                        new_aliases = aliases
+                    self.opencti.stix_domain_object.update_field(
+                        id=object_result["id"], key="aliases", value=new_aliases
                     )
-                    object_result["alias"] = new_aliases
+                    object_result["aliases"] = new_aliases
                 # first_seen
                 if first_seen is not None and object_result["first_seen"] != first_seen:
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="first_seen", value=first_seen
                     )
                     object_result["first_seen"] = first_seen
                 # last_seen
                 if last_seen is not None and object_result["last_seen"] != last_seen:
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="last_seen", value=last_seen
                     )
                     object_result["last_seen"] = last_seen
-                # goal
-                if self.opencti.not_empty(goal) and object_result["goal"] != goal:
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="goal", value=goal
+                # goals
+                if self.opencti.not_empty(goals) and object_result["goals"] != goals:
+                    self.opencti.stix_domain_object.update_field(
+                        id=object_result["id"], key="goals", value=goals
                     )
-                    object_result["goal"] = goal
-                # sophistication
-                if (
-                    self.opencti.not_empty(sophistication)
-                    and object_result["sophistication"] != sophistication
-                ):
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"],
-                        key="sophistication",
-                        value=sophistication,
-                    )
-                    object_result["sophistication"] = sophistication
+                    object_result["goals"] = goals
                 # resource_level
                 if (
                     self.opencti.not_empty(resource_level)
                     and object_result["resource_level"] != resource_level
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"],
                         key="resource_level",
                         value=resource_level,
@@ -405,102 +403,106 @@ class IntrusionSet:
                     self.opencti.not_empty(primary_motivation)
                     and object_result["primary_motivation"] != primary_motivation
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"],
                         key="primary_motivation",
                         value=primary_motivation,
                     )
                     object_result["primary_motivation"] = primary_motivation
-                # secondary_motivation
+                # secondary_motivations
                 if (
-                    self.opencti.not_empty(secondary_motivation)
-                    and object_result["secondary_motivation"] != secondary_motivation
+                    self.opencti.not_empty(secondary_motivations)
+                    and object_result["secondary_motivations"] != secondary_motivations
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"],
-                        key="secondary_motivation",
-                        value=secondary_motivation,
+                        key="secondary_motivations",
+                        value=secondary_motivations,
                     )
-                    object_result["secondary_motivation"] = secondary_motivation
+                    object_result["secondary_motivations"] = secondary_motivations
             return object_result
         else:
             return self.create_raw(
-                name=name,
-                description=description,
-                alias=alias,
-                first_seen=first_seen,
-                last_seen=last_seen,
-                goal=goal,
-                sophistication=sophistication,
-                resource_level=resource_level,
-                primary_motivation=primary_motivation,
-                secondary_motivation=secondary_motivation,
-                id=id,
-                stix_id_key=stix_id_key,
+                stix_id=stix_id,
+                createdBy=created_by,
+                objectMarking=object_marking,
+                objectLabel=object_label,
+                externalReferences=external_references,
+                revoked=revoked,
+                confidence=confidence,
+                lang=lang,
                 created=created,
                 modified=modified,
-                createdByRef=created_by_ref,
-                markingDefinitions=marking_definitions,
-                tags=tags,
+                name=name,
+                description=description,
+                aliases=aliases,
+                first_seen=first_seen,
+                last_seen=last_seen,
+                goals=goals,
+                resource_level=resource_level,
+                primary_motivation=primary_motivation,
+                secondary_motivations=secondary_motivations,
             )
 
     """
-        Export an Intrusion-Set object in STIX2
-    
-        :param id: the id of the Intrusion-Set
+        Import an Intrusion-Set object from a STIX2 object
+
+        :param stixObject: the Stix-Object Intrusion-Set
         :return Intrusion-Set object
     """
 
-    def to_stix2(self, **kwargs):
-        id = kwargs.get("id", None)
-        mode = kwargs.get("mode", "simple")
-        max_marking_definition_entity = kwargs.get(
-            "max_marking_definition_entity", None
-        )
-        entity = kwargs.get("entity", None)
-        if id is not None and entity is None:
-            entity = self.read(id=id)
-        if entity is not None:
-            intrusion_set = dict()
-            intrusion_set["id"] = entity["stix_id_key"]
-            intrusion_set["type"] = "intrusion-set"
-            intrusion_set["spec_version"] = SPEC_VERSION
-            intrusion_set["name"] = entity["name"]
-            if self.opencti.not_empty(entity["stix_label"]):
-                intrusion_set["labels"] = entity["stix_label"]
-            else:
-                intrusion_set["labels"] = ["intrusion-set"]
-            if self.opencti.not_empty(entity["alias"]):
-                intrusion_set["aliases"] = entity["alias"]
-            if self.opencti.not_empty(entity["description"]):
-                intrusion_set["description"] = entity["description"]
-            if self.opencti.not_empty(entity["goal"]):
-                intrusion_set["goals"] = entity["goal"]
-            if self.opencti.not_empty(entity["sophistication"]):
-                intrusion_set["sophistication"] = entity["sophistication"]
-            if self.opencti.not_empty(entity["resource_level"]):
-                intrusion_set["resource_level"] = entity["resource_level"]
-            if self.opencti.not_empty(entity["primary_motivation"]):
-                intrusion_set["primary_motivation"] = entity["primary_motivation"]
-            if self.opencti.not_empty(entity["secondary_motivation"]):
-                intrusion_set["secondary_motivations"] = entity["secondary_motivation"]
-            if self.opencti.not_empty(entity["first_seen"]):
-                intrusion_set["first_seen"] = self.opencti.stix2.format_date(
-                    entity["first_seen"]
+    def import_from_stix2(self, **kwargs):
+        stix_object = kwargs.get("stixObject", None)
+        extras = kwargs.get("extras", {})
+        update = kwargs.get("update", False)
+        if stix_object is not None:
+            return self.create(
+                stix_id=stix_object["id"],
+                createdBy=extras["created_by_id"]
+                if "created_by_id" in extras
+                else None,
+                objectMarking=extras["object_marking_ids"]
+                if "object_marking_ids" in extras
+                else None,
+                objectLabel=extras["object_label_ids"]
+                if "object_label_ids" in extras
+                else [],
+                externalReferences=extras["external_references_ids"]
+                if "external_references_ids" in extras
+                else [],
+                revoked=stix_object["revoked"] if "revoked" in stix_object else None,
+                confidence=stix_object["confidence"]
+                if "confidence" in stix_object
+                else None,
+                lang=stix_object["lang"] if "lang" in stix_object else None,
+                created=stix_object["created"] if "created" in stix_object else None,
+                modified=stix_object["modified"] if "modified" in stix_object else None,
+                name=stix_object["name"],
+                description=self.opencti.stix2.convert_markdown(
+                    stix_object["description"]
                 )
-            if self.opencti.not_empty(entity["last_seen"]):
-                intrusion_set["last_seen"] = self.opencti.stix2.format_date(
-                    entity["last_seen"]
-                )
-            intrusion_set["created"] = self.opencti.stix2.format_date(entity["created"])
-            intrusion_set["modified"] = self.opencti.stix2.format_date(
-                entity["modified"]
-            )
-            intrusion_set[CustomProperties.ID] = entity["id"]
-            return self.opencti.stix2.prepare_export(
-                entity, intrusion_set, mode, max_marking_definition_entity
+                if "description" in stix_object
+                else "",
+                alias=self.opencti.stix2.pick_aliases(stix_object),
+                first_seen=stix_object["first_seen"]
+                if "first_seen" in stix_object
+                else None,
+                last_seen=stix_object["last_seen"]
+                if "last_seen" in stix_object
+                else None,
+                goals=stix_object["goals"] if "goals" in stix_object else None,
+                resource_level=stix_object["resource_level"]
+                if "resource_level" in stix_object
+                else None,
+                primary_motivation=stix_object["primary_motivation"]
+                if "primary_motivation" in stix_object
+                else None,
+                secondary_motivations=stix_object["secondary_motivations"]
+                if "secondary_motivations" in stix_object
+                else None,
+                update=update,
             )
         else:
             self.opencti.log(
-                "error", "[opencti_intrusion_set] Missing parameters: id or entity"
+                "error", "[opencti_attack_pattern] Missing parameters: stixObject"
             )

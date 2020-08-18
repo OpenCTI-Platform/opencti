@@ -8,17 +8,18 @@ class ExternalReference:
         self.opencti = opencti
         self.properties = """
             id
+            standard_id
             entity_type
-            stix_id_key
+            parent_types
+            created_at
+            updated_at
+            created
+            modified
             source_name
             description
             url
             hash
             external_id
-            created
-            modified
-            created_at
-            updated_at
         """
 
     """
@@ -130,14 +131,13 @@ class ExternalReference:
     """
 
     def create_raw(self, **kwargs):
+        stix_id = kwargs.get("stix_id", None)
+        created = kwargs.get("created", None)
+        modified = kwargs.get("modified", None)
         source_name = kwargs.get("source_name", None)
         url = kwargs.get("url", None)
         external_id = kwargs.get("external_id", None)
         description = kwargs.get("description", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
 
         if source_name is not None and url is not None:
             self.opencti.log(
@@ -158,14 +158,13 @@ class ExternalReference:
                 query,
                 {
                     "input": {
+                        "stix_id": stix_id,
+                        "created": created,
+                        "modified": modified,
                         "source_name": source_name,
                         "external_id": external_id,
                         "description": description,
                         "url": url,
-                        "internal_id_key": id,
-                        "stix_id_key": stix_id_key,
-                        "created": created,
-                        "modified": modified,
                     }
                 },
             )
@@ -190,8 +189,7 @@ class ExternalReference:
         url = kwargs.get("url", None)
         external_id = kwargs.get("external_id", None)
         description = kwargs.get("description", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
 
@@ -204,8 +202,18 @@ class ExternalReference:
                 url=url,
                 external_id=external_id,
                 description=description,
-                id=id,
-                stix_id_key=stix_id_key,
+                stix_id=stix_id,
                 created=created,
                 modified=modified,
             )
+
+    def delete(self, id):
+        self.opencti.log("info", "Deleting + " + id + "...")
+        query = """
+             mutation ExternalReferenceEdit($id: ID!) {
+                 externalReferenceEdit(id: $id) {
+                     delete
+                 }
+             }
+         """
+        self.opencti.query(query, {"id": id})

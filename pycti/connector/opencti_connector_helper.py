@@ -449,7 +449,7 @@ class OpenCTIConnectorHelper:
 
         :param item: valid stix2 item
         :type item:
-        :return: returns a dict of created_by_ref of object_marking_refs
+        :return: returns a dict of created_by of object_marking_refs
         :rtype: dict
         """
         # Marking definitions
@@ -459,13 +459,13 @@ class OpenCTIConnectorHelper:
                 if object_marking_ref in self.cache_index:
                     object_marking_refs.append(self.cache_index[object_marking_ref])
         # Created by ref
-        created_by_ref = None
-        if "created_by_ref" in item and item["created_by_ref"] in self.cache_index:
-            created_by_ref = self.cache_index[item["created_by_ref"]]
+        created_by = None
+        if "created_by" in item and item["created_by"] in self.cache_index:
+            created_by = self.cache_index[item["created_by"]]
 
         return {
             "object_marking_refs": object_marking_refs,
-            "created_by_ref": created_by_ref,
+            "created_by": created_by,
         }
 
     def stix2_get_entity_objects(self, entity) -> list:
@@ -481,8 +481,8 @@ class OpenCTIConnectorHelper:
         # Get embedded objects
         embedded_objects = self.stix2_get_embedded_objects(entity)
         # Add created by ref
-        if embedded_objects["created_by_ref"] is not None:
-            items.append(embedded_objects["created_by_ref"])
+        if embedded_objects["created_by"] is not None:
+            items.append(embedded_objects["created_by"])
         # Add marking definitions
         if len(embedded_objects["object_marking_refs"]) > 0:
             items = items + embedded_objects["object_marking_refs"]
@@ -510,8 +510,8 @@ class OpenCTIConnectorHelper:
         # Get embedded objects
         embedded_objects = self.stix2_get_embedded_objects(relationship)
         # Add created by ref
-        if embedded_objects["created_by_ref"] is not None:
-            items.append(embedded_objects["created_by_ref"])
+        if embedded_objects["created_by"] is not None:
+            items.append(embedded_objects["created_by"])
         # Add marking definitions
         if len(embedded_objects["object_marking_refs"]) > 0:
             items = items + embedded_objects["object_marking_refs"]

@@ -3,7 +3,7 @@
 import json
 
 
-class AttackPattern:
+class XOpenCTIIncident:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -34,7 +34,7 @@ class AttackPattern:
                                 color
                             }
                         }
-                    }
+                    }                    
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -92,34 +92,19 @@ class AttackPattern:
             name
             description
             aliases
-            x_mitre_platforms
-            x_mitre_permissions_required
-            x_mitre_detection
-            x_mitre_id
-            killChainPhases {
-                edges {
-                    node {
-                        id
-                        standard_id                            
-                        entity_type
-                        kill_chain_name
-                        phase_name
-                        x_opencti_order
-                        created
-                        modified
-                    }
-                }
-            }        
+            first_seen
+            last_seen
+            objective
         """
 
     """
-        List Attack-Pattern objects
+        List Incident objects
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Attack-Pattern objects
+        :return List of Incident objects
     """
 
     def list(self, **kwargs):
@@ -136,12 +121,12 @@ class AttackPattern:
             first = 500
 
         self.opencti.log(
-            "info", "Listing Attack-Patterns with filters " + json.dumps(filters) + "."
+            "info", "Listing Incidents with filters " + json.dumps(filters) + "."
         )
         query = (
             """
-            query AttackPatterns($filters: [AttackPatternsFiltering], $search: String, $first: Int, $after: ID, $orderBy: AttackPatternsOrdering, $orderMode: OrderingMode) {
-                attackPatterns(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query XOpenCTIIncidents($filters: [IncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: IncidentsOrdering, $orderMode: OrderingMode) {
+                xOpenCTIIncidents(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -171,38 +156,16 @@ class AttackPattern:
                 "orderMode": order_mode,
             },
         )
-        if get_all:
-            final_data = []
-            data = self.opencti.process_multiple(result["data"]["attackPatterns"])
-            final_data = final_data + data
-            while result["data"]["attackPatterns"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["attackPatterns"]["pageInfo"]["endCursor"]
-                self.opencti.log("info", "Listing Attack-Patterns after " + after)
-                result = self.opencti.query(
-                    query,
-                    {
-                        "filters": filters,
-                        "search": search,
-                        "first": first,
-                        "after": after,
-                        "orderBy": order_by,
-                        "orderMode": order_mode,
-                    },
-                )
-                data = self.opencti.process_multiple(result["data"]["attackPatterns"])
-                final_data = final_data + data
-            return final_data
-        else:
-            return self.opencti.process_multiple(
-                result["data"]["attackPatterns"], with_pagination
-            )
+        return self.opencti.process_multiple(
+            result["data"]["xOpenCTIIncidents"], with_pagination
+        )
 
     """
-        Read a Attack-Pattern object
+        Read a X-OpenCTI-Incident object
         
-        :param id: the id of the Attack-Pattern
+        :param id: the id of the X-OpenCTI-Incident
         :param filters: the filters to apply if no id provided
-        :return Attack-Pattern object
+        :return X-OpenCTI-Incident object
     """
 
     def read(self, **kwargs):
@@ -210,11 +173,11 @@ class AttackPattern:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Attack-Pattern {" + id + "}.")
+            self.opencti.log("info", "Reading Incident {" + id + "}.")
             query = (
                 """
-                query AttackPattern($id: String!) {
-                    attackPattern(id: $id) {
+                query XOpenCTIIncident($id: String!) {
+                    xOpenCTIIncident(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -227,7 +190,9 @@ class AttackPattern:
              """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["attackPattern"])
+            return self.opencti.process_multiple_fields(
+                result["data"]["xOpenCTIIncident"]
+            )
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -236,15 +201,15 @@ class AttackPattern:
                 return None
         else:
             self.opencti.log(
-                "error", "[opencti_attack_pattern] Missing parameters: id or filters"
+                "error", "[opencti_incident] Missing parameters: id or filters"
             )
             return None
 
     """
-        Create a Attack-Pattern object
+        Create a Incident object
 
-        :param name: the name of the Attack Pattern
-        :return Attack-Pattern object
+        :param name: the name of the Incident
+        :return Incident object
     """
 
     def create_raw(self, **kwargs):
@@ -261,23 +226,21 @@ class AttackPattern:
         name = kwargs.get("name", None)
         description = kwargs.get("description", "")
         aliases = kwargs.get("aliases", None)
-        x_mitre_platforms = kwargs.get("x_mitre_platforms", None)
-        x_mitre_permissions_required = kwargs.get("x_mitre_permissions_required", None)
-        x_mitre_detection = kwargs.get("x_mitre_detection", None)
-        x_mitre_id = kwargs.get("x_mitre_id", None)
-        kill_chain_phases = kwargs.get("killChainPhases", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        objective = kwargs.get("objective", None)
 
         if name is not None and description is not None:
-            self.opencti.log("info", "Creating Attack-Pattern {" + name + "}.")
+            self.opencti.log("info", "Creating Incident {" + name + "}.")
             query = """
-                mutation AttackPatternAdd($input: AttackPatternAddInput) {
-                    attackPatternAdd(input: $input) {
+                mutation XOpenCTIIncidentAdd($input: XOpenCTIIncidentAddInput) {
+                    xOpenCTIIncidentAdd(input: $input) {
                         id
                         standard_id
                         entity_type
-                        parent_types
+                        parent_types               
                     }
-                }
+               }
             """
             result = self.opencti.query(
                 query,
@@ -296,29 +259,24 @@ class AttackPattern:
                         "name": name,
                         "description": description,
                         "aliases": aliases,
-                        "x_mitre_platforms": x_mitre_platforms,
-                        "x_mitre_permissions_required": x_mitre_permissions_required,
-                        "x_mitre_detection": x_mitre_detection,
-                        "x_mitre_id": x_mitre_id,
-                        "killChainPhases": kill_chain_phases,
+                        "first_seen": first_seen,
+                        "last_seen": last_seen,
+                        "objective": objective,
                     }
                 },
             )
             return self.opencti.process_multiple_fields(
-                result["data"]["attackPatternAdd"]
+                result["data"]["xOpenCTIIncidentAdd"]
             )
         else:
-            self.opencti.log(
-                "error",
-                "[opencti_attack_pattern] Missing parameters: name and description",
-            )
+            self.opencti.log("error", "Missing parameters: name and description")
 
     """
-        Create a Attack-Pattern object only if it not exists, update it on request
+         Create a X-OpenCTI-Incident object only if it not exists, update it on request
 
-        :param name: the name of the Attack-Pattern
-        :return Attack-Pattern object
-    """
+         :param name: the name of the X-OpenCTI-Incident
+         :return X-OpenCTI-Incident object
+     """
 
     def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
@@ -334,11 +292,9 @@ class AttackPattern:
         name = kwargs.get("name", None)
         description = kwargs.get("description", "")
         aliases = kwargs.get("aliases", None)
-        x_mitre_platforms = kwargs.get("x_mitre_platforms", None)
-        x_mitre_permissions_required = kwargs.get("x_mitre_permissions_required", None)
-        x_mitre_detection = kwargs.get("x_mitre_detection", None)
-        x_mitre_id = kwargs.get("x_mitre_id", None)
-        kill_chain_phases = kwargs.get("killChainPhases", None)
+        first_seen = kwargs.get("first_seen", None)
+        last_seen = kwargs.get("last_seen", None)
+        objective = kwargs.get("objective", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
@@ -349,53 +305,22 @@ class AttackPattern:
                 ... on Identity {
                     id
                 }
-            }
-            name
-            description
-            aliases
-            x_mitre_platforms
-            x_mitre_permissions_required
-            x_mitre_detection
-            x_mitre_id
-            killChainPhases {
-                edges {
-                    node {
-                        id
-                        standard_id                            
-                        entity_type
-                        kill_chain_name
-                        phase_name
-                        x_opencti_order
-                        created
-                        modified
-                    }
-                }
+            }   
+            ... on XOpenCTIIncident {
+                name
+                description
+                aliases
+                first_seen
+                last_seen
+                objective
             }
         """
-        object_result = None
-        if stix_id is not None:
-            object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is None and x_mitre_id is not None:
-            object_result = self.read(
-                filters=[
-                    {"key": "x_mitre_id", "values": [x_mitre_id], "operator": "match"}
-                ]
-            )
-        if object_result is None and name is not None:
-            object_result = self.read(
-                filters=[{"key": "name", "values": [name]}],
-                customAttributes=custom_attributes,
-            )
-            if object_result is None:
-                object_result = self.read(
-                    filters=[{"key": "aliases", "values": [name]}],
-                    customAttributes=custom_attributes,
-                )
-            # If x_mitre_id mismatch, no duplicate
-            if object_result is not None:
-                if object_result["x_mitre_id"] is not None and x_mitre_id is not None:
-                    if object_result["x_mitre_id"] != x_mitre_id:
-                        object_result = None
+        object_result = self.opencti.stix_domain_object.get_by_stix_id_or_name(
+            types=["X-OpenCTI-Incident"],
+            stix_id=stix_id,
+            name=name,
+            customAttributes=custom_attributes,
+        )
         if object_result is not None:
             if update or object_result["createdById"] == created_by:
                 # name
@@ -428,49 +353,27 @@ class AttackPattern:
                         id=object_result["id"], key="aliases", value=new_aliases
                     )
                     object_result["aliases"] = new_aliases
-                # x_mitre_platforms
+                # first_seen
+                if first_seen is not None and object_result["first_seen"] != first_seen:
+                    self.opencti.stix_domain_object.update_field(
+                        id=object_result["id"], key="first_seen", value=first_seen
+                    )
+                    object_result["first_seen"] = first_seen
+                # last_seen
+                if last_seen is not None and object_result["last_seen"] != last_seen:
+                    self.opencti.stix_domain_object.update_field(
+                        id=object_result["id"], key="last_seen", value=last_seen
+                    )
+                    object_result["last_seen"] = last_seen
+                # objective
                 if (
-                    self.opencti.not_empty(x_mitre_platforms)
-                    and object_result["x_mitre_platforms"] != x_mitre_platforms
+                    self.opencti.not_empty(objective)
+                    and object_result["objective"] != objective
                 ):
                     self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_mitre_platforms",
-                        value=x_mitre_platforms,
+                        id=object_result["id"], key="objective", value=objective
                     )
-                    object_result["x_mitre_platforms"] = x_mitre_platforms
-                # x_mitre_permissions_required
-                if (
-                    self.opencti.not_empty(x_mitre_permissions_required)
-                    and object_result["x_mitre_permissions_required"]
-                    != x_mitre_permissions_required
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_mitre_permissions_required",
-                        value=x_mitre_permissions_required,
-                    )
-                    object_result[
-                        "x_mitre_permissions_required"
-                    ] = x_mitre_permissions_required
-                # x_mitre_id
-                if (
-                    self.opencti.not_empty(x_mitre_id)
-                    and object_result["x_mitre_id"] != x_mitre_id
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="x_mitre_id", value=str(x_mitre_id),
-                    )
-                    object_result["x_mitre_id"] = x_mitre_id
-                # confidence
-                if (
-                    self.opencti.not_empty(confidence)
-                    and object_result["confidence"] != confidence
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="confidence", value=str(confidence)
-                    )
-                    object_result["confidence"] = confidence
+                    object_result["objective"] = objective
             return object_result
         else:
             return self.create_raw(
@@ -487,18 +390,16 @@ class AttackPattern:
                 name=name,
                 description=description,
                 aliases=aliases,
-                x_mitre_platforms=x_mitre_platforms,
-                x_mitre_permissions_required=x_mitre_permissions_required,
-                x_mitre_detection=x_mitre_detection,
-                x_mitre_id=x_mitre_id,
-                killChainPhases=kill_chain_phases,
+                first_seen=first_seen,
+                last_seen=last_seen,
+                objective=objective,
             )
 
     """
-        Import an Attack-Pattern object from a STIX2 object
+        Import a X-OpenCTI-Incident object from a STIX2 object
 
-        :param stixObject: the Stix-Object Attack-Pattern
-        :return Attack-Pattern object
+        :param stixObject: the Stix-Object X-OpenCTI-Incident
+        :return X-OpenCTI-Incident object
     """
 
     def import_from_stix2(self, **kwargs):
@@ -506,28 +407,6 @@ class AttackPattern:
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
-            # Extract external ID
-            x_mitre_id = None
-            if "x_mitre_id" in stix_object:
-                x_mitre_id = stix_object["x_mitre_id"]
-            if "external_references" in stix_object:
-                for external_reference in stix_object["external_references"]:
-                    if (
-                        external_reference["source_name"] == "mitre-attack"
-                        or external_reference["source_name"] == "mitre-pre-attack"
-                        or external_reference["source_name"] == "mitre-mobile-attack"
-                        or external_reference["source_name"] == "amitt-attack"
-                    ):
-                        x_mitre_id = external_reference["external_id"]
-
-            # TODO: Compatibility with OpenCTI 3.X to be REMOVED
-            if "x_opencti_order" not in stix_object:
-                stix_object["x_opencti_order"] = (
-                    stix_object["x_opencti_level"]
-                    if "x_opencti_level" in stix_object
-                    else 0
-                )
-
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=extras["created_by_id"]
@@ -556,24 +435,18 @@ class AttackPattern:
                 if "description" in stix_object
                 else "",
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
-                x_mitre_platforms=stix_object["x_mitre_platforms"]
-                if "x_mitre_platforms" in stix_object
-                else stix_object["x_amitt_platforms"]
-                if "x_amitt_platforms" in stix_object
+                objective=stix_object["objective"]
+                if "objective" in stix_object
                 else None,
-                x_mitre_permissions_required=stix_object["x_mitre_permissions_required"]
-                if "x_mitre_permissions_required" in stix_object
+                first_seen=stix_object["first_seen"]
+                if "first_seen" in stix_object
                 else None,
-                x_mitre_detection=stix_object["x_mitre_detection"]
-                if "x_mitre_detection" in stix_object
-                else None,
-                x_mitre_id=x_mitre_id,
-                killChainPhases=extras["kill_chain_phases_ids"]
-                if "kill_chain_phases_ids" in extras
+                last_seen=stix_object["last_seen"]
+                if "last_seen" in stix_object
                 else None,
                 update=update,
             )
         else:
             self.opencti.log(
-                "error", "[opencti_attack_pattern] Missing parameters: stixObject"
+                "error", "[opencti_incident] Missing parameters: stixObject"
             )

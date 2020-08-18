@@ -2,82 +2,78 @@
 
 import dateutil.parser
 import datetime
-from pycti.utils.constants import CustomProperties
-from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
-class StixSighting:
+class StixSightingRelationship:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
             id
-            stix_id_key
             entity_type
-            relationship_type
-            description
-            confidence
-            number
-            negative
-            first_seen
-            last_seen
-            created
-            modified
+            parent_types
+            spec_version
             created_at
             updated_at
-            fromRole
-            from {
-                id
-                stix_id_key
-                entity_type
-                ...on StixDomainEntity {
-                    name
-                    description
-                }
-            }
-            toRole
-            to {
-                id
-                stix_id_key
-                entity_type
-                ...on StixDomainEntity {
-                    name
-                    description
-                }
-            }
-            createdByRef {
-                node {
+            standard_id
+            description
+            first_seen
+            last_seen
+            attribute_count
+            x_opencti_negative
+            created
+            modified
+            confidence
+            createdBy {
+                ... on Identity {
                     id
+                    standard_id
                     entity_type
-                    stix_id_key
-                    stix_label
+                    parent_types
                     name
-                    alias
+                    aliases
                     description
                     created
                     modified
-                    ... on Organization {
-                        organization_class
-                    }
+                    objectLabel {
+                        edges {
+                            node {
+                                id
+                                value
+                                color
+                            }
+                        }
+                    }                    
                 }
-                relation {
-                    id
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
+                }
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
                 }
             }
-            markingDefinitions {
+            objectMarking {
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         definition_type
                         definition
-                        level
-                        color
                         created
                         modified
+                        x_opencti_order
+                        x_opencti_color
                     }
-                    relation {
-                       id
+                }
+            }
+            objectLabel {
+                edges {
+                    node {
+                        id
+                        value
+                        color
                     }
                 }
             }
@@ -85,8 +81,8 @@ class StixSighting:
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         source_name
                         description
                         url
@@ -95,9 +91,168 @@ class StixSighting:
                         created
                         modified
                     }
-                    relation {
-                        id
-                    }
+                }
+            }
+            from {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixObject {
+                    standard_id
+                    spec_version
+                    created_at
+                    updated_at
+                }
+                ... on AttackPattern {
+                    name
+                }
+                ... on Campaign {
+                    name
+                }
+                ... on CourseOfAction {
+                    name
+                }
+                ... on Individual {
+                    name
+                }
+                ... on Organization {
+                    name
+                }
+                ... on Sector {
+                    name
+                }
+                ... on Indicator {
+                    name
+                }
+                ... on Infrastructure {
+                    name
+                }
+                ... on IntrusionSet {
+                    name
+                }
+                ... on Position {
+                    name
+                }
+                ... on City {
+                    name
+                }
+                ... on Country {
+                    name
+                }
+                ... on Region {
+                    name
+                }
+                ... on Malware {
+                    name
+                }
+                ... on ThreatActor {
+                    name
+                }
+                ... on Tool {
+                    name
+                }
+                ... on Vulnerability {
+                    name
+                }
+                ... on XOpenCTIIncident {
+                    name
+                }           
+                ... on StixCyberObservable {
+                    observable_value
+                }                     
+                ... on StixCoreRelationship {
+                    standard_id
+                    spec_version
+                    created_at
+                    updated_at
+                }
+            }
+            to {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixObject {
+                    standard_id
+                    spec_version
+                    created_at
+                    updated_at
+                }
+                ... on AttackPattern {
+                    name
+                }
+                ... on Campaign {
+                    name
+                }
+                ... on CourseOfAction {
+                    name
+                }
+                ... on Individual {
+                    name
+                }
+                ... on Organization {
+                    name
+                }
+                ... on Sector {
+                    name
+                }
+                ... on Indicator {
+                    name
+                }
+                ... on Infrastructure {
+                    name
+                }
+                ... on IntrusionSet {
+                    name
+                }
+                ... on Position {
+                    name
+                }
+                ... on City {
+                    name
+                }
+                ... on Country {
+                    name
+                }
+                ... on Region {
+                    name
+                }
+                ... on Malware {
+                    name
+                }
+                ... on ThreatActor {
+                    name
+                }
+                ... on Tool {
+                    name
+                }
+                ... on Vulnerability {
+                    name
+                }
+                ... on XOpenCTIIncident {
+                    name
+                }
+                ... on StixCyberObservable {
+                    observable_value
+                }
+                ... on StixCoreRelationship {
+                    standard_id
+                    spec_version
+                    created_at
+                    updated_at
                 }
             }
         """
@@ -134,7 +289,6 @@ class StixSighting:
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
-        force_natural = kwargs.get("forceNatural", False)
         if get_all:
             first = 500
 
@@ -148,8 +302,8 @@ class StixSighting:
         )
         query = (
             """
-                query StixSightings($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $filters: [StixSightingsFiltering], $first: Int, $after: ID, $orderBy: StixSightingsOrdering, $orderMode: OrderingMode, $forceNatural: Boolean) {
-                    stixSightings(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, forceNatural: $forceNatural) {
+                query StixSightingRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $filters: [StixSightingRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode) {
+                    stixSightingRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -185,11 +339,10 @@ class StixSighting:
                 "after": after,
                 "orderBy": order_by,
                 "orderMode": order_mode,
-                "forceNatural": force_natural,
             },
         )
         return self.opencti.process_multiple(
-            result["data"]["stixSightings"], with_pagination
+            result["data"]["stixSightingRelationships"], with_pagination
         )
 
     """
@@ -220,8 +373,8 @@ class StixSighting:
             self.opencti.log("info", "Reading stix_sighting {" + id + "}.")
             query = (
                 """
-                    query StixSighting($id: String!) {
-                        stixSighting(id: $id) {
+                    query StixSightingRelationship($id: String!) {
+                        stixSightingRelationship(id: $id) {
                             """
                 + (
                     custom_attributes
@@ -234,7 +387,9 @@ class StixSighting:
              """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["stixSighting"])
+            return self.opencti.process_multiple_fields(
+                result["data"]["stixSightingRelationship"]
+            )
         elif from_id is not None and to_id is not None:
             result = self.list(
                 fromId=from_id,
@@ -263,27 +418,28 @@ class StixSighting:
     def create_raw(self, **kwargs):
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
+        stix_id = kwargs.get("stix_id", None)
         description = kwargs.get("description", None)
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
-        confidence = kwargs.get("confidence", 15)
-        number = kwargs.get("number", 1)
-        negative = kwargs.get("negative", False)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        count = kwargs.get("count", None)
+        x_opencti_negative = kwargs.get("x_opencti_negative", False)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
+        confidence = kwargs.get("confidence", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
 
         self.opencti.log(
             "info", "Creating stix_sighting {" + from_id + ", " + str(to_id) + "}.",
         )
         query = """
-                mutation StixSightingAdd($input: StixSightingAddInput!) {
-                    stixSightingAdd(input: $input) {
+                mutation StixSightingRelationshipAdd($input: StixSightingRelationshipAddInput!) {
+                    stixSightingRelationshipAdd(input: $input) {
                         id
-                        stix_id_key
+                        standard_id
                         entity_type
                         parent_types
                     }
@@ -295,22 +451,25 @@ class StixSighting:
                 "input": {
                     "fromId": from_id,
                     "toId": to_id,
+                    "stix_id": stix_id,
                     "description": description,
                     "first_seen": first_seen,
                     "last_seen": last_seen,
-                    "confidence": confidence,
-                    "number": number,
-                    "negative": negative,
-                    "internal_id_key": id,
-                    "stix_id_key": stix_id_key,
+                    "attribute_count": count,
+                    "x_opencti_negative": x_opencti_negative,
                     "created": created,
                     "modified": modified,
-                    "createdByRef": created_by_ref,
-                    "markingDefinitions": marking_definitions,
+                    "confidence": confidence,
+                    "createdBy": created_by,
+                    "objectMarking": object_marking,
+                    "objectLabel": object_label,
+                    "externalReferences": external_references,
                 }
             },
         )
-        return self.opencti.process_multiple_fields(result["data"]["stixSightingAdd"])
+        return self.opencti.process_multiple_fields(
+            result["data"]["stixSightingRelationshipAdd"]
+        )
 
     """
         Create a stix_sighting object only if it not exists, update it on request
@@ -322,43 +481,38 @@ class StixSighting:
     def create(self, **kwargs):
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
+        stix_id = kwargs.get("stix_id", None)
         description = kwargs.get("description", None)
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
-        number = kwargs.get("number", 1)
-        confidence = kwargs.get("confidence", 15)
-        negative = kwargs.get("negative", False)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        count = kwargs.get("count", None)
+        x_opencti_negative = kwargs.get("x_opencti_negative", False)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
+        confidence = kwargs.get("confidence", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
         update = kwargs.get("update", False)
         ignore_dates = kwargs.get("ignore_dates", False)
         custom_attributes = """
             id
+            standard_id
             entity_type
-            name
-            description
-            confidence
-            number
-            negative
+            parent_types
             first_seen
             last_seen
-            createdByRef {
-                node {
+            x_opencti_negative
+            attribute_count
+            confidence
+            createdBy {
+                ... on Identity {
                     id
                 }
-            }
+            }       
         """
-        stix_sighting_result = None
-        if id is not None:
-            stix_sighting_result = self.read(id=id, customAttributes=custom_attributes)
-        if stix_sighting_result is None and stix_id_key is not None:
-            stix_sighting_result = self.read(
-                id=stix_id_key, customAttributes=custom_attributes
-            )
+        stix_sighting_result = self.read(id=stix_id, customAttributes=custom_attributes)
         if stix_sighting_result is None and to_id is not None:
             if (
                 ignore_dates is False
@@ -394,7 +548,7 @@ class StixSighting:
                 customAttributes=custom_attributes,
             )
         if stix_sighting_result is not None:
-            if update or stix_sighting_result["createdByRef"] == created_by_ref:
+            if update or stix_sighting_result["createdBy"] == created_by:
                 if (
                     description is not None
                     and stix_sighting_result["description"] != description
@@ -416,20 +570,25 @@ class StixSighting:
                     )
                     stix_sighting_result["confidence"] = confidence
                 if (
-                    negative is not None
-                    and stix_sighting_result["negative"] != negative
+                    x_opencti_negative is not None
+                    and stix_sighting_result["x_opencti_negative"] != x_opencti_negative
                 ):
                     self.update_field(
                         id=stix_sighting_result["id"],
-                        key="negative",
-                        value=str(negative).lower(),
+                        key="x_opencti_negative",
+                        value=str(x_opencti_negative).lower(),
                     )
-                    stix_sighting_result["negative"] = negative
-                if number is not None and stix_sighting_result["number"] != number:
+                    stix_sighting_result["x_opencti_negative"] = x_opencti_negative
+                if (
+                    count is not None
+                    and stix_sighting_result["attribute_count"] != count
+                ):
                     self.update_field(
-                        id=stix_sighting_result["id"], key="number", value=str(number),
+                        id=stix_sighting_result["id"],
+                        key="attribute_count",
+                        value=str(count),
                     )
-                    stix_sighting_result["number"] = number
+                    stix_sighting_result["attribute_count"] = count
                 if first_seen is not None:
                     new_first_seen = dateutil.parser.parse(first_seen)
                     old_first_seen = dateutil.parser.parse(
@@ -459,18 +618,19 @@ class StixSighting:
             return self.create_raw(
                 fromId=from_id,
                 toId=to_id,
+                stix_id=stix_id,
                 description=description,
                 first_seen=first_seen,
                 last_seen=last_seen,
-                confidence=confidence,
-                number=number,
-                negative=negative,
-                id=id,
-                stix_id_key=stix_id_key,
+                count=count,
+                x_opencti_negative=x_opencti_negative,
                 created=created,
                 modified=modified,
-                createdByRef=created_by_ref,
-                markingDefinitions=marking_definitions,
+                confidence=confidence,
+                createdBy=created_by,
+                objectMarking=object_marking,
+                objectLabel=object_label,
+                externalReferences=external_references,
             )
 
     """
@@ -491,8 +651,8 @@ class StixSighting:
                 "info", "Updating stix_sighting {" + id + "} field {" + key + "}."
             )
             query = """
-                    mutation StixSightingEdit($id: ID!, $input: EditInput!) {
-                        stixSightingEdit(id: $id) {
+                    mutation StixSightingRelationshipEdit($id: ID!, $input: EditInput!) {
+                        stixSightingRelationshipEdit(id: $id) {
                             fieldPatch(input: $input) {
                                 id
                             }
@@ -503,7 +663,7 @@ class StixSighting:
                 query, {"id": id, "input": {"key": key, "value": value}}
             )
             return self.opencti.process_multiple_fields(
-                result["data"]["stixSightingEdit"]["fieldPatch"]
+                result["data"]["stixSightingRelationshipEdit"]["fieldPatch"]
             )
         else:
             self.opencti.log(
@@ -524,8 +684,8 @@ class StixSighting:
         if id is not None:
             self.opencti.log("info", "Deleting stix_sighting {" + id + "}.")
             query = """
-                mutation StixSightingEdit($id: ID!) {
-                    stixSightingEdit(id: $id) {
+                mutation StixSightingRelationshipEdit($id: ID!) {
+                    stixSightingRelationshipEdit(id: $id) {
                         delete
                     }
                 }
@@ -534,51 +694,3 @@ class StixSighting:
         else:
             self.opencti.log("error", "[opencti_stix_sighting] Missing parameters: id")
             return None
-
-    """
-        Export an stix_sighting object in STIX2
-
-        :param id: the id of the stix_sighting
-        :return stix_sighting object
-    """
-
-    def to_stix2(self, **kwargs):
-        id = kwargs.get("id", None)
-        mode = kwargs.get("mode", "simple")
-        max_marking_definition_entity = kwargs.get(
-            "max_marking_definition_entity", None
-        )
-        entity = kwargs.get("entity", None)
-        if id is not None and entity is None:
-            entity = self.read(id=id)
-        if entity is not None:
-            stix_sighting = dict()
-            stix_sighting["id"] = entity["stix_id_key"]
-            stix_sighting["type"] = "sighting"
-            stix_sighting["spec_version"] = SPEC_VERSION
-            stix_sighting["sighting_of_ref"] = entity["from"]["stix_id_key"]
-            stix_sighting["where_sighted_refs"] = entity["to"]["stix_id_key"]
-            if self.opencti.not_empty(entity["description"]):
-                stix_sighting["description"] = entity["description"]
-            stix_sighting["created"] = self.opencti.stix2.format_date(entity["created"])
-            stix_sighting["modified"] = self.opencti.stix2.format_date(
-                entity["modified"]
-            )
-            if self.opencti.not_empty(entity["first_seen"]):
-                stix_sighting["first_seen"] = self.opencti.stix2.format_date(
-                    entity["first_seen"]
-                )
-            if self.opencti.not_empty(entity["last_seen"]):
-                stix_sighting["last_seen"] = self.opencti.stix2.format_date(
-                    entity["last_seen"]
-                )
-            if self.opencti.not_empty(entity["confidence"]):
-                stix_sighting["confidence"] = entity["confidence"]
-            stix_sighting[CustomProperties.ID] = entity["id"]
-            return self.opencti.stix2.prepare_export(
-                entity, stix_sighting, mode, max_marking_definition_entity
-            )
-        else:
-            self.opencti.log(
-                "error", "[opencti_stix_sighting] Missing parameters: id or entity"
-            )

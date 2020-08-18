@@ -3,7 +3,7 @@
 import json
 
 
-class Note:
+class ObservedData:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -89,9 +89,9 @@ class Note:
             confidence
             created
             modified
-            attribute_abstract
-            content
-            authors
+            first_observed
+            last_observed
+            number_observed
             objects {
                 edges {
                     node {
@@ -177,13 +177,13 @@ class Note:
         """
 
     """
-        List Note objects
+        List ObservedData objects
 
         :param filters: the filters to apply
         :param search: the search keyword
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Note objects
+        :return List of ObservedData objects
     """
 
     def list(self, **kwargs):
@@ -200,12 +200,12 @@ class Note:
             first = 500
 
         self.opencti.log(
-            "info", "Listing Notes with filters " + json.dumps(filters) + "."
+            "info", "Listing ObservedDatas with filters " + json.dumps(filters) + "."
         )
         query = (
             """
-            query Notes($filters: [NotesFiltering], $search: String, $first: Int, $after: ID, $orderBy: NotesOrdering, $orderMode: OrderingMode) {
-                notes(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query ObservedDatas($filters: [ObservedDatasFiltering], $search: String, $first: Int, $after: ID, $orderBy: ObservedDatasOrdering, $orderMode: OrderingMode) {
+                observedDatas(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -235,14 +235,16 @@ class Note:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["notes"], with_pagination)
+        return self.opencti.process_multiple(
+            result["data"]["observedDatas"], with_pagination
+        )
 
     """
-        Read a Note object
+        Read a ObservedData object
 
-        :param id: the id of the Note
+        :param id: the id of the ObservedData
         :param filters: the filters to apply if no id provided
-        :return Note object
+        :return ObservedData object
     """
 
     def read(self, **kwargs):
@@ -250,11 +252,11 @@ class Note:
         filters = kwargs.get("filters", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading Note {" + id + "}.")
+            self.opencti.log("info", "Reading ObservedData {" + id + "}.")
             query = (
                 """
-                query Note($id: String!) {
-                    note(id: $id) {
+                query ObservedData($id: String!) {
+                    observedData(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -267,7 +269,7 @@ class Note:
             """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["note"])
+            return self.opencti.process_multiple_fields(result["data"]["observedData"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -276,7 +278,7 @@ class Note:
                 return None
 
     """
-        Check if a note already contains a STIX entity
+        Check if a observedData already contains a STIX entity
         
         :return Boolean
     """
@@ -291,13 +293,13 @@ class Note:
                 "info",
                 "Checking StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} in Note {"
+                + "} in ObservedData {"
                 + id
                 + "}",
             )
             query = """
-                query NoteContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
-                    noteContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
+                query ObservedDataContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
+                    observedDataContainsStixObjectOrStixRelationship(id: $id, stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId)
                 }
             """
             result = self.opencti.query(
@@ -307,17 +309,17 @@ class Note:
                     "stixObjectOrStixRelationshipId": stix_object_or_stix_relationship_id,
                 },
             )
-            return result["data"]["noteContainsStixObjectOrStixRelationship"]
+            return result["data"]["observedDataContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
-                "error", "[opencti_note] Missing parameters: id or entity_id",
+                "error", "[opencti_observedData] Missing parameters: id or entity_id",
             )
 
     """
-        Create a Note object
+        Create a ObservedData object
 
-        :param name: the name of the Note
-        :return Note object
+        :param name: the name of the ObservedData
+        :return ObservedData object
     """
 
     def create_raw(self, **kwargs):
@@ -331,19 +333,19 @@ class Note:
         lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        abstract = kwargs.get("abstract", None)
-        content = kwargs.get("content", None)
-        authors = kwargs.get("authors", None)
+        first_observed = kwargs.get("first_observed", None)
+        last_observed = kwargs.get("last_observed", None)
+        number_observed = kwargs.get("number_observed", None)
 
-        if content is not None:
-            self.opencti.log("info", "Creating Note {" + content + "}.")
+        if first_observed is not None and last_observed is not None:
+            self.opencti.log("info", "Creating ObservedData.")
             query = """
-                mutation NoteAdd($input: NoteAddInput) {
-                    noteAdd(input: $input) {
+                mutation ObservedDataAdd($input: ObservedDataAddInput) {
+                    observedDataAdd(input: $input) {
                         id
                         standard_id
                         entity_type
-                        parent_types                    
+                        parent_types                     
                     }
                 }
             """
@@ -361,25 +363,27 @@ class Note:
                         "lang": lang,
                         "created": created,
                         "modified": modified,
-                        "attribute_abstract": abstract,
-                        "content": content,
-                        "authors": authors,
+                        "first_observed": first_observed,
+                        "last_observed": last_observed,
+                        "number_observed": number_observed,
                     }
                 },
             )
-            return self.opencti.process_multiple_fields(result["data"]["noteAdd"])
+            return self.opencti.process_multiple_fields(
+                result["data"]["observedDataAdd"]
+            )
         else:
             self.opencti.log(
-                "error", "[opencti_note] Missing parameters: content",
+                "error", "[opencti_observedData] Missing parameters: content",
             )
 
     """
-         Create a Note object only if it not exists, update it on request
+         Create a ObservedData object only if it not exists, update it on request
 
-         :param name: the name of the Note
-         :param description: the description of the Note
-         :param published: the publication date of the Note
-         :return Note object
+         :param name: the name of the ObservedData
+         :param description: the description of the ObservedData
+         :param published: the publication date of the ObservedData
+         :return ObservedData object
      """
 
     def create(self, **kwargs):
@@ -393,9 +397,9 @@ class Note:
         lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        abstract = kwargs.get("abstract", None)
-        content = kwargs.get("content", None)
-        authors = kwargs.get("authors", None)
+        first_observed = kwargs.get("first_observed", None)
+        last_observed = kwargs.get("last_observed", None)
+        number_observed = kwargs.get("number_observed", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
@@ -407,31 +411,30 @@ class Note:
                     id
                 }
             }
-            ... on Note {
-                attribute_abstract
-                content
-                authors
+            ... on ObservedData {
+                first_observed
+                last_observed
+                number_observed
             }
         """
-        object_result = self.read(id=stix_id, customAttributes=custom_attributes)
+        object_result = None
+        if stix_id is not None:
+            object_result = self.read(id=stix_id, customAttributes=custom_attributes)
         if object_result is not None:
             if update or object_result["createdById"] == created_by:
                 if (
-                    abstract is not None
-                    and object_result["attribute_abstract"] != abstract
+                    number_observed is not None
+                    and object_result["number_observed"] != number_observed
                 ):
                     self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="attribute_abstract", value=abstract
+                        id=object_result["id"],
+                        key="number_observed",
+                        value=number_observed,
                     )
-                    object_result["attribute_abstract"] = abstract
-                if content is not None and object_result["content"] != content:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="content", value=content
-                    )
-                    object_result["content"] = content
+                    object_result["number_observed"] = number_observed
             return object_result
         else:
-            note = self.create_raw(
+            observedData = self.create_raw(
                 stix_id=stix_id,
                 createdBy=created_by,
                 objectMarking=object_marking,
@@ -442,16 +445,16 @@ class Note:
                 lang=lang,
                 created=created,
                 modified=modified,
-                abstract=abstract,
-                content=content,
-                authors=authors,
+                first_observed=first_observed,
+                last_observed=last_observed,
+                number_observed=number_observed,
             )
-            return note
+            return observedData
 
     """
-        Add a Stix-Entity object to Note object (object_refs)
+        Add a Stix-Entity object to ObservedData object (object)
 
-        :param id: the id of the Note
+        :param id: the id of the ObservedData
         :param entity_id: the id of the Stix-Entity
         :return Boolean
     """
@@ -471,13 +474,13 @@ class Note:
                 "info",
                 "Adding StixObjectOrStixRelationship {"
                 + stix_object_or_stix_relationship_id
-                + "} to Note {"
+                + "} to ObservedData {"
                 + id
                 + "}",
             )
             query = """
-               mutation NoteEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
-                   noteEdit(id: $id) {
+               mutation ObservedDataEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   observedDataEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
                         }
@@ -498,15 +501,15 @@ class Note:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_note] Missing parameters: id and stix_object_or_stix_relationship_id",
+                "[opencti_observedData] Missing parameters: id and stix_object_or_stix_relationship_id",
             )
             return False
 
     """
-        Import a Note object from a STIX2 object
+        Import a ObservedData object from a STIX2 object
 
-        :param stixObject: the Stix-Object Note
-        :return Note object
+        :param stixObject: the Stix-Object ObservedData
+        :return ObservedData object
     """
 
     def import_from_stix2(self, **kwargs):
@@ -514,7 +517,7 @@ class Note:
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
-            return self.create(
+            observed_data_result = self.create(
                 stix_id=stix_object["id"],
                 createdBy=extras["created_by_id"]
                 if "created_by_id" in extras
@@ -535,15 +538,43 @@ class Note:
                 lang=stix_object["lang"] if "lang" in stix_object else None,
                 created=stix_object["created"] if "created" in stix_object else None,
                 modified=stix_object["modified"] if "modified" in stix_object else None,
-                abstract=self.opencti.stix2.convert_markdown(stix_object["abstract"])
-                if "abstract" in stix_object
-                else "",
-                content=self.opencti.stix2.convert_markdown(stix_object["content"])
-                if "content" in stix_object
-                else "",
-                authors=stix_object["authors"] if "authors" in stix_object else None,
+                first_observed=stix_object["first_observed"]
+                if "first_observed" in stix_object
+                else None,
+                last_observed=stix_object["last_observed"]
+                if "last_observed" in stix_object
+                else None,
+                number_observed=stix_object["number_observed"]
+                if "number_observed" in stix_object
+                else None,
                 update=update,
             )
+            if "objects" in stix_object:
+                for key, observable_item in stix_object["objects"].items():
+                    stix_observable_result = self.opencti.stix_cyber_observable.create(
+                        observableData=observable_item,
+                        createdBy=extras["created_by_id"]
+                        if "created_by_id" in extras
+                        else None,
+                        objectMarking=extras["object_marking_ids"]
+                        if "object_marking_ids" in extras
+                        else None,
+                        objectLabel=extras["object_label_ids"]
+                        if "object_label_ids" in extras
+                        else [],
+                    )
+                    if stix_observable_result is not None:
+                        self.add_stix_object_or_stix_relationship(
+                            id=observed_data_result["id"],
+                            stixObjectOrStixRelationshipId=stix_observable_result["id"],
+                        )
+                        self.opencti.stix2.mapping_cache[
+                            stix_observable_result["id"]
+                        ] = {
+                            "id": stix_observable_result["id"],
+                            "type": stix_observable_result["entity_type"],
+                        }
+            return observed_data_result
         else:
             self.opencti.log(
                 "error", "[opencti_attack_pattern] Missing parameters: stixObject"

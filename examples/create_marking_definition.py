@@ -11,7 +11,10 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Create the marking definition
 marking_definition = opencti_api_client.marking_definition.create(
-    definition_type="TLP", definition="TLP:BLACK", level=10, color="#000000"
+    definition_type="TLP",
+    definition="TLP:BLACK",
+    x_opencti_order=10,
+    x_opencti_color="#000000",
 )
 
 # Print

@@ -15,4 +15,4 @@ intrusion_set = opencti_api_client.intrusion_set.read(
 )
 
 # Delete the intrusion set
-opencti_api_client.stix_domain_entity.delete(id=intrusion_set["id"])
+opencti_api_client.stix_domain_object.delete(id=intrusion_set["id"])
