@@ -192,9 +192,47 @@ class ExternalReference:
         stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
+        update = kwargs.get("update", False)
 
         external_reference_result = self.read(filters=[{"key": "url", "values": [url]}])
         if external_reference_result is not None:
+            if update:
+                # source_name
+                if (
+                    self.opencti.not_empty(source_name) and
+                    external_reference_result["source_name"] != source_name
+                ):
+                    self.update_field(
+                        id=object_result["id"], key="source_name", value=source_name
+                    )
+                    external_reference_result["source_name"] = source_name
+                # url
+                if (
+                    self.opencti.not_empty(url) and
+                    external_reference_result["url"] != url
+                ):
+                    self.update_field(
+                        id=object_result["id"], key="url", value=url
+                    )
+                    external_reference_result["url"] = url
+                # external_id
+                if (
+                    self.opencti.not_empty(external_id) and
+                    external_reference_result["external_id"] != external_id
+                ):
+                    self.update_field(
+                        id=object_result["id"], key="external_id", value=external_id
+                    )
+                    external_reference_result["external_id"] = external_id
+                # description
+                if  (
+                    self.opencti.not_empty(description) and
+                    external_reference_result["description"] != description
+                ):
+                    self.update_field(
+                        id=object_result["id"], key="description", value=description
+                    )
+                    external_reference_result["description"] = description
             return external_reference_result
         else:
             return self.create_raw(
@@ -206,6 +244,45 @@ class ExternalReference:
                 created=created,
                 modified=modified,
             )
+
+    """
+        Update a External Reference object field
+
+        :param id: the External Reference id
+        :param key: the key of the field
+        :param value: the value of the field
+        :return The updated External Reference object
+    """
+
+    def update_field(self, **kwargs):
+        id = kwargs.get("id", None)
+        key = kwargs.get("key", None)
+        value = kwargs.get("value", None)
+        if id is not None and key is not None and value is not None:
+            self.opencti.log(
+                "info", "Updating External-Reference {" + id + "} field {" + key + "}."
+            )
+            query = """
+                    mutation ExternalReferenceEdit($id: ID!, $input: EditInput!) {
+                        externalReferenceEdit(id: $id) {
+                            fieldPatch(input: $input) {
+                                id
+                            }
+                        }
+                    }
+                """
+            result = self.opencti.query(
+                query, {"id": id, "input": {"key": key, "value": value}}
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["externalReferenceEdit"]["fieldPatch"]
+            )
+        else:
+            self.opencti.log(
+                "error",
+                "[opencti_external_reference] Missing parameters: id and key and value",
+            )
+            return None
 
     def delete(self, id):
         self.opencti.log("info", "Deleting + " + id + "...")
