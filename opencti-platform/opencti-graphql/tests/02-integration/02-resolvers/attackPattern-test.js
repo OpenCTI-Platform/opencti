@@ -78,6 +78,7 @@ describe('AttackPattern resolver standard behavior', () => {
     const ATTACK_PATTERN_TO_CREATE = {
       input: {
         name: 'AttackPattern',
+        x_mitre_id: 'T001',
         stix_id: attackPatternStixId,
         description: 'AttackPattern description',
         killChainPhases: ['kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'],

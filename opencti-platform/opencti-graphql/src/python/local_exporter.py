@@ -16,7 +16,7 @@ class TestLocalExporter:
         opencti_api_client = OpenCTIApiClient(self.api_url, self.api_token)
         # Generate a json bundle from openCTI
         bundle = opencti_api_client.stix2.export_entity(
-            "malware", self.entity_id, "full"
+            "Malware", self.entity_id, "full"
         )
         json_bundle = json.dumps(bundle, indent=4)
         # Upload the export inside the entity to ack like an import
@@ -29,11 +29,11 @@ class TestLocalExporter:
     def upload_list(self):
         opencti_api_client = OpenCTIApiClient(self.api_url, self.api_token)
         # Generate a json bundle from openCTI
-        bundle = opencti_api_client.stix2.export_list("malware")
+        bundle = opencti_api_client.stix2.export_list("Malware")
         json_bundle = json.dumps(bundle, indent=4)
         # Upload the export inside the entity to ack like an import
         opencti_api_client.stix_domain_object.push_list_export(
-            "malware", self.file_name, json_bundle
+            "Malware", self.file_name, json_bundle
         )
         # Upload it like a simple file to import
         opencti_api_client.upload_file(file_name=self.file_name, data=json_bundle)

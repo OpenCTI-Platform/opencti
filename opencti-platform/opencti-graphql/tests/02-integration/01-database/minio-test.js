@@ -40,7 +40,7 @@ describe('Minio basic and utils', () => {
     expect(fileName).toEqual(expect.stringContaining('_(ExportFileStix)_full.json'));
   });
   it('should entity export name correctly generated', async () => {
-    const type = 'malware';
+    const type = 'Malware';
     const exportType = 'all';
     const connector = { name: 'ExportFileStix' };
     const maxMarking = { definition: 'TLP:RED' };
@@ -50,25 +50,32 @@ describe('Minio basic and utils', () => {
     expect(fileExportName).toEqual(expect.stringContaining(expectedName));
   });
   it('should list export name correctly generated', async () => {
-    const type = 'attack-pattern';
+    const type = 'Attack-Pattern';
     const exportType = 'all';
     const connector = { name: 'ExportFileStix' };
     const maxMarking = { definition: 'TLP:RED' };
     const entity = null;
     const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
-    const expectedName = '_TLP:RED_(ExportFileStix)_attack-pattern.json';
+    const expectedName = '_TLP:RED_(ExportFileStix)_Attack-Pattern.json';
     expect(fileExportName).toEqual(expect.stringContaining(expectedName));
   });
 });
 
-describe('Minio file listing', () => {
-  const malware = elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-  const malwareId = malware.internal_id;
-  const exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
-  const exportFileId = `export/malware/${malwareId}/${exportFileName}`;
-  const importFileId = `import/global/${exportFileName}`;
-  const importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
-  it('Should file upload succeed', async () => {
+describe('Minio file listing', async () => {
+  let malwareId;
+  let exportFileName;
+  let exportFileId;
+  let importFileId;
+  let importOpts;
+  it('should resolve the malware', async () => {
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    malwareId = malware.internal_id;
+    exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
+    exportFileId = `export/malware/${malwareId}/${exportFileName}`;
+    importFileId = `import/global/${exportFileName}`;
+    importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
+  });
+  it('should file upload succeed', async () => {
     const httpServer = await listenServer();
     // local exporter create an export and also upload the file as an import
     const execution = await execPython3(PYTHON_PATH, 'local_exporter.py', importOpts);
@@ -84,7 +91,7 @@ describe('Minio file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(18844);
+    expect(file.size).toEqual(8481);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData['content-type']).toEqual('application/octet-stream');
     expect(file.metaData.category).toEqual('export');
@@ -96,7 +103,7 @@ describe('Minio file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(18844);
+    expect(file.size).toEqual(8481);
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
@@ -106,16 +113,16 @@ describe('Minio file listing', () => {
     expect(data).not.toBeNull();
     const jsonData = JSON.parse(data);
     expect(jsonData).not.toBeNull();
-    expect(jsonData.objects.length).toEqual(16);
+    expect(jsonData.objects.length).toEqual(8);
     const user = head(jsonData.objects);
-    expect(user.name).toEqual('admin');
+    expect(user.name).toEqual('Paradise Ransomware');
   });
   it('should load file', async () => {
     const file = await loadFile(exportFileId);
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(18844);
+    expect(file.size).toEqual(8481);
   });
   it('should delete file', async () => {
     let deleted = await deleteFile({ user_email: 'test@opencti.io' }, exportFileId);
