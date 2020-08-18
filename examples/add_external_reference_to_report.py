@@ -27,7 +27,7 @@ external_reference = opencti_api_client.external_reference.create(
 )
 
 # Add the external reference to the report
-opencti_api_client.stix_entity.add_external_reference(
+opencti_api_client.stix_domain_object.add_external_reference(
     id=report["id"], external_reference_id=external_reference["id"]
 )
 

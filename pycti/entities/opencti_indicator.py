@@ -1,8 +1,6 @@
 # coding: utf-8
 
 import json
-from pycti.utils.constants import CustomProperties
-from pycti.utils.opencti_stix2 import SPEC_VERSION
 
 
 class Indicator:
@@ -15,89 +13,64 @@ class Indicator:
         self.opencti = opencti
         self.properties = """
             id
-            stix_id_key
-            stix_label
+            standard_id
             entity_type
             parent_types
-            name
-            alias
-            description
-            graph_data
-            indicator_pattern
-            pattern_type
-            detection
-            confidence
-            valid_from
-            valid_until
-            score
-            created
-            modified            
+            spec_version
             created_at
             updated_at
-            killChainPhases {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        stix_id_key
-                        kill_chain_name
-                        phase_name
-                        phase_order
-                        created
-                        modified
-                    }
-                    relation {
-                        id
-                    }
-                }
-            }
-            createdByRef {
-                node {
+            createdBy {
+                ... on Identity {
                     id
+                    standard_id
                     entity_type
-                    stix_id_key
-                    stix_label
+                    parent_types
+                    spec_version
                     name
-                    alias
+                    aliases
                     description
                     created
                     modified
-                    ... on Organization {
-                        organization_class
-                    }
+                    objectLabel {
+                        edges {
+                            node {
+                                id
+                                value
+                                color
+                            }
+                        }
+                    }                    
                 }
-                relation {
-                    id
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
                 }
-            }            
-            markingDefinitions {
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
+                }
+            }
+            objectMarking {
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         definition_type
                         definition
-                        level
-                        color
                         created
                         modified
-                    }
-                    relation {
-                        id
+                        x_opencti_order
+                        x_opencti_color
                     }
                 }
             }
-            tags {
+            objectLabel {
                 edges {
                     node {
                         id
-                        tag_type
                         value
                         color
-                    }
-                    relation {
-                        id
                     }
                 }
             }
@@ -105,8 +78,8 @@ class Indicator:
                 edges {
                     node {
                         id
+                        standard_id
                         entity_type
-                        stix_id_key
                         source_name
                         description
                         url
@@ -115,21 +88,34 @@ class Indicator:
                         created
                         modified
                     }
-                    relation {
-                        id
-                    }
                 }
-            }       
-            observableRefs {
+            }
+            revoked
+            confidence
+            created
+            modified
+            pattern_type
+            pattern_version
+            pattern
+            name
+            description
+            indicator_types
+            valid_from
+            valid_until
+            x_opencti_score
+            x_opencti_detection
+            x_opencti_main_observable_type
+            killChainPhases {
                 edges {
                     node {
                         id
+                        standard_id                            
                         entity_type
-                        stix_id_key
-                        observable_value
-                    }
-                    relation {
-                        id
+                        kill_chain_name
+                        phase_name
+                        x_opencti_order
+                        created
+                        modified
                     }
                 }
             }
@@ -283,51 +269,53 @@ class Indicator:
     """
 
     def create_raw(self, **kwargs):
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", None)
-        indicator_pattern = kwargs.get("indicator_pattern", None)
-        main_observable_type = kwargs.get("main_observable_type", None)
-        pattern_type = kwargs.get("pattern_type", None)
-        valid_from = kwargs.get("valid_from", None)
-        valid_until = kwargs.get("valid_until", None)
-        score = kwargs.get("score", None)
-        confidence = kwargs.get("confidence", 50)
-        detection = kwargs.get("detection", False)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
+        revoked = kwargs.get("revoked", None)
+        confidence = kwargs.get("confidence", None)
+        lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
-        tags = kwargs.get("tags", None)
+        pattern_type = kwargs.get("pattern_type", None)
+        pattern_version = kwargs.get("pattern_version", None)
+        pattern = kwargs.get("pattern", None)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", None)
+        indicator_types = kwargs.get("indicator_types", None)
+        valid_from = kwargs.get("valid_from", None)
+        valid_until = kwargs.get("valid_until", None)
+        x_opencti_score = kwargs.get("x_opencti_score", 50)
+        x_opencti_detection = kwargs.get("x_opencti_detection", False)
+        x_opencti_main_observable_type = kwargs.get(
+            "x_opencti_main_observable_type", None
+        )
         kill_chain_phases = kwargs.get("killChainPhases", None)
 
         if (
             name is not None
-            and indicator_pattern is not None
-            and main_observable_type is not None
+            and pattern is not None
+            and x_opencti_main_observable_type is not None
         ):
             self.opencti.log("info", "Creating Indicator {" + name + "}.")
             query = """
                 mutation IndicatorAdd($input: IndicatorAddInput) {
                     indicatorAdd(input: $input) {
                         id
-                        stix_id_key
+                        standard_id
                         entity_type
                         parent_types
-                        observableRefs {
+                        observables {
                             edges {
                                 node {
                                     id
+                                    standard_id
                                     entity_type
-                                    stix_id_key
-                                    observable_value
-                                }
-                                relation {
-                                    id
                                 }
                             }
-                        }                        
+                        }
                     }
                 }
             """
@@ -337,23 +325,27 @@ class Indicator:
                 query,
                 {
                     "input": {
-                        "name": name,
-                        "description": description,
-                        "indicator_pattern": indicator_pattern,
-                        "main_observable_type": main_observable_type,
-                        "pattern_type": pattern_type,
-                        "valid_from": valid_from,
-                        "valid_until": valid_until,
-                        "score": score,
-                        "detection": detection,
+                        "stix_id": stix_id,
+                        "createdBy": created_by,
+                        "objectMarking": object_marking,
+                        "objectLabel": object_label,
+                        "externalReferences": external_references,
+                        "revoked": revoked,
                         "confidence": confidence,
-                        "internal_id_key": id,
-                        "stix_id_key": stix_id_key,
+                        "lang": lang,
                         "created": created,
                         "modified": modified,
-                        "createdByRef": created_by_ref,
-                        "markingDefinitions": marking_definitions,
-                        "tags": tags,
+                        "pattern_type": pattern_type,
+                        "pattern_version": pattern_version,
+                        "pattern": pattern,
+                        "name": name,
+                        "description": description,
+                        "indicator_types": indicator_types,
+                        "valid_until": valid_until,
+                        "valid_from": valid_from,
+                        "x_opencti_score": x_opencti_score,
+                        "x_opencti_detection": x_opencti_detection,
+                        "x_opencti_main_observable_type": x_opencti_main_observable_type,
                         "killChainPhases": kill_chain_phases,
                     }
                 },
@@ -373,75 +365,74 @@ class Indicator:
     """
 
     def create(self, **kwargs):
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", None)
-        indicator_pattern = kwargs.get("indicator_pattern", None)
-        main_observable_type = kwargs.get("main_observable_type", None)
-        pattern_type = kwargs.get("pattern_type", None)
-        valid_from = kwargs.get("valid_from", None)
-        valid_until = kwargs.get("valid_until", None)
-        score = kwargs.get("score", None)
-        confidence = kwargs.get("confidence", 50)
-        detection = kwargs.get("detection", False)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
+        created_by = kwargs.get("createdBy", None)
+        object_marking = kwargs.get("objectMarking", None)
+        object_label = kwargs.get("objectLabel", None)
+        external_references = kwargs.get("externalReferences", None)
+        revoked = kwargs.get("revoked", None)
+        confidence = kwargs.get("confidence", None)
+        lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-        created_by_ref = kwargs.get("createdByRef", None)
-        marking_definitions = kwargs.get("markingDefinitions", None)
-        tags = kwargs.get("tags", None)
+        pattern_type = kwargs.get("pattern_type", None)
+        pattern_version = kwargs.get("pattern_version", None)
+        pattern = kwargs.get("pattern", None)
+        name = kwargs.get("name", None)
+        description = kwargs.get("description", None)
+        indicator_types = kwargs.get("indicator_types", None)
+        valid_from = kwargs.get("valid_from", None)
+        valid_until = kwargs.get("valid_until", None)
+        x_opencti_score = kwargs.get("x_opencti_score", 50)
+        x_opencti_detection = kwargs.get("x_opencti_detection", False)
+        x_opencti_main_observable_type = kwargs.get(
+            "x_opencti_main_observable_type", None
+        )
         kill_chain_phases = kwargs.get("killChainPhases", None)
         update = kwargs.get("update", False)
         custom_attributes = """
             id
+            standard_id
             entity_type
-            name
-            description
-            score
-            confidence
-            detection
-            createdByRef {
-                node {
+            parent_types
+            createdBy {
+                ... on Identity {
                     id
                 }
             }
             ... on Indicator {
-                observableRefs {
-                    edges {
-                        node {
-                            id
-                            entity_type
-                            stix_id_key
-                            observable_value
-                        }
-                        relation {
-                            id
-                        }
-                    }
-                }
+                pattern_type
+                pattern_version
+                pattern
+                name
+                description
+                indicator_types
+                valid_from
+                valid_until
+                x_opencti_score
+                x_opencti_detection
+                x_opencti_main_observable_type
             }
         """
         object_result = None
-        if stix_id_key is not None:
-            object_result = self.read(
-                id=stix_id_key, customAttributes=custom_attributes
-            )
+        if stix_id is not None:
+            object_result = self.read(id=stix_id, customAttributes=custom_attributes)
         if object_result is None:
             object_result = self.read(
                 filters=[
                     {
-                        "key": "indicator_pattern",
-                        "values": [indicator_pattern],
-                        "operator": "match" if len(indicator_pattern) > 500 else "eq",
+                        "key": "pattern",
+                        "values": [pattern],
+                        "operator": "match" if len(pattern) > 500 else "eq",
                     }
                 ],
                 customAttributes=custom_attributes,
             )
         if object_result is not None:
-            if update or object_result["createdByRefId"] == created_by_ref:
+            if update or object_result["createdById"] == created_by:
                 # name
                 if name is not None and object_result["name"] != name:
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="name", value=name
                     )
                     object_result["name"] = name
@@ -450,61 +441,70 @@ class Indicator:
                     self.opencti.not_empty(description)
                     and object_result["description"] != description
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="description", value=description
                     )
                     object_result["description"] = description
                 # score
-                if self.opencti.not_empty(score) and object_result["score"] != score:
-                    self.opencti.stix_domain_entity.update_field(
-                        id=object_result["id"], key="score", value=str(score)
+                if (
+                    self.opencti.not_empty(x_opencti_score)
+                    and object_result["x_opencti_score"] != x_opencti_score
+                ):
+                    self.opencti.stix_domain_object.update_field(
+                        id=object_result["id"],
+                        key="x_opencti_score",
+                        value=str(x_opencti_score),
                     )
-                    object_result["score"] = score
+                    object_result["x_opencti_score"] = x_opencti_score
                 # confidence
                 if (
                     self.opencti.not_empty(confidence)
                     and object_result["confidence"] != confidence
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"], key="confidence", value=str(confidence)
                     )
                     object_result["confidence"] = confidence
                 # detection
                 if (
-                    self.opencti.not_empty(detection)
-                    and object_result["detection"] != detection
+                    self.opencti.not_empty(x_opencti_detection)
+                    and object_result["x_opencti_detection"] != x_opencti_detection
                 ):
-                    self.opencti.stix_domain_entity.update_field(
+                    self.opencti.stix_domain_object.update_field(
                         id=object_result["id"],
-                        key="detection",
-                        value=str(detection).lower(),
+                        key="x_opencti_detection",
+                        value=str(x_opencti_detection).lower(),
                     )
-                    object_result["detection"] = detection
+                    object_result["x_opencti_detection"] = x_opencti_detection
             return object_result
         else:
             return self.create_raw(
-                name=name,
-                description=description,
-                indicator_pattern=indicator_pattern,
-                main_observable_type=main_observable_type,
-                pattern_type=pattern_type,
-                valid_from=valid_from,
-                valid_until=valid_until,
-                score=score,
-                detection=detection,
+                stix_id=stix_id,
+                createdBy=created_by,
+                objectMarking=object_marking,
+                objectLabel=object_label,
+                externalReferences=external_references,
+                revoked=revoked,
                 confidence=confidence,
-                id=id,
-                stix_id_key=stix_id_key,
+                lang=lang,
                 created=created,
                 modified=modified,
-                createdByRef=created_by_ref,
-                markingDefinitions=marking_definitions,
-                tags=tags,
+                pattern_type=pattern_type,
+                pattern_version=pattern_version,
+                pattern=pattern,
+                name=name,
+                description=description,
+                indicator_types=indicator_types,
+                valid_from=valid_from,
+                valid_until=valid_until,
+                x_opencti_score=x_opencti_score,
+                x_opencti_detection=x_opencti_detection,
+                x_opencti_main_observable_type=x_opencti_main_observable_type,
                 killChainPhases=kill_chain_phases,
             )
 
     """
-        Add a Stix-Observable object to Indicator object (observable_refs)
+        Add a Stix-Observable object to Indicator object (based-on)
 
         :param id: the id of the Indicator
         :param entity_id: the id of the Stix-Observable
@@ -514,8 +514,8 @@ class Indicator:
     def add_stix_observable(self, **kwargs):
         id = kwargs.get("id", None)
         indicator = kwargs.get("indicator", None)
-        stix_observable_id = kwargs.get("stix_observable_id", None)
-        if id is not None and stix_observable_id is not None:
+        stix_cyber_observable_id = kwargs.get("stix_cyber_observable_id", None)
+        if id is not None and stix_cyber_observable_id is not None:
             if indicator is None:
                 indicator = self.read(id=id)
             if indicator is None:
@@ -524,19 +524,19 @@ class Indicator:
                     "[opencti_indicator] Cannot add Object Ref, indicator not found",
                 )
                 return False
-            if stix_observable_id in indicator["observableRefsIds"]:
+            if stix_cyber_observable_id in indicator["observablesIds"]:
                 return True
             else:
                 self.opencti.log(
                     "info",
                     "Adding Stix-Observable {"
-                    + stix_observable_id
+                    + stix_cyber_observable_id
                     + "} to Indicator {"
                     + id
                     + "}",
                 )
                 query = """
-                   mutation IndicatorEdit($id: ID!, $input: RelationAddInput) {
+                   mutation IndicatorEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
                        indicatorEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
@@ -549,10 +549,8 @@ class Indicator:
                     {
                         "id": id,
                         "input": {
-                            "fromRole": "observables_aggregation",
-                            "toId": stix_observable_id,
-                            "toRole": "soo",
-                            "through": "observable_refs",
+                            "toId": stix_cyber_observable_id,
+                            "through": "based-on",
                         },
                     },
                 )
@@ -560,7 +558,7 @@ class Indicator:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_indicator] Missing parameters: id and stix_observable_id",
+                "[opencti_indicator] Missing parameters: id and stix cyber_observable_id",
             )
             return False
 
@@ -576,53 +574,60 @@ class Indicator:
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
         if stix_object is not None:
-            pattern_type = "stix"
-            if CustomProperties.PATTERN_TYPE in stix_object:
-                pattern_type = stix_object[CustomProperties.PATTERN_TYPE]
-            elif "pattern_type" in stix_object:
-                pattern_type = stix_object["pattern_type"]
             return self.create(
+                stix_id=stix_object["id"],
+                createdBy=extras["created_by_id"]
+                if "created_by_id" in extras
+                else None,
+                objectMarking=extras["object_marking_ids"]
+                if "object_marking_ids" in extras
+                else None,
+                objectLabel=extras["object_label_ids"]
+                if "object_label_ids" in extras
+                else [],
+                externalReferences=extras["external_references_ids"]
+                if "external_references_ids" in extras
+                else [],
+                revoked=stix_object["revoked"] if "revoked" in stix_object else None,
+                confidence=stix_object["confidence"]
+                if "confidence" in stix_object
+                else None,
+                lang=stix_object["lang"] if "lang" in stix_object else None,
+                created=stix_object["created"] if "created" in stix_object else None,
+                modified=stix_object["modified"] if "modified" in stix_object else None,
+                pattern_type=stix_object["pattern_type"]
+                if "pattern_type" in stix_object
+                else None,
+                pattern_version=stix_object["pattern_version"]
+                if "pattern_version" in stix_object
+                else None,
+                pattern=stix_object["pattern"] if "pattern" in stix_object else "",
                 name=stix_object["name"] if "name" in stix_object else "",
                 description=self.opencti.stix2.convert_markdown(
                     stix_object["description"]
                 )
                 if "description" in stix_object
                 else "",
-                indicator_pattern=stix_object[CustomProperties.INDICATOR_PATTERN]
-                if CustomProperties.INDICATOR_PATTERN in stix_object
-                else stix_object["pattern"],
-                main_observable_type=stix_object[CustomProperties.OBSERVABLE_TYPE]
-                if CustomProperties.OBSERVABLE_TYPE in stix_object
-                else "Unknown",
-                pattern_type=pattern_type,
+                indicator_types=stix_object["indicator_types"]
+                if "indicator_types" in stix_object
+                else "",
                 valid_from=stix_object["valid_from"]
                 if "valid_from" in stix_object
-                else None,
+                else "",
                 valid_until=stix_object["valid_until"]
                 if "valid_until" in stix_object
-                else None,
-                score=stix_object[CustomProperties.SCORE]
-                if CustomProperties.SCORE in stix_object
-                else None,
-                confidence=stix_object["confidence"]
-                if "confidence" in stix_object
+                else "",
+                x_opencti_score=stix_object["x_opencti_score"]
+                if "x_opencti_score" in stix_object
                 else 50,
-                detection=stix_object[CustomProperties.DETECTION]
-                if CustomProperties.DETECTION in stix_object
-                else None,
-                id=stix_object[CustomProperties.ID]
-                if CustomProperties.ID in stix_object
-                else None,
-                stix_id_key=stix_object["id"] if "id" in stix_object else None,
-                created=stix_object["created"] if "created" in stix_object else None,
-                modified=stix_object["modified"] if "modified" in stix_object else None,
-                createdByRef=extras["created_by_ref_id"]
-                if "created_by_ref_id" in extras
-                else None,
-                markingDefinitions=extras["marking_definitions_ids"]
-                if "marking_definitions_ids" in extras
-                else None,
-                tags=extras["tags_ids"] if "tags_ids" in extras else [],
+                x_opencti_detection=stix_object["x_opencti_detection"]
+                if "x_opencti_detection" in stix_object
+                else False,
+                x_opencti_main_observable_type=stix_object[
+                    "x_opencti_main_observable_type"
+                ]
+                if "x_opencti_main_observable_type" in stix_object
+                else "Unknown",
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
                 else None,
@@ -632,55 +637,3 @@ class Indicator:
             self.opencti.log(
                 "error", "[opencti_attack_pattern] Missing parameters: stixObject"
             )
-
-    """
-        Export an Indicator object in STIX2
-    
-        :param id: the id of the Indicator
-        :return Indicator object
-    """
-
-    def to_stix2(self, **kwargs):
-        id = kwargs.get("id", None)
-        mode = kwargs.get("mode", "simple")
-        max_marking_definition_entity = kwargs.get(
-            "max_marking_definition_entity", None
-        )
-        entity = kwargs.get("entity", None)
-        if id is not None and entity is None:
-            entity = self.read(id=id)
-        if entity is not None:
-            indicator = dict()
-            indicator["id"] = entity["stix_id_key"]
-            indicator["type"] = "indicator"
-            indicator["spec_version"] = SPEC_VERSION
-            indicator["name"] = entity["name"]
-            if self.opencti.not_empty(entity["stix_label"]):
-                indicator["labels"] = entity["stix_label"]
-            else:
-                indicator["labels"] = ["indicator"]
-            if self.opencti.not_empty(entity["description"]):
-                indicator["description"] = entity["description"]
-            indicator["pattern"] = entity["indicator_pattern"]
-            indicator["valid_from"] = self.opencti.stix2.format_date(
-                entity["valid_from"]
-            )
-            indicator["valid_until"] = self.opencti.stix2.format_date(
-                entity["valid_until"]
-            )
-            if self.opencti.not_empty(entity["pattern_type"]):
-                indicator["pattern_type"] = entity["pattern_type"]
-            else:
-                indicator["pattern_type"] = "stix"
-            indicator["created"] = self.opencti.stix2.format_date(entity["created"])
-            indicator["modified"] = self.opencti.stix2.format_date(entity["modified"])
-            if self.opencti.not_empty(entity["alias"]):
-                indicator[CustomProperties.ALIASES] = entity["alias"]
-            if self.opencti.not_empty(entity["score"]):
-                indicator[CustomProperties.SCORE] = entity["score"]
-            indicator[CustomProperties.ID] = entity["id"]
-            return self.opencti.stix2.prepare_export(
-                entity, indicator, mode, max_marking_definition_entity
-            )
-        else:
-            self.opencti.log("error", "Missing parameters: id or entity")

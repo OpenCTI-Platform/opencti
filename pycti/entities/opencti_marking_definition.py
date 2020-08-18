@@ -8,12 +8,13 @@ class MarkingDefinition:
         self.opencti = opencti
         self.properties = """
             id
-            stix_id_key
+            standard_id
             entity_type
+            parent_types
             definition_type
             definition
-            level
-            color
+            x_opencti_order
+            x_opencti_color
             created
             modified
             created_at
@@ -130,14 +131,13 @@ class MarkingDefinition:
     """
 
     def create_raw(self, **kwargs):
-        definition_type = kwargs.get("definition_type", None)
-        definition = kwargs.get("definition", None)
-        level = kwargs.get("level", 0)
-        color = kwargs.get("color", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
+        definition_type = kwargs.get("definition_type", None)
+        definition = kwargs.get("definition", None)
+        x_opencti_order = kwargs.get("x_opencti_order", 0)
+        x_opencti_color = kwargs.get("x_opencti_color", None)
 
         if definition is not None and definition_type is not None:
             query = (
@@ -157,10 +157,9 @@ class MarkingDefinition:
                     "input": {
                         "definition_type": definition_type,
                         "definition": definition,
-                        "internal_id_key": id,
-                        "level": level,
-                        "color": color,
-                        "stix_id_key": stix_id_key,
+                        "x_opencti_order": x_opencti_order,
+                        "x_opencti_color": x_opencti_color,
+                        "stix_id": stix_id,
                         "created": created,
                         "modified": modified,
                     }
@@ -184,18 +183,16 @@ class MarkingDefinition:
     """
 
     def create(self, **kwargs):
-        definition_type = kwargs.get("definition_type", None)
-        definition = kwargs.get("definition", None)
-        level = kwargs.get("level", 0)
-        color = kwargs.get("color", None)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
-
+        definition_type = kwargs.get("definition_type", None)
+        definition = kwargs.get("definition", None)
+        x_opencti_order = kwargs.get("x_opencti_order", 0)
+        x_opencti_color = kwargs.get("x_opencti_color", None)
         object_result = None
-        if stix_id_key is not None:
-            object_result = self.read(id=stix_id_key)
+        if stix_id is not None:
+            object_result = self.read(id=stix_id)
         if object_result is None:
             object_result = self.read(
                 filters=[
@@ -209,10 +206,53 @@ class MarkingDefinition:
             return self.create_raw(
                 definition_type=definition_type,
                 definition=definition,
-                level=level,
-                color=color,
-                id=id,
-                stix_id_key=stix_id_key,
+                x_opencti_order=x_opencti_order,
+                x_opencti_color=x_opencti_color,
+                stix_id=stix_id,
                 created=created,
                 modified=modified,
+            )
+
+    """
+        Import an Marking Definition object from a STIX2 object
+
+        :param stixObject: the MarkingDefinition
+        :return MarkingDefinition object
+    """
+
+    def import_from_stix2(self, **kwargs):
+        stix_object = kwargs.get("stixObject", None)
+        if stix_object is not None:
+            definition_type = stix_object["definition_type"]
+            definition = stix_object["definition"][stix_object["definition_type"]]
+            if stix_object["definition_type"] == "tlp":
+                definition_type = definition_type.upper()
+                definition = (
+                    definition_type + ":" + stix_object["definition"]["tlp"].upper()
+                )
+
+            # TODO: Compatibility with OpenCTI 3.X to be REMOVED
+            if "x_opencti_order" not in stix_object:
+                stix_object["x_opencti_order"] = (
+                    stix_object["x_opencti_level"]
+                    if "x_opencti_level" in stix_object
+                    else 0
+                )
+
+            return self.opencti.marking_definition.create(
+                stix_id=stix_object["id"],
+                created=stix_object["created"] if "created" in stix_object else None,
+                modified=stix_object["modified"] if "modified" in stix_object else None,
+                definition_type=definition_type,
+                definition=definition,
+                x_opencti_order=stix_object["x_opencti_order"]
+                if "x_opencti_order" in stix_object
+                else 0,
+                x_opencti_color=stix_object["x_opencti_color"]
+                if "x_opencti_color" in stix_object
+                else None,
+            )
+        else:
+            self.opencti.log(
+                "error", "[opencti_marking_definition] Missing parameters: stixObject"
             )

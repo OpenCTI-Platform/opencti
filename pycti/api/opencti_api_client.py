@@ -12,24 +12,29 @@ from typing import Union
 
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_job import OpenCTIApiJob
-from pycti.utils.constants import ObservableTypes
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
-from pycti.entities.opencti_tag import Tag
+from pycti.entities.opencti_label import Label
 from pycti.entities.opencti_marking_definition import MarkingDefinition
 from pycti.entities.opencti_external_reference import ExternalReference
 from pycti.entities.opencti_kill_chain_phase import KillChainPhase
-from pycti.entities.opencti_stix_entity import StixEntity
-from pycti.entities.opencti_stix_domain_entity import StixDomainEntity
-from pycti.entities.opencti_stix_observable import StixObservable
-from pycti.entities.opencti_stix_relation import StixRelation
-from pycti.entities.opencti_stix_sighting import StixSighting
-from pycti.entities.opencti_stix_observable_relation import StixObservableRelation
+from pycti.entities.opencti_stix_object_or_stix_relationship import (
+    StixObjectOrStixRelationship,
+)
+from pycti.entities.opencti_stix_domain_object import StixDomainObject
+from pycti.entities.opencti_stix_cyber_observable import StixCyberObservable
+from pycti.entities.opencti_stix_core_relationship import StixCoreRelationship
+from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
+from pycti.entities.opencti_stix_cyber_observable_relation import (
+    StixCyberObservableRelation,
+)
 from pycti.entities.opencti_identity import Identity
+from pycti.entities.opencti_location import Location
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_intrusion_set import IntrusionSet
+from pycti.entities.opencti_infrastructure import Infrastructure
 from pycti.entities.opencti_campaign import Campaign
-from pycti.entities.opencti_incident import Incident
+from pycti.entities.opencti_x_opencti_incident import XOpenCTIIncident
 from pycti.entities.opencti_malware import Malware
 from pycti.entities.opencti_tool import Tool
 from pycti.entities.opencti_vulnerability import Vulnerability
@@ -37,6 +42,7 @@ from pycti.entities.opencti_attack_pattern import AttackPattern
 from pycti.entities.opencti_course_of_action import CourseOfAction
 from pycti.entities.opencti_report import Report
 from pycti.entities.opencti_note import Note
+from pycti.entities.opencti_observed_data import ObservedData
 from pycti.entities.opencti_opinion import Opinion
 from pycti.entities.opencti_indicator import Indicator
 
@@ -103,21 +109,25 @@ class OpenCTIApiClient:
         self.stix2 = OpenCTIStix2(self)
 
         # Define the entities
-        self.tag = Tag(self)
+        self.label = Label(self)
         self.marking_definition = MarkingDefinition(self)
         self.external_reference = ExternalReference(self)
         self.kill_chain_phase = KillChainPhase(self)
-        self.stix_entity = StixEntity(self)
-        self.stix_domain_entity = StixDomainEntity(self, File)
-        self.stix_observable = StixObservable(self)
-        self.stix_relation = StixRelation(self)
-        self.stix_sighting = StixSighting(self)
-        self.stix_observable_relation = StixObservableRelation(self)
+        self.opencti_stix_object_or_stix_relationship = StixObjectOrStixRelationship(
+            self
+        )
+        self.stix_domain_object = StixDomainObject(self, File)
+        self.stix_cyber_observable = StixCyberObservable(self)
+        self.stix_core_relationship = StixCoreRelationship(self)
+        self.stix_sighting_relationship = StixSightingRelationship(self)
+        self.stix_observable_relation = StixCyberObservableRelation(self)
         self.identity = Identity(self)
+        self.location = Location(self)
         self.threat_actor = ThreatActor(self)
         self.intrusion_set = IntrusionSet(self)
+        self.infrastructure = Infrastructure(self)
         self.campaign = Campaign(self)
-        self.incident = Incident(self)
+        self.x_opencti_incident = XOpenCTIIncident(self)
         self.malware = Malware(self)
         self.tool = Tool(self)
         self.vulnerability = Vulnerability(self)
@@ -125,6 +135,7 @@ class OpenCTIApiClient:
         self.course_of_action = CourseOfAction(self)
         self.report = Report(self)
         self.note = Note(self)
+        self.observed_data = ObservedData(self)
         self.opinion = Opinion(self)
         self.indicator = Indicator(self)
 
@@ -357,6 +368,8 @@ class OpenCTIApiClient:
                     return True
                 else:
                     return False
+            if isinstance(value, dict):
+                return bool(value)
             if isinstance(value, list):
                 is_not_empty = False
                 for v in value:
@@ -390,18 +403,10 @@ class OpenCTIApiClient:
             data["edges"] if "edges" in data and data["edges"] is not None else []
         ):
             row = edge["node"]
-            # Handle remote relation ID
-            if (
-                "relation" in edge
-                and edge["relation"] is not None
-                and "id" in edge["relation"]
-            ):
-                row["remote_relation_id"] = edge["relation"]["id"]
             if with_pagination:
                 result["entities"].append(self.process_multiple_fields(row))
             else:
                 result.append(self.process_multiple_fields(row))
-
         if with_pagination and "pageInfo" in data:
             result["pagination"] = data["pageInfo"]
         return result
@@ -433,30 +438,30 @@ class OpenCTIApiClient:
 
         if data is None:
             return data
-        if (
-            "createdByRef" in data
-            and data["createdByRef"] is not None
-            and "node" in data["createdByRef"]
-        ):
-            row = data["createdByRef"]["node"]
-            # Handle remote relation ID
-            if "relation" in data["createdByRef"]:
-                row["remote_relation_id"] = data["createdByRef"]["relation"]["id"]
-            data["createdByRef"] = row
-            data["createdByRefId"] = row["id"]
+        if "createdBy" in data and data["createdBy"] is not None:
+            data["createdById"] = data["createdBy"]["id"]
+            if "objectMarking" in data["createdBy"]:
+                data["createdBy"]["objectMarking"] = self.process_multiple(
+                    data["createdBy"]["objectMarking"]
+                )
+                data["createdBy"]["objectMarkingIds"] = self.process_multiple_ids(
+                    data["createdBy"]["objectMarking"]
+                )
+            if "objectLabel" in data["createdBy"]:
+                data["createdBy"]["objectLabel"] = self.process_multiple(
+                    data["createdBy"]["objectLabel"]
+                )
+                data["createdBy"]["objectLabelIds"] = self.process_multiple_ids(
+                    data["createdBy"]["objectLabel"]
+                )
         else:
-            data["createdByRef"] = None
-            data["createdByRefId"] = None
-        if "markingDefinitions" in data:
-            data["markingDefinitions"] = self.process_multiple(
-                data["markingDefinitions"]
-            )
-            data["markingDefinitionsIds"] = self.process_multiple_ids(
-                data["markingDefinitions"]
-            )
-        if "tags" in data:
-            data["tags"] = self.process_multiple(data["tags"])
-            data["tagsIds"] = self.process_multiple_ids(data["tags"])
+            data["createdById"] = None
+        if "objectMarking" in data:
+            data["objectMarking"] = self.process_multiple(data["objectMarking"])
+            data["objectMarkingIds"] = self.process_multiple_ids(data["objectMarking"])
+        if "objectLabel" in data:
+            data["objectLabel"] = self.process_multiple(data["objectLabel"])
+            data["objectLabelIds"] = self.process_multiple_ids(data["objectLabel"])
         if "reports" in data:
             data["reports"] = self.process_multiple(data["reports"])
             data["reportsIds"] = self.process_multiple_ids(data["reports"])
@@ -478,20 +483,19 @@ class OpenCTIApiClient:
             data["externalReferencesIds"] = self.process_multiple_ids(
                 data["externalReferences"]
             )
-        if "objectRefs" in data:
-            data["objectRefs"] = self.process_multiple(data["objectRefs"])
-            data["objectRefsIds"] = self.process_multiple_ids(data["objectRefs"])
-        if "observableRefs" in data:
-            data["observableRefs"] = self.process_multiple(data["observableRefs"])
-            data["observableRefsIds"] = self.process_multiple_ids(
-                data["observableRefs"]
+        if "objects" in data:
+            data["objects"] = self.process_multiple(data["objects"])
+            data["objectsIds"] = self.process_multiple_ids(data["objects"])
+        if "observables" in data:
+            data["observables"] = self.process_multiple(data["observables"])
+            data["observablesIds"] = self.process_multiple_ids(data["observables"])
+        if "stixCoreRelationships" in data:
+            data["stixCoreRelationships"] = self.process_multiple(
+                data["stixCoreRelationships"]
             )
-        if "relationRefs" in data:
-            data["relationRefs"] = self.process_multiple(data["relationRefs"])
-            data["relationRefsIds"] = self.process_multiple_ids(data["relationRefs"])
-        if "stixRelations" in data:
-            data["stixRelations"] = self.process_multiple(data["stixRelations"])
-            data["stixRelationsIds"] = self.process_multiple_ids(data["stixRelations"])
+            data["stixCoreRelationshipsIds"] = self.process_multiple_ids(
+                data["stixCoreRelationships"]
+            )
         if "indicators" in data:
             data["indicators"] = self.process_multiple(data["indicators"])
             data["indicatorsIds"] = self.process_multiple_ids(data["indicators"])
@@ -530,348 +534,4 @@ class OpenCTIApiClient:
             self.log(
                 "error", "[upload] Missing parameters: file_name or data",
             )
-            return None
-
-    # TODO Move to ExternalReference
-    def delete_external_reference(self, id):
-        logging.info("Deleting + " + id + "...")
-        query = """
-             mutation ExternalReferenceEdit($id: ID!) {
-                 externalReferenceEdit(id: $id) {
-                     delete
-                 }
-             }
-         """
-        self.query(query, {"id": id})
-
-    def resolve_role(self, relation_type, from_type, to_type):
-        """resolves the role for a specified entity
-
-        :param relation_type: input relation type
-        :type relation_type: str
-        :param from_type: entity type
-        :type from_type: str
-        :param to_type: entity type
-        :type to_type: str
-        :return: returns the role mapping
-        :rtype: dict
-        """
-
-        if from_type == "stix-relation":
-            from_type = "stix_relation"
-        if to_type == "stix-relation":
-            to_type = "stix_relation"
-        if relation_type == "related-to":
-            return {"from_role": "relate_from", "to_role": "relate_to"}
-        if relation_type == "linked":
-            return {"from_role": "link_from", "to_role": "link_to"}
-        relation_type = relation_type.lower()
-        from_type = from_type.lower()
-        from_type = (
-            "observable"
-            if (
-                (
-                    ObservableTypes.has_value(from_type)
-                    and (
-                        relation_type == "localization" or relation_type == "gathering"
-                    )
-                )
-                or from_type == "stix-observable"
-            )
-            else from_type
-        )
-        to_type = to_type.lower()
-        mapping = {
-            "uses": {
-                "threat-actor": {
-                    "malware": {"from_role": "user", "to_role": "usage"},
-                    "tool": {"from_role": "user", "to_role": "usage"},
-                    "attack-pattern": {"from_role": "user", "to_role": "usage"},
-                },
-                "intrusion-set": {
-                    "malware": {"from_role": "user", "to_role": "usage"},
-                    "tool": {"from_role": "user", "to_role": "usage"},
-                    "attack-pattern": {"from_role": "user", "to_role": "usage"},
-                },
-                "campaign": {
-                    "malware": {"from_role": "user", "to_role": "usage"},
-                    "tool": {"from_role": "user", "to_role": "usage"},
-                    "attack-pattern": {"from_role": "user", "to_role": "usage"},
-                },
-                "incident": {
-                    "malware": {"from_role": "user", "to_role": "usage"},
-                    "tool": {"from_role": "user", "to_role": "usage"},
-                    "attack-pattern": {"from_role": "user", "to_role": "usage"},
-                },
-                "malware": {
-                    "tool": {"from_role": "user", "to_role": "usage"},
-                    "attack-pattern": {"from_role": "user", "to_role": "usage"},
-                },
-                "tool": {"attack-pattern": {"from_role": "user", "to_role": "usage"}},
-            },
-            "variant-of": {
-                "malware": {
-                    "malware": {"from_role": "variation", "to_role": "original"},
-                },
-                "tool": {"tool": {"from_role": "variation", "to_role": "original"},},
-            },
-            "targets": {
-                "threat-actor": {
-                    "identity": {"from_role": "source", "to_role": "target"},
-                    "sector": {"from_role": "source", "to_role": "target"},
-                    "region": {"from_role": "source", "to_role": "target"},
-                    "country": {"from_role": "source", "to_role": "target"},
-                    "city": {"from_role": "source", "to_role": "target"},
-                    "organization": {"from_role": "source", "to_role": "target"},
-                    "user": {"from_role": "source", "to_role": "target"},
-                    "vulnerability": {"from_role": "source", "to_role": "target"},
-                },
-                "intrusion-set": {
-                    "identity": {"from_role": "source", "to_role": "target"},
-                    "sector": {"from_role": "source", "to_role": "target"},
-                    "region": {"from_role": "source", "to_role": "target"},
-                    "country": {"from_role": "source", "to_role": "target"},
-                    "city": {"from_role": "source", "to_role": "target"},
-                    "organization": {"from_role": "source", "to_role": "target"},
-                    "user": {"from_role": "source", "to_role": "target"},
-                    "vulnerability": {"from_role": "source", "to_role": "target"},
-                },
-                "campaign": {
-                    "identity": {"from_role": "source", "to_role": "target"},
-                    "sector": {"from_role": "source", "to_role": "target"},
-                    "region": {"from_role": "source", "to_role": "target"},
-                    "country": {"from_role": "source", "to_role": "target"},
-                    "city": {"from_role": "source", "to_role": "target"},
-                    "organization": {"from_role": "source", "to_role": "target"},
-                    "user": {"from_role": "source", "to_role": "target"},
-                    "vulnerability": {"from_role": "source", "to_role": "target"},
-                },
-                "incident": {
-                    "identity": {"from_role": "source", "to_role": "target"},
-                    "sector": {"from_role": "source", "to_role": "target"},
-                    "region": {"from_role": "source", "to_role": "target"},
-                    "country": {"from_role": "source", "to_role": "target"},
-                    "city": {"from_role": "source", "to_role": "target"},
-                    "organization": {"from_role": "source", "to_role": "target"},
-                    "user": {"from_role": "source", "to_role": "target"},
-                    "vulnerability": {"from_role": "source", "to_role": "target"},
-                },
-                "malware": {
-                    "identity": {"from_role": "source", "to_role": "target"},
-                    "sector": {"from_role": "source", "to_role": "target"},
-                    "region": {"from_role": "source", "to_role": "target"},
-                    "country": {"from_role": "source", "to_role": "target"},
-                    "city": {"from_role": "source", "to_role": "target"},
-                    "organization": {"from_role": "source", "to_role": "target"},
-                    "user": {"from_role": "source", "to_role": "target"},
-                    "vulnerability": {"from_role": "source", "to_role": "target"},
-                },
-                "attack-pattern": {
-                    "vulnerability": {"from_role": "source", "to_role": "target"},
-                },
-            },
-            "attributed-to": {
-                "threat-actor": {
-                    "identity": {"from_role": "attribution", "to_role": "origin"},
-                    "organization": {"from_role": "attribution", "to_role": "origin"},
-                    "user": {"from_role": "attribution", "to_role": "origin"},
-                },
-                "intrusion-set": {
-                    "identity": {"from_role": "attribution", "to_role": "origin"},
-                    "threat-actor": {"from_role": "attribution", "to_role": "origin"},
-                },
-                "campaign": {
-                    "identity": {"from_role": "attribution", "to_role": "origin"},
-                    "threat-actor": {"from_role": "attribution", "to_role": "origin"},
-                    "intrusion-set": {"from_role": "attribution", "to_role": "origin"},
-                },
-                "incident": {
-                    "identity": {"from_role": "attribution", "to_role": "origin"},
-                    "threat-actor": {"from_role": "attribution", "to_role": "origin"},
-                    "intrusion-set": {"from_role": "attribution", "to_role": "origin"},
-                    "campaign": {"from_role": "attribution", "to_role": "origin"},
-                },
-                "malware": {
-                    "identity": {"from_role": "attribution", "to_role": "origin"},
-                    "threat-actor": {"from_role": "attribution", "to_role": "origin"},
-                },
-            },
-            "mitigates": {
-                "course-of-action": {
-                    "attack-pattern": {"from_role": "mitigation", "to_role": "problem"}
-                }
-            },
-            "localization": {
-                "threat-actor": {
-                    "region": {"from_role": "localized", "to_role": "location"},
-                    "country": {"from_role": "localized", "to_role": "location"},
-                    "city": {"from_role": "localized", "to_role": "location"},
-                },
-                "observable": {
-                    "region": {"from_role": "localized", "to_role": "location"},
-                    "country": {"from_role": "localized", "to_role": "location"},
-                    "city": {"from_role": "localized", "to_role": "location"},
-                },
-                "stix_relation": {
-                    "region": {"from_role": "localized", "to_role": "location"},
-                    "country": {"from_role": "localized", "to_role": "location"},
-                    "city": {"from_role": "localized", "to_role": "location"},
-                },
-                "region": {"region": {"from_role": "localized", "to_role": "location"}},
-                "country": {
-                    "region": {"from_role": "localized", "to_role": "location"}
-                },
-                "city": {"country": {"from_role": "localized", "to_role": "location"}},
-                "organization": {
-                    "region": {"from_role": "localized", "to_role": "location"},
-                    "country": {"from_role": "localized", "to_role": "location"},
-                    "city": {"from_role": "localized", "to_role": "location"},
-                },
-                "user": {
-                    "region": {"from_role": "localized", "to_role": "location"},
-                    "country": {"from_role": "localized", "to_role": "location"},
-                    "city": {"from_role": "localized", "to_role": "location"},
-                },
-            },
-            "indicates": {
-                "indicator": {
-                    "threat-actor": {
-                        "from_role": "indicator",
-                        "to_role": "characterize",
-                    },
-                    "intrusion-set": {
-                        "from_role": "indicator",
-                        "to_role": "characterize",
-                    },
-                    "campaign": {"from_role": "indicator", "to_role": "characterize"},
-                    "malware": {"from_role": "indicator", "to_role": "characterize"},
-                    "tool": {"from_role": "indicator", "to_role": "characterize"},
-                    "attack-pattern": {
-                        "from_role": "indicator",
-                        "to_role": "characterize",
-                    },
-                    "stix_relation": {
-                        "from_role": "indicator",
-                        "to_role": "characterize",
-                    },
-                }
-            },
-            "gathering": {
-                "threat-actor": {
-                    "organization": {"from_role": "part_of", "to_role": "gather"},
-                },
-                "sector": {
-                    "sector": {"from_role": "part_of", "to_role": "gather"},
-                    "organization": {"from_role": "part_of", "to_role": "gather"},
-                },
-                "organization": {
-                    "sector": {"from_role": "part_of", "to_role": "gather"},
-                    "organization": {"from_role": "part_of", "to_role": "gather"},
-                },
-                "user": {
-                    "organization": {"from_role": "part_of", "to_role": "gather"},
-                },
-                "observable": {
-                    "organization": {"from_role": "part_of", "to_role": "gather"},
-                    "user": {"from_role": "part_of", "to_role": "gather"},
-                },
-            },
-            "drops": {
-                "malware": {
-                    "malware": {"from_role": "dropping", "to_role": "dropped"},
-                    "tool": {"from_role": "dropping", "to_role": "dropped"},
-                },
-                "tool": {
-                    "malware": {"from_role": "dropping", "to_role": "dropped"},
-                    "tool": {"from_role": "dropping", "to_role": "dropped"},
-                },
-            },
-            "belongs": {
-                "ipv4-addr": {
-                    "autonomous-system": {
-                        "from_role": "belonging_to",
-                        "to_role": "belonged_to",
-                    }
-                },
-                "ipv6-addr": {
-                    "autonomous-system": {
-                        "from_role": "belonging_to",
-                        "to_role": "belonged_to",
-                    }
-                },
-            },
-            "resolves": {
-                "ipv4-addr": {
-                    "domain": {"from_role": "resolving", "to_role": "resolved",}
-                },
-                "ipv6-addr": {
-                    "domain": {"from_role": "resolving", "to_role": "resolved",}
-                },
-            },
-            "corresponds": {
-                "file-name": {
-                    "file-md5": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-sha1": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-sha256": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                },
-                "file-md5": {
-                    "file-name": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-sha1": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-sha256": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                },
-                "file-sha1": {
-                    "file-name": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-md5": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-sha256": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                },
-                "file-sha256": {
-                    "file-name": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-md5": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                    "file-sha1": {
-                        "from_role": "correspond_from",
-                        "to_role": "correspond_to",
-                    },
-                },
-            },
-        }
-        if (
-            relation_type in mapping
-            and from_type in mapping[relation_type]
-            and to_type in mapping[relation_type][from_type]
-        ):
-            return mapping[relation_type][from_type][to_type]
-        else:
             return None

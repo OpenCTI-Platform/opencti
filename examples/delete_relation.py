@@ -20,14 +20,14 @@ malware = opencti_api_client.intrusion_set.read(
 )
 
 # Get the relations between APT28 and DealersChoice
-relations = opencti_api_client.stix_relation.list(
+relations = opencti_api_client.stix_core_relationship.list(
     fromId=intrusion_set["id"],
     fromTypes=["Intrusion-Set"],
     toId=malware["id"],
     toTypes=["Malware"],
-    relationType="uses",
+    relationship_type="uses",
 )
 
 # Delete the relations
 for relation in relations:
-    opencti_api_client.stix_relation.delete(id=relation["id"])
+    opencti_api_client.stix_core_relationship.delete(id=relation["id"])

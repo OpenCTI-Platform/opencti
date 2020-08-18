@@ -27,7 +27,7 @@ Submodules
    pycti.entities.opencti_note
    pycti.entities.opencti_opinion
    pycti.entities.opencti_report
-   pycti.entities.opencti_stix_domain_entity
+   pycti.entities.opencti_stix_domain_object
    pycti.entities.opencti_stix_entity
    pycti.entities.opencti_stix_observable
    pycti.entities.opencti_stix_observable_relation

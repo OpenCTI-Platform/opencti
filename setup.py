@@ -5,7 +5,7 @@ import sys
 from setuptools import setup
 from setuptools.command.install import install
 
-VERSION = "3.3.3"
+VERSION = "4.0.0"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -50,14 +50,14 @@ setup(
     ],
     include_package_data=True,
     install_requires=[
-        "requests==2.23.0",
+        "requests==2.24.0",
         "PyYAML==5.3.1",
         "python-dateutil==2.8.1",
-        "datefinder==0.7.1",
-        "stix2==1.4.0",
+        "datefinder==0.7.0",
+        "stix2==2.0.2",
         "pytz==2020.1",
         "pika==1.1.0",
-        "python-magic==0.4.15;sys.platform=='linux' or sys.platform=='darwin'",
+        "python-magic==0.4.18;sys.platform=='linux' or sys.platform=='darwin'",
         "python-magic-bin==0.4.14;sys.platform=='win32'",
     ],
     cmdclass={"verify": VerifyVersionCommand},

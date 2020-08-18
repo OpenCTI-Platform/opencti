@@ -8,11 +8,12 @@ class KillChainPhase:
         self.opencti = opencti
         self.properties = """
             id
+            standard_id
             entity_type
-            stix_id_key
+            parent_types
             kill_chain_name
             phase_name
-            phase_order
+            x_opencti_order
             created
             modified
             created_at
@@ -126,13 +127,12 @@ class KillChainPhase:
     """
 
     def create_raw(self, **kwargs):
-        kill_chain_name = kwargs.get("kill_chain_name", None)
-        phase_name = kwargs.get("phase_name", None)
-        phase_order = kwargs.get("phase_order", 0)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
+        kill_chain_name = kwargs.get("kill_chain_name", None)
+        phase_name = kwargs.get("phase_name", None)
+        x_opencti_order = kwargs.get("x_opencti_order", 0)
 
         if kill_chain_name is not None and phase_name is not None:
             self.opencti.log("info", "Creating Kill-Chain-Phase {" + phase_name + "}.")
@@ -151,13 +151,12 @@ class KillChainPhase:
                 query,
                 {
                     "input": {
-                        "kill_chain_name": kill_chain_name,
-                        "phase_name": phase_name,
-                        "phase_order": phase_order,
-                        "internal_id_key": id,
-                        "stix_id_key": stix_id_key,
+                        "stix_id": stix_id,
                         "created": created,
                         "modified": modified,
+                        "kill_chain_name": kill_chain_name,
+                        "phase_name": phase_name,
+                        "x_opencti_order": x_opencti_order,
                     }
                 },
             )
@@ -178,13 +177,12 @@ class KillChainPhase:
     """
 
     def create(self, **kwargs):
-        kill_chain_name = kwargs.get("kill_chain_name", None)
-        phase_name = kwargs.get("phase_name", None)
-        phase_order = kwargs.get("phase_order", 0)
-        id = kwargs.get("id", None)
-        stix_id_key = kwargs.get("stix_id_key", None)
+        stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
+        kill_chain_name = kwargs.get("kill_chain_name", None)
+        phase_name = kwargs.get("phase_name", None)
+        x_opencti_order = kwargs.get("x_opencti_order", 0)
 
         kill_chain_phase_result = self.read(
             filters=[
@@ -196,11 +194,10 @@ class KillChainPhase:
             return kill_chain_phase_result
         else:
             return self.create_raw(
-                kill_chain_name=kill_chain_name,
-                phase_name=phase_name,
-                phase_order=phase_order,
-                id=id,
-                stix_id_key=stix_id_key,
+                stix_id=stix_id,
                 created=created,
                 modified=modified,
+                kill_chain_name=kill_chain_name,
+                phase_name=phase_name,
+                x_opencti_order=x_opencti_order,
             )

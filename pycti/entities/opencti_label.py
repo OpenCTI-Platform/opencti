@@ -3,12 +3,11 @@
 import json
 
 
-class Tag:
+class Label:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
             id
-            tag_type
             value
             color
             created_at
@@ -16,12 +15,12 @@ class Tag:
         """
 
     """
-        List Tag objects
+        List Label objects
 
         :param filters: the filters to apply
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of Tag objects
+        :return List of Label objects
     """
 
     def list(self, **kwargs):
@@ -36,12 +35,12 @@ class Tag:
             first = 500
 
         self.opencti.log(
-            "info", "Listing Tags with filters " + json.dumps(filters) + "."
+            "info", "Listing Labels with filters " + json.dumps(filters) + "."
         )
         query = (
             """
-            query Tags($filters: [TagsFiltering], $first: Int, $after: ID, $orderBy: TagsOrdering, $orderMode: OrderingMode) {
-                tags(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query Labels($filters: [LabelsFiltering], $first: Int, $after: ID, $orderBy: LabelsOrdering, $orderMode: OrderingMode) {
+                labels(filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -70,25 +69,25 @@ class Tag:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["tags"], with_pagination)
+        return self.opencti.process_multiple(result["data"]["labels"], with_pagination)
 
     """
-        Read a Tag object
+        Read a Label object
 
-        :param id: the id of the Tag
+        :param id: the id of the Label
         :param filters: the filters to apply if no id provided
-        :return Marking-Definition object
+        :return Label object
     """
 
     def read(self, **kwargs):
         id = kwargs.get("id", None)
         filters = kwargs.get("filters", None)
         if id is not None:
-            self.opencti.log("info", "Reading Tag {" + id + "}.")
+            self.opencti.log("info", "Reading label {" + id + "}.")
             query = (
                 """
-                query Tag($id: String!) {
-                    tag(id: $id) {
+                query Label($id: String!) {
+                    label(id: $id) {
                         """
                 + self.properties
                 + """
@@ -97,7 +96,7 @@ class Tag:
             """
             )
             result = self.opencti.query(query, {"id": id})
-            return self.opencti.process_multiple_fields(result["data"]["tag"])
+            return self.opencti.process_multiple_fields(result["data"]["label"])
         elif filters is not None:
             result = self.list(filters=filters)
             if len(result) > 0:
@@ -105,29 +104,29 @@ class Tag:
             else:
                 return None
         else:
-            self.opencti.log("error", "[opencti_tag] Missing parameters: id or filters")
+            self.opencti.log(
+                "error", "[opencti_label] Missing parameters: id or filters"
+            )
             return None
 
     """
-        Create a Tag object
+        Create a Label object
 
-        :param tag_type: the tag type
         :param value: the value
         :param color: the color
-        :return Tag object
+        :return label object
     """
 
     def create_raw(self, **kwargs):
-        tag_type = kwargs.get("tag_type", None)
+        stix_id = kwargs.get("stix_id", None)
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
-        id = kwargs.get("id", None)
 
-        if tag_type is not None and value is not None and color is not None:
+        if value is not None:
             query = (
                 """
-                mutation TagAdd($input: TagAddInput) {
-                    tagAdd(input: $input) {
+                mutation LabelAdd($input: LabelAddInput) {
+                    labelAdd(input: $input) {
                         """
                 + self.properties
                 + """
@@ -136,40 +135,28 @@ class Tag:
             """
             )
             result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "tag_type": tag_type,
-                        "value": value,
-                        "color": color,
-                        "internal_id_key": id,
-                    }
-                },
+                query, {"input": {"stix_id": stix_id, "value": value, "color": color,}},
             )
-            return self.opencti.process_multiple_fields(result["data"]["tagAdd"])
+            return self.opencti.process_multiple_fields(result["data"]["labelAdd"])
         else:
             self.opencti.log(
-                "error",
-                "[opencti_tag] Missing parameters: tag_type and value and color",
+                "error", "[opencti_label] Missing parameters: value",
             )
 
     """
-        Create a Tag object only if it not exists, update it on request
+        Create a Label object only if it not exists, update it on request
 
-        :param tag_type: the tag type
         :param value: the value
         :param color: the color
-        :return Tag object
+        :return Label object
     """
 
     def create(self, **kwargs):
-        tag_type = kwargs.get("tag_type", None)
+        stix_id = kwargs.get("stix_id", None)
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
-        id = kwargs.get("id", None)
-
         object_result = self.read(filters=[{"key": "value", "values": [value]}])
         if object_result is not None:
             return object_result
         else:
-            return self.create_raw(tag_type=tag_type, value=value, color=color, id=id)
+            return self.create_raw(stix_id=stix_id, value=value, color=color)
