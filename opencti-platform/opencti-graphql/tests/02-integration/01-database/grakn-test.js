@@ -388,7 +388,7 @@ describe('Grakn entities listing', () => {
     const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
     const locations = await listEntities(['Location'], ['name'], options);
     expect(locations.edges.length).toEqual(6);
-    const firstResults = ['Hietzing'];
+    const firstResults = ['Hietzing', 'Western Europe'];
     expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
     const lastResults = ['Western Europe'];
     expect(includes(last(locations.edges).node.name, lastResults)).toBeTruthy();
