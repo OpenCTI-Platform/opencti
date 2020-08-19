@@ -292,7 +292,7 @@ describe('Opinion resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        field: 'created_by_ref.name',
+        field: 'created-by.name',
         operation: 'count',
       },
     });

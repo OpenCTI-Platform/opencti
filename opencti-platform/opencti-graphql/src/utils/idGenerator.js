@@ -663,7 +663,7 @@ const generateStixCyberObservableUUID = (type, data) => {
       throw DatabaseError(`Unknown observable type`);
   }
 };
-const generateInternalObjectId = (type, data) => {
+export const generateInternalObjectId = (type, data) => {
   const prefix = convertEntityTypeToStixType(type);
   const id = generateInternalObjectUUID(type, data);
   return `${prefix}--${id}`;

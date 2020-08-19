@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
-import { v5 as uuid5 } from 'uuid';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { OPENCTI_NAMESPACE } from '../../../src/utils/idGenerator';
+import { ENTITY_TYPE_CAPABILITY, generateInternalObjectId } from '../../../src/utils/idGenerator';
+import { elLoadByStandardId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query roles($first: Int, $after: ID, $orderBy: RolesOrdering, $orderMode: OrderingMode, $search: String) {
@@ -132,6 +132,8 @@ describe('Role resolver standard behavior', () => {
     expect(queryResult.data.roleEdit.contextClean.id).toEqual(roleInternalId);
   });
   it('should add relation in role', async () => {
+    const capabilityId = generateInternalObjectId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
+    const capability = await elLoadByStandardId(capabilityId);
     const RELATION_ADD_QUERY = gql`
       mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         roleEdit(id: $id) {
@@ -141,6 +143,7 @@ describe('Role resolver standard behavior', () => {
               ... on Role {
                 capabilities {
                   id
+                  standard_id
                   name
                 }
               }
@@ -154,7 +157,7 @@ describe('Role resolver standard behavior', () => {
       variables: {
         id: roleInternalId,
         input: {
-          toId: uuid5('KNOWLEDGE', OPENCTI_NAMESPACE),
+          toId: capability.internal_id,
           relationship_type: 'has-capability',
         },
       },

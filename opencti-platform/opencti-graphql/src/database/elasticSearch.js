@@ -757,6 +757,9 @@ const elInternalLoadById = async (id, type = null, elementTypes = ['internal_id'
 export const elLoadById = (id, type = null, indices = DATA_INDICES) => {
   return elInternalLoadById(id, type, ['internal_id'], indices);
 };
+export const elLoadByStandardId = (id, type = null, indices = DATA_INDICES) => {
+  return elInternalLoadById(id, type, ['standard_id'], indices);
+};
 export const elLoadByStixId = (id, type = null, indices = DATA_INDICES) => {
   return elInternalLoadById(id, type, ['standard_id', 'stix_ids'], indices);
 };

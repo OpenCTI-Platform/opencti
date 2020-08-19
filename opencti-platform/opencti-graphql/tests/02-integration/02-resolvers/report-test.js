@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { now } from '../../../src/database/grakn';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query reports(
@@ -26,6 +27,7 @@ const LIST_QUERY = gql`
           id
           name
           description
+          published
         }
       }
     }
@@ -85,8 +87,10 @@ const READ_QUERY = gql`
   query report($id: String!) {
     report(id: $id) {
       id
+      standard_id
       name
       description
+      published
       toStix
     }
   }
@@ -94,24 +98,32 @@ const READ_QUERY = gql`
 
 describe('Report resolver standard behavior', () => {
   let reportInternalId;
-  const reportStixId = 'report--aa0d4d61-0fc5-4f8b-9b7b-c7ddcf1d3111';
+  let datasetReportInternalId;
+  let datasetMalwareInternalId;
+  const reportStixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f53';
   it('should report created', async () => {
     const CREATE_QUERY = gql`
       mutation ReportAdd($input: ReportAddInput) {
         reportAdd(input: $input) {
           id
+          standard_id
           name
           description
+          published
         }
       }
     `;
     // Create the report
     const REPORT_TO_CREATE = {
       input: {
-        name: 'Report',
         stix_id: reportStixId,
+        name: 'Report',
         description: 'Report description',
         published: '2020-02-26T00:51:35.000Z',
+        objects: [
+          'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+          'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
+        ],
       },
     };
     const report = await queryAsAdmin({
@@ -136,16 +148,25 @@ describe('Report resolver standard behavior', () => {
     expect(queryResult.data.report).not.toBeNull();
     expect(queryResult.data.report.id).toEqual(reportInternalId);
   });
-  it('should report stix domain entities accurate', async () => {
+  it('should report stix objects sor stix relationships accurate', async () => {
+    const report = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    datasetReportInternalId = report.internal_id;
     const REPORT_STIX_DOMAIN_ENTITIES = gql`
       query report($id: String!) {
         report(id: $id) {
           id
+          standard_id
           objects {
             edges {
               node {
-                id
-                standard_id
+                ... on BasicObject {
+                  id
+                  standard_id
+                }
+                ... on BasicRelationship {
+                  id
+                  standard_id
+                }
               }
             }
           }
@@ -154,92 +175,48 @@ describe('Report resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: REPORT_STIX_DOMAIN_ENTITIES,
-      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+      variables: { id: datasetReportInternalId },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
-    expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
-    expect(queryResult.data.report.objectRefs.edges.length).toEqual(14);
+    expect(queryResult.data.report.standard_id).toEqual('report--eb147aa9-f6e7-5b5d-9026-63337bb48a45');
+    expect(queryResult.data.report.objects.edges.length).toEqual(18);
   });
-  it('should report contains stix domain entity accurate', async () => {
-    const REPORT_CONTAINS_STIX_DOMAIN_ENTITY = gql`
-      query reportContainsStixDomainEntity($id: String!, $objectId: String!) {
-        reportContainsStixDomainEntity(id: $id, objectId: $objectId)
+  it('should report contains stix object or stix relationship accurate', async () => {
+    const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const stixRelationship = await elLoadByStixId('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    const REPORT_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
+      query reportContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
+        reportContainsStixObjectOrStixRelationship(
+          id: $id
+          stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId
+        )
       }
     `;
-    const queryResult = await queryAsAdmin({
-      query: REPORT_CONTAINS_STIX_DOMAIN_ENTITY,
-      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732', objectId: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' },
+    let queryResult = await queryAsAdmin({
+      query: REPORT_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
+      variables: {
+        id: datasetReportInternalId,
+        stixObjectOrStixRelationshipId: intrusionSet.internal_id,
+      },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.reportContainsStixDomainEntity).not.toBeNull();
-    expect(queryResult.data.reportContainsStixDomainEntity).toBeTruthy();
-  });
-  it('should report stix relations accurate', async () => {
-    const REPORT_STIX_RELATIONS = gql`
-      query report($id: String!) {
-        report(id: $id) {
-          id
-          relationRefs {
-            edges {
-              node {
-                id
-              }
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: REPORT_STIX_RELATIONS,
-      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
+    expect(queryResult.data.reportContainsStixObjectOrStixRelationship).not.toBeNull();
+    expect(queryResult.data.reportContainsStixObjectOrStixRelationship).toBeTruthy();
+    queryResult = await queryAsAdmin({
+      query: REPORT_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
+      variables: {
+        id: datasetReportInternalId,
+        stixObjectOrStixRelationshipId: stixRelationship.internal_id,
+      },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).not.toBeNull();
-    expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
-    expect(queryResult.data.report.relationRefs.edges.length).toEqual(11);
-  });
-  it('should report contains stix relation accurate', async () => {
-    const REPORT_CONTAINS_STIX_RELATION = gql`
-      query reportContainsStixRelation($id: String!, $objectId: String!) {
-        reportContainsStixRelation(id: $id, objectId: $objectId)
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: REPORT_CONTAINS_STIX_RELATION,
-      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732', objectId: 'c094dbfe-7034-45f6-a283-b00b6a740b6c' },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.reportContainsStixRelation).not.toBeNull();
-    expect(queryResult.data.reportContainsStixRelation).toBeTruthy();
-  });
-  it('should report stix observables accurate', async () => {
-    const REPORT_STIX_OBSERVABLES = gql`
-      query report($id: String!) {
-        report(id: $id) {
-          id
-          observableRefs {
-            edges {
-              node {
-                id
-              }
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: REPORT_STIX_OBSERVABLES,
-      variables: { id: '685aac19-d2f6-4835-a256-0631bb322732' },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.report).not.toBeNull();
-    expect(queryResult.data.report.id).toEqual('685aac19-d2f6-4835-a256-0631bb322732');
-    expect(queryResult.data.report.observableRefs.edges.length).toEqual(6);
+    expect(queryResult.data.reportContainsStixObjectOrStixRelationship).not.toBeNull();
+    expect(queryResult.data.reportContainsStixObjectOrStixRelationship).toBeTruthy();
   });
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.reports.edges.length).toEqual(2);
+    expect(queryResult.data.reports.edges.length).toEqual(7);
   });
   it('should timeseries reports to be accurate', async () => {
     const queryResult = await queryAsAdmin({
@@ -253,14 +230,16 @@ describe('Report resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.reportsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.reportsTimeSeries[1].value).toEqual(1);
     expect(queryResult.data.reportsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.reportsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries reports for entity to be accurate', async () => {
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    datasetMalwareInternalId = malware.internal_id;
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        objectId: datasetMalwareInternalId,
         field: 'published',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
@@ -269,14 +248,15 @@ describe('Report resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.reportsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.reportsTimeSeries[1].value).toEqual(0);
     expect(queryResult.data.reportsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.reportsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries reports for author to be accurate', async () => {
+    const identity = await elLoadByStixId('identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        authorId: 'c79e5d9f-4321-4174-b120-7cd9342ec88a',
+        authorId: identity.internal_id,
         field: 'published',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
@@ -285,8 +265,8 @@ describe('Report resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.reportsTimeSeries.length).toEqual(13);
-    expect(queryResult.data.reportsTimeSeries[1].value).toEqual(0);
     expect(queryResult.data.reportsTimeSeries[2].value).toEqual(1);
+    expect(queryResult.data.reportsTimeSeries[3].value).toEqual(0);
   });
   it('should reports number to be accurate', async () => {
     const queryResult = await queryAsAdmin({
@@ -295,25 +275,25 @@ describe('Report resolver standard behavior', () => {
         endDate: now(),
       },
     });
-    expect(queryResult.data.reportsNumber.total).toEqual(2);
-    expect(queryResult.data.reportsNumber.count).toEqual(2);
+    expect(queryResult.data.reportsNumber.total).toEqual(7);
+    expect(queryResult.data.reportsNumber.count).toEqual(7);
   });
   it('should reports number by entity to be accurate', async () => {
     const queryResult = await queryAsAdmin({
       query: NUMBER_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        objectId: datasetMalwareInternalId,
         endDate: now(),
       },
     });
-    expect(queryResult.data.reportsNumber.total).toEqual(1);
-    expect(queryResult.data.reportsNumber.count).toEqual(1);
+    expect(queryResult.data.reportsNumber.total).toEqual(4);
+    expect(queryResult.data.reportsNumber.count).toEqual(4);
   });
   it('should reports distribution to be accurate', async () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        field: 'created_by_ref.name',
+        field: 'created-by.name',
         operation: 'count',
       },
     });
@@ -323,12 +303,12 @@ describe('Report resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
-        field: 'created_by_ref.name',
+        objectId: datasetMalwareInternalId,
+        field: 'created-by.name',
         operation: 'count',
       },
     });
-    expect(queryResult.data.reportsDistribution[0].label).toEqual('ANSSI');
+    expect(queryResult.data.reportsDistribution[0].label).toEqual('Kaspersky');
     expect(queryResult.data.reportsDistribution[0].value).toEqual(1);
   });
   it('should update report', async () => {
@@ -338,6 +318,8 @@ describe('Report resolver standard behavior', () => {
           fieldPatch(input: $input) {
             id
             name
+            description
+            published
           }
         }
       }
