@@ -546,6 +546,18 @@ const reportId = (data) => {
   const { name, published } = data;
   return openctiId({ name, published: published?.toISOString() });
 };
+const noteId = (data) => {
+  const { attribute_abstract: attributeAbstract, content } = data;
+  return openctiId({ attributeAbstract, content });
+};
+const opinionId = (data) => {
+  const { explanation, opinion } = data;
+  return openctiId({ explanation, opinion });
+};
+const observedDataId = (data) => {
+  const { first_observed: firstObserved, last_observed: lastObserved } = data;
+  return openctiId({ first_observed: firstObserved?.toISOString(), last_observed: lastObserved?.toISOString() });
+};
 const indicatorId = (data) => {
   return openctiId({ pattern: data.pattern });
 };
@@ -582,6 +594,12 @@ const generateStixDomainObjectUUID = (type, data) => {
       return attackPatternId(data);
     case ENTITY_TYPE_CONTAINER_REPORT:
       return reportId(data);
+    case ENTITY_TYPE_CONTAINER_NOTE:
+      return noteId(data);
+    case ENTITY_TYPE_CONTAINER_OPINION:
+      return opinionId(data);
+    case ENTITY_TYPE_CONTAINER_OBSERVED_DATA:
+      return observedDataId(data);
     case ENTITY_TYPE_INDICATOR:
       return indicatorId(data);
     default:

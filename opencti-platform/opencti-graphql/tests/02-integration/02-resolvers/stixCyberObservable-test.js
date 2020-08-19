@@ -24,7 +24,6 @@ const LIST_QUERY = gql`
         node {
           id
           observable_value
-          description
         }
       }
     }
@@ -36,7 +35,6 @@ const READ_QUERY = gql`
     stixCyberObservable(id: $id) {
       id
       observable_value
-      description
       toStix
     }
   }
@@ -47,21 +45,22 @@ describe('StixCyberObservable resolver standard behavior', () => {
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
   it('should stixCyberObservable created', async () => {
     const CREATE_QUERY = gql`
-      mutation StixCyberObservableAdd($input: StixCyberObservableAddInput) {
-        stixCyberObservableAdd(input: $input) {
+      mutation StixCyberObservableAdd($type: String!, $IPv4Addr: IPv4AddrAddInput) {
+        stixCyberObservableAdd(type: $type, IPv4Addr: $IPv4Addr) {
           id
           observable_value
-          description
+          ... on IPv4Addr {
+            value
+          }
         }
       }
     `;
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       input: {
-        type: 'IPv4-Addr',
-        observable_value: '8.8.8.8',
         stix_id: stixCyberObservableStixId,
-        description: 'StixCyberObservable description',
+        type: 'IPv4-Addr',
+        value: '8.8.8.8',
       },
     };
     const stixCyberObservable = await queryAsAdmin({
@@ -90,7 +89,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
         stixCyberObservableEdit(id: $id) {
           fieldPatch(input: $input) {
             id
-            description
+            x_opencti_score
           }
         }
       }
@@ -99,10 +98,10 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: {
         id: stixCyberObservableInternalId,
-        input: { key: 'description', value: ['StixCyberObservable - test'] },
+        input: { key: 'x_opencti_score', value: '20' },
       },
     });
-    expect(queryResult.data.stixCyberObservableEdit.fieldPatch.description).toEqual('StixCyberObservable - test');
+    expect(queryResult.data.stixCyberObservableEdit.fieldPatch.x_opencti_score).toEqual(20);
   });
   it('should context patch stixCyberObservable', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -201,8 +200,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
       mutation NoteAdd($input: NoteAddInput) {
         noteAdd(input: $input) {
           id
-          name
-          description
+          attribute_abstract
           content
         }
       }
@@ -210,10 +208,9 @@ describe('StixCyberObservable resolver standard behavior', () => {
     // Create the note
     const NOTE_TO_CREATE = {
       input: {
-        name: 'Note',
-        description: 'Note description',
+        attribute_abstract: 'Note description',
         content: 'Test content',
-        observableRefs: [stixCyberObservableInternalId],
+        objects: [stixCyberObservableInternalId],
       },
     };
     const note = await queryAsAdmin({
@@ -222,7 +219,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
     });
     expect(note).not.toBeNull();
     expect(note.data.noteAdd).not.toBeNull();
-    expect(note.data.noteAdd.name).toEqual('Note');
+    expect(note.data.noteAdd.attribute_abstract).toEqual('Note description');
     const noteInternalId = note.data.noteAdd.id;
     const DELETE_QUERY = gql`
       mutation noteDelete($id: ID!) {
@@ -240,8 +237,9 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query note($id: String!) {
         note(id: $id) {
           id
-          name
-          description
+          standard_id
+          attribute_abstract
+          content
         }
       }
     `;

@@ -23,8 +23,10 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
-          name
-          description
+          ... on Report {
+            name
+            description
+          }
         }
       }
     }
@@ -35,12 +37,14 @@ const READ_QUERY = gql`
   query stixDomainObject($id: String!) {
     stixDomainObject(id: $id) {
       id
-      name
-      description
       toStix
       editContext {
         focusOn
         name
+      }
+      ... on Report {
+        name
+        description
       }
     }
   }
@@ -54,14 +58,16 @@ describe('StixDomainObject resolver standard behavior', () => {
       mutation StixDomainObjectAdd($input: StixDomainObjectAddInput) {
         stixDomainObjectAdd(input: $input) {
           id
-          name
-          description
-          tags {
+          objectLabel {
             edges {
               node {
                 id
               }
             }
+          }
+          ... on Report {
+            name
+            description
           }
         }
       }
@@ -73,7 +79,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         type: 'Report',
         stix_id: stixDomainObjectStixId,
         description: 'StixDomainObject description',
-        tags: ['ebd3398f-2189-4597-b994-5d1ab310d4bc', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
+        objectLabel: ['ebd3398f-2189-4597-b994-5d1ab310d4bc', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
       },
     };
     const stixDomainObject = await queryAsAdmin({

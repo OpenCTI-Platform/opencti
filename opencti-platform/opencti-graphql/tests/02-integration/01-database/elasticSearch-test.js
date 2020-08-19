@@ -317,11 +317,8 @@ describe('Elasticsearch relation reconstruction', () => {
     expect(relation.toRole).toEqual(CONN_MARKING_ROLE);
   });
   it('Relation reconstruct with internal_id', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MALWARE_ID, { alias: 'from', internalIdKey: CONN_MALWARE_ID, role: undefined });
-    relationMap.set(CONN_MARKING_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
     const concept = buildRelationConcept('object-marking');
-    const relation = elReconstructRelation(concept, relationMap);
+    const relation = elReconstructRelation(concept);
     expect(relation.internal_id).toEqual(concept.internal_id);
     expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);

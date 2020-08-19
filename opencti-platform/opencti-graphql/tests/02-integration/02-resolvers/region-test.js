@@ -131,7 +131,7 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult.data.region.isSubRegion).toBeTruthy();
     expect(queryResult.data.region.parentRegions.edges.length).toEqual(1);
     expect(queryResult.data.region.parentRegions.edges[0].node.standard_id).toEqual(
-      'location--cb729867-02b4-58b2-b9b9-193fd45be9dc'
+      'location--2669797f-1726-5f75-85cb-3bf05e69bfe7'
     );
   });
   it('should list regions', async () => {

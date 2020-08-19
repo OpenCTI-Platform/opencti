@@ -30,12 +30,10 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     // Create the stixCoreRelationship
     const STIX_RELATION_TO_CREATE = {
       input: {
-        fromId: 'fab6fa99-b07f-4278-86b4-b674edf60877',
-        fromRole: 'user',
-        toId: 'dcbadcd2-9359-48ac-8b86-88e38a092a2b',
-        toRole: 'usage',
-        relationship_type: 'uses',
         stix_id: stixCoreRelationshipStixId,
+        fromId: 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+        toId: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17',
+        relationship_type: 'uses',
         description: 'StixCoreRelationship description',
       },
     };
