@@ -35,12 +35,14 @@ const READ_QUERY = gql`
   query tool($id: String!) {
     tool(id: $id) {
       id
+      standard_id
       name
       description
       killChainPhases {
         edges {
           node {
             id
+            standard_id
           }
         }
       }

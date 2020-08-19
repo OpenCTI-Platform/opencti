@@ -8,7 +8,6 @@ import {
   executeWrite,
   getRelationInferredById,
   getSingleValueNumber,
-  internalLoadEntityById,
   listFromEntitiesThroughRelation,
   listRelations,
   listToEntitiesThroughRelation,
@@ -19,16 +18,14 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
   isInternalId,
@@ -36,7 +33,6 @@ import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
-  RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,

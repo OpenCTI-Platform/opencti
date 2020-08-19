@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { authentication } from '../../../src/domain/user';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE, generateInternalObjectId } from '../../../src/utils/idGenerator';
+import { ENTITY_TYPE_ROLE, generateInternalObjectId } from '../../../src/utils/idGenerator';
 import { elLoadByStandardId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
@@ -44,14 +44,19 @@ const READ_QUERY = gql`
   query user($id: String!) {
     user(id: $id) {
       id
+      standard_id
       name
       description
       roles {
+        id
+        standard_id
         name
         description
         default_assignation
       }
       capabilities {
+        id
+        standard_id
         name
         description
       }
@@ -64,12 +69,13 @@ describe('User resolver standard behavior', () => {
   let userInternalId;
   let groupInternalId;
   let userToken;
-  const userStixId = 'identity--a186efb8-5e41-4082-817e-993e378d32f0';
+  let userStandardId;
   it('should user created', async () => {
     const CREATE_QUERY = gql`
       mutation UserAdd($input: UserAddInput) {
         userAdd(input: $input) {
           id
+          standard_id
           name
           user_email
           firstname
@@ -81,7 +87,6 @@ describe('User resolver standard behavior', () => {
     const USER_TO_CREATE = {
       input: {
         name: 'User',
-        stix_id: userStixId,
         description: 'User description',
         password: 'user',
         user_email: 'user@mail.com',
@@ -97,6 +102,7 @@ describe('User resolver standard behavior', () => {
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
     userInternalId = user.data.userAdd.id;
+    userStandardId = user.data.userAdd.standard_id;
   });
   it('should user loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
@@ -104,27 +110,11 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
   });
-  it('should user loaded by stix id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStixId } });
+  it('should user loaded by standard id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
-  });
-  it('should me loaded', async () => {
-    // TODO: Ask to Julien
-    /*
-    const userResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
-    const ME_QUERY = gql`
-      query me {
-        me {
-          id
-        }
-      }
-    `;
-    const queryResult = await queryAsUser(userResult.data.user, { query: ME_QUERY });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.me).not.toBeNull();
-    expect(queryResult.data.me.id).toEqual(userInternalId); */
   });
   it('should user roles to be accurate', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
@@ -280,7 +270,7 @@ describe('User resolver standard behavior', () => {
     expect(group.data.groupAdd.name).toEqual('Group in user');
     groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation UserEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         userEdit(id: $id) {
           relationAdd(input: $input) {
             id
@@ -289,9 +279,6 @@ describe('User resolver standard behavior', () => {
                 groups {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -307,10 +294,8 @@ describe('User resolver standard behavior', () => {
       variables: {
         id: userInternalId,
         input: {
-          fromRole: 'member',
           toId: group.data.groupAdd.id,
-          toRole: 'grouping',
-          through: 'membership',
+          relationship_type: 'member-of',
         },
       },
     });
@@ -369,7 +354,7 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStixId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).toBeNull();
   });

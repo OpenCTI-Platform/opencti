@@ -37,6 +37,8 @@ import {
 } from '../database/grakn';
 import {
   ABSTRACT_INTERNAL_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
@@ -44,6 +46,7 @@ import {
   ENTITY_TYPE_USER,
   generateStandardId,
   isInternalRelationship,
+  isStixMetaRelationship,
   OPENCTI_ADMIN_UUID,
   RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
@@ -257,14 +260,18 @@ export const roleEditField = (user, roleId, input) => {
 };
 
 export const roleAddRelation = async (user, roleId, input) => {
-  const finalInput = pipe(assoc('fromId', roleId), assoc('relationship_type', RELATION_HAS_CAPABILITY))(input);
-  const data = await createRelation(user, finalInput, { noLog: true });
-  // Clear cache of every user with this modified role
-  const impactedUsers = await findAll({
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
+  const role = await loadEntityById(roleId, ENTITY_TYPE_ROLE);
+  if (!role) {
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`);
+  }
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  const finalInput = assoc('fromId', roleId, input);
+  return createRelation(user, finalInput).then((relationData) => {
+    notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
+    return relationData;
   });
-  await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, data, user);
 };
 
 export const roleDeleteRelation = async (user, roleId, toId, relationshipType) => {
@@ -309,10 +316,18 @@ export const userDelete = async (user, userId) => {
 };
 
 export const userAddRelation = async (user, userId, input) => {
-  const finalInput = pipe(assoc('fromId', userId), assoc('fromType', ENTITY_TYPE_USER))(input);
-  const data = await createRelation(user, finalInput);
-  await clearUserTokenCache(userId);
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, data, user);
+  const userData = await loadEntityById(userId, ENTITY_TYPE_USER);
+  if (!userData) {
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
+  }
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  const finalInput = assoc('fromId', userId, input);
+  return createRelation(user, finalInput).then((relationData) => {
+    notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
+    return relationData;
+  });
 };
 
 export const userDeleteRelation = async (user, userId, toId, relationshipType) => {
@@ -326,6 +341,7 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
   await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP, {
     noLog: true,
   });
+  await clearUserTokenCache(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
 

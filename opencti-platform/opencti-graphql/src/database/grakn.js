@@ -60,7 +60,6 @@ import {
   isStixMetaObject,
   isStixMetaRelationship,
   isStixObject,
-  isStixRelationship,
   isStixRelationShipExceptMeta,
   isStixSightingRelationship,
   RELATION_CREATED_BY,
