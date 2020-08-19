@@ -38,9 +38,6 @@ const xOpenCTIIncidentResolvers = {
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
-  XOpenCTIIncident: {
-    observables: (incident) => observables(incident.id),
-  },
   Mutation: {
     xOpenCTIIncidentEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),

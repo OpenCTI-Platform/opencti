@@ -5,7 +5,7 @@ import {
   createRelation,
   createRelations,
   deleteEntityById,
-  deleteRelationById,
+  deleteRelationsByFromAndTo,
   escapeString,
   executeWrite,
   getSingleValueNumber,
@@ -16,9 +16,15 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { findAll as findAllStixDomains } from './stixDomainObject';
-import { ForbiddenAccess } from '../config/errors';
-import { ENTITY_TYPE_WORKSPACE, RELATION_OBJECT } from '../utils/idGenerator';
+import { findAll as findAllStixDomains } from './workspace';
+import { FunctionalError } from '../config/errors';
+import {
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  ENTITY_TYPE_WORKSPACE,
+  isInternalRelationship,
+  isStixMetaRelationship,
+  RELATION_OBJECT,
+} from '../utils/idGenerator';
 
 // region grakn fetch
 export const findById = (workspaceId) => {
@@ -61,42 +67,58 @@ export const workspacesNumber = (args) => {
 
 // region mutations
 export const addWorkspace = async (user, workspace) => {
-  const workspaceToCreate = assoc('createdByOwner', user.id, workspace);
-  const created = await createEntity(user, workspaceToCreate, ENTITY_TYPE_WORKSPACE, {
+  const created = await createEntity(user, workspace, ENTITY_TYPE_WORKSPACE, {
     noLog: true,
   });
-  return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
 
 export const workspaceDelete = (user, workspaceId) =>
   deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE, { noLog: true });
 
-export const workspaceAddRelation = (user, workspaceId, input) => {
-  if (!input.through) throw ForbiddenAccess();
-  const finalInput = pipe(assoc('fromId', workspaceId), assoc('fromType', ENTITY_TYPE_WORKSPACE))(input);
-  return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
+export const workspaceAddRelation = async (user, workspaceId, input) => {
+  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  if (!workspace) {
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_WORKSPACE} cannot be found.`);
+  }
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  const finalInput = assoc('fromId', workspaceId, input);
+  return createRelation(user, finalInput).then((relationData) => {
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
+
 export const workspaceAddRelations = async (user, workspaceId, input) => {
-  if (!input.through) {
-    throw ForbiddenAccess();
+  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  if (!workspace) {
+    throw FunctionalError('Cannot add the relation, Stix-Domain-Object cannot be found.');
   }
-  const finalInputs = map(
-    (n) => ({
-      fromType: ENTITY_TYPE_WORKSPACE,
-      fromRole: input.fromRole,
-      toId: n,
-      toRole: input.toRole,
-      through: input.through,
-    }),
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  const finalInput = map(
+    (n) => ({ fromId: workspaceId, toId: n, relationship_type: input.relationship_type }),
     input.toIds
   );
-  await createRelations(user, workspaceId, finalInputs);
-  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  await createRelations(user, finalInput);
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user)
   );
+};
+
+export const workspaceDeleteRelation = async (user, workspaceId, toId, relationshipType) => {
+  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  if (!workspace) {
+    throw FunctionalError('Cannot delete the relation, Stix-Domain-Object cannot be found.');
+  }
+  if (!isStixMetaRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(user, workspaceId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 
 export const workspaceEditField = (user, workspaceId, input) => {
@@ -104,14 +126,8 @@ export const workspaceEditField = (user, workspaceId, input) => {
     return updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, wTx, { noLog: true });
   }).then(async () => {
     const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
-    return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
+    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
   });
-};
-
-export const workspaceDeleteRelation = async (user, workspaceId, relationId) => {
-  await deleteRelationById(user, relationId, 'stix_relation');
-  const data = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
-  return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, data, user);
 };
 // endregion
 
@@ -119,14 +135,14 @@ export const workspaceDeleteRelation = async (user, workspaceId, relationId) => 
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
   return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user)
   );
 };
 
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
   return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user)
   );
 };
 // endregion

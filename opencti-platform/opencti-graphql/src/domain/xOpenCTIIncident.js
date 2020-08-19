@@ -35,15 +35,6 @@ export const xOpenCTIIncidentsTimeSeries = (args) => {
 };
 // endregion
 
-export const observables = (reportId) => {
-  return listToEntitiesThroughRelation(
-    reportId,
-    ABSTRACT_STIX_CYBER_OBSERVABLE,
-    RELATION_RELATED_TO,
-    ENTITY_TYPE_X_OPENCTI_INCIDENT
-  );
-};
-
 export const addXOpenCTIIncident = async (user, incident) => {
   const currentDate = now();
   const incidentToCreate = pipe(

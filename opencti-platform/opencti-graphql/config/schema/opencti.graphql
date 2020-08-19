@@ -3943,7 +3943,6 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
   first_seen: DateTime
   last_seen: DateTime
   objective: String
-  observables: StixCyberObservableConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection

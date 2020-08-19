@@ -37,8 +37,6 @@ import {
 } from '../database/grakn';
 import {
   ABSTRACT_INTERNAL_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
@@ -46,7 +44,6 @@ import {
   ENTITY_TYPE_USER,
   generateStandardId,
   isInternalRelationship,
-  isStixMetaRelationship,
   OPENCTI_ADMIN_UUID,
   RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
@@ -268,7 +265,7 @@ export const roleAddRelation = async (user, roleId, input) => {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', roleId, input);
-  return createRelation(user, finalInput).then((relationData) => {
+  return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -324,7 +321,7 @@ export const userAddRelation = async (user, userId, input) => {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', userId, input);
-  return createRelation(user, finalInput).then((relationData) => {
+  return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
     return relationData;
   });

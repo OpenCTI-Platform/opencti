@@ -7,7 +7,6 @@ import {
   escapeString,
   executeWrite,
   getRelationInferredById,
-  internalLoadEntityById,
   listFromEntitiesThroughRelation,
   listRelations,
   listToEntitiesThroughRelation,

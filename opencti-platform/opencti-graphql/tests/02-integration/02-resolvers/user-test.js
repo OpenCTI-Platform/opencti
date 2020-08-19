@@ -294,7 +294,7 @@ describe('User resolver standard behavior', () => {
       variables: {
         id: userInternalId,
         input: {
-          toId: group.data.groupAdd.id,
+          toId: groupInternalId,
           relationship_type: 'member-of',
         },
       },
@@ -322,8 +322,8 @@ describe('User resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: userInternalId,
-        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
-        relationship_type: 'object-marking',
+        toId: groupInternalId,
+        relationship_type: 'member-of',
       },
     });
     expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(0);

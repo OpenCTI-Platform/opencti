@@ -29,7 +29,6 @@ import { generateFileExportName, upload } from '../database/minio';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
