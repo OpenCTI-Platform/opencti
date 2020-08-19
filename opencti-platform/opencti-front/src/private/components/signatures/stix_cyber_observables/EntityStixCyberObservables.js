@@ -29,7 +29,8 @@ class EntityStixCyberObservables extends Component {
     if (this.state.targetStixDomainObjectTypes.includes(type)) {
       this.setState({
         targetStixDomainObjectTypes:
-          filter((t) => t !== type, this.state.targetStixDomainObjectTypes).length === 0
+          filter((t) => t !== type, this.state.targetStixDomainObjectTypes)
+            .length === 0
             ? ['Stix-Cyber-Observable']
             : filter((t) => t !== type, this.state.targetStixDomainObjectTypes),
       });

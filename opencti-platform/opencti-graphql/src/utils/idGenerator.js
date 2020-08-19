@@ -212,6 +212,8 @@ const INTERNAL_RELATIONSHIPS = [
 ];
 export const isInternalRelationship = (type) => R.includes(type, INTERNAL_RELATIONSHIPS);
 // endregion
+export const isStixRelationShipExceptMeta = (type) =>
+  isStixCoreRelationship(type) || isStixSightingRelationship(type) || isStixCyberObservableRelationship(type);
 export const isStixRelationship = (type) =>
   isStixCoreRelationship(type) ||
   isStixSightingRelationship(type) ||

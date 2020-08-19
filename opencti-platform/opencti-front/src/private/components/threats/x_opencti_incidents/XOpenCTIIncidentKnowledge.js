@@ -64,7 +64,11 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
               relationshipType="attributed-to"
-              targetStixDomainObjectTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign']}
+              targetStixDomainObjectTypes={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+              ]}
               entityLink={link}
               isRelationReversed={false}
               {...routeProps}

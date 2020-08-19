@@ -455,12 +455,18 @@ class StixSightingRelationshipCreationFromRelation extends Component {
 
   renderSelectEntity() {
     const {
-      classes, t, targetStixDomainObjectTypes, onlyObservables,
+      classes,
+      t,
+      targetStixDomainObjectTypes,
+      onlyObservables,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
       types: targetStixDomainObjectTypes
-        ? filter((n) => n !== 'Stix-Cyber-Observable', targetStixDomainObjectTypes)
+        ? filter(
+          (n) => n !== 'Stix-Cyber-Observable',
+          targetStixDomainObjectTypes,
+        )
         : null,
       orderBy: 'created_at',
       orderMode: 'desc',

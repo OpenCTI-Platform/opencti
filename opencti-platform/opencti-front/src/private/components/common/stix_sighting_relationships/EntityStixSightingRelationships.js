@@ -161,7 +161,8 @@ class EntityStixSightingRelationships extends Component {
     } = this.state;
 
     // Display types selection when target types are multiple
-    const displayTypes = targetStixDomainObjectTypes.length > 1 || targetStixDomainObjectTypes.includes('Identity');
+    const displayTypes = targetStixDomainObjectTypes.length > 1
+      || targetStixDomainObjectTypes.includes('Identity');
 
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {

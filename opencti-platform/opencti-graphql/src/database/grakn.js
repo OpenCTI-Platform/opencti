@@ -42,6 +42,7 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
+  ENTITY_TYPE_LABEL,
   generateInternalId,
   generateStandardId,
   getParentTypes,
@@ -49,6 +50,7 @@ import {
   isBasicObject,
   isBasicRelationship,
   isDatedInternalObject,
+  isInternalId,
   isInternalObject,
   isStixCoreObject,
   isStixCoreRelationship,
@@ -59,6 +61,7 @@ import {
   isStixMetaRelationship,
   isStixObject,
   isStixRelationship,
+  isStixRelationShipExceptMeta,
   isStixSightingRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -1224,7 +1227,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   relationAttributes.created_at = today;
   relationAttributes.updated_at = today;
   // stix-relationship
-  if (isStixRelationship(relationshipType)) {
+  if (isStixRelationShipExceptMeta(relationshipType)) {
     relationAttributes.stix_ids = R.isNil(input.stix_id) ? [] : [input.stix_id];
     relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.revoked = R.isNil(input.revoked) ? false : input.revoked;
@@ -1391,8 +1394,17 @@ const addMarkingDefs = async (user, internalId, markingDefIds, opts = {}) => {
   return markings;
 };
 const addLabel = async (user, fromInternalId, labelInput, opts = {}) => {
-  if (!labelId) return undefined;
-  
+  if (!labelInput) return undefined;
+  let labelId = labelInput;
+  if (!isStixId(labelInput) && !isInternalId(labelInput)) {
+    const labels = await listEntities([ENTITY_TYPE_LABEL], ['value'], {
+      filters: [{ key: 'value', values: [labelInput], operator: 'eq' }],
+    });
+    if (labels.edges.length === 0) {
+      throw FunctionalError(`The label ${labelInput} does not exist, please create it before using it`);
+    }
+    labelId = R.head(labels.edges).node.id;
+  }
   const input = {
     fromId: fromInternalId,
     toId: labelId,

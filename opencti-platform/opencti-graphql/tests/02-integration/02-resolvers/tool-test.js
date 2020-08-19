@@ -68,7 +68,7 @@ describe('Tool resolver standard behavior', () => {
         name: 'Tool',
         stix_id: toolStixId,
         description: 'Tool description',
-        killChainPhases: ['2a2202bd-1da6-4668-9fc5-ad1017e974bc'],
+        killChainPhases: ['kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'],
       },
     };
     const tool = await queryAsAdmin({
@@ -87,7 +87,9 @@ describe('Tool resolver standard behavior', () => {
     expect(queryResult.data.tool.id).toEqual(toolInternalId);
     expect(queryResult.data.tool.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.tool.killChainPhases.edges.length).toEqual(1);
-    expect(queryResult.data.tool.killChainPhases.edges[0].node.id).toEqual('2a2202bd-1da6-4668-9fc5-ad1017e974bc');
+    expect(queryResult.data.tool.killChainPhases.edges[0].node.standard_id).toEqual(
+      'kill-chain-phase--5bdd6c3c-6a3f-5a82-9299-37ed052b770e'
+    );
   });
   it('should tool loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: toolStixId } });

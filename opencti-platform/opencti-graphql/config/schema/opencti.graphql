@@ -6812,7 +6812,7 @@ input StixSightingRelationshipAddInput {
   first_seen: DateTime
   last_seen: DateTime
   attribute_count: Int!
-  x_opencti_negative: Boolean!
+  x_opencti_negative: Boolean
   confidence: Int
   createdBy: String
   objectMarking: [String]

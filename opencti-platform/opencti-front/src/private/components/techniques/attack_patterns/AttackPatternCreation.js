@@ -203,11 +203,11 @@ class AttackPatternCreation extends Component {
                     detectDuplicate={['Attack-Pattern']}
                   />
                   <Field
-                      component={TextField}
-                      name="x_mitre_id"
-                      label={t('External ID')}
-                      fullWidth={true}
-                      style={{ marginTop: 20 }}
+                    component={TextField}
+                    name="x_mitre_id"
+                    label={t('External ID')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={TextField}

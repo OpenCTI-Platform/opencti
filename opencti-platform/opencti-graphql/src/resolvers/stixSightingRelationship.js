@@ -11,8 +11,14 @@ import {
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
   stixSightingRelationshipsNumber,
+  createdBy,
+  externalReferences,
+  labels,
+  markingDefinitions,
+  notes,
+  reports,
 } from '../domain/stixSightingRelationship';
-import { pubsub } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
@@ -23,6 +29,7 @@ import {
   RELATION_OBJECT_MARKING,
   STIX_SIGHTING_RELATIONSHIP,
 } from '../utils/idGenerator';
+import { creator } from '../domain/log';
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -52,6 +59,14 @@ const stixSightingRelationshipResolvers = {
     from: (rel) => loadById(rel.fromId, rel.fromType),
     to: (rel) => loadById(rel.toId, rel.toType),
     toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
+    creator: (rel) => creator(rel.id),
+    createdBy: (rel) => createdBy(rel.id),
+    objectMarking: (rel) => markingDefinitions(rel.id),
+    objectLabel: (rel) => labels(rel.id),
+    editContext: (rel) => fetchEditContext(rel.id),
+    externalReferences: (rel) => externalReferences(rel.id),
+    reports: (rel) => reports(rel.id),
+    notes: (rel) => notes(rel.id),
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, { user }) => ({
@@ -60,7 +75,8 @@ const stixSightingRelationshipResolvers = {
       contextPatch: ({ input }) => stixSightingRelationshipEditContext(user, id, input),
       contextClean: () => stixSightingRelationshipCleanContext(user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixSightingRelationshipDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixSightingRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixSightingRelationshipAdd: (_, { input }, { user }) => addStixSightingRelationship(user, input),
   },

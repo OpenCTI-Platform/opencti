@@ -186,7 +186,8 @@ class EntityStixCoreRelationships extends Component {
     } = this.state;
 
     // Display types selection when target types are multiple
-    const displayTypes = targetStixDomainObjectTypes.length > 1 || targetStixDomainObjectTypes.includes('Identity');
+    const displayTypes = targetStixDomainObjectTypes.length > 1
+      || targetStixDomainObjectTypes.includes('Identity');
 
     // sort only when inferences are disabled or inferences are resolved
     let paginationOptions = {
@@ -198,7 +199,10 @@ class EntityStixCoreRelationships extends Component {
     };
     if (isRelationReversed) {
       paginationOptions = pipe(
-        assoc('fromTypes', toType === 'All' ? targetStixDomainObjectTypes : [toType]),
+        assoc(
+          'fromTypes',
+          toType === 'All' ? targetStixDomainObjectTypes : [toType],
+        ),
         assoc('toId', entityId),
         assoc('toRole', role || null),
       )(paginationOptions);
@@ -206,7 +210,10 @@ class EntityStixCoreRelationships extends Component {
       paginationOptions = pipe(
         assoc('fromId', entityId),
         assoc('fromRole', role || null),
-        assoc('toTypes', toType === 'All' ? targetStixDomainObjectTypes : [toType]),
+        assoc(
+          'toTypes',
+          toType === 'All' ? targetStixDomainObjectTypes : [toType],
+        ),
       )(paginationOptions);
     }
     return (
@@ -273,13 +280,16 @@ class EntityStixCoreRelationships extends Component {
                     ) : (
                       ''
                     )}
-                    {includes('Course-Of-Action', targetStixDomainObjectTypes) ? (
+                    {includes(
+                      'Course-Of-Action',
+                      targetStixDomainObjectTypes,
+                    ) ? (
                       <MenuItem value="Course-Of-Action">
                         {t('Course of action')}
                       </MenuItem>
-                    ) : (
-                      ''
-                    )}
+                      ) : (
+                        ''
+                      )}
                     {includes('Individual', targetStixDomainObjectTypes)
                     || includes('Identity', targetStixDomainObjectTypes) ? (
                       <MenuItem value="Individual">{t('Individual')}</MenuItem>
@@ -369,13 +379,16 @@ class EntityStixCoreRelationships extends Component {
                     ) : (
                       ''
                     )}
-                    {includes('X-OpenCTI-Incident', targetStixDomainObjectTypes) ? (
+                    {includes(
+                      'X-OpenCTI-Incident',
+                      targetStixDomainObjectTypes,
+                    ) ? (
                       <MenuItem value="X-OpenCTI-Incident">
                         {t('Incident')}
                       </MenuItem>
-                    ) : (
-                      ''
-                    )}
+                      ) : (
+                        ''
+                      )}
                   </Select>
                 </Grid>
               ) : (

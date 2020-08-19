@@ -37,7 +37,7 @@ import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
-import {truncate} from "../../utils/String";
+import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
   root: {

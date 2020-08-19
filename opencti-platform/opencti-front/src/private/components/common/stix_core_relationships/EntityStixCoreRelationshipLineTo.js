@@ -125,7 +125,6 @@ EntityStixCoreRelationshipLineToComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-
 const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
   EntityStixCoreRelationshipLineToComponent,
   {

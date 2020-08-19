@@ -37,6 +37,7 @@ const READ_QUERY = gql`
   query stixDomainObject($id: String!) {
     stixDomainObject(id: $id) {
       id
+      standard_id
       toStix
       editContext {
         focusOn
@@ -58,6 +59,7 @@ describe('StixDomainObject resolver standard behavior', () => {
       mutation StixDomainObjectAdd($input: StixDomainObjectAddInput) {
         stixDomainObjectAdd(input: $input) {
           id
+          standard_id
           objectLabel {
             edges {
               node {
@@ -79,7 +81,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         type: 'Report',
         stix_id: stixDomainObjectStixId,
         description: 'StixDomainObject description',
-        objectLabel: ['campaign--92d46985-17a6-4610-8be8-cc70c82ed214', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
+        objectLabel: ['TrickBot', 'COVID-19'],
       },
     };
     const stixDomainObject = await queryAsAdmin({
@@ -89,7 +91,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     expect(stixDomainObject).not.toBeNull();
     expect(stixDomainObject.data.stixDomainObjectAdd).not.toBeNull();
     expect(stixDomainObject.data.stixDomainObjectAdd.name).toEqual('StixDomainObject');
-    expect(stixDomainObject.data.stixDomainObjectAdd.tags.edges.length).toEqual(2);
+    expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.edges.length).toEqual(2);
     stixDomainObjectInternalId = stixDomainObject.data.stixDomainObjectAdd.id;
   });
   it('should stixDomainObject loaded by internal id', async () => {
@@ -118,7 +120,7 @@ describe('StixDomainObject resolver standard behavior', () => {
       }
     `;
     const queryResult = await queryAsAdmin({ query: NUMBER_QUERY });
-    expect(queryResult.data.stixDomainObjectsNumber.total).toEqual(69);
+    expect(queryResult.data.stixDomainObjectsNumber.total).toEqual(37);
   });
   it('should timeseries stixDomainObjects to be accurate', async () => {
     const TIMESERIES_QUERY = gql`
@@ -163,7 +165,9 @@ describe('StixDomainObject resolver standard behavior', () => {
         stixDomainObjectEdit(id: $id) {
           fieldPatch(input: $input) {
             id
-            name
+            ... on Report {
+              name
+            }
           }
         }
       }
@@ -273,33 +277,6 @@ describe('StixDomainObject resolver standard behavior', () => {
     });
     expect(queryResult.data.stixDomainObjectEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
-  it('should delete relation with toId in stixDomainObject', async () => {
-    const RELATION_TOID_DELETE_QUERY = gql`
-      mutation StixDomainObjectEdit($id: ID!, $toId: String, $relationship_type: String) {
-        stixDomainObjectEdit(id: $id) {
-          relationDelete(toId: $toId, relationship_type: $relationship_type) {
-            id
-            tags {
-              edges {
-                node {
-                  id
-                }
-              }
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: RELATION_TOID_DELETE_QUERY,
-      variables: {
-        id: stixDomainObjectInternalId,
-        toId: 'ebd3398f-2189-4597-b994-5d1ab310d4bc',
-        relationship_type: 'tagged',
-      },
-    });
-    expect(queryResult.data.stixDomainObjectEdit.relationDelete.tags.edges.length).toEqual(1);
-  });
   it('should stixDomainObject deleted', async () => {
     const DELETE_QUERY = gql`
       mutation stixDomainObjectDelete($id: ID!) {
@@ -317,6 +294,5 @@ describe('StixDomainObject resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainObjectStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixDomainObject).toBeNull();
-    // TODO Verify is no relations are linked to the deleted entity
   });
 });

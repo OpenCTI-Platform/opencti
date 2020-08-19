@@ -149,7 +149,7 @@ export const stixCoreRelationshipEditField = (user, stixCoreRelationshipId, inpu
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {
-  const stixCoreRelationship = await internalLoadEntityById(stixCoreRelationshipId);
+  const stixCoreRelationship = await loadEntityById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot add the relation, stix-core-relationship cannot be found.');
   }

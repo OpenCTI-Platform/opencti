@@ -3,19 +3,45 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteRelationById,
+  deleteRelationsByFromAndTo,
   escapeString,
   executeWrite,
   getRelationInferredById,
   getSingleValueNumber,
+  internalLoadEntityById,
+  listFromEntitiesThroughRelation,
   listRelations,
+  listToEntitiesThroughRelation,
+  load,
   loadEntityById,
   loadRelationById,
   prepareDate,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess } from '../config/errors';
-import { isInternalId, isStixId, STIX_SIGHTING_RELATIONSHIP } from '../utils/idGenerator';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  isInternalId,
+  isStixId,
+  isStixMetaRelationship,
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_KILL_CHAIN_PHASE,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+  STIX_SIGHTING_RELATIONSHIP,
+} from '../utils/idGenerator';
 
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
@@ -42,6 +68,60 @@ export const stixSightingRelationshipsNumber = (args) => ({
   ),
 });
 
+export const createdBy = async (stixSightingRelationshipId) => {
+  const element = await load(
+    `match $to isa ${ENTITY_TYPE_IDENTITY}; 
+    $rel(${RELATION_CREATED_BY}_from:$from, ${RELATION_CREATED_BY}_to: $to) isa ${RELATION_CREATED_BY};
+    $from has internal_id "${escapeString(stixSightingRelationshipId)}"; get;`,
+    ['to']
+  );
+  return element && element.to;
+};
+
+export const reports = (stixSightingRelationshipId) => {
+  return listFromEntitiesThroughRelation(
+    stixSightingRelationshipId,
+    null,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_REPORT
+  );
+};
+
+export const notes = (stixSightingRelationshipId) => {
+  return listFromEntitiesThroughRelation(stixSightingRelationshipId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+};
+
+export const opinions = (stixSightingRelationshipId) => {
+  return listFromEntitiesThroughRelation(
+    stixSightingRelationshipId,
+    null,
+    RELATION_OBJECT,
+    ENTITY_TYPE_CONTAINER_OPINION
+  );
+};
+
+export const labels = (stixSightingRelationshipId) => {
+  return listToEntitiesThroughRelation(stixSightingRelationshipId, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+};
+
+export const markingDefinitions = (stixSightingRelationshipId) => {
+  return listToEntitiesThroughRelation(
+    stixSightingRelationshipId,
+    null,
+    RELATION_OBJECT_MARKING,
+    ENTITY_TYPE_MARKING_DEFINITION
+  );
+};
+
+export const externalReferences = (stixSightingRelationshipId) => {
+  return listToEntitiesThroughRelation(
+    stixSightingRelationshipId,
+    null,
+    RELATION_EXTERNAL_REFERENCE,
+    ENTITY_TYPE_EXTERNAL_REFERENCE
+  );
+};
+
 // region mutations
 export const addStixSightingRelationship = async (user, stixSightingRelationship) => {
   const created = await createRelation(
@@ -62,9 +142,12 @@ export const stixSightingRelationshipEditField = (user, stixSightingRelationship
   });
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
-  const data = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-  if (data.type !== STIX_SIGHTING_RELATIONSHIP || !input.relationship_type) {
-    throw ForbiddenAccess();
+  const stixSightingRelationship = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  if (!stixSightingRelationship) {
+    throw FunctionalError(`Cannot add the relation, ${ABSTRACT_STIX_META_RELATIONSHIP} cannot be found.`);
+  }
+  if (!isStixMetaRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', stixSightingRelationshipId, input);
   return createRelation(user, finalInput).then((relationData) => {
@@ -72,10 +155,27 @@ export const stixSightingRelationshipAddRelation = async (user, stixSightingRela
     return relationData;
   });
 };
-export const stixSightingRelationshipDeleteRelation = async (user, stixSightingRelationshipId, relationId) => {
-  await deleteRelationById(user, relationId, STIX_SIGHTING_RELATIONSHIP);
-  const data = await loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-  return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, data, user);
+export const stixSightingRelationshipDeleteRelation = async (
+  user,
+  stixSightingRelationshipId,
+  toId,
+  relationshipType
+) => {
+  const stixSightingRelationship = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  if (!stixSightingRelationship) {
+    throw FunctionalError(`Cannot delete the relation, ${STIX_SIGHTING_RELATIONSHIP} cannot be found.`);
+  }
+  if (!isStixMetaRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(
+    user,
+    stixSightingRelationshipId,
+    toId,
+    relationshipType,
+    ABSTRACT_STIX_META_RELATIONSHIP
+  );
+  return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
 };
 // endregion
 

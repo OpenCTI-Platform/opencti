@@ -472,13 +472,14 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   renderSelectEntity() {
-    const {
-      classes, t, targetStixDomainObjectTypes,
-    } = this.props;
+    const { classes, t, targetStixDomainObjectTypes } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
       types: targetStixDomainObjectTypes
-        ? filter((n) => n !== 'Stix-Cyber-Observable', targetStixDomainObjectTypes)
+        ? filter(
+          (n) => n !== 'Stix-Cyber-Observable',
+          targetStixDomainObjectTypes,
+        )
         : null,
       orderBy: 'created_at',
       orderMode: 'desc',
@@ -547,11 +548,12 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                   />
                 );
               }
-              return !targetStixDomainObjectTypes || targetStixDomainObjectTypes.length === 0 ? (
-                this.renderFakeList()
-              ) : (
+              return !targetStixDomainObjectTypes
+                || targetStixDomainObjectTypes.length === 0 ? (
+                  this.renderFakeList()
+                ) : (
                 <div> &nbsp; </div>
-              );
+                );
             }}
           />
           <StixDomainObjectCreation

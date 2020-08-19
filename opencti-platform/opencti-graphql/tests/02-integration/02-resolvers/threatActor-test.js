@@ -177,12 +177,9 @@ describe('Threat actor resolver standard behavior', () => {
         threatActorEdit(id: $id) {
           relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
-                  id
-                }
-                relation {
                   id
                 }
               }
