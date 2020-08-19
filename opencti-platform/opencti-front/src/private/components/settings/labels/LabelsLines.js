@@ -76,8 +76,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "LabelsOrdering", defaultValue: "value" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "LabelsOrdering", defaultValue: value }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         labels(
           search: $search

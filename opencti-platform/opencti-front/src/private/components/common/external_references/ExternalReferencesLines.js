@@ -81,9 +81,9 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "ExternalReferencesOrdering"
-            defaultValue: "source_name"
+            defaultValue: source_name
           }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         externalReferences(
           search: $search

@@ -97,9 +97,9 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "StixSightingRelationshipsOrdering"
-            defaultValue: "first_seen"
+            defaultValue: first_seen
           }
-          orderMode: { type: "OrderingMode", defaultValue: "desc" }
+          orderMode: { type: "OrderingMode", defaultValue: desc }
         ) {
         stixSightingRelationships(
           fromId: $fromId

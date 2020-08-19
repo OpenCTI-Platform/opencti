@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const READ_QUERY = gql`
   query StixCoreRelationship($id: String!) {
@@ -60,6 +61,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     expect(queryResult.data.stixCoreRelationship.id).toEqual(stixCoreRelationshipInternalId);
   });
   it('should stixCoreRelationship number to be accurate', async () => {
+    const campaign = await elLoadByStixId('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const NUMBER_QUERY = gql`
       query StixCoreRelationshipsNumber($type: String, $fromId: String) {
         stixCoreRelationshipsNumber(type: $type, fromId: $fromId) {
@@ -69,7 +71,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: NUMBER_QUERY,
-      variables: { type: 'uses', fromId: 'fab6fa99-b07f-4278-86b4-b674edf60877' },
+      variables: { type: 'uses', fromId: campaign.internal_id },
     });
     expect(queryResult.data.stixCoreRelationshipsNumber.total).toEqual(1);
     const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'stix_relation' } });

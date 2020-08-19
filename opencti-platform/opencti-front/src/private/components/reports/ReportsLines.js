@@ -88,8 +88,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "ReportsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "ReportsOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[ReportsFiltering]" }
         ) {
         reports(

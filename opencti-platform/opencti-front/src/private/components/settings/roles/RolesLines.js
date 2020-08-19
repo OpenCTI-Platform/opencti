@@ -76,8 +76,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "RolesOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "RolesOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         roles(
           search: $search

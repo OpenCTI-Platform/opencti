@@ -3971,10 +3971,7 @@ input XOpenCTIIncidentAddInput {
 ######## STIX CYBER OBSERVABLES ENTITIES
 
 enum StixCyberObservablesOrdering {
-  name
   entity_type
-  observable_value
-  value
   created_at
   updated_at
   objectMarking

@@ -106,9 +106,9 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "StixObjectOrStixRelationshipsOrdering"
-            defaultValue: "name"
+            defaultValue: name
           }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
         ) {
         id

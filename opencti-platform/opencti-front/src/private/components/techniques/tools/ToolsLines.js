@@ -86,8 +86,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "ToolsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "ToolsOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[ToolsFiltering]" }
         ) {
         tools(

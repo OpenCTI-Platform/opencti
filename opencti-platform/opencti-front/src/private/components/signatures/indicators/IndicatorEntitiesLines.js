@@ -137,7 +137,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "StixCoreRelationshipsOrdering"
-            defaultValue: "start_time"
+            defaultValue: start_time
           }
           orderMode: { type: "OrderingMode" }
         ) {

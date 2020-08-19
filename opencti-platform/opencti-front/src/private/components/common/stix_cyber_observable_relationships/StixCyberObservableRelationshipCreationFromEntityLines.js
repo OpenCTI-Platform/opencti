@@ -186,9 +186,9 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
           cursor: { type: "ID" }
           orderBy: {
             type: "StixCyberObservablesOrdering"
-            defaultValue: "name"
+            defaultValue: created_at
           }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         stixCyberObservables(
           search: $search

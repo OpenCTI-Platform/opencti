@@ -131,9 +131,9 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "StixCyberObservablesOrdering"
-            defaultValue: "observable_value"
+            defaultValue: created_at
           }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[StixCyberObservablesFiltering]" }
         ) {
         stixCyberObservables(

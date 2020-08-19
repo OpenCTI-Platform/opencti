@@ -91,8 +91,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "OrganizationsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "OrganizationsOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[OrganizationsFiltering]" }
         ) {
         organizations(

@@ -345,9 +345,9 @@ const ReportAddObjectsLines = createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "StixCoreObjectsOrdering"
-            defaultValue: "created_at"
+            defaultValue: created_at
           }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         stixCoreObjects(
           search: $search

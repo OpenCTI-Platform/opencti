@@ -80,8 +80,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "CampaignsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "CampaignsOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[CampaignsFiltering]" }
         ) {
         campaigns(

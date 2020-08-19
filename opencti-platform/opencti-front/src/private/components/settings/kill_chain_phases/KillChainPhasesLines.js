@@ -81,9 +81,9 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "KillChainPhasesOrdering"
-            defaultValue: "phase_name"
+            defaultValue: phase_name
           }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         killChainPhases(
           search: $search

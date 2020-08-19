@@ -93,8 +93,8 @@ export default createPaginationContainer(
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
           filters: { type: "[IndicatorsFiltering]" }
-          orderBy: { type: "IndicatorsOrdering", defaultValue: "valid_from" }
-          orderMode: { type: "OrderingMode", defaultValue: "desc" }
+          orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
+          orderMode: { type: "OrderingMode", defaultValue: desc }
         ) {
         indicators(
           search: $search

@@ -88,8 +88,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "CitiesOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "CitiesOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[CitiesFiltering]" }
         ) {
         cities(

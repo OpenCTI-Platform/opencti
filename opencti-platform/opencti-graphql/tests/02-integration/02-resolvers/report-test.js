@@ -308,8 +308,8 @@ describe('Report resolver standard behavior', () => {
         operation: 'count',
       },
     });
-    expect(queryResult.data.reportsDistribution[0].label).toEqual('Kaspersky');
-    expect(queryResult.data.reportsDistribution[0].value).toEqual(1);
+    const aggregationMap = new Map(queryResult.data.reportsDistribution.map((i) => [i.label, i]));
+    expect(aggregationMap.get('ANSSI').value).toEqual(1);
   });
   it('should update report', async () => {
     const UPDATE_QUERY = gql`
