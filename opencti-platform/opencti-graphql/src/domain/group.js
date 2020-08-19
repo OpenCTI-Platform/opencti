@@ -1,9 +1,8 @@
-import { assoc, pipe } from 'ramda';
+import { assoc } from 'ramda';
 import {
   createEntity,
   createRelation,
   deleteEntityById,
-  deleteRelationById,
   deleteRelationsByFromAndTo,
   executeWrite,
   listEntities,
@@ -15,12 +14,9 @@ import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   ABSTRACT_INTERNAL_RELATIONSHIP,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_USER,
   isInternalRelationship,
-  isStixMetaRelationship,
   RELATION_MEMBER_OF,
 } from '../utils/idGenerator';
 import { FunctionalError } from '../config/errors';
