@@ -4,7 +4,6 @@ import {
   findById,
   xOpenCTIIncidentsTimeSeries,
   xOpenCTIIncidentsTimeSeriesByEntity,
-  observables,
 } from '../domain/xOpenCTIIncident';
 import {
   stixDomainObjectAddRelation,
