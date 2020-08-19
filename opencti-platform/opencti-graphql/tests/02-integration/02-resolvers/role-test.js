@@ -29,6 +29,7 @@ const READ_QUERY = gql`
 
 describe('Role resolver standard behavior', () => {
   let roleInternalId;
+  let capabilityId;
   it('should role created', async () => {
     const CREATE_QUERY = gql`
       mutation RoleAdd($input: RoleAddInput) {
@@ -132,8 +133,9 @@ describe('Role resolver standard behavior', () => {
     expect(queryResult.data.roleEdit.contextClean.id).toEqual(roleInternalId);
   });
   it('should add relation in role', async () => {
-    const capabilityId = generateInternalObjectId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
-    const capability = await elLoadByStandardId(capabilityId);
+    const capabilityStandardId = generateInternalObjectId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
+    const capability = await elLoadByStandardId(capabilityStandardId);
+    capabilityId = capability.id;
     const RELATION_ADD_QUERY = gql`
       mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         roleEdit(id: $id) {
@@ -157,7 +159,7 @@ describe('Role resolver standard behavior', () => {
       variables: {
         id: roleInternalId,
         input: {
-          toId: capability.internal_id,
+          toId: capabilityId,
           relationship_type: 'has-capability',
         },
       },
@@ -167,9 +169,9 @@ describe('Role resolver standard behavior', () => {
   });
   it('should remove capability in role', async () => {
     const REMOVE_CAPABILITY_QUERY = gql`
-      mutation RoleEdit($id: ID!, $name: String!) {
+      mutation RoleEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         roleEdit(id: $id) {
-          removeCapability(name: $name) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             capabilities {
               id
@@ -182,10 +184,11 @@ describe('Role resolver standard behavior', () => {
       query: REMOVE_CAPABILITY_QUERY,
       variables: {
         id: roleInternalId,
-        name: 'KNOWLEDGE',
+        toId: capabilityId,
+        relationship_type: 'has-capability',
       },
     });
-    expect(queryResult.data.roleEdit.removeCapability.capabilities.length).toEqual(0);
+    expect(queryResult.data.roleEdit.relationDelete.capabilities.length).toEqual(0);
   });
   it('should role deleted', async () => {
     const DELETE_QUERY = gql`

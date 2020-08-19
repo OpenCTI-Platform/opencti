@@ -75,7 +75,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     });
     expect(queryResult.data.stixCoreRelationshipsNumber.total).toEqual(1);
     const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'stix_relation' } });
-    expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(22);
+    expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(25);
   });
   it('should update stixCoreRelationship', async () => {
     const UPDATE_QUERY = gql`
@@ -83,16 +83,16 @@ describe('StixCoreRelationship resolver standard behavior', () => {
         stixCoreRelationshipEdit(id: $id) {
           fieldPatch(input: $input) {
             id
-            name
+            description
           }
         }
       }
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: stixCoreRelationshipInternalId, input: { key: 'name', value: ['StixCoreRelationship - test'] } },
+      variables: { id: stixCoreRelationshipInternalId, input: { key: 'description', value: ['StixCoreRelationship - test'] } },
     });
-    expect(queryResult.data.stixCoreRelationshipEdit.fieldPatch.name).toEqual('StixCoreRelationship - test');
+    expect(queryResult.data.stixCoreRelationshipEdit.fieldPatch.description).toEqual('StixCoreRelationship - test');
   });
   it('should context patch stixCoreRelationship', async () => {
     const CONTEXT_PATCH_QUERY = gql`

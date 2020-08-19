@@ -12,8 +12,6 @@ import {
   getRoles,
   logout,
   meEditField,
-  removeRole,
-  roleRemoveCapability,
   setAuthenticationCookie,
   token,
   roleEditField,
@@ -21,6 +19,7 @@ import {
   userDelete,
   userEditField,
   roleAddRelation,
+  roleDeleteRelation,
   userAddRelation,
   userDeleteRelation,
   userRenewToken,
@@ -90,7 +89,8 @@ const userResolvers = {
       contextPatch: ({ input }) => roleEditContext(user, id, input),
       contextClean: () => roleCleanContext(user, id),
       relationAdd: ({ input }) => roleAddRelation(user, id, input),
-      removeCapability: ({ name }) => roleRemoveCapability(user, id, name),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        roleDeleteRelation(user, id, toId, relationshipType),
     }),
     roleAdd: (_, { input }, { user }) => addRole(user, input),
     userEdit: (_, { id }, { user }) => ({
@@ -99,9 +99,9 @@ const userResolvers = {
       contextPatch: ({ input }) => userEditContext(user, id, input),
       contextClean: () => userCleanContext(user, id),
       tokenRenew: () => userRenewToken(user, id),
-      removeRole: ({ name }) => removeRole(id, name),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => userDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        userDeleteRelation(user, id, toId, relationshipType),
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
     userAdd: (_, { input }, { user }) => addUser(user, input),

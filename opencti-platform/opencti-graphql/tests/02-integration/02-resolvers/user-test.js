@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { authentication } from '../../../src/domain/user';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE, generateInternalObjectId } from '../../../src/utils/idGenerator';
+import { elLoadByStandardId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query users(
@@ -139,10 +141,12 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user.capabilities[0].name).toEqual('KNOWLEDGE');
   });
   it('should user remove role', async () => {
+    const roleStandardId = generateInternalObjectId(ENTITY_TYPE_ROLE, { name: 'Default' });
+    const role = await elLoadByStandardId(roleStandardId);
     const REMOTE_ROLE_QUERY = gql`
-      mutation UserEditRemoveRole($id: ID!, $name: String!) {
+      mutation UserEditRemoveRole($id: ID!, $toId: String!, $relationship_type: String!) {
         userEdit(id: $id) {
-          removeRole(name: $name) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             roles {
               name
@@ -155,11 +159,11 @@ describe('User resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: REMOTE_ROLE_QUERY,
-      variables: { id: userInternalId, name: 'Default' },
+      variables: { id: userInternalId, toId: role.id, relationship_type: 'has-role' },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.userEdit).not.toBeNull();
-    expect(queryResult.data.userEdit.removeRole.roles.length).toEqual(0);
+    expect(queryResult.data.userEdit.relationDelete.roles.length).toEqual(0);
   });
   it('should user login', async () => {
     const res = await queryAsAdmin({

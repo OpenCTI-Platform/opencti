@@ -24,7 +24,6 @@ import {
   createEntity,
   createRelation,
   deleteEntityById,
-  deleteRelationById,
   deleteRelationsByFromAndTo,
   escapeString,
   executeWrite,
@@ -37,12 +36,14 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import {
+  ABSTRACT_INTERNAL_RELATIONSHIP,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_USER,
   generateStandardId,
+  isInternalRelationship,
   OPENCTI_ADMIN_UUID,
   RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
@@ -180,34 +181,6 @@ export const findCapabilities = (args) => {
   return listEntities([ENTITY_TYPE_CAPABILITY], ['description'], finalArgs);
 };
 
-export const removeRole = async (userId, roleName) => {
-  await executeWrite(async (wTx) => {
-    const query = `match $rel(${RELATION_HAS_ROLE}_from: $from, ${RELATION_HAS_ROLE}_to: $to) isa ${RELATION_HAS_ROLE}; 
-            $from has internal_id "${escapeString(userId)}"; 
-            $to has name "${escapeString(roleName)}"; 
-            delete $rel;`;
-    await wTx.query(query, { infer: false });
-  });
-  await clearUserTokenCache(userId);
-  return findById(userId);
-};
-
-export const roleRemoveCapability = async (user, roleId, capabilityName) => {
-  await executeWrite(async (wTx) => {
-    const query = `match $rel(${RELATION_HAS_CAPABILITY}_from: $from, ${RELATION_HAS_CAPABILITY}_to: $to) isa ${RELATION_HAS_CAPABILITY}; 
-            $from isa Role, has internal_id "${escapeString(roleId)}"; 
-            $to isa Capability, has name $name; { $name contains "${escapeString(capabilityName)}";};
-            delete $rel;`;
-    await wTx.query(query, { infer: false });
-  });
-  // Clear cache of every user with this modified role
-  const impactedUsers = await findAll({
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
-  });
-  await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return loadEntityById(roleId, ENTITY_TYPE_ROLE);
-};
-
 export const roleDelete = async (user, roleId) => {
   // Clear cache of every user with this deleted role
   const impactedUsers = await findAll({
@@ -294,6 +267,20 @@ export const roleAddRelation = async (user, roleId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, data, user);
 };
 
+export const roleDeleteRelation = async (user, roleId, toId, relationshipType) => {
+  const role = await loadEntityById(roleId, ENTITY_TYPE_ROLE);
+  if (!role) {
+    throw FunctionalError('Cannot delete the relation, Role cannot be found.');
+  }
+  if (!isInternalRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP, {
+    noLog: true,
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
+};
+
 // User related
 export const userEditField = (user, userId, input) => {
   const { key } = input;
@@ -328,23 +315,18 @@ export const userAddRelation = async (user, userId, input) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, data, user);
 };
 
-export const userDeleteRelation = async (
-  user,
-  userId,
-  relationId = null,
-  toId = null,
-  relationship_type = 'relation'
-) => {
-  if (relationId) {
-    await deleteRelationById(user, relationId, 'relation');
-  } else if (toId) {
-    await deleteRelationsByFromAndTo(user, userId, toId, relationship_type, 'relation');
-  } else {
-    throw FunctionalError('Cannot delete the relation, missing relationId or toId');
+export const userDeleteRelation = async (user, userId, toId, relationshipType) => {
+  const userData = await loadEntityById(userId, ENTITY_TYPE_USER);
+  if (!userData) {
+    throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
-  await clearUserTokenCache(userId);
-  const data = await loadEntityById(userId, 'Stix-Domain-Object');
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, data, user);
+  if (!isInternalRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP, {
+    noLog: true,
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
 
 export const loginFromProvider = async (email, name) => {

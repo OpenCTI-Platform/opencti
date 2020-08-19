@@ -86,9 +86,13 @@ const userEditionOverviewAddRole = graphql`
 `;
 
 const userEditionOverviewDeleteRole = graphql`
-  mutation UserEditionOverviewDeleteRoleMutation($id: ID!, $name: String!) {
+  mutation UserEditionOverviewDeleteRoleMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
     userEdit(id: $id) {
-      removeRole(name: $name) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...UserEditionOverview_user
       }
     }
@@ -175,7 +179,8 @@ class UserEditionOverviewComponent extends Component {
         mutation: userEditionOverviewDeleteRole,
         variables: {
           id: user.id,
-          name: head(removed).name,
+          toId: head(removed).id,
+          relationship_type: 'has-role',
         },
       });
     }

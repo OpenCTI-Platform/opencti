@@ -82,9 +82,13 @@ const roleEditionAddCapability = graphql`
 `;
 
 const roleEditionRemoveCapability = graphql`
-  mutation RoleEditionOverviewDelCapabilityMutation($id: ID!, $name: String!) {
+  mutation RoleEditionOverviewDelCapabilityMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
     roleEdit(id: $id) {
-      removeCapability(name: $name) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...RoleEditionOverview_role
       }
     }
@@ -149,7 +153,7 @@ const RoleEditionOverviewComponent = ({
           id: roleId,
           input: {
             toId: capability.id,
-            relationship_type: 'role_capability',
+            relationship_type: 'has-capability',
           },
         },
       });
@@ -158,7 +162,8 @@ const RoleEditionOverviewComponent = ({
         mutation: roleEditionRemoveCapability,
         variables: {
           id: roleId,
-          name: capability.name,
+          toId: capability.id,
+          relationship_type: 'has-capability',
         },
       });
     }

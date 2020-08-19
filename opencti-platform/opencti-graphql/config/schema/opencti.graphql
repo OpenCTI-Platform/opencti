@@ -7651,7 +7651,6 @@ type UserEditMutations {
   tokenRenew: User
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
   relationDelete(toId: String!, relationship_type: String!): User
-  removeRole(name: String!): User
 }
 type RoleEditMutations {
   delete: ID
@@ -7659,7 +7658,7 @@ type RoleEditMutations {
   contextPatch(input: EditContext): Role
   contextClean: Role
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
-  removeCapability(name: String!): Role
+  relationDelete(toId: String!, relationship_type: String!): Role
 }
 type WorkspaceEditMutations {
   delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
