@@ -59,7 +59,6 @@ const READ_QUERY = gql`
 
 describe('Sector resolver standard behavior', () => {
   let sectorInternalId;
-  let sectorMarkingDefinitionRelationId;
   const sectorStixId = 'identity--be5c22c3-b130-4c6e-9545-10a0114d0908';
   it('should sector created', async () => {
     const CREATE_QUERY = gql`
@@ -210,7 +209,6 @@ describe('Sector resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    sectorMarkingDefinitionRelationId = queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in sector', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -233,7 +231,8 @@ describe('Sector resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: sectorInternalId,
-        relationId: sectorMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.sectorEdit.relationDelete.objectMarking.edges.length).toEqual(0);

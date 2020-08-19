@@ -61,7 +61,7 @@ describe('MarkingDefinition resolver standard behavior', () => {
         stix_id: markingDefinitionStixId,
         definition_type: 'TLP',
         definition: 'TLP:TEST2',
-        level: 0,
+        x_opencti_order: 0,
       },
     };
     const markingDefinition = await queryAsAdmin({

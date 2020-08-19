@@ -67,7 +67,7 @@ export const groupAddRelation = async (user, groupId, input) => {
   } else if (input.toId) {
     finalInput = assoc('fromId', groupId, input);
   }
-  return createRelation(user, finalInput).then((relationData) => {
+  return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -82,9 +82,13 @@ export const groupDeleteRelation = async (user, groupId, fromId, toId, relations
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
   if (fromId) {
-    await deleteRelationsByFromAndTo(user, fromId, groupId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
+    await deleteRelationsByFromAndTo(user, fromId, groupId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP, {
+      noLog: true,
+    });
   } else if (toId) {
-    await deleteRelationsByFromAndTo(user, groupId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
+    await deleteRelationsByFromAndTo(user, groupId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP, {
+      noLog: true,
+    });
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };

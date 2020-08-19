@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query organizations(
@@ -35,12 +36,14 @@ const READ_QUERY = gql`
   query organization($id: String!) {
     organization(id: $id) {
       id
+      standard_id
       name
       description
       sectors {
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -51,7 +54,6 @@ const READ_QUERY = gql`
 
 describe('Organization resolver standard behavior', () => {
   let organizationInternalId;
-  let organizationMarkingDefinitionRelationId;
   const organizationStixId = 'identity--43008345-56bd-4175-adad-312bef2ff6a1';
   it('should organization created', async () => {
     const CREATE_QUERY = gql`
@@ -94,19 +96,22 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization.id).toEqual(organizationInternalId);
   });
   it('should organization sectors be accurate', async () => {
+    const organization = await elLoadByStixId('identity--c017f212-546b-4f21-999d-97d3dc558f7b');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: '9ca2ff43-b765-4f13-a213-10664a2ae8fc' },
+      variables: { id: organization.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.organization).not.toBeNull();
-    expect(queryResult.data.organization.id).toEqual('9ca2ff43-b765-4f13-a213-10664a2ae8fc');
+    expect(queryResult.data.organization.standard_id).toEqual('identity--2ec05f6c-a298-54f3-bea2-639be5913eb9');
     expect(queryResult.data.organization.sectors.edges.length).toEqual(1);
-    expect(queryResult.data.organization.sectors.edges[0].node.id).toEqual('9dcde1a4-88ef-4f50-ad74-23d865b438e6');
+    expect(queryResult.data.organization.sectors.edges[0].node.standard_id).toEqual(
+      'identity--ec64e236-dc31-50ed-ab39-ece26c828282'
+    );
   });
   it('should list organizations', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.organizations.edges.length).toEqual(6);
+    expect(queryResult.data.organizations.edges.length).toEqual(9);
   });
   it('should update organization', async () => {
     const UPDATE_QUERY = gql`
@@ -189,8 +194,6 @@ describe('Organization resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.organizationEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    organizationMarkingDefinitionRelationId =
-      queryResult.data.organizationEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in organization', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -213,7 +216,8 @@ describe('Organization resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: organizationInternalId,
-        relationId: organizationMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.organizationEdit.relationDelete.objectMarking.edges.length).toEqual(0);

@@ -1462,7 +1462,7 @@ input NoteAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  object: [String]
+  objects: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1585,6 +1585,7 @@ input ObservedDataAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  objects: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1704,6 +1705,7 @@ input OpinionAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  objects: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -1833,6 +1835,7 @@ input ReportAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  objects: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
@@ -2150,6 +2153,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   # Individual
   x_opencti_firstname: String
   x_opencti_lastname: String
+  organizations: OrganizationConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection

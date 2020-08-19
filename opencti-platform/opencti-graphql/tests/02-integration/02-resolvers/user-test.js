@@ -61,7 +61,6 @@ const READ_QUERY = gql`
 describe('User resolver standard behavior', () => {
   let userInternalId;
   let groupInternalId;
-  let userGroupRelationId;
   let userToken;
   const userStixId = 'identity--a186efb8-5e41-4082-817e-993e378d32f0';
   it('should user created', async () => {
@@ -312,7 +311,6 @@ describe('User resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.userEdit.relationAdd.from.groups.edges.length).toEqual(1);
-    userGroupRelationId = queryResult.data.userEdit.relationAdd.from.groups.edges[0].relation.id;
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -335,7 +333,8 @@ describe('User resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: userInternalId,
-        relationId: userGroupRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(0);

@@ -19,7 +19,6 @@ const READ_QUERY = gql`
 describe('StixSighting resolver standard behavior', () => {
   let stixSightingInternalId;
   let stixSightingStixId;
-  let stixSightingMarkingDefinitionRelationId;
   it('should stixSighting created', async () => {
     const CREATE_QUERY = gql`
       mutation StixDomainRelationAdd($input: StixSightingAddInput) {
@@ -163,8 +162,6 @@ describe('StixSighting resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixSightingEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    stixSightingMarkingDefinitionRelationId =
-      queryResult.data.stixSightingEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in stixSighting', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -187,7 +184,8 @@ describe('StixSighting resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: stixSightingInternalId,
-        relationId: stixSightingMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.stixSightingEdit.relationDelete.objectMarking.edges.length).toEqual(0);

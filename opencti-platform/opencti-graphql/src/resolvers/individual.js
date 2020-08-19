@@ -1,4 +1,4 @@
-import { addIndividual, findAll, findById } from '../domain/individual';
+import { addIndividual, findAll, findById, organizations } from '../domain/individual';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -14,6 +14,9 @@ const individualResolvers = {
   Query: {
     individual: (_, { id }) => findById(id),
     individuals: (_, args) => findAll(args),
+  },
+  Individual: {
+    organizations: (individual) => organizations(individual.id),
   },
   IndividualsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,

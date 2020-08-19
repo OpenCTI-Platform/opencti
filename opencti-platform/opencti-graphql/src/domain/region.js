@@ -4,6 +4,7 @@ import {
   escapeString,
   getSingleValueNumber,
   listEntities,
+  listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
   loadEntityById,
 } from '../database/grakn';
@@ -24,7 +25,7 @@ export const parentRegions = (regionId) => {
 };
 
 export const subRegions = (regionId) => {
-  return listToEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const isSubRegion = async (regionId, args) => {

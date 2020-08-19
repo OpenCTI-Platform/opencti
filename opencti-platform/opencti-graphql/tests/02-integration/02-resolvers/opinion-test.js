@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { now } from '../../../src/database/grakn';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query opinions(
@@ -24,9 +25,9 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
-          name
-          description
           explanation
+          authors
+          opinion
         }
       }
     }
@@ -86,9 +87,10 @@ const READ_QUERY = gql`
   query opinion($id: String!) {
     opinion(id: $id) {
       id
-      name
-      description
+      standard_id
       explanation
+      authors
+      opinion
       toStix
     }
   }
@@ -96,26 +98,31 @@ const READ_QUERY = gql`
 
 describe('Opinion resolver standard behavior', () => {
   let opinionInternalId;
-  let opinionMarkingDefinitionRelationId;
-  const opinionStixId = 'opinion--a144b39f-05e6-49ca-b761-46a536896026';
+  let datasetOpinionInternalId;
+  let datasetMalwareInternalId;
+  const opinionStixId = 'opinion--994491f0-f114-4e41-bcf0-3288c0324f53';
   it('should opinion created', async () => {
     const CREATE_QUERY = gql`
       mutation OpinionAdd($input: OpinionAddInput) {
         opinionAdd(input: $input) {
           id
-          name
-          description
+          standard_id
           explanation
+          authors
+          opinion
         }
       }
     `;
     // Create the opinion
     const OPINION_TO_CREATE = {
       input: {
-        name: 'Opinion',
         stix_id: opinionStixId,
-        description: 'strongly-agree',
+        opinion: 'strongly-agree',
         explanation: 'Explanation of the opinion',
+        objects: [
+          'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+          'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
+        ],
       },
     };
     const opinion = await queryAsAdmin({
@@ -124,7 +131,7 @@ describe('Opinion resolver standard behavior', () => {
     });
     expect(opinion).not.toBeNull();
     expect(opinion.data.opinionAdd).not.toBeNull();
-    expect(opinion.data.opinionAdd.name).toEqual('Opinion');
+    expect(opinion.data.opinionAdd.explanation).toEqual('Explanation of the opinion');
     opinionInternalId = opinion.data.opinionAdd.id;
   });
   it('should opinion loaded by internal id', async () => {
@@ -140,15 +147,25 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinion).not.toBeNull();
     expect(queryResult.data.opinion.id).toEqual(opinionInternalId);
   });
-  it('should opinion stix domain entities accurate', async () => {
+  it('should opinion stix objects sor stix relationships accurate', async () => {
+    const opinion = await elLoadByStixId('opinion--fab0d63d-e1be-4771-9c14-043b76f71d4f');
+    datasetOpinionInternalId = opinion.internal_id;
     const OPINION_STIX_DOMAIN_ENTITIES = gql`
       query opinion($id: String!) {
         opinion(id: $id) {
           id
-          objectRefs {
+          standard_id
+          objects {
             edges {
               node {
-                id
+                ... on BasicObject {
+                  id
+                  standard_id
+                }
+                ... on BasicRelationship {
+                  id
+                  standard_id
+                }
               }
             }
           }
@@ -157,88 +174,44 @@ describe('Opinion resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: OPINION_STIX_DOMAIN_ENTITIES,
-      variables: { id: '3391d309-0479-45e8-8fa6-e632d9c89d6d' },
+      variables: { id: datasetOpinionInternalId },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
-    expect(queryResult.data.opinion.id).toEqual('3391d309-0479-45e8-8fa6-e632d9c89d6d');
-    expect(queryResult.data.opinion.objectRefs.edges.length).toEqual(4);
+    expect(queryResult.data.opinion.standard_id).toEqual('opinion--14e2d591-b50a-4bf4-9d7e-26ebf9a0b450');
+    expect(queryResult.data.opinion.objects.edges.length).toEqual(5);
   });
-  it('should opinion contains stix domain entity accurate', async () => {
-    const OPINION_CONTAINS_STIX_DOMAIN_ENTITY = gql`
-      query opinionContainsStixDomainEntity($id: String!, $objectId: String!) {
-        opinionContainsStixDomainEntity(id: $id, objectId: $objectId)
+  it('should opinion contains stix object or stix relationship accurate', async () => {
+    const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const stixRelationship = await elLoadByStixId('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    const OPINION_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
+      query opinionContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
+        opinionContainsStixObjectOrStixRelationship(
+          id: $id
+          stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId
+        )
       }
     `;
-    const queryResult = await queryAsAdmin({
-      query: OPINION_CONTAINS_STIX_DOMAIN_ENTITY,
-      variables: { id: '3391d309-0479-45e8-8fa6-e632d9c89d6d', objectId: '82316ffd-a0ec-4519-a454-6566f8f5676c' },
+    let queryResult = await queryAsAdmin({
+      query: OPINION_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
+      variables: {
+        id: datasetOpinionInternalId,
+        stixObjectOrStixRelationshipId: intrusionSet.internal_id,
+      },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.opinionContainsStixDomainEntity).not.toBeNull();
-    expect(queryResult.data.opinionContainsStixDomainEntity).toBeTruthy();
-  });
-  it('should opinion stix relations accurate', async () => {
-    const OPINION_STIX_RELATIONS = gql`
-      query opinion($id: String!) {
-        opinion(id: $id) {
-          id
-          relationRefs {
-            edges {
-              node {
-                id
-              }
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: OPINION_STIX_RELATIONS,
-      variables: { id: '3391d309-0479-45e8-8fa6-e632d9c89d6d' },
+    expect(queryResult.data.opinionContainsStixObjectOrStixRelationship).not.toBeNull();
+    expect(queryResult.data.opinionContainsStixObjectOrStixRelationship).toBeTruthy();
+    queryResult = await queryAsAdmin({
+      query: OPINION_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
+      variables: {
+        id: datasetOpinionInternalId,
+        stixObjectOrStixRelationshipId: stixRelationship.internal_id,
+      },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.opinion).not.toBeNull();
-    expect(queryResult.data.opinion.id).toEqual('3391d309-0479-45e8-8fa6-e632d9c89d6d');
-    expect(queryResult.data.opinion.relationRefs.edges.length).toEqual(1);
-  });
-  it('should opinion contains stix relation accurate', async () => {
-    const OPINION_CONTAINS_STIX_RELATION = gql`
-      query opinionContainsStixRelation($id: String!, $objectId: String!) {
-        opinionContainsStixRelation(id: $id, objectId: $objectId)
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: OPINION_CONTAINS_STIX_RELATION,
-      variables: { id: '3391d309-0479-45e8-8fa6-e632d9c89d6d', objectId: '97ebc9b3-8a25-428a-8523-1e87b2701d3d' },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.opinionContainsStixRelation).not.toBeNull();
-    expect(queryResult.data.opinionContainsStixRelation).toBeTruthy();
-  });
-  it('should opinion stix observables accurate', async () => {
-    const OPINION_STIX_OBSERVABLES = gql`
-      query opinion($id: String!) {
-        opinion(id: $id) {
-          id
-          observableRefs {
-            edges {
-              node {
-                id
-              }
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: OPINION_STIX_OBSERVABLES,
-      variables: { id: '3391d309-0479-45e8-8fa6-e632d9c89d6d' },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.opinion).not.toBeNull();
-    expect(queryResult.data.opinion.id).toEqual('3391d309-0479-45e8-8fa6-e632d9c89d6d');
-    expect(queryResult.data.opinion.observableRefs.edges.length).toEqual(3);
+    expect(queryResult.data.opinionContainsStixObjectOrStixRelationship).not.toBeNull();
+    expect(queryResult.data.opinionContainsStixObjectOrStixRelationship).toBeTruthy();
   });
   it('should list opinions', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
@@ -260,10 +233,12 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries opinions for entity to be accurate', async () => {
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    datasetMalwareInternalId = malware.internal_id;
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        objectId: datasetMalwareInternalId,
         field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
@@ -276,10 +251,11 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult.data.opinionsTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries opinions for author to be accurate', async () => {
+    const identity = await elLoadByStixId('identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        authorId: 'c79e5d9f-4321-4174-b120-7cd9342ec88a',
+        authorId: identity.internal_id,
         field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
@@ -305,7 +281,7 @@ describe('Opinion resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: NUMBER_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        objectId: datasetMalwareInternalId,
         endDate: now(),
       },
     });
@@ -326,8 +302,8 @@ describe('Opinion resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
-        field: 'created_by_ref.name',
+        objectId: datasetMalwareInternalId,
+        field: 'created-by.name',
         operation: 'count',
       },
     });
@@ -340,16 +316,18 @@ describe('Opinion resolver standard behavior', () => {
         opinionEdit(id: $id) {
           fieldPatch(input: $input) {
             id
-            name
+            explanation
+            authors
+            opinion
           }
         }
       }
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: opinionInternalId, input: { key: 'name', value: ['Opinion - test'] } },
+      variables: { id: opinionInternalId, input: { key: 'explanation', value: ['Opinion - test'] } },
     });
-    expect(queryResult.data.opinionEdit.fieldPatch.name).toEqual('Opinion - test');
+    expect(queryResult.data.opinionEdit.fieldPatch.explanation).toEqual('Opinion - test');
   });
   it('should context patch opinion', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -415,8 +393,6 @@ describe('Opinion resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.opinionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    opinionMarkingDefinitionRelationId =
-      queryResult.data.opinionEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in opinion', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -439,7 +415,8 @@ describe('Opinion resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: opinionInternalId,
-        relationId: opinionMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.opinionEdit.relationDelete.objectMarking.edges.length).toEqual(0);

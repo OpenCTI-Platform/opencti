@@ -48,6 +48,7 @@ const convertStixObjectToStix = (data, onlyBase) => {
     dissoc('standard_id'),
     dissoc('internal_id'),
     assoc('id', data.standard_id),
+    assoc('x_opencti_id', data.internal_id),
     dissoc('entity_type'),
     assoc('type', data.entity_type.toLowerCase()),
     // Reserved keywords in Grakn
@@ -69,11 +70,14 @@ export const convertStixCoreRelationshipToStix = (data, extra = {}, onlyBase = t
     dissoc('standard_id'),
     dissoc('internal_id'),
     assoc('id', data.standard_id),
+    assoc('x_opencti_id', data.internal_id),
     dissoc('entity_type'),
     assoc('type', 'relationship'),
     // Relation IDs
     assoc('source_ref', extra.from ? extra.from.standard_id : null),
-    assoc('target_ref', extra.to ? extra.to.standard_id : null)
+    assoc('target_ref', extra.to ? extra.to.standard_id : null),
+    assoc('x_opencti_source_ref', extra.from ? extra.from.internal_id : null),
+    assoc('x_opencti_target_ref', extra.to ? extra.to.internal_id : null)
   )(data);
   if (onlyBase) {
     return pick(['id', 'type', 'spec_version'], data);
@@ -86,6 +90,7 @@ export const convertStixSightingRelationshipToStix = async (data, extra = {}, on
     dissoc('standard_id'),
     dissoc('internal_id'),
     assoc('id', data.standard_id),
+    assoc('x_opencti_id', data.internal_id),
     dissoc('entity_type'),
     assoc('type', 'relationship'),
     // Reserved keywords in Grakn

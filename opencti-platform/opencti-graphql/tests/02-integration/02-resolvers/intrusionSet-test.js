@@ -45,7 +45,6 @@ const READ_QUERY = gql`
 
 describe('Intrusion set resolver standard behavior', () => {
   let intrusionSetInternalId;
-  let intrusionSetMarkingDefinitionRelationId;
   const intrusionSetStixId = 'intrusion-set--952ec932-a8c8-4050-9662-f0771ed7c477';
   it('should intrusion set created', async () => {
     const CREATE_QUERY = gql`
@@ -172,8 +171,6 @@ describe('Intrusion set resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    intrusionSetMarkingDefinitionRelationId =
-      queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in intrusion set', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -196,7 +193,8 @@ describe('Intrusion set resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: intrusionSetInternalId,
-        relationId: intrusionSetMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.intrusionSetEdit.relationDelete.objectMarking.edges.length).toEqual(0);

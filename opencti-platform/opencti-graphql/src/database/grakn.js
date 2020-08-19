@@ -1530,7 +1530,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
     R.dissoc('objectLabel'),
     R.dissoc('killChainPhases'),
     R.dissoc('externalReferences'),
-    R.dissoc('object')
+    R.dissoc('objects')
   )(input);
   // Default attributes
   // Basic-Object
@@ -1645,7 +1645,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
       addLabels(user, internalId, input.objectLabel, opts), // Embedded in same execution.
       addKillChains(user, internalId, input.killChainPhases, opts), // Embedded in same execution.
       addExternalReferences(user, internalId, input.externalReferences, opts),
-      addObjects(user, internalId, input.object, opts)
+      addObjects(user, internalId, input.objects, opts)
     );
   }
   await Promise.all(postOperations);
@@ -1857,7 +1857,7 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   }
   return relationId;
 };
-export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType) => {
+export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType, opts = {}) => {
   /* istanbul ignore if */
   if (R.isNil(scopeType)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
@@ -1874,7 +1874,7 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   const relationsIds = R.map((r) => r.rel.id, relationsToDelete);
   for (let i = 0; i < relationsIds.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    await deleteRelationById(user, relationsIds[i], scopeType);
+    await deleteRelationById(user, relationsIds[i], scopeType, opts);
   }
 };
 export const deleteAttributeById = async (id) => {

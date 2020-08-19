@@ -44,7 +44,6 @@ const READ_QUERY = gql`
 
 describe('Threat actor resolver standard behavior', () => {
   let threatActorInternalId;
-  let threatActorMarkingDefinitionRelationId;
   const threatActorStixId = 'threat-actor--16978493-d5fb-4b28-a39a-eca332f53189';
   it('should threat actor created', async () => {
     const CREATE_QUERY = gql`
@@ -171,8 +170,6 @@ describe('Threat actor resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.threatActorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    threatActorMarkingDefinitionRelationId =
-      queryResult.data.threatActorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in threat actor', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -198,7 +195,8 @@ describe('Threat actor resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: threatActorInternalId,
-        relationId: threatActorMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.threatActorEdit.relationDelete.objectMarking.edges.length).toEqual(0);

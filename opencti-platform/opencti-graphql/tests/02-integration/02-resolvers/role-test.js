@@ -133,7 +133,7 @@ describe('Role resolver standard behavior', () => {
   });
   it('should add relation in role', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation RoleEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation RoleEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         roleEdit(id: $id) {
           relationAdd(input: $input) {
             id
@@ -154,10 +154,8 @@ describe('Role resolver standard behavior', () => {
       variables: {
         id: roleInternalId,
         input: {
-          fromRole: 'position',
           toId: uuid5('KNOWLEDGE', OPENCTI_NAMESPACE),
-          toRole: 'capability',
-          through: 'role_capability',
+          relationship_type: 'has-capability',
         },
       },
     });

@@ -17,7 +17,6 @@ const READ_QUERY = gql`
 
 describe('StixCoreRelationship resolver standard behavior', () => {
   let stixCoreRelationshipInternalId;
-  let stixCoreRelationshipMarkingDefinitionRelationId;
   const stixCoreRelationshipStixId = 'relationship--3d8bb13a-6cad-493d-933a-ae4ff5a203ca';
   it('should stixCoreRelationship created', async () => {
     const CREATE_QUERY = gql`
@@ -166,8 +165,6 @@ describe('StixCoreRelationship resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixCoreRelationshipEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    stixCoreRelationshipMarkingDefinitionRelationId =
-      queryResult.data.stixCoreRelationshipEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in stixCoreRelationship', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -190,7 +187,8 @@ describe('StixCoreRelationship resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: stixCoreRelationshipInternalId,
-        relationId: stixCoreRelationshipMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.stixCoreRelationshipEdit.relationDelete.objectMarking.edges.length).toEqual(0);

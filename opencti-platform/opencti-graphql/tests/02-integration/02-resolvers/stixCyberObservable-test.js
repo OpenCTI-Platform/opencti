@@ -44,7 +44,6 @@ const READ_QUERY = gql`
 
 describe('StixCyberObservable resolver standard behavior', () => {
   let stixCyberObservableInternalId;
-  let stixCyberObservableMarkingDefinitionRelationId;
   const stixCyberObservableStixId = 'ipv4-addr--921c202b-5706-499d-9484-b5cf9bc6f70c';
   it('should stixCyberObservable created', async () => {
     const CREATE_QUERY = gql`
@@ -169,8 +168,6 @@ describe('StixCyberObservable resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.stixCyberObservableEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    stixCyberObservableMarkingDefinitionRelationId =
-      queryResult.data.stixCyberObservableEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in stixCyberObservable', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -193,7 +190,8 @@ describe('StixCyberObservable resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: stixCyberObservableInternalId,
-        relationId: stixCyberObservableMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.stixCyberObservableEdit.relationDelete.objectMarking.edges.length).toEqual(0);

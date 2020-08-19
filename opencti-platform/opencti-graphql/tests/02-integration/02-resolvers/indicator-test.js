@@ -47,7 +47,6 @@ const READ_QUERY = gql`
 describe('Indicator resolver standard behavior', () => {
   let indicatorInternalId;
   let stixObservableInternalId;
-  let indicatorMarkingDefinitionRelationId;
   const indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
   it('should indicator created', async () => {
     const CREATE_QUERY = gql`
@@ -60,6 +59,7 @@ describe('Indicator resolver standard behavior', () => {
             edges {
               node {
                 id
+                standard_id
               }
             }
           }
@@ -72,9 +72,9 @@ describe('Indicator resolver standard behavior', () => {
         name: 'Indicator',
         stix_id: indicatorStixId,
         description: 'Indicator description',
-        indicator_pattern: "[domain-name:value = 'www.payah.rest']",
+        pattern: "[domain-name:value = 'www.payah.rest']",
         pattern_type: 'stix',
-        main_observable_type: 'domain',
+        x_opencti_main_observable_type: 'Domain-Name',
       },
     };
     const indicator = await queryAsAdmin({
@@ -84,9 +84,9 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator).not.toBeNull();
     expect(indicator.data.indicatorAdd).not.toBeNull();
     expect(indicator.data.indicatorAdd.name).toEqual('Indicator');
-    expect(indicator.data.indicatorAdd.observableRefs.edges.length).toEqual(1);
+    expect(indicator.data.indicatorAdd.observables.edges.length).toEqual(1);
     indicatorInternalId = indicator.data.indicatorAdd.id;
-    stixObservableInternalId = indicator.data.indicatorAdd.observableRefs.edges[0].node.id;
+    stixObservableInternalId = indicator.data.indicatorAdd.observables.edges[0].node.id;
   });
   it('should indicator loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: indicatorInternalId } });
@@ -186,8 +186,6 @@ describe('Indicator resolver standard behavior', () => {
       },
     });
     expect(queryResult.data.indicatorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
-    indicatorMarkingDefinitionRelationId =
-      queryResult.data.indicatorEdit.relationAdd.from.objectMarking.edges[0].relation.id;
   });
   it('should delete relation in indicator', async () => {
     const RELATION_DELETE_QUERY = gql`
@@ -210,7 +208,8 @@ describe('Indicator resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: indicatorInternalId,
-        relationId: indicatorMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
     expect(queryResult.data.indicatorEdit.relationDelete.objectMarking.edges.length).toEqual(0);

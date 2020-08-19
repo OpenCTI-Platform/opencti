@@ -173,7 +173,7 @@ describe('Group resolver standard behavior', () => {
         relationship_type: 'member-of',
       },
     });
-    expect(queryResult.data.groupEdit.relationDelete.permissions.edges.length).toEqual(0);
+    expect(queryResult.data.groupEdit.relationDelete.members.edges.length).toEqual(0);
   });
   it('should group deleted', async () => {
     const DELETE_QUERY = gql`
