@@ -66,15 +66,6 @@ const READ_QUERY = gql`
       standard_id
       name
       description
-      observables {
-        edges {
-          node {
-            id
-            standard_id
-            observable_value
-          }
-        }
-      }
       toStix
     }
   }
@@ -118,7 +109,6 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
     expect(queryResult.data.xOpenCTIIncident).not.toBeNull();
     expect(queryResult.data.xOpenCTIIncident.id).toEqual(xOpenCTIIncidentInternalId);
     expect(queryResult.data.xOpenCTIIncident.toStix.length).toBeGreaterThan(5);
-    expect(queryResult.data.xOpenCTIIncident.observables.edges.length).toEqual(0);
   });
   it('should XOpenCTIIncident loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: xOpenCTIIncidentInternalId } });
