@@ -1390,8 +1390,9 @@ const addMarkingDefs = async (user, internalId, markingDefIds, opts = {}) => {
   }
   return markings;
 };
-const addLabel = async (user, fromInternalId, labelId, opts = {}) => {
+const addLabel = async (user, fromInternalId, labelInput, opts = {}) => {
   if (!labelId) return undefined;
+  
   const input = {
     fromId: fromInternalId,
     toId: labelId,

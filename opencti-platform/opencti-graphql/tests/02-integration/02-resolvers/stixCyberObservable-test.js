@@ -57,9 +57,9 @@ describe('StixCyberObservable resolver standard behavior', () => {
     `;
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
-      input: {
+      type: 'IPv4-Addr',
+      IPv4Addr: {
         stix_id: stixCyberObservableStixId,
-        type: 'IPv4-Addr',
         value: '8.8.8.8',
       },
     };
@@ -81,7 +81,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should list stixCyberObservables', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(7);
+    expect(queryResult.data.stixCyberObservables.edges.length).toEqual(5);
   });
   it('should update stixCyberObservable', async () => {
     const UPDATE_QUERY = gql`

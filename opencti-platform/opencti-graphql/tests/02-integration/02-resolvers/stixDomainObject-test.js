@@ -79,7 +79,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         type: 'Report',
         stix_id: stixDomainObjectStixId,
         description: 'StixDomainObject description',
-        objectLabel: ['ebd3398f-2189-4597-b994-5d1ab310d4bc', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
+        objectLabel: ['campaign--92d46985-17a6-4610-8be8-cc70c82ed214', 'd2f32968-7e6a-4a78-b0d7-df4e9e30130c'],
       },
     };
     const stixDomainObject = await queryAsAdmin({

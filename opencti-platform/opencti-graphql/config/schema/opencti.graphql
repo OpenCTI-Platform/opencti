@@ -1049,6 +1049,9 @@ input StixDomainObjectAddInput {
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
+  killChainPhases: [String]
+  externalReferences: [String]
+  object: [String]
   clientMutationId: String
   created: DateTime
   modified: DateTime
@@ -4041,6 +4044,7 @@ interface StixCyberObservable {
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4109,6 +4113,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4144,6 +4149,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
 }
 input AutonomousSystemAddInput {
   stix_id: String
+  x_opencti_score: Int
   number: Int!
   name: String
   rir: String
@@ -4151,8 +4157,6 @@ input AutonomousSystemAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -4194,6 +4198,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4231,6 +4236,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
 }
 input DirectoryAddInput {
   stix_id: String
+  x_opencti_score: Int
   path: String!
   path_enc: String
   ctime: DateTime
@@ -4240,8 +4246,6 @@ input DirectoryAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -4284,6 +4288,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   ): StixCoreRelationshipConnection
   # StixCyberObservable
   observable_value: String!
+  x_opencti_score: Int
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
     first: Int
@@ -4316,12 +4321,11 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
 }
 input DomainNameAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String!
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -4363,6 +4367,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4397,14 +4402,13 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
 }
 input EmailAddrAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String!
   display_name: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -4446,6 +4450,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4485,6 +4490,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
 }
 input EmailMessageAddInput {
   stix_id: String
+  x_opencti_score: Int
   is_multipart: Boolean
   attribute_date: DateTime
   content_type: String
@@ -4496,8 +4502,6 @@ input EmailMessageAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -4539,6 +4543,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4574,6 +4579,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
 }
 input EmailMimePartTypeAddInput {
   stix_id: String
+  x_opencti_score: Int
   body: String
   content_type: String
   content_disposition: String
@@ -4581,8 +4587,6 @@ input EmailMimePartTypeAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 ############## HashedObservable
@@ -4625,6 +4629,7 @@ interface HashedObservable {
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4698,6 +4703,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4740,6 +4746,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input ArtifactAddInput {
   stix_id: String
+  x_opencti_score: Int
   md5: String
   sha1: String
   sha256: String
@@ -4753,8 +4760,6 @@ input ArtifactAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
@@ -4796,6 +4801,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4842,6 +4848,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input StixFileAddInput {
   stix_id: String
+  x_opencti_score: Int
   md5: String
   sha1: String
   sha256: String
@@ -4859,8 +4866,6 @@ input StixFileAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
@@ -4902,6 +4907,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -4946,6 +4952,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
 }
 input X509CertificateAddInput {
   stix_id: String
+  x_opencti_score: Int
   md5: String
   sha1: String
   sha256: String
@@ -5004,6 +5011,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5037,6 +5045,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input IPv4AddrAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
@@ -5084,6 +5093,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5165,6 +5175,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5198,13 +5209,12 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 }
 input MacAddrAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5246,6 +5256,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5279,13 +5290,12 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
 }
 input MutexAddInput {
   stix_id: String
+  x_opencti_score: Int
   name: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5327,6 +5337,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5370,6 +5381,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
 }
 input NetworkTrafficAddInput {
   stix_id: String
+  x_opencti_score: Int
   extensions: String
   start: DateTime
   end: DateTime
@@ -5385,8 +5397,6 @@ input NetworkTrafficAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5428,6 +5438,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5467,6 +5478,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 }
 input ProcessAddInput {
   stix_id: String
+  x_opencti_score: Int
   extensions: [String]
   is_hidden: Boolean
   pid: Int
@@ -5478,8 +5490,6 @@ input ProcessAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5521,6 +5531,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5559,6 +5570,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input SoftwareAddInput {
   stix_id: String
+  x_opencti_score: Int
   name: String
   cpe: String
   swid: String
@@ -5569,8 +5581,6 @@ input SoftwareAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5612,6 +5622,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5645,13 +5656,12 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
 }
 input UrlAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5693,6 +5703,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5740,6 +5751,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
 }
 input UserAccountAddInput {
   stix_id: String
+  x_opencti_score: Int
   extensions: [String]
   user_id: String
   credential: String
@@ -5759,8 +5771,6 @@ input UserAccountAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5802,6 +5812,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5837,6 +5848,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
 }
 input WindowsRegistryKeyAddInput {
   stix_id: String
+  x_opencti_score: Int
   attribute_key: String
   modified_time: DateTime
   number_of_subkeys: Int
@@ -5844,8 +5856,6 @@ input WindowsRegistryKeyAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5887,6 +5897,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -5922,6 +5933,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
 }
 input WindowsRegistryValueTypeAddInput {
   stix_id: String
+  x_opencti_score: Int
   name: String
   data: String
   data_type: String
@@ -5929,8 +5941,6 @@ input WindowsRegistryValueTypeAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -5972,6 +5982,7 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -6020,6 +6031,7 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
 }
 input X509V3ExtensionsTypeAddInput {
   stix_id: String
+  x_opencti_score: Int
   basic_constraints: String
   name_constraints: String
   policy_constraints: String
@@ -6040,8 +6052,6 @@ input X509V3ExtensionsTypeAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -6083,6 +6093,7 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -6116,13 +6127,12 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
 }
 input XOpenCTICryptographicKeyAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -6164,6 +6174,7 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -6197,13 +6208,12 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
 }
 input XOpenCTICryptocurrencyWalletAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -6245,6 +6255,7 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -6278,13 +6289,12 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
 }
 input XOpenCTIHostnameAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -6326,6 +6336,7 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -6359,13 +6370,12 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
 }
 input XOpenCTITextAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -6407,6 +6417,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
   # StixCyberObservable
+  x_opencti_score: Int
   observable_value: String!
   indicators: IndicatorConnection
   stixCyberObservableRelationships(
@@ -6440,13 +6451,12 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
 }
 input XOpenCTIUserAgentAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
 }
 

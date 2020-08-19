@@ -161,7 +161,7 @@ export const addStixCyberObservable = async (user, args) => {
   if (!args[graphQLType]) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
-  const observableSyntaxResult = checkObservableSyntax(args.type, args);
+  const observableSyntaxResult = checkObservableSyntax(args.type, args[graphQLType]);
   if (observableSyntaxResult !== true) {
     throw FunctionalError(`Observable of type ${args.type} is not correctly formatted.`, { observableSyntaxResult });
   }
@@ -208,16 +208,16 @@ export const stixCyberObservableDelete = async (user, stixCyberObservableId) => 
 };
 
 export const stixCyberObservableAddRelation = async (user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await loadEntityById(stixCyberObservableId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const stixCyberObservable = await loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
-    throw FunctionalError('Cannot add the relation, Stix-Domain-Object cannot be found.');
+    throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
   }
   if (!isStixMetaRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = assoc('fromId', stixCyberObservableId, input);
   return createRelation(user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, relationData, user);
+    notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
@@ -263,7 +263,7 @@ export const stixCyberObservableEditField = (user, stixCyberObservableId, input)
     return updateAttribute(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, input, wTx);
   }).then(async () => {
     const stixCyberObservable = await loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-    return notify(BUS_TOPICS.StixCyberObservable.EDIT_TOPIC, stixCyberObservable, user);
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
   });
 };
 // endregion
