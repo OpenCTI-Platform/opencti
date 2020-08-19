@@ -32,7 +32,8 @@ const groupResolvers = {
       contextPatch: ({ input }) => groupEditContext(user, id, input),
       contextClean: () => groupCleanContext(user, id),
       relationAdd: ({ input }) => groupAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => groupDeleteRelation(user, id, relationId),
+      relationDelete: ({ fromId, toId, relationship_type: relationshipType }) =>
+        groupDeleteRelation(user, id, fromId, toId, relationshipType),
     }),
     groupAdd: (_, { input }, { user }) => addGroup(user, input),
   },

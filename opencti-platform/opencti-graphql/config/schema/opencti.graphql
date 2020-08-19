@@ -6480,7 +6480,8 @@ type InternalRelationship implements BasicRelationship {
 }
 input InternalRelationshipAddInput {
   relationship_type: String! # Will be check by code
-  toId: ID!
+  fromId: ID
+  toId: ID
 }
 
 ######## STIX RELATIONSHIPS
@@ -7639,7 +7640,7 @@ type GroupEditMutations {
   contextPatch(input: EditContext): Group
   contextClean: Group
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
-  relationDelete(toId: String!, relationship_type: String!): Group
+  relationDelete(fromId: String, toId: String, relationship_type: String!): Group
 }
 type UserEditMutations {
   delete: ID

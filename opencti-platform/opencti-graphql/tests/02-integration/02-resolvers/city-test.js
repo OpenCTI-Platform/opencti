@@ -38,6 +38,7 @@ const READ_QUERY = gql`
   query city($id: String!) {
     city(id: $id) {
       id
+      standard_id
       name
       description
       toStix
@@ -102,8 +103,8 @@ describe('City resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.city).not.toBeNull();
-    expect(queryResult.data.city.stix_ids).toEqual(['location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c']);
-    expect(queryResult.data.city.country.stix_ids).toEqual(['location--5acd8b26-51c2-4608-86ed-e9edd43ad971']);
+    expect(queryResult.data.city.standard_id).toEqual('location--8cd41ad1-5ffc-5ce5-bb8d-abe6cd79b598');
+    expect(queryResult.data.city.country.standard_id).toEqual('location--da7e1450-3d18-5f2d-990c-f2e797fd7f53');
   });
   it('should list cities', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

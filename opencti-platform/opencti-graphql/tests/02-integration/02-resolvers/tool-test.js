@@ -175,7 +175,7 @@ describe('Tool resolver standard behavior', () => {
       variables: {
         id: toolInternalId,
         input: {
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
         },
       },

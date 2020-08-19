@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query countries(
@@ -35,10 +36,12 @@ const READ_QUERY = gql`
   query country($id: String!) {
     country(id: $id) {
       id
+      standard_id
       name
       description
       region {
         id
+        standard_id
       }
       toStix
     }
@@ -88,15 +91,16 @@ describe('Country resolver standard behavior', () => {
     expect(queryResult.data.country.id).toEqual(countryInternalId);
   });
   it('should country region be accurate', async () => {
+    const country = await elLoadByStixId('location--5acd8b26-51c2-4608-86ed-e9edd43ad971');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: 'f2ea7d37-996d-4313-8f73-42a8782d39a0' },
+      variables: { id: country.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.country).not.toBeNull();
-    expect(queryResult.data.country.id).toEqual('f2ea7d37-996d-4313-8f73-42a8782d39a0');
+    expect(queryResult.data.country.standard_id).toEqual('location--da7e1450-3d18-5f2d-990c-f2e797fd7f53');
     expect(queryResult.data.country.region).not.toBeNull();
-    expect(queryResult.data.country.region.id).toEqual('ccbbd430-f264-4dae-b4db-d5c02e1edeb7');
+    expect(queryResult.data.country.region.standard_id).toEqual('location--cb729867-02b4-58b2-b9b9-193fd45be9dc');
   });
   it('should list countries', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
@@ -177,7 +181,7 @@ describe('Country resolver standard behavior', () => {
       variables: {
         id: countryInternalId,
         input: {
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
         },
       },

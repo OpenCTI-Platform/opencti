@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { OPENCTI_ADMIN_UUID } from '../../../src/utils/idGenerator';
 
 const LIST_QUERY = gql`
   query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String) {
@@ -27,7 +28,6 @@ const READ_QUERY = gql`
 
 describe('Group resolver standard behavior', () => {
   let groupInternalId;
-  let groupMarkingDefinitionRelationId;
   it('should group created', async () => {
     const CREATE_QUERY = gql`
       mutation GroupAdd($input: GroupAddInput) {
@@ -115,16 +115,17 @@ describe('Group resolver standard behavior', () => {
   });
   it('should add relation in group', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation GroupEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation GroupEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         groupEdit(id: $id) {
           relationAdd(input: $input) {
             id
-            from {
+            to {
               ... on Group {
-                permissions {
+                members {
                   edges {
                     node {
                       id
+                      standard_id
                     }
                   }
                 }
@@ -139,26 +140,24 @@ describe('Group resolver standard behavior', () => {
       variables: {
         id: groupInternalId,
         input: {
-          fromRole: 'allowed',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          toRole: 'allow',
-          through: 'permission',
+          fromId: OPENCTI_ADMIN_UUID,
+          relationship_type: 'member-of',
         },
       },
     });
-    expect(queryResult.data.groupEdit.relationAdd.from.permissions.edges.length).toEqual(1);
-    groupMarkingDefinitionRelationId = queryResult.data.groupEdit.relationAdd.from.permissions.edges[0].relation.id;
+    expect(queryResult.data.groupEdit.relationAdd.to.members.edges.length).toEqual(1);
   });
   it('should delete relation in group', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation GroupEdit($id: ID!, $toId: String!, $relationship_type: String!) {
+      mutation GroupEdit($id: ID!, $fromId: String, $relationship_type: String!) {
         groupEdit(id: $id) {
-          relationDelete(toId: $toId, relationship_type: $relationship_type) {
+          relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
             id
-            permissions {
+            members {
               edges {
                 node {
                   id
+                  standard_id
                 }
               }
             }
@@ -170,7 +169,8 @@ describe('Group resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: groupInternalId,
-        relationId: groupMarkingDefinitionRelationId,
+        fromId: OPENCTI_ADMIN_UUID,
+        relationship_type: 'member-of',
       },
     });
     expect(queryResult.data.groupEdit.relationDelete.permissions.edges.length).toEqual(0);

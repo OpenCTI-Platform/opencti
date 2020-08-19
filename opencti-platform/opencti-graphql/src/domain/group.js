@@ -4,6 +4,7 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
+  deleteRelationsByFromAndTo,
   executeWrite,
   listEntities,
   listFromEntitiesThroughRelation,
@@ -12,7 +13,17 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER, RELATION_MEMBER_OF } from '../utils/idGenerator';
+import {
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_USER,
+  isInternalRelationship,
+  isStixMetaRelationship,
+  RELATION_MEMBER_OF,
+} from '../utils/idGenerator';
+import { FunctionalError } from '../config/errors';
 
 export const findById = (groupId) => {
   return loadEntityById(groupId, ENTITY_TYPE_GROUP);
@@ -43,15 +54,39 @@ export const groupEditField = (user, groupId, input) => {
 };
 
 export const groupAddRelation = async (user, groupId, input) => {
-  const finalInput = pipe(assoc('fromId', groupId), assoc('fromType', ENTITY_TYPE_GROUP))(input);
-  const data = await createRelation(user, finalInput, { noLog: true });
-  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, data, user);
+  const group = await loadEntityById(groupId, ENTITY_TYPE_GROUP);
+  if (!group) {
+    throw FunctionalError('Cannot add the relation, Group cannot be found.');
+  }
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  let finalInput;
+  if (input.fromId) {
+    finalInput = assoc('toId', groupId, input);
+  } else if (input.toId) {
+    finalInput = assoc('fromId', groupId, input);
+  }
+  return createRelation(user, finalInput).then((relationData) => {
+    notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, relationData, user);
+    return relationData;
+  });
 };
 
-export const groupDeleteRelation = async (user, groupId, relationId) => {
-  await deleteRelationById(user, relationId, 'relation');
-  const data = await loadEntityById(groupId, ENTITY_TYPE_GROUP);
-  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, data, user);
+export const groupDeleteRelation = async (user, groupId, fromId, toId, relationshipType) => {
+  const group = await loadEntityById(groupId, ENTITY_TYPE_GROUP);
+  if (!group) {
+    throw FunctionalError('Cannot delete the relation, Group cannot be found.');
+  }
+  if (!isInternalRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  if (fromId) {
+    await deleteRelationsByFromAndTo(user, fromId, groupId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
+  } else if (toId) {
+    await deleteRelationsByFromAndTo(user, groupId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 
 export const groupCleanContext = async (user, groupId) => {

@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query campaigns(
@@ -136,11 +137,12 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult.data.campaignsTimeSeries[2].value).toEqual(1);
   });
   it("should timeseries of an entity's campaigns", async () => {
+    const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        objectId: '82316ffd-a0ec-4519-a454-6566f8f5676c',
-        field: 'start_time',
+        objectId: intrusionSet.internal_id,
+        field: 'first_seen',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',

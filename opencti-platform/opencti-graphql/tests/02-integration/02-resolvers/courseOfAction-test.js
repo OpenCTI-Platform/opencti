@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query coursesOfAction(
@@ -35,12 +36,14 @@ const READ_QUERY = gql`
   query courseOfAction($id: String!) {
     courseOfAction(id: $id) {
       id
+      standard_id
       name
       description
       attackPatterns {
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -93,16 +96,19 @@ describe('CourseOfAction resolver standard behavior', () => {
     expect(queryResult.data.courseOfAction.id).toEqual(courseOfActionInternalId);
   });
   it('should courseOfAction coursesOfAction be accurate', async () => {
+    const courseOfAction = await elLoadByStixId('course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: '326b7708-d4cf-4020-8cd1-9726b99895db' },
+      variables: { id: courseOfAction.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.courseOfAction).not.toBeNull();
-    expect(queryResult.data.courseOfAction.id).toEqual('326b7708-d4cf-4020-8cd1-9726b99895db');
+    expect(queryResult.data.courseOfAction.standard_id).toEqual(
+      'course-of-action--18f5414b-fae9-5a76-a7e5-163298d36f64'
+    );
     expect(queryResult.data.courseOfAction.attackPatterns.edges.length).toEqual(1);
-    expect(queryResult.data.courseOfAction.attackPatterns.edges[0].node.id).toEqual(
-      'dcbadcd2-9359-48ac-8b86-88e38a092a2b'
+    expect(queryResult.data.courseOfAction.attackPatterns.edges[0].node.standard_id).toEqual(
+      'attack-pattern--036e48f5-ce45-5333-b695-00a9c8b9dd6b'
     );
   });
   it('should list coursesOfAction', async () => {
@@ -184,7 +190,7 @@ describe('CourseOfAction resolver standard behavior', () => {
       variables: {
         id: courseOfActionInternalId,
         input: {
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
         },
       },
