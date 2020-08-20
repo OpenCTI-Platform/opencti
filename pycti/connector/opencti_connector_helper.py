@@ -12,7 +12,7 @@ from typing import Callable, Dict, List, Optional, Union
 from pika.exceptions import UnroutableError, NackError
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
-
+from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 def get_config_variable(
     env_var: str, yaml_path: list, config: Dict = {}, isNumber: Optional[bool] = False
@@ -312,7 +312,8 @@ class OpenCTIConnectorHelper:
         if entities_types is None:
             entities_types = []
         if split:
-            bundles = self.split_stix2_bundle(bundle)
+            stix2_splitter = OpenCTIStix2Splitter()
+            bundles = stix2_splitter.split_bundle(bundle)
             if len(bundles) == 0:
                 raise ValueError("Nothing to import")
             pika_connection = pika.BlockingConnection(
@@ -459,13 +460,13 @@ class OpenCTIConnectorHelper:
                 if object_marking_ref in self.cache_index:
                     object_marking_refs.append(self.cache_index[object_marking_ref])
         # Created by ref
-        created_by = None
-        if "created_by" in item and item["created_by"] in self.cache_index:
-            created_by = self.cache_index[item["created_by"]]
+        created_by_ref = None
+        if "created_by_ref" in item and item["created_by_ref"] in self.cache_index:
+            created_by_ref = self.cache_index[item["created_by_ref"]]
 
         return {
             "object_marking_refs": object_marking_refs,
-            "created_by": created_by,
+            "created_by_ref": created_by_ref,
         }
 
     def stix2_get_entity_objects(self, entity) -> list:
@@ -481,8 +482,8 @@ class OpenCTIConnectorHelper:
         # Get embedded objects
         embedded_objects = self.stix2_get_embedded_objects(entity)
         # Add created by ref
-        if embedded_objects["created_by"] is not None:
-            items.append(embedded_objects["created_by"])
+        if embedded_objects["created_by_ref"] is not None:
+            items.append(embedded_objects["created_by_ref"])
         # Add marking definitions
         if len(embedded_objects["object_marking_refs"]) > 0:
             items = items + embedded_objects["object_marking_refs"]

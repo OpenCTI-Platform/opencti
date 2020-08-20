@@ -41,6 +41,7 @@ from .entities.opencti_opinion import Opinion
 from .entities.opencti_indicator import Indicator
 
 from .utils.opencti_stix2 import OpenCTIStix2
+from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from .utils.constants import StixCyberObservableTypes
 
 __all__ = [
@@ -79,5 +80,6 @@ __all__ = [
     "Opinion",
     "Indicator",
     "OpenCTIStix2",
+    "OpenCTIStix2Splitter",
     "StixCyberObservableTypes",
 ]
