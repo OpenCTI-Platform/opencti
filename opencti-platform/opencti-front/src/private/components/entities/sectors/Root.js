@@ -39,7 +39,7 @@ const sectorQuery = graphql`
       ...FileExportViewer_entity
       id
       name
-      aliases
+      x_opencti_aliases
     }
     connectorsForExport {
       ...FileManager_connectorsExport

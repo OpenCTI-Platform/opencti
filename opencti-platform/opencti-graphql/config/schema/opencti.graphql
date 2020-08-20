@@ -1484,7 +1484,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 input NoteAddInput {
   stix_id: String
-  attribute_abstract: String
+  attribute_abstract: String!
   content: String! @constraint(minLength: 2)
   authors: [String]
   revoked: Boolean
@@ -1602,7 +1602,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # ObservedData
   first_observed: DateTime!
   last_observed: DateTime!
-  number_observed: Int
+  number_observed: Int!
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -1975,6 +1975,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   name: String!
   description: String
   x_opencti_aliases: [String]
+  x_mitre_id: String
   attackPatterns: AttackPatternConnection
   # Technical
   creator: User
@@ -1988,6 +1989,7 @@ input CourseOfActionAddInput {
   name: String! @constraint(minLength: 2)
   description: String!
   x_opencti_aliases: [String]
+  x_mitre_id: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -2094,8 +2096,9 @@ interface Identity {
   identity_class: String!
   name: String!
   description: String
-  aliases: [String]
+  roles: [String]
   contact_information: String
+  x_opencti_aliases: [String]
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -2109,10 +2112,11 @@ input IdentityAddInput {
   name: String!
   description: String
   contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
   confidence: Int
   revoked: Boolean
   lang: String
-  aliases: [String]
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
@@ -2210,8 +2214,9 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   identity_class: String!
   name: String!
   description: String
-  aliases: [String]
   contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
   # Individual
   x_opencti_firstname: String
   x_opencti_lastname: String
@@ -2227,8 +2232,9 @@ input IndividualAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String!
-  aliases: [String]
   contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
   x_opencti_firstname: String
   x_opencti_lastname: String
   confidence: Int
@@ -2339,8 +2345,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   identity_class: String!
   name: String!
   description: String
-  aliases: [String]
   contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
   # Organization
   x_opencti_organization_type: String
   x_opencti_reliability: OrganizationReliability
@@ -2356,8 +2363,9 @@ input OrganizationAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String!
-  aliases: [String]
   contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
   confidence: Int
   revoked: Boolean
   lang: String
@@ -2462,8 +2470,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   identity_class: String!
   name: String!
   description: String
-  aliases: [String]
   contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
   # Sector
   parentSectors: SectorConnection
   subSectors: SectorConnection
@@ -2479,8 +2488,9 @@ input SectorAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String!
-  aliases: [String]
   contact_information: String
+  roles: [String]
+  x_opencti_aliases: [String]
   confidence: Int
   revoked: Boolean
   lang: String

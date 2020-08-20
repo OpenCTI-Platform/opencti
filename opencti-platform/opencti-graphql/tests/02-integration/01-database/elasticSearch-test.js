@@ -277,11 +277,11 @@ describe('Elasticsearch computation', () => {
       'year',
       undefined, // No start
       undefined, // No end
-      [{ isRelation: false, type: 'name', value: 'The MITRE Corporation' }]
+      [{ isRelation: false, type: 'name', value: 'ANSSI' }]
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2017')).toEqual(1);
+    expect(aggregationMap.get('2020')).toEqual(1);
   });
 });
 
@@ -449,13 +449,13 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with dates filter', async () => {
     let filters = [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }];
     let data = await elPaginate(ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(2); // The 4 Default TLP + MITRE Corporation
+    expect(data.edges.length).toEqual(1); // The 4 Default TLP + MITRE Corporation
     filters = [
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
       { key: 'color', operator: undefined, values: [null] },
     ];
     data = await elPaginate(ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(26);
+    expect(data.edges.length).toEqual(27);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
@@ -495,14 +495,14 @@ describe('Elasticsearch pagination', () => {
   it('should relation paginate everything', async () => {
     let data = await elPaginate(RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(161);
+    expect(data.edges.length).toEqual(160);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(161);
+    expect(data.length).toEqual(160);
     filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');

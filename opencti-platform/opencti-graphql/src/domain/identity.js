@@ -16,7 +16,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_IDENTITY);
   }
-  return listEntities(types, ['name', 'description', 'aliases'], args);
+  return listEntities(types, ['name', 'description', 'x_opencti_aliases'], args);
 };
 
 export const addIdentity = async (user, identity) => {

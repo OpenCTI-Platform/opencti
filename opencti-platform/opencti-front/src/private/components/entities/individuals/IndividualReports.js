@@ -76,7 +76,7 @@ const IndividualReports = createFragmentContainer(IndividualReportsComponent, {
     fragment IndividualReports_individual on Individual {
       id
       name
-      aliases
+      x_opencti_aliases
     }
   `,
 });

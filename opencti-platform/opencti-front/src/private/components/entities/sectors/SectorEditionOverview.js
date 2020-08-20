@@ -229,10 +229,8 @@ class SectorEditionOverviewComponent extends Component {
         variables: {
           id: head(added).value,
           input: {
-            fromRole: 'part_of',
             toId: this.props.sector.id,
-            toRole: 'gather',
-            through: 'part-of',
+            relationship_type: 'part-of',
             first_seen: now(),
             last_seen: now(),
             weight: 4,

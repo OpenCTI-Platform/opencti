@@ -2,7 +2,7 @@ import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import * as R from 'ramda';
-import { __, propOr } from 'ramda';
+import { __ } from 'ramda';
 import {
   DatabaseError,
   DuplicateEntryError,
@@ -39,7 +39,6 @@ import {
 } from './rabbitmq';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
@@ -53,7 +52,6 @@ import {
   isDatedInternalObject,
   isInternalId,
   isInternalObject,
-  isInternalRelationship,
   isStixCoreObject,
   isStixCoreRelationship,
   isStixCyberObservableRelationship,

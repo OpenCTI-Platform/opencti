@@ -34,7 +34,7 @@ const individualQuery = graphql`
     individual(id: $id) {
       id
       name
-      aliases
+      x_opencti_aliases
       ...Individual_individual
       ...IndividualReports_individual
       ...IndividualKnowledge_individual
