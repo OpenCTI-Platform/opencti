@@ -21,6 +21,7 @@ import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
@@ -43,14 +44,14 @@ import {
 } from '../utils/idGenerator';
 
 export const findAll = async (args) => {
-  return listRelations(propOr('stix-core-relationship', 'relationship_type', args), args);
+  return listRelations(propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
 };
 
 export const findById = (stixCoreRelationshipId) => {
   if (!isStixId(stixCoreRelationshipId) && !isInternalId(stixCoreRelationshipId)) {
     return getRelationInferredById(stixCoreRelationshipId);
   }
-  return loadRelationById(stixCoreRelationshipId, 'stix-core-relationship');
+  return loadRelationById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
 export const stixCoreRelationshipsNumber = (args) => {
@@ -138,13 +139,16 @@ export const stixCoreRelationshipDelete = async (user, stixCoreRelationshipId) =
   return deleteRelationById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
-export const stixCoreRelationshipEditField = (user, stixCoreRelationshipId, input) => {
+export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input) => {
+  const stixCoreRelationship = await loadRelationById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  if (!stixCoreRelationship) {
+    throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
+  }
   return executeWrite((wTx) => {
     return updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, wTx);
-  }).then(async () => {
-    const stixCoreRelationship = await loadRelationById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
-  });
+  }).then(async (updatedStixCoreRelationship) =>
+    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedStixCoreRelationship, user)
+  );
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {
