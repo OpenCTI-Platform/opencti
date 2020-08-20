@@ -873,20 +873,12 @@ class OpenCTIStix2:
     # region export
     def generate_export(self, entity):
         # Handle model deviation
-
         # Identities
         if IdentityTypes.has_value(entity["entity_type"]):
-            if entity["entity_type"] == "Individual":
-                entity["identity_class"] = "individual"
-            elif entity["entity_type"] == "Sector":
-                entity["identity_class"] = "class"
-            else:
-                entity["identity_class"] = "organization"
             entity["entity_type"] = "Identity"
 
         # Locations
         if LocationTypes.has_value(entity["entity_type"]):
-            entity["x_opencti_location_type"] = entity["entity_type"]
             entity["entity_type"] = "Location"
 
         # Flatten

@@ -274,8 +274,10 @@ class OpenCTIApiClient:
                     and "reason" in result["errors"][0]["data"]
                 ):
                     logging.error(result["errors"][0]["data"]["reason"])
+                    raise ValueError(result["errors"][0]["data"]["reason"])
                 else:
                     logging.error(result["errors"][0]["message"])
+                    raise ValueError(result["errors"][0]["message"])
             else:
                 return result
         else:
