@@ -677,6 +677,7 @@ input MarkingDefinitionAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Labels
@@ -794,6 +795,7 @@ input ExternalReferenceAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## KillChainPhases
@@ -851,6 +853,7 @@ input KillChainPhaseAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ######## STIX CORE OBJECT ENTITIES
@@ -1054,6 +1057,7 @@ input StixDomainObjectAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  update: Boolean
 }
 
 ############## AttackPatterns
@@ -1175,6 +1179,7 @@ input AttackPatternAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Campaigns
@@ -1290,6 +1295,7 @@ input CampaignAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Containers
@@ -1468,6 +1474,7 @@ input NoteAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ ObservedDatas
@@ -1591,6 +1598,7 @@ input ObservedDataAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ Opînions
@@ -1711,6 +1719,7 @@ input OpinionAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ Reports
@@ -1841,6 +1850,7 @@ input ReportAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## CoursesOfAction
@@ -1948,6 +1958,7 @@ input CourseOfActionAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Identities
@@ -2065,6 +2076,7 @@ input IdentityAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  update: Boolean
 }
 
 ################ Individuals
@@ -2181,6 +2193,7 @@ input IndividualAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ Organizations
@@ -2305,6 +2318,7 @@ input OrganizationAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ Sectors
@@ -2421,6 +2435,7 @@ input SectorAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Indicators
@@ -2562,6 +2577,7 @@ input IndicatorAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Infrastructures
@@ -2680,6 +2696,7 @@ input InfrastructureAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## IntrusionSets
@@ -2798,6 +2815,7 @@ input IntrusionSetAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Locations
@@ -2915,6 +2933,7 @@ input LocationAddInput {
   clientMutationId: String
   created: DateTime
   modified: DateTime
+  update: Boolean
 }
 
 ################ Positions
@@ -3032,6 +3051,7 @@ input PositionAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ Cities
@@ -3147,6 +3167,7 @@ input CityAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ Countries
@@ -3257,6 +3278,7 @@ input CountryAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ################ Regions
@@ -3369,6 +3391,7 @@ input RegionAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Malware
@@ -3498,6 +3521,7 @@ input MalwareAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## ThreatActors
@@ -3623,6 +3647,7 @@ input ThreatActorAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Tools
@@ -3735,6 +3760,7 @@ input ToolAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## Vulnerabilities
@@ -3853,6 +3879,7 @@ input VulnerabilityAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## XOpenCTIIncident
@@ -3966,6 +3993,7 @@ input XOpenCTIIncidentAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ######## STIX CYBER OBSERVABLES ENTITIES
@@ -4155,6 +4183,7 @@ input AutonomousSystemAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4244,6 +4273,7 @@ input DirectoryAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4324,6 +4354,7 @@ input DomainNameAddInput {
   objectMarking: [String]
   objectLabel: [String]
   clientMutationId: String
+  update: Boolean
 }
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4407,6 +4438,7 @@ input EmailAddrAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4500,6 +4532,7 @@ input EmailMessageAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4585,6 +4618,7 @@ input EmailMimePartTypeAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 ############## HashedObservable
 interface HashedObservable {
@@ -4758,6 +4792,7 @@ input ArtifactAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
@@ -4864,6 +4899,7 @@ input StixFileAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
@@ -4968,6 +5004,7 @@ input X509CertificateAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5050,6 +5087,7 @@ input IPv4AddrAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5132,6 +5170,7 @@ input IPv6AddrAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5213,6 +5252,7 @@ input MacAddrAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5294,6 +5334,7 @@ input MutexAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5395,6 +5436,7 @@ input NetworkTrafficAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5488,6 +5530,7 @@ input ProcessAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5579,6 +5622,7 @@ input SoftwareAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5660,6 +5704,7 @@ input UrlAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5769,6 +5814,7 @@ input UserAccountAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5854,6 +5900,7 @@ input WindowsRegistryKeyAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5939,6 +5986,7 @@ input WindowsRegistryValueTypeAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6050,6 +6098,7 @@ input X509V3ExtensionsTypeAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6131,6 +6180,7 @@ input XOpenCTICryptographicKeyAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6212,6 +6262,7 @@ input XOpenCTICryptocurrencyWalletAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6293,6 +6344,7 @@ input XOpenCTIHostnameAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6374,6 +6426,7 @@ input XOpenCTITextAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6455,6 +6508,7 @@ input XOpenCTIUserAgentAddInput {
   objectLabel: [String]
   externalReferences: [String]
   clientMutationId: String
+  update: Boolean
 }
 
 ###### RELATIONSHIPS
@@ -6718,6 +6772,7 @@ input StixCoreRelationshipAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## StixSightingRelationships
@@ -6818,6 +6873,7 @@ input StixSightingRelationshipAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## StixCyberObservableRelationships
@@ -6887,6 +6943,7 @@ input StixCyberObservableRelationshipAddInput {
   created: DateTime
   modified: DateTime
   clientMutationId: String
+  update: Boolean
 }
 
 ############## StixMetaRelationships

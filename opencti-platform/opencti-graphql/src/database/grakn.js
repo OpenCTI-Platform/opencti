@@ -1714,6 +1714,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
   const today = now();
   // Dissoc additional data
   let data = R.pipe(
+    R.dissoc('update'),
     R.dissoc('createdBy'),
     R.dissoc('objectMarking'),
     R.dissoc('objectLabel'),
