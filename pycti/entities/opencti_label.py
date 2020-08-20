@@ -117,7 +117,7 @@ class Label:
         :return label object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         value = kwargs.get("value", None)
         color = kwargs.get("color", None)
@@ -142,21 +142,3 @@ class Label:
             self.opencti.log(
                 "error", "[opencti_label] Missing parameters: value",
             )
-
-    """
-        Create a Label object only if it not exists, update it on request
-
-        :param value: the value
-        :param color: the color
-        :return Label object
-    """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        value = kwargs.get("value", None)
-        color = kwargs.get("color", None)
-        object_result = self.read(filters=[{"key": "value", "values": [value]}])
-        if object_result is not None:
-            return object_result
-        else:
-            return self.create_raw(stix_id=stix_id, value=value, color=color)

@@ -251,7 +251,7 @@ class StixCyberObservableRelation:
         :return stix_observable_relation object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         from_id = kwargs.get("fromId", None)
         from_role = kwargs.get("fromRole", None)
         to_id = kwargs.get("toId", None)
@@ -268,6 +268,7 @@ class StixCyberObservableRelation:
         modified = kwargs.get("modified", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
+        update = kwargs.get("update", False)
 
         self.opencti.log(
             "info",
@@ -317,162 +318,6 @@ class StixCyberObservableRelation:
         return self.opencti.process_multiple_fields(
             result["data"]["StixCyberObservableRelationAdd"]
         )
-
-    """
-        Create a stix_observable_relation object only if it not exists, update it on request
-
-        :param name: the name of the stix_observable_relation
-        :return stix_observable_relation object
-    """
-
-    def create(self, **kwargs):
-        from_id = kwargs.get("fromId", None)
-        from_type = kwargs.get("fromType", None)
-        to_type = kwargs.get("toType", None)
-        to_id = kwargs.get("toId", None)
-        relationship_type = kwargs.get("relationship_type", None)
-        description = kwargs.get("description", None)
-        role_played = kwargs.get("role_played", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        weight = kwargs.get("weight", None)
-        id = kwargs.get("id", None)
-        stix_id = kwargs.get("stix_id", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        update = kwargs.get("update", False)
-        ignore_dates = kwargs.get("ignore_dates", False)
-        custom_attributes = """
-            id
-            entity_type
-            name
-            description
-            weight
-            first_seen
-            last_seen
-        """
-        stix_relation_result = None
-        if stix_id is not None:
-            stix_relation_result = self.read(
-                id=stix_id, customAttributes=custom_attributes
-            )
-        if stix_relation_result is None:
-            if (
-                ignore_dates is False
-                and first_seen is not None
-                and last_seen is not None
-            ):
-                first_seen = dateutil.parser.parse(first_seen)
-                first_seen_start = (first_seen + datetime.timedelta(days=-1)).strftime(
-                    "%Y-%m-%dT%H:%M:%S+00:00"
-                )
-                first_seen_stop = (first_seen + datetime.timedelta(days=1)).strftime(
-                    "%Y-%m-%dT%H:%M:%S+00:00"
-                )
-                last_seen = dateutil.parser.parse(last_seen)
-                last_seen_start = (last_seen + datetime.timedelta(days=-1)).strftime(
-                    "%Y-%m-%dT%H:%M:%S+00:00"
-                )
-                last_seen_stop = (last_seen + datetime.timedelta(days=1)).strftime(
-                    "%Y-%m-%dT%H:%M:%S+00:00"
-                )
-            else:
-                first_seen_start = None
-                first_seen_stop = None
-                last_seen_start = None
-                last_seen_stop = None
-            stix_relation_result = self.read(
-                fromId=from_id,
-                toId=to_id,
-                relationship_type=relationship_type,
-                firstSeenStart=first_seen_start,
-                firstSeenStop=first_seen_stop,
-                lastSeenStart=last_seen_start,
-                lastSeenStop=last_seen_stop,
-                customAttributes=custom_attributes,
-            )
-        if stix_relation_result is not None:
-            if update:
-                if description is not None:
-                    self.update_field(
-                        id=stix_relation_result["id"],
-                        key="description",
-                        value=description,
-                    )
-                    stix_relation_result["description"] = description
-                if weight is not None:
-                    self.update_field(
-                        id=stix_relation_result["id"], key="weight", value=str(weight)
-                    )
-                    stix_relation_result["weight"] = weight
-                if first_seen is not None:
-                    new_first_seen = dateutil.parser.parse(first_seen)
-                    old_first_seen = dateutil.parser.parse(
-                        stix_relation_result["first_seen"]
-                    )
-                    if new_first_seen < old_first_seen:
-                        self.update_field(
-                            id=stix_relation_result["id"],
-                            key="first_seen",
-                            value=first_seen,
-                        )
-                        stix_relation_result["first_seen"] = first_seen
-                if last_seen is not None:
-                    new_last_seen = dateutil.parser.parse(last_seen)
-                    old_last_seen = dateutil.parser.parse(
-                        stix_relation_result["last_seen"]
-                    )
-                    if new_last_seen > old_last_seen:
-                        self.update_field(
-                            id=stix_relation_result["id"],
-                            key="last_seen",
-                            value=last_seen,
-                        )
-                        stix_relation_result["last_seen"] = last_seen
-            return stix_relation_result
-        else:
-            roles = self.opencti.resolve_role(relationship_type, from_type, to_type)
-            if roles is not None:
-                final_from_id = from_id
-                final_to_id = to_id
-            else:
-                roles = self.opencti.resolve_role(relationship_type, to_type, from_type)
-                if roles is not None:
-                    final_from_id = to_id
-                    final_to_id = from_id
-                else:
-                    self.opencti.log(
-                        "error",
-                        "Relation creation failed, cannot resolve roles: {"
-                        + relationship_type
-                        + ": "
-                        + from_type
-                        + ", "
-                        + to_type
-                        + "}",
-                    )
-                    return None
-
-            return self.create_raw(
-                fromId=final_from_id,
-                fromRole=roles["from_role"],
-                toId=final_to_id,
-                toRole=roles["to_role"],
-                relationship_type=relationship_type,
-                description=description,
-                first_seen=first_seen,
-                last_seen=last_seen,
-                weight=weight,
-                role_played=role_played,
-                id=id,
-                stix_id=stix_id,
-                created=created,
-                modified=modified,
-                createdBy=created_by,
-                objectMarking=object_marking,
-            )
 
     """
         Update a stix_observable_relation object field

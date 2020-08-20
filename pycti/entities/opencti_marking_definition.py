@@ -130,7 +130,7 @@ class MarkingDefinition:
         :return Marking-Definition object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
@@ -138,6 +138,7 @@ class MarkingDefinition:
         definition = kwargs.get("definition", None)
         x_opencti_order = kwargs.get("x_opencti_order", 0)
         x_opencti_color = kwargs.get("x_opencti_color", None)
+        update = kwargs.get("update", False)
 
         if definition is not None and definition_type is not None:
             query = (
@@ -172,45 +173,6 @@ class MarkingDefinition:
             self.opencti.log(
                 "error",
                 "[opencti_marking_definition] Missing parameters: definition and definition_type",
-            )
-
-    """
-        Create a Marking-Definition object only if it not exists, update it on request
-
-        :param definition_type: the definition_type
-        :param definition: the definition
-        :return Marking-Definition object
-    """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        definition_type = kwargs.get("definition_type", None)
-        definition = kwargs.get("definition", None)
-        x_opencti_order = kwargs.get("x_opencti_order", 0)
-        x_opencti_color = kwargs.get("x_opencti_color", None)
-        object_result = None
-        if stix_id is not None:
-            object_result = self.read(id=stix_id)
-        if object_result is None:
-            object_result = self.read(
-                filters=[
-                    {"key": "definition_type", "values": [definition_type]},
-                    {"key": "definition", "values": [definition]},
-                ]
-            )
-        if object_result is not None:
-            return object_result
-        else:
-            return self.create_raw(
-                definition_type=definition_type,
-                definition=definition,
-                x_opencti_order=x_opencti_order,
-                x_opencti_color=x_opencti_color,
-                stix_id=stix_id,
-                created=created,
-                modified=modified,
             )
 
     """

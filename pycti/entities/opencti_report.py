@@ -352,7 +352,7 @@ class Report:
         :return Report object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -369,6 +369,7 @@ class Report:
         published = kwargs.get("published", None)
         x_opencti_graph_data = kwargs.get("x_opencti_graph_data", None)
         x_opencti_report_status = kwargs.get("x_opencti_report_status", None)
+        update = kwargs.get("update", False)
 
         if name is not None and description is not None and published is not None:
             self.opencti.log("info", "Creating Report {" + name + "}.")
@@ -411,113 +412,6 @@ class Report:
                 "error",
                 "[opencti_report] Missing parameters: name and description and published and report_class",
             )
-
-    """
-         Create a Report object only if it not exists, update it on request
-
-         :param name: the name of the Report
-         :param description: the description of the Report
-         :param published: the publication date of the Report
-         :return Report object
-     """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        external_reference_id = kwargs.get("external_reference_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
-        report_types = kwargs.get("report_types", None)
-        published = kwargs.get("published", None)
-        x_opencti_graph_data = kwargs.get("x_opencti_graph_data", None)
-        x_opencti_report_status = kwargs.get("x_opencti_report_status", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }
-            ... on Report {
-                name
-                description
-                report_types
-                published
-                x_opencti_report_status
-            }       
-        """
-        object_result = None
-        if external_reference_id is not None:
-            object_result = self.opencti.stix_domain_object.read(
-                types=["Report"],
-                filters=[
-                    {"key": "hasExternalReference", "values": [external_reference_id]}
-                ],
-                customAttributes=custom_attributes,
-            )
-        if object_result is None and name is not None:
-            object_result = self.get_by_stix_id_or_name(
-                stix_id=stix_id,
-                name=name,
-                published=published,
-                custom_attributes=custom_attributes,
-            )
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                if object_result["name"] != name:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                if (
-                    description is not None
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
-            if external_reference_id is not None:
-                self.opencti.stix_domain_object.add_external_reference(
-                    id=object_result["id"], external_reference_id=external_reference_id,
-                )
-            return object_result
-        else:
-            report = self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                name=name,
-                description=description,
-                report_types=report_types,
-                published=published,
-                x_opencti_graph_data=x_opencti_graph_data,
-                x_opencti_report_status=x_opencti_report_status,
-            )
-            if external_reference_id is not None:
-                self.opencti.stix_domain_object.add_external_reference(
-                    id=report["id"], external_reference_id=external_reference_id,
-                )
-            return report
 
     """
         Add a Stix-Entity object to Report object (object_refs)

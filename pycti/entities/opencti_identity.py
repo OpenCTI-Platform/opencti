@@ -220,7 +220,7 @@ class Identity:
         :return Identity object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         type = kwargs.get("type", None)
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
@@ -240,6 +240,8 @@ class Identity:
         x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
         x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
+        update = kwargs.get("update", False)
+
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Identity {" + name + "}.")
             input_variables = {
@@ -307,159 +309,6 @@ class Identity:
             )
         else:
             self.opencti.log("error", "Missing parameters: name and description")
-
-    """
-        Create a  Identity object only if it not exists, update it on request
-
-        :param name: the name of the Identity
-        :return Identity object
-    """
-
-    def create(self, **kwargs):
-        type = kwargs.get("type", None)
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", False)
-        confidence = kwargs.get("confidence", 0)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
-        aliases = kwargs.get("aliases", None)
-        contact_information = kwargs.get("contact_information", None)
-        x_opencti_organization_type = kwargs.get("x_opencti_organization_type", None)
-        x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
-        x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
-        x_opencti_lastname = kwargs.get("x_opencti_lastname", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            ... on Identity {
-                name
-                description 
-                aliases
-                contact_information
-            }
-            ... on Organization {
-                x_opencti_organization_type
-                x_opencti_reliability
-            }
-            ... on Individual {
-                x_opencti_firstname
-                x_opencti_lastname
-            }
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }
-        """
-        object_result = self.opencti.stix_domain_object.get_by_stix_id_or_name(
-            types=[type],
-            stix_id=stix_id,
-            name=name,
-            customAttributes=custom_attributes,
-        )
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                # name
-                if object_result["name"] != name:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                # description
-                if (
-                    self.opencti.not_empty(description)
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
-                # aliases
-                if (
-                    self.opencti.not_empty(aliases)
-                    and object_result["aliases"] != aliases
-                ):
-                    if "aliases" in object_result:
-                        new_aliases = object_result["aliases"] + list(
-                            set(aliases) - set(object_result["aliases"])
-                        )
-                    else:
-                        new_aliases = aliases
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="aliases", value=new_aliases
-                    )
-                    object_result["aliases"] = new_aliases
-                # contact_information
-                if (
-                    self.opencti.not_empty(contact_information)
-                    and object_result["contact_information"] != contact_information
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="contact_information",
-                        value=contact_information,
-                    )
-                    object_result["contact_information"] = contact_information
-                # x_opencti_organization_type
-                if (
-                    self.opencti.not_empty(x_opencti_organization_type)
-                    and "x_opencti_organization_type" in object_result
-                    and object_result["x_opencti_organization_type"]
-                    != x_opencti_organization_type
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_opencti_organization_type",
-                        value=x_opencti_organization_type,
-                    )
-                    object_result[
-                        "x_opencti_organization_type"
-                    ] = x_opencti_organization_type
-                # x_opencti_reliability
-                if (
-                    self.opencti.not_empty(x_opencti_reliability)
-                    and "x_opencti_reliability" in object_result
-                    and object_result["x_opencti_reliability"] != x_opencti_reliability
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_opencti_reliability",
-                        value=x_opencti_reliability,
-                    )
-                    object_result["x_opencti_reliability"] = x_opencti_reliability
-            return object_result
-        else:
-            return self.create_raw(
-                type=type,
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                name=name,
-                description=description,
-                aliases=aliases,
-                contact_information=contact_information,
-                x_opencti_organization_type=x_opencti_organization_type,
-                x_opencti_reliability=x_opencti_reliability,
-                x_opencti_firstname=x_opencti_firstname,
-                x_opencti_lastname=x_opencti_lastname,
-            )
 
     """
         Import an Identity object from a STIX2 object

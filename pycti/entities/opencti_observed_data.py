@@ -322,7 +322,7 @@ class ObservedData:
         :return ObservedData object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -336,6 +336,7 @@ class ObservedData:
         first_observed = kwargs.get("first_observed", None)
         last_observed = kwargs.get("last_observed", None)
         number_observed = kwargs.get("number_observed", None)
+        update = kwargs.get("update", False)
 
         if first_observed is not None and last_observed is not None:
             self.opencti.log("info", "Creating ObservedData.")
@@ -377,80 +378,6 @@ class ObservedData:
                 "error",
                 "[opencti_observedData] Missing parameters: first_observed or last_observed",
             )
-
-    """
-         Create a ObservedData object only if it not exists, update it on request
-
-         :param name: the name of the ObservedData
-         :param description: the description of the ObservedData
-         :param published: the publication date of the ObservedData
-         :return ObservedData object
-     """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        first_observed = kwargs.get("first_observed", None)
-        last_observed = kwargs.get("last_observed", None)
-        number_observed = kwargs.get("number_observed", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }
-            ... on ObservedData {
-                first_observed
-                last_observed
-                number_observed
-            }
-        """
-        object_result = None
-        if stix_id is not None:
-            object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                if (
-                    number_observed is not None
-                    and object_result["number_observed"] != number_observed
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="number_observed",
-                        value=number_observed,
-                    )
-                    object_result["number_observed"] = number_observed
-            return object_result
-        else:
-            observedData = self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                first_observed=first_observed,
-                last_observed=last_observed,
-                number_observed=number_observed,
-            )
-            return observedData
 
     """
         Add a Stix-Entity object to ObservedData object (object)

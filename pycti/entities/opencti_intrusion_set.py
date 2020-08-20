@@ -213,7 +213,7 @@ class IntrusionSet:
         :return Intrusion-Set object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -233,6 +233,7 @@ class IntrusionSet:
         resource_level = kwargs.get("resource_level", None)
         primary_motivation = kwargs.get("primary_motivation", None)
         secondary_motivations = kwargs.get("secondary_motivations", None)
+        update = kwargs.get("update", False)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Intrusion-Set {" + name + "}.")
@@ -279,169 +280,6 @@ class IntrusionSet:
             self.opencti.log(
                 "error",
                 "[opencti_intrusion_set] Missing parameters: name and description",
-            )
-
-    """
-        Create a Intrusion-Set object only if it not exists, update it on request
-
-        :param name: the name of the Intrusion Set
-        :return Intrusion-Set object
-    """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
-        aliases = kwargs.get("aliases", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        goals = kwargs.get("goals", None)
-        resource_level = kwargs.get("resource_level", None)
-        primary_motivation = kwargs.get("primary_motivation", None)
-        secondary_motivations = kwargs.get("secondary_motivations", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }       
-            ... on IntrusionSet {
-                name
-                description
-                aliases    
-                first_seen
-                last_seen
-                goals
-                resource_level
-                primary_motivation
-                secondary_motivations
-            }
-        """
-        object_result = self.opencti.stix_domain_object.get_by_stix_id_or_name(
-            types=["Intrusion-Set"],
-            stix_id=stix_id,
-            name=name,
-            customAttributes=custom_attributes,
-        )
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                # name
-                if object_result["name"] != name:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                # description
-                if (
-                    self.opencti.not_empty(description)
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
-                # aliases
-                if (
-                    self.opencti.not_empty(aliases)
-                    and object_result["aliases"] != aliases
-                ):
-                    if "aliases" in object_result:
-                        new_aliases = object_result["aliases"] + list(
-                            set(aliases) - set(object_result["aliases"])
-                        )
-                    else:
-                        new_aliases = aliases
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="aliases", value=new_aliases
-                    )
-                    object_result["aliases"] = new_aliases
-                # first_seen
-                if first_seen is not None and object_result["first_seen"] != first_seen:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="first_seen", value=first_seen
-                    )
-                    object_result["first_seen"] = first_seen
-                # last_seen
-                if last_seen is not None and object_result["last_seen"] != last_seen:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="last_seen", value=last_seen
-                    )
-                    object_result["last_seen"] = last_seen
-                # goals
-                if self.opencti.not_empty(goals) and object_result["goals"] != goals:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="goals", value=goals
-                    )
-                    object_result["goals"] = goals
-                # resource_level
-                if (
-                    self.opencti.not_empty(resource_level)
-                    and object_result["resource_level"] != resource_level
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="resource_level",
-                        value=resource_level,
-                    )
-                    object_result["resource_level"] = resource_level
-                # primary_motivation
-                if (
-                    self.opencti.not_empty(primary_motivation)
-                    and object_result["primary_motivation"] != primary_motivation
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="primary_motivation",
-                        value=primary_motivation,
-                    )
-                    object_result["primary_motivation"] = primary_motivation
-                # secondary_motivations
-                if (
-                    self.opencti.not_empty(secondary_motivations)
-                    and object_result["secondary_motivations"] != secondary_motivations
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="secondary_motivations",
-                        value=secondary_motivations,
-                    )
-                    object_result["secondary_motivations"] = secondary_motivations
-            return object_result
-        else:
-            return self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                name=name,
-                description=description,
-                aliases=aliases,
-                first_seen=first_seen,
-                last_seen=last_seen,
-                goals=goals,
-                resource_level=resource_level,
-                primary_motivation=primary_motivation,
-                secondary_motivations=secondary_motivations,
             )
 
     """

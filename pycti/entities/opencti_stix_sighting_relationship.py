@@ -415,7 +415,7 @@ class StixSightingRelationship:
         :return stix_sighting object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         stix_id = kwargs.get("stix_id", None)
@@ -431,6 +431,7 @@ class StixSightingRelationship:
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
+        update = kwargs.get("update", False)
 
         self.opencti.log(
             "info", "Creating stix_sighting {" + from_id + ", " + str(to_id) + "}.",
@@ -470,168 +471,6 @@ class StixSightingRelationship:
         return self.opencti.process_multiple_fields(
             result["data"]["stixSightingRelationshipAdd"]
         )
-
-    """
-        Create a stix_sighting object only if it not exists, update it on request
-
-        :param name: the name of the stix_sighting
-        :return stix_sighting object
-    """
-
-    def create(self, **kwargs):
-        from_id = kwargs.get("fromId", None)
-        to_id = kwargs.get("toId", None)
-        stix_id = kwargs.get("stix_id", None)
-        description = kwargs.get("description", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        count = kwargs.get("count", None)
-        x_opencti_negative = kwargs.get("x_opencti_negative", False)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        confidence = kwargs.get("confidence", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        update = kwargs.get("update", False)
-        ignore_dates = kwargs.get("ignore_dates", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            first_seen
-            last_seen
-            x_opencti_negative
-            attribute_count
-            confidence
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }       
-        """
-        stix_sighting_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if stix_sighting_result is None and to_id is not None:
-            if (
-                ignore_dates is False
-                and first_seen is not None
-                and last_seen is not None
-            ):
-                first_seen_parsed = dateutil.parser.parse(first_seen)
-                first_seen_start = (
-                    first_seen_parsed + datetime.timedelta(days=-1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-                first_seen_stop = (
-                    first_seen_parsed + datetime.timedelta(days=1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-                last_seen_parsed = dateutil.parser.parse(last_seen)
-                last_seen_start = (
-                    last_seen_parsed + datetime.timedelta(days=-1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-                last_seen_stop = (
-                    last_seen_parsed + datetime.timedelta(days=1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-            else:
-                first_seen_start = None
-                first_seen_stop = None
-                last_seen_start = None
-                last_seen_stop = None
-            stix_sighting_result = self.read(
-                fromId=from_id,
-                toId=to_id,
-                firstSeenStart=first_seen_start,
-                firstSeenStop=first_seen_stop,
-                lastSeenStart=last_seen_start,
-                lastSeenStop=last_seen_stop,
-                customAttributes=custom_attributes,
-            )
-        if stix_sighting_result is not None:
-            if update or stix_sighting_result["createdBy"] == created_by:
-                if (
-                    description is not None
-                    and stix_sighting_result["description"] != description
-                ):
-                    self.update_field(
-                        id=stix_sighting_result["id"],
-                        key="description",
-                        value=description,
-                    )
-                    stix_sighting_result["description"] = description
-                if (
-                    confidence is not None
-                    and stix_sighting_result["confidence"] != confidence
-                ):
-                    self.update_field(
-                        id=stix_sighting_result["id"],
-                        key="confidence",
-                        value=str(confidence),
-                    )
-                    stix_sighting_result["confidence"] = confidence
-                if (
-                    x_opencti_negative is not None
-                    and stix_sighting_result["x_opencti_negative"] != x_opencti_negative
-                ):
-                    self.update_field(
-                        id=stix_sighting_result["id"],
-                        key="x_opencti_negative",
-                        value=str(x_opencti_negative).lower(),
-                    )
-                    stix_sighting_result["x_opencti_negative"] = x_opencti_negative
-                if (
-                    count is not None
-                    and stix_sighting_result["attribute_count"] != count
-                ):
-                    self.update_field(
-                        id=stix_sighting_result["id"],
-                        key="attribute_count",
-                        value=str(count),
-                    )
-                    stix_sighting_result["attribute_count"] = count
-                if first_seen is not None:
-                    new_first_seen = dateutil.parser.parse(first_seen)
-                    old_first_seen = dateutil.parser.parse(
-                        stix_sighting_result["first_seen"]
-                    )
-                    if new_first_seen < old_first_seen:
-                        self.update_field(
-                            id=stix_sighting_result["id"],
-                            key="first_seen",
-                            value=first_seen,
-                        )
-                        stix_sighting_result["first_seen"] = first_seen
-                if last_seen is not None:
-                    new_last_seen = dateutil.parser.parse(last_seen)
-                    old_last_seen = dateutil.parser.parse(
-                        stix_sighting_result["last_seen"]
-                    )
-                    if new_last_seen > old_last_seen:
-                        self.update_field(
-                            id=stix_sighting_result["id"],
-                            key="last_seen",
-                            value=last_seen,
-                        )
-                        stix_sighting_result["last_seen"] = last_seen
-            return stix_sighting_result
-        else:
-            return self.create_raw(
-                fromId=from_id,
-                toId=to_id,
-                stix_id=stix_id,
-                description=description,
-                first_seen=first_seen,
-                last_seen=last_seen,
-                count=count,
-                x_opencti_negative=x_opencti_negative,
-                created=created,
-                modified=modified,
-                confidence=confidence,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-            )
 
     """
         Update a stix_sighting object field
