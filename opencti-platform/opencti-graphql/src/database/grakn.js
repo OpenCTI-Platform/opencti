@@ -2,7 +2,7 @@ import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import * as R from 'ramda';
-import { __ } from 'ramda';
+import { __, propOr } from 'ramda';
 import {
   DatabaseError,
   DuplicateEntryError,
@@ -39,6 +39,7 @@ import {
 } from './rabbitmq';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
@@ -52,6 +53,7 @@ import {
   isDatedInternalObject,
   isInternalId,
   isInternalObject,
+  isInternalRelationship,
   isStixCoreObject,
   isStixCoreRelationship,
   isStixCyberObservableRelationship,
@@ -759,7 +761,17 @@ export const listRelations = async (relationshipType, args) => {
   const { first = 1000, after, orderBy, relationFilter, inferred = false } = args;
   let useInference = inferred;
   const { filters = [], search, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
-  const { startTimeStart, startTimeStop, stopTimeStart, stopTimeStop, confidences = [] } = args;
+  const {
+    startTimeStart,
+    startTimeStop,
+    stopTimeStart,
+    stopTimeStop,
+    firstSeenStart,
+    firstSeenStop,
+    lastSeenStart,
+    lastSeenStop,
+    confidences = [],
+  } = args;
   // Use $from, $to only if fromId or toId specified.
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
@@ -800,6 +812,10 @@ export const listRelations = async (relationshipType, args) => {
     if (startTimeStop) finalFilters.push({ key: 'start_time', values: [startTimeStop], operator: 'lt' });
     if (stopTimeStart) finalFilters.push({ key: 'stop_time', values: [stopTimeStart], operator: 'gt' });
     if (stopTimeStop) finalFilters.push({ key: 'stop_time', values: [stopTimeStop], operator: 'lt' });
+    if (firstSeenStart) finalFilters.push({ key: 'first_seen', values: [firstSeenStart], operator: 'gt' });
+    if (firstSeenStop) finalFilters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
+    if (lastSeenStart) finalFilters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
+    if (lastSeenStop) finalFilters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
     if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
     const paginateArgs = R.pipe(R.assoc('types', [relationToGet]), R.assoc('filters', finalFilters))(args);
     return elPaginate(RELATIONSHIPS_INDICES, paginateArgs);
@@ -863,6 +879,16 @@ export const listRelations = async (relationshipType, args) => {
     attributesFields.push(`$rel has stop_time $ls;`);
     if (stopTimeStart) attributesFilters.push(`$ls > ${prepareDate(stopTimeStart)};`);
     if (stopTimeStop) attributesFilters.push(`$ls < ${prepareDate(stopTimeStop)};`);
+  }
+  if (firstSeenStart || firstSeenStop) {
+    attributesFields.push(`$rel has first_seen $fs;`);
+    if (firstSeenStart) attributesFilters.push(`$fs > ${prepareDate(firstSeenStart)};`);
+    if (firstSeenStop) attributesFilters.push(`$fs < ${prepareDate(firstSeenStop)};`);
+  }
+  if (lastSeenStart || lastSeenStop) {
+    attributesFields.push(`$rel has last_seen $ls;`);
+    if (lastSeenStart) attributesFilters.push(`$ls > ${prepareDate(lastSeenStart)};`);
+    if (lastSeenStop) attributesFilters.push(`$ls < ${prepareDate(lastSeenStop)};`);
   }
   if (confidences && confidences.length > 0) {
     attributesFields.push(`$rel has confidence $confidence;`);
@@ -1366,12 +1392,38 @@ const createRelationRaw = async (user, input, opts = {}) => {
     relationshipType,
     R.pipe(R.assoc('fromId', from.standard_id), R.assoc('toId', to.standard_id))(input)
   );
-  const existingRelationship = await loadRelationById(standardId, input.relationship_type);
+
+  // 04. Check existing relationship
+  const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
+  if (isStixCoreRelationship(input.relationship_type)) {
+    if (!R.isNil(input.start_time)) {
+      listingArgs.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
+      listingArgs.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
+    }
+    if (!R.isNil(input.stop_time)) {
+      listingArgs.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months'));
+      listingArgs.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months'));
+    }
+  } else if (isStixSightingRelationship(input.relationship_type)) {
+    if (!R.isNil(input.first_seen)) {
+      listingArgs.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
+      listingArgs.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
+    }
+    if (!R.isNil(input.last_seen)) {
+      listingArgs.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months'));
+      listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months'));
+    }
+  }
+  const existingRelationships = await listRelations(input.relationship_type, listingArgs);
+  let existingRelationship = null;
+  if (existingRelationships.edges.length > 0) {
+    existingRelationship = R.head(existingRelationships.edges).node;
+  }
   if (existingRelationship) {
     return upsertRelation(user, existingRelationship, input.relationship_type, input);
   }
 
-  // 04. Prepare the relation to be created
+  // 05. Prepare the relation to be created
   const today = now();
   let relationAttributes = {};
   // Default attributes
@@ -1483,7 +1535,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   } finally {
     if (lock) await lock.unlock();
   }
-  // 05. Prepare the final data with Grakn IDs
+  // 06. Prepare the final data with Grakn IDs
   const createdRel = R.pipe(
     R.assoc('id', internalId),
     R.assoc('fromId', from.internal_id),
@@ -1500,9 +1552,9 @@ const createRelationRaw = async (user, input, opts = {}) => {
     R.assoc('base_type', BASE_TYPE_RELATION)
   )(relationAttributes);
   const postOperations = [];
-  // 04. Index the relation and the modification in the base entity
+  // 07. Index the relation and the modification in the base entity
   postOperations.push(elIndexElements([createdRel]));
-  // 05. Send logs
+  // 08. Send logs
   if (!noLog) {
     if (isStixMetaRelationship(relationshipType)) {
       const eventType = relationshipType === RELATION_CREATED_BY ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD;
@@ -1512,7 +1564,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     }
   }
   await Promise.all(postOperations);
-  // 06. Return result if no need to reverse the relations from and to
+  // 09. Return result if no need to reverse the relations from and to
   return createdRel;
 };
 const addCreatedBy = async (user, fromInternalId, createdById, opts = {}) => {

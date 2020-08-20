@@ -933,6 +933,10 @@ interface StixCoreObject {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1022,6 +1026,10 @@ interface StixDomainObject {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1131,6 +1139,10 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1252,6 +1264,10 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1332,6 +1348,10 @@ interface Container {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1425,6 +1445,10 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1549,6 +1573,10 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1670,6 +1698,10 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1795,6 +1827,10 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -1920,6 +1956,10 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2035,6 +2075,10 @@ interface Identity {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2147,6 +2191,10 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2272,6 +2320,10 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2391,6 +2443,10 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2521,6 +2577,10 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2653,6 +2713,10 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2766,6 +2830,10 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -2895,6 +2963,10 @@ interface Location {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3002,6 +3074,10 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3122,6 +3198,10 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3235,6 +3315,10 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3346,6 +3430,10 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3468,6 +3556,10 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3591,6 +3683,10 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3717,6 +3813,10 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3834,6 +3934,10 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -3950,6 +4054,10 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4063,6 +4171,10 @@ interface StixCyberObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4087,6 +4199,10 @@ interface StixCyberObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4132,6 +4248,10 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4156,6 +4276,10 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4218,6 +4342,10 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4242,6 +4370,10 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4308,6 +4440,10 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4332,6 +4468,10 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4389,6 +4529,10 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4413,6 +4557,10 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4473,6 +4621,10 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4497,6 +4649,10 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4567,6 +4723,10 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4591,6 +4751,10 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4654,6 +4818,10 @@ interface HashedObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4678,6 +4846,10 @@ interface HashedObservable {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4728,6 +4900,10 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4752,6 +4928,10 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4827,6 +5007,10 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4851,6 +5035,10 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -4934,6 +5122,10 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -4958,6 +5150,10 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5039,6 +5235,10 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5063,6 +5263,10 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5122,6 +5326,10 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5146,6 +5354,10 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5205,6 +5417,10 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5229,6 +5445,10 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5287,6 +5507,10 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5311,6 +5535,10 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5369,6 +5597,10 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5393,6 +5625,10 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5471,6 +5707,10 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5495,6 +5735,10 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5565,6 +5809,10 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5589,6 +5837,10 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5657,6 +5909,10 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5681,6 +5937,10 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5739,6 +5999,10 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5763,6 +6027,10 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5849,6 +6117,10 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5873,6 +6145,10 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -5935,6 +6211,10 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -5959,6 +6239,10 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -6021,6 +6305,10 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -6045,6 +6333,10 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -6133,6 +6425,10 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -6157,6 +6453,10 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -6215,6 +6515,10 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -6239,6 +6543,10 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -6297,6 +6605,10 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -6321,6 +6633,10 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -6379,6 +6695,10 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -6403,6 +6723,10 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -6461,6 +6785,10 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -6485,6 +6813,10 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
@@ -6741,6 +7073,10 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -7542,6 +7878,10 @@ type Query {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -7634,6 +7974,10 @@ type Query {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode
