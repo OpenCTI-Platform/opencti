@@ -20,7 +20,6 @@ import {
   elHistogramCount,
   elIndexElements,
   elLoadById,
-  elLoadByStandardId,
   elLoadByStixId,
   elPaginate,
   elRemoveRelationConnection,
@@ -40,7 +39,6 @@ import {
 } from './rabbitmq';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
@@ -1329,7 +1327,7 @@ const upsertRelation = async (user, relationship, type, input) => {
       return updateAttribute(
         user,
         relationship.internal_id,
-        input.relationship_type,
+        type,
         {
           key: 'stix_ids',
           value: [input.stix_id],
