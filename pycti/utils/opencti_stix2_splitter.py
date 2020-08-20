@@ -12,8 +12,12 @@ class OpenCTIStix2Splitter:
     def enlist_entity_element(self, item_id, raw_data):
         nb_deps = 0
         item = raw_data[item_id]
-        is_marking = item["id"].startswith('marking-definition--')
-        if "created_by_ref" in item and is_marking is False and self.cache_index.get(item["created_by_ref"]) is None:
+        is_marking = item["id"].startswith("marking-definition--")
+        if (
+            "created_by_ref" in item
+            and is_marking is False
+            and self.cache_index.get(item["created_by_ref"]) is None
+        ):
             nb_deps += 1
             self.enlist_entity_element(item["created_by_ref"], raw_data)
 
@@ -38,11 +42,11 @@ class OpenCTIStix2Splitter:
         item = raw_data[item_id]
         source = item["source_ref"]
         target = item["target_ref"]
-        if source.startswith('relationship--'):
+        if source.startswith("relationship--"):
             nb_deps += 1
             if self.cache_index.get(source) is None:
                 self.enlist_entity_element(target, raw_data)
-        if target.startswith('relationship--'):
+        if target.startswith("relationship--"):
             nb_deps += 1
             if self.cache_index.get(target) is None:
                 self.enlist_entity_element(target, raw_data)

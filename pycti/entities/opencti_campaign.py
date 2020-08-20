@@ -261,6 +261,7 @@ class Campaign:
                         "first_seen": first_seen,
                         "last_seen": last_seen,
                         "objective": objective,
+                        "update": update,
                     }
                 },
             )

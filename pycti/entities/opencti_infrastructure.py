@@ -317,6 +317,7 @@ class Infrastructure:
                         "first_seen": first_seen,
                         "last_seen": last_seen,
                         "killChainPhases": kill_chain_phases,
+                        "update": update,
                     }
                 },
             )

@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import dateutil.parser
-import datetime
-
 
 class StixSightingRelationship:
     def __init__(self, opencti):
@@ -465,6 +462,7 @@ class StixSightingRelationship:
                     "objectMarking": object_marking,
                     "objectLabel": object_label,
                     "externalReferences": external_references,
+                    "update": update,
                 }
             },
         )

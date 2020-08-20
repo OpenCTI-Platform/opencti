@@ -271,6 +271,7 @@ class Tool:
                         "tool_types": tool_types,
                         "tool_version": tool_version,
                         "killChainPhases": kill_chain_phases,
+                        "update": update,
                     }
                 },
             )

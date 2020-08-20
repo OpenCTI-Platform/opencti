@@ -403,6 +403,7 @@ class Report:
                         "published": published,
                         "x_opencti_graph_data": x_opencti_graph_data,
                         "x_opencti_report_status": x_opencti_report_status,
+                        "update": update,
                     }
                 },
             )

@@ -348,6 +348,7 @@ class Indicator:
                         "x_opencti_detection": x_opencti_detection,
                         "x_opencti_main_observable_type": x_opencti_main_observable_type,
                         "killChainPhases": kill_chain_phases,
+                        "update": update,
                     }
                 },
             )

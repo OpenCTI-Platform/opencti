@@ -270,6 +270,7 @@ class IntrusionSet:
                         "resource_level": resource_level,
                         "primary_motivation": primary_motivation,
                         "secondary_motivations": secondary_motivations,
+                        "update": update,
                     }
                 },
             )

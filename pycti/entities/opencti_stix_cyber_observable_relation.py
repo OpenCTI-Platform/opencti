@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import dateutil.parser
-import datetime
-
 
 class StixCyberObservableRelation:
     def __init__(self, opencti):
@@ -312,6 +309,7 @@ class StixCyberObservableRelation:
                     "modified": modified,
                     "createdBy": created_by,
                     "objectMarking": object_marking,
+                    "update": update,
                 }
             },
         )

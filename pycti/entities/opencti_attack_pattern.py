@@ -302,6 +302,7 @@ class AttackPattern:
                         "x_mitre_detection": x_mitre_detection,
                         "x_mitre_id": x_mitre_id,
                         "killChainPhases": kill_chain_phases,
+                        "update": update,
                     }
                 },
             )

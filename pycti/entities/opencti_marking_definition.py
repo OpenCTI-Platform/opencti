@@ -163,6 +163,7 @@ class MarkingDefinition:
                         "stix_id": stix_id,
                         "created": created,
                         "modified": modified,
+                        "update": update,
                     }
                 },
             )
