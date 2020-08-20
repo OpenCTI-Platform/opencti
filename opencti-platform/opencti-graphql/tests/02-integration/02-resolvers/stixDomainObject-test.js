@@ -94,6 +94,49 @@ describe('StixDomainObject resolver standard behavior', () => {
     expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.edges.length).toEqual(2);
     stixDomainObjectInternalId = stixDomainObject.data.stixDomainObjectAdd.id;
   });
+  it('should stixDomainObject upserted', async () => {
+    const CREATE_QUERY = gql`
+      mutation StixDomainObjectAdd($input: StixDomainObjectAddInput) {
+        stixDomainObjectAdd(input: $input) {
+          id
+          standard_id
+          stix_ids
+          objectLabel {
+            edges {
+              node {
+                id
+              }
+            }
+          }
+          ... on Report {
+            name
+            description
+          }
+        }
+      }
+    `;
+    // Create the stixDomainObject
+    const STIX_DOMAIN_ENTITY_TO_CREATE = {
+      input: {
+        name: 'StixDomainObject',
+        type: 'Report',
+        stix_id: 'report--84dddb68-f440-4cb5-b9f6-a59159079ef5',
+        description: 'StixDomainObject description',
+        objectLabel: ['TrickBot', 'COVID-19'],
+      },
+    };
+    const stixDomainObject = await queryAsAdmin({
+      query: CREATE_QUERY,
+      variables: STIX_DOMAIN_ENTITY_TO_CREATE,
+    });
+    expect(stixDomainObject).not.toBeNull();
+    expect(stixDomainObject.data.stixDomainObjectAdd).not.toBeNull();
+    expect(stixDomainObject.data.stixDomainObjectAdd.name).toEqual('StixDomainObject');
+    expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.edges.length).toEqual(2);
+    expect(stixDomainObject.data.stixDomainObjectAdd.stix_ids).toEqual(
+      expect.arrayContaining(['report--84dddb68-f440-4cb5-b9f6-a59159079ef5'])
+    );
+  });
   it('should stixDomainObject loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixDomainObjectInternalId } });
     expect(queryResult).not.toBeNull();
