@@ -408,7 +408,7 @@ class StixCyberObservable:
             if "x_opencti_create_indicator" in observable_data
             else kwargs.get("createIndicator", False)
         )
-        type = observable_data["type"].capitalize()
+        type = observable_data["type"].title()
         if type.lower() == "file":
             type = "StixFile"
         elif type.lower() == "ipv4-addr":
