@@ -1038,7 +1038,6 @@ interface StixDomainObject {
   editContext: [EditUserContext]
 }
 input StixDomainObjectAddInput {
-  internal_id_key: String
   stix_id: String
   name: String
   description: String
@@ -3477,7 +3476,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   editContext: [EditUserContext]
 }
 input MalwareAddInput {
-  internal_id_key: String
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String!
