@@ -11,8 +11,8 @@ import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
-  STIX_SIGHTING_RELATIONSHIP,
-} from '../utils/idGenerator';
+} from '../schema/general';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 export const findById = (attributeId) => queryAttributeValueByGraknId(attributeId);
 

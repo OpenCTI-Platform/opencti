@@ -47,7 +47,7 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   RELATION_MITIGATES,
-} from '../../../src/utils/idGenerator';
+} from '../../../src/schema/identifier';
 
 describe('Grakn basic and utils', () => {
   it('should database accessible', () => {

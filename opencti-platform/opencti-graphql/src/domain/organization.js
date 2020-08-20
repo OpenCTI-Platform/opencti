@@ -2,12 +2,9 @@ import { assoc } from 'ramda';
 import { createEntity, listEntities, listToEntitiesThroughRelation, loadEntityById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import {
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_IDENTITY_SECTOR,
-  RELATION_PART_OF,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
+import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (organizationId) => {
   return loadEntityById(organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);

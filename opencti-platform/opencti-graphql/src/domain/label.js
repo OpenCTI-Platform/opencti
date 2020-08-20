@@ -9,7 +9,7 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_LABEL } from '../utils/idGenerator';
+import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 
 export const findById = (labelId) => {
   return loadEntityById(labelId, ENTITY_TYPE_LABEL);

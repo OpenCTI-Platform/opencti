@@ -15,12 +15,9 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixDomainEntities } from './stixDomainObject';
 import { findById as findIdentityById } from './identity';
-import {
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;

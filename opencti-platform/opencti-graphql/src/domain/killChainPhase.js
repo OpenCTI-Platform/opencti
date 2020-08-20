@@ -11,7 +11,8 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_KILL_CHAIN_PHASE, RELATION_KILL_CHAIN_PHASE } from '../utils/idGenerator';
+import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
+import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixMetaRelationship';
 
 export const findById = (killChainPhaseId) => {
   return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);

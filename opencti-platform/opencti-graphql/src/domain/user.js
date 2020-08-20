@@ -35,22 +35,23 @@ import {
   now,
   updateAttribute,
 } from '../database/grakn';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
-  ABSTRACT_INTERNAL_RELATIONSHIP,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_USER,
-  generateStandardId,
+} from '../schema/internalObject';
+import {
   isInternalRelationship,
-  OPENCTI_ADMIN_UUID,
   RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
-} from '../utils/idGenerator';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+} from '../schema/internalRelationship';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
+import { generateStandardId } from '../schema/identifier';
 
 // region utils
 export const BYPASS = 'BYPASS';

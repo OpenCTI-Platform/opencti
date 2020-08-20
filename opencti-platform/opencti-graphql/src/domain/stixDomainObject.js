@@ -27,14 +27,13 @@ import { addStixCoreRelationship, findAll as findAllStixRelations } from './stix
 import { FunctionalError } from '../config/errors';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixCoreObject';
+import { isStixDomainObject } from '../schema/stixDomainObject';
 import {
-  RELATION_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  isStixMetaRelationship,
-  isStixDomainObject,
-} from '../utils/idGenerator';
+} from '../schema/general';
+import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 export const findAll = async (args) => {
   let types = [];

@@ -113,10 +113,7 @@ define
   precision sub attribute, datatype double;
   x_opencti_aliases sub attribute, datatype string;
   objective sub attribute, datatype string;
-  md5 sub attribute, datatype string;
-  sha1 sub attribute, datatype string;
-  sha256 sub attribute, datatype string;
-  sha512 sub attribute, datatype string;
+  hashes sub attribute, datatype string;
   pattern_type sub attribute, datatype string;
   pattern_version sub attribute, datatype string;
   pattern sub attribute, datatype string;
@@ -1373,10 +1370,7 @@ define
 
   Hashed-Observable sub Stix-Cyber-Observable,
     abstract,
-    has md5,
-    has sha1,
-    has sha256,
-    has sha512;
+    has hashes;
 
   Artifact sub Hashed-Observable,
     has mime_type,

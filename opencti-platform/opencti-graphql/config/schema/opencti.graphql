@@ -4785,6 +4785,14 @@ input EmailMimePartTypeAddInput {
   update: Boolean
 }
 ############## HashedObservable
+input HashInput {
+  algorithm: String! # MD5 ...
+  hash: String!
+}
+type Hash {
+  algorithm: String!
+  hash: String
+}
 interface HashedObservable {
   id: ID! # internal_id
   standard_id: String!
@@ -4856,10 +4864,7 @@ interface HashedObservable {
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
-  md5: String
-  sha1: String
-  sha256: String
-  sha512: String
+  hashes: [Hash]
   # Technical
   creator: User
   toStix: String
@@ -4938,10 +4943,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
-  md5: String
-  sha1: String
-  sha256: String
-  sha512: String
+  hashes: [Hash]
   # Artifact
   mime_type: String
   payload_bin: String
@@ -4958,10 +4960,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input ArtifactAddInput {
   stix_id: String
   x_opencti_score: Int
-  md5: String
-  sha1: String
-  sha256: String
-  sha512: String
+  hashes: [HashInput]
   mime_type: String
   payload_bin: String
   url: String
@@ -5045,10 +5044,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
-  md5: String
-  sha1: String
-  sha256: String
-  sha512: String
+  hashes: [Hash]
   # File
   extensions: String
   size: String
@@ -5069,10 +5065,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input StixFileAddInput {
   stix_id: String
   x_opencti_score: Int
-  md5: String
-  sha1: String
-  sha256: String
-  sha512: String
+  hashes: [HashInput]
   extensions: String
   size: String
   name: String
@@ -5160,10 +5153,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # HashedObservable
-  md5: String
-  sha1: String
-  sha256: String
-  sha512: String
+  hashes: [Hash]
   # X509Certificate
   is_self_signed: Boolean
   version: String

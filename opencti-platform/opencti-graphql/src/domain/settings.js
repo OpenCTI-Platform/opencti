@@ -6,7 +6,7 @@ import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { getMinIOVersion } from '../database/minio';
 import { version } from '../../package.json';
-import { ENTITY_TYPE_SETTINGS } from '../utils/idGenerator';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 export const getApplicationInfo = () => ({
   version,

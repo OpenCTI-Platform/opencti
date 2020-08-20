@@ -14,7 +14,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import { RELATION_EXTERNAL_REFERENCE } from '../utils/idGenerator';
+import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
 
 const externalReferenceResolvers = {
   Query: {

@@ -13,7 +13,7 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
-import { RELATION_OBJECT_MARKING } from '../utils/idGenerator';
+import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 
 const markingDefinitionResolvers = {
   Query: {

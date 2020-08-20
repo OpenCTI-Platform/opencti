@@ -12,12 +12,10 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  isStixMetaRelationship,
-} from '../utils/idGenerator';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 
 export const findById = (externalReferenceId) => {
   return loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);

@@ -2,7 +2,8 @@ import { assoc, pipe } from 'ramda';
 import { createEntity, listEntities, loadEntityById, now, timeSeriesEntities } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_X_OPENCTI_INCIDENT } from '../utils/idGenerator';
+import { ENTITY_TYPE_X_OPENCTI_INCIDENT } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (incidentId) => {
   return loadEntityById(incidentId, ENTITY_TYPE_X_OPENCTI_INCIDENT);

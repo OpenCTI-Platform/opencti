@@ -1,12 +1,9 @@
 import { createEntity, listEntities, listToEntitiesThroughRelation, loadEntityById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import {
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ENTITY_TYPE_ATTACK_PATTERN,
-  ENTITY_TYPE_COURSE_OF_ACTION,
-  RELATION_MITIGATES,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
 
 export const findById = (courseOfActionId) => {
   return loadEntityById(courseOfActionId, ENTITY_TYPE_COURSE_OF_ACTION);

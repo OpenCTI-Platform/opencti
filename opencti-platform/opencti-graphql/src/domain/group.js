@@ -12,14 +12,10 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  ABSTRACT_INTERNAL_RELATIONSHIP,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_USER,
-  isInternalRelationship,
-  RELATION_MEMBER_OF,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { isInternalRelationship, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
+import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 
 export const findById = (groupId) => {
   return loadEntityById(groupId, ENTITY_TYPE_GROUP);

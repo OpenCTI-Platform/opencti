@@ -1,4 +1,7 @@
-import { ENTITY_TYPE_CONTAINER_REPORT, generateStandardId } from '../../../src/utils/idGenerator';
+import { generateStandardId } from '../../../src/schema/identifier';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject';
+import { ENTITY_HASHED_OBSERVABLE_ARTIFACT } from '../../../src/schema/stixCyberObservableObject';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../../../src/schema/stixMetaObject';
 
 test('should report ids stable', () => {
   const data = {
@@ -8,6 +11,18 @@ test('should report ids stable', () => {
   };
   for (let i = 0; i < 100; i += 1) {
     const reportStandardId = generateStandardId(ENTITY_TYPE_CONTAINER_REPORT, data);
-    expect(reportStandardId).toEqual('report--eb147aa9-f6e7-5b5d-9026-63337bb48a45');
+    expect(reportStandardId).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
   }
+});
+
+test('should observable ids stable', () => {
+  const data = { name: 'test', payload_bin: 'test', hashes: '{"MD5":"yyyyyyyyyyyyy"}' };
+  const reportStandardId = generateStandardId(ENTITY_HASHED_OBSERVABLE_ARTIFACT, data);
+  expect(reportStandardId).toEqual('artifact--5e63958a-9ee6-535d-8c84-3a1e42b8213d');
+});
+
+test('should external reference ids stable', () => {
+  const data = { url: 'http://ssss', source_name: 'http://' };
+  const reportStandardId = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, data);
+  expect(reportStandardId).toEqual('external-reference--b92c2140-b505-5236-82af-ae4c42146a23');
 });

@@ -1,8 +1,9 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { authentication } from '../../../src/domain/user';
-import { ENTITY_TYPE_ROLE, generateInternalObjectId } from '../../../src/utils/idGenerator';
 import { elLoadByStandardId } from '../../../src/database/elasticSearch';
+import { generateStandardId } from '../../../src/schema/identifier';
+import { ENTITY_TYPE_ROLE } from '../../../src/schema/internalObject';
 
 const LIST_QUERY = gql`
   query users(
@@ -131,7 +132,7 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user.capabilities[0].name).toEqual('KNOWLEDGE');
   });
   it('should user remove role', async () => {
-    const roleStandardId = generateInternalObjectId(ENTITY_TYPE_ROLE, { name: 'Default' });
+    const roleStandardId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Default' });
     const role = await elLoadByStandardId(roleStandardId);
     const REMOTE_ROLE_QUERY = gql`
       mutation UserEditRemoveRole($id: ID!, $toId: String!, $relationship_type: String!) {

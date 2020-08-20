@@ -8,14 +8,13 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { killChainPhases } from '../domain/stixCoreObject';
-
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
 
 const attackPatternResolvers = {
   Query: {

@@ -37,40 +37,36 @@ import {
   EVENT_TYPE_UPDATE_REMOVE,
   sendLog,
 } from './rabbitmq';
+// eslint-disable-next-line import/no-cycle
+import { generateInternalId, generateStandardId } from '../schema/identifier';
+import { lockResource } from './redis';
+import { STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
-  ENTITY_TYPE_LABEL,
-  generateInternalId,
-  generateStandardId,
-  getParentTypes,
   isAbstract,
-  isBasicObject,
-  isBasicRelationship,
-  isDatedInternalObject,
-  isInternalId,
-  isInternalObject,
-  isStixCoreObject,
-  isStixCoreRelationship,
-  isStixCyberObservableRelationship,
-  isStixDomainObject,
-  isStixId,
-  isStixMetaObject,
+} from '../schema/general';
+import { getParentTypes, isInternalId, isStixId } from '../schema/schemaUtils';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import {
   isStixMetaRelationship,
-  isStixObject,
-  isStixRelationShipExceptMeta,
-  isStixSightingRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
-import { lockResource } from './redis';
-import { STIX_SPEC_VERSION } from './stix';
+} from '../schema/stixMetaRelationship';
+import { isDatedInternalObject, isInternalObject } from '../schema/internalObject';
+import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { dictAttributes, dictReconstruction } from '../schema/fieldDataAdapter';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixDomainObject } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 // region global variables
 export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
@@ -443,6 +439,8 @@ const loadConcept = async (tx, concept, args = {}) => {
           const { dataType, label } = attribute;
           if (dataType === GraknDate) {
             transformedVal = moment(attribute.value).utc().toISOString();
+          } else if (dictAttributes[attribute.label]) {
+            transformedVal = dictReconstruction(attribute.label, attribute.value);
           } else if (dataType === GraknString) {
             transformedVal = attribute.value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
           }
@@ -1386,11 +1384,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   }
   // 03. Generate the ID
   const internalId = generateInternalId();
-  const standardId = generateStandardId(
-    relationshipType,
-    R.pipe(R.assoc('fromId', from.standard_id), R.assoc('toId', to.standard_id))(input)
-  );
-
+  const standardId = generateStandardId(relationshipType, input);
   // 04. Check existing relationship
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
   if (isStixCoreRelationship(input.relationship_type)) {
@@ -1764,6 +1758,8 @@ export const createEntity = async (user, input, type, opts = {}) => {
   const today = now();
   // Dissoc additional data
   let data = R.pipe(
+    R.assoc('internal_id', internalId),
+    R.assoc('entity_type', type),
     R.dissoc('update'),
     R.dissoc('createdBy'),
     R.dissoc('objectMarking'),
@@ -1773,8 +1769,6 @@ export const createEntity = async (user, input, type, opts = {}) => {
     R.dissoc('objects')
   )(input);
   // Default attributes
-  // Basic-Object
-  data = R.pipe(R.assoc('internal_id', internalId), R.assoc('entity_type', type))(data);
   // Internal-Object
   if (isInternalObject(type)) {
     data = R.assoc('standard_id', standardId, data);

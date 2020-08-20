@@ -19,25 +19,27 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { isInternalId, isStixId } from '../schema/schemaUtils';
+import { ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isInternalId,
-  isStixId,
   isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  STIX_SIGHTING_RELATIONSHIP,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+} from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
 
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);

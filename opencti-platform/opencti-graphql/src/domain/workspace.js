@@ -16,15 +16,12 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { findAll as findAllStixDomains } from './workspace';
+import { findAll as findAllStixDomains } from './stixDomainObject';
 import { FunctionalError } from '../config/errors';
-import {
-  ABSTRACT_INTERNAL_RELATIONSHIP,
-  ENTITY_TYPE_WORKSPACE,
-  isInternalRelationship,
-  isStixMetaRelationship,
-  RELATION_OBJECT,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
+import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { isInternalRelationship } from '../schema/internalRelationship';
+import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 
 // region grakn fetch
 export const findById = (workspaceId) => {

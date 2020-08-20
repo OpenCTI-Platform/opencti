@@ -27,11 +27,11 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
-  RELATION_OBJECT_LABEL,
   RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 const stixDomainObjectResolvers = {
   Query: {

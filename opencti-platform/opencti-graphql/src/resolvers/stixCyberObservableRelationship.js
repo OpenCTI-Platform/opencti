@@ -12,7 +12,7 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { loadById } from '../database/grakn';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../utils/idGenerator';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {

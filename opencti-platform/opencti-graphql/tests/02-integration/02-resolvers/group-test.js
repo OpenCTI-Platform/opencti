@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { OPENCTI_ADMIN_UUID } from '../../../src/utils/idGenerator';
+import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
 const LIST_QUERY = gql`
   query groups($first: Int, $after: ID, $orderBy: GroupsOrdering, $orderMode: OrderingMode, $search: String) {

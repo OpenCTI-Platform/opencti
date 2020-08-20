@@ -9,7 +9,7 @@ import {
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_MARKING_DEFINITION } from '../utils/idGenerator';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const findById = (markingDefinitionId) => {
   return loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);

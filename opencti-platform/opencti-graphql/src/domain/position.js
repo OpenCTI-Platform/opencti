@@ -2,12 +2,9 @@ import { assoc } from 'ramda';
 import { createEntity, escapeString, listEntities, loadEntityById, load } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import {
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ENTITY_TYPE_LOCATION_POSITION,
-  ENTITY_TYPE_LOCATION_CITY,
-  RELATION_LOCATED_AT,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_POSITION } from '../schema/stixDomainObject';
+import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (positionId) => {
   return loadEntityById(positionId, ENTITY_TYPE_LOCATION_POSITION);
