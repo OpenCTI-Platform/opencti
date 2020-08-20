@@ -264,10 +264,9 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input)
   }
   return executeWrite((wTx) => {
     return updateAttribute(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, wTx);
-  }).then(async () => {
-    const stixDomain = await loadEntityById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-    return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomain, user);
-  });
+  }).then(async (updatedStixDomainObject) =>
+    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user)
+  );
 };
 
 export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomainObjectsIds, alias) => {

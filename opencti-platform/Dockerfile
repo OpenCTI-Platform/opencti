@@ -11,6 +11,7 @@ ENV PYTHONUNBUFFERED=1
 
 # Install Python
 RUN apk add --update \
+    git \
     python3 \
     python3-dev \
     py-pip \
@@ -38,7 +39,7 @@ RUN BUILD_OPENCTI=noninteractive \
 	  yarn cache clean && \
 	  mv /opt/opencti-build/opencti-graphql /opt/opencti && \
 	  rm -rf /opt/opencti-build && \
-      apk del build-base python3-dev
+      apk del build-base python3-dev git
 
 # Expose and entrypoint
 RUN chmod +x /entrypoint.sh

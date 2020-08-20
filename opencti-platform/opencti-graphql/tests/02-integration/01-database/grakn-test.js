@@ -41,6 +41,7 @@ import { PART_OF_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../.
 import { elLoadById, REL_INDEX_PREFIX, elLoadByStixId } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
 import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
@@ -255,7 +256,7 @@ describe('Grakn attribute updater', () => {
     const update = await executeWrite((wTx) => {
       return updateAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input, wTx);
     });
-    expect(update).toEqual(campaignId);
+    expect(update.internal_id).toEqual(campaignId);
   });
   it.each(noCacheCases)('should update date with dependencies', async (noCache) => {
     const stixId = 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214';
@@ -265,7 +266,7 @@ describe('Grakn attribute updater', () => {
     const type = 'Stix-Domain-Object';
     let input = { key: 'first_seen', value: ['2020-02-20T08:45:43.366Z'] };
     let update = await executeWrite((wTx) => updateAttribute(ADMIN_USER, campaignId, type, input, wTx));
-    expect(update).toEqual(campaignId);
+    expect(update.internal_id).toEqual(campaignId);
     campaign = await internalLoadEntityById(stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-20T08:45:43.366Z');
     expect(campaign.first_seen_day).toEqual('2020-02-20');
@@ -274,24 +275,24 @@ describe('Grakn attribute updater', () => {
     // Value back to before
     input = { key: 'first_seen', value: ['2020-02-27T08:45:43.365Z'] };
     update = await executeWrite((wTx) => updateAttribute(ADMIN_USER, campaignId, type, input, wTx));
-    expect(update).toEqual(campaignId);
+    expect(update.internal_id).toEqual(campaignId);
     campaign = await internalLoadEntityById(stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     expect(campaign.first_seen_day).toEqual('2020-02-27');
   });
   it.each(noCacheCases)('should update numeric', async (noCache) => {
     const stixId = 'relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416';
-    let relation = await loadRelationById(stixId, 'stix-core-relationship', { noCache });
+    let relation = await loadRelationById(stixId, ABSTRACT_STIX_CORE_RELATIONSHIP, { noCache });
     const relationId = relation.internal_id;
     expect(relation.confidence).toEqual(1);
     let input = { key: 'confidence', value: [5] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, input, wTx));
-    relation = await loadRelationById(stixId, { noCache });
+    relation = await loadRelationById(stixId, ABSTRACT_STIX_CORE_RELATIONSHIP, { noCache });
     expect(relation.confidence).toEqual(5);
     // Value back to before
     input = { key: 'confidence', value: [1] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, input, wTx));
-    relation = await loadRelationById(stixId, { noCache });
+    relation = await loadRelationById(stixId, ABSTRACT_STIX_CORE_RELATIONSHIP, { noCache });
     expect(relation.confidence).toEqual(1);
   });
   it.each(noCacheCases)('should update multivalued attribute', async (noCache) => {
@@ -533,7 +534,7 @@ describe('Grakn relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(24);
     const stixMetaRelationships = await listRelations('stix-meta-relationship', { noCache });
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(135);
+    expect(stixMetaRelationships.edges.length).toEqual(130);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('uses', { noCache, fromRole: 'uses_from', toRole: 'uses_to' });
@@ -738,7 +739,7 @@ describe('Grakn relations listing', () => {
   it.each(noCacheCases)('should list sightings (noCache = %s)', async (noCache) => {
     const stixSightings = await listRelations('stix-sighting-relationship', { noCache });
     expect(stixSightings).not.toBeNull();
-    expect(stixSightings.edges.length).toEqual(2);
+    expect(stixSightings.edges.length).toEqual(3);
   });
   it.each(noCacheCases)('should list sightings with id option (noCache = %s)', async (noCache) => {
     // Just id specified,
@@ -839,7 +840,7 @@ describe('Grakn element loader', () => {
     // No type
     const relation = await elLoadByStixId('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
     const relationId = relation.internal_id;
-    const loadPromise = loadRelationById(relationId, { noCache });
+    const loadPromise = loadRelationById(relationId, null, { noCache });
     expect(loadPromise).rejects.toThrow();
     const element = await loadRelationById(relationId, 'uses', { noCache });
     expect(element).not.toBeNull();
