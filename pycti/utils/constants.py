@@ -34,7 +34,7 @@ class StixCyberObservableTypes(Enum):
     @classmethod
     def has_value(cls, value):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value in lower_attr
+        return value.lower() in lower_attr
 
 
 class IdentityTypes(Enum):
@@ -45,7 +45,7 @@ class IdentityTypes(Enum):
     @classmethod
     def has_value(cls, value):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value in lower_attr
+        return value.lower() in lower_attr
 
 
 class LocationTypes(Enum):
@@ -57,7 +57,7 @@ class LocationTypes(Enum):
     @classmethod
     def has_value(cls, value):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value in lower_attr
+        return value.lower() in lower_attr
 
 
 class ContainerTypes(Enum):
@@ -69,4 +69,4 @@ class ContainerTypes(Enum):
     @classmethod
     def has_value(cls, value):
         lower_attr = list(map(lambda x: x.lower(), cls._value2member_map_))
-        return value in lower_attr
+        return value.lower() in lower_attr

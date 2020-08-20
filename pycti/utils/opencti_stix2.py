@@ -543,6 +543,13 @@ class OpenCTIStix2:
             "vulnerability": self.opencti.vulnerability.import_from_stix2,
             "x-opencti-incident": self.opencti.x_opencti_incident.import_from_stix2,
         }
+
+        # TODO: Remove this, compatibility with V3
+        if "x_opencti_identity_type" in stix_object and LocationTypes.has_value(
+            stix_object["x_opencti_identity_type"]
+        ):
+            stix_object["type"] = "location"
+
         do_import = importer.get(
             stix_object["type"], lambda **kwargs: self.unknown_type(stix_object),
         )
@@ -1362,8 +1369,13 @@ class OpenCTIStix2:
         start_time = time.time()
         for item in stix_bundle["objects"]:
             if item["type"] == "identity" and (types is None or "identity" in types):
-                self.import_object(item, update, types)
-                imported_elements.append({"id": item["id"], "type": item["type"]})
+                # TODO REmove this, compatibility with v3.
+                if "x_opencti_identity_type" not in item or (
+                    "x_opencti_identity_type" in item
+                    and not LocationTypes.has_value(item["x_opencti_identity_type"])
+                ):
+                    self.import_object(item, update, types)
+                    imported_elements.append({"id": item["id"], "type": item["type"]})
         end_time = time.time()
         self.opencti.log(
             "info", "Identities imported in: %ssecs" % round(end_time - start_time)
