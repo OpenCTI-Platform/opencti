@@ -273,6 +273,7 @@ class StixCyberObservable:
         custom_attributes = kwargs.get("customAttributes", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
+
         if get_all:
             first = 500
 
@@ -403,6 +404,8 @@ class StixCyberObservable:
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
+        update = kwargs.get("update", False)
+
         create_indicator = (
             observable_data["x_opencti_create_indicator"]
             if "x_opencti_create_indicator" in observable_data
@@ -443,6 +446,7 @@ class StixCyberObservable:
                     else None,
                 ),
                 "createIndicator": create_indicator,
+                "update": update,
             }
             query = """
                 mutation StixCyberObservableAdd(

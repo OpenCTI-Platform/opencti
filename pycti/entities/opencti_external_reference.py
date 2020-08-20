@@ -166,6 +166,7 @@ class ExternalReference:
                         "external_id": external_id,
                         "description": description,
                         "url": url,
+                        "update": update,
                     }
                 },
             )

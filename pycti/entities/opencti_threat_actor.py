@@ -330,6 +330,7 @@ class ThreatActor:
                         "primary_motivation": primary_motivation,
                         "secondary_motivations": secondary_motivations,
                         "personal_motivations": personal_motivations,
+                        "update": update,
                     }
                 },
             )

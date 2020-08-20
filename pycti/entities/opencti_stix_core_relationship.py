@@ -1,8 +1,5 @@
 # coding: utf-8
 
-import dateutil.parser
-import datetime
-
 
 class StixCoreRelationship:
     def __init__(self, opencti):
@@ -479,6 +476,7 @@ class StixCoreRelationship:
                     "objectLabel": object_label,
                     "externalReferences": external_references,
                     "killChainPhases": kill_chain_phases,
+                    "update": update,
                 }
             },
         )

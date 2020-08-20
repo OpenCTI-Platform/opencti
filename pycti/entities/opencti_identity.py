@@ -259,6 +259,7 @@ class Identity:
                 "description": description,
                 "aliases": aliases,
                 "contact_information": contact_information,
+                "update": update,
             }
             if type == IdentityTypes.ORGANIZATION.value:
                 query = """

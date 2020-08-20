@@ -365,6 +365,7 @@ class Note:
                         "attribute_abstract": abstract,
                         "content": content,
                         "authors": authors,
+                        "update": update,
                     }
                 },
             )

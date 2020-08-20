@@ -367,6 +367,7 @@ class Opinion:
                         "explanation": explanation,
                         "authors": authors,
                         "opinion": opinion,
+                        "update": update,
                     }
                 },
             )

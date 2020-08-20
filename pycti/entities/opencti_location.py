@@ -266,6 +266,7 @@ class Location:
                         "longitude": longitude,
                         "precision": precision,
                         "x_opencti_aliases": x_opencti_aliases,
+                        "update": update,
                     }
                 },
             )

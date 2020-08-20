@@ -367,6 +367,7 @@ class ObservedData:
                         "first_observed": first_observed,
                         "last_observed": last_observed,
                         "number_observed": number_observed,
+                        "update": update,
                     }
                 },
             )

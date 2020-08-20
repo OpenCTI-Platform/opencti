@@ -255,6 +255,7 @@ class CourseOfAction:
                         "name": name,
                         "description": description,
                         "x_opencti_aliases": x_opencti_aliases,
+                        "update": update,
                     }
                 },
             )

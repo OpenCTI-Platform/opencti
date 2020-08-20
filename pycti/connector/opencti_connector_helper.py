@@ -14,6 +14,7 @@ from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
+
 def get_config_variable(
     env_var: str, yaml_path: list, config: Dict = {}, isNumber: Optional[bool] = False
 ) -> Union[bool, int, None, str]:
