@@ -87,8 +87,7 @@ export const resetStateConnector = async (user, id) => {
 };
 
 export const registerConnector = async (user, connectorData) => {
-  const { name, type, scope } = connectorData;
-  const id = generateStandardId(ENTITY_TYPE_CONNECTOR, connectorData);
+  const { id, name, type, scope } = connectorData;
   const connector = await loadEntityById(id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);

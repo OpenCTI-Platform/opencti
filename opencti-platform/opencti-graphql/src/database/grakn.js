@@ -1325,7 +1325,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     }
     // Lock cant be acquired after 5 sec, assume relation already exists.
     if (err.name === 'LockError') {
-      throw DuplicateEntryError('Relation already exists (redis)', { id: internalId });
+      throw DatabaseError('Operation still in progress (redis lock)', { id: internalId });
     }
     throw err;
   } finally {
@@ -1625,10 +1625,9 @@ export const createEntity = async (user, input, type, opts = {}) => {
       logger.warn(err.message, { input, ...err.data });
       return loadEntityById(err.data.id, type);
     }
-    // Lock cant be acquired after 5 sec, assume input already exists.
+    // Lock cant be acquired after 5 sec, throw
     if (err.name === 'LockError') {
-      logger.warn('Entity already exists (Redis)', { input, ...err.data });
-      return loadEntityById(internalId, type);
+      throw DatabaseError('Operation still in progress (redis lock)', { id: internalId });
     }
     throw err;
   } finally {

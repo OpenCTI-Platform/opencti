@@ -16,7 +16,6 @@ from requests.exceptions import RequestException
 from itertools import groupby
 from elasticsearch import Elasticsearch
 from pycti import OpenCTIApiClient
-from utils.constants import UnsupportedCreation
 
 
 class Consumer(threading.Thread):
@@ -31,6 +30,7 @@ class Consumer(threading.Thread):
         )
         self.channel = self.pika_connection.channel()
         self.channel.basic_qos(prefetch_count=1)
+        self.processing_count = 0
 
     def get_id(self):
         if hasattr(self, "_thread_id"):
@@ -50,9 +50,7 @@ class Consumer(threading.Thread):
 
     def nack_message(self, channel, delivery_tag):
         if channel.is_open:
-            logging.info(
-                "Message (delivery_tag=" + str(delivery_tag) + ") rejected"
-            )
+            logging.info("Message (delivery_tag=" + str(delivery_tag) + ") rejected")
             channel.basic_nack(delivery_tag)
         else:
             logging.info(
@@ -100,13 +98,18 @@ class Consumer(threading.Thread):
 
     # Data handling
     def data_handler(self, connection, channel, delivery_tag, data):
+        self.processing_count += 1
         job_id = data["job_id"]
         token = None
         if "token" in data:
             token = data["token"]
         try:
             content = base64.b64decode(data["content"]).decode("utf-8")
-            types = data["entities_types"] if "entities_types" in data and len(data["entity_types"]) > 0 else None
+            types = (
+                data["entities_types"]
+                if "entities_types" in data and len(data["entities_types"]) > 0
+                else None
+            )
             update = data["update"] if "update" in data else False
             if token:
                 self.api.set_token(token)
@@ -125,29 +128,30 @@ class Consumer(threading.Thread):
             return True
         except RequestException as re:
             logging.error("A connection error occurred: { " + str(re) + " }")
+            time.sleep(60)
             logging.info(
                 "Message (delivery_tag=" + str(delivery_tag) + ") NOT acknowledged"
             )
-            cb = functools.partial(self.stop_consume, channel)
-            connection.add_callback_threadsafe(cb)
-            return False
-        except UnsupportedCreation as ue:
-            logging.info(str(ue))
-            # If creation is not supported just acknowledge the content
-            cb = functools.partial(self.ack_message, channel, delivery_tag)
-            connection.add_callback_threadsafe(cb)
-            return True
-        except Exception as e:
-            logging.error(str(e))
-            # errorType = e.args[0]
-            # Wait 5 sec before putting back in the queue
-            time.sleep(5)
-            # Nack the message
             cb = functools.partial(self.nack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
-            # if job_id is not None:
-            #     self.api.job.update_job(job_id, "error", [str(e)])
             return False
+        except Exception as e:
+            logging.error(str(e))
+            if self.processing_count <= 5:
+                time.sleep(2)
+                logging.info(
+                    "Message (delivery_tag="
+                    + str(delivery_tag)
+                    + ") reprocess (retry nb: "
+                    + str(self.processing_count)
+                    + ")"
+                )
+                self.data_handler(connection, channel, delivery_tag, data)
+            else:
+                self.processing_count = 0
+                cb = functools.partial(self.ack_message, channel, delivery_tag)
+                connection.add_callback_threadsafe(cb)
+                return False
 
     def run(self):
         try:
@@ -234,7 +238,9 @@ class Worker:
         self.opencti_token = os.getenv("OPENCTI_TOKEN") or config["opencti"]["token"]
 
         # Check if openCTI is available
-        self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token, self.log_level)
+        self.api = OpenCTIApiClient(
+            self.opencti_url, self.opencti_token, self.log_level
+        )
 
         # Configure logger
         numeric_level = getattr(logging, self.log_level.upper(), None)

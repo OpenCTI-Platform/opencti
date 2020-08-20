@@ -106,20 +106,21 @@ export const indicators = (stixCyberObservableId) => {
 export const observableValue = (stixCyberObservable) => {
   switch (stixCyberObservable.entity_type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
-      return stixCyberObservable.number;
+      return stixCyberObservable.number || 'Unknown';
     case ENTITY_DIRECTORY:
-      return stixCyberObservable.path;
+      return stixCyberObservable.path || 'Unknown';
     case ENTITY_EMAIL_MESSAGE:
-      return stixCyberObservable.body || stixCyberObservable.subject;
+      return stixCyberObservable.body || stixCyberObservable.subject || 'Unknown';
     case ENTITY_EMAIL_MIME_PART_TYPE:
-      return stixCyberObservable.body;
+      return stixCyberObservable.body || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
       return (
         stixCyberObservable.md5 ||
         stixCyberObservable.sha1 ||
         stixCyberObservable.sha256 ||
         stixCyberObservable.sha512 ||
-        stixCyberObservable.payload_bin
+        stixCyberObservable.payload_bin ||
+        'Unknown'
       );
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
       return (
@@ -127,28 +128,29 @@ export const observableValue = (stixCyberObservable) => {
         stixCyberObservable.sha1 ||
         stixCyberObservable.sha256 ||
         stixCyberObservable.sha512 ||
-        stixCyberObservable.name
+        stixCyberObservable.name ||
+        'Unknown'
       );
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
-      return stixCyberObservable.subject || stixCyberObservable.issuer;
+      return stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
     case ENTITY_MUTEX:
-      return stixCyberObservable.name;
+      return stixCyberObservable.name || 'Unknown';
     case ENTITY_NETWORK_TRAFFIC:
-      return stixCyberObservable.dst_port;
+      return stixCyberObservable.dst_port || 'Unknown';
     case ENTITY_PROCESS:
-      return stixCyberObservable.pid;
+      return stixCyberObservable.pid || 'Unknown';
     case ENTITY_SOFTWARE:
-      return stixCyberObservable.name;
+      return stixCyberObservable.name || 'Unknown';
     case ENTITY_USER_ACCOUNT:
-      return stixCyberObservable.account_login;
+      return stixCyberObservable.account_login || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_KEY:
-      return stixCyberObservable.attribute_key;
+      return stixCyberObservable.attribute_key || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
-      return stixCyberObservable.name;
+      return stixCyberObservable.name || 'Unknown';
     case ENTITY_X509_V3_EXTENSIONS_TYPE:
-      return stixCyberObservable.certificate_policies;
+      return stixCyberObservable.certificate_policies || 'Unknown';
     default:
-      return stixCyberObservable.value;
+      return stixCyberObservable.value || 'Unknown';
   }
 };
 
