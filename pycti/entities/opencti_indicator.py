@@ -268,7 +268,7 @@ class Indicator:
         :return Indicator object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -293,6 +293,7 @@ class Indicator:
             "x_opencti_main_observable_type", None
         )
         kill_chain_phases = kwargs.get("killChainPhases", None)
+        update = kwargs.get("update", False)
 
         if (
             name is not None
@@ -355,152 +356,6 @@ class Indicator:
             self.opencti.log(
                 "error",
                 "[opencti_indicator] Missing parameters: name and indicator_pattern and main_observable_type",
-            )
-
-    """
-        Create a Indicator object only if it not exists, update it on request
-
-        :param name: the name of the Indicator
-        :return Indicator object
-    """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        pattern_type = kwargs.get("pattern_type", None)
-        pattern_version = kwargs.get("pattern_version", None)
-        pattern = kwargs.get("pattern", None)
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", None)
-        indicator_types = kwargs.get("indicator_types", None)
-        valid_from = kwargs.get("valid_from", None)
-        valid_until = kwargs.get("valid_until", None)
-        x_opencti_score = kwargs.get("x_opencti_score", 50)
-        x_opencti_detection = kwargs.get("x_opencti_detection", False)
-        x_opencti_main_observable_type = kwargs.get(
-            "x_opencti_main_observable_type", None
-        )
-        kill_chain_phases = kwargs.get("killChainPhases", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }
-            ... on Indicator {
-                pattern_type
-                pattern_version
-                pattern
-                name
-                description
-                indicator_types
-                valid_from
-                valid_until
-                x_opencti_score
-                x_opencti_detection
-                x_opencti_main_observable_type
-            }
-        """
-        object_result = None
-        if stix_id is not None:
-            object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is None:
-            object_result = self.read(
-                filters=[
-                    {
-                        "key": "pattern",
-                        "values": [pattern],
-                        "operator": "match" if len(pattern) > 500 else "eq",
-                    }
-                ],
-                customAttributes=custom_attributes,
-            )
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                # name
-                if name is not None and object_result["name"] != name:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                # description
-                if (
-                    self.opencti.not_empty(description)
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
-                # score
-                if (
-                    self.opencti.not_empty(x_opencti_score)
-                    and object_result["x_opencti_score"] != x_opencti_score
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_opencti_score",
-                        value=str(x_opencti_score),
-                    )
-                    object_result["x_opencti_score"] = x_opencti_score
-                # confidence
-                if (
-                    self.opencti.not_empty(confidence)
-                    and object_result["confidence"] != confidence
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="confidence", value=str(confidence)
-                    )
-                    object_result["confidence"] = confidence
-                # detection
-                if (
-                    self.opencti.not_empty(x_opencti_detection)
-                    and object_result["x_opencti_detection"] != x_opencti_detection
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_opencti_detection",
-                        value=str(x_opencti_detection).lower(),
-                    )
-                    object_result["x_opencti_detection"] = x_opencti_detection
-            return object_result
-        else:
-            return self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                pattern_type=pattern_type,
-                pattern_version=pattern_version,
-                pattern=pattern,
-                name=name,
-                description=description,
-                indicator_types=indicator_types,
-                valid_from=valid_from,
-                valid_until=valid_until,
-                x_opencti_score=x_opencti_score,
-                x_opencti_detection=x_opencti_detection,
-                x_opencti_main_observable_type=x_opencti_main_observable_type,
-                killChainPhases=kill_chain_phases,
             )
 
     """

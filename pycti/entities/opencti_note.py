@@ -320,7 +320,7 @@ class Note:
         :return Note object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -334,6 +334,7 @@ class Note:
         abstract = kwargs.get("abstract", None)
         content = kwargs.get("content", None)
         authors = kwargs.get("authors", None)
+        update = kwargs.get("update", False)
 
         if content is not None:
             self.opencti.log("info", "Creating Note {" + content + "}.")
@@ -372,81 +373,6 @@ class Note:
             self.opencti.log(
                 "error", "[opencti_note] Missing parameters: content",
             )
-
-    """
-         Create a Note object only if it not exists, update it on request
-
-         :param name: the name of the Note
-         :param description: the description of the Note
-         :param published: the publication date of the Note
-         :return Note object
-     """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        abstract = kwargs.get("abstract", None)
-        content = kwargs.get("content", None)
-        authors = kwargs.get("authors", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }
-            ... on Note {
-                attribute_abstract
-                content
-                authors
-            }
-        """
-        object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                if (
-                    abstract is not None
-                    and object_result["attribute_abstract"] != abstract
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="attribute_abstract", value=abstract
-                    )
-                    object_result["attribute_abstract"] = abstract
-                if content is not None and object_result["content"] != content:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="content", value=content
-                    )
-                    object_result["content"] = content
-            return object_result
-        else:
-            note = self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                abstract=abstract,
-                content=content,
-                authors=authors,
-            )
-            return note
 
     """
         Add a Stix-Entity object to Note object (object_refs)

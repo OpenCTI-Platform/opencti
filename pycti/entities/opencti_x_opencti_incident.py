@@ -212,7 +212,7 @@ class XOpenCTIIncident:
         :return Incident object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -229,6 +229,7 @@ class XOpenCTIIncident:
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
         objective = kwargs.get("objective", None)
+        update = kwargs.get("update", False)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Incident {" + name + "}.")
@@ -270,130 +271,6 @@ class XOpenCTIIncident:
             )
         else:
             self.opencti.log("error", "Missing parameters: name and description")
-
-    """
-         Create a X-OpenCTI-Incident object only if it not exists, update it on request
-
-         :param name: the name of the X-OpenCTI-Incident
-         :return X-OpenCTI-Incident object
-     """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
-        aliases = kwargs.get("aliases", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        objective = kwargs.get("objective", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }   
-            ... on XOpenCTIIncident {
-                name
-                description
-                aliases
-                first_seen
-                last_seen
-                objective
-            }
-        """
-        object_result = self.opencti.stix_domain_object.get_by_stix_id_or_name(
-            types=["X-OpenCTI-Incident"],
-            stix_id=stix_id,
-            name=name,
-            customAttributes=custom_attributes,
-        )
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                # name
-                if object_result["name"] != name:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                # description
-                if (
-                    self.opencti.not_empty(description)
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
-                # aliases
-                if (
-                    self.opencti.not_empty(aliases)
-                    and object_result["aliases"] != aliases
-                ):
-                    if "aliases" in object_result:
-                        new_aliases = object_result["aliases"] + list(
-                            set(aliases) - set(object_result["aliases"])
-                        )
-                    else:
-                        new_aliases = aliases
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="aliases", value=new_aliases
-                    )
-                    object_result["aliases"] = new_aliases
-                # first_seen
-                if first_seen is not None and object_result["first_seen"] != first_seen:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="first_seen", value=first_seen
-                    )
-                    object_result["first_seen"] = first_seen
-                # last_seen
-                if last_seen is not None and object_result["last_seen"] != last_seen:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="last_seen", value=last_seen
-                    )
-                    object_result["last_seen"] = last_seen
-                # objective
-                if (
-                    self.opencti.not_empty(objective)
-                    and object_result["objective"] != objective
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="objective", value=objective
-                    )
-                    object_result["objective"] = objective
-            return object_result
-        else:
-            return self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                name=name,
-                description=description,
-                aliases=aliases,
-                first_seen=first_seen,
-                last_seen=last_seen,
-                objective=objective,
-            )
 
     """
         Import a X-OpenCTI-Incident object from a STIX2 object

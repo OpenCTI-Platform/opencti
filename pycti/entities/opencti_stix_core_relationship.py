@@ -425,7 +425,7 @@ class StixCoreRelationship:
         :return stix_core_relationship object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         stix_id = kwargs.get("stix_id", None)
@@ -443,6 +443,7 @@ class StixCoreRelationship:
         object_label = kwargs.get("objectLabel", None)
         external_references = kwargs.get("externalReferences", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
+        update = kwargs.get("update", False)
 
         self.opencti.log(
             "info", "Creating stix_core_relationship {" + from_id + ", " + to_id + "}.",
@@ -484,156 +485,6 @@ class StixCoreRelationship:
         return self.opencti.process_multiple_fields(
             result["data"]["stixCoreRelationshipAdd"]
         )
-
-    """
-        Create a stix_core_relationship object only if it not exists, update it on request
-
-        :param name: the name of the stix_core_relationship
-        :return stix_core_relationship object
-    """
-
-    def create(self, **kwargs):
-        from_id = kwargs.get("fromId", None)
-        to_id = kwargs.get("toId", None)
-        stix_id = kwargs.get("stix_id", None)
-        relationship_type = kwargs.get("relationship_type", None)
-        description = kwargs.get("description", None)
-        start_time = kwargs.get("start_time", None)
-        stop_time = kwargs.get("stop_time", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", "")
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        kill_chain_phases = kwargs.get("killChainPhases", None)
-        update = kwargs.get("update", False)
-        ignore_dates = kwargs.get("ignore_dates", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            description
-            start_time
-            stop_time
-            confidence
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }       
-        """
-        stix_core_relationship_result = None
-        if stix_id is not None:
-            stix_core_relationship_result = self.read(
-                id=stix_id, customAttributes=custom_attributes
-            )
-        if stix_core_relationship_result is None:
-            if (
-                ignore_dates is False
-                and start_time is not None
-                and stop_time is not None
-            ):
-                start_time_parsed = dateutil.parser.parse(start_time)
-                start_time_start = (
-                    start_time_parsed + datetime.timedelta(days=-1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-                start_time_stop = (
-                    start_time_parsed + datetime.timedelta(days=1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-                stop_time_parsed = dateutil.parser.parse(stop_time)
-                stop_time_start = (
-                    stop_time_parsed + datetime.timedelta(days=-1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-                stop_time_stop = (
-                    stop_time_parsed + datetime.timedelta(days=1)
-                ).strftime("%Y-%m-%dT%H:%M:%S+00:00")
-            else:
-                start_time_start = None
-                start_time_stop = None
-                stop_time_start = None
-                stop_time_stop = None
-            stix_core_relationship_result = self.read(
-                fromId=from_id,
-                toId=to_id,
-                relationship_type=relationship_type,
-                startTimeStart=start_time_start,
-                startTimeStop=start_time_stop,
-                stopTimeStart=stop_time_start,
-                stopTimeStop=stop_time_stop,
-                customAttributes=custom_attributes,
-            )
-        if stix_core_relationship_result is not None:
-            if update or stix_core_relationship_result["createdBy"] == created_by:
-                if (
-                    description is not None
-                    and stix_core_relationship_result["description"] != description
-                ):
-                    self.update_field(
-                        id=stix_core_relationship_result["id"],
-                        key="description",
-                        value=description,
-                    )
-                    stix_core_relationship_result["description"] = description
-                if (
-                    confidence is not None
-                    and stix_core_relationship_result["confidence"] != confidence
-                ):
-                    self.update_field(
-                        id=stix_core_relationship_result["id"],
-                        key="confidence",
-                        value=str(confidence),
-                    )
-                    stix_core_relationship_result["confidence"] = confidence
-                if start_time is not None:
-                    new_start_time = dateutil.parser.parse(start_time)
-                    old_start_time = dateutil.parser.parse(
-                        stix_core_relationship_result["start_time"]
-                    )
-                    if new_start_time < old_start_time:
-                        self.update_field(
-                            id=stix_core_relationship_result["id"],
-                            key="start_time",
-                            value=start_time,
-                        )
-                        stix_core_relationship_result["start_time"] = start_time
-                if stop_time is not None:
-                    new_stop_time = dateutil.parser.parse(stop_time)
-                    old_stop_time = dateutil.parser.parse(
-                        stix_core_relationship_result["stop_time"]
-                    )
-                    if new_stop_time > old_stop_time:
-                        self.update_field(
-                            id=stix_core_relationship_result["id"],
-                            key="stop_time",
-                            value=stop_time,
-                        )
-                        stix_core_relationship_result["stop_time"] = stop_time
-            return stix_core_relationship_result
-        else:
-            return self.create_raw(
-                fromId=from_id,
-                toId=to_id,
-                stix_id=stix_id,
-                relationship_type=relationship_type,
-                description=description,
-                start_time=start_time,
-                stop_time=stop_time,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                killChainPhases=kill_chain_phases,
-            )
 
     """
         Update a stix_core_relationship object field

@@ -247,7 +247,7 @@ class AttackPattern:
         :return Attack-Pattern object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -266,6 +266,7 @@ class AttackPattern:
         x_mitre_detection = kwargs.get("x_mitre_detection", None)
         x_mitre_id = kwargs.get("x_mitre_id", None)
         kill_chain_phases = kwargs.get("killChainPhases", None)
+        update = kwargs.get("update", False)
 
         if name is not None and description is not None:
             self.opencti.log("info", "Creating Attack-Pattern {" + name + "}.")
@@ -311,187 +312,6 @@ class AttackPattern:
             self.opencti.log(
                 "error",
                 "[opencti_attack_pattern] Missing parameters: name and description",
-            )
-
-    """
-        Create a Attack-Pattern object only if it not exists, update it on request
-
-        :param name: the name of the Attack-Pattern
-        :return Attack-Pattern object
-    """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
-        aliases = kwargs.get("aliases", None)
-        x_mitre_platforms = kwargs.get("x_mitre_platforms", None)
-        x_mitre_permissions_required = kwargs.get("x_mitre_permissions_required", None)
-        x_mitre_detection = kwargs.get("x_mitre_detection", None)
-        x_mitre_id = kwargs.get("x_mitre_id", None)
-        kill_chain_phases = kwargs.get("killChainPhases", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }
-            name
-            description
-            aliases
-            x_mitre_platforms
-            x_mitre_permissions_required
-            x_mitre_detection
-            x_mitre_id
-            killChainPhases {
-                edges {
-                    node {
-                        id
-                        standard_id                            
-                        entity_type
-                        kill_chain_name
-                        phase_name
-                        x_opencti_order
-                        created
-                        modified
-                    }
-                }
-            }
-        """
-        object_result = None
-        if stix_id is not None:
-            object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is None and x_mitre_id is not None:
-            object_result = self.read(
-                filters=[
-                    {"key": "x_mitre_id", "values": [x_mitre_id], "operator": "match"}
-                ]
-            )
-        if object_result is None and name is not None:
-            object_result = self.read(
-                filters=[{"key": "name", "values": [name]}],
-                customAttributes=custom_attributes,
-            )
-            if object_result is None:
-                object_result = self.read(
-                    filters=[{"key": "aliases", "values": [name]}],
-                    customAttributes=custom_attributes,
-                )
-            # If x_mitre_id mismatch, no duplicate
-            if object_result is not None:
-                if object_result["x_mitre_id"] is not None and x_mitre_id is not None:
-                    if object_result["x_mitre_id"] != x_mitre_id:
-                        object_result = None
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                # name
-                if object_result["name"] != name:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                # description
-                if (
-                    self.opencti.not_empty(description)
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
-                # aliases
-                if (
-                    self.opencti.not_empty(aliases)
-                    and object_result["aliases"] != aliases
-                ):
-                    if "aliases" in object_result:
-                        new_aliases = object_result["aliases"] + list(
-                            set(aliases) - set(object_result["aliases"])
-                        )
-                    else:
-                        new_aliases = aliases
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="aliases", value=new_aliases
-                    )
-                    object_result["aliases"] = new_aliases
-                # x_mitre_platforms
-                if (
-                    self.opencti.not_empty(x_mitre_platforms)
-                    and object_result["x_mitre_platforms"] != x_mitre_platforms
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_mitre_platforms",
-                        value=x_mitre_platforms,
-                    )
-                    object_result["x_mitre_platforms"] = x_mitre_platforms
-                # x_mitre_permissions_required
-                if (
-                    self.opencti.not_empty(x_mitre_permissions_required)
-                    and object_result["x_mitre_permissions_required"]
-                    != x_mitre_permissions_required
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="x_mitre_permissions_required",
-                        value=x_mitre_permissions_required,
-                    )
-                    object_result[
-                        "x_mitre_permissions_required"
-                    ] = x_mitre_permissions_required
-                # x_mitre_id
-                if (
-                    self.opencti.not_empty(x_mitre_id)
-                    and object_result["x_mitre_id"] != x_mitre_id
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="x_mitre_id", value=str(x_mitre_id),
-                    )
-                    object_result["x_mitre_id"] = x_mitre_id
-                # confidence
-                if (
-                    self.opencti.not_empty(confidence)
-                    and object_result["confidence"] != confidence
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="confidence", value=str(confidence)
-                    )
-                    object_result["confidence"] = confidence
-            return object_result
-        else:
-            return self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                name=name,
-                description=description,
-                aliases=aliases,
-                x_mitre_platforms=x_mitre_platforms,
-                x_mitre_permissions_required=x_mitre_permissions_required,
-                x_mitre_detection=x_mitre_detection,
-                x_mitre_id=x_mitre_id,
-                killChainPhases=kill_chain_phases,
             )
 
     """

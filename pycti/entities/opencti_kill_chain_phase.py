@@ -126,7 +126,7 @@ class KillChainPhase:
         :return Kill-Chain-Phase object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
@@ -167,37 +167,4 @@ class KillChainPhase:
             self.opencti.log(
                 "error",
                 "[opencti_kill_chain_phase] Missing parameters: kill_chain_name and phase_name",
-            )
-
-    """
-        Create a Kill-Chain-Phase object only if it not exists, update it on request
-
-        :param name: the name of the Kill-Chain-Phase
-        :return Kill-Chain-Phase object
-    """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        kill_chain_name = kwargs.get("kill_chain_name", None)
-        phase_name = kwargs.get("phase_name", None)
-        x_opencti_order = kwargs.get("x_opencti_order", 0)
-
-        kill_chain_phase_result = self.read(
-            filters=[
-                {"key": "kill_chain_name", "values": [kill_chain_name]},
-                {"key": "phase_name", "values": [phase_name]},
-            ]
-        )
-        if kill_chain_phase_result is not None:
-            return kill_chain_phase_result
-        else:
-            return self.create_raw(
-                stix_id=stix_id,
-                created=created,
-                modified=modified,
-                kill_chain_name=kill_chain_name,
-                phase_name=phase_name,
-                x_opencti_order=x_opencti_order,
             )

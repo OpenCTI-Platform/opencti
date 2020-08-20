@@ -130,7 +130,7 @@ class ExternalReference:
         :return External Reference object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
@@ -138,6 +138,7 @@ class ExternalReference:
         url = kwargs.get("url", None)
         external_id = kwargs.get("external_id", None)
         description = kwargs.get("description", None)
+        update = kwargs.get("update", False)
 
         if source_name is not None and url is not None:
             self.opencti.log(
@@ -175,80 +176,6 @@ class ExternalReference:
             self.opencti.log(
                 "error",
                 "[opencti_external_reference] Missing parameters: source_name and url",
-            )
-
-    """
-        Create a External Reference object only if it not exists, update it on request
-
-        :param name: the name of the External Reference
-        :return External Reference object
-    """
-
-    def create(self, **kwargs):
-        source_name = kwargs.get("source_name", None)
-        url = kwargs.get("url", None)
-        external_id = kwargs.get("external_id", None)
-        description = kwargs.get("description", None)
-        stix_id = kwargs.get("stix_id", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        update = kwargs.get("update", False)
-
-        external_reference_result = self.read(filters=[{"key": "url", "values": [url]}])
-        if external_reference_result is not None:
-            if update:
-                # source_name
-                if (
-                    self.opencti.not_empty(source_name)
-                    and external_reference_result["source_name"] != source_name
-                ):
-                    self.update_field(
-                        id=external_reference_result["id"],
-                        key="source_name",
-                        value=source_name,
-                    )
-                    external_reference_result["source_name"] = source_name
-                # url
-                if (
-                    self.opencti.not_empty(url)
-                    and external_reference_result["url"] != url
-                ):
-                    self.update_field(
-                        id=external_reference_result["id"], key="url", value=url
-                    )
-                    external_reference_result["url"] = url
-                # external_id
-                if (
-                    self.opencti.not_empty(external_id)
-                    and external_reference_result["external_id"] != external_id
-                ):
-                    self.update_field(
-                        id=external_reference_result["id"],
-                        key="external_id",
-                        value=external_id,
-                    )
-                    external_reference_result["external_id"] = external_id
-                # description
-                if (
-                    self.opencti.not_empty(description)
-                    and external_reference_result["description"] != description
-                ):
-                    self.update_field(
-                        id=external_reference_result["id"],
-                        key="description",
-                        value=description,
-                    )
-                    external_reference_result["description"] = description
-            return external_reference_result
-        else:
-            return self.create_raw(
-                source_name=source_name,
-                url=url,
-                external_id=external_id,
-                description=description,
-                stix_id=stix_id,
-                created=created,
-                modified=modified,
             )
 
     """

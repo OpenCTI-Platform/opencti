@@ -229,85 +229,6 @@ class ThreatActor:
             )
             return None
 
-    def _create_raw(self, **kwargs):
-        """Create a Threat-Actor object
-        """
-
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
-        aliases = kwargs.get("aliases", None)
-        threat_actor_types = kwargs.get("threat_actor_types", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        roles = kwargs.get("roles", None)
-        goals = kwargs.get("goals", None)
-        sophistication = kwargs.get("sophistication", None)
-        resource_level = kwargs.get("resource_level", None)
-        primary_motivation = kwargs.get("primary_motivation", None)
-        secondary_motivations = kwargs.get("secondary_motivations", None)
-        personal_motivations = kwargs.get("personal_motivations", None)
-
-        if name is not None and description is not None:
-            self.opencti.log("info", "Creating Threat-Actor {" + name + "}.")
-            query = """
-                mutation ThreatActorAdd($input: ThreatActorAddInput) {
-                    threatActorAdd(input: $input) {
-                        id
-                        standard_id
-                        entity_type
-                        parent_types
-                    }
-                }
-            """
-            result = self.opencti.query(
-                query,
-                {
-                    "input": {
-                        "stix_id": stix_id,
-                        "createdBy": created_by,
-                        "objectMarking": object_marking,
-                        "objectLabel": object_label,
-                        "externalReferences": external_references,
-                        "revoked": revoked,
-                        "confidence": confidence,
-                        "lang": lang,
-                        "created": created,
-                        "modified": modified,
-                        "name": name,
-                        "description": description,
-                        "aliases": aliases,
-                        "threat_actor_types": threat_actor_types,
-                        "first_seen": first_seen,
-                        "last_seen": last_seen,
-                        "roles": roles,
-                        "goals": goals,
-                        "sophistication": sophistication,
-                        "resource_level": resource_level,
-                        "primary_motivation": primary_motivation,
-                        "secondary_motivations": secondary_motivations,
-                        "personal_motivations": personal_motivations,
-                    }
-                },
-            )
-            return self.opencti.process_multiple_fields(
-                result["data"]["threatActorAdd"]
-            )
-        else:
-            self.opencti.log(
-                "error",
-                "[opencti_threat_actor] Missing parameters: name and description",
-            )
-
     def create(self, **kwargs):
         """Create a Threat-Actor object
 
@@ -369,169 +290,56 @@ class ThreatActor:
         secondary_motivations = kwargs.get("secondary_motivations", None)
         personal_motivations = kwargs.get("personal_motivations", None)
         update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
+
+        if name is not None and description is not None:
+            self.opencti.log("info", "Creating Threat-Actor {" + name + "}.")
+            query = """
+                mutation ThreatActorAdd($input: ThreatActorAddInput) {
+                    threatActorAdd(input: $input) {
+                        id
+                        standard_id
+                        entity_type
+                        parent_types
+                    }
                 }
-            }       
-            ... on ThreatActor {
-                name
-                description
-                aliases
-                threat_actor_types
-                first_seen
-                last_seen
-                roles
-                goals
-                sophistication
-                resource_level
-                primary_motivation
-                secondary_motivations
-                personal_motivations
-            }
-        """
-        object_result = self.opencti.stix_domain_object.get_by_stix_id_or_name(
-            types=["Threat-Actor"],
-            stix_id=stix_id,
-            name=name,
-            customAttributes=custom_attributes,
-        )
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                # name
-                if object_result["name"] != name:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="name", value=name
-                    )
-                    object_result["name"] = name
-                # description
-                if (
-                    self.opencti.not_empty(description)
-                    and object_result["description"] != description
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="description", value=description
-                    )
-                    object_result["description"] = description
-                # aliases
-                if (
-                    self.opencti.not_empty(aliases)
-                    and object_result["aliases"] != aliases
-                ):
-                    if "aliases" in object_result:
-                        new_aliases = object_result["aliases"] + list(
-                            set(aliases) - set(object_result["aliases"])
-                        )
-                    else:
-                        new_aliases = aliases
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="aliases", value=new_aliases
-                    )
-                    object_result["aliases"] = new_aliases
-                # first_seen
-                if first_seen is not None and object_result["first_seen"] != first_seen:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="first_seen", value=first_seen
-                    )
-                    object_result["first_seen"] = first_seen
-                # last_seen
-                if last_seen is not None and object_result["last_seen"] != last_seen:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="last_seen", value=last_seen
-                    )
-                    object_result["last_seen"] = last_seen
-                # goals
-                if self.opencti.not_empty(goals) and object_result["goals"] != goals:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="goals", value=goals
-                    )
-                    object_result["goals"] = goals
-                # sophistication
-                if (
-                    self.opencti.not_empty(sophistication)
-                    and object_result["sophistication"] != sophistication
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="sophistication",
-                        value=sophistication,
-                    )
-                    object_result["sophistication"] = sophistication
-                # resource_level
-                if (
-                    self.opencti.not_empty(resource_level)
-                    and object_result["resource_level"] != resource_level
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="resource_level",
-                        value=resource_level,
-                    )
-                    object_result["resource_level"] = resource_level
-                # primary_motivation
-                if (
-                    self.opencti.not_empty(primary_motivation)
-                    and object_result["primary_motivation"] != primary_motivation
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="primary_motivation",
-                        value=primary_motivation,
-                    )
-                    object_result["primary_motivation"] = primary_motivation
-                # secondary_motivations
-                if (
-                    self.opencti.not_empty(secondary_motivations)
-                    and object_result["secondary_motivations"] != secondary_motivations
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="secondary_motivations",
-                        value=secondary_motivations,
-                    )
-                    object_result["secondary_motivations"] = secondary_motivations
-                # personal_motivations
-                if (
-                    self.opencti.not_empty(personal_motivations)
-                    and object_result["personal_motivations"] != personal_motivations
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"],
-                        key="personal_motivations",
-                        value=personal_motivations,
-                    )
-                    object_result["personal_motivations"] = personal_motivations
-            return object_result
+            """
+            result = self.opencti.query(
+                query,
+                {
+                    "input": {
+                        "stix_id": stix_id,
+                        "createdBy": created_by,
+                        "objectMarking": object_marking,
+                        "objectLabel": object_label,
+                        "externalReferences": external_references,
+                        "revoked": revoked,
+                        "confidence": confidence,
+                        "lang": lang,
+                        "created": created,
+                        "modified": modified,
+                        "name": name,
+                        "description": description,
+                        "aliases": aliases,
+                        "threat_actor_types": threat_actor_types,
+                        "first_seen": first_seen,
+                        "last_seen": last_seen,
+                        "roles": roles,
+                        "goals": goals,
+                        "sophistication": sophistication,
+                        "resource_level": resource_level,
+                        "primary_motivation": primary_motivation,
+                        "secondary_motivations": secondary_motivations,
+                        "personal_motivations": personal_motivations,
+                    }
+                },
+            )
+            return self.opencti.process_multiple_fields(
+                result["data"]["threatActorAdd"]
+            )
         else:
-            return self._create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                name=name,
-                description=description,
-                aliases=aliases,
-                threat_actor_types=threat_actor_types,
-                first_seen=first_seen,
-                last_seen=last_seen,
-                roles=roles,
-                goals=goals,
-                sophistication=sophistication,
-                resource_level=resource_level,
-                primary_motivation=primary_motivation,
-                secondary_motivations=secondary_motivations,
-                personal_motivations=personal_motivations,
+            self.opencti.log(
+                "error",
+                "[opencti_threat_actor] Missing parameters: name and description",
             )
 
     """

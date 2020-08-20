@@ -322,7 +322,7 @@ class Opinion:
         :return Opinion object
     """
 
-    def create_raw(self, **kwargs):
+    def create(self, **kwargs):
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -336,6 +336,7 @@ class Opinion:
         explanation = kwargs.get("explanation", None)
         authors = kwargs.get("authors", None)
         opinion = kwargs.get("opinion", None)
+        update = kwargs.get("update", False)
 
         if opinion is not None:
             self.opencti.log("info", "Creating Opinion {" + opinion + "}.")
@@ -374,86 +375,6 @@ class Opinion:
             self.opencti.log(
                 "error", "[opencti_opinion] Missing parameters: content",
             )
-
-    """
-         Create a Opinion object only if it not exists, update it on request
-
-         :param name: the name of the Opinion
-         :param description: the description of the Opinion
-         :param published: the publication date of the Opinion
-         :return Opinion object
-     """
-
-    def create(self, **kwargs):
-        stix_id = kwargs.get("stix_id", None)
-        created_by = kwargs.get("createdBy", None)
-        object_marking = kwargs.get("objectMarking", None)
-        object_label = kwargs.get("objectLabel", None)
-        external_references = kwargs.get("externalReferences", None)
-        revoked = kwargs.get("revoked", None)
-        confidence = kwargs.get("confidence", None)
-        lang = kwargs.get("lang", None)
-        created = kwargs.get("created", None)
-        modified = kwargs.get("modified", None)
-        explanation = kwargs.get("explanation", None)
-        authors = kwargs.get("authors", None)
-        opinion = kwargs.get("opinion", None)
-        update = kwargs.get("update", False)
-        custom_attributes = """
-            id
-            standard_id
-            entity_type
-            parent_types
-            createdBy {
-                ... on Identity {
-                    id
-                }
-            }
-            ... on Opinion {
-                explanation
-                authors
-                opinion
-            }
-        """
-        object_result = self.read(id=stix_id, customAttributes=custom_attributes)
-        if object_result is not None:
-            if update or object_result["createdById"] == created_by:
-                if (
-                    explanation is not None
-                    and object_result["explanation"] != explanation
-                ):
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="explanation", value=explanation
-                    )
-                    object_result["explanation"] = explanation
-                if authors is not None and object_result["authors"] != authors:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="authors", value=authors
-                    )
-                    object_result["opinion"] = authors
-                if opinion is not None and object_result["opinion"] != authors:
-                    self.opencti.stix_domain_object.update_field(
-                        id=object_result["id"], key="opinion", value=authors
-                    )
-                    object_result["opinion"] = authors
-            return object_result
-        else:
-            opinion = self.create_raw(
-                stix_id=stix_id,
-                createdBy=created_by,
-                objectMarking=object_marking,
-                objectLabel=object_label,
-                externalReferences=external_references,
-                revoked=revoked,
-                confidence=confidence,
-                lang=lang,
-                created=created,
-                modified=modified,
-                explanation=explanation,
-                authors=authors,
-                opinion=opinion,
-            )
-            return opinion
 
     """
         Add a Stix-Entity object to Opinion object (object_refs)
