@@ -88,12 +88,14 @@ const entityLastReportsQuery = graphql`
           name
           description
           published
-          createdByRef {
-            node {
+          createdBy {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
                 definition
@@ -113,13 +115,18 @@ class EntityLastReports extends Component {
       nsd,
       classes,
       entityId,
-      stixObservableId,
+      stixCyberObservableId,
       authorId,
     } = this.props;
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
-    if (entityId) filters.push({ key: 'knowledgeContains', values: [entityId] });
-    if (stixObservableId) filters.push({ key: 'observablesContains', values: [stixObservableId] });
+    if (entityId) filters.push({ key: 'objectContains', values: [entityId] });
+    if (stixCyberObservableId) {
+      filters.push({
+        key: 'observablesContains',
+        values: [stixCyberObservableId],
+      });
+    }
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -166,11 +173,7 @@ class EntityLastReports extends Component {
                             }
                           />
                           <div style={inlineStyles.itemAuthor}>
-                            {pathOr(
-                              '',
-                              ['createdByRef', 'node', 'name'],
-                              report,
-                            )}
+                            {pathOr('', ['createdBy', 'name'], report)}
                           </div>
                           <div style={inlineStyles.itemDate}>
                             {nsd(report.published)}
@@ -228,7 +231,7 @@ class EntityLastReports extends Component {
 
 EntityLastReports.propTypes = {
   entityId: PropTypes.string,
-  stixObservableId: PropTypes.string,
+  stixCyberObservableId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -91,13 +91,13 @@ class Vulnerabilities extends Component {
         width: '20%',
         isSortable: true,
       },
-      base_severity: {
+      x_opencti_base_severity: {
         label: 'CVSS3 - Severity',
         width: '15%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      objectLabel: {
+        label: 'Labels',
         width: '25%',
         isSortable: true,
       },
@@ -129,13 +129,13 @@ class Vulnerabilities extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'tags',
+          'labels',
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
-          'base_score_gt',
-          'base_severity',
-          'attack_vector',
+          'x_opencti_base_score_gt',
+          'x_opencti_base_severity',
+          'x_opencti_attack_vector',
           'createdBy',
         ]}
       >
@@ -148,7 +148,7 @@ class Vulnerabilities extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}

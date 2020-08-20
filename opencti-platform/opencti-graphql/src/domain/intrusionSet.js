@@ -1,24 +1,22 @@
-import { assoc, pipe } from 'ramda';
-import { createEntity, listEntities, loadEntityById, loadEntityByStixId, now } from '../database/grakn';
+import { assoc, pipe, isNil } from 'ramda';
+import { createEntity, listEntities, loadEntityById, FROM_START, UNTIL_END } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_INTRUSION_SET } from '../utils/idGenerator';
 
 export const findById = (intrusionSetId) => {
-  if (intrusionSetId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(intrusionSetId, 'Intrusion-Set');
-  }
-  return loadEntityById(intrusionSetId, 'Intrusion-Set');
+  return loadEntityById(intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
 };
+
 export const findAll = (args) => {
-  return listEntities(['Intrusion-Set'], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_INTRUSION_SET], ['name', 'description', 'aliases'], args);
 };
 
 export const addIntrusionSet = async (user, intrusionSet) => {
-  const currentDate = now();
   const intrusionSetToCreate = pipe(
-    assoc('first_seen', intrusionSet.first_seen ? intrusionSet.first_seen : currentDate),
-    assoc('last_seen', intrusionSet.last_seen ? intrusionSet.last_seen : currentDate)
+    assoc('first_seen', isNil(intrusionSet.first_seen) ? new Date(FROM_START) : intrusionSet.first_seen),
+    assoc('last_seen', isNil(intrusionSet.last_seen) ? new Date(UNTIL_END) : intrusionSet.last_seen)
   )(intrusionSet);
-  const created = await createEntity(user, intrusionSetToCreate, 'Intrusion-Set');
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(user, intrusionSetToCreate, ENTITY_TYPE_INTRUSION_SET);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

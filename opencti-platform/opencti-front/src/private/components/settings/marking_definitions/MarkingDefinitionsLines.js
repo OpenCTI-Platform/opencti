@@ -19,7 +19,7 @@ export const markingDefinitionsLinesSearchQuery = graphql`
           id
           definition_type
           definition
-          color
+          x_opencti_color
         }
       }
     }
@@ -96,9 +96,9 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: {
             type: "MarkingDefinitionsOrdering"
-            defaultValue: "definition"
+            defaultValue: definition
           }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         markingDefinitions(
           search: $search

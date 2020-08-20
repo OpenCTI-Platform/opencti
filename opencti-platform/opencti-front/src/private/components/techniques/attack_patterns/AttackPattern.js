@@ -10,11 +10,11 @@ import AttackPatternOverview from './AttackPatternOverview';
 import AttackPatternDetails from './AttackPatternDetails';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternPopover from './AttackPatternPopover';
-import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
+import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
 import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
@@ -31,8 +31,8 @@ class AttackPatternComponent extends Component {
     const { classes, attackPattern } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={attackPattern}
+        <StixDomainObjectHeader
+          stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
         />
         <Grid
@@ -60,9 +60,9 @@ class AttackPatternComponent extends Component {
             <AttackPatternCoursesOfAction attackPattern={attackPattern} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsChart
+            <EntityStixCoreRelationshipsChart
               entityId={attackPattern.id}
-              relationType="uses"
+              relationshipType="uses"
             />
           </Grid>
           <Grid item={true} xs={4}>
@@ -88,7 +88,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
     fragment AttackPattern_attackPattern on AttackPattern {
       id
       name
-      alias
+      aliases
       ...AttackPatternOverview_attackPattern
       ...AttackPatternDetails_attackPattern
       ...AttackPatternCoursesOfAction_attackPattern

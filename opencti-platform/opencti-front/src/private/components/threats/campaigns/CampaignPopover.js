@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { campaignEditionQuery } from './CampaignEdition';
 import CampaignEditionContainer from './CampaignEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -109,7 +111,11 @@ class CampaignPopover extends Component {
     const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
         <Menu
@@ -167,7 +173,8 @@ class CampaignPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CampaignEditionContainer campaign={props.campaign}
+                  <CampaignEditionContainer
+                    campaign={props.campaign}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

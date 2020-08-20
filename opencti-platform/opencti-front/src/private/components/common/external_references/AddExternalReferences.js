@@ -84,10 +84,7 @@ class AddExternalReferences extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      entityId,
-      entityExternalReferences,
+      t, classes, entityId, entityExternalReferences,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -193,7 +190,4 @@ AddExternalReferences.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddExternalReferences);
+export default compose(inject18n, withStyles(styles))(AddExternalReferences);

@@ -2,24 +2,30 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Button from '@material-ui/core/Button';
 import { Link } from 'react-router-dom';
+import Security, { SETTINGS_SETACCESSES } from '../utils/Security';
 
 class ItemCreator extends Component {
   render() {
     const { creator } = this.props;
     return (
       <div>
-        {creator ? (
+        <Security
+          needs={[SETTINGS_SETACCESSES]}
+          placeholder={
+            <Button variant="outlined" size="small">
+              {creator.name}
+            </Button>
+          }
+        >
           <Button
             variant="outlined"
             size="small"
             component={Link}
-            to={`/dashboard/entities/persons/${creator.id}?viewAs=author`}
+            to={`/dashboard/settings/accesses/users/${creator.id}`}
           >
             {creator.name}
           </Button>
-        ) : (
-          '-'
-        )}
+        </Security>
       </div>
     );
   }

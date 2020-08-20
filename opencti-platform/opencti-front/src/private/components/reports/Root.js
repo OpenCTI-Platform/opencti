@@ -5,17 +5,17 @@ import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer, requestSubscription } from '../../../relay/environment';
 import TopBar from '../nav/TopBar';
 import Report from './Report';
-import ReportEntities from './ReportEntities';
+import ReportEntities from './ReportStixDomainObjects';
 import ReportKnowledge from './ReportKnowledge';
-import ReportObservables from './ReportObservables';
+import ReportObservables from './ReportStixCyberObservables';
 import FileManager from '../common/files/FileManager';
-import StixObjectHistory from '../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../common/stix_core_objects/StixCoreObjectHistory';
 import ReportHeader from './ReportHeader';
 import Loader from '../../../components/Loader';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Report {
         ...Report_report
         ...ReportKnowledgeGraph_report
@@ -35,8 +35,8 @@ const reportQuery = graphql`
       ...ReportOverview_report
       ...ReportDetails_report
       ...ReportKnowledge_report
-      ...ReportEntities_report
-      ...ReportObservables_report
+      ...ReportStixDomainObjects_report
+      ...ReportStixCyberObservables_report
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -137,7 +137,7 @@ class RootReport extends Component {
                     render={(routeProps) => (
                       <React.Fragment>
                         <ReportHeader report={props.report} />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={reportId}
                         />

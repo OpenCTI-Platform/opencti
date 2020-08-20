@@ -11,15 +11,15 @@ import Region from './Region';
 import RegionReports from './RegionReports';
 import RegionKnowledge from './RegionKnowledge';
 import RegionObservables from './RegionObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import RegionPopover from './RegionPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootRegionsSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Region {
         ...Region_region
         ...RegionEditionContainer_region
@@ -35,7 +35,7 @@ const regionQuery = graphql`
     region(id: $id) {
       id
       name
-      alias
+      x_opencti_aliases
       ...Region_region
       ...RegionReports_region
       ...RegionKnowledge_region
@@ -127,8 +127,8 @@ class RootRegion extends Component {
                     path="/dashboard/entities/regions/:regionId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.region}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.region}
                           PopoverComponent={<RegionPopover />}
                         />
                         <FileManager
@@ -145,11 +145,11 @@ class RootRegion extends Component {
                     path="/dashboard/entities/regions/:regionId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.region}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.region}
                           PopoverComponent={<RegionPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={regionId}
                         />

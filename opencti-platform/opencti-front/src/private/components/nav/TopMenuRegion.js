@@ -59,7 +59,10 @@ class TopMenuRegion extends Component {
           <FlagOutlined className={classes.icon} fontSize="small" />
           {t('Regions')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/regions/${regionId}`}

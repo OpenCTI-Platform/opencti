@@ -10,7 +10,7 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import IndicatorEntitiesLines, {
   indicatorEntitiesLinesQuery,
 } from './IndicatorEntitiesLines';
-import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 const styles = () => ({
   paper: {
@@ -109,11 +109,11 @@ class IndicatorEntities extends Component {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
     const {
-      classes, t, entityId, relationType,
+      classes, t, entityId, relationship_type,
     } = this.props;
     const paginationOptions = {
       fromId: entityId,
-      relationType,
+      relationship_type,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -123,16 +123,16 @@ class IndicatorEntities extends Component {
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Relations to threats')}
         </Typography>
-        <StixRelationCreationFromEntity
+        <StixCoreRelationshipCreationFromEntity
           paginationOptions={paginationOptions}
           entityId={entityId}
           variant="inLine"
-          isFrom={true}
-          targetEntityTypes={[
+          isRelationReversed={false}
+          targetStixDomainObjectTypes={[
             'Threat-Actor',
             'Intrusion-Set',
             'Campaign',
-            'Incident',
+            'XOpenCTIIncident',
             'Malware',
             'Tool',
             'Vulnerability',
@@ -150,13 +150,10 @@ class IndicatorEntities extends Component {
 
 IndicatorEntities.propTypes = {
   entityId: PropTypes.string,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorEntities);
+export default compose(inject18n, withStyles(styles))(IndicatorEntities);

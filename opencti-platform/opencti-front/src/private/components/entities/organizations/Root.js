@@ -11,15 +11,15 @@ import Organization from './Organization';
 import OrganizationReports from './OrganizationReports';
 import OrganizationKnowledge from './OrganizationKnowledge';
 import OrganizationObservables from './OrganizationObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import OrganizationPopover from './OrganizationPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Organization {
         ...Organization_organization
         ...OrganizationEditionContainer_organization
@@ -35,7 +35,7 @@ const organizationQuery = graphql`
     organization(id: $id) {
       id
       name
-      alias
+      aliases
       ...Organization_organization
       ...OrganizationReports_organization
       ...OrganizationKnowledge_organization
@@ -136,8 +136,8 @@ class RootOrganization extends Component {
                     path="/dashboard/entities/organizations/:organizationId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.organization}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.organization}
                           PopoverComponent={<OrganizationPopover />}
                         />
                         <FileManager
@@ -154,11 +154,11 @@ class RootOrganization extends Component {
                     path="/dashboard/entities/organizations/:organizationId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.organization}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.organization}
                           PopoverComponent={<OrganizationPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={organizationId}
                         />

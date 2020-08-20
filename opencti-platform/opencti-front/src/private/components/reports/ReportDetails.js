@@ -7,9 +7,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
-import ItemStatus from '../../../components/ItemStatus';
-import ItemConfidenceLevel from '../../../components/ItemConfidenceLevel';
-import StixDomainEntityTags from '../common/stix_domain_entities/StixDomainEntityTags';
+import ItemStatus from '../../../components/ReportStatus';
+import ItemConfidence from '../../../components/ItemConfidence';
+import StixDomainObjectLabels from '../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../components/ItemCreator';
 
 const styles = () => ({
@@ -31,7 +31,7 @@ class ReportDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainEntityTags tags={report.tags} id={report.id} />
+          <StixDomainObjectLabels labels={report.objectLabel} id={report.id} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -50,12 +50,12 @@ class ReportDetailsComponent extends Component {
           <ItemStatus
             label={t(
               `${
-                report.object_status
-                  ? `report_status_${report.object_status}`
+                report.x_opencti_report_status
+                  ? `report_status_${report.x_opencti_report_status}`
                   : 'report_status_0'
               }`,
             )}
-            status={report.object_status}
+            status={report.x_opencti_report_status}
           />
           <Typography
             variant="h3"
@@ -64,7 +64,7 @@ class ReportDetailsComponent extends Component {
           >
             {t('Confidence level')}
           </Typography>
-          <ItemConfidenceLevel level={report.source_confidence_level} />
+          <ItemConfidence confidence={report.confidence} />
         </Paper>
       </div>
     );
@@ -82,22 +82,18 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
   report: graphql`
     fragment ReportDetails_report on Report {
       id
-      object_status
-      source_confidence_level
+      confidence
+      x_opencti_report_status
       creator {
-          id
-          name
-        }
-      tags {
+        id
+        name
+      }
+      objectLabel {
         edges {
           node {
             id
-            tag_type
             value
             color
-          }
-          relation {
-            id
           }
         }
       }

@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -46,7 +46,7 @@ const styles = (theme) => ({
 class CourseOfActionLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onTagClick,
+      fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -70,12 +70,12 @@ class CourseOfActionLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags
+                <StixCoreObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -106,7 +106,7 @@ CourseOfActionLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const CourseOfActionLineFragment = createFragmentContainer(
@@ -118,16 +118,12 @@ const CourseOfActionLineFragment = createFragmentContainer(
         name
         created
         modified
-        tags {
+        objectLabel {
           edges {
             node {
               id
-              tag_type
               value
               color
-            }
-            relation {
-              id
             }
           }
         }
@@ -160,7 +156,7 @@ class CourseOfActionLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

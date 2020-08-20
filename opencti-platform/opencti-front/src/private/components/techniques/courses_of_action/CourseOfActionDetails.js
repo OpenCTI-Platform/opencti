@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import CoursesOfActionAttackPatterns from './CourseOfActionAttackPatterns';
 import ItemCreator from '../../../../components/ItemCreator';
 
@@ -37,8 +37,8 @@ class CourseOfActionDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainEntityTags
-            tags={courseOfAction.tags}
+          <StixDomainObjectLabels
+            labels={courseOfAction.objectLabel}
             id={courseOfAction.id}
           />
           <Typography
@@ -73,16 +73,12 @@ const CourseOfActionDetails = createFragmentContainer(
           id
           name
         }
-        tags {
+        objectLabel {
           edges {
             node {
               id
-              tag_type
               value
               color
-            }
-            relation {
-              id
             }
           }
         }

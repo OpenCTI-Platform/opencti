@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CityPopover from './CityPopover';
 import CityKnowledgeBar from './CityKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class CityKnowledgeComponent extends Component {
     const link = `/dashboard/entities/cities/${city.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={city}
+        <StixDomainObjectHeader
+          stixDomainObject={city}
           PopoverComponent={<CityPopover />}
         />
         <CityKnowledgeBar cityId={city.id} />
@@ -35,7 +35,7 @@ class CityKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={city.id}
               paddingRight={true}
               {...routeProps}
@@ -46,9 +46,9 @@ class CityKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={city.id}
-              stixDomainEntityType="city"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={city.id}
+              stixDomainObjectType="City"
               {...routeProps}
             />
           )}
@@ -57,12 +57,12 @@ class CityKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/countries"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={city.id}
-              relationType="localization"
-              targetEntityTypes={['Country']}
+              relationshipType="localization"
+              targetStixDomainObjectTypes={['Country']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -71,19 +71,19 @@ class CityKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={city.id}
-              relationType="targets"
-              targetEntityTypes={[
+              relationshipType="targets"
+              targetStixDomainObjectTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'X-OpenCTI-Incident',
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -104,7 +104,7 @@ const CityKnowledge = createFragmentContainer(CityKnowledgeComponent, {
     fragment CityKnowledge_city on City {
       id
       name
-      alias
+      x_opencti_aliases
     }
   `,
 });

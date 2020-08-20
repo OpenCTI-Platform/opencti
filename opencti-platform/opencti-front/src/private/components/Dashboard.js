@@ -37,6 +37,7 @@ import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
+import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
   root: {
@@ -130,15 +131,15 @@ const inlineStyles = {
   },
 };
 
-const dashboardStixDomainEntitiesTimeSeriesQuery = graphql`
-  query DashboardStixDomainEntitiesTimeSeriesQuery(
+const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
+  query DashboardStixDomainObjectsTimeSeriesQuery(
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
   ) {
-    stixDomainEntitiesTimeSeries(
+    stixDomainObjectsTimeSeries(
       field: $field
       operation: $operation
       startDate: $startDate
@@ -164,14 +165,17 @@ const dashboardLastReportsQuery = graphql`
           name
           description
           published
-          createdByRef {
-            node {
+          createdBy {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
@@ -182,14 +186,14 @@ const dashboardLastReportsQuery = graphql`
   }
 `;
 
-const dashboardLastStixDomainEntitiesQuery = graphql`
-  query DashboardLastStixDomainEntitiesQuery(
+const dashboardLastStixDomainObjectsQuery = graphql`
+  query DashboardLastStixDomainObjectsQuery(
     $first: Int
-    $orderBy: StixDomainEntitiesOrdering
+    $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
     $types: [String]
   ) {
-    stixDomainEntities(
+    stixDomainObjects(
       first: $first
       orderBy: $orderBy
       orderMode: $orderMode
@@ -199,17 +203,90 @@ const dashboardLastStixDomainEntitiesQuery = graphql`
         node {
           id
           entity_type
-          name
-          description
           updated_at
-          createdByRef {
-            node {
+          ... on AttackPattern {
+            name
+            description
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+            description
+          }
+          ... on Infrastructure {
+            name
+            description
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on XOpenCTIIncident {
+            name
+            description
+          }
+          createdBy {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
@@ -230,43 +307,84 @@ const dashboardLastNotesQuery = graphql`
       edges {
         node {
           id
-          name
+          attribute_abstract
+          content
           created
-          createdByRef {
-            node {
+          createdBy {
+            ... on Identity {
+              id
               name
+              entity_type
             }
           }
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
           }
-          objectRefs {
+          objects {
             edges {
               node {
-                id
-                entity_type
-              }
-            }
-          }
-          observableRefs {
-            edges {
-              node {
-                id
-                entity_type
-              }
-            }
-          }
-          relationRefs {
-            edges {
-              node {
-                id
-                from {
+                ... on BasicObject {
                   id
                   entity_type
+                }
+                ... on AttackPattern {
+                  name
+                }
+                ... on Campaign {
+                  name
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on Indicator {
+                  name
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                }
+                ... on ThreatActor {
+                  name
+                }
+                ... on Tool {
+                  name
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on XOpenCTIIncident {
+                  name
                 }
               }
             }
@@ -280,20 +398,24 @@ const dashboardLastNotesQuery = graphql`
 const dashboardLastObservablesQuery = graphql`
   query DashboardLastObservablesQuery(
     $first: Int
-    $orderBy: StixObservablesOrdering
+    $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
   ) {
-    stixObservables(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
+    stixCyberObservables(
+      first: $first
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) {
       edges {
         node {
           id
           entity_type
           observable_value
-          description
           created_at
-          markingDefinitions {
+          objectMarking {
             edges {
               node {
+                id
                 definition
               }
             }
@@ -304,33 +426,36 @@ const dashboardLastObservablesQuery = graphql`
   }
 `;
 
-const dashboardStixDomainEntitiesNumberQuery = graphql`
-  query DashboardStixDomainEntitiesNumberQuery(
+const dashboardStixDomainObjectsNumberQuery = graphql`
+  query DashboardStixDomainObjectsNumberQuery(
     $types: [String]
     $endDate: DateTime
   ) {
-    stixDomainEntitiesNumber(types: $types, endDate: $endDate) {
+    stixDomainObjectsNumber(types: $types, endDate: $endDate) {
       total
       count
     }
   }
 `;
 
-const dashboardStixRelationsNumberQuery = graphql`
-  query DashboardStixRelationsNumberQuery($type: String, $endDate: DateTime) {
-    stixRelationsNumber(type: $type, endDate: $endDate) {
+const dashboardStixCoreRelationshipsNumberQuery = graphql`
+  query DashboardStixCoreRelationshipsNumberQuery(
+    $type: String
+    $endDate: DateTime
+  ) {
+    stixCoreRelationshipsNumber(type: $type, endDate: $endDate) {
       total
       count
     }
   }
 `;
 
-const dashboardStixObservablesNumberQuery = graphql`
-  query DashboardStixObservablesNumberQuery(
+const dashboardStixCyberObservablesNumberQuery = graphql`
+  query DashboardStixCyberObservablesNumberQuery(
     $types: [String]
     $endDate: DateTime
   ) {
-    stixObservablesNumber(types: $types, endDate: $endDate) {
+    stixCyberObservablesNumber(types: $types, endDate: $endDate) {
       total
       count
     }
@@ -342,7 +467,7 @@ class Dashboard extends Component {
     const {
       t, n, nsd, classes,
     } = this.props;
-    const stixDomainEntitiesTimeSeriesVariables = {
+    const stixDomainObjectsTimeSeriesVariables = {
       field: 'created_at',
       operation: 'count',
       startDate: yearsAgo(1),
@@ -361,12 +486,12 @@ class Dashboard extends Component {
             <Grid item={true} lg={3} xs={6}>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixDomainEntitiesNumberQuery}
+                  query={dashboardStixDomainObjectsNumberQuery}
                   variables={{ endDate: dayAgo() }}
                   render={({ props }) => {
-                    if (props && props.stixDomainEntitiesNumber) {
-                      const { total } = props.stixDomainEntitiesNumber;
-                      const difference = total - props.stixDomainEntitiesNumber.count;
+                    if (props && props.stixDomainObjectsNumber) {
+                      const { total } = props.stixDomainObjectsNumber;
+                      const difference = total - props.stixDomainObjectsNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -386,12 +511,12 @@ class Dashboard extends Component {
               </Card>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixObservablesNumberQuery}
+                  query={dashboardStixCyberObservablesNumberQuery}
                   variables={{ endDate: dayAgo() }}
                   render={({ props }) => {
-                    if (props && props.stixObservablesNumber) {
-                      const { total } = props.stixObservablesNumber;
-                      const difference = total - props.stixObservablesNumber.count;
+                    if (props && props.stixCyberObservablesNumber) {
+                      const { total } = props.stixCyberObservablesNumber;
+                      const difference = total - props.stixCyberObservablesNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -413,12 +538,15 @@ class Dashboard extends Component {
             <Grid item={true} lg={3} xs={6}>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixRelationsNumberQuery}
-                  variables={{ type: 'stix_relation', endDate: dayAgo() }}
+                  query={dashboardStixCoreRelationshipsNumberQuery}
+                  variables={{
+                    type: 'stix-core-relationship',
+                    endDate: dayAgo(),
+                  }}
                   render={({ props }) => {
-                    if (props && props.stixRelationsNumber) {
-                      const { total } = props.stixRelationsNumber;
-                      const difference = total - props.stixRelationsNumber.count;
+                    if (props && props.stixCoreRelationshipsNumber) {
+                      const { total } = props.stixCoreRelationshipsNumber;
+                      const difference = total - props.stixCoreRelationshipsNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -438,12 +566,12 @@ class Dashboard extends Component {
               </Card>
               <Card classes={{ root: classes.card }} style={{ height: 110 }}>
                 <QueryRenderer
-                  query={dashboardStixDomainEntitiesNumberQuery}
+                  query={dashboardStixDomainObjectsNumberQuery}
                   variables={{ types: ['report'], endDate: dayAgo() }}
                   render={({ props }) => {
-                    if (props && props.stixDomainEntitiesNumber) {
-                      const { total } = props.stixDomainEntitiesNumber;
-                      const difference = total - props.stixDomainEntitiesNumber.count;
+                    if (props && props.stixDomainObjectsNumber) {
+                      const { total } = props.stixDomainObjectsNumber;
+                      const difference = total - props.stixDomainObjectsNumber.count;
                       return (
                         <CardContent>
                           <div className={classes.title}>
@@ -471,14 +599,14 @@ class Dashboard extends Component {
                   <div className={classes.title}>{t('Ingested entities')}</div>
                   <div className={classes.graphContainer}>
                     <QueryRenderer
-                      query={dashboardStixDomainEntitiesTimeSeriesQuery}
-                      variables={stixDomainEntitiesTimeSeriesVariables}
+                      query={dashboardStixDomainObjectsTimeSeriesQuery}
+                      variables={stixDomainObjectsTimeSeriesVariables}
                       render={({ props }) => {
-                        if (props && props.stixDomainEntitiesTimeSeries) {
+                        if (props && props.stixDomainObjectsTimeSeries) {
                           return (
                             <ResponsiveContainer height={170} width="100%">
                               <BarChart
-                                data={props.stixDomainEntitiesTimeSeries}
+                                data={props.stixDomainObjectsTimeSeries}
                                 margin={{
                                   top: 5,
                                   right: 5,
@@ -536,7 +664,7 @@ class Dashboard extends Component {
               </Typography>
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <QueryRenderer
-                  query={dashboardLastStixDomainEntitiesQuery}
+                  query={dashboardLastStixDomainObjectsQuery}
                   variables={{
                     first: 8,
                     orderBy: 'modified',
@@ -545,7 +673,7 @@ class Dashboard extends Component {
                       'Threat-Actor',
                       'Intrusion-Set',
                       'Campaign',
-                      'Incident',
+                      'XOpenCTIIncident',
                       'Malware',
                       'Attack-Pattern',
                       'Course-of-Action',
@@ -554,54 +682,54 @@ class Dashboard extends Component {
                     ],
                   }}
                   render={({ props }) => {
-                    if (props && props.stixDomainEntities) {
+                    if (props && props.stixDomainObjects) {
                       return (
                         <List>
-                          {props.stixDomainEntities.edges.map(
-                            (stixDomainEntityEdge) => {
-                              const stixDomainEntity = stixDomainEntityEdge.node;
-                              const stixDomainEntityLink = `${resolveLink(
-                                stixDomainEntity.entity_type,
-                              )}/${stixDomainEntity.id}`;
+                          {props.stixDomainObjects.edges.map(
+                            (stixDomainObjectEdge) => {
+                              const stixDomainObject = stixDomainObjectEdge.node;
+                              const stixDomainObjectLink = `${resolveLink(
+                                stixDomainObject.entity_type,
+                              )}/${stixDomainObject.id}`;
                               const markingDefinition = head(
                                 pathOr(
                                   [],
-                                  ['markingDefinitions', 'edges'],
-                                  stixDomainEntity,
+                                  ['objectMarking', 'edges'],
+                                  stixDomainObject,
                                 ),
                               );
                               return (
                                 <ListItem
-                                  key={stixDomainEntity.id}
+                                  key={stixDomainObject.id}
                                   dense={true}
                                   button={true}
                                   classes={{ root: classes.item }}
                                   divider={true}
                                   component={Link}
-                                  to={stixDomainEntityLink}
+                                  to={stixDomainObjectLink}
                                 >
                                   <ListItemIcon>
                                     <ItemIcon
-                                      type={stixDomainEntity.entity_type}
+                                      type={stixDomainObject.entity_type}
                                       color="#00bcd4"
                                     />
                                   </ListItemIcon>
                                   <ListItemText
                                     primary={
                                       <div className={classes.itemText}>
-                                        {stixDomainEntity.name}
+                                        {stixDomainObject.name}
                                       </div>
                                     }
                                   />
                                   <div style={inlineStyles.itemAuthor}>
                                     {pathOr(
                                       '',
-                                      ['createdByRef', 'node', 'name'],
-                                      stixDomainEntity,
+                                      ['createdBy', 'name'],
+                                      stixDomainObject,
                                     )}
                                   </div>
                                   <div style={inlineStyles.itemDate}>
-                                    {nsd(stixDomainEntity.modified)}
+                                    {nsd(stixDomainObject.modified)}
                                   </div>
                                   <div
                                     style={{
@@ -654,25 +782,13 @@ class Dashboard extends Component {
                           {props.notes.edges.map((noteEdge) => {
                             const note = noteEdge.node;
                             let noteLink;
-                            if (note.objectRefs.edges.length > 0) {
+                            if (note.objects.edges.length > 0) {
                               noteLink = `${resolveLink(
-                                note.objectRefs.edges[0].node.entity_type,
-                              )}/${note.objectRefs.edges[0].node.id}`;
-                            } else if (note.observableRefs.edges.length > 0) {
-                              noteLink = `${resolveLink(
-                                note.observableRefs.edges[0].node.entity_type,
-                              )}/${note.observableRefs.edges[0].node.id}`;
-                            } else if (note.relationRefs.edges.length > 0) {
-                              noteLink = `${resolveLink(
-                                note.relationRefs.edges[0].node.from.entity_type,
-                              )}/${
-                                note.relationRefs.edges[0].node.from.id
-                              }/knowledge/relations/${
-                                note.relationRefs.edges[0].node.id
-                              }`;
+                                note.objects.edges[0].node.entity_type,
+                              )}/${note.objects.edges[0].node.id}`;
                             }
-                            const markingDefinition = head(
-                              pathOr([], ['markingDefinitions', 'edges'], note),
+                            const objectMarking = head(
+                              pathOr([], ['objectMarking', 'edges'], note),
                             );
                             return (
                               <ListItem
@@ -690,16 +806,12 @@ class Dashboard extends Component {
                                 <ListItemText
                                   primary={
                                     <div className={classes.itemText}>
-                                      {note.name}
+                                      {truncate(note.content, 20)}
                                     </div>
                                   }
                                 />
                                 <div style={inlineStyles.itemAuthor}>
-                                  {pathOr(
-                                    '',
-                                    ['createdByRef', 'node', 'name'],
-                                    note,
-                                  )}
+                                  {pathOr('', ['createdBy', 'name'], note)}
                                 </div>
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(note.created)}
@@ -712,10 +824,10 @@ class Dashboard extends Component {
                                     paddingRight: 20,
                                   }}
                                 >
-                                  {markingDefinition ? (
+                                  {objectMarking ? (
                                     <ItemMarking
-                                      key={markingDefinition.node.id}
-                                      label={markingDefinition.node.definition}
+                                      key={objectMarking.node.id}
+                                      label={objectMarking.node.definition}
                                       variant="inList"
                                     />
                                   ) : (
@@ -751,12 +863,8 @@ class Dashboard extends Component {
                         <List>
                           {props.reports.edges.map((reportEdge) => {
                             const report = reportEdge.node;
-                            const markingDefinition = head(
-                              pathOr(
-                                [],
-                                ['markingDefinitions', 'edges'],
-                                report,
-                              ),
+                            const objectMarking = head(
+                              pathOr([], ['objectMarking', 'edges'], report),
                             );
                             return (
                               <ListItem
@@ -779,11 +887,7 @@ class Dashboard extends Component {
                                   }
                                 />
                                 <div style={inlineStyles.itemAuthor}>
-                                  {pathOr(
-                                    '',
-                                    ['createdByRef', 'node', 'name'],
-                                    report,
-                                  )}
+                                  {pathOr('', ['createdBy', 'name'], report)}
                                 </div>
                                 <div style={inlineStyles.itemDate}>
                                   {nsd(report.published)}
@@ -796,10 +900,10 @@ class Dashboard extends Component {
                                     paddingRight: 20,
                                   }}
                                 >
-                                  {markingDefinition ? (
+                                  {objectMarking ? (
                                     <ItemMarking
-                                      key={markingDefinition.node.id}
-                                      label={markingDefinition.node.definition}
+                                      key={objectMarking.node.id}
+                                      label={objectMarking.node.definition}
                                       variant="inList"
                                     />
                                   ) : (
@@ -830,28 +934,28 @@ class Dashboard extends Component {
                     orderMode: 'desc',
                   }}
                   render={({ props }) => {
-                    if (props && props.stixObservables) {
+                    if (props && props.stixCyberObservables) {
                       return (
                         <List>
-                          {props.stixObservables.edges.map(
-                            (stixObservableEdge) => {
-                              const stixObservable = stixObservableEdge.node;
-                              const markingDefinition = head(
+                          {props.stixCyberObservables.edges.map(
+                            (stixCyberObservableEdge) => {
+                              const stixCyberObservable = stixCyberObservableEdge.node;
+                              const objectMarking = head(
                                 pathOr(
                                   [],
-                                  ['markingDefinitions', 'edges'],
-                                  stixObservable,
+                                  ['objectMarking', 'edges'],
+                                  stixCyberObservable,
                                 ),
                               );
                               return (
                                 <ListItem
-                                  key={stixObservable.id}
+                                  key={stixCyberObservable.id}
                                   dense={true}
                                   button={true}
                                   classes={{ root: classes.item }}
                                   divider={true}
                                   component={Link}
-                                  to={`/dashboard/signatures/observables/${stixObservable.id}`}
+                                  to={`/dashboard/signatures/observables/${stixCyberObservable.id}`}
                                 >
                                   <ListItemIcon>
                                     <HexagonOutline color="primary" />
@@ -859,17 +963,17 @@ class Dashboard extends Component {
                                   <ListItemText
                                     primary={
                                       <div className={classes.itemText}>
-                                        {stixObservable.observable_value}
+                                        {stixCyberObservable.observable_value}
                                       </div>
                                     }
                                   />
                                   <div style={inlineStyles.itemType}>
                                     {t(
-                                      `observable_${stixObservable.entity_type}`,
+                                      `observable_${stixCyberObservable.entity_type}`,
                                     )}
                                   </div>
                                   <div style={inlineStyles.itemDate}>
-                                    {nsd(stixObservable.created_at)}
+                                    {nsd(stixCyberObservable.created_at)}
                                   </div>
                                   <div
                                     style={{
@@ -879,12 +983,10 @@ class Dashboard extends Component {
                                       paddingRight: 20,
                                     }}
                                   >
-                                    {markingDefinition ? (
+                                    {objectMarking ? (
                                       <ItemMarking
-                                        key={markingDefinition.node.id}
-                                        label={
-                                          markingDefinition.node.definition
-                                        }
+                                        key={objectMarking.node.id}
+                                        label={objectMarking.node.definition}
                                         variant="inList"
                                       />
                                     ) : (

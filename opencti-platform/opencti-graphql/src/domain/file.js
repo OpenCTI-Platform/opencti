@@ -25,9 +25,9 @@ const uploadJobImport = async (fileId, fileMime, context = null, token = null) =
       map((data) => {
         const { connector, work, job } = data;
         const message = {
-          work_id: work.internal_id_key, // work(id)
+          work_id: work.internal_id, // work(id)
           work_context: context,
-          job_id: job.internal_id_key, // job(id)
+          job_id: job.internal_id, // job(id)
           token,
           file_mime: fileMime, // Ex. application/json
           file_path: `/storage/get/${fileId}`, // Path to get the file
@@ -45,6 +45,7 @@ export const askJobImport = async (user, filename, context) => {
   await uploadJobImport(file.id, file.metaData.mimetype, context, user.token.uuid);
   return file;
 };
+
 export const uploadImport = async (user, file) => {
   const up = await upload(user, 'import', file);
   await uploadJobImport(up.id, up.metaData.mimetype, user.token.uuid);

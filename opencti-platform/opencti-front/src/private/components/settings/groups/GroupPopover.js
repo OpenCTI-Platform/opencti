@@ -16,10 +16,7 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
-import {
-  commitMutation,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import GroupEdition from './GroupEdition';
 import Loader from '../../../../components/Loader';
 
@@ -142,7 +139,11 @@ class GroupPopover extends Component {
     const { classes, t, groupId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
         <Menu
@@ -170,8 +171,10 @@ class GroupPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <GroupEdition group={props.group}
-                    handleClose={this.handleCloseUpdate.bind(this)}/>
+                  <GroupEdition
+                    group={props.group}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

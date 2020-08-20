@@ -21,7 +21,7 @@ class ReportsLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onTagClick,
+      initialLoading, dataColumns, relay, onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -39,7 +39,7 @@ class ReportsLines extends Component {
         DummyLineComponent={<ReportLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -54,7 +54,7 @@ ReportsLines.propTypes = {
   reports: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -88,8 +88,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "ReportsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "ReportsOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[ReportsFiltering]" }
         ) {
         reports(
@@ -105,12 +105,14 @@ export default createPaginationContainer(
               id
               name
               published
-              createdByRef {
-                node {
+              createdBy {
+                ... on Identity {
+                  id
                   name
+                  entity_type
                 }
               }
-              markingDefinitions {
+              objectMarking {
                 edges {
                   node {
                     id

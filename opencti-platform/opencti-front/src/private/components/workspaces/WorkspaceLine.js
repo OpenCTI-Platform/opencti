@@ -8,9 +8,8 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight, Work } from '@material-ui/icons';
-import { compose, pathOr, take } from 'ramda';
+import { compose } from 'ramda';
 import inject18n from '../../../components/i18n';
-import ItemMarking from '../../../components/ItemMarking';
 
 const styles = (theme) => ({
   item: {
@@ -69,29 +68,9 @@ class WorkspaceLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.owner.width }}
-              >
-                {pathOr('', ['ownedBy', 'node', 'name'], node)}
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
                 {fd(node.created_at)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
-              >
-                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      variant="inList"
-                      label={markingDefinition.node.definition}
-                    />
-                  ),
-                )}
               </div>
             </div>
           }
@@ -117,20 +96,7 @@ const WorkspaceLineFragment = createFragmentContainer(WorkspaceLineComponent, {
       id
       workspace_type
       name
-      ownedBy {
-        node {
-          name
-        }
-      }
       created_at
-      markingDefinitions {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
-      }
     }
   `,
 });
@@ -159,21 +125,9 @@ class WorkspaceLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.owner.width }}
-              >
-                <div className="fakeItem" style={{ width: '70%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
                 <div className="fakeItem" style={{ width: 140 }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
-              >
-                <div className="fakeItem" style={{ width: '90%' }} />
               </div>
             </div>
           }

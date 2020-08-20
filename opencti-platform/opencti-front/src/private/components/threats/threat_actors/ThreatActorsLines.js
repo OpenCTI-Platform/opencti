@@ -21,7 +21,7 @@ class ThreatActorsLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onTagClick,
+      initialLoading, dataColumns, relay, onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -39,7 +39,7 @@ class ThreatActorsLines extends Component {
         DummyLineComponent={<ThreatActorLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -53,7 +53,7 @@ ThreatActorsLines.propTypes = {
   relay: PropTypes.object,
   threatActors: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -87,8 +87,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "ThreatActorsOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
           filters: { type: "[ThreatActorsFiltering]" }
         ) {
         threatActors(

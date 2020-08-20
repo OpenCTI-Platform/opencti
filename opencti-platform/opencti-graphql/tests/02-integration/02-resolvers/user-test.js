@@ -1,6 +1,8 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { authentication } from '../../../src/domain/user';
+import { ENTITY_TYPE_ROLE, generateInternalObjectId } from '../../../src/utils/idGenerator';
+import { elLoadByStandardId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query users(
@@ -42,14 +44,19 @@ const READ_QUERY = gql`
   query user($id: String!) {
     user(id: $id) {
       id
+      standard_id
       name
       description
       roles {
+        id
+        standard_id
         name
         description
         default_assignation
       }
       capabilities {
+        id
+        standard_id
         name
         description
       }
@@ -61,14 +68,14 @@ const READ_QUERY = gql`
 describe('User resolver standard behavior', () => {
   let userInternalId;
   let groupInternalId;
-  let userGroupRelationId;
   let userToken;
-  const userStixId = 'identity--a186efb8-5e41-4082-817e-993e378d32f0';
+  let userStandardId;
   it('should user created', async () => {
     const CREATE_QUERY = gql`
       mutation UserAdd($input: UserAddInput) {
         userAdd(input: $input) {
           id
+          standard_id
           name
           user_email
           firstname
@@ -80,7 +87,6 @@ describe('User resolver standard behavior', () => {
     const USER_TO_CREATE = {
       input: {
         name: 'User',
-        stix_id_key: userStixId,
         description: 'User description',
         password: 'user',
         user_email: 'user@mail.com',
@@ -96,6 +102,7 @@ describe('User resolver standard behavior', () => {
     expect(user.data.userAdd).not.toBeNull();
     expect(user.data.userAdd.name).toEqual('User');
     userInternalId = user.data.userAdd.id;
+    userStandardId = user.data.userAdd.standard_id;
   });
   it('should user loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
@@ -103,27 +110,11 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
   });
-  it('should user loaded by stix id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStixId } });
+  it('should user loaded by standard id', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).not.toBeNull();
     expect(queryResult.data.user.id).toEqual(userInternalId);
-  });
-  it('should me loaded', async () => {
-    // TODO: Ask to Julien
-    /*
-    const userResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
-    const ME_QUERY = gql`
-      query me {
-        me {
-          id
-        }
-      }
-    `;
-    const queryResult = await queryAsUser(userResult.data.user, { query: ME_QUERY });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.me).not.toBeNull();
-    expect(queryResult.data.me.id).toEqual(userInternalId); */
   });
   it('should user roles to be accurate', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userInternalId } });
@@ -140,10 +131,12 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user.capabilities[0].name).toEqual('KNOWLEDGE');
   });
   it('should user remove role', async () => {
+    const roleStandardId = generateInternalObjectId(ENTITY_TYPE_ROLE, { name: 'Default' });
+    const role = await elLoadByStandardId(roleStandardId);
     const REMOTE_ROLE_QUERY = gql`
-      mutation UserEditRemoveRole($id: ID!, $name: String!) {
+      mutation UserEditRemoveRole($id: ID!, $toId: String!, $relationship_type: String!) {
         userEdit(id: $id) {
-          removeRole(name: $name) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             roles {
               name
@@ -156,11 +149,11 @@ describe('User resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: REMOTE_ROLE_QUERY,
-      variables: { id: userInternalId, name: 'Default' },
+      variables: { id: userInternalId, toId: role.id, relationship_type: 'has-role' },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.userEdit).not.toBeNull();
-    expect(queryResult.data.userEdit.removeRole.roles.length).toEqual(0);
+    expect(queryResult.data.userEdit.relationDelete.roles.length).toEqual(0);
   });
   it('should user login', async () => {
     const res = await queryAsAdmin({
@@ -277,7 +270,7 @@ describe('User resolver standard behavior', () => {
     expect(group.data.groupAdd.name).toEqual('Group in user');
     groupInternalId = group.data.groupAdd.id;
     const RELATION_ADD_QUERY = gql`
-      mutation UserEdit($id: ID!, $input: RelationAddInput!) {
+      mutation UserEdit($id: ID!, $input: InternalRelationshipAddInput!) {
         userEdit(id: $id) {
           relationAdd(input: $input) {
             id
@@ -286,9 +279,6 @@ describe('User resolver standard behavior', () => {
                 groups {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -304,21 +294,18 @@ describe('User resolver standard behavior', () => {
       variables: {
         id: userInternalId,
         input: {
-          fromRole: 'member',
-          toId: group.data.groupAdd.id,
-          toRole: 'grouping',
-          through: 'membership',
+          toId: groupInternalId,
+          relationship_type: 'member-of',
         },
       },
     });
     expect(queryResult.data.userEdit.relationAdd.from.groups.edges.length).toEqual(1);
-    userGroupRelationId = queryResult.data.userEdit.relationAdd.from.groups.edges[0].relation.id;
   });
   it('should delete relation in user', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation UserEdit($id: ID!, $relationId: ID!) {
+      mutation UserEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         userEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
             groups {
               edges {
@@ -335,7 +322,8 @@ describe('User resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: userInternalId,
-        relationId: userGroupRelationId,
+        toId: groupInternalId,
+        relationship_type: 'member-of',
       },
     });
     expect(queryResult.data.userEdit.relationDelete.groups.edges.length).toEqual(0);
@@ -366,7 +354,7 @@ describe('User resolver standard behavior', () => {
       variables: { id: userInternalId },
     });
     // Verify is no longer found
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStixId } });
+    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).toBeNull();
   });

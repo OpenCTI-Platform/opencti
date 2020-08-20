@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { DiamondOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -46,7 +46,7 @@ const styles = (theme) => ({
 class IntrusionSetLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onTagClick,
+      fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -70,12 +70,12 @@ class IntrusionSetLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags
+                <StixCoreObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -107,7 +107,7 @@ IntrusionSetLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const IntrusionSetLineFragment = createFragmentContainer(
@@ -119,24 +119,20 @@ const IntrusionSetLineFragment = createFragmentContainer(
         name
         created
         modified
-        tags {
-          edges {
-            node {
-              id
-              tag_type
-              value
-              color
-            }
-            relation {
-              id
-            }
-          }
-        }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }
@@ -169,7 +165,7 @@ class IntrusionSetLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

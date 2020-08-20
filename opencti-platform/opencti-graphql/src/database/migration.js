@@ -5,6 +5,7 @@ import Migration from 'migrate/lib/migration';
 import { executeWrite, find, load, internalDirectWrite } from './grakn';
 import { logger } from '../config/conf';
 import { DatabaseError } from '../config/errors';
+import { RELATION_MIGRATES } from '../utils/idGenerator';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {
@@ -28,26 +29,31 @@ const retrieveMigrations = () => {
 const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
-    const migration = await load(`match $status isa MigrationStatus; get;`, ['status'], {
-      noCache: true,
-    });
+    const migration = await load(`match $status isa MigrationStatus; $status has internal_id $status_id; get;`, [
+      'status',
+    ]);
     if (!migration) {
       // If no migration found, initialize
       logger.info('[MIGRATION] > Fresh platform detected, creating migration structure');
       const lastExistingMigration = last(retrieveMigrations());
-      const [time] = lastExistingMigration.title.split('-');
+      let time = new Date().getTime();
+      if (lastExistingMigration) {
+        [time] = lastExistingMigration.title.split('-');
+      }
       const lastRunInit = `${parseInt(time, 10) + 1}-init`;
       await internalDirectWrite(
-        `insert $x isa MigrationStatus, has lastRun "${lastRunInit}", has internal_id_key "${uuid()}";`
+        `insert $x isa MigrationStatus, 
+        has entity_type "MigrationStatus",
+        has lastRun "${lastRunInit}", 
+        has internal_id "${uuid()}", 
+        has standard_id "migrationstatus--${uuid()}";`
       );
       return fn(null, { lastRun: lastRunInit, migrations: [] });
     }
     // If migrations found, convert to current status
-    const migrations = await find(
-      `match $from isa MigrationStatus; $rel(status:$from, state:$to) isa migrate; get;`,
-      ['from', 'to'],
-      { noCache: true }
-    );
+    const query = `match $from isa MigrationStatus; 
+    $rel(${RELATION_MIGRATES}_from:$from, ${RELATION_MIGRATES}_to:$to) isa ${RELATION_MIGRATES}; get;`;
+    const migrations = await find(query, ['from', 'to']);
     logger.info(`[MIGRATION] > Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.status.lastRun,
@@ -75,7 +81,8 @@ const graknStateStorage = {
         await wTx.query(q2);
         // Insert the migration reference
         const q3 = `insert $x isa MigrationReference,
-          has internal_id_key "${uuid()}",
+          has entity_type "MigrationReference",
+          has internal_id "${uuid()}",
           has title "${mig.title}",
           has timestamp ${mig.timestamp};`;
         logger.debug(`[MIGRATION] step 3`, { query: q3 });
@@ -84,7 +91,7 @@ const graknStateStorage = {
         // Attach the reference to the migration status.
         const q4 = `match $status isa MigrationStatus; 
           $ref isa MigrationReference, has title "${mig.title}"; 
-          insert (status: $status, state: $ref) isa migrate, has internal_id_key "${uuid()}";`;
+          insert (${RELATION_MIGRATES}_from: $status, ${RELATION_MIGRATES}_to: $ref) isa ${RELATION_MIGRATES}, has internal_id "${uuid()}";`;
         logger.debug(`[MIGRATION] step 4`, { query: q4 });
         await wTx.query(q4);
         logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);

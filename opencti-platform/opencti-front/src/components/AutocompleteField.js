@@ -33,12 +33,9 @@ const AutocompleteField = (props) => {
       onFocus(name);
     }
   }, [onFocus, name]);
-  const internalOnBlur = React.useCallback(
-    () => {
-      setTouched(true);
-    },
-    [setTouched],
-  );
+  const internalOnBlur = React.useCallback(() => {
+    setTouched(true);
+  }, [setTouched]);
   const fieldProps = fieldToTextField(props);
   delete fieldProps.helperText;
   delete fieldProps.openCreate;

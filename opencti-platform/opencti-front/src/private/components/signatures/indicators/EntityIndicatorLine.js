@@ -12,9 +12,9 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixRelationPopover from '../../common/stix_relations/StixRelationPopover';
+import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemPatternType from '../../../../components/ItemPatternType';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
@@ -85,9 +85,12 @@ class EntityIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags variant="inList" tags={node.to.tags} />
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.to.objectLabel}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -103,7 +106,7 @@ class EntityIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 {take(
                   1,
@@ -120,8 +123,8 @@ class EntityIndicatorLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixRelationPopover
-            stixRelationId={node.id}
+          <StixCoreRelationshipPopover
+            stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
           />
@@ -145,26 +148,25 @@ const EntityIndicatorLineFragment = createFragmentContainer(
   EntityIndicatorLineComponent,
   {
     node: graphql`
-      fragment EntityIndicatorLine_node on StixRelation {
+      fragment EntityIndicatorLine_node on StixCoreRelationship {
         id
-        weight
-        first_seen
-        last_seen
+        start_time
+        stop_time
         description
+        confidence
         inferred
-        role_played
         to {
           ... on Indicator {
             id
             name
-            main_observable_type
             pattern_type
             description
             valid_from
             valid_until
-            score
             created
-            markingDefinitions {
+            x_opencti_score
+            x_opencti_main_observable_type
+            objectMarking {
               edges {
                 node {
                   id
@@ -172,16 +174,12 @@ const EntityIndicatorLineFragment = createFragmentContainer(
                 }
               }
             }
-            tags {
+            objectLabel {
               edges {
                 node {
                   id
-                  tag_type
                   value
                   color
-                }
-                relation {
-                  id
                 }
               }
             }
@@ -222,7 +220,7 @@ class EntityIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -240,7 +238,7 @@ class EntityIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <div className="fakeItem" style={{ width: 80 }} />
               </div>

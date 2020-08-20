@@ -1,6 +1,7 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { now } from '../../../src/database/grakn';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query notes(
@@ -24,9 +25,9 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
-          name
-          description
+          attribute_abstract
           content
+          authors
         }
       }
     }
@@ -86,8 +87,10 @@ const READ_QUERY = gql`
   query note($id: String!) {
     note(id: $id) {
       id
-      name
-      description
+      standard_id
+      attribute_abstract
+      content
+      authors
       toStix
     }
   }
@@ -95,28 +98,31 @@ const READ_QUERY = gql`
 
 describe('Note resolver standard behavior', () => {
   let noteInternalId;
-  let noteMarkingDefinitionRelationId;
+  let datasetNoteInternalId;
+  let datasetMalwareInternalId;
   const noteStixId = 'note--2cf49568-b812-45fe-8c48-bb0c7d5eb952';
   it('should note created', async () => {
     const CREATE_QUERY = gql`
       mutation NoteAdd($input: NoteAddInput) {
         noteAdd(input: $input) {
           id
-          name
-          description
+          standard_id
+          attribute_abstract
           content
+          authors
         }
       }
     `;
     // Create the note
     const NOTE_TO_CREATE = {
       input: {
-        name: 'Note',
-        stix_id_key: noteStixId,
-        description: 'Note description',
+        stix_id: noteStixId,
+        attribute_abstract: 'Note',
         content: 'Test content',
-        objectRefs: ['fab6fa99-b07f-4278-86b4-b674edf60877'],
-        relationRefs: ['209cbdf0-fc5e-47c9-8023-dd724993ae55'],
+        objects: [
+          'campaign--92d46985-17a6-4610-8be8-cc70c82ed214',
+          'relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02',
+        ],
       },
     };
     const note = await queryAsAdmin({
@@ -125,7 +131,7 @@ describe('Note resolver standard behavior', () => {
     });
     expect(note).not.toBeNull();
     expect(note.data.noteAdd).not.toBeNull();
-    expect(note.data.noteAdd.name).toEqual('Note');
+    expect(note.data.noteAdd.attribute_abstract).toEqual('Note');
     noteInternalId = note.data.noteAdd.id;
   });
   it('should note loaded by internal id', async () => {
@@ -141,15 +147,25 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note).not.toBeNull();
     expect(queryResult.data.note.id).toEqual(noteInternalId);
   });
-  it('should note stix domain entities accurate', async () => {
+  it('should note stix objects sor stix relationships accurate', async () => {
+    const note = await elLoadByStixId('note--573f623c-bf68-4f19-9500-d618f0d00af0');
+    datasetNoteInternalId = note.internal_id;
     const NOTE_STIX_DOMAIN_ENTITIES = gql`
       query note($id: String!) {
         note(id: $id) {
           id
-          objectRefs {
+          standard_id
+          objects {
             edges {
               node {
-                id
+                ... on BasicObject {
+                  id
+                  standard_id
+                }
+                ... on BasicRelationship {
+                  id
+                  standard_id
+                }
               }
             }
           }
@@ -158,88 +174,44 @@ describe('Note resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: NOTE_STIX_DOMAIN_ENTITIES,
-      variables: { id: 'ce216266-4962-4b5a-9e48-cdf3453f5281' },
+      variables: { id: datasetNoteInternalId },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).not.toBeNull();
-    expect(queryResult.data.note.id).toEqual('ce216266-4962-4b5a-9e48-cdf3453f5281');
-    expect(queryResult.data.note.objectRefs.edges.length).toEqual(3);
+    expect(queryResult.data.note.standard_id).toEqual('note--d64c3849-a260-529d-9156-3b72ae5fcb59');
+    expect(queryResult.data.note.objects.edges.length).toEqual(4);
   });
-  it('should note contains stix domain entity accurate', async () => {
-    const NOTE_CONTAINS_STIX_DOMAIN_ENTITY = gql`
-      query noteContainsStixDomainEntity($id: String!, $objectId: String!) {
-        noteContainsStixDomainEntity(id: $id, objectId: $objectId)
+  it('should note contains stix object or stix relationship accurate', async () => {
+    const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const stixRelationship = await elLoadByStixId('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    const NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
+      query noteContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
+        noteContainsStixObjectOrStixRelationship(
+          id: $id
+          stixObjectOrStixRelationshipId: $stixObjectOrStixRelationshipId
+        )
       }
     `;
-    const queryResult = await queryAsAdmin({
-      query: NOTE_CONTAINS_STIX_DOMAIN_ENTITY,
-      variables: { id: 'ce216266-4962-4b5a-9e48-cdf3453f5281', objectId: '82316ffd-a0ec-4519-a454-6566f8f5676c' },
+    let queryResult = await queryAsAdmin({
+      query: NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
+      variables: {
+        id: datasetNoteInternalId,
+        stixObjectOrStixRelationshipId: intrusionSet.internal_id,
+      },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.noteContainsStixDomainEntity).not.toBeNull();
-    expect(queryResult.data.noteContainsStixDomainEntity).toBeTruthy();
-  });
-  it('should note stix relations accurate', async () => {
-    const NOTE_STIX_RELATIONS = gql`
-      query note($id: String!) {
-        note(id: $id) {
-          id
-          relationRefs {
-            edges {
-              node {
-                id
-              }
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: NOTE_STIX_RELATIONS,
-      variables: { id: 'ce216266-4962-4b5a-9e48-cdf3453f5281' },
+    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).not.toBeNull();
+    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).toBeTruthy();
+    queryResult = await queryAsAdmin({
+      query: NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP,
+      variables: {
+        id: datasetNoteInternalId,
+        stixObjectOrStixRelationshipId: stixRelationship.internal_id,
+      },
     });
     expect(queryResult).not.toBeNull();
-    expect(queryResult.data.note).not.toBeNull();
-    expect(queryResult.data.note.id).toEqual('ce216266-4962-4b5a-9e48-cdf3453f5281');
-    expect(queryResult.data.note.relationRefs.edges.length).toEqual(1);
-  });
-  it('should note contains stix relation accurate', async () => {
-    const NOTE_CONTAINS_STIX_RELATION = gql`
-      query noteContainsStixRelation($id: String!, $objectId: String!) {
-        noteContainsStixRelation(id: $id, objectId: $objectId)
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: NOTE_CONTAINS_STIX_RELATION,
-      variables: { id: 'ce216266-4962-4b5a-9e48-cdf3453f5281', objectId: '97ebc9b3-8a25-428a-8523-1e87b2701d3d' },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.noteContainsStixRelation).not.toBeNull();
-    expect(queryResult.data.noteContainsStixRelation).toBeTruthy();
-  });
-  it('should note stix observables accurate', async () => {
-    const NOTE_STIX_OBSERVABLES = gql`
-      query note($id: String!) {
-        note(id: $id) {
-          id
-          observableRefs {
-            edges {
-              node {
-                id
-              }
-            }
-          }
-        }
-      }
-    `;
-    const queryResult = await queryAsAdmin({
-      query: NOTE_STIX_OBSERVABLES,
-      variables: { id: 'ce216266-4962-4b5a-9e48-cdf3453f5281' },
-    });
-    expect(queryResult).not.toBeNull();
-    expect(queryResult.data.note).not.toBeNull();
-    expect(queryResult.data.note.id).toEqual('ce216266-4962-4b5a-9e48-cdf3453f5281');
-    expect(queryResult.data.note.observableRefs.edges.length).toEqual(3);
+    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).not.toBeNull();
+    expect(queryResult.data.noteContainsStixObjectOrStixRelationship).toBeTruthy();
   });
   it('should list notes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
@@ -261,10 +233,12 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries notes for entity to be accurate', async () => {
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    datasetMalwareInternalId = malware.internal_id;
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        objectId: datasetMalwareInternalId,
         field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
@@ -277,10 +251,11 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries notes for author to be accurate', async () => {
+    const identity = await elLoadByStixId('identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        authorId: 'c79e5d9f-4321-4174-b120-7cd9342ec88a',
+        authorId: identity.internal_id,
         field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
@@ -306,7 +281,7 @@ describe('Note resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: NUMBER_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
+        objectId: datasetMalwareInternalId,
         endDate: now(),
       },
     });
@@ -327,8 +302,8 @@ describe('Note resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        objectId: 'ab78a62f-4928-4d5a-8740-03f0af9c4330',
-        field: 'created_by_ref.name',
+        objectId: datasetMalwareInternalId,
+        field: 'created-by.name',
         operation: 'count',
       },
     });
@@ -341,16 +316,16 @@ describe('Note resolver standard behavior', () => {
         noteEdit(id: $id) {
           fieldPatch(input: $input) {
             id
-            name
+            attribute_abstract
           }
         }
       }
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: noteInternalId, input: { key: 'name', value: ['Note - test'] } },
+      variables: { id: noteInternalId, input: { key: 'attribute_abstract', value: ['Note - test'] } },
     });
-    expect(queryResult.data.noteEdit.fieldPatch.name).toEqual('Note - test');
+    expect(queryResult.data.noteEdit.fieldPatch.attribute_abstract).toEqual('Note - test');
   });
   it('should context patch note', async () => {
     const CONTEXT_PATCH_QUERY = gql`
@@ -386,18 +361,15 @@ describe('Note resolver standard behavior', () => {
   });
   it('should add relation in note', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation NoteEdit($id: ID!, $input: RelationAddInput!) {
+      mutation NoteEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         noteEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Note {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -413,24 +385,20 @@ describe('Note resolver standard behavior', () => {
       variables: {
         id: noteInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    noteMarkingDefinitionRelationId =
-      queryResult.data.noteEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.noteEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in note', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation NoteEdit($id: ID!, $relationId: ID!) {
+      mutation NoteEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         noteEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -445,10 +413,11 @@ describe('Note resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: noteInternalId,
-        relationId: noteMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.noteEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.noteEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should note deleted', async () => {
     const DELETE_QUERY = gql`

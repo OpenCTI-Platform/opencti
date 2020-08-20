@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CountryPopover from './CountryPopover';
 import Reports from '../../reports/Reports';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -49,8 +49,8 @@ class CountryReportsComponent extends Component {
           withPadding ? classes.containerWithPadding : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={country}
+        <StixDomainObjectHeader
+          stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -76,7 +76,7 @@ const CountryReports = createFragmentContainer(CountryReportsComponent, {
     fragment CountryReports_country on Country {
       id
       name
-      alias
+      x_opencti_aliases
     }
   `,
 });

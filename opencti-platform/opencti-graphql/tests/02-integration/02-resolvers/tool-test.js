@@ -35,12 +35,14 @@ const READ_QUERY = gql`
   query tool($id: String!) {
     tool(id: $id) {
       id
+      standard_id
       name
       description
       killChainPhases {
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -51,7 +53,6 @@ const READ_QUERY = gql`
 
 describe('Tool resolver standard behavior', () => {
   let toolInternalId;
-  let toolMarkingDefinitionRelationId;
   const toolStixId = 'tool--50a74e71-131c-4d98-a4b8-24e0441b2587';
   it('should tool created', async () => {
     const CREATE_QUERY = gql`
@@ -67,9 +68,9 @@ describe('Tool resolver standard behavior', () => {
     const TOOL_TO_CREATE = {
       input: {
         name: 'Tool',
-        stix_id_key: toolStixId,
+        stix_id: toolStixId,
         description: 'Tool description',
-        killChainPhases: ['2a2202bd-1da6-4668-9fc5-ad1017e974bc'],
+        killChainPhases: ['kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'],
       },
     };
     const tool = await queryAsAdmin({
@@ -88,7 +89,9 @@ describe('Tool resolver standard behavior', () => {
     expect(queryResult.data.tool.id).toEqual(toolInternalId);
     expect(queryResult.data.tool.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.tool.killChainPhases.edges.length).toEqual(1);
-    expect(queryResult.data.tool.killChainPhases.edges[0].node.id).toEqual('2a2202bd-1da6-4668-9fc5-ad1017e974bc');
+    expect(queryResult.data.tool.killChainPhases.edges[0].node.standard_id).toEqual(
+      'kill-chain-phase--5bdd6c3c-6a3f-5a82-9299-37ed052b770e'
+    );
   });
   it('should tool loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: toolStixId } });
@@ -151,18 +154,15 @@ describe('Tool resolver standard behavior', () => {
   });
   it('should add relation in tool', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ToolEdit($id: ID!, $input: RelationAddInput!) {
+      mutation ToolEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         toolEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Tool {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -178,24 +178,20 @@ describe('Tool resolver standard behavior', () => {
       variables: {
         id: toolInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.toolEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    toolMarkingDefinitionRelationId =
-      queryResult.data.toolEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.toolEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in tool', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ToolEdit($id: ID!, $relationId: ID!) {
+      mutation ToolEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         toolEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -210,10 +206,11 @@ describe('Tool resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: toolInternalId,
-        relationId: toolMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.toolEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.toolEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should tool deleted', async () => {
     const DELETE_QUERY = gql`

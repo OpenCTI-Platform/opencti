@@ -11,15 +11,15 @@ import Campaign from './Campaign';
 import CampaignReports from './CampaignReports';
 import CampaignKnowledge from './CampaignKnowledge';
 import CampaignIndicators from './CampaignIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CampaignPopover from './CampaignPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Campaign {
         ...Campaign_campaign
         ...CampaignEditionContainer_campaign
@@ -35,7 +35,7 @@ const campaignQuery = graphql`
     campaign(id: $id) {
       id
       name
-      alias
+      aliases
       ...Campaign_campaign
       ...CampaignReports_campaign
       ...CampaignKnowledge_campaign
@@ -133,8 +133,8 @@ class RootCampaign extends Component {
                     path="/dashboard/threats/campaigns/:campaignId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.campaign}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.campaign}
                           PopoverComponent={<CampaignPopover />}
                         />
                         <FileManager
@@ -151,11 +151,11 @@ class RootCampaign extends Component {
                     path="/dashboard/threats/campaigns/:campaignId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.campaign}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.campaign}
                           PopoverComponent={<CampaignPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={campaignId}
                         />

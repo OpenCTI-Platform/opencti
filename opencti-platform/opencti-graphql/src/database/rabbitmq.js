@@ -200,7 +200,7 @@ export const ensureRabbitMQAndLogsQueue = async () => {
 };
 
 export const pushToConnector = (connector, message) => {
-  return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id_key), JSON.stringify(message));
+  return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id), JSON.stringify(message));
 };
 
 export const pushToLogs = (communityId, message) => {

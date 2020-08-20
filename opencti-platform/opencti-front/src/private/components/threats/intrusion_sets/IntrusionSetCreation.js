@@ -17,9 +17,9 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import TagsField from '../../common/form/TagsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -107,9 +107,9 @@ class IntrusionSetCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        createdByRef: path(['value']),
-        markingDefinitions: pluck('value'),
-        tags: pluck('value'),
+        createdBy: path(['value']),
+        objectMarking: pluck('value'),
+        objectLabel: pluck('value'),
       },
       values,
     );
@@ -175,9 +175,9 @@ class IntrusionSetCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                createdByRef: '',
-                markingDefinitions: [],
-                tags: [],
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
               }}
               validationSchema={intrusionSetValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -212,19 +212,19 @@ class IntrusionSetCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

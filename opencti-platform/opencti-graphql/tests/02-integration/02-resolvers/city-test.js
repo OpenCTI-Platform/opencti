@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query cities(
@@ -23,6 +24,8 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
+          standard_id
+          stix_ids
           name
           description
         }
@@ -35,11 +38,14 @@ const READ_QUERY = gql`
   query city($id: String!) {
     city(id: $id) {
       id
+      standard_id
       name
       description
       toStix
       country {
         id
+        standard_id
+        stix_ids
         name
       }
     }
@@ -48,7 +54,6 @@ const READ_QUERY = gql`
 
 describe('City resolver standard behavior', () => {
   let cityInternalId;
-  let cityMarkingDefinitionRelationId;
   const cityStixId = 'identity--861af688-581e-4571-a0d9-955c9096fb41';
   it('should city created', async () => {
     const CREATE_QUERY = gql`
@@ -64,7 +69,7 @@ describe('City resolver standard behavior', () => {
     const CITY_TO_CREATE = {
       input: {
         name: 'City',
-        stix_id_key: cityStixId,
+        stix_id: cityStixId,
         description: 'City description',
       },
     };
@@ -91,14 +96,15 @@ describe('City resolver standard behavior', () => {
     expect(queryResult.data.city.id).toEqual(cityInternalId);
   });
   it('should city country to be accurate', async () => {
+    const city = await elLoadByStixId('location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: 'd1881166-f431-4335-bfed-b1c647e59f89' },
+      variables: { id: city.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.city).not.toBeNull();
-    expect(queryResult.data.city.id).toEqual('d1881166-f431-4335-bfed-b1c647e59f89');
-    expect(queryResult.data.city.country.id).toEqual('f2ea7d37-996d-4313-8f73-42a8782d39a0');
+    expect(queryResult.data.city.standard_id).toEqual('location--8cd41ad1-5ffc-5ce5-bb8d-abe6cd79b598');
+    expect(queryResult.data.city.country.standard_id).toEqual('location--da7e1450-3d18-5f2d-990c-f2e797fd7f53');
   });
   it('should list cities', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
@@ -155,18 +161,15 @@ describe('City resolver standard behavior', () => {
   });
   it('should add relation in city', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CityEdit($id: ID!, $input: RelationAddInput!) {
+      mutation CityEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         cityEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on City {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -182,24 +185,20 @@ describe('City resolver standard behavior', () => {
       variables: {
         id: cityInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.cityEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    cityMarkingDefinitionRelationId =
-      queryResult.data.cityEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.cityEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in city', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CityEdit($id: ID!, $relationId: ID!) {
+      mutation CityEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         cityEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -214,10 +213,11 @@ describe('City resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: cityInternalId,
-        relationId: cityMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.cityEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.cityEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should city deleted', async () => {
     const DELETE_QUERY = gql`

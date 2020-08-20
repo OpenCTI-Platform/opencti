@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import OrganizationPopover from './OrganizationPopover';
 import OrganizationKnowledgeBar from './OrganizationKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class OrganizationKnowledgeComponent extends Component {
     const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={organization}
+        <StixDomainObjectHeader
+          stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
         />
         <OrganizationKnowledgeBar organizationId={organization.id} />
@@ -35,7 +35,7 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={organization.id}
               paddingRight={true}
               {...routeProps}
@@ -46,9 +46,9 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={organization.id}
-              stixDomainEntityType="organization"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={organization.id}
+              stixDomainObjectType="Organization"
               {...routeProps}
             />
           )}
@@ -57,12 +57,12 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/sectors"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
-              relationType="gathering"
-              targetEntityTypes={['Sector']}
+              relationshipType="part-of"
+              targetStixDomainObjectTypes={['Sector']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -71,12 +71,12 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/locations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
-              relationType="localization"
-              targetEntityTypes={['Region', 'Country', 'City']}
+              relationshipType="localization"
+              targetStixDomainObjectTypes={['Region', 'Country', 'City']}
               entityLink={link}
-              creationIsFrom={true}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
@@ -85,27 +85,27 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
-              role='gather'
-              relationType="gathering"
-              targetEntityTypes={['Organization']}
+              role="gather"
+              relationshipType="part-of"
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:organizationId/knowledge/persons"
+          path="/dashboard/entities/organizations/:organizationId/knowledge/individuals"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
-              relationType="gathering"
-              targetEntityTypes={['User']}
+              relationshipType="part-of"
+              targetStixDomainObjectTypes={['User']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -114,19 +114,19 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
-              relationType="targets"
-              targetEntityTypes={[
+              relationshipType="targets"
+              targetStixDomainObjectTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'XOpenCTIIncident',
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -135,18 +135,18 @@ class OrganizationKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/attribution"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={organization.id}
-              relationType="attributed-to"
-              targetEntityTypes={[
+              relationshipType="attributed-to"
+              targetStixDomainObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'XOpenCTIIncident',
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -169,7 +169,7 @@ const OrganizationKnowledge = createFragmentContainer(
       fragment OrganizationKnowledge_organization on Organization {
         id
         name
-        alias
+        aliases
       }
     `,
   },

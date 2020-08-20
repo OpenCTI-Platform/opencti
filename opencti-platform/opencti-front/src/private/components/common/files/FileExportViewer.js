@@ -28,7 +28,12 @@ const styles = () => ({
 });
 
 const FileExportViewerBase = ({
-  entity, relay, t, classes, handleOpenExport, isExportPossible,
+  entity,
+  relay,
+  t,
+  classes,
+  handleOpenExport,
+  isExportPossible,
 }) => {
   const { id, exportFiles } = entity;
   const { edges } = exportFiles;
@@ -54,18 +59,22 @@ const FileExportViewerBase = ({
           </Typography>
           <div style={{ float: 'left', marginTop: -17 }}>
             <Tooltip
-              title={isExportPossible ? t('Generate an export') : t('No export connector available to generate an export')}
+              title={
+                isExportPossible
+                  ? t('Generate an export')
+                  : t('No export connector available to generate an export')
+              }
               aria-label="generate-export"
             >
               <span>
-              <IconButton
-                onClick={handleOpenExport}
-                disabled={!isExportPossible}
-                aria-haspopup="true"
-                color="primary"
-              >
-                <FileExportOutline />
-              </IconButton>
+                <IconButton
+                  onClick={handleOpenExport}
+                  disabled={!isExportPossible}
+                  aria-haspopup="true"
+                  color="primary"
+                >
+                  <FileExportOutline />
+                </IconButton>
               </span>
             </Tooltip>
           </div>
@@ -99,7 +108,7 @@ const FileExportViewerComponent = compose(
 
 const FileExportViewerRefetchQuery = graphql`
   query FileExportViewerRefetchQuery($id: String!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ...FileExportViewer_entity
     }
   }
@@ -109,7 +118,7 @@ const FileExportViewer = createRefetchContainer(
   FileExportViewerComponent,
   {
     entity: graphql`
-      fragment FileExportViewer_entity on StixDomainEntity {
+      fragment FileExportViewer_entity on StixDomainObject {
         id
         exportFiles(first: 1000) @connection(key: "Pagination_exportFiles") {
           edges {

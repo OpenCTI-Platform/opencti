@@ -12,10 +12,10 @@ import CityPopover from './CityPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -31,8 +31,8 @@ class CityComponent extends Component {
     const { classes, city } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={city}
+        <StixDomainObjectHeader
+          stixDomainObject={city}
           PopoverComponent={<CityPopover />}
         />
         <Grid
@@ -47,7 +47,7 @@ class CityComponent extends Component {
             <EntityLastReports entityId={city.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={city.id} />
+        <StixCoreObjectNotes entityId={city.id} />
         <Grid
           container={true}
           spacing={3}
@@ -58,7 +58,7 @@ class CityComponent extends Component {
             <EntityCampaignsChart entityId={city.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={city.id} />
+            <EntityXOpenCTIIncidentsChart entityId={city.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={city.id} />
@@ -83,7 +83,7 @@ const City = createFragmentContainer(CityComponent, {
     fragment City_city on City {
       id
       name
-      alias
+      x_opencti_aliases
       ...CityOverview_city
     }
   `,

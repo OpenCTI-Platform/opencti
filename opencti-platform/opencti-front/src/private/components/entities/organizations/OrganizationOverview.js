@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, pathOr } from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -35,7 +35,7 @@ class OrganizationOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {organization.markingDefinitions.edges.length > 0 ? (
+          {organization.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class OrganizationOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              organization.markingDefinitions.edges,
+              organization.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -71,9 +71,7 @@ class OrganizationOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], organization)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', organization)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -105,7 +103,14 @@ const OrganizationOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        objectMarking {
           edges {
             node {
               id
@@ -113,19 +118,9 @@ const OrganizationOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
-          node {
-            id
-            name
-            entity_type
-          }
-        }
       }
     `,
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(OrganizationOverview);
+export default compose(inject18n, withStyles(styles))(OrganizationOverview);

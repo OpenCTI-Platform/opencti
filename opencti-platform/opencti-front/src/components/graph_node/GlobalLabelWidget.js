@@ -37,7 +37,4 @@ GlobalLabelWidget.propTypes = {
   nsd: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(GlobalLabelWidget);
+export default compose(inject18n, withStyles(styles))(GlobalLabelWidget);

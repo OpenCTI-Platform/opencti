@@ -21,9 +21,9 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import TagsField from '../../common/form/TagsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -114,9 +114,9 @@ class CourseOfActionCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
-      assoc('tags', pluck('value', values.tags)),
+      assoc('createdBy', values.createdBy.value),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
+      assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
       mutation: courseOfActionMutation,
@@ -130,7 +130,7 @@ class CourseOfActionCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.paginationOptions,
+          this.props.objectLabel,
           newEdge,
         );
       },
@@ -186,9 +186,9 @@ class CourseOfActionCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                createdByRef: '',
-                markingDefinitions: [],
-                tags: [],
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
               }}
               validationSchema={courseOfActionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -218,19 +218,19 @@ class CourseOfActionCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
@@ -280,8 +280,8 @@ class CourseOfActionCreation extends Component {
             initialValues={{
               name: inputValue,
               description: '',
-              createdByRef: '',
-              markingDefinitions: [],
+              createdBy: '',
+              objectMarking: [],
             }}
             validationSchema={courseOfActionValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -311,19 +311,19 @@ class CourseOfActionCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                 </DialogContent>

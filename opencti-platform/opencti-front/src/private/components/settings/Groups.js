@@ -144,8 +144,4 @@ Groups.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Groups);
+export default compose(inject18n, withRouter, withStyles(styles))(Groups);

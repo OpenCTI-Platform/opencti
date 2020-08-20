@@ -57,7 +57,7 @@ describe('Rabbit connector management', () => {
     expect(aggregationMap.get(`push_${connectorId}`)).not.toBeUndefined();
   });
   it('should push message to connector', async () => {
-    const connector = { internal_id_key: connectorId };
+    const connector = { internal_id: connectorId };
     await pushToConnector(connector, { work_id: uuid() });
   });
   it('should delete connector', async () => {

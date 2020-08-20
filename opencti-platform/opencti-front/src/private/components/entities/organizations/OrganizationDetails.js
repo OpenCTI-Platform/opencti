@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import Markdown from 'react-markdown';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
 import ItemCreator from '../../../../components/ItemCreator';
@@ -45,7 +45,10 @@ class OrganizationDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainEntityTags tags={organization.tags} id={organization.id} />
+          <StixDomainObjectLabels
+            labels={organization.objectLabel}
+            id={organization.id}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -64,8 +67,8 @@ class OrganizationDetailsComponent extends Component {
           <Chip
             classes={{ root: classes.chip }}
             label={t(
-              organization.organization_class
-                ? `organization_${organization.organization_class}`
+              organization.x_opencti_organization_type
+                ? `organization_${organization.x_opencti_organization_type}`
                 : 'organization_other',
             )}
           />
@@ -77,8 +80,8 @@ class OrganizationDetailsComponent extends Component {
             {t('Reliability')}
           </Typography>
           <ItemReliability
-            reliability={organization.reliability}
-            label={t(`reliability_${organization.reliability}`)}
+            reliability={organization.x_opencti_reliability}
+            label={t(`reliability_${organization.x_opencti_reliability}`)}
           />
           <Typography
             variant="h3"
@@ -110,23 +113,19 @@ const OrganizationDetails = createFragmentContainer(
     organization: graphql`
       fragment OrganizationDetails_organization on Organization {
         id
-        reliability
-        organization_class
         contact_information
+        x_opencti_reliability
+        x_opencti_organization_type
         creator {
           id
           name
         }
-        tags {
+        objectLabel {
           edges {
             node {
               id
-              tag_type
               value
               color
-            }
-            relation {
-              id
             }
           }
         }

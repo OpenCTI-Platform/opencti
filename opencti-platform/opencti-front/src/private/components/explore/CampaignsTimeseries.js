@@ -60,7 +60,4 @@ CampaignsTimeseries.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CampaignsTimeseries);
+export default compose(inject18n, withStyles(styles))(CampaignsTimeseries);

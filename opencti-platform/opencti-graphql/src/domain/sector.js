@@ -1,55 +1,48 @@
+import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
-  findWithConnectedRelations,
   getSingleValueNumber,
   listEntities,
+  listFromEntitiesThroughRelation,
+  listToEntitiesThroughRelation,
   loadEntityById,
-  loadEntityByStixId,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination, TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY_SECTOR, RELATION_PART_OF } from '../utils/idGenerator';
 
 export const findById = (sectorId) => {
-  if (sectorId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(sectorId, 'Sector');
-  }
-  return loadEntityById(sectorId, 'Sector');
+  return loadEntityById(sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
 };
+
 export const findAll = (args) => {
-  return listEntities(['Sector'], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], ['name', 'alias'], args);
 };
+
 export const parentSectors = (sectorId) => {
-  return findWithConnectedRelations(
-    `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
-     $from has internal_id_key "${escapeString(sectorId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listToEntitiesThroughRelation(sectorId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
+
 export const subSectors = (sectorId) => {
-  return findWithConnectedRelations(
-    `match $to isa Sector; $rel(gather:$from, part_of:$to) isa gathering;
-     $from has internal_id_key "${escapeString(sectorId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => buildPagination(0, 0, data, data.length));
+  return listFromEntitiesThroughRelation(sectorId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const isSubSector = async (sectorId, args) => {
   const numberOfParents = await getSingleValueNumber(
-    `match $parent isa Sector; 
-    $rel(gather:$parent, part_of:$subsector) isa gathering; 
-    $subsector has internal_id_key "${escapeString(sectorId)}"; get; count;`,
+    `match $parent isa ${ENTITY_TYPE_IDENTITY_SECTOR}; 
+    $rel(${RELATION_PART_OF}_from:$subsector, ${RELATION_PART_OF}_to:$parent) isa ${RELATION_PART_OF}; 
+    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`,
     args
   );
   return numberOfParents > 0;
 };
+
 export const addSector = async (user, sector) => {
-  const created = await createEntity(user, sector, 'Sector', {
-    modelType: TYPE_STIX_DOMAIN_ENTITY,
-    stixIdType: 'identity',
-  });
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(
+    user,
+    assoc('identity_class', ENTITY_TYPE_IDENTITY_SECTOR.toLowerCase(), sector),
+    ENTITY_TYPE_IDENTITY_SECTOR
+  );
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

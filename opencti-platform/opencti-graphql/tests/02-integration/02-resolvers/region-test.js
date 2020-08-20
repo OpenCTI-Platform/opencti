@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query regions(
@@ -35,12 +36,14 @@ const READ_QUERY = gql`
   query region($id: String!) {
     region(id: $id) {
       id
+      standard_id
       name
       description
       subRegions {
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -48,6 +51,7 @@ const READ_QUERY = gql`
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -59,7 +63,6 @@ const READ_QUERY = gql`
 
 describe('Region resolver standard behavior', () => {
   let regionInternalId;
-  let regionMarkingDefinitionRelationId;
   const regionStixId = 'identity--e0afe8b4-8615-46cb-abe1-cf7e08c1f0ca';
   it('should region created', async () => {
     const CREATE_QUERY = gql`
@@ -75,7 +78,7 @@ describe('Region resolver standard behavior', () => {
     const REGION_TO_CREATE = {
       input: {
         name: 'Region',
-        stix_id_key: regionStixId,
+        stix_id: regionStixId,
         description: 'Region description',
       },
     };
@@ -102,28 +105,34 @@ describe('Region resolver standard behavior', () => {
     expect(queryResult.data.region.id).toEqual(regionInternalId);
   });
   it('should region subregions be accurate', async () => {
+    const region = await elLoadByStixId('location--bc9f5d2c-7209-4b24-903e-587c7cf00ab1');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: '98cbf59d-f079-4eb9-8a88-2095d0d336c1' },
+      variables: { id: region.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.region).not.toBeNull();
-    expect(queryResult.data.region.id).toEqual('98cbf59d-f079-4eb9-8a88-2095d0d336c1');
+    expect(queryResult.data.region.standard_id).toEqual('location--2669797f-1726-5f75-85cb-3bf05e69bfe7');
     expect(queryResult.data.region.isSubRegion).toBeFalsy();
     expect(queryResult.data.region.subRegions.edges.length).toEqual(1);
-    expect(queryResult.data.region.subRegions.edges[0].node.id).toEqual('ccbbd430-f264-4dae-b4db-d5c02e1edeb7');
+    expect(queryResult.data.region.subRegions.edges[0].node.standard_id).toEqual(
+      'location--cb729867-02b4-58b2-b9b9-193fd45be9dc'
+    );
   });
   it('should region parent regions be accurate', async () => {
+    const region = await elLoadByStixId('location--6bf1f67a-6a55-4e4d-b237-6cdda97baef2');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: 'ccbbd430-f264-4dae-b4db-d5c02e1edeb7' },
+      variables: { id: region.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.region).not.toBeNull();
-    expect(queryResult.data.region.id).toEqual('ccbbd430-f264-4dae-b4db-d5c02e1edeb7');
+    expect(queryResult.data.region.standard_id).toEqual('location--cb729867-02b4-58b2-b9b9-193fd45be9dc');
     expect(queryResult.data.region.isSubRegion).toBeTruthy();
     expect(queryResult.data.region.parentRegions.edges.length).toEqual(1);
-    expect(queryResult.data.region.parentRegions.edges[0].node.id).toEqual('98cbf59d-f079-4eb9-8a88-2095d0d336c1');
+    expect(queryResult.data.region.parentRegions.edges[0].node.standard_id).toEqual(
+      'location--2669797f-1726-5f75-85cb-3bf05e69bfe7'
+    );
   });
   it('should list regions', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
@@ -180,18 +189,15 @@ describe('Region resolver standard behavior', () => {
   });
   it('should add relation in region', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation RegionEdit($id: ID!, $input: RelationAddInput!) {
+      mutation RegionEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         regionEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Region {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -207,24 +213,20 @@ describe('Region resolver standard behavior', () => {
       variables: {
         id: regionInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.regionEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    regionMarkingDefinitionRelationId =
-      queryResult.data.regionEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.regionEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in region', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation RegionEdit($id: ID!, $relationId: ID!) {
+      mutation RegionEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         regionEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -239,10 +241,11 @@ describe('Region resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: regionInternalId,
-        relationId: regionMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.regionEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.regionEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should region deleted', async () => {
     const DELETE_QUERY = gql`

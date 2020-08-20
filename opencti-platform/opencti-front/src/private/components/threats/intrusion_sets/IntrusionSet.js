@@ -11,12 +11,12 @@ import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
-import EntityStixRelationsDonut from '../../common/stix_relations/EntityStixRelationsDonut';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -32,8 +32,8 @@ class IntrusionSetComponent extends Component {
     const { classes, intrusionSet } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={intrusionSet}
+        <StixDomainObjectHeader
+          stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
         />
         <Grid
@@ -51,7 +51,7 @@ class IntrusionSetComponent extends Component {
             <EntityLastReports entityId={intrusionSet.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={intrusionSet.id} />
+        <StixCoreObjectNotes entityId={intrusionSet.id} />
         <Grid
           container={true}
           spacing={3}
@@ -61,15 +61,15 @@ class IntrusionSetComponent extends Component {
           <Grid item={true} xs={4}>
             <EntityCampaignsChart
               entityId={intrusionSet.id}
-              relationType="attributed-to"
+              relationshipType="attributed-to"
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={intrusionSet.id}
               entityType="Indicator"
-              relationType="indicates"
-              field="main_observable_type"
+              relationshipType="indicates"
+              field="x_opencti_main_observable_type"
             />
           </Grid>
           <Grid item={true} xs={4}>
@@ -95,7 +95,7 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
     fragment IntrusionSet_intrusionSet on IntrusionSet {
       id
       name
-      alias
+      aliases
       ...IntrusionSetOverview_intrusionSet
       ...IntrusionSetDetails_intrusionSet
     }

@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch, SettingsApplications, PermIdentity } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -40,12 +40,12 @@ class AttackPatternDetailsComponent extends Component {
           </Typography>
           <Chip
             size="small"
-            label={attackPattern.external_id}
+            label={attackPattern.x_mitre_id}
             color="primary"
             style={{ marginBottom: 20 }}
           />
-          <StixDomainEntityTags
-            tags={attackPattern.tags}
+          <StixDomainObjectLabels
+            labels={attackPattern.objectLabel}
             id={attackPattern.id}
           />
           <Typography
@@ -88,7 +88,7 @@ class AttackPatternDetailsComponent extends Component {
             {t('Platforms')}
           </Typography>
           <List>
-            {propOr([], 'platform', attackPattern).map((platform) => (
+            {propOr([], 'x_mitre_platforms', attackPattern).map((platform) => (
               <ListItem key={platform} dense={true} divider={true}>
                 <ListItemIcon>
                   <SettingsApplications />
@@ -105,7 +105,7 @@ class AttackPatternDetailsComponent extends Component {
             {t('Required permissions')}
           </Typography>
           <List>
-            {propOr([], 'required_permission', attackPattern).map(
+            {propOr([], 'x_mitre_permissions_required', attackPattern).map(
               (permission) => (
                 <ListItem key={permission} dense={true} divider={true}>
                   <ListItemIcon>
@@ -135,25 +135,12 @@ const AttackPatternDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternDetails_attackPattern on AttackPattern {
         id
-        external_id
-        platform
-        required_permission
+        x_mitre_platforms
+        x_mitre_permissions_required
+        x_mitre_id
         creator {
           id
           name
-        }
-        tags {
-          edges {
-            node {
-              id
-              tag_type
-              value
-              color
-            }
-            relation {
-              id
-            }
-          }
         }
         killChainPhases {
           edges {
@@ -161,7 +148,16 @@ const AttackPatternDetails = createFragmentContainer(
               id
               kill_chain_name
               phase_name
-              phase_order
+              x_opencti_order
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }

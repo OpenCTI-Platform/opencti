@@ -145,8 +145,8 @@ class Indicators extends Component {
         width: '25%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      objectLabel: {
+        label: 'Labels',
         width: '20%',
         isSortable: false,
       },
@@ -160,7 +160,7 @@ class Indicators extends Component {
         width: '13%',
         isSortable: true,
       },
-      markingDefinitions: {
+      objectMarking: {
         label: 'Marking',
         isSortable: false,
       },
@@ -183,7 +183,7 @@ class Indicators extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'tags',
+          'labels',
           'markingDefinitions',
           'created_start_date',
           'created_end_date',
@@ -201,7 +201,7 @@ class Indicators extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -232,7 +232,7 @@ class Indicators extends Component {
     if (observableTypes.length > 0) {
       finalFilters = append(
         {
-          key: 'main_observable_type',
+          key: 'x_opencti_main_observable_type',
           values: observableTypes,
           operator: 'match',
         },

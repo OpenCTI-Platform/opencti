@@ -32,7 +32,7 @@ const styles = (theme) => ({
 const groupMutationRelationAdd = graphql`
   mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: InternalRelationshipAddInput
   ) {
     groupEdit(id: $id) {
       relationAdd(input: $input) {
@@ -47,10 +47,11 @@ const groupMutationRelationAdd = graphql`
 const groupMutationRelationDelete = graphql`
   mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     groupEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...GroupEditionPermissions_group
       }
     }
@@ -65,10 +66,8 @@ class GroupEditionPermissionsComponent extends Component {
         variables: {
           id: this.props.group.id,
           input: {
-            fromRole: 'allowed',
             toId: markingDefinitionId,
-            toRole: 'allow',
-            through: 'permission',
+            relationship_type: 'grants',
           },
         },
       });
@@ -87,7 +86,7 @@ class GroupEditionPermissionsComponent extends Component {
     const { classes, group, t } = this.props;
     const groupMarkingDefinitions = pipe(
       pathOr([], ['permissions', 'edges']),
-      map((n) => ({ id: n.node.id, relation: n.relation.id })),
+      map((n) => ({ id: n.node.id })),
     )(group);
 
     return (
@@ -104,7 +103,7 @@ class GroupEditionPermissionsComponent extends Component {
             if (props) {
               // Done
               const markingDefinitions = pipe(
-                pathOr([], ['markingDefinitions', 'edges']),
+                pathOr([], ['objectMarking', 'edges']),
                 map((n) => n.node),
               )(props);
               return (
@@ -159,18 +158,6 @@ const GroupEditionPermissions = createFragmentContainer(
     group: graphql`
       fragment GroupEditionPermissions_group on Group {
         id
-        permissions {
-          edges {
-            node {
-              id
-              definition
-              definition_type
-            }
-            relation {
-              id
-            }
-          }
-        }
       }
     `,
   },

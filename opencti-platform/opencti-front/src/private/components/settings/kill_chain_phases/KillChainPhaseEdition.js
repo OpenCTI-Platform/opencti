@@ -86,7 +86,7 @@ const killChainPhaseEditionFocus = graphql`
 const killChainPhaseValidation = (t) => Yup.object().shape({
   kill_chain_name: Yup.string().required(t('This field is required')),
   phase_name: Yup.string().required(t('This field is required')),
-  phase_order: Yup.number()
+  x_opencti_order: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
@@ -141,9 +141,12 @@ class KillChainPhaseEditionContainer extends Component {
     } = this.props;
     const { editContext } = killChainPhase;
     const initialValues = over(
-      lensProp('phase_order'),
+      lensProp('x_opencti_order'),
       defaultTo(''),
-      pickAll(['kill_chain_name', 'phase_name', 'phase_order'], killChainPhase),
+      pickAll(
+        ['kill_chain_name', 'phase_name', 'x_opencti_order'],
+        killChainPhase,
+      ),
     );
     return (
       <div>
@@ -200,7 +203,7 @@ class KillChainPhaseEditionContainer extends Component {
                 />
                 <Field
                   component={TextField}
-                  name="phase_order"
+                  name="x_opencti_order"
                   label={t('Order')}
                   fullWidth={true}
                   type="number"
@@ -210,7 +213,7 @@ class KillChainPhaseEditionContainer extends Component {
                   helperText={
                     <SubscriptionFocus
                       context={editContext}
-                      fieldName="phase_order"
+                      fieldName="x_opencti_order"
                     />
                   }
                 />
@@ -239,7 +242,7 @@ const KillChainPhaseEditionFragment = createFragmentContainer(
         id
         kill_chain_name
         phase_name
-        phase_order
+        x_opencti_order
         editContext {
           name
           focusOn

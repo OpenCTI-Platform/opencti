@@ -110,7 +110,11 @@ class ReportPopover extends Component {
     const { classes, t, reportId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
         <Menu
@@ -167,7 +171,8 @@ class ReportPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ReportEditionContainer report={props.report}
+                  <ReportEditionContainer
+                    report={props.report}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

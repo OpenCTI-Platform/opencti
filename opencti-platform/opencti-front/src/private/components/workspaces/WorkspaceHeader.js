@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../components/i18n';
-import ItemMarking from '../../../components/ItemMarking';
 import WorkspacePopover from './WorkspacePopover';
 import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 
@@ -23,10 +22,10 @@ const styles = () => ({
     float: 'right',
     overflowX: 'hidden',
   },
-  alias: {
+  aliases: {
     marginRight: 7,
   },
-  aliasInput: {
+  aliasesInput: {
     margin: '4px 0 0 10px',
     float: 'right',
   },
@@ -46,19 +45,11 @@ class WorkspaceHeaderComponent extends Component {
         </Typography>
         <div className={classes.popover}>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <WorkspacePopover workspaceId={workspace.id}
-              workspaceType={workspace.workspace_type}/>
+            <WorkspacePopover
+              workspaceId={workspace.id}
+              workspaceType={workspace.workspace_type}
+            />
           </Security>
-        </div>
-        <div className={classes.marking}>
-          {pathOr([], ['markingDefinitions', 'edges'], workspace).map(
-            (markingDefinition) => (
-              <ItemMarking
-                key={markingDefinition.node.id}
-                label={markingDefinition.node.definition}
-              />
-            ),
-          )}
         </div>
         <div className="clearfix" />
       </div>
@@ -79,19 +70,8 @@ const WorkspaceHeader = createFragmentContainer(WorkspaceHeaderComponent, {
       id
       workspace_type
       name
-      markingDefinitions {
-        edges {
-          node {
-            id
-            definition
-          }
-        }
-      }
     }
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(WorkspaceHeader);
+export default compose(inject18n, withStyles(styles))(WorkspaceHeader);

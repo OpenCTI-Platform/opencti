@@ -17,10 +17,7 @@ import {
 } from 'ramda';
 import * as Yup from 'yup';
 import { dateFormat } from '../../../utils/Time';
-import {
-  QueryRenderer,
-  commitMutation,
-} from '../../../relay/environment';
+import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -28,8 +25,8 @@ import { SubscriptionFocus } from '../../../components/Subscription';
 import DatePickerField from '../../../components/DatePickerField';
 import { attributesQuery } from '../settings/attributes/AttributesLines';
 import Loader from '../../../components/Loader';
-import CreatedByRefField from '../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../common/form/MarkingDefinitionsField';
+import CreatedByField from '../common/form/CreatedByField';
+import ObjectMarkingField from '../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -82,7 +79,7 @@ export const reportEditionOverviewFocus = graphql`
 const reportMutationRelationAdd = graphql`
   mutation ReportEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     reportEdit(id: $id) {
       relationAdd(input: $input) {
@@ -97,10 +94,11 @@ const reportMutationRelationAdd = graphql`
 const reportMutationRelationDelete = graphql`
   mutation ReportEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     reportEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...ReportEditionOverview_report
       }
     }
@@ -112,10 +110,10 @@ const reportValidation = (t) => Yup.object().shape({
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  report_class: Yup.string().required(t('This field is required')),
+  report_types: Yup.array().required(t('This field is required')),
   description: Yup.string(),
-  object_status: Yup.number(),
-  source_confidence_level: Yup.number(),
+  confidence: Yup.number(),
+  x_opencti_report_status: Yup.number(),
 });
 
 class ReportEditionOverviewComponent extends Component {
@@ -143,33 +141,31 @@ class ReportEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { report } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], report),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], report),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], report),
+      value: pathOr(null, ['createdBy', 'id'], report),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: reportMutationRelationAdd,
         variables: {
           id: this.props.report.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: reportMutationRelationDelete,
         variables: {
           id: this.props.report.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -178,10 +174,8 @@ class ReportEditionOverviewComponent extends Component {
           variables: {
             id: this.props.report.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -189,14 +183,13 @@ class ReportEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { report } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(report);
 
@@ -209,10 +202,8 @@ class ReportEditionOverviewComponent extends Component {
         variables: {
           id: this.props.report.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -223,7 +214,8 @@ class ReportEditionOverviewComponent extends Component {
         mutation: reportMutationRelationDelete,
         variables: {
           id: this.props.report.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -231,44 +223,42 @@ class ReportEditionOverviewComponent extends Component {
 
   render() {
     const { t, report, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], report) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], report) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], report),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], report),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], report),
+        label: pathOr(null, ['createdBy', 'name'], report),
+        value: pathOr(null, ['createdBy', 'id'], report),
       };
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(report);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('createdBy', createdBy),
+      assoc('objectMarking', objectMarking),
       assoc('published', dateFormat(report.published)),
       pick([
         'name',
         'published',
         'description',
-        'report_class',
-        'createdByRef',
-        'markingDefinitions',
-        'object_status',
-        'source_confidence_level',
+        'report_types',
+        'createdBy',
+        'objectMarking',
+        'confidence',
+        'x_opencti_report_status',
       ]),
     )(report);
     return (
       <div>
         <QueryRenderer
           query={attributesQuery}
-          variables={{ type: 'report_class' }}
+          variables={{ type: 'report_types' }}
           render={({ props }) => {
             if (props && props.attributes) {
-              const reportClassesEdges = props.attributes.edges;
+              const reportTypesEdges = props.attributes.edges;
               return (
                 <Formik
                   enableReinitialize={true}
@@ -294,25 +284,26 @@ class ReportEditionOverviewComponent extends Component {
                         />
                         <Field
                           component={SelectField}
-                          name="report_class"
+                          name="report_types"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
-                          label={t('Report type')}
+                          label={t('Report types')}
                           fullWidth={true}
+                          multiple={true}
                           containerstyle={{ marginTop: 20, width: '100%' }}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="report_class"
+                              fieldName="report_types"
                             />
                           }
                         >
-                          {reportClassesEdges.map((reportClassEdge) => (
+                          {reportTypesEdges.map((reportTypeEdge) => (
                             <MenuItem
-                              key={reportClassEdge.node.value}
-                              value={reportClassEdge.node.value}
+                              key={reportTypeEdge.node.value}
+                              value={reportTypeEdge.node.value}
                             >
-                              {reportClassEdge.node.value}
+                              {reportTypeEdge.node.value}
                             </MenuItem>
                           ))}
                         </Field>
@@ -353,7 +344,7 @@ class ReportEditionOverviewComponent extends Component {
                         />
                         <Field
                           component={SelectField}
-                          name="object_status"
+                          name="x_opencti_report_status"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
                           label={t('Processing status')}
@@ -362,7 +353,7 @@ class ReportEditionOverviewComponent extends Component {
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="object_status"
+                              fieldName="x_opencti_report_status"
                             />
                           }
                         >
@@ -381,16 +372,16 @@ class ReportEditionOverviewComponent extends Component {
                         </Field>
                         <Field
                           component={SelectField}
-                          name="source_confidence_level"
+                          name="confidence"
                           onFocus={this.handleChangeFocus.bind(this)}
                           onChange={this.handleSubmitField.bind(this)}
-                          label={t('Confidence level')}
+                          label={t('Confidence')}
                           fullWidth={true}
                           containerstyle={{ width: '100%', marginTop: 20 }}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="source_confidence_level"
+                              fieldName="confidence"
                             />
                           }
                         >
@@ -407,30 +398,28 @@ class ReportEditionOverviewComponent extends Component {
                             {t('confidence_4')}
                           </MenuItem>
                         </Field>
-                        <CreatedByRefField
-                          name="createdByRef"
+                        <CreatedByField
+                          name="createdBy"
                           style={{ marginTop: 20, width: '100%' }}
                           setFieldValue={setFieldValue}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="createdByRef"
+                              fieldName="createdBy"
                             />
                           }
-                          onChange={this.handleChangeCreatedByRef.bind(this)}
+                          onChange={this.handleChangeCreatedBy.bind(this)}
                         />
-                        <MarkingDefinitionsField
-                          name="markingDefinitions"
+                        <ObjectMarkingField
+                          name="objectMarking"
                           style={{ marginTop: 20, width: '100%' }}
                           helpertext={
                             <SubscriptionFocus
                               context={context}
-                              fieldName="markingDefinitions"
+                              fieldname="objectMarking"
                             />
                           }
-                          onChange={this.handleChangeMarkingDefinitions.bind(
-                            this,
-                          )}
+                          onChange={this.handleChangeObjectMarking.bind(this)}
                         />
                       </Form>
                     </div>
@@ -462,29 +451,23 @@ const ReportEditionOverview = createFragmentContainer(
         id
         name
         description
-        report_class
+        report_types
         published
-        object_status
-        source_confidence_level
-        createdByRef {
-          node {
+        confidence
+        x_opencti_report_status
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

@@ -33,14 +33,20 @@ const AppIntlProvider = (props) => {
     ? me.language
     : platformLang;
   return (
-      <IntlProvider locale={lang} onError={intlError} key={lang} messages={i18n.messages[lang]}>
-        <MuiPickersUtilsProvider
-          utils={MomentUtils}
-          locale={lang}
-          moment={moment}>
-          {children}
-        </MuiPickersUtilsProvider>
-      </IntlProvider>
+    <IntlProvider
+      locale={lang}
+      onError={intlError}
+      key={lang}
+      messages={i18n.messages[lang]}
+    >
+      <MuiPickersUtilsProvider
+        utils={MomentUtils}
+        locale={lang}
+        moment={moment}
+      >
+        {children}
+      </MuiPickersUtilsProvider>
+    </IntlProvider>
   );
 };
 

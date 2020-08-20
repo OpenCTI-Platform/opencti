@@ -68,6 +68,7 @@ export const NoMatch = () => <ErrorNotFound />;
 export const SimpleError = () => (
   <Alert severity="error">
     <AlertTitle>Error</AlertTitle>
-    An unknown error occurred. Please contact your administrator or the OpenCTI maintainers.
+    An unknown error occurred. Please contact your administrator or the OpenCTI
+    maintainers.
   </Alert>
 );

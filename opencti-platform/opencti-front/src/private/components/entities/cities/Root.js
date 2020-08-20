@@ -11,15 +11,15 @@ import City from './City';
 import CityReports from './CityReports';
 import CityKnowledge from './CityKnowledge';
 import CityObservables from './CityObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CityPopover from './CityPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on City {
         ...City_city
         ...CityEditionContainer_city
@@ -35,7 +35,7 @@ const cityQuery = graphql`
     city(id: $id) {
       id
       name
-      alias
+      x_opencti_aliases
       ...City_city
       ...CityReports_city
       ...CityKnowledge_city
@@ -124,8 +124,8 @@ class RootCity extends Component {
                     path="/dashboard/entities/cities/:cityId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.city}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.city}
                           PopoverComponent={<CityPopover />}
                         />
                         <FileManager
@@ -142,11 +142,14 @@ class RootCity extends Component {
                     path="/dashboard/entities/cities/:cityId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.city}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.city}
                           PopoverComponent={<CityPopover />}
                         />
-                        <StixObjectHistory {...routeProps} entityId={cityId} />
+                        <StixCoreObjectHistory
+                          {...routeProps}
+                          entityId={cityId}
+                        />
                       </React.Fragment>
                     )}
                   />

@@ -19,8 +19,8 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -76,7 +76,7 @@ export const threatActorEditionOverviewFocus = graphql`
 const threatActorMutationRelationAdd = graphql`
   mutation ThreatActorEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     threatActorEdit(id: $id) {
       relationAdd(input: $input) {
@@ -91,10 +91,11 @@ const threatActorMutationRelationAdd = graphql`
 const threatActorMutationRelationDelete = graphql`
   mutation ThreatActorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     threatActorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...ThreatActorEditionOverview_threatActor
       }
     }
@@ -137,33 +138,31 @@ class ThreatActorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { threatActor } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], threatActor),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], threatActor),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], threatActor),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], threatActor),
+      value: pathOr(null, ['createdBy', 'id'], threatActor),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
           id: this.props.threatActor.id,
           input: {
-            fromRole: 'so',
-            toRole: 'creator',
             toId: value.value,
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: threatActorMutationRelationDelete,
         variables: {
           id: this.props.threatActor.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -172,10 +171,8 @@ class ThreatActorEditionOverviewComponent extends Component {
           variables: {
             id: this.props.threatActor.id,
             input: {
-              fromRole: 'so',
-              toRole: 'creator',
               toId: value.value,
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -183,14 +180,13 @@ class ThreatActorEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { threatActor } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
 
@@ -203,10 +199,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.threatActor.id,
           input: {
-            fromRole: 'so',
-            toRole: 'marking',
             toId: head(added).value,
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -217,7 +211,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         mutation: threatActorMutationRelationDelete,
         variables: {
           id: this.props.threatActor.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -225,43 +220,36 @@ class ThreatActorEditionOverviewComponent extends Component {
 
   render() {
     const { t, threatActor, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], threatActor) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], threatActor) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], threatActor),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], threatActor),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          threatActor,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], threatActor),
+        value: pathOr(null, ['createdBy', 'id'], threatActor),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(threatActor);
     return (
@@ -298,25 +286,25 @@ class ThreatActorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -341,25 +329,19 @@ const ThreatActorEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

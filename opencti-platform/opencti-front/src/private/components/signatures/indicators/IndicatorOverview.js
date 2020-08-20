@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -45,8 +45,8 @@ class IndicatorOverviewComponent extends Component {
             {t('Detection')}
           </Typography>
           <ItemDetection
-            label={indicator.detection ? t('YES') : t('NO')}
-            status={indicator.detection}
+            label={indicator.x_opencti_detection ? t('YES') : t('NO')}
+            status={indicator.x_opencti_detection}
           />
           <Typography
             variant="h3"
@@ -71,9 +71,7 @@ class IndicatorOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], indicator)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', indicator)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -104,12 +102,12 @@ const IndicatorOverview = createFragmentContainer(IndicatorOverviewComponent, {
       created
       modified
       pattern_type
-      detection
-      createdByRef {
-        node {
+      x_opencti_detection
+      createdBy {
+        ... on Identity {
           id
-          entity_type
           name
+          entity_type
         }
       }
     }

@@ -6,18 +6,20 @@ import { resolveLink } from '../utils/Entity';
 
 class ItemAuthor extends Component {
   render() {
-    const { createdByRef } = this.props;
+    const { createdBy } = this.props;
     return (
       <div>
-        {createdByRef ? (
+        {createdBy ? (
           <Button
             variant="outlined"
             color="secondary"
             size="small"
             component={Link}
-            to={`${resolveLink(createdByRef.entity_type)}/${createdByRef.id}?viewAs=author`}
+            to={`${resolveLink(createdBy.entity_type)}/${
+              createdBy.id
+            }?viewAs=author`}
           >
-            {createdByRef.name}
+            {createdBy.name}
           </Button>
         ) : (
           '-'
@@ -28,7 +30,7 @@ class ItemAuthor extends Component {
 }
 
 ItemAuthor.propTypes = {
-  createdByRef: PropTypes.object,
+  createdBy: PropTypes.object,
 };
 
 export default ItemAuthor;

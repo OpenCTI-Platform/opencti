@@ -14,7 +14,7 @@ import * as PropTypes from 'prop-types';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
-import { tagsSearchQuery } from '../../settings/Tags';
+import { labelsSearchQuery } from '../../settings/Labels';
 import { attributesSearchQuery } from '../../settings/Attributes';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -62,26 +62,26 @@ class Filters extends Component {
   searchEntities(filterKey, event) {
     const { t } = this.props;
     switch (filterKey) {
-      case 'tags':
-        fetchQuery(tagsSearchQuery, {
+      case 'createdBy':
+        fetchQuery(identityCreationIdentitiesSearchQuery, {
+          types: ['User', 'Organization'],
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
           const entities = pipe(
-            pathOr([], ['tags', 'edges']),
+            pathOr([], ['identities', 'edges']),
             map((n) => ({
-              label: n.node.value,
+              label: n.node.name,
               value: n.node.id,
-              type: 'tag',
-              color: n.node.color,
+              type: n.node.entity_type,
             })),
           )(data);
           this.setState({
-            entities: { tags: union(this.state.entities, entities) },
+            entities: { createdBy: union(this.state.entities, entities) },
           });
         });
         break;
-      case 'markingDefinitions':
+      case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
@@ -102,22 +102,22 @@ class Filters extends Component {
           });
         });
         break;
-      case 'createdBy':
-        fetchQuery(identityCreationIdentitiesSearchQuery, {
-          types: ['User', 'Organization'],
+      case 'labelledBy':
+        fetchQuery(labelsSearchQuery, {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
           const entities = pipe(
-            pathOr([], ['identities', 'edges']),
+            pathOr([], ['labels', 'edges']),
             map((n) => ({
-              label: n.node.name,
+              label: n.node.value,
               value: n.node.id,
-              type: n.node.entity_type,
+              type: 'label',
+              color: n.node.color,
             })),
           )(data);
           this.setState({
-            entities: { createdBy: union(this.state.entities, entities) },
+            entities: { labels: union(this.state.entities, entities) },
           });
         });
         break;
@@ -273,7 +273,8 @@ class Filters extends Component {
                     onInputChange={this.searchEntities.bind(this, filterKey)}
                     onChange={this.handleChange.bind(this, filterKey)}
                     value={currentValue ? currentValue.value : null}
-                    getOptionSelected={(option, value) => option.value === value}
+                    getOptionSelected={(option, value) => option.value === value
+                    }
                     renderInput={(params) => (
                       <TextField
                         {...params}

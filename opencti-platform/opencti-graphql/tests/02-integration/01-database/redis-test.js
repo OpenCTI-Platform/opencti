@@ -10,7 +10,7 @@ import {
   setEditContext,
   storeAccessCache,
 } from '../../../src/database/redis';
-import { OPENCTI_ADMIN_UUID } from '../../../src/domain/user';
+import { OPENCTI_ADMIN_UUID } from '../../../src/utils/idGenerator';
 
 describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {

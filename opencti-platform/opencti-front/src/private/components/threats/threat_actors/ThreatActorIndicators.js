@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import ThreatActorPopover from './ThreatActorPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -67,15 +67,15 @@ class ThreatActorIndicatorsComponent extends Component {
 
     return (
       <div className={className}>
-        <StixDomainEntityHeader
-          stixDomainEntity={threatActor}
+        <StixDomainObjectHeader
+          stixDomainObject={threatActor}
           PopoverComponent={<ThreatActorPopover />}
         />
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation entityId={threatActor.id} {...routeProps} />
+            <StixCoreRelationship entityId={threatActor.id} {...routeProps} />
           )}
         />
         <Route
@@ -85,7 +85,7 @@ class ThreatActorIndicatorsComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
                 entityId={threatActor.id}
-                relationType="indicates"
+                relationshipType="indicates"
                 entityLink={link}
                 onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
                 }
@@ -113,7 +113,7 @@ const ThreatActorIndicators = createFragmentContainer(
       fragment ThreatActorIndicators_threatActor on ThreatActor {
         id
         name
-        alias
+        aliases
       }
     `,
   },

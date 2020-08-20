@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, pathOr } from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,7 +35,7 @@ class CourseOfActionOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {courseOfAction.markingDefinitions.edges.length > 0 ? (
+          {courseOfAction.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class CourseOfActionOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              courseOfAction.markingDefinitions.edges,
+              courseOfAction.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -71,13 +71,7 @@ class CourseOfActionOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(
-              null,
-              ['createdByRef', 'node'],
-              courseOfAction,
-            )}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', courseOfAction)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -113,7 +107,7 @@ const CourseOfActionOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -121,8 +115,8 @@ const CourseOfActionOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type

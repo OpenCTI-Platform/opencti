@@ -12,8 +12,8 @@ import Cities from './Cities';
 import RootCity from './cities/Root';
 import Organizations from './Organizations';
 import RootOrganization from './organizations/Root';
-import Persons from './Persons';
-import RootPerson from './persons/Root';
+import Individuals from './Individuals';
+import RootIndividual from './individuals/Root';
 
 class Root extends Component {
   render() {
@@ -72,12 +72,12 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/dashboard/entities/persons"
-          component={Persons}
+          path="/dashboard/entities/individuals"
+          component={Individuals}
         />
         <BoundaryRoute
-          path="/dashboard/entities/persons/:personId"
-          render={(routeProps) => <RootPerson {...routeProps} me={me} />}
+          path="/dashboard/entities/individuals/:individualId"
+          render={(routeProps) => <RootIndividual {...routeProps} me={me} />}
         />
       </Switch>
     );

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, pathOr } from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,7 +35,7 @@ class CampaignOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {campaign.markingDefinitions.edges.length > 0 ? (
+          {campaign.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class CampaignOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              campaign.markingDefinitions.edges,
+              campaign.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -71,9 +71,7 @@ class CampaignOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], campaign)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', campaign)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -107,7 +105,7 @@ const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {
       description
       created
       modified
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id
@@ -115,8 +113,8 @@ const CampaignOverview = createFragmentContainer(CampaignOverviewComponent, {
           }
         }
       }
-      createdByRef {
-        node {
+      createdBy {
+        ... on Identity {
           id
           name
           entity_type

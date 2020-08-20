@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import SectorPopover from './SectorPopover';
 import SectorKnowledgeBar from './SectorKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class SectorKnowledgeComponent extends Component {
     const link = `/dashboard/entities/sectors/${sector.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={sector}
+        <StixDomainObjectHeader
+          stixDomainObject={sector}
           PopoverComponent={<SectorPopover />}
         />
         <SectorKnowledgeBar sectorId={sector.id} />
@@ -35,7 +35,7 @@ class SectorKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={sector.id}
               paddingRight={true}
               {...routeProps}
@@ -46,9 +46,9 @@ class SectorKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={sector.id}
-              stixDomainEntityType="sector"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={sector.id}
+              stixDomainObjectType="Sector"
               {...routeProps}
             />
           )}
@@ -57,12 +57,12 @@ class SectorKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="gathering"
-              targetEntityTypes={['Organization']}
+              relationshipType="part-of"
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -71,12 +71,12 @@ class SectorKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/intrusion_sets"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Intrusion-Set']}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -85,12 +85,12 @@ class SectorKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/campaigns"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Campaign']}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -99,12 +99,12 @@ class SectorKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/incidents"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Incident']}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -113,12 +113,12 @@ class SectorKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/sectors/:sectorId/knowledge/malwares"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={sector.id}
-              relationType="targets"
-              targetEntityTypes={['Malware']}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -139,7 +139,7 @@ const SectorKnowledge = createFragmentContainer(SectorKnowledgeComponent, {
     fragment SectorKnowledge_sector on Sector {
       id
       name
-      alias
+      aliases
     }
   `,
 });

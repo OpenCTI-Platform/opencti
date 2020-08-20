@@ -11,7 +11,7 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import TagsAttributesMenu from './TagsAttributesMenu';
+import LabelsAttributesMenu from './LabelsAttributesMenu';
 import AttributesLines, {
   attributesLinesQuery,
 } from './attributes/AttributesLines';
@@ -120,7 +120,7 @@ class Attributes extends Component {
     };
     return (
       <div className={classes.container}>
-        <TagsAttributesMenu />
+        <LabelsAttributesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <AttributeCreation
           paginationOptions={paginationOptions}

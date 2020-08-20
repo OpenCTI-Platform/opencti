@@ -1,14 +1,14 @@
 import { addIdentity, findAll, findById } from '../domain/identity';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
-  stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete,
-} from '../domain/stixDomainEntity';
-import { createdByRef, markingDefinitions, reports, stixRelations, tags } from '../domain/stixEntity';
+  stixDomainObjectEditContext,
+  stixDomainObjectCleanContext,
+  stixDomainObjectEditField,
+  stixDomainObjectAddRelation,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
+} from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../utils/idGenerator';
 
 const identityResolvers = {
   Query: {
@@ -16,12 +16,13 @@ const identityResolvers = {
     identities: (_, args) => findAll(args),
   },
   IdentitiesOrdering: {
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IdentitiesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Identity: {
     // eslint-disable-next-line no-underscore-dangle
@@ -31,20 +32,16 @@ const identityResolvers = {
       }
       return 'Unknown';
     },
-    createdByRef: (identity) => createdByRef(identity.id),
-    markingDefinitions: (identity) => markingDefinitions(identity.id),
-    tags: (identity) => tags(identity.id),
-    reports: (identity) => reports(identity.id),
-    stixRelations: (identity, args) => stixRelations(identity.id, args),
   },
   Mutation: {
     identityEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId),
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
     identityAdd: (_, { input }, { user }) => addIdentity(user, input),
   },

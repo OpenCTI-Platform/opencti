@@ -11,15 +11,15 @@ import Country from './Country';
 import CountryReports from './CountryReports';
 import CountryKnowledge from './CountryKnowledge';
 import CountryObservables from './CountryObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CountryPopover from './CountryPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Country {
         ...Country_country
         ...CountryEditionContainer_country
@@ -35,7 +35,7 @@ const countryQuery = graphql`
     country(id: $id) {
       id
       name
-      alias
+      x_opencti_aliases
       ...Country_country
       ...CountryReports_country
       ...CountryKnowledge_country
@@ -130,8 +130,8 @@ class RootCountry extends Component {
                     path="/dashboard/entities/countries/:countryId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.country}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.country}
                           PopoverComponent={<CountryPopover />}
                         />
                         <FileManager
@@ -148,11 +148,11 @@ class RootCountry extends Component {
                     path="/dashboard/entities/countries/:countryId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.country}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.country}
                           PopoverComponent={<CountryPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={countryId}
                         />

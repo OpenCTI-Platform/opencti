@@ -8,8 +8,8 @@ import IntrusionSets from './IntrusionSets';
 import RootIntrusionSet from './intrusion_sets/Root';
 import Campaigns from './Campaigns';
 import RootCampaign from './campaigns/Root';
-import Incidents from './Incidents';
-import RootIncident from './incidents/Root';
+import XOpenCTIIncidents from './XOpenCTIIncidents';
+import RootXOpenCTIIncident from './x_opencti_incidents/Root';
 import Malwares from './Malwares';
 import RootMalware from './malwares/Root';
 
@@ -53,11 +53,13 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/dashboard/threats/incidents"
-          component={Incidents}
+          component={XOpenCTIIncidents}
         />
         <BoundaryRoute
           path="/dashboard/threats/incidents/:incidentId"
-          render={(routeProps) => <RootIncident {...routeProps} me={me} />}
+          render={(routeProps) => (
+            <RootXOpenCTIIncident {...routeProps} me={me} />
+          )}
         />
         <BoundaryRoute
           exact

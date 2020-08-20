@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query sectors(
@@ -35,12 +36,14 @@ const READ_QUERY = gql`
   query sector($id: String!) {
     sector(id: $id) {
       id
+      standard_id
       name
       description
       subSectors {
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -48,6 +51,7 @@ const READ_QUERY = gql`
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -59,7 +63,6 @@ const READ_QUERY = gql`
 
 describe('Sector resolver standard behavior', () => {
   let sectorInternalId;
-  let sectorMarkingDefinitionRelationId;
   const sectorStixId = 'identity--be5c22c3-b130-4c6e-9545-10a0114d0908';
   it('should sector created', async () => {
     const CREATE_QUERY = gql`
@@ -75,7 +78,7 @@ describe('Sector resolver standard behavior', () => {
     const SECTOR_TO_CREATE = {
       input: {
         name: 'Sector',
-        stix_id_key: sectorStixId,
+        stix_id: sectorStixId,
         description: 'Sector description',
       },
     };
@@ -102,28 +105,34 @@ describe('Sector resolver standard behavior', () => {
     expect(queryResult.data.sector.id).toEqual(sectorInternalId);
   });
   it('should sector subsectors be accurate', async () => {
+    const sector = await elLoadByStixId('identity--5556c4ab-3e5e-4d56-8410-60b29cecbeb6');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: '9dcde1a4-88ef-4f50-ad74-23d865b438e6' },
+      variables: { id: sector.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.sector).not.toBeNull();
-    expect(queryResult.data.sector.id).toEqual('9dcde1a4-88ef-4f50-ad74-23d865b438e6');
+    expect(queryResult.data.sector.standard_id).toEqual('identity--ec64e236-dc31-50ed-ab39-ece26c828282');
     expect(queryResult.data.sector.isSubSector).toBeFalsy();
     expect(queryResult.data.sector.subSectors.edges.length).toEqual(1);
-    expect(queryResult.data.sector.subSectors.edges[0].node.id).toEqual('b9c8cb0f-607c-4cb3-aa20-2450eaa8c3c4');
+    expect(queryResult.data.sector.subSectors.edges[0].node.standard_id).toEqual(
+      'identity--5d4d04f3-ae38-5523-a0ee-cbb2c76a7da1'
+    );
   });
   it('should sector parent sectors be accurate', async () => {
+    const sector = await elLoadByStixId('identity--360f3368-b911-4bb1-a7f9-0a8e4ef4e023');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: 'b9c8cb0f-607c-4cb3-aa20-2450eaa8c3c4' },
+      variables: { id: sector.internal_id },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.sector).not.toBeNull();
-    expect(queryResult.data.sector.id).toEqual('b9c8cb0f-607c-4cb3-aa20-2450eaa8c3c4');
+    expect(queryResult.data.sector.standard_id).toEqual('identity--5d4d04f3-ae38-5523-a0ee-cbb2c76a7da1');
     expect(queryResult.data.sector.isSubSector).toBeTruthy();
     expect(queryResult.data.sector.parentSectors.edges.length).toEqual(1);
-    expect(queryResult.data.sector.parentSectors.edges[0].node.id).toEqual('9dcde1a4-88ef-4f50-ad74-23d865b438e6');
+    expect(queryResult.data.sector.parentSectors.edges[0].node.standard_id).toEqual(
+      'identity--ec64e236-dc31-50ed-ab39-ece26c828282'
+    );
   });
   it('should list sectors', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
@@ -180,18 +189,15 @@ describe('Sector resolver standard behavior', () => {
   });
   it('should add relation in sector', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation SectorEdit($id: ID!, $input: RelationAddInput!) {
+      mutation SectorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         sectorEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Sector {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -207,24 +213,20 @@ describe('Sector resolver standard behavior', () => {
       variables: {
         id: sectorInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.sectorEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    sectorMarkingDefinitionRelationId =
-      queryResult.data.sectorEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.sectorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in sector', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation SectorEdit($id: ID!, $relationId: ID!) {
+      mutation SectorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         sectorEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -239,10 +241,11 @@ describe('Sector resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: sectorInternalId,
-        relationId: sectorMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.sectorEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.sectorEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should sector deleted', async () => {
     const DELETE_QUERY = gql`

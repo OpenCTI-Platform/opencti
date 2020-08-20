@@ -27,9 +27,9 @@ const styles = (theme) => ({
 
 const addSubSectorsLinesMutationRelationAdd = graphql`
   mutation AddSubSectorsLinesRelationAddMutation(
-    $input: StixRelationAddInput!
+    $input: StixCoreRelationshipAddInput
   ) {
-    stixRelationAdd(input: $input) {
+    stixCoreRelationshipAdd(input: $input) {
       to {
         ...SectorSubSectors_sector
       }
@@ -39,7 +39,7 @@ const addSubSectorsLinesMutationRelationAdd = graphql`
 
 export const addSubSectorsMutationRelationDelete = graphql`
   mutation AddSubSectorsLinesRelationDeleteMutation($id: ID!) {
-    stixRelationEdit(id: $id) {
+    stixCoreRelationshipEdit(id: $id) {
       delete
     }
   }
@@ -63,7 +63,8 @@ class AddSubSectorsLinesContainer extends Component {
           const subSectors = node.getLinkedRecord('subSectors');
           const edges = subSectors.getLinkedRecords('edges');
           const newEdges = filter(
-            (n) => n.getLinkedRecord('node').getValue('id') !== existingSubSector.node.id,
+            (n) => n.getLinkedRecord('node').getValue('id')
+              !== existingSubSector.node.id,
             edges,
           );
           subSectors.setLinkedRecords(newEdges, 'edges');
@@ -71,11 +72,9 @@ class AddSubSectorsLinesContainer extends Component {
       });
     } else {
       const input = {
-        relationship_type: 'gathering',
+        relationship_type: 'part-of',
         fromId: subSector.id,
-        fromRole: 'part_of',
         toId: sectorId,
-        toRole: 'gather',
       };
       commitMutation({
         mutation: addSubSectorsLinesMutationRelationAdd,

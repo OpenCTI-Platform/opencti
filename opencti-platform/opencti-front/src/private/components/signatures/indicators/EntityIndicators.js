@@ -17,7 +17,7 @@ import EntityIndicatorsLines, {
 } from './EntityIndicatorsLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixRelationCreationFromEntity from '../../common/stix_relations/StixRelationCreationFromEntity';
+import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
@@ -132,8 +132,8 @@ class EntityIndicators extends Component {
         width: '30%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      objectLabel: {
+        label: 'Labels',
         width: '15%',
         isSortable: false,
       },
@@ -147,7 +147,7 @@ class EntityIndicators extends Component {
         width: '15%',
         isSortable: true,
       },
-      markingDefinitions: {
+      objectMarking: {
         label: 'Marking',
         isSortable: false,
       },
@@ -200,10 +200,10 @@ class EntityIndicators extends Component {
   }
 
   render() {
-    const { entityId, relationType } = this.props;
+    const { entityId, relationship_type } = this.props;
     const {
       view,
-      targetEntityTypes,
+      targetStixDomainObjectTypes,
       sortBy,
       orderAsc,
       inferred,
@@ -243,9 +243,9 @@ class EntityIndicators extends Component {
     const paginationOptions = {
       inferred,
       search: searchTerm,
-      toTypes: targetEntityTypes,
+      toTypes: targetStixDomainObjectTypes,
       fromId: entityId,
-      relationType,
+      relationship_type,
       lastSeenStart: null,
       lastSeenStop: null,
       orderBy: sortBy,
@@ -256,10 +256,10 @@ class EntityIndicators extends Component {
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixRelationCreationFromEntity
+          <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
-            isFrom={false}
-            targetEntityTypes={['Indicator']}
+            isRelationReversed={true}
+            targetStixDomainObjectTypes={['Indicator']}
             paginationOptions={paginationOptions}
             openExports={openExports}
             paddingRight={true}

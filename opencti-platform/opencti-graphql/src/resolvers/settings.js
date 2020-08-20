@@ -11,6 +11,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { PROVIDERS } from '../config/providers';
+import { ENTITY_TYPE_SETTINGS } from '../utils/idGenerator';
 
 const settingsResolvers = {
   Query: {
@@ -35,7 +36,7 @@ const settingsResolvers = {
       subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         settingsEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.Settings.EDIT_TOPIC),
+          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_SETTINGS].EDIT_TOPIC),
           (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;

@@ -17,8 +17,8 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -105,8 +105,8 @@ class CountryCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('createdBy', values.createdBy.value),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
       mutation: countryMutation,
@@ -170,8 +170,8 @@ class CountryCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                createdByRef: '',
-                markingDefinitions: [],
+                createdBy: '',
+                objectMarking: [],
               }}
               validationSchema={countryValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -197,13 +197,13 @@ class CountryCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

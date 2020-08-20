@@ -215,6 +215,15 @@ class UserCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={4}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
                     name="password"
                     label={t('Password')}
                     type="password"

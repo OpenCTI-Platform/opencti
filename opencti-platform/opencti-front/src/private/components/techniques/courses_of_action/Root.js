@@ -8,15 +8,15 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import CourseOfAction from './CourseOfAction';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 
 const subscription = graphql`
   subscription RootCoursesOfActionSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on CourseOfAction {
         ...CourseOfAction_courseOfAction
         ...CourseOfActionEditionContainer_courseOfAction
@@ -32,7 +32,7 @@ const courseOfActionQuery = graphql`
     courseOfAction(id: $id) {
       id
       name
-      alias
+      x_opencti_aliases
       ...CourseOfAction_courseOfAction
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -93,8 +93,8 @@ class RootCourseOfAction extends Component {
                     path="/dashboard/techniques/courses_of_action/:courseOfActionId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.courseOfAction}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.courseOfAction}
                           PopoverComponent={<CourseOfActionPopover />}
                         />
                         <FileManager
@@ -111,11 +111,11 @@ class RootCourseOfAction extends Component {
                     path="/dashboard/techniques/courses_of_action/:courseOfActionId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.courseOfAction}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.courseOfAction}
                           PopoverComponent={<CourseOfActionPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={courseOfActionId}
                         />

@@ -14,10 +14,10 @@ import SectorPopover from './SectorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -33,8 +33,8 @@ class SectorComponent extends Component {
     const { classes, sector } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={sector}
+        <StixDomainObjectHeader
+          stixDomainObject={sector}
           PopoverComponent={<SectorPopover />}
         />
         <Grid
@@ -56,7 +56,7 @@ class SectorComponent extends Component {
             <EntityLastReports entityId={sector.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={sector.id} />
+        <StixCoreObjectNotes entityId={sector.id} />
         <Grid
           container={true}
           spacing={3}
@@ -67,7 +67,7 @@ class SectorComponent extends Component {
             <EntityCampaignsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={sector.id} />
+            <EntityXOpenCTIIncidentsChart entityId={sector.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={sector.id} />
@@ -100,7 +100,7 @@ const Sector = createFragmentContainer(SectorComponent, {
         }
       }
       name
-      alias
+      aliases
       ...SectorOverview_sector
       ...SectorSubSectors_sector
       ...SectorParentSectors_sector

@@ -151,10 +151,12 @@ class FileLineComponent extends Component {
             {!disableImport ? (
               <Tooltip title={t('Launch an import of this file')}>
                 <span>
-                  <IconButton disabled={isProgress || !isImportActive()}
+                  <IconButton
+                    disabled={isProgress || !isImportActive()}
                     onClick={this.askForImportJob.bind(this)}
                     aria-haspopup="true"
-                    color="primary">
+                    color="primary"
+                  >
                     <ProgressUpload />
                   </IconButton>
                 </span>

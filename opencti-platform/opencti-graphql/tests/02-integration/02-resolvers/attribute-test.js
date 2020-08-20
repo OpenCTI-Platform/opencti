@@ -47,7 +47,7 @@ describe('Attribute resolver standard behavior', () => {
     // Create the country
     const ATTRIBUTE_TO_CREATE = {
       input: {
-        type: 'role_played',
+        type: 'report_types',
         value: 'Test',
       },
     };
@@ -80,14 +80,14 @@ describe('Attribute resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: attributeInternalId, input: { type: 'role_played', value: 'Test', newValue: 'Test2' } },
+      variables: { id: attributeInternalId, input: { type: 'report_types', value: 'Test', newValue: 'Test2' } },
     });
     expect(queryResult.data.attributeEdit.update.value).toEqual('Test2');
     attributeInternalId = queryResult.data.attributeEdit.update.id;
   });
   it('should list attributes', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { type: 'role_played' } });
-    expect(queryResult.data.attributes.edges.length).toEqual(4);
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { type: 'report_types' } });
+    expect(queryResult.data.attributes.edges.length).toEqual(3);
   });
   it('should attribute deleted', async () => {
     const DELETE_QUERY = gql`

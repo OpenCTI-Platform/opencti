@@ -19,8 +19,8 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -73,7 +73,7 @@ export const countryEditionOverviewFocus = graphql`
 const countryMutationRelationAdd = graphql`
   mutation CountryEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput!
   ) {
     countryEdit(id: $id) {
       relationAdd(input: $input) {
@@ -88,10 +88,11 @@ const countryMutationRelationAdd = graphql`
 const countryMutationRelationDelete = graphql`
   mutation CountryEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     countryEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CountryEditionOverview_country
       }
     }
@@ -131,33 +132,31 @@ class CountryEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { country } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], country),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], country),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], country),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], country),
+      value: pathOr(null, ['createdBy', 'id'], country),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: countryMutationRelationAdd,
         variables: {
           id: this.props.country.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: countryMutationRelationDelete,
         variables: {
           id: this.props.country.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -166,10 +165,8 @@ class CountryEditionOverviewComponent extends Component {
           variables: {
             id: this.props.country.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -177,14 +174,13 @@ class CountryEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { country } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(country);
 
@@ -197,10 +193,8 @@ class CountryEditionOverviewComponent extends Component {
         variables: {
           id: this.props.country.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -211,7 +205,8 @@ class CountryEditionOverviewComponent extends Component {
         mutation: countryMutationRelationDelete,
         variables: {
           id: this.props.country.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -219,25 +214,23 @@ class CountryEditionOverviewComponent extends Component {
 
   render() {
     const { t, country, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], country) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], country) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], country),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], country),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], country),
+        label: pathOr(null, ['createdBy', 'name'], country),
+        value: pathOr(null, ['createdBy', 'id'], country),
       };
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(country);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
-      assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+      assoc('createdBy', createdBy),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(country);
     return (
       <Formik
@@ -273,25 +266,25 @@ class CountryEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -316,25 +309,19 @@ const CountryEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

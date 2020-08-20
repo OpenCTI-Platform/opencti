@@ -93,8 +93,8 @@ export default createPaginationContainer(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "AttributesOrdering", defaultValue: "value" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
+          orderBy: { type: "AttributesOrdering", defaultValue: value }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
         ) {
         attributes(
           type: $type

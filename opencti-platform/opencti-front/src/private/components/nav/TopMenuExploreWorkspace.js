@@ -55,7 +55,10 @@ class TopMenuExploreWorkspace extends Component {
           <WorkOutlined className={classes.icon} fontSize="small" />
           {t('Workspaces')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/investigate/${workspaceId}`}

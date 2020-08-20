@@ -12,10 +12,10 @@ import CountryPopover from './CountryPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -31,8 +31,8 @@ class CountryComponent extends Component {
     const { classes, country } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={country}
+        <StixDomainObjectHeader
+          stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
         />
         <Grid
@@ -47,7 +47,7 @@ class CountryComponent extends Component {
             <EntityLastReports entityId={country.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={country.id} />
+        <StixCoreObjectNotes entityId={country.id} />
         <Grid
           container={true}
           spacing={3}
@@ -58,7 +58,7 @@ class CountryComponent extends Component {
             <EntityCampaignsChart entityId={country.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={country.id} />
+            <EntityXOpenCTIIncidentsChart entityId={country.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={country.id} />
@@ -83,7 +83,7 @@ const Country = createFragmentContainer(CountryComponent, {
     fragment Country_country on Country {
       id
       name
-      alias
+      x_opencti_aliases
       ...CountryOverview_country
     }
   `,

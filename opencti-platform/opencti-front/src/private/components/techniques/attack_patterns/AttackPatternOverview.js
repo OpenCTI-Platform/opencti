@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, pathOr } from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,7 +35,7 @@ class AttackPatternOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {attackPattern.markingDefinitions.edges.length > 0 ? (
+          {attackPattern.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class AttackPatternOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              attackPattern.markingDefinitions.edges,
+              attackPattern.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -71,9 +71,7 @@ class AttackPatternOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], attackPattern)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', attackPattern)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -109,7 +107,7 @@ const AttackPatternOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -117,8 +115,8 @@ const AttackPatternOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type

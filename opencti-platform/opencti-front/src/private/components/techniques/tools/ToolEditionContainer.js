@@ -64,7 +64,7 @@ class ToolEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <ToolEditionOverview tool={this.props.tool} context={editContext}/>
+          <ToolEditionOverview tool={this.props.tool} context={editContext} />
         </div>
       </div>
     );

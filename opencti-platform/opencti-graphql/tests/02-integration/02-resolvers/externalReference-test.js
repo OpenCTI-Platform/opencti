@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query externalReferences(
@@ -53,7 +54,7 @@ const READ_QUERY = gql`
 
 describe('ExternalReference resolver standard behavior', () => {
   let externalReferenceInternalId;
-  let externalReferenceStixDomainEntityRelationId;
+  let campaignId;
   const externalReferenceStixId = 'external-reference--e8ff325d-d51b-4e0e-aa1f-9e19ae6c6a65';
   it('should externalReference created', async () => {
     const CREATE_QUERY = gql`
@@ -71,7 +72,7 @@ describe('ExternalReference resolver standard behavior', () => {
     // Create the external reference
     const EXTERNAL_REFERENCE_TO_CREATE = {
       input: {
-        stix_id_key: externalReferenceStixId,
+        stix_id: externalReferenceStixId,
         source_name: 'ExternalReference',
         description: 'ExternalReference description',
         url: 'https://www.google.com',
@@ -156,20 +157,20 @@ describe('ExternalReference resolver standard behavior', () => {
     expect(queryResult.data.externalReferenceEdit.contextClean.id).toEqual(externalReferenceInternalId);
   });
   it('should add relation in externalReference', async () => {
+    const campaign = await elLoadByStixId('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    campaignId = campaign.internal_id;
     const RELATION_ADD_QUERY = gql`
-      mutation ExternalReferenceEdit($id: ID!, $input: RelationAddInput!) {
+      mutation ExternalReferenceEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         externalReferenceEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
-              ... on StixDomainEntity {
+              ... on StixDomainObject {
                 externalReferences {
                   edges {
                     node {
                       id
-                    }
-                    relation {
-                      id
+                      standard_id
                     }
                   }
                 }
@@ -182,24 +183,20 @@ describe('ExternalReference resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: 'fab6fa99-b07f-4278-86b4-b674edf60877',
+        id: externalReferenceInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'external_reference',
-          toId: externalReferenceInternalId,
-          through: 'external_references',
+          fromId: campaignId,
+          relationship_type: 'external-reference',
         },
       },
     });
     expect(queryResult.data.externalReferenceEdit.relationAdd.from.externalReferences.edges.length).toEqual(1);
-    externalReferenceStixDomainEntityRelationId =
-      queryResult.data.externalReferenceEdit.relationAdd.from.externalReferences.edges[0].relation.id;
   });
   it('should delete relation in externalReference', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ExternalReferenceEdit($id: ID!, $relationId: ID!) {
+      mutation ExternalReferenceEdit($id: ID!, $fromId: String!, $relationship_type: String!) {
         externalReferenceEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
             id
           }
         }
@@ -209,7 +206,8 @@ describe('ExternalReference resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: externalReferenceInternalId,
-        relationId: externalReferenceStixDomainEntityRelationId,
+        fromId: campaignId,
+        relationship_type: 'external-reference',
       },
     });
     expect(queryResult.data.externalReferenceEdit.relationDelete.id).toEqual(externalReferenceInternalId);

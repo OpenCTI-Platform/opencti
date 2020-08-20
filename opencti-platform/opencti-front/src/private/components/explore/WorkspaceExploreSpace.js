@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, indexBy, map, prop, propOr, values,
+  assoc,
+  compose,
+  dissoc,
+  indexBy,
+  map,
+  prop,
+  propOr,
+  values,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -21,7 +28,7 @@ import ExploreUpdateWidget from './ExploreUpdateWidget';
 import VictimologyDistribution from './VictimologyDistribution';
 import VictimologyTimeseries from './VictimologyTimeseries';
 import CampaignsTimeseries from './CampaignsTimeseries';
-import IncidentsTimeseries from './IncidentsTimeseries';
+import XOpenCTIIncidentsTimeseries from './XOpenCTIIncidentsTimeseries';
 import AttackPatternsDistribution from './AttackPatternsDistribution';
 import Security, { EXPLORE_EXUPDATE } from '../../../utils/Security';
 
@@ -123,7 +130,10 @@ class WorkspaceExploreSpaceComponent extends Component {
     const layoutsObject = indexBy(prop('i'), layouts);
     const finalWorkspaceData = assoc(
       'widgets',
-      map((n) => assoc('layout', layoutsObject[n.id], n), workspaceData.widgets),
+      map(
+        (n) => assoc('layout', layoutsObject[n.id], n),
+        workspaceData.widgets,
+      ),
       workspaceData,
     );
     this.saveWorkspace(finalWorkspaceData);
@@ -162,9 +172,11 @@ class WorkspaceExploreSpaceComponent extends Component {
     const workspaceData = this.decodeWorkspaceData();
     return (
       <div className={classes.container}>
-        <Drawer anchor="bottom"
+        <Drawer
+          anchor="bottom"
           variant="permanent"
-          classes={{ paper: classes.bottomNav }}>
+          classes={{ paper: classes.bottomNav }}
+        >
           <Grid container={true} spacing={1}>
             <Grid item={true} xs="auto">
               <DatePicker
@@ -208,12 +220,17 @@ class WorkspaceExploreSpaceComponent extends Component {
         <ResponsiveReactGridLayout
           className="layout"
           cols={{
-            lg: 12, md: 10, sm: 6, xs: 4, xxs: 2,
+            lg: 12,
+            md: 10,
+            sm: 6,
+            xs: 4,
+            xxs: 2,
           }}
           rowHeight={100}
           isDraggable={false}
           isResizable={false}
-          onLayoutChange={this.onLayoutChange.bind(this)}>
+          onLayoutChange={this.onLayoutChange.bind(this)}
+        >
           {map((widget) => {
             switch (widget.widget) {
               case 'VictimologyDistribution':
@@ -252,10 +269,10 @@ class WorkspaceExploreSpaceComponent extends Component {
                     />
                   </div>
                 );
-              case 'IncidentsTimeseries':
+              case 'XOpenCTIIncidentsTimeseries':
                 return (
                   <div key={widget.id} data-grid={widget.layout}>
-                    <IncidentsTimeseries
+                    <XOpenCTIIncidentsTimeseries
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
                       inferred={workspaceData.config.inferred}
@@ -314,7 +331,4 @@ const WorkspaceExploreSpace = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(WorkspaceExploreSpace);
+export default compose(inject18n, withStyles(styles))(WorkspaceExploreSpace);

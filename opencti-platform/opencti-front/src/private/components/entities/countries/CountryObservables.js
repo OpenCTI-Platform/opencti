@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CountryPopover from './CountryPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import EntityStixCyberObservables from '../../signatures/stix_cyber_observables/EntityStixCyberObservables';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -44,18 +44,15 @@ class CountryObservablesComponent extends Component {
             : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={country}
+        <StixDomainObjectHeader
+          stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
         />
         <Route
           exact
           path="/dashboard/entities/countries/:countryId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={country.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={country.id} {...routeProps} />
           )}
         />
         <Route
@@ -63,9 +60,9 @@ class CountryObservablesComponent extends Component {
           path="/dashboard/entities/countries/:countryId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
+              <EntityStixCyberObservables
                 entityId={country.id}
-                relationType="localization"
+                relationshipType="localization"
                 entityLink={link}
                 {...routeProps}
               />
@@ -91,7 +88,7 @@ const CountryObservables = createFragmentContainer(
       fragment CountryObservables_country on Country {
         id
         name
-        alias
+        x_opencti_aliases
       }
     `,
   },

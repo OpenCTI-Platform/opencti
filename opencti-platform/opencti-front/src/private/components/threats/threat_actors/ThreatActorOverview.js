@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, map } from 'ramda';
+import { compose, propOr, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,7 +35,7 @@ class ThreatActorOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {threatActor.markingDefinitions.edges.length > 0 ? (
+          {threatActor.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class ThreatActorOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              threatActor.markingDefinitions.edges,
+              threatActor.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -71,9 +71,7 @@ class ThreatActorOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], threatActor)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', threatActor)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -109,7 +107,7 @@ const ThreatActorOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -117,8 +115,8 @@ const ThreatActorOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type

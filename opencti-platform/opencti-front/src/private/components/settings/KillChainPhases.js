@@ -38,7 +38,7 @@ class KillChainPhases extends Component {
       'KillChainPhases-view',
     );
     this.state = {
-      sortBy: propOr('phase_order', 'sortBy', params),
+      sortBy: propOr('x_opencti_order', 'sortBy', params),
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
@@ -75,7 +75,7 @@ class KillChainPhases extends Component {
         width: '35%',
         isSortable: true,
       },
-      phase_order: {
+      x_opencti_order: {
         label: 'Order',
         width: '10%',
         isSortable: true,
@@ -137,7 +137,4 @@ KillChainPhases.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(KillChainPhases);
+export default compose(inject18n, withRouter)(KillChainPhases);

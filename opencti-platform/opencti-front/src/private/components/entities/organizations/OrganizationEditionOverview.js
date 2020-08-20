@@ -21,8 +21,8 @@ import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -78,7 +78,7 @@ export const organizationEditionOverviewFocus = graphql`
 const organizationMutationRelationAdd = graphql`
   mutation OrganizationEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput!
   ) {
     organizationEdit(id: $id) {
       relationAdd(input: $input) {
@@ -93,10 +93,11 @@ const organizationMutationRelationAdd = graphql`
 const organizationMutationRelationDelete = graphql`
   mutation OrganizationEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     organizationEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...OrganizationEditionOverview_organization
       }
     }
@@ -110,8 +111,10 @@ const organizationValidation = (t) => Yup.object().shape({
     .max(5000, t('The value is too long'))
     .required(t('This field is required')),
   contact_information: Yup.string(),
-  organization_class: Yup.string().required(t('This field is required')),
-  reliability: Yup.string().required(t('This field is required')),
+  x_opencti_organization_type: Yup.string().required(
+    t('This field is required'),
+  ),
+  x_opencti_reliability: Yup.string().required(t('This field is required')),
 });
 
 class OrganizationEditionOverviewComponent extends Component {
@@ -142,33 +145,31 @@ class OrganizationEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { organization } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], organization),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], organization),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], organization),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], organization),
+      value: pathOr(null, ['createdBy', 'id'], organization),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: organizationMutationRelationAdd,
         variables: {
           id: this.props.organization.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: organizationMutationRelationDelete,
         variables: {
           id: this.props.organization.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -177,10 +178,8 @@ class OrganizationEditionOverviewComponent extends Component {
           variables: {
             id: this.props.organization.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -188,14 +187,13 @@ class OrganizationEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { organization } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(organization);
 
@@ -208,10 +206,8 @@ class OrganizationEditionOverviewComponent extends Component {
         variables: {
           id: this.props.organization.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -222,7 +218,8 @@ class OrganizationEditionOverviewComponent extends Component {
         mutation: organizationMutationRelationDelete,
         variables: {
           id: this.props.organization.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'created-by',
         },
       });
     }
@@ -230,36 +227,30 @@ class OrganizationEditionOverviewComponent extends Component {
 
   render() {
     const { t, organization, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], organization) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], organization) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], organization),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], organization),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          organization,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], organization),
+        value: pathOr(null, ['createdBy', 'id'], organization),
       };
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(organization);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('createdBy', createdBy),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
         'contact_information',
-        'organization_class',
-        'reliability',
-        'createdByRef',
-        'markingDefinitions',
+        'x_opencti_organization_type',
+        'x_opencti_reliability',
+        'createdBy',
+        'objectMarking',
       ]),
     )(organization);
     return (
@@ -315,20 +306,20 @@ class OrganizationEditionOverviewComponent extends Component {
             />
             <Field
               component={SelectField}
-              name="organization_class"
+              name="x_opencti_organization_type"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
               label={t('Organization type')}
               fullWidth={true}
               inputProps={{
-                name: 'organization_class',
-                id: 'organization_class',
+                name: 'x_opencti_organization_type',
+                id: 'x_opencti_organization_type',
               }}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="organization_class"
+                  fieldName="x_opencti_organization_type"
                 />
               }
             >
@@ -340,18 +331,21 @@ class OrganizationEditionOverviewComponent extends Component {
             </Field>
             <Field
               component={SelectField}
-              name="reliability"
+              name="x_opencti_reliability"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
               label={t('Reliability')}
               fullWidth={true}
               inputProps={{
-                name: 'reliability',
-                id: 'reliability',
+                name: 'x_opencti_reliability',
+                id: 'x_opencti_reliability',
               }}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="reliability" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_reliability"
+                />
               }
             >
               <MenuItem value="A">{t('reliability_A')}</MenuItem>
@@ -361,25 +355,25 @@ class OrganizationEditionOverviewComponent extends Component {
               <MenuItem value="E">{t('reliability_E')}</MenuItem>
               <MenuItem value="F">{t('reliability_F')}</MenuItem>
             </Field>
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -405,27 +399,21 @@ const OrganizationEditionOverview = createFragmentContainer(
         name
         description
         contact_information
-        organization_class
-        reliability
-        createdByRef {
-          node {
+        x_opencti_organization_type
+        x_opencti_reliability
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

@@ -12,7 +12,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import { stixObservablesLinesSubTypesQuery } from '../stix_observables/StixObservablesLines';
+import { stixCyberObservablesLinesSubTypesQuery } from '../stix_cyber_observables/StixCyberObservablesLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -154,8 +154,8 @@ class IndicatorsRightBar extends Component {
           </ListItem>
         </List>
         <QueryRenderer
-          query={stixObservablesLinesSubTypesQuery}
-          variables={{ type: 'Stix-Observable' }}
+          query={stixCyberObservablesLinesSubTypesQuery}
+          variables={{ type: 'Stix-Cyber-Observable' }}
           render={({ props }) => {
             if (props && props.subTypes) {
               const subTypesEdges = props.subTypes.edges;

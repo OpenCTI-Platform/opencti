@@ -9,7 +9,10 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {
-  Domain, Person, Map, AccountBalance,
+  DomainOutlined,
+  PersonOutlined,
+  MapOutlined,
+  AccountBalanceOutlined,
 } from '@material-ui/icons';
 import { Gauge, SourcePull, TargetVariant } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
@@ -71,7 +74,7 @@ class OrganizationKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Domain />
+              <DomainOutlined />
             </ListItemIcon>
             <ListItemText
               primary={t('Sectors')}
@@ -89,7 +92,7 @@ class OrganizationKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Map />
+              <MapOutlined />
             </ListItemIcon>
             <ListItemText
               primary={t('Location')}
@@ -107,7 +110,7 @@ class OrganizationKnowledgeBar extends Component {
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <AccountBalance />
+              <AccountBalanceOutlined />
             </ListItemIcon>
             <ListItemText
               primary={t('Organizations')}
@@ -116,19 +119,19 @@ class OrganizationKnowledgeBar extends Component {
           </MenuItem>
           <MenuItem
             component={Link}
-            to={`/dashboard/entities/organizations/${organizationId}/knowledge/persons`}
+            to={`/dashboard/entities/organizations/${organizationId}/knowledge/individuals`}
             selected={
               location.pathname
-              === `/dashboard/entities/organizations/${organizationId}/knowledge/persons`
+              === `/dashboard/entities/organizations/${organizationId}/knowledge/individuals`
             }
             dense={false}
             classes={{ root: classes.item }}
           >
             <ListItemIcon>
-              <Person />
+              <PersonOutlined />
             </ListItemIcon>
             <ListItemText
-              primary={t('Persons')}
+              primary={t('Individuals')}
               secondary={t('Belonging to this organization')}
             />
           </MenuItem>

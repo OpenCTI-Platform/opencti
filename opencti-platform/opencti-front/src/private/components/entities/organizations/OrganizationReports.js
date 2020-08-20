@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import OrganizationPopover from './OrganizationPopover';
 import Reports from '../../reports/Reports';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -46,7 +46,10 @@ class OrganizationReportsComponent extends Component {
     const { withPadding } = this.state;
     const { classes, organization } = this.props;
     if (
-      contains(organization.organization_class, organizationTypesForAuthorMode)
+      contains(
+        organization.x_opencti_organization_type,
+        organizationTypesForAuthorMode,
+      )
     ) {
       return (
         <div
@@ -54,8 +57,8 @@ class OrganizationReportsComponent extends Component {
             withPadding ? classes.containerWithPadding : classes.container
           }
         >
-          <StixDomainEntityHeader
-            stixDomainEntity={organization}
+          <StixDomainObjectHeader
+            stixDomainObject={organization}
             PopoverComponent={<OrganizationPopover />}
           />
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -74,8 +77,8 @@ class OrganizationReportsComponent extends Component {
           withPadding ? classes.containerWithPadding : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={organization}
+        <StixDomainObjectHeader
+          stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -102,9 +105,9 @@ const OrganizationReports = createFragmentContainer(
     organization: graphql`
       fragment OrganizationReports_organization on Organization {
         id
-        organization_class
+        x_opencti_organization_type
         name
-        alias
+        aliases
       }
     `,
   },

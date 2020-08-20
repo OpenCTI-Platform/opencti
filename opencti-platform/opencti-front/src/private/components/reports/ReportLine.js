@@ -7,12 +7,15 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, DescriptionOutlined } from '@material-ui/icons';
+import {
+  KeyboardArrowRightOutlined,
+  DescriptionOutlined,
+} from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../components/i18n';
 import ItemMarking from '../../../components/ItemMarking';
-import ItemStatus from '../../../components/ItemStatus';
-import StixObjectTags from '../common/stix_object/StixObjectTags';
+import ItemStatus from '../../../components/ReportStatus';
+import StixCoreObjectLabels from '../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -47,7 +50,7 @@ const styles = (theme) => ({
 class ReportLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, node, dataColumns, onTagClick,
+      t, fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -73,16 +76,16 @@ class ReportLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.createdBy.width }}
               >
-                {pathOr('', ['createdByRef', 'node', 'name'], node)}
+                {pathOr('', ['createdBy', 'name'], node)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags
+                <StixCoreObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -93,13 +96,15 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.object_status.width }}
+                style={{ width: dataColumns.x_opencti_report_status.width }}
               >
                 <ItemStatus
-                  status={node.object_status}
+                  status={node.x_opencti_report_status}
                   label={t(
                     `report_status_${
-                      node.object_status ? node.object_status : 0
+                      node.x_opencti_report_status
+                        ? node.x_opencti_report_status
+                        : 0
                     }`,
                   )}
                   variant="inList"
@@ -107,15 +112,15 @@ class ReportLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
                       variant="inList"
                       label={markingDefinition.node.definition}
-                      color={markingDefinition.node.color}
+                      color={markingDefinition.node.x_opencti_color}
                     />
                   ),
                 )}
@@ -137,7 +142,7 @@ ReportLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
@@ -145,32 +150,30 @@ const ReportLineFragment = createFragmentContainer(ReportLineComponent, {
     fragment ReportLine_node on Report {
       id
       name
-      object_status
-      createdByRef {
-        node {
+      published
+      x_opencti_report_status
+      createdBy {
+        ... on Identity {
+          id
           name
+          entity_type
         }
       }
-      published
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id
             definition
-            color
+            x_opencti_color
           }
         }
       }
-      tags {
+      objectLabel {
         edges {
           node {
             id
-            tag_type
             value
             color
-          }
-          relation {
-            id
           }
         }
       }
@@ -208,7 +211,7 @@ class ReportLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -220,13 +223,13 @@ class ReportLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.object_status.width }}
+                style={{ width: dataColumns.x_opencti_report_status.width }}
               >
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.marking.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

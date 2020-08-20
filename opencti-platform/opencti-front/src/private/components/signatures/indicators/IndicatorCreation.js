@@ -20,9 +20,9 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import TagsField from '../../common/form/TagsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import TypesField from '../TypesField';
 import SwitchField from '../../../../components/SwitchField';
 
@@ -92,11 +92,13 @@ const indicatorMutation = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  indicator_pattern: Yup.string().required(t('This field is required')),
-  pattern_type: Yup.string().required(t('This field is required')),
-  main_observable_type: Yup.string().required(t('This field is required')),
   description: Yup.string(),
-  detection: Yup.boolean(),
+  pattern: Yup.string().required(t('This field is required')),
+  pattern_type: Yup.string().required(t('This field is required')),
+  x_opencti_main_observable_type: Yup.string().required(
+    t('This field is required'),
+  ),
+  x_opencti_detection: Yup.boolean(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -126,9 +128,9 @@ class IndicatorCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
-        createdByRef: path(['value']),
-        markingDefinitions: pluck('value'),
-        tags: pluck('value'),
+        createdBy: path(['value']),
+        objectMarking: pluck('value'),
+        objectLabel: pluck('value'),
       },
       values,
     );
@@ -195,16 +197,16 @@ class IndicatorCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
-                indicator_pattern: '',
+                pattern: '',
                 pattern_type: '',
-                main_observable_type: '',
+                x_opencti_main_observable_type: '',
                 valid_from: null,
                 valid_until: null,
                 description: '',
-                createdByRef: '',
-                markingDefinitions: [],
-                tags: [],
-                detection: false,
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
+                x_opencti_detection: false,
               }}
               validationSchema={indicatorValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -240,7 +242,7 @@ class IndicatorCreation extends Component {
                   </Field>
                   <Field
                     component={TextField}
-                    name="indicator_pattern"
+                    name="pattern"
                     label={t('Pattern')}
                     fullWidth={true}
                     multiline={true}
@@ -249,7 +251,7 @@ class IndicatorCreation extends Component {
                     detectDuplicate={['Indicator']}
                   />
                   <TypesField
-                    name="main_observable_type"
+                    name="x_opencti_main_observable_type"
                     label={t('Main observable type')}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   />
@@ -282,25 +284,25 @@ class IndicatorCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <Field
                     component={SwitchField}
                     type="checkbox"
-                    name="detection"
+                    name="x_opencti_detection"
                     label={t('Detection')}
                     containerstyle={{ marginTop: 20 }}
                   />

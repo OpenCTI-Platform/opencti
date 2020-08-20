@@ -44,7 +44,6 @@ const READ_QUERY = gql`
 
 describe('Threat actor resolver standard behavior', () => {
   let threatActorInternalId;
-  let threatActorMarkingDefinitionRelationId;
   const threatActorStixId = 'threat-actor--16978493-d5fb-4b28-a39a-eca332f53189';
   it('should threat actor created', async () => {
     const CREATE_QUERY = gql`
@@ -60,7 +59,7 @@ describe('Threat actor resolver standard behavior', () => {
     const THREAT_ACTOR_TO_CREATE = {
       input: {
         name: 'Threat actor',
-        stix_id_key: threatActorStixId,
+        stix_id: threatActorStixId,
         description: 'Threat actor description',
       },
     };
@@ -141,18 +140,15 @@ describe('Threat actor resolver standard behavior', () => {
   });
   it('should add relation in threat actor', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ThreatActorEdit($id: ID!, $input: RelationAddInput!) {
+      mutation ThreatActorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         threatActorEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on ThreatActor {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -168,29 +164,22 @@ describe('Threat actor resolver standard behavior', () => {
       variables: {
         id: threatActorInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.threatActorEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    threatActorMarkingDefinitionRelationId =
-      queryResult.data.threatActorEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.threatActorEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in threat actor', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation ThreatActorEdit($id: ID!, $relationId: ID!) {
+      mutation ThreatActorEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         threatActorEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
-                  id
-                }
-                relation {
                   id
                 }
               }
@@ -203,10 +192,11 @@ describe('Threat actor resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: threatActorInternalId,
-        relationId: threatActorMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.threatActorEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.threatActorEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should threat actor deleted', async () => {
     const DELETE_QUERY = gql`

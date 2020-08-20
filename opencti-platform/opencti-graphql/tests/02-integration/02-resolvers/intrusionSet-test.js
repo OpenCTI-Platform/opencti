@@ -35,6 +35,7 @@ const READ_QUERY = gql`
   query intrusionSet($id: String!) {
     intrusionSet(id: $id) {
       id
+      standard_id
       name
       description
       toStix
@@ -44,7 +45,6 @@ const READ_QUERY = gql`
 
 describe('Intrusion set resolver standard behavior', () => {
   let intrusionSetInternalId;
-  let intrusionSetMarkingDefinitionRelationId;
   const intrusionSetStixId = 'intrusion-set--952ec932-a8c8-4050-9662-f0771ed7c477';
   it('should intrusion set created', async () => {
     const CREATE_QUERY = gql`
@@ -60,7 +60,7 @@ describe('Intrusion set resolver standard behavior', () => {
     const INTRUSION_SET_TO_CREATE = {
       input: {
         name: 'Intrusion set',
-        stix_id_key: intrusionSetStixId,
+        stix_id: intrusionSetStixId,
         description: 'Intrusion set description',
       },
     };
@@ -141,18 +141,15 @@ describe('Intrusion set resolver standard behavior', () => {
   });
   it('should add relation in intrusion set', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation IntrusionSetEdit($id: ID!, $input: RelationAddInput!) {
+      mutation IntrusionSetEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         intrusionSetEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on IntrusionSet {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -168,24 +165,20 @@ describe('Intrusion set resolver standard behavior', () => {
       variables: {
         id: intrusionSetInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    intrusionSetMarkingDefinitionRelationId =
-      queryResult.data.intrusionSetEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.intrusionSetEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in intrusion set', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation IntrusionSetEdit($id: ID!, $relationId: ID!) {
+      mutation IntrusionSetEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         intrusionSetEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -200,10 +193,11 @@ describe('Intrusion set resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: intrusionSetInternalId,
-        relationId: intrusionSetMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.intrusionSetEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.intrusionSetEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should intrusion set deleted', async () => {
     const DELETE_QUERY = gql`

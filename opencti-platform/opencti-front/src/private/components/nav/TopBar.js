@@ -26,7 +26,7 @@ import TopMenuThreatActor from './TopMenuThreatActor';
 import TopMenuSector from './TopMenuSector';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuCampaign from './TopMenuCampaign';
-import TopMenuIncident from './TopMenuIncident';
+import TopMenuXOpenCTIIncident from './TopMenuXOpenCTIIncident';
 import TopMenuMalware from './TopMenuMalware';
 import TopMenuTechniques from './TopMenuTechniques';
 import TopMenuAttackPattern from './TopMenuAttackPattern';
@@ -43,7 +43,7 @@ import TopMenuEntities from './TopMenuEntities';
 import TopMenuCountry from './TopMenuCountry';
 import TopMenuCity from './TopMenuCity';
 import TopMenuOrganization from './TopMenuOrganization';
-import TopMenuPerson from './TopMenuPerson';
+import TopMenuIndividual from './TopMenuIndividual';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
@@ -187,7 +187,7 @@ const TopBar = ({
             ''
           )}
           {location.pathname.includes('/dashboard/threats/incidents/') ? (
-            <TopMenuIncident />
+            <TopMenuXOpenCTIIncident />
           ) : (
             ''
           )}
@@ -286,8 +286,8 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes('/dashboard/entities/persons/') ? (
-            <TopMenuPerson />
+          {location.pathname.includes('/dashboard/entities/individuals/') ? (
+            <TopMenuIndividual />
           ) : (
             ''
           )}

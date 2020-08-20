@@ -18,9 +18,9 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import TagsField from '../../common/form/TagsField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -75,6 +75,7 @@ const attackPatternMutation = graphql`
 
 const attackPatternValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  x_mitre_id: Yup.string().required(t('This field is required')),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -107,10 +108,10 @@ class AttackPatternCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('createdByRef', values.createdByRef.value),
-      assoc('markingDefinitions', pluck('value', values.markingDefinitions)),
+      assoc('createdBy', values.createdBy.value),
+      assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('tags', pluck('value', values.tags)),
+      assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
     commitMutation({
       mutation: attackPatternMutation,
@@ -175,11 +176,12 @@ class AttackPatternCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
+                x_mitre_id: '',
                 description: '',
-                createdByRef: '',
-                markingDefinitions: [],
+                createdBy: '',
+                objectMarking: [],
                 killChainPhases: [],
-                tags: [],
+                objectLabel: [],
               }}
               validationSchema={attackPatternValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -202,6 +204,13 @@ class AttackPatternCreation extends Component {
                   />
                   <Field
                     component={TextField}
+                    name="x_mitre_id"
+                    label={t('External ID')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -213,19 +222,19 @@ class AttackPatternCreation extends Component {
                     name="killChainPhases"
                     style={{ marginTop: 20, width: '100%' }}
                   />
-                  <CreatedByRefField
-                    name="createdByRef"
+                  <CreatedByField
+                    name="createdBy"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
                   />
-                  <TagsField
-                    name="tags"
+                  <ObjectLabelField
+                    name="objectLabel"
                     style={{ marginTop: 20, width: '100%' }}
                     setFieldValue={setFieldValue}
-                    values={values.tags}
+                    values={values.objectLabel}
                   />
-                  <MarkingDefinitionsField
-                    name="markingDefinitions"
+                  <ObjectMarkingField
+                    name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>

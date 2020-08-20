@@ -10,13 +10,13 @@ import CourseOfActionOverview from './CourseOfActionOverview';
 import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
-import EntityExternalReferences from '../../common/external_references/EntityExternalReferences';
-import EntityStixRelationsPie from '../../common/stix_relations/EntityStixRelationsPie';
+import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
+import EntityStixCoreRelationshipsPie from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -32,8 +32,8 @@ class CourseOfActionComponent extends Component {
     const { classes, courseOfAction } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={courseOfAction}
+        <StixDomainObjectHeader
+          stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
         />
         <Grid
@@ -51,7 +51,7 @@ class CourseOfActionComponent extends Component {
             <EntityExternalReferences entityId={courseOfAction.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={courseOfAction.id} />
+        <StixCoreObjectNotes entityId={courseOfAction.id} />
         <Grid
           container={true}
           spacing={3}
@@ -59,15 +59,15 @@ class CourseOfActionComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={4}>
-            <EntityStixRelationsChart
+            <EntityStixCoreRelationshipsChart
               entityId={courseOfAction.id}
-              relationType="uses"
+              relationshipType="uses"
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityStixRelationsPie
+            <EntityStixCoreRelationshipsPie
               entityId={courseOfAction.id}
-              entityType="Stix-Domain-Entity"
+              entityType="Stix-Domain-Object"
               field="entity_type"
             />
           </Grid>
@@ -94,7 +94,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
     fragment CourseOfAction_courseOfAction on CourseOfAction {
       id
       name
-      alias
+      x_opencti_aliases
       ...CourseOfActionOverview_courseOfAction
       ...CourseOfActionDetails_courseOfAction
     }

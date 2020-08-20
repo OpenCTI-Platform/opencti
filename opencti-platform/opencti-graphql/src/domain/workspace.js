@@ -5,41 +5,49 @@ import {
   createRelation,
   createRelations,
   deleteEntityById,
-  deleteRelationById,
+  deleteRelationsByFromAndTo,
   escapeString,
   executeWrite,
   getSingleValueNumber,
   listEntities,
+  load,
   loadEntityById,
-  loadWithConnectedRelations,
   prepareDate,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { findAll as findAllStixDomains } from './stixDomainEntity';
-import { ForbiddenAccess } from '../config/errors';
-import { TYPE_OPENCTI_INTERNAL } from '../database/utils';
+import { findAll as findAllStixDomains } from './workspace';
+import { FunctionalError } from '../config/errors';
+import {
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  ENTITY_TYPE_WORKSPACE,
+  isInternalRelationship,
+  isStixMetaRelationship,
+  RELATION_OBJECT,
+} from '../utils/idGenerator';
 
 // region grakn fetch
 export const findById = (workspaceId) => {
-  return loadEntityById(workspaceId, 'Workspace');
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
 };
+
 export const findAll = (args) => {
-  return listEntities(['Workspace'], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_WORKSPACE], ['name', 'description'], args);
 };
-export const ownedBy = (workspaceId) => {
-  return loadWithConnectedRelations(
-    `match $x isa User; 
-    $rel(owner:$x, so:$workspace) isa owned_by; 
-    $workspace has internal_id_key "${escapeString(workspaceId)}"; get; offset 0; limit 1;`,
-    'x',
-    { extraRelKey: 'rel' }
+
+export const ownedBy = async (workspaceId) => {
+  const element = await load(
+    `match $x isa User; $rel(owner:$x, so:$workspace) isa owned_by; 
+    $workspace has internal_id "${escapeString(workspaceId)}"; get;`,
+    ['x']
   );
+  return element && element.x;
 };
+
 export const objectRefs = (workspaceId, args) => {
-  const filter = { key: 'object_refs.internal_id_key', values: [workspaceId] };
+  const filter = { key: `${RELATION_OBJECT}.internal_id`, values: [workspaceId] };
   const filters = concat([filter], args.filters || []);
-  const finalArgs = pipe(assoc('filters', filters), assoc('types', ['Stix-Domain-Entity']))(args);
+  const finalArgs = pipe(assoc('filters', filters), assoc('types', ['Stix-Domain-Object']))(args);
   return findAllStixDomains(finalArgs);
 };
 // endregion
@@ -48,80 +56,93 @@ export const objectRefs = (workspaceId, args) => {
 export const workspacesNumber = (args) => {
   return {
     count: getSingleValueNumber(
-      `match $x isa Workspace; ${
+      `match $x isa ${ENTITY_TYPE_WORKSPACE}; ${
         args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
       } get; count;`
     ),
-    total: getSingleValueNumber(`match $x isa Workspace; get; count;`),
+    total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_WORKSPACE}; get; count;`),
   };
 };
 // endregion
 
 // region mutations
 export const addWorkspace = async (user, workspace) => {
-  const workspaceToCreate = assoc('createdByOwner', user.id, workspace);
-  const created = await createEntity(user, workspaceToCreate, 'Workspace', {
-    modelType: TYPE_OPENCTI_INTERNAL,
+  const created = await createEntity(user, workspace, ENTITY_TYPE_WORKSPACE, {
     noLog: true,
   });
-  return notify(BUS_TOPICS.Workspace.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
-export const workspaceDelete = (user, workspaceId) => deleteEntityById(user, workspaceId, 'Workspace', { noLog: true });
-export const workspaceAddRelation = (user, workspaceId, input) => {
-  if (!input.through) {
-    throw ForbiddenAccess();
+
+export const workspaceDelete = (user, workspaceId) =>
+  deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE, { noLog: true });
+
+export const workspaceAddRelation = async (user, workspaceId, input) => {
+  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  if (!workspace) {
+    throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_WORKSPACE} cannot be found.`);
   }
-  const finalInput = assoc('fromType', 'Workspace', input);
-  return createRelation(user, workspaceId, finalInput, { noLog: true }).then((relationData) => {
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, relationData, user);
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  const finalInput = assoc('fromId', workspaceId, input);
+  return createRelation(user, finalInput).then((relationData) => {
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
+
 export const workspaceAddRelations = async (user, workspaceId, input) => {
-  if (!input.through) {
-    throw ForbiddenAccess();
+  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  if (!workspace) {
+    throw FunctionalError('Cannot add the relation, Stix-Domain-Object cannot be found.');
   }
-  const finalInputs = map(
-    (n) => ({
-      fromType: 'Workspace',
-      fromRole: input.fromRole,
-      toId: n,
-      toRole: input.toRole,
-      through: input.through,
-    }),
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  const finalInput = map(
+    (n) => ({ fromId: workspaceId, toId: n, relationship_type: input.relationship_type }),
     input.toIds
   );
-  await createRelations(user, workspaceId, finalInputs);
-  return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  await createRelations(user, finalInput);
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user)
   );
 };
+
+export const workspaceDeleteRelation = async (user, workspaceId, toId, relationshipType) => {
+  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  if (!workspace) {
+    throw FunctionalError('Cannot delete the relation, Stix-Domain-Object cannot be found.');
+  }
+  if (!isStixMetaRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(user, workspaceId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
+};
+
 export const workspaceEditField = (user, workspaceId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, workspaceId, 'Workspace', input, wTx, { noLog: true });
+    return updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, wTx, { noLog: true });
   }).then(async () => {
-    const workspace = await loadEntityById(workspaceId, 'Workspace');
-    return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user);
+    const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
   });
-};
-export const workspaceDeleteRelation = async (user, workspaceId, relationId) => {
-  await deleteRelationById(user, relationId, 'stix_relation');
-  const data = await loadEntityById(workspaceId, 'Workspace');
-  return notify(BUS_TOPICS.Workspace.EDIT_TOPIC, data, user);
 };
 // endregion
 
 // region context
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
-  return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user)
   );
 };
+
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
-  return loadEntityById(workspaceId, 'Workspace').then((workspace) =>
-    notify(BUS_TOPICS.Workspace.EDIT_TOPIC, workspace, user)
+  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user)
   );
 };
 // endregion

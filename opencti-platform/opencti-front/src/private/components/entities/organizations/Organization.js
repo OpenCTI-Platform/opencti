@@ -13,10 +13,10 @@ import OrganizationPopover from './OrganizationPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
@@ -63,8 +63,8 @@ class OrganizationComponent extends Component {
     if (viewAs === 'author') {
       return (
         <div className={classes.container}>
-          <StixDomainEntityHeader
-            stixDomainEntity={organization}
+          <StixDomainObjectHeader
+            stixDomainObject={organization}
             PopoverComponent={<OrganizationPopover />}
             onViewAs={this.handleChangeViewAs.bind(this)}
             viewAs={this.state.viewAs}
@@ -84,7 +84,7 @@ class OrganizationComponent extends Component {
               <EntityLastReports authorId={organization.id} />
             </Grid>
           </Grid>
-          <StixObjectNotes entityId={organization.id} />
+          <StixCoreObjectNotes entityId={organization.id} />
           <Grid
             container={true}
             spacing={3}
@@ -103,8 +103,8 @@ class OrganizationComponent extends Component {
     }
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={organization}
+        <StixDomainObjectHeader
+          stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
           onViewAs={this.handleChangeViewAs.bind(this)}
           viewAs={this.state.viewAs}
@@ -124,7 +124,7 @@ class OrganizationComponent extends Component {
             <EntityLastReports entityId={organization.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={organization.id} />
+        <StixCoreObjectNotes entityId={organization.id} />
         <Grid
           container={true}
           spacing={3}
@@ -135,7 +135,7 @@ class OrganizationComponent extends Component {
             <EntityCampaignsChart entityId={organization.id} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={organization.id} />
+            <EntityXOpenCTIIncidentsChart entityId={organization.id} />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={organization.id} />
@@ -159,9 +159,9 @@ const Organization = createFragmentContainer(OrganizationComponent, {
   organization: graphql`
     fragment Organization_organization on Organization {
       id
-      organization_class
+      x_opencti_organization_type
       name
-      alias
+      aliases
       ...OrganizationOverview_organization
       ...OrganizationDetails_organization
     }

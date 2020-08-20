@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -46,7 +46,7 @@ const styles = (theme) => ({
 class AttackPatternLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onTagClick,
+      fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -64,9 +64,9 @@ class AttackPatternLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.external_id.width }}
+                style={{ width: dataColumns.x_mitre_id.width }}
               >
-                {node.external_id}
+                {node.x_mitre_id}
               </div>
               <div
                 className={classes.bodyItem}
@@ -76,12 +76,12 @@ class AttackPatternLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags
+                <StixCoreObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -113,7 +113,7 @@ AttackPatternLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   orderAsc: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const AttackPatternLineFragment = createFragmentContainer(
@@ -122,20 +122,16 @@ const AttackPatternLineFragment = createFragmentContainer(
     node: graphql`
       fragment AttackPatternLine_node on AttackPattern {
         id
-        external_id
+        x_mitre_id
         name
         created
         modified
-        tags {
+        objectLabel {
           edges {
             node {
               id
-              tag_type
               value
               color
-            }
-            relation {
-              id
             }
           }
         }
@@ -162,7 +158,7 @@ class AttackPatternLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.external_id.width }}
+                style={{ width: dataColumns.x_mitre_id.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -174,7 +170,7 @@ class AttackPatternLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

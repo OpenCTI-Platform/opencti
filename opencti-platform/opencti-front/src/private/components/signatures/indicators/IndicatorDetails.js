@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemScore from '../../../../components/ItemScore';
 import ItemCreator from '../../../../components/ItemCreator';
 
@@ -35,9 +35,12 @@ class IndicatorDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Indicator pattern')}
           </Typography>
-          <pre>{indicator.indicator_pattern}</pre>
+          <pre>{indicator.pattern}</pre>
           <div style={{ marginTop: 20 }}>
-            <StixDomainEntityTags tags={indicator.tags} id={indicator.id} />
+            <StixDomainObjectLabels
+              labels={indicator.objectLabel}
+              id={indicator.id}
+            />
           </div>
           <Typography
             variant="h3"
@@ -88,25 +91,21 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
   indicator: graphql`
     fragment IndicatorDetails_indicator on Indicator {
       id
-      indicator_pattern
+      pattern
       valid_from
       valid_until
-      score
-      detection
+      x_opencti_score
+      x_opencti_detection
       creator {
-          id
-          name
-        }
-      tags {
+        id
+        name
+      }
+      objectLabel {
         edges {
           node {
             id
-            tag_type
             value
             color
-          }
-          relation {
-            id
           }
         }
       }

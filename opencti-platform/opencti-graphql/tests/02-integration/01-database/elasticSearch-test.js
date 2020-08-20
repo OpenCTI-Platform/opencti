@@ -14,22 +14,41 @@ import {
   elIndexElements,
   elIndexExists,
   elIsAlive,
-  elLoadByGraknId,
   elLoadById,
   elLoadByStixId,
-  elLoadByTerms,
   elPaginate,
   elReconstructRelation,
   elVersion,
+  ENTITIES_INDICES,
+  RELATIONSHIPS_INDICES,
   specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
-import { INDEX_STIX_ENTITIES, INDEX_STIX_RELATIONS, utcDate } from '../../../src/database/utils';
+import {
+  INDEX_INTERNAL_OBJECTS,
+  INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  INDEX_STIX_CORE_RELATIONSHIPS,
+  INDEX_STIX_DOMAIN_OBJECTS,
+  INDEX_STIX_META_OBJECTS,
+  INDEX_STIX_META_RELATIONSHIPS,
+  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  INDEX_INTERNAL_RELATIONSHIPS,
+  INDEX_STIX_CYBER_OBSERVABLES,
+  utcDate,
+} from '../../../src/database/utils';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
     expect(elIsAlive()).resolves.toBeTruthy();
     expect(elVersion()).resolves.toContain('7.8');
-    expect(elIndexExists(INDEX_STIX_ENTITIES)).toBeTruthy();
+    expect(elIndexExists(INDEX_INTERNAL_OBJECTS)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_CORE_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_DOMAIN_OBJECTS)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_META_OBJECTS)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_META_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(INDEX_INTERNAL_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(INDEX_STIX_CYBER_OBSERVABLES)).toBeTruthy();
   });
   it('should manage index', async () => {
     // Create index
@@ -54,31 +73,26 @@ describe('Elasticsearch document loader', () => {
 
   it('should create and retrieve document', async () => {
     // Index an element and try to retrieve the data
-    const graknId = 'V23181';
-    const stixId = 'campaign--aae8b913-564b-405e-a9c1-5e5ea6c60259';
-    const internalIdKey = '867d03f4-be73-44f6-82d9-7d7b14df55d7';
+    const standardId = 'campaign--aae8b913-564b-405e-a9c1-5e5ea6c60259';
+    const internalId = '867d03f4-be73-44f6-82d9-7d7b14df55d7';
     const documentBody = {
-      grakn_id: graknId,
-      internal_id_key: internalIdKey,
-      stix_id_key: stixId,
+      internal_id: internalId,
+      standard_id: standardId,
       name: 'Germany - Maze - October 2019',
-      parent_types: ['Campaign', 'Stix-Domain-Entity', 'Stix-Domain'],
+      parent_types: ['Campaign', 'Stix-Domain-Object', 'Stix-Core-Object', 'Stix-Object', 'Basic-Object'],
     };
     const indexedData = await elIndex('test_index', documentBody);
     expect(indexedData).toEqual(documentBody);
     const documentWithIndex = assoc('_index', 'test_index', documentBody);
     // Load by internal Id
-    const dataThroughInternal = await elLoadById(internalIdKey, null, null, ['test_index']);
+    const dataThroughInternal = await elLoadById(internalId, null, ['test_index']);
     expect(dataThroughInternal).toEqual(documentWithIndex);
     // Load by stix id
-    const dataThroughStix = await elLoadByStixId(stixId, 'Campaign', null, ['test_index']);
+    const dataThroughStix = await elLoadByStixId(standardId, null, ['test_index']);
     expect(dataThroughStix).toEqual(documentWithIndex);
-    // Load by grakn id
-    const dataThroughGraknId = await elLoadByGraknId(graknId, 'Stix-Domain', null, ['test_index']);
-    expect(dataThroughGraknId).toEqual(documentWithIndex);
     // Try to delete
-    await elDeleteByField('test_index', 'internal_id_key', internalIdKey);
-    const removedInternal = await elLoadById(internalIdKey, null, null, ['test_index']);
+    await elDeleteByField('test_index', 'internal_id', internalId);
+    const removedInternal = await elLoadById(internalId, null, ['test_index']);
     expect(removedInternal).toBeNull();
   });
 });
@@ -86,12 +100,12 @@ describe('Elasticsearch document loader', () => {
 describe('Elasticsearch computation', () => {
   it('should count accurate', async () => {
     // const { endDate = null, type = null, types = null } = options;
-    const malwaresCount = await elCount(INDEX_STIX_ENTITIES, { types: ['Malware'] });
+    const malwaresCount = await elCount(ENTITIES_INDICES, { types: ['Malware'] });
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
     const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
-    const malwaresCount = await elCount(INDEX_STIX_ENTITIES, {
+    const malwaresCount = await elCount(ENTITIES_INDICES, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
     });
@@ -102,20 +116,20 @@ describe('Elasticsearch computation', () => {
     // "from", "to" is not use in elastic
     // Aggregate all stix domain by entity type, no filtering
     const malwaresAggregation = await elAggregationCount(
-      'Stix-Domain',
+      'Stix-Domain-Object',
       'entity_type',
       undefined, // No start
       undefined, // No end
       [] // No filters
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('malware')).toEqual(2);
-    expect(aggregationMap.get('marking-definition')).toEqual(6);
+    expect(aggregationMap.get('Malware')).toEqual(2);
+    expect(aggregationMap.get('Indicator')).toEqual(3);
   });
   it('should entity aggregation with date accurate', async () => {
     const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresAggregation = await elAggregationCount(
-      'Stix-Domain',
+      'Stix-Domain-Object',
       'entity_type',
       '2019-01-01T00:00:00Z',
       new Date(mostRecentMalware.created_at).getTime() - 1,
@@ -123,65 +137,64 @@ describe('Elasticsearch computation', () => {
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.size).toEqual(1);
-    expect(aggregationMap.get('malware')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(1);
   });
   it('should entity aggregation with relation accurate', async () => {
     // Aggregate with relation filter on marking definition TLP:RED
     const marking = await elLoadByStixId('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
     const malwaresAggregation = await elAggregationCount(
-      'Stix-Domain',
+      'Stix-Domain-Object',
       'entity_type',
       undefined, // No start
       undefined, // No end
-      [{ isRelation: true, type: 'object_marking_refs', value: marking.internal_id_key }]
+      [{ isRelation: true, type: 'bject-marking', value: marking.internal_id }]
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('malware')).toEqual(1);
-    expect(aggregationMap.get('report')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(1);
+    expect(aggregationMap.get('Report')).toEqual(1);
   });
   it('should relation aggregation accurate', async () => {
     const testingReport = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const reportRelationsAggregation = await elAggregationRelationsCount(
-      'stix_relation_embedded',
+      'stix-meta-relationship',
       null,
       null,
-      ['Stix-Domain'], //
-      testingReport.internal_id_key
+      ['Stix-Domain-Object'], //
+      testingReport.internal_id
     );
     const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('indicator')).toEqual(3);
-    expect(aggregationMap.get('organization')).toEqual(3);
-    expect(aggregationMap.get('attack-pattern')).toEqual(2);
-    expect(aggregationMap.get('city')).toEqual(1);
-    expect(aggregationMap.get('country')).toEqual(1);
-    expect(aggregationMap.get('intrusion-set')).toEqual(1);
-    expect(aggregationMap.get('malware')).toEqual(1);
-    expect(aggregationMap.get('marking-definition')).toEqual(1);
-    expect(aggregationMap.get('sector')).toEqual(1);
+    expect(aggregationMap.get('Indicator')).toEqual(3);
+    expect(aggregationMap.get('Organization')).toEqual(3);
+    expect(aggregationMap.get('Attack-Pattern')).toEqual(2);
+    expect(aggregationMap.get('City')).toEqual(1);
+    expect(aggregationMap.get('Country')).toEqual(1);
+    expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(1);
+    expect(aggregationMap.get('Sector')).toEqual(1);
   });
   it('should relation aggregation with date accurate', async () => {
     const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     const intrusionRelationsAggregation = await elAggregationRelationsCount(
-      'stix_relation',
+      'stix-core-relationship',
       '2020-02-29T00:00:00Z',
       new Date().getTime(),
-      ['Stix-Domain'], //
-      intrusionSet.internal_id_key
+      ['Stix-Domain-Object'],
+      intrusionSet.internal_id
     );
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('city')).toEqual(1);
-    expect(aggregationMap.get('indicator')).toEqual(1);
-    expect(aggregationMap.get('organization')).toEqual(1);
-    expect(aggregationMap.get('malware')).toEqual(undefined); // Because of date filtering
+    expect(aggregationMap.get('City')).toEqual(1);
+    expect(aggregationMap.get('Indicator')).toEqual(1);
+    expect(aggregationMap.get('Organization')).toEqual(1);
+    expect(aggregationMap.get('Malware')).toEqual(undefined); // Because of date filtering
   });
   it('should invalid time histogram fail', async () => {
-    const histogramCount = elHistogramCount('Stix-Domain-Entity', 'created_at', 'minute', null, null, []);
+    const histogramCount = elHistogramCount('Stix-Domain-Object', 'created_at', 'minute', null, null, []);
     // noinspection ES6MissingAwait
     expect(histogramCount).rejects.toThrow();
   });
   it('should day histogram accurate', async () => {
     const data = await elHistogramCount(
-      'Stix-Domain-Entity',
+      'Stix-Domain-Object',
       'created_at',
       'day',
       '2019-09-29T00:00:00.000Z',
@@ -192,11 +205,11 @@ describe('Elasticsearch computation', () => {
     // noinspection JSUnresolvedVariable
     const storedFormat = moment(head(data).date)._f;
     expect(storedFormat).toEqual('YYYY-MM-DD');
-    expect(head(data).value).toEqual(28);
+    expect(head(data).value).toEqual(36);
   });
   it('should month histogram accurate', async () => {
     const data = await elHistogramCount(
-      'Stix-Domain-Entity',
+      'Stix-Domain-Object',
       'created',
       'month',
       '2019-09-23T00:00:00.000Z',
@@ -216,7 +229,7 @@ describe('Elasticsearch computation', () => {
   });
   it('should year histogram accurate', async () => {
     const data = await elHistogramCount(
-      'Stix-Domain-Entity',
+      'Stix-Domain-Object',
       'created',
       'year',
       '2019-09-23T00:00:00.000Z',
@@ -229,26 +242,28 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2020')).toEqual(14);
   });
   it('should year histogram with relation filter accurate', async () => {
+    const attackPattern = await elLoadByStixId('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
-      'Stix-Domain-Entity',
+      'Stix-Domain-Object',
       'created',
       'year',
       '2019-09-23T00:00:00.000Z',
       '2020-03-02T00:00:00.000Z',
-      [{ isRelation: true, type: 'uses', value: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' }]
+      [{ isRelation: true, type: 'uses', value: attackPattern.internal_id }]
     );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019')).toEqual(1);
   });
   it('should year histogram with relation filter accurate', async () => {
+    const attackPattern = await elLoadByStixId('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
-      'Stix-Domain-Entity',
+      'Stix-Domain-Object',
       'created',
       'year',
       '2019-09-23T00:00:00.000Z',
       '2020-03-02T00:00:00.000Z',
-      [{ isRelation: true, type: undefined, value: '9f7f00f9-304b-4055-8c4f-f5eadb00de3b' }]
+      [{ isRelation: true, type: undefined, value: attackPattern.internal_id }]
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
@@ -273,102 +288,60 @@ describe('Elasticsearch computation', () => {
 describe('Elasticsearch relation reconstruction', () => {
   const RELATION_ID = 'a0cfc7fc-837b-5ea0-b919-425047d4bb0d';
   const CONN_MALWARE_ID = '6fb84f02-f095-430e-87a0-394d41955eee';
-  const CONN_MALWARE_GRAKN_ID = 'V454728';
-  const CONN_MALWARE_ROLE = 'so';
+  const CONN_MALWARE_ROLE = 'object-marking_from';
   const CONN_MARKING_ID = '63309927-48f6-45c2-aee0-4d92b403cee5';
-  const CONN_MARKING_GRAKN_ID = 'V409696';
-  const CONN_MARKING_ROLE = 'marking';
-  const buildRelationConcept = (relationType) => ({
-    internal_id_key: RELATION_ID,
-    entity_type: 'relation_embedded',
-    relationship_type: relationType,
+  const CONN_MARKING_ROLE = 'object-marking_to';
+  const buildRelationConcept = (relationshipType) => ({
+    internal_id: RELATION_ID,
+    entity_type: 'object-marking',
+    relationship_type: relationshipType,
     connections: [
       {
-        internal_id_key: CONN_MALWARE_ID,
-        grakn_id: CONN_MALWARE_GRAKN_ID,
+        internal_id: CONN_MALWARE_ID,
         role: CONN_MALWARE_ROLE,
-        types: ['Malware', 'Stix-Domain-Entity', 'Stix-Domain'],
+        types: ['Malware', 'Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'],
       },
       {
-        internal_id_key: CONN_MARKING_ID,
-        grakn_id: CONN_MARKING_GRAKN_ID,
+        internal_id: CONN_MARKING_ID,
         role: CONN_MARKING_ROLE,
-        types: ['Marking-Definition', 'Stix-Domain'],
+        types: ['Marking-Definition', 'Basic-Object', 'Stix-Object', 'Stix-Meta-Object'],
       },
     ],
   });
   it('Relation reconstruct natural', async () => {
-    const concept = buildRelationConcept('object_marking_refs');
+    const concept = buildRelationConcept('object-marking');
     const relation = elReconstructRelation(concept);
-    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
+    expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);
-    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_ID);
     expect(relation.toRole).toEqual(CONN_MARKING_ROLE);
   });
-  it('Relation reconstruct with internal_id_key', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
-    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: CONN_MALWARE_ID, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
-    const relation = elReconstructRelation(concept, relationMap);
-    expect(relation.internal_id_key).toEqual(concept.internal_id_key);
-    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
-    expect(relation.fromInternalId).toEqual(CONN_MALWARE_ID);
+  it('Relation reconstruct with internal_id', async () => {
+    const concept = buildRelationConcept('object-marking');
+    const relation = elReconstructRelation(concept);
+    expect(relation.internal_id).toEqual(concept.internal_id);
+    expect(relation.fromId).toEqual(CONN_MALWARE_ID);
     expect(relation.fromRole).toEqual(CONN_MALWARE_ROLE);
-    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
-    expect(relation.toInternalId).toEqual(CONN_MARKING_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_ID);
     expect(relation.toRole).toEqual(CONN_MARKING_ROLE);
   });
   it('Relation reconstruct with no info', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: undefined });
-    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
-    const relation = elReconstructRelation(concept, relationMap);
-    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
-    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+    const concept = buildRelationConcept('object-marking');
+    const relation = elReconstructRelation(concept);
+    expect(relation.fromId).toEqual(CONN_MALWARE_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from reverse id', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
-    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
-    const relation = elReconstructRelation(concept, relationMap);
-    expect(relation.fromId).toEqual(CONN_MARKING_GRAKN_ID);
-    expect(relation.toId).toEqual(CONN_MALWARE_GRAKN_ID);
-  });
-  it('Relation reconstruct from reverse id, forcing natural', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: CONN_MALWARE_ID, role: undefined });
-    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
-    const relation = elReconstructRelation(concept, relationMap, true);
-    expect(relation.fromId).toEqual(CONN_MALWARE_GRAKN_ID);
-    expect(relation.toId).toEqual(CONN_MARKING_GRAKN_ID);
+    const concept = buildRelationConcept('object-marking');
+    const relation = elReconstructRelation(concept);
+    expect(relation.fromId).toEqual(CONN_MALWARE_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
   it('Relation reconstruct from roles', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: undefined, role: CONN_MALWARE_ROLE });
-    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: CONN_MARKING_ROLE });
-    const concept = buildRelationConcept('object_marking_refs');
-    const relation = elReconstructRelation(concept, relationMap);
-    expect(relation.fromId).toEqual(CONN_MARKING_GRAKN_ID);
-    expect(relation.toId).toEqual(CONN_MALWARE_GRAKN_ID);
-  });
-  it('Relation reconstruct fail if no reverse definition', async () => {
-    const concept = buildRelationConcept('undefined_relation');
-    expect(() => {
-      elReconstructRelation(concept, new Map());
-    }).toThrow(Error);
-  });
-  it('Relation reconstruct fail with bad configuration', async () => {
-    const relationMap = new Map();
-    relationMap.set(CONN_MARKING_GRAKN_ID, { alias: 'to', internalIdKey: 'bad-to', role: undefined });
-    relationMap.set(CONN_MALWARE_GRAKN_ID, { alias: 'from', internalIdKey: undefined, role: undefined });
-    const concept = buildRelationConcept('object_marking_refs');
-    expect(() => {
-      elReconstructRelation(concept, relationMap);
-    }).toThrow(Error);
+    const concept = buildRelationConcept('object-marking');
+    const relation = elReconstructRelation(concept);
+    expect(relation.fromId).toEqual(CONN_MALWARE_ID);
+    expect(relation.toId).toEqual(CONN_MARKING_ID);
   });
 });
 
@@ -383,115 +356,116 @@ describe('Elasticsearch pagination', () => {
     expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
   });
   it('should entity paginate everything', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES);
+    const data = await elPaginate(ENTITIES_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(68);
+    expect(data.edges.length).toEqual(92);
     const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
-    expect(head(filterBaseTypes)).toEqual('entity');
+    expect(head(filterBaseTypes)).toEqual('ENTITY');
   });
   it('should entity search with trailing slash', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'groups/G0096' });
+    const data = await elPaginate(ENTITIES_INDICES, { search: 'groups/G0096' });
     expect(data).not.toBeNull();
     // external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5 | url
     // intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 | description
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(3);
   });
   it('should entity paginate everything after', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { after: offsetToCursor(30) });
+    const data = await elPaginate(ENTITIES_INDICES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(38);
+    expect(data.edges.length).toEqual(62);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
     // orderBy = null, orderMode = 'asc',
-    // relationsMap = null, forceNatural = false,
     // connectionFormat = true
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { types: ['Malware'] });
+    const data = await elPaginate(ENTITIES_INDICES, { types: ['Malware'] });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(2);
     const nodes = map((e) => e.node, data.edges);
-    const malware = find(propEq('stix_id_key', 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c'))(nodes);
-    expect(malware.internal_id_key).not.toBeNull();
+    const malware = find(propEq('stix_ids', ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c']))(nodes);
+    expect(malware.internal_id).not.toBeNull();
     expect(malware.name).toEqual('Paradise Ransomware');
-    expect(malware._index).toEqual(INDEX_STIX_ENTITIES);
-    expect(malware.parent_types).toEqual(expect.arrayContaining(['Malware', 'Stix-Domain-Entity', 'Stix-Domain']));
+    expect(malware._index).toEqual(INDEX_STIX_DOMAIN_OBJECTS);
+    expect(malware.parent_types).toEqual(
+      expect.arrayContaining(['Basic-Object', 'Stix-Object', 'Stix-Core-Object', 'Stix-Domain-Object'])
+    );
   });
   it('should entity paginate with classic search', async () => {
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'malicious' });
+    let data = await elPaginate(ENTITIES_INDICES, { search: 'malicious' });
     expect(data.edges.length).toEqual(2);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'with malicious' });
-    expect(data.edges.length).toEqual(5);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '"with malicious"' });
+    data = await elPaginate(ENTITIES_INDICES, { search: 'with malicious' });
+    expect(data.edges.length).toEqual(7);
+    data = await elPaginate(ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with escaped search', async () => {
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: '(Citation:' });
+    let data = await elPaginate(ENTITIES_INDICES, { search: '(Citation:' });
     expect(data.edges.length).toEqual(3);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '[APT41]' });
+    data = await elPaginate(ENTITIES_INDICES, { search: '[APT41]' });
     expect(data.edges.length).toEqual(1);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: '%5BAPT41%5D' });
+    data = await elPaginate(ENTITIES_INDICES, { search: '%5BAPT41%5D' });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with http and https', async () => {
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'http://attack.mitre.org/groups/G0096' });
+    let data = await elPaginate(ENTITIES_INDICES, { search: 'http://attack.mitre.org/groups/G0096' });
     expect(data.edges.length).toEqual(2);
-    data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'https://attack.mitre.org/groups/G0096' });
+    data = await elPaginate(ENTITIES_INDICES, { search: 'https://attack.mitre.org/groups/G0096' });
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with incorrect encoding', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { search: 'ATT%' });
+    const data = await elPaginate(ENTITIES_INDICES, { search: 'ATT%' });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with field not exist filter', async () => {
-    const filters = [{ key: 'color', operator: undefined, values: [null] }];
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(61); // The 4 Default TLP Marking definitions + 1
+    const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
+    const data = await elPaginate(ENTITIES_INDICES, { filters });
+    expect(data.edges.length).toEqual(86); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
-    const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(7); // The 4 Default TLP Marking definitions
+    const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
+    const data = await elPaginate(ENTITIES_INDICES, { filters });
+    expect(data.edges.length).toEqual(6); // The 4 Default TLP Marking definitions
   });
   it('should entity paginate with equality filter', async () => {
     // eq operation will use the field.keyword to do an exact field equality
-    let filters = [{ key: 'color', operator: 'eq', values: ['#c62828'] }];
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    let filters = [{ key: 'x_opencti_color', operator: 'eq', values: ['#c62828'] }];
+    let data = await elPaginate(ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(1);
     // Special case when operator = eq + the field key is a dateFields => use a match
     filters = [{ key: 'published', operator: 'eq', values: ['2020-03-01'] }];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    data = await elPaginate(ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with match filter', async () => {
     let filters = [{ key: 'entity_type', operator: 'match', values: ['marking'] }];
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    let data = await elPaginate(ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(6); // The 4 Default TLP + MITRE Corporation
     // Verify that nothing is found in this case if using the eq operator
     filters = [{ key: 'entity_type', operator: 'eq', values: ['marking'] }];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    data = await elPaginate(ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with dates filter', async () => {
     let filters = [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }];
-    let data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    let data = await elPaginate(ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(2); // The 4 Default TLP + MITRE Corporation
     filters = [
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
       { key: 'color', operator: undefined, values: [null] },
     ];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
-    expect(data.edges.length).toEqual(5);
+    data = await elPaginate(ENTITIES_INDICES, { filters });
+    expect(data.edges.length).toEqual(26);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
     ];
-    data = await elPaginate(INDEX_STIX_ENTITIES, { filters });
+    data = await elPaginate(ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with date ordering', async () => {
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { orderBy: 'created', orderMode: 'asc' });
-    expect(data.edges.length).toEqual(43);
+    const data = await elPaginate(ENTITIES_INDICES, { orderBy: 'created', orderMode: 'asc' });
+    expect(data.edges.length).toEqual(64);
     const createdDates = map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
     for (let index = 0; index < createdDates.length; index += 1) {
@@ -508,95 +482,74 @@ describe('Elasticsearch pagination', () => {
     }
   });
   it('should entity paginate with keyword ordering', async () => {
-    const filters = [{ key: 'color', operator: undefined, values: ['EXISTS'] }];
-    const data = await elPaginate(INDEX_STIX_ENTITIES, { filters, orderBy: 'definition', orderMode: 'desc' });
-    expect(data.edges.length).toEqual(4);
+    const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
+    const data = await elPaginate(ENTITIES_INDICES, { filters, orderBy: 'definition', orderMode: 'desc' });
+    expect(data.edges.length).toEqual(6);
     const markings = map((e) => e.node.definition, data.edges);
     expect(markings[0]).toEqual('TLP:WHITE');
-    expect(markings[1]).toEqual('TLP:RED');
-    expect(markings[2]).toEqual('TLP:GREEN');
-    expect(markings[3]).toEqual('TLP:AMBER');
+    expect(markings[1]).toEqual('TLP:TEST');
+    expect(markings[2]).toEqual('TLP:RED');
+    expect(markings[3]).toEqual('TLP:GREEN');
+    expect(markings[4]).toEqual('TLP:AMBER');
   });
   it('should relation paginate everything', async () => {
-    let data = await elPaginate(INDEX_STIX_RELATIONS);
+    let data = await elPaginate(RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(174);
+    expect(data.edges.length).toEqual(165);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
-    expect(head(filterBaseTypes)).toEqual('relation');
+    expect(head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
-    data = await elPaginate(INDEX_STIX_RELATIONS, { connectionFormat: false });
+    data = await elPaginate(RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(174);
+    expect(data.length).toEqual(165);
     filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
-    expect(head(filterBaseTypes)).toEqual('relation');
+    expect(head(filterBaseTypes)).toEqual('RELATION');
   });
 });
 
 describe('Elasticsearch basic loader', () => {
   it('should entity load by internal id', async () => {
-    const data = await elLoadById('ab78a62f-4928-4d5a-8740-03f0af9c4330', 'Stix-Domain-Entity');
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
+    const data = await elLoadById(malware.internal_id);
     expect(data).not.toBeNull();
-    expect(data.stix_id_key).toEqual('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    expect(data.standard_id).toEqual('malware--d684b00b-4088-508c-8e42-f23bf2936fac');
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
-    expect(data.entity_type).toEqual('malware');
+    expect(data.entity_type).toEqual('Malware');
   });
   it('should entity load by stix id', async () => {
-    const data = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain');
+    const data = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
     expect(data).not.toBeNull();
-    expect(data.id).toEqual('ab78a62f-4928-4d5a-8740-03f0af9c4330');
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
-    expect(data.entity_type).toEqual('malware');
-  });
-  it('should entity load by grakn id', async () => {
-    const finder = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Malware');
-    const data = await elLoadByGraknId(finder.grakn_id, 'malware');
-    expect(data).not.toBeNull();
-    expect(data.grakn_id).toEqual(finder.grakn_id);
-    expect(data.revoked).toBeFalsy();
-    expect(data.name).toEqual('Paradise Ransomware');
-    expect(data.entity_type).toEqual('malware');
+    expect(data.entity_type).toEqual('Malware');
   });
   it('should relation reconstruct', async () => {
     const data = await elLoadByStixId('relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
     expect(data).not.toBeNull();
-    expect(data.fromRole).toEqual('indicator');
-    expect(data.toRole).toEqual('characterize');
-    expect(data.entity_type).toEqual('stix_relation');
-  });
-  it('should relation creation use x_opencti_id', async () => {
-    const data = await elLoadByStixId('relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02');
-    expect(data).not.toBeNull();
-    expect(data.id).toEqual('209cbdf0-fc5e-47c9-8023-dd724993ae55');
+    expect(data.fromRole).toEqual('indicates_from');
+    expect(data.toRole).toEqual('indicates_to');
+    expect(data.entity_type).toEqual('indicates');
   });
 });
 
 describe('Elasticsearch reindex', () => {
-  const malwareInternalId = 'ab78a62f-4928-4d5a-8740-03f0af9c4330';
-  const attackId = 'dcbadcd2-9359-48ac-8b86-88e38a092a2b';
-  const checkRelationConnections = async () => {
-    let terms = [{ 'internal_id_key.keyword': malwareInternalId }, { 'rel_uses.internal_id_key.keyword': attackId }];
-    const malware = await elLoadByTerms(terms);
-    expect(malware).not.toBeNull();
-    terms = [{ 'internal_id_key.keyword': attackId }, { 'rel_uses.internal_id_key.keyword': malwareInternalId }];
-    const attack = await elLoadByTerms(terms);
-    expect(attack).not.toBeNull();
-  };
   it('should relation correctly indexed', async () => {
+    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malwareInternalId = malware.internal_id;
+    const attackPattern = await elLoadByStixId('attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17');
+    const attackPatternId = attackPattern.internal_id;
     // relationship_type -> uses
     // source_ref -> malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
     // target_ref -> attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
-    const data = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de', 'stix_relation');
+    const data = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
     expect(data).not.toBeNull();
     expect(data.connections.length).toEqual(2);
-    const connections = map((c) => c.internal_id_key, data.connections);
+    const connections = map((c) => c.internal_id, data.connections);
     expect(includes(malwareInternalId, connections)).toBeTruthy(); // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
-    expect(includes(attackId, connections)).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
-    // Malware must be find by the relation
-    await checkRelationConnections();
+    expect(includes(attackPatternId, connections)).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
   });
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements([{ relationship_type: 'uses' }]);

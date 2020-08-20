@@ -66,7 +66,8 @@ class CampaignEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -79,16 +80,20 @@ class CampaignEditionContainer extends Component {
           <AppBar position="static" elevation={0} className={classes.appBar}>
             <Tabs
               value={this.state.currentTab}
-              onChange={this.handleChangeTab.bind(this)}>
+              onChange={this.handleChangeTab.bind(this)}
+            >
               <Tab label={t('Overview')} />
               <Tab label={t('Details')} />
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <CampaignEditionOverview campaign={campaign} context={editContext}/>
+            <CampaignEditionOverview
+              campaign={campaign}
+              context={editContext}
+            />
           )}
           {this.state.currentTab === 1 && (
-            <CampaignEditionDetails campaign={campaign} context={editContext}/>
+            <CampaignEditionDetails campaign={campaign} context={editContext} />
           )}
         </div>
       </div>

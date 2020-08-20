@@ -56,7 +56,8 @@ const inject18n = (WrappedComponent) => {
           {...{ nsdt: shortNumericDateTime }}
           {...{ fd: standardDate }}
           {...{ md: monthDate }}
-          {...{ yd: yearDate }}>
+          {...{ yd: yearDate }}
+        >
           {children}
         </WrappedComponent>
       );

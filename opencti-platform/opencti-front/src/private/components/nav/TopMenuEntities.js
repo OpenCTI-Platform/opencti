@@ -129,22 +129,22 @@ class TopMenuTechniques extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/entities/persons"
+          to="/dashboard/entities/individuals"
           variant={
-            location.pathname === '/dashboard/entities/persons'
+            location.pathname === '/dashboard/entities/individuals'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/entities/persons'
+            location.pathname === '/dashboard/entities/individuals'
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
           <PersonOutlined className={classes.icon} fontSize="small" />
-          {t('Persons')}
+          {t('Individuals')}
         </Button>
       </div>
     );

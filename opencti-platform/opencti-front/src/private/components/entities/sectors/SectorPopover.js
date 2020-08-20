@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { sectorEditionQuery } from './SectorEdition';
 import SectorEditionContainer from './SectorEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -109,7 +111,11 @@ class SectorPopover extends Component {
     const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
         <Menu
@@ -168,7 +174,8 @@ class SectorPopover extends Component {
               if (props) {
                 // Done
                 return (
-                  <SectorEditionContainer sector={props.sector}
+                  <SectorEditionContainer
+                    sector={props.sector}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

@@ -2,49 +2,30 @@ define
 
   ## PROPERTIES
 
-  # migration properties
-  uuid sub attribute, datatype string;
-  title sub attribute, datatype string;
-  lastRun sub attribute, datatype string;
-  timestamp sub attribute, datatype long;
-
-  # OpenCTI properties
-  internal_id_key sub attribute, datatype string;
+  # Common
+  internal_id sub attribute, datatype string;
+  standard_id sub attribute, datatype string;
+  entity_type sub attribute, datatype string;
   created_at sub attribute, datatype date;
   created_at_day sub attribute, datatype string;
   created_at_month sub attribute, datatype string;
   created_at_year sub attribute, datatype string;
   updated_at sub attribute, datatype date;
+  name sub attribute, datatype string;
+  description sub attribute, datatype string;
+  x_opencti_graph_data sub attribute, datatype string;
   issuer sub attribute, datatype string;
-  duration sub attribute, datatype string;
-  password sub attribute, datatype string;
-  user_email sub attribute, datatype string;
-  firstname sub attribute, datatype string;
-  lastname sub attribute, datatype string;
-  language sub attribute, datatype string;
-  external sub attribute, datatype boolean;
-  grant sub attribute, datatype string;
-  default_assignation sub attribute, datatype boolean;
-  platform_title sub attribute, datatype string;
-  platform_language sub attribute, datatype string;
-  platform_email sub attribute, datatype string;
-  platform_url sub attribute, datatype string;
-  graph_data sub attribute, datatype string;
-  workspace_data sub attribute, datatype string;
-  workspace_type sub attribute, datatype string;
-  object_status sub attribute, datatype long;
-  score sub attribute, datatype long;
-  tag_type sub attribute, datatype string;
-  ordering sub attribute, datatype double;
+  revoked sub attribute, datatype boolean;
 
-  # STIX common properties
-  stix_id_key sub attribute, datatype string;
-  stix_label sub attribute, datatype string;
-  entity_type sub attribute, datatype string;
+  # STIX Common
   spec_version sub attribute, datatype string;
+  stix_ids sub attribute, datatype string;
   created sub attribute, datatype date;
   modified sub attribute, datatype date;
-  revoked sub attribute, datatype boolean;
+  confidence sub attribute, datatype long;
+  lang sub attribute, datatype string;
+
+  # STIX General
   first_seen sub attribute, datatype date;
   first_seen_day sub attribute, datatype string;
   first_seen_month sub attribute, datatype string;
@@ -53,44 +34,93 @@ define
   last_seen_day sub attribute, datatype string;
   last_seen_month sub attribute, datatype string;
   last_seen_year sub attribute, datatype string;
-  name sub attribute, datatype string;
-  description sub attribute, datatype string;
+
+  # Internal Relationships
+  grant sub attribute, datatype string;
+
+  # STIX Core Relationship
+  relationship_type sub attribute, datatype string;
+  start_time sub attribute, datatype date;
+  start_time_day sub attribute, datatype string;
+  start_time_month sub attribute, datatype string;
+  start_time_year sub attribute, datatype string;
+  stop_time sub attribute, datatype date;
+  stop_time_day sub attribute, datatype string;
+  stop_time_month sub attribute, datatype string;
+  stop_time_year sub attribute, datatype string;
+
+  # STIX Sighting Relationship
+  attribute_count sub attribute, datatype long;
+  x_opencti_negative sub attribute, datatype boolean;
+
+  # Internal Entities
+  platform_title sub attribute, datatype string;
+  platform_language sub attribute, datatype string;
+  platform_email sub attribute, datatype string;
+  platform_url sub attribute, datatype string;
+  title sub attribute, datatype string;
+  timestamp sub attribute, datatype long;
+  lastRun sub attribute, datatype string;
+  uuid sub attribute, datatype string;
+  duration sub attribute, datatype string;
+  firstname sub attribute, datatype string;
+  lastname sub attribute, datatype string;
+  user_email sub attribute, datatype string;
+  password sub attribute, datatype string;
+  language sub attribute, datatype string;
+  external sub attribute, datatype boolean;
+  default_assignation sub attribute, datatype boolean;
+  attribute_order sub attribute, datatype double;
+  active sub attribute, datatype boolean;
   connector_type sub attribute, datatype string;
   connector_scope sub attribute, datatype string;
   connector_state sub attribute, datatype string;
   connector_state_reset sub attribute, datatype boolean;
+  workspace_type sub attribute, datatype string;
+  workspace_data sub attribute, datatype string;
 
-  # STIX SDO
-  alias sub attribute, datatype string;
-  stix_role sub attribute, datatype string;
-  objective sub attribute, datatype string;
-  goal sub attribute, datatype string;
-  sophistication sub attribute, datatype string;
-  resource_level sub attribute, datatype string;
-  primary_motivation sub attribute, datatype string;
-  secondary_motivation sub attribute, datatype string;
-  personal_motivation sub attribute, datatype string;
-  tool_version sub attribute, datatype string;
-  kill_chain_name sub attribute, datatype string;
-  phase_name sub attribute, datatype string;
-  phase_order sub attribute, datatype long;
+  # STIX Object
+  value sub attribute, datatype string;
+  url sub attribute, datatype string;
+
+  # STIX Meta Objects
   definition_type sub attribute, datatype string;
   definition sub attribute, datatype string;
-  level sub attribute, datatype long;
+  x_opencti_order  sub attribute, datatype long;
+  x_opencti_color sub attribute, datatype string;
   color sub attribute, datatype string;
   source_name sub attribute, datatype string;
-  url sub attribute, datatype string;
   hash sub attribute, datatype string;
   external_id sub attribute, datatype string;
-  published sub attribute, datatype date;
-  published_day sub attribute, datatype string;
-  published_month sub attribute, datatype string;
-  published_year sub attribute, datatype string;
-  organization_class sub attribute, datatype string;
-  report_class sub attribute, datatype string;
-  indicator_pattern sub attribute, datatype string;
-  indicator_type sub attribute, datatype string;
-  main_observable_type sub attribute, datatype string;
+  kill_chain_name sub attribute, datatype string;
+  phase_name sub attribute, datatype string;
+
+  # STIX Core Objects
+
+  # STIX Domain Object
+  aliases sub attribute, datatype string;
+  x_mitre_detection sub attribute, datatype string;
+  x_mitre_platforms sub attribute, datatype string;
+  x_mitre_permissions_required sub attribute, datatype string;
+  x_mitre_id sub attribute, datatype string;
+  contact_information sub attribute, datatype string;
+  x_opencti_firstname sub attribute, datatype string;
+  x_opencti_lastname sub attribute, datatype string;
+  x_opencti_organization_type sub attribute, datatype string;
+  x_opencti_reliability sub attribute, datatype string;
+  latitude sub attribute, datatype double;
+  longitude sub attribute, datatype double;
+  precision sub attribute, datatype double;
+  x_opencti_aliases sub attribute, datatype string;
+  objective sub attribute, datatype string;
+  md5 sub attribute, datatype string;
+  sha1 sub attribute, datatype string;
+  sha256 sub attribute, datatype string;
+  sha512 sub attribute, datatype string;
+  pattern_type sub attribute, datatype string;
+  pattern_version sub attribute, datatype string;
+  pattern sub attribute, datatype string;
+  indicator_types sub attribute, datatype string;
   valid_from sub attribute, datatype date;
   valid_from_day sub attribute, datatype string;
   valid_from_month sub attribute, datatype string;
@@ -99,349 +129,477 @@ define
   valid_until_day sub attribute, datatype string;
   valid_until_month sub attribute, datatype string;
   valid_until_year sub attribute, datatype string;
-  platform sub attribute, datatype string;
-  required_permission sub attribute, datatype string;
-  source_confidence_level sub attribute, datatype long;
-  confidence sub attribute, datatype long;
-  reliability sub attribute, datatype string;
-  value sub attribute, datatype string;
-  pattern_type sub attribute, datatype string;
-  pattern_version sub attribute, datatype string;
-  base_score sub attribute, datatype double;
-  base_severity sub attribute, datatype string;
-  attack_vector sub attribute, datatype string;
-  integrity_impact sub attribute, datatype string;
-  availability_impact sub attribute, datatype string;
-  content sub attribute, datatype string;
-  explanation sub attribute, datatype string;
-  detection sub attribute, datatype boolean;
-  threat_actor_type sub attribute, datatype string;
+  x_opencti_score sub attribute, datatype long;
+  x_opencti_detection sub attribute, datatype boolean;
+  x_opencti_main_observable_type sub attribute, datatype string;
+  infrastructure_types sub attribute, datatype string;
+  goals sub attribute, datatype string;
+  resource_level sub attribute, datatype string;
+  primary_motivation sub attribute, datatype string;
+  secondary_motivations sub attribute, datatype string;
+  street_address sub attribute, datatype string;
+  postal_code sub attribute, datatype string;
+  malware_types sub attribute, datatype string;
   is_family sub attribute, datatype boolean;
+  architecture_execution_envs sub attribute, datatype string;
+  implementation_languages sub attribute, datatype string;
+  capabilities sub attribute, datatype string;
+  attribute_abstract  sub attribute, datatype string;
+  content sub attribute, datatype string;
+  authors sub attribute, datatype string;
+  first_observed sub attribute, datatype date;
+  last_observed sub attribute, datatype date;
+  number_observed sub attribute, datatype long;
+  explanation sub attribute, datatype string;
+  opinion sub attribute, datatype string;
+  report_types sub attribute, datatype string;
+  x_opencti_report_status sub attribute, datatype long;
+  published sub attribute, datatype date;
+  published_day sub attribute, datatype string;
+  published_month sub attribute, datatype string;
+  published_year sub attribute, datatype string;
+  threat_actor_types sub attribute, datatype string;
+  sophistication sub attribute, datatype string;
+  personal_motivations sub attribute, datatype string;
+  roles sub attribute, datatype string;
+  tool_types sub attribute, datatype string;
+  tool_version sub attribute, datatype string;
+  x_opencti_base_score sub attribute, datatype double;
+  x_opencti_base_severity sub attribute, datatype string;
+  x_opencti_attack_vector sub attribute, datatype string;
+  x_opencti_integrity_impact sub attribute, datatype string;
+  x_opencti_availability_impact sub attribute, datatype string;
+  identity_class sub attribute, datatype string;
+  x_opencti_location_type sub attribute, datatype string;
+
+  # STIX Cyber Observables
+  mime_type sub attribute, datatype string;
+  payload_bin sub attribute, datatype string;
+  encryption_algorithm sub attribute, datatype string;
+  decryption_key sub attribute, datatype string;
   number sub attribute, datatype long;
-  contact_information sub attribute, datatype string;
+  rir sub attribute, datatype string;
+  path sub attribute, datatype string;
+  path_enc sub attribute, datatype string;
+  ctime sub attribute, datatype date;
+  mtime sub attribute, datatype date;
+  atime sub attribute, datatype date;
+  display_name sub attribute, datatype string;
+  is_multipart sub attribute, datatype boolean;
+  attribute_date sub attribute, datatype date;
+  content_type sub attribute, datatype string;
+  message_id sub attribute, datatype string;
+  subject sub attribute, datatype string;
+  received_lines sub attribute, datatype string;
+  body sub attribute, datatype string;
+  content_disposition sub attribute, datatype string;
+  size sub attribute, datatype long;
+  extensions sub attribute, datatype string;
+  name_enc sub attribute, datatype string;
+  magic_number_hex sub attribute, datatype string;
+  start sub attribute, datatype date;
+  end sub attribute, datatype date;
+  is_active sub attribute, datatype boolean;
+  protocols sub attribute, datatype string;
+  src_port sub attribute, datatype long;
+  dst_port sub attribute, datatype long;
+  src_byte_count sub attribute, datatype long;
+  dst_byte_count sub attribute, datatype long;
+  src_packets sub attribute, datatype long;
+  dst_packets sub attribute, datatype long;
+  is_hidden sub attribute, datatype boolean;
+  pid sub attribute, datatype long;
+  created_time sub attribute, datatype date;
+  cwd sub attribute, datatype string;
+  command_line sub attribute, datatype string;
+  environment_variables sub attribute, datatype string;
+  cpe sub attribute, datatype string;
+  swid sub attribute, datatype string;
+  languages sub attribute, datatype string;
+  vendor sub attribute, datatype string;
+  version sub attribute, datatype string;
+  user_id sub attribute, datatype string;
+  credential sub attribute, datatype string;
+  account_login sub attribute, datatype string;
+  account_type sub attribute, datatype string;
+  is_service_account sub attribute, datatype boolean;
+  is_privileged sub attribute, datatype boolean;
+  can_escalate_privs sub attribute, datatype boolean;
+  is_disabled sub attribute, datatype boolean;
+  account_created sub attribute, datatype date;
+  account_expires sub attribute, datatype date;
+  credential_last_changed sub attribute, datatype date;
+  account_first_login sub attribute, datatype date;
+  account_last_login sub attribute, datatype date;
+  attribute_key sub attribute, datatype string;
+  modified_time sub attribute, datatype date;
+  number_of_subkeys sub attribute, datatype double;
+  data sub attribute, datatype string;
+  data_type sub attribute, datatype string;
+  is_self_signed sub attribute, datatype boolean;
+  serial_number sub attribute, datatype string;
+  signature_algorithm sub attribute, datatype string;
+  validity_not_before sub attribute, datatype date;
+  validity_not_after sub attribute, datatype date;
+  subject_public_key_algorithm sub attribute, datatype string;
+  subject_public_key_modulus sub attribute, datatype string;
+  subject_public_key_exponent sub attribute, datatype string;
+  basic_constraints sub attribute, datatype string;
+  name_constraints sub attribute, datatype string;
+  policy_constraints sub attribute, datatype string;
+  key_usage sub attribute, datatype string;
+  extended_key_usage sub attribute, datatype string;
+  subject_key_identifier sub attribute, datatype string;
+  authority_key_identifier sub attribute, datatype string;
+  subject_alternative_name sub attribute, datatype string;
+  issuer_alternative_name sub attribute, datatype string;
+  subject_directory_attributes sub attribute, datatype string;
+  crl_distribution_points sub attribute, datatype string;
+  inhibit_any_policy sub attribute, datatype string;
+  private_key_usage_period_not_before sub attribute, datatype date;
+  private_key_usage_period_not_after sub attribute, datatype date;
+  certificate_policies sub attribute, datatype string;
+  policy_mappings sub attribute, datatype string;
 
-  # STIX SRO
-  relationship_type sub attribute, datatype string;
-  role_played sub attribute, datatype string;
-  weight sub attribute, datatype long;
-  negative sub attribute, datatype boolean;
-
-  # STIX SOO
-  observable_value sub attribute, datatype string;
-  observable_date sub attribute, datatype date;
 
   ## ROLES
 
-  # Migration
-  status sub role;
-  state sub role;
+  # Internal Relations
+  authorized-by_from sub role;
+  authorized-by_to sub role;
+  migrates_from sub role;
+  migrates_to sub role;
+  member-of_from sub role;
+  member-of_to sub role;
+  allowed-by_from sub role;
+  allowed-by_to sub role;
+  has-role_from sub role;
+  has-role_to sub role;
+  has-capability_from sub role;
+  has-capability_to sub role;
 
-  # OpenCTI roles
-  author sub role;
-  authorization sub role;
-  client sub role;
-  allow sub role;
-  allowed sub role;
-  grouping sub role;
-  member sub role;
-  tagging sub role;
+  # STIX Knowledge Relationships
+  delivers_from sub role;
+  delivers_to sub role;
+  targets_from sub role;
+  targets_to sub role;
+  uses_from sub role;
+  uses_to sub role;
+  attributed-to_from sub role;
+  attributed-to_to sub role;
+  compromises_from sub role;
+  compromises_to sub role;
+  originates-from_from sub role;
+  originates-from_to sub role;
+  investigates_from sub role;
+  investigates_to sub role;
+  mitigates_from sub role;
+  mitigates_to sub role;
+  located-at_from sub role;
+  located-at_to sub role;
+  indicates_from sub role;
+  indicates_to sub role;
+  based-on_from sub role;
+  based-on_to sub role;
+  communicates-with_from sub role;
+  communicates-with_to sub role;
+  consists-of_from sub role;
+  consists-of_to sub role;
+  controls_from sub role;
+  controls_to sub role;
+  relation-has_from sub role;
+  relation-has_to sub role;
+  hosts_from sub role;
+  hosts_to sub role;
+  owns_from sub role;
+  owns_to sub role;
+  authored-by_from sub role;
+  authored-by_to sub role;
+  beacons-to_from sub role;
+  beacons-to_to sub role;
+  exfiltrate-to_from sub role;
+  exfiltrate-to_to sub role;
+  downloads_from sub role;
+  downloads_to sub role;
+  drops_from sub role;
+  drops_to sub role;
+  exploits_from sub role;
+  exploits_to sub role;
+  variant-of_from sub role;
+  variant-of_to sub role;
+  characterizes_from sub role;
+  characterizes_to sub role;
+  analysis-of_from sub role;
+  analysis-of_to sub role;
+  static-analysis-of_from sub role;
+  static-analysis-of_to sub role;
+  dynamic-analysis-of_from sub role;
+  dynamic-analysis-of_to sub role;
+  impersonates_from sub role;
+  impersonates_to sub role;
+  remediates_from sub role;
+  remediates_to sub role;
+  related-to_from sub role;
+  related-to_to sub role;
+  derived-from_from sub role;
+  derived-from_to sub role;
+  duplicate-of_from sub role;
+  duplicate-of_to sub role;
+  part-of_from sub role;
+  part-of_to sub role;
+  subtechnique-of_from sub role;
+  subtechnique-of_to sub role;
 
-  # STIX common roles
-  so sub role;
-  kill_chain_phase sub role;
+  # STIX Sighting Relationships
+  stix-sighting-relationship_from sub role;
+  stix-sighting-relationship_to sub role;
 
-  # STIX embeded roles
-  creator sub role;
-  marking sub role;
-  external_reference sub role;
-  phase_belonging sub role;
-  knowledge_aggregation sub role;
+  # STIX Meta Relationships
+  object-label_from sub role;
+  object-label_to sub role;
+  created-by_from sub role;
+  created-by_to sub role;
+  object-marking_from sub role;
+  object-marking_to sub role;
+  object_from sub role;
+  object_to sub role;
+  external-reference_from sub role;
+  external-reference_to sub role;
+  kill-chain-phase_from sub role;
+  kill-chain-phase_to sub role;
 
-  # STIX observables roles
-  soo sub role;
-  link_from sub role;
-  link_to sub role;
-  resolving sub role;
-  resolved sub role;
-  belonging_to sub role;
-  belonged_to sub role;
-  correspond_from sub role;
-  correspond_to sub role;
-  container sub role;
-  contained sub role;
 
-  # STIX SRO roles
+  ## RELATIONS
 
-  # targets
-  source sub role;
-  target sub role;
-
-  # uses
-  user sub role;
-  usage sub role;
-
-  # attributed-to
-  attribution sub role;
-  origin sub role;
-
-  # mitigates
-  mitigation sub role;
-  problem sub role;
-
-  # indicates
-  indicator sub role;
-  characterize sub role;
-
-  # variant-of
-  variation sub role;
-  original sub role;
-
-  # impersonates
-  dummy sub role;
-  genuine sub role;
-
-  # related-to
-  relate_from sub role;
-  relate_to sub role;
-
-  # localization
-  localized sub role;
-  location sub role;
-
-  # gathering
-  part_of sub role;
-  gather sub role;
-
-  # drops
-  dropped sub role;
-  dropping sub role;
-
-  # sighting
-  sighted_in sub role;
-
-  ## RELATIONSHIPS
-
-  # Login relationship
-  authorize sub relation,
-    key internal_id_key,
-    relates client,
-    relates authorization;
-
-  # Migration relationships
-  migrate sub relation,
-    key internal_id_key,
-    relates status,
-    relates state;
-
-  # Group membership relationships
-  membership sub relation,
-    key internal_id_key,
-    relates member,
-    relates grouping;
-
-  # Access relationships
-  permission sub relation,
-    key internal_id_key,
-    has grant,
-    relates allowed,
-    relates allow;
-
-  user_role sub relation,
-    key internal_id_key,
-    relates client,
-    relates position;
-
-  role_capability sub relation,
-    key internal_id_key,
-    relates position,
-    relates capability;
-
-  # OpenCTI embeded relationships
-  relation_embedded sub relation,
+  basic-relationship sub relation,
     abstract,
-    key internal_id_key;
-
-  authored_by sub relation_embedded,
-    relates so,
-    relates author;
-
-  owned_by sub relation_embedded,
-    relates so,
-    relates owner;
-
-  tagged sub relation_embedded,
-    relates so,
-    relates tagging;
-
-  # STIX embeded relationships
-  stix_relation_embedded sub relation,
-    abstract,
-    key internal_id_key;
-
-  created_by_ref sub stix_relation_embedded,
-    relates so,
-    relates creator;
-
-  object_marking_refs sub stix_relation_embedded,
-    relates so,
-    relates marking;
-
-  object_refs sub stix_relation_embedded,
-    relates knowledge_aggregation,
-    relates so;
-
-  external_references sub stix_relation_embedded,
-    relates so,
-    relates external_reference;
-
-  kill_chain_phases sub stix_relation_embedded,
-    relates phase_belonging,
-    relates kill_chain_phase;
-
-  observable_refs sub stix_relation_embedded,
-    relates observables_aggregation,
-    relates soo;
-
-  # STIX SRO relationships
-  stix_sighting sub relation,
-    key internal_id_key,
-    key stix_id_key,
-    has name,
-    has description,
-    has created,
-    has modified,
-    has revoked,
+    key internal_id,
+    key standard_id,
     has entity_type,
-    has relationship_type,
-    has weight,
-    has confidence,
-    has negative,
-    has number,
-    has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
-    has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
     has created_at,
     has created_at_day,
     has created_at_month,
     has created_at_year,
-    has updated_at,
-    plays so,
-    relates sighted_in,
-    relates so;
+    has updated_at;
 
-  stix_relation sub relation,
-    abstract,
-    key internal_id_key,
-    key stix_id_key,
-    has created,
-    has modified,
-    has revoked,
-    has entity_type,
-    has relationship_type,
-    has weight,
-    has confidence,
-    has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
-    has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
-    has name,
-    has description,
-    has role_played,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays relate_from,
-    plays relate_to,
-    plays phase_belonging,
-    plays characterize,
-    plays so;
-
-  # targets
-  targets sub stix_relation,
-    plays localized,
-    relates source,
-    relates target;
-
-  # uses
-  uses sub stix_relation,
-    relates user,
-    relates usage;
-
-  # related-to
-  related-to sub stix_relation,
-    relates relate_from,
-    relates relate_to;
-
-  # mitigates
-  mitigates sub stix_relation,
-    relates mitigation,
-    relates problem;
-
-  # impersonates
-  impersonates sub stix_relation,
-    relates dummy,
-    relates genuine;
-
-  # indicates
-  indicates sub stix_relation,
-    relates indicator,
-    relates characterize;
-
-  # comes-after
-  comes-after sub stix_relation,
-    relates coming_from,
-    relates coming_after;
-
-  # parentship
-  parentship sub stix_relation,
+  # Internal relations
+  internal-relationship sub basic-relationship,
     abstract;
 
-  # attributed-to
-  attributed-to sub parentship,
-    relates origin,
-    relates attribution;
+  authorized-by sub internal-relationship,
+    relates authorized-by_from,
+    relates authorized-by_to;
 
-  # variant-of
-  variant-of sub parentship,
-    relates variation,
-    relates original;
+  migrates sub internal-relationship,
+    relates migrates_from,
+    relates migrates_to;
 
-  # localization
-  localization sub parentship,
-    relates localized,
-    relates location;
+  member-of sub internal-relationship,
+    relates member-of_from,
+    relates member-of_to;
 
-  # gathering
-  gathering sub parentship,
-    relates gather,
-    relates part_of;
+  allowed-by sub internal-relationship,
+    has grant,
+    relates allowed-by_from,
+    relates allowed-by_to;
 
-  # drops
-  drops sub parentship,
-    relates dropping,
-    relates dropped;
+  has-role sub internal-relationship,
+    relates has-role_from,
+    relates has-role_to;
 
-  # STIX SOO relationships
-  stix_observable_relation sub relation,
+  has-capability sub internal-relationship,
+    relates has-capability_from,
+    relates has-capability_to;
+
+  # STIX relations
+  stix-relationship sub basic-relationship,
     abstract,
-    key internal_id_key,
-    key stix_id_key,
+    has stix_ids,
+    has spec_version,
+    has revoked,
+    has confidence,
+    has lang,
     has created,
     has modified,
-    has revoked,
-    has entity_type,
+    plays object_to;
+
+  # STIX Core Relationships
+  stix-core-relationship sub stix-relationship,
+    abstract,
     has relationship_type,
+    has description,
+    has start_time,
+    has start_time_day,
+    has start_time_month,
+    has start_time_year,
+    has stop_time,
+    has stop_time_day,
+    has stop_time_month,
+    has stop_time_year,
+    plays created-by_from,
+    plays object-marking_from,
+    plays object-label_from,
+    plays external-reference_from,
+    plays duplicate-of_from,
+    plays derived-from_from,
+    plays related-to_from,
+    plays duplicate-of_to,
+    plays derived-from_to,
+    plays related-to_to;
+
+  delivers sub stix-core-relationship,
+    relates delivers_from,
+    relates delivers_to,
+    plays indicates_to;
+
+  targets sub stix-core-relationship,
+    relates targets_from,
+    relates targets_to,
+    plays located-at_from;
+
+  uses sub stix-core-relationship,
+    relates uses_from,
+    relates uses_to,
+    plays kill-chain-phase_from,
+    plays indicates_to;
+
+  attributed-to sub stix-core-relationship,
+    relates attributed-to_from,
+    relates attributed-to_to;
+
+  compromises sub stix-core-relationship,
+    relates compromises_from,
+    relates compromises_to;
+
+  originates-from sub stix-core-relationship,
+    relates originates-from_from,
+    relates originates-from_to;
+
+  investigates sub stix-core-relationship,
+    relates investigates_from,
+    relates investigates_to;
+
+  mitigates sub stix-core-relationship,
+    relates mitigates_from,
+    relates mitigates_to;
+
+  located-at sub stix-core-relationship,
+    relates located-at_from,
+    relates located-at_to;
+
+  indicates sub stix-core-relationship,
+    plays kill-chain-phase_from,
+    relates indicates_from,
+    relates indicates_to;
+
+  based-on sub stix-core-relationship,
+    relates based-on_from,
+    relates based-on_to;
+
+  communicates-with sub stix-core-relationship,
+    relates communicates-with_from,
+    relates communicates-with_to,
+    plays indicates_to;
+
+  consists-of sub stix-core-relationship,
+    relates consists-of_from,
+    relates consists-of_to;
+
+  controls sub stix-core-relationship,
+    relates controls_from,
+    relates controls_to;
+
+  relation-has sub stix-core-relationship,
+    relates relation-has_from,
+    relates relation-has_to;
+
+  hosts sub stix-core-relationship,
+    relates hosts_from,
+    relates hosts_to;
+
+  owns sub stix-core-relationship,
+    relates owns_from,
+    relates owns_to;
+
+  authored-by sub stix-core-relationship,
+    relates authored-by_from,
+    relates authored-by_to;
+
+  beacons-to sub stix-core-relationship,
+    relates beacons-to_from,
+    relates beacons-to_to,
+    plays indicates_to;
+
+  exfiltrate-to sub stix-core-relationship,
+    relates exfiltrate-to_from,
+    relates exfiltrate-to_to;
+
+  downloads sub stix-core-relationship,
+    relates downloads_from,
+    relates downloads_to;
+
+  drops sub stix-core-relationship,
+    plays kill-chain-phase_from,
+    relates drops_from,
+    relates drops_to;
+
+  exploits sub stix-core-relationship,
+    plays kill-chain-phase_from,
+    relates exploits_from,
+    relates exploits_to,
+    plays indicates_to;
+
+  variant-of sub stix-core-relationship,
+    relates variant-of_from,
+    relates variant-of_to;
+
+  characterizes sub stix-core-relationship,
+    relates characterizes_from,
+    relates characterizes_to;
+
+  analysis-of sub stix-core-relationship,
+    relates analysis-of_from,
+    relates analysis-of_to;
+
+  static-analysis-of sub stix-core-relationship,
+    relates static-analysis-of_from,
+    relates static-analysis-of_to;
+
+  dynamic-analysis-of sub stix-core-relationship,
+    relates dynamic-analysis-of_from,
+    relates dynamic-analysis-of_to;
+
+  impersonates sub stix-core-relationship,
+    relates impersonates_from,
+    relates impersonates_to;
+
+  remediates sub stix-core-relationship,
+    relates remediates_from,
+    relates remediates_to;
+
+  related-to sub stix-core-relationship,
+    relates related-to_from,
+    relates related-to_to;
+
+  derived-from sub stix-core-relationship,
+    relates derived-from_from,
+    relates derived-from_to;
+
+  duplicate-of sub stix-core-relationship,
+    relates duplicate-of_from,
+    relates duplicate-of_to;
+
+  part-of sub stix-core-relationship,
+    relates part-of_from,
+    relates part-of_to;
+
+  subtechnique-of sub stix-core-relationship,
+    relates subtechnique-of_from,
+    relates subtechnique-of_to;
+
+  # STIX Sighting Relationships
+  stix-sighting-relationship sub stix-relationship,
+    has description,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -450,56 +608,191 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
-    has name,
-    has description,
-    has role_played,
-    has weight,
+    has attribute_count,
+    has x_opencti_negative,
     has confidence,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays phase_belonging,
-    plays so;
+    plays created-by_from,
+    plays object-marking_from,
+    plays object-label_from,
+    plays external-reference_from,
+    relates stix-sighting-relationship_from,
+    relates stix-sighting-relationship_to;
 
-  linked sub stix_observable_relation,
-    relates link_from,
-    relates link_to;
+  # STIX Meta Relationships
+  stix-meta-relationship sub stix-relationship,
+    abstract;
 
-  resolves sub stix_observable_relation,
-    relates resolving,
-    relates resolved;
+  created-by sub stix-meta-relationship,
+    relates created-by_from,
+    relates created-by_to;
 
-  belongs sub stix_observable_relation,
-    relates belonging_to,
-    relates belonged_to;
+  object-marking sub stix-meta-relationship,
+    relates object-marking_from,
+    relates object-marking_to;
 
-  contains sub stix_observable_relation,
-    relates container,
-    relates contained;
+  object sub stix-meta-relationship,
+    relates object_from,
+    relates object_to;
 
-  corresponds sub stix_observable_relation,
-    relates correspond_from,
-    relates correspond_to;
+  # STIX Internal Meta Relationships
+  internal-meta-relationship sub stix-meta-relationship,
+    abstract;
+
+  object-label sub stix-meta-relationship,
+    relates object-label_from,
+    relates object-label_to;
+
+  external-reference sub internal-meta-relationship,
+    relates external-reference_from,
+    relates external-reference_to;
+
+  kill-chain-phase sub internal-meta-relationship,
+    relates kill-chain-phase_from,
+    relates kill-chain-phase_to;
+
+  # STIX Cyber Observable Relationships
+  stix-cyber-observable-relationship sub stix-relationship,
+    abstract,
+    has relationship_type,
+    has start_time,
+    has start_time_day,
+    has start_time_month,
+    has start_time_year,
+    has stop_time,
+    has stop_time_day,
+    has stop_time_month,
+    has stop_time_year;
+
+  operating-system sub stix-cyber-observable-relationship,
+    relates operating-system_from,
+    relates operating-system_to;
+
+  sample sub stix-cyber-observable-relationship,
+    relates sample_from,
+    relates sample_to;
+
+  contains sub stix-cyber-observable-relationship,
+    relates contains_from,
+    relates contains_to;
+
+  resolves-to sub stix-cyber-observable-relationship,
+    relates resolves-to_from,
+    relates resolves-to_to;
+
+  belongs-to sub stix-cyber-observable-relationship,
+    relates belongs-to_from,
+    relates belongs-to_to;
+
+  from sub stix-cyber-observable-relationship,
+    relates from_from,
+    relates from_to;
+
+  sender sub stix-cyber-observable-relationship,
+    relates sender_from,
+    relates sender_to;
+
+  to sub stix-cyber-observable-relationship,
+    relates to_from,
+    relates to_to;
+
+  cc sub stix-cyber-observable-relationship,
+    relates cc_from,
+    relates cc_to;
+
+  bcc sub stix-cyber-observable-relationship,
+    relates bcc_from,
+    relates bcc_to;
+
+  raw-email sub stix-cyber-observable-relationship,
+    relates raw-email_from,
+    relates raw-email_to;
+
+  body-raw sub stix-cyber-observable-relationship,
+    relates body-raw_from,
+    relates body-raw_to;
+
+  parent-directory sub stix-cyber-observable-relationship,
+    relates parent-directory_from,
+    relates parent-directory_to;
+
+  relation-content sub stix-cyber-observable-relationship,
+    relates relation-content_from,
+    relates relation-content_to;
+
+  src sub stix-cyber-observable-relationship,
+    relates src_from,
+    relates src_to;
+
+  dst sub stix-cyber-observable-relationship,
+    relates dst_from,
+    relates dst_to;
+
+  src-payload sub stix-cyber-observable-relationship,
+    relates src-payload_from,
+    relates src-payload_to;
+
+  dst-payload sub stix-cyber-observable-relationship,
+    relates dst-payload_from,
+    relates dst-payload_to;
+
+  encapsulates sub stix-cyber-observable-relationship,
+    relates encapsulates_from,
+    relates encapsulates_to;
+
+  encapsulated-by sub stix-cyber-observable-relationship,
+    relates encapsulates-by_from,
+    relates encapsulates-by_to;
+
+  opened-connection sub stix-cyber-observable-relationship,
+    relates opened-connection_from,
+    relates opened-connection_to;
+
+  creator-user sub stix-cyber-observable-relationship,
+    relates creator-user_from,
+    relates creator-user_to;
+
+  image sub stix-cyber-observable-relationship,
+    relates image_from,
+    relates image_to;
+
+  parent sub stix-cyber-observable-relationship,
+    relates parent_from,
+    relates parent_to;
+
+  child sub stix-cyber-observable-relationship,
+    relates child_from,
+    relates child_to;
+
+  # Interrnal Cyber Observable Relationships
+  internal-cyber-observable-relationship sub stix-cyber-observable-relationship,
+      abstract;
+
+  body-multipart sub internal-cyber-observable-relationship,
+    relates body-multipart_from,
+    relates body-multipart_to;
+
+  values sub internal-cyber-observable-relationship,
+    relates values_from,
+    relates values_to;
+
+  x509-v3-extensions sub internal-cyber-observable-relationship,
+    relates x509-v3-extensions_from,
+    relates x509-v3-extensions_to;
+
 
   ## ENTITIES
-  # Migration entities
-  MigrationStatus sub entity,
-    key internal_id_key,
-    has lastRun,
-    plays status;
 
-  MigrationReference sub entity,
-    key internal_id_key,
-    has title,
-    has timestamp,
-    plays state;
+  Basic-Object sub entity,
+    abstract,
+    key internal_id,
+    key standard_id,
+    has entity_type;
 
-  # OpenCTI entities
-  Settings sub entity,
-    key internal_id_key,
-    has entity_type,
+  # Internal entities
+  Internal-Object sub Basic-Object,
+    abstract;
+
+  Settings sub Internal-Object,
     has platform_title,
     has platform_email,
     has platform_url,
@@ -510,23 +803,84 @@ define
     has created_at_year,
     has updated_at;
 
-  Tag sub entity,
-    key internal_id_key,
-    has tag_type,
-    has entity_type,
-    key value,
-    has color,
+  MigrationStatus sub Internal-Object,
+    has lastRun,
+    plays migrates_from;
+
+  MigrationReference sub Internal-Object,
+    has title,
+    has timestamp,
+    plays migrates_to;
+
+  Token sub Internal-Object,
+    key uuid,
+    has name,
+    has duration,
+    has issuer,
+    has revoked,
     has created_at,
     has created_at_day,
     has created_at_month,
     has created_at_year,
     has updated_at,
-    plays tagging;
+    plays authorized-by_to;
 
-  Connector sub entity,
-    key internal_id_key,
-    has entity_type,
+  Group sub Internal-Object,
     has name,
+    has description,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays member-of_to;
+
+  User sub Internal-Object,
+    has user_email,
+    has password,
+    has name,
+    has description,
+    has firstname,
+    has lastname,
+    has language,
+    has external,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays authorized-by_from,
+    plays has-role_from,
+    plays member-of_from,
+    plays allowed-by_from;
+
+  Role sub Internal-Object,
+    key name,
+    has default_assignation,
+    has description,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays allowed-by_to,
+    plays has-capability_from,
+    plays has-role_to;
+
+  Capability sub Internal-Object,
+    key name,
+    has attribute_order,
+    has description,
+    has created_at,
+    has created_at_day,
+    has created_at_month,
+    has created_at_year,
+    has updated_at,
+    plays has-capability_to;
+
+  Connector sub Internal-Object,
+    has name,
+    has active,
     has connector_type,
     has connector_scope,
     has connector_state,
@@ -537,168 +891,107 @@ define
     has created_at_year,
     has updated_at;
 
-  Group sub entity,
-    key internal_id_key,
-    has entity_type,
-    has name,
-    has description,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays allowed,
-    plays grouping;
-
-  Workspace sub entity,
-    key internal_id_key,
-    has entity_type,
+  Workspace sub Internal-Object,
     has workspace_type,
     has name,
     has description,
-    has graph_data,
+    has x_opencti_graph_data,
     has workspace_data,
     has created_at,
     has created_at_day,
     has created_at_month,
     has created_at_year,
-    has updated_at,
-    plays so,
-    plays knowledge_aggregation;
+    has updated_at;
 
-  Token sub entity,
-    key internal_id_key,
-    key uuid,
-    has entity_type,
-    has name,
-    has revoked,
-    has created,
-    has duration,
-    has issuer,
+  # STIX Object Entities
+  Stix-Object sub Basic-Object,
+    abstract,
+    has stix_ids,
+    has spec_version,
     has created_at,
     has created_at_day,
     has created_at_month,
     has created_at_year,
-    has updated_at,
-    plays authorization;
+    has updated_at;
 
-  Stix-Domain sub entity,
+  # STIX Meta Object Entities
+  Stix-Meta-Object sub Stix-Object,
     abstract,
-    key internal_id_key,
-    key stix_id_key,
-    has stix_label,
-    has entity_type,
     has created,
-    has modified,
-    has revoked,
-    has object_status,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays relate_from,
-    plays relate_to,
-    plays so;
+    has modified;
 
-  Stix-Domain-Entity sub Stix-Domain,
-    abstract,
-    has name,
-    has description,
-    has alias,
-    has confidence,
-    has graph_data;
+  Marking-Definition sub Stix-Meta-Object,
+    has definition_type,
+    has definition,
+    has x_opencti_order,
+    has x_opencti_color,
+    plays object-marking_to;
 
-  External-Reference sub Stix-Domain,
+  Label sub Stix-Meta-Object,
+    key value,
+    has color,
+    plays object-label_to;
+
+  External-Reference sub Stix-Meta-Object,
     has source_name,
     has description,
     has url,
     has hash,
     has external_id,
-    plays external_reference;
+    plays external-reference_to;
 
-  Kill-Chain-Phase sub Stix-Domain,
+  Kill-Chain-Phase sub Stix-Meta-Object,
     has kill_chain_name,
     has phase_name,
-    has phase_order,
-    plays kill_chain_phase;
+    has x_opencti_order,
+    plays kill-chain-phase_to;
 
-  Marking-Definition sub Stix-Domain,
-    has definition_type,
-    has definition,
-    has level,
-    has color,
-    plays marking,
-    plays allow;
-
-  Attack-Pattern sub Stix-Domain-Entity,
-    has platform,
-    has required_permission,
-    has external_id,
-    plays phase_belonging,
-    plays source,
-    plays user,
-    plays usage,
-    plays problem,
-    plays characterize,
-    plays coming_from,
-    plays coming_after;
-
-  Campaign sub Stix-Domain-Entity,
-    has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
-    has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
-    has objective,
-    plays attribution,
-    plays origin,
-    plays user,
-    plays source,
-    plays characterize,
-    plays phase_belonging;
-
-  Course-Of-Action sub Stix-Domain-Entity,
-    plays mitigation;
-
-  Identity sub Stix-Domain-Entity,
+  Stix-Core-Object sub Stix-Object,
     abstract,
-    has contact_information,
-    plays gather,
-    plays part_of,
-    plays creator,
-    plays target,
-    plays origin,
-    plays attribution,
-    plays dummy,
-    plays user,
-    plays genuine,
-    plays localized,
-    plays sighted_in;
+    plays created-by_from,
+    plays object-marking_from,
+    plays object-label_from,
+    plays external-reference_from,
+    plays object_to;
 
-  Region sub Identity,
-    plays location;
+  # STIX Domain Object Entities
+  Stix-Domain-Object sub Stix-Core-Object,
+    abstract,
+    has revoked,
+    has confidence,
+    has lang,
+    has created,
+    has modified,
+    plays duplicate-of_from,
+    plays derived-from_from,
+    plays related-to_from,
+    plays stix-sighting-relationship_from,
+    plays duplicate-of_to,
+    plays derived-from_to,
+    plays related-to_to;
 
-  Country sub Identity,
-    plays localized,
-    plays location;
+  Attack-Pattern sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
+    has x_mitre_platforms,
+    has x_mitre_permissions_required,
+    has x_mitre_detection,
+    has x_mitre_id,
+    plays kill-chain-phase_from,
+    plays subtechnique-of_from,
+    plays delivers_from,
+    plays targets_from,
+    plays uses_from,
+    plays subtechnique-of_to,
+    plays indicates_to,
+    plays mitigates_to,
+    plays uses_to;
 
-  City sub Identity,
-    plays localized,
-    plays location;
-
-  Sector sub Identity;
-
-  Organization sub Identity,
-    has organization_class,
-    has reliability,
-    plays characterize;
-
-  Threat-Actor sub Identity,
-    has threat_actor_type,
+  Campaign sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -707,157 +1000,92 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
-    has stix_role,
-    has goal,
-    has sophistication,
-    has resource_level,
-    has primary_motivation,
-    has secondary_motivation,
-    has personal_motivation,
-    plays attribution,
-    plays source,
-    plays user,
-    plays characterize,
-    plays localized;
-
-  User sub Identity,
-    key user_email,
-    has password,
-    has firstname,
-    has lastname,
-    has language,
-    has external,
-    plays client,
-    plays author,
-    plays owner,
-    plays member,
-    plays allowed,
-    plays characterize;
-
-  Role sub entity,
-    key internal_id_key,
-    key name,
-    has entity_type,
-    has default_assignation,
-    has description,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays position;
-
-  Capability sub entity,
-    key internal_id_key,
-    key name,
-    has ordering,
-    has entity_type,
-    has description,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays capability;
-
-  Incident sub Stix-Domain-Entity,
     has objective,
-    has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
-    has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
-    plays attribution,
-    plays user,
-    plays source,
-    plays characterize;
+    plays attributed-to_from,
+    plays compromises_from,
+    plays originates-from_from,
+    plays targets_from,
+    plays uses_from,
+    plays attributed-to_to,
+    plays indicates_to;
 
-  Intrusion-Set sub Stix-Domain-Entity,
-    has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
-    has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
-    has goal,
-    has sophistication,
-    has resource_level,
-    has primary_motivation,
-    has secondary_motivation,
-    plays attribution,
-    plays source,
-    plays user,
-    plays origin,
-    plays characterize;
+  Container sub Stix-Domain-Object,
+    abstract,
+    plays object_from;
 
-  Malware sub Stix-Domain-Entity,
-    has is_family,
-    plays phase_belonging,
-    plays source,
-    plays user,
-    plays variation,
-    plays usage,
-    plays problem,
-    plays characterize,
-    plays attribution,
-    plays dropping,
-    plays dropped,
-    plays original;
+  Note sub Container,
+    has attribute_abstract,
+    has content,
+    has authors;
 
-  Report sub Stix-Domain-Entity,
-    has report_class,
+  Observed-Data sub Container,
+    has first_observed,
+    has last_observed,
+    has number_observed,
+    plays object_to,
+    plays based-on_to,
+    plays consists-of_to;
+
+  Opinion sub Container,
+    has explanation,
+    has authors,
+    has opinion;
+
+  Report sub Container,
+    has name,
+    has description,
+    has report_types,
+    has x_opencti_report_status,
     has published,
     has published_day,
     has published_year,
     has published_month,
-    has source_confidence_level,
-    plays knowledge_aggregation,
-    plays observables_aggregation;
+    has x_opencti_graph_data;
 
-  Note sub Stix-Domain-Entity,
-    has content,
-    plays knowledge_aggregation,
-    plays observables_aggregation;
+  Course-Of-Action sub Stix-Domain-Object,
+    has name,
+    has description,
+    has x_opencti_aliases,
+    plays mitigates_from,
+    plays investigates_from,
+    plays migrates_from,
+    plays remediates_from;
 
-  Opinion sub Stix-Domain-Entity,
-    has explanation,
-    plays knowledge_aggregation,
-    plays observables_aggregation;
+  Identity sub Stix-Domain-Object,
+    abstract,
+    has name,
+    has description,
+    has aliases,
+    has contact_information,
+    has identity_class,
+    plays located-at_from,
+    plays part-of_from,
+    plays stix-sighting-relationship_to,
+    plays targets_to,
+    plays attributed-to_to,
+    plays impersonates_to;
 
-  Tool sub Stix-Domain-Entity,
-    has tool_version,
-    plays phase_belonging,
-    plays source,
-    plays user,
-    plays usage,
-    plays problem,
-    plays dropping,
-    plays dropped,
-    plays characterize;
+  Individual sub Identity,
+    has x_opencti_firstname,
+    has x_opencti_lastname,
+    plays created-by_to;
 
-  Vulnerability sub Stix-Domain-Entity,
-    has base_score,
-    has base_severity,
-    has attack_vector,
-    has integrity_impact,
-    has availability_impact,
-    plays target,
-    plays problem,
-    plays characterize;
+  Organization sub Identity,
+    has x_opencti_organization_type,
+    has x_opencti_reliability,
+    plays created-by_to,
+    plays part-of_to;
 
-  Indicator sub Stix-Domain-Entity,
-    key indicator_pattern,
-    has indicator_type,
-    has main_observable_type,
+  Sector sub Identity,
+    plays part-of_to;
+
+  Indicator sub Stix-Domain-Object,
     has pattern_type,
     has pattern_version,
-    has score,
-    has detection,
+    key pattern,
+    has name,
+    has description,
+    has indicator_types,
     has valid_from,
     has valid_from_day,
     has valid_from_month,
@@ -866,96 +1094,465 @@ define
     has valid_until_day,
     has valid_until_month,
     has valid_until_year,
-    plays observables_aggregation,
-    plays phase_belonging,
-    plays indicator;
+    has x_opencti_score,
+    has x_opencti_detection,
+    has x_opencti_main_observable_type,
+    plays kill-chain-phase_from,
+    plays indicates_from,
+    plays based-on_from,
+    plays investigates_to,
+    plays mitigates_to;
 
-  Stix-Observable sub entity,
-    abstract,
-    key internal_id_key,
-    key stix_id_key,
-    has entity_type,
+  Infrastructure sub Stix-Domain-Object,
     has name,
     has description,
-    key observable_value,
-    has observable_date,
-    has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
-    has updated_at,
-    plays so,
-    plays soo,
-    plays relate_from,
-    plays relate_to,
-    plays part_of,
-    plays link_from,
-    plays link_to;
+    has aliases,
+    has infrastructure_types,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    plays kill-chain-phase_from,
+    plays communicates-with_from,
+    plays consists-of_from,
+    plays controls_from,
+    plays relation-has_from,
+    plays hosts_from,
+    plays located-at_from,
+    plays uses_from,
+    plays compromises_to,
+    plays beacons-to_to,
+    plays exfiltrate-to_to,
+    plays hosts_to,
+    plays indicates_to,
+    plays owns_to,
+    plays targets_to,
+    plays uses_to;
 
-  Autonomous-System sub Stix-Observable,
-    plays belonged_to;
+  Intrusion-Set sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    has goals,
+    has resource_level,
+    has primary_motivation,
+    has secondary_motivations,
+    plays attributed-to_from,
+    plays compromises_from,
+    plays hosts_from,
+    plays owns_from,
+    plays originates-from_from,
+    plays targets_from,
+    plays uses_from,
+    plays attributed-to_to,
+    plays authored-by_to,
+    plays indicates_to;
 
-  Mac-Addr sub Stix-Observable;
+  Location sub Stix-Domain-Object,
+    abstract,
+    has name,
+    has description,
+    has latitude,
+    has longitude,
+    has precision,
+    has x_opencti_aliases,
+    has x_opencti_location_type,
+    plays located-at_from,
+    plays stix-sighting-relationship_to,
+    plays located-at_to,
+    plays originates-from_to,
+    plays targets_to;
 
-  Domain sub Stix-Observable,
-    plays resolved;
+  City sub Location;
 
-  IPv4-Addr sub Stix-Observable,
-    plays resolving,
-    plays belonging_to,
-    plays localized;
+  Country sub Location;
 
-  IPv6-Addr sub Stix-Observable,
-    plays resolving,
-    plays belonging_to,
-    plays localized;
+  Region sub Location;
 
-  URL sub Stix-Observable;
+  Position sub Location,
+    has street_address,
+    has postal_code;
 
-  Email sub Stix-Observable;
-  Email-Address sub Email;
-  Email-Subject sub Email;
+  Malware sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
+    has malware_types,
+    has is_family,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    has architecture_execution_envs,
+    has implementation_languages,
+    has capabilities,
+    plays kill-chain-phase_from,
+    plays operating-system_from,
+    plays sample_from,
+    plays authorized-by_from,
+    plays beacons-to_from,
+    plays exfiltrate-to_from,
+    plays communicates-with_from,
+    plays controls_from,
+    plays downloads_from,
+    plays drops_from,
+    plays exploits_from,
+    plays originates-from_from,
+    plays targets_from,
+    plays uses_from,
+    plays variant-of_from,
+    plays delivers_to,
+    plays indicates_to,
+    plays mitigates_to,
+    plays remediates_to,
+    plays uses_to,
+    plays drops_to,
+    plays controls_to,
+    plays characterizes_to,
+    plays static-analysis-of_to,
+    plays dynamic-analysis-of_to;
 
-  Mutex sub Stix-Observable;
+  Threat-Actor sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
+    has threat_actor_types,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    has roles,
+    has goals,
+    has sophistication,
+    has resource_level,
+    has primary_motivation,
+    has secondary_motivations,
+    has personal_motivations,
+    plays attributed-to_from,
+    plays compromises_from,
+    plays hosts_from,
+    plays owns_from,
+    plays impersonates_from,
+    plays located-at_from,
+    plays targets_from,
+    plays uses_from,
+    plays attributed-to_to,
+    plays authored-by_to,
+    plays indicates_to;
 
-  File sub Stix-Observable,
-    plays correspond_from,
-    plays correspond_to,
-    plays contained;
-  File-Name sub File;
-  File-Path sub File;
-  File-MD5 sub File;
-  File-SHA1 sub File;
-  File-SHA256 sub File;
+  Tool sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
+    has tool_types,
+    has tool_version,
+    plays kill-chain-phase_from,
+    plays delivers_from,
+    plays drops_from,
+    plays relation-has_from,
+    plays targets_from,
+    plays uses_from,
+    plays hosts_to,
+    plays downloads_to,
+    plays drops_to,
+    plays indicates_to,
+    plays uses_to;
 
-  Directory sub Stix-Observable,
-    plays container;
+  Vulnerability sub Stix-Domain-Object,
+    has name,
+    has description,
+    has x_opencti_base_score,
+    has x_opencti_base_severity,
+    has x_opencti_attack_vector,
+    has x_opencti_integrity_impact,
+    has x_opencti_availability_impact,
+    plays targets_to,
+    plays exploits_to,
+    plays mitigates_to,
+    plays remediates_to,
+    plays relation-has_to;
 
-  Registry-Key sub Stix-Observable;
-  Registry-Key-Value sub Registry-Key;
+  X-OpenCTI-Incident sub Stix-Domain-Object,
+    has name,
+    has description,
+    has aliases,
+    has first_seen,
+    has first_seen_day,
+    has first_seen_month,
+    has first_seen_year,
+    has last_seen,
+    has last_seen_day,
+    has last_seen_month,
+    has last_seen_year,
+    has objective,
+    plays attributed-to_from,
+    plays compromises_from,
+    plays targets_from,
+    plays uses_from,
+    plays indicates_to;
 
-  Hostname sub Stix-Observable;
+   # STIX Cyber Observables Entities
+  Stix-Cyber-Observable sub Stix-Core-Object,
+    abstract,
+    has x_opencti_score,
+    plays stix-sighting-relationship_from,
+    plays consists-of_to,
+    plays based-on_to;
 
-  PDB-Path sub Stix-Observable;
+  Autonomous-System sub Stix-Cyber-Observable,
+    has number,
+    has name,
+    has rir;
 
-  Text sub Stix-Observable;
+  Directory sub Stix-Cyber-Observable,
+    has path,
+    has path_enc,
+    has ctime,
+    has mtime,
+    has atime,
+    plays contains_from;
 
-  Process sub Stix-Observable;
+  Domain-Name sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_from,
+    plays src_to,
+    plays dst_to;
 
-  User-Account sub Stix-Observable;
+  Email-Addr sub Stix-Cyber-Observable,
+    has value,
+    has display_name,
+    plays belongs-to_from,
+    plays from_to,
+    plays sender_to,
+    plays to_to,
+    plays cc_to,
+    plays bcc_to;
 
-  Cryptographic-Key sub Stix-Observable;
+  Email-Message sub Stix-Cyber-Observable,
+    has is_multipart,
+    has attribute_date,
+    has content_type,
+    has message_id,
+    has subject,
+    has received_lines,
+    has body,
+    plays from_from,
+    plays sender_from,
+    plays to_from,
+    plays cc_from,
+    plays bcc_from,
+    plays body-multipart_from,
+    plays raw-email_from;
 
-  Cryptocurrency-Wallet sub Stix-Observable;
+  Email-Mime-Part-Type sub Stix-Cyber-Observable,
+    has body,
+    has content_type,
+    has content_disposition,
+    plays body-raw_from,
+    plays body-multipart_to;
 
-  User-Agent sub Stix-Observable;
+  Hashed-Observable sub Stix-Cyber-Observable,
+    abstract,
+    has md5,
+    has sha1,
+    has sha256,
+    has sha512;
 
-  Windows-Service sub Stix-Observable;
-  Windows-Service-Name sub Windows-Service;
-  Windows-Service-Display-Name sub Windows-Service;
+  Artifact sub Hashed-Observable,
+    has mime_type,
+    has payload_bin,
+    has url,
+    has encryption_algorithm,
+    has decryption_key,
+    plays raw-email_to,
+    plays body-raw_to;
 
-  Windows-Scheduled-Task sub Stix-Observable;
+  StixFile sub Hashed-Observable,
+    has extensions,
+    has size,
+    has name,
+    has name_enc,
+    has magic_number_hex,
+    has mime_type,
+    has ctime,
+    has mtime,
+    has atime,
+    plays parent-directory_from,
+    plays contains_from,
+    plays relation-content_from,
+    plays parent-directory_to,
+    plays contains_to,
+    plays image_to;
 
-  X509-Certificate sub Stix-Observable;
-  X509-Certificate-Issuer sub X509-Certificate;
-  X509-Certificate-Serial-Number sub X509-Certificate;
+  X509-Certificate sub Hashed-Observable,
+    has is_self_signed,
+    has version,
+    has serial_number,
+    has signature_algorithm,
+    has issuer,
+    has validity_not_before,
+    has validity_not_after,
+    has subject,
+    has subject_public_key_algorithm,
+    has subject_public_key_modulus,
+    has subject_public_key_exponent,
+    plays x509-v3-extensions_from;
+
+  IPv4-Addr sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_from,
+    plays belongs-to_from,
+    plays resolves-to_to,
+    plays src_to,
+    plays dst_to;
+
+  IPv6-Addr sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_from,
+    plays belongs-to_from,
+    plays resolves-to_to,
+    plays src_to,
+    plays dst_to;
+
+  Mac-Addr sub Stix-Cyber-Observable,
+    has value,
+    plays resolves-to_to,
+    plays src_to,
+    plays dst_to;
+
+  Mutex sub Stix-Cyber-Observable,
+    has name;
+
+  Network-Traffic sub Stix-Cyber-Observable,
+    has extensions,
+    has start,
+    has end,
+    has is_active,
+    has src_port,
+    has dst_port,
+    has protocols,
+    has src_byte_count,
+    has dst_byte_count,
+    has src_packets,
+    has dst_packets,
+    plays src_from,
+    plays dst_from,
+    plays src-payload_from,
+    plays dst-payload_from,
+    plays encapsulates_from,
+    plays encapsulates-by_from,
+    plays encapsulates_to,
+    plays encapsulates-by_to,
+    plays opened-connection_to;
+
+  Process sub Stix-Cyber-Observable,
+    has extensions,
+    has is_hidden,
+    has pid,
+    has created_time,
+    has cwd,
+    has command_line,
+    has environment_variables,
+    plays opened-connection_from,
+    plays creator-user_from,
+    plays image_from,
+    plays parent_from,
+    plays child_from,
+    plays parent_to,
+    plays child_to;
+
+  Software sub Stix-Cyber-Observable,
+    has name,
+    has cpe,
+    has swid,
+    has languages,
+    has vendor,
+    has version;
+
+  Url sub Stix-Cyber-Observable,
+    has value;
+
+  User-Account sub Stix-Cyber-Observable,
+    has extensions,
+    has user_id,
+    has credential,
+    has account_login,
+    has account_type,
+    has display_name,
+    has is_service_account,
+    has is_privileged,
+    has can_escalate_privs,
+    has is_disabled,
+    has account_created,
+    has account_expires,
+    has credential_last_changed,
+    has account_first_login,
+    has account_last_login,
+    plays creator-user_to;
+
+  Windows-Registry-Key sub Stix-Cyber-Observable,
+    has attribute_key,
+    has modified_time,
+    has number_of_subkeys,
+    plays values_from,
+    plays creator-user_from;
+
+  Windows-Registry-Value-Type sub Stix-Cyber-Observable,
+    has name,
+    has data,
+    has data_type,
+    plays values_to;
+
+  X509-V3-Extensions-Type sub Stix-Cyber-Observable,
+    has basic_constraints,
+    has name_constraints,
+    has policy_constraints,
+    has key_usage,
+    has extended_key_usage,
+    has subject_key_identifier,
+    has authority_key_identifier,
+    has subject_alternative_name,
+    has issuer_alternative_name,
+    has subject_directory_attributes,
+    has crl_distribution_points,
+    has inhibit_any_policy,
+    has private_key_usage_period_not_before,
+    has private_key_usage_period_not_after,
+    has certificate_policies,
+    has policy_mappings,
+    plays x509-v3-extensions_to;
+
+  X-OpenCTI-Cryptographic-Key sub Stix-Cyber-Observable,
+    has value;
+
+  X-OpenCTI-Cryptocurrency-Wallet sub Stix-Cyber-Observable,
+    has value;
+
+  X-OpenCTI-Hostname sub Stix-Cyber-Observable,
+    has value;
+
+  X-OpenCTI-Text sub Stix-Cyber-Observable,
+    has value;
+
+  X-OpenCTI-User-Agent sub Stix-Cyber-Observable,
+    has value;

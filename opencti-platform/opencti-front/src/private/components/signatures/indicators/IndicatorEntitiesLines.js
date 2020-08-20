@@ -42,10 +42,14 @@ class IndicatorEntitiesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixRelations', 'edges'], this.props.data)}
+        dataList={pathOr(
+          [],
+          ['stixCoreRelationships', 'edges'],
+          this.props.data,
+        )}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixRelations', 'pageInfo', 'globalCount'],
+          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={
@@ -73,7 +77,7 @@ IndicatorEntitiesLines.propTypes = {
   entityId: PropTypes.string,
   data: PropTypes.object,
   relay: PropTypes.object,
-  stixRelations: PropTypes.object,
+  stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
   displayRelation: PropTypes.bool,
@@ -83,28 +87,28 @@ export const indicatorEntitiesLinesQuery = graphql`
   query IndicatorEntitiesLinesPaginationQuery(
     $fromId: String
     $inferred: Boolean
-    $relationType: String
-    $firstSeenStart: DateTime
-    $firstSeenStop: DateTime
-    $lastSeenStart: DateTime
-    $lastSeenStop: DateTime
-    $weights: [Int]
+    $relationship_type: String
+    $startTimeStart: DateTime
+    $startTimeStop: DateTime
+    $stopTimeStart: DateTime
+    $stopTimeStop: DateTime
+    $confidences: [Int]
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: StixRelationsOrdering
+    $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
   ) {
     ...IndicatorEntitiesLines_data
       @arguments(
         fromId: $fromId
         inferred: $inferred
-        relationType: $relationType
-        firstSeenStart: $firstSeenStart
-        firstSeenStop: $firstSeenStop
-        lastSeenStart: $lastSeenStart
-        lastSeenStop: $lastSeenStop
-        weights: $weights
+        relationship_type: $relationship_type
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
+        confidences: $confidences
         search: $search
         count: $count
         cursor: $cursor
@@ -122,33 +126,36 @@ export default createPaginationContainer(
         @argumentDefinitions(
           fromId: { type: "String" }
           inferred: { type: "Boolean" }
-          relationType: { type: "String" }
-          firstSeenStart: { type: "DateTime" }
-          firstSeenStop: { type: "DateTime" }
-          lastSeenStart: { type: "DateTime" }
-          lastSeenStop: { type: "DateTime" }
-          weights: { type: "[Int]" }
+          relationship_type: { type: "String" }
+          startTimeStart: { type: "DateTime" }
+          startTimeStop: { type: "DateTime" }
+          stopTimeStart: { type: "DateTime" }
+          stopTimeStop: { type: "DateTime" }
+          confidences: { type: "[Int]" }
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixRelationsOrdering" }
+          orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: start_time
+          }
           orderMode: { type: "OrderingMode" }
         ) {
-        stixRelations(
+        stixCoreRelationships(
           fromId: $fromId
           inferred: $inferred
-          relationType: $relationType
-          firstSeenStart: $firstSeenStart
-          firstSeenStop: $firstSeenStop
-          lastSeenStart: $lastSeenStart
-          lastSeenStop: $lastSeenStop
-          weights: $weights
+          relationship_type: $relationship_type
+          startTimeStart: $startTimeStart
+          startTimeStop: $startTimeStop
+          stopTimeStart: $stopTimeStart
+          stopTimeStop: $stopTimeStop
+          confidences: $confidences
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixRelations") {
+        ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
               ...IndicatorEntityLine_node
@@ -166,7 +173,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixRelations;
+      return props.data && props.data.stixCoreRelationships;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -179,12 +186,12 @@ export default createPaginationContainer(
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
-        relationType: fragmentVariables.relationType,
-        firstSeenStart: fragmentVariables.firstSeenStart,
-        firstSeenStop: fragmentVariables.firstSeenStop,
-        lastSeenStart: fragmentVariables.lastSeenStart,
-        lastSeenStop: fragmentVariables.lastSeenStop,
-        weights: fragmentVariables.weights,
+        relationship_type: fragmentVariables.relationship_type,
+        startTimeStart: fragmentVariables.startTimeStart,
+        startTimeStop: fragmentVariables.startTimeStop,
+        stopTimeStart: fragmentVariables.stopTimeStart,
+        stopTimeStop: fragmentVariables.stopTimeStop,
+        confidences: fragmentVariables.confidences,
         search: fragmentVariables.search,
         count,
         cursor,

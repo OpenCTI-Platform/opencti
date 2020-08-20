@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -50,9 +50,7 @@ class SectorOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], sector)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', sector)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -82,8 +80,8 @@ const SectorOverview = createFragmentContainer(SectorOverviewComponent, {
       description
       created
       modified
-      createdByRef {
-        node {
+      createdBy {
+        ... on Identity {
           id
           name
           entity_type
@@ -93,7 +91,4 @@ const SectorOverview = createFragmentContainer(SectorOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SectorOverview);
+export default compose(inject18n, withStyles(styles))(SectorOverview);

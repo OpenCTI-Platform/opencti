@@ -15,27 +15,27 @@ export const stringToColour = (str) => {
 
 export const itemColor = (type, dark) => {
   switch (type) {
-    case 'sector':
+    case 'Sector':
       if (dark) {
         return '#0d47a1';
       }
       return '#2196f3';
-    case 'threat-actor':
+    case 'Threat-Actor':
       if (dark) {
         return '#880e4f';
       }
       return '#e91e63';
-    case 'intrusion-set':
+    case 'Intrusion-Set':
       if (dark) {
         return '#bf360c';
       }
       return '#ff5722';
-    case 'campaign':
+    case 'Campaign':
       if (dark) {
         return '#4a148c';
       }
       return '#9c27b0';
-    case 'incident':
+    case 'X-OpenCTI-Incident':
       if (dark) {
         return '#f44336';
       }
@@ -96,13 +96,13 @@ export const itemColor = (type, dark) => {
     case 'uses':
     case 'related-to':
     case 'mitigates':
-    case 'impersonates':
+    case 'imindividualates':
     case 'indicates':
     case 'comes-after':
     case 'attributed-to':
     case 'variant-of':
     case 'localization':
-    case 'gathering':
+    case 'part-of':
     case 'drops':
       if (dark) {
         return '#616161';

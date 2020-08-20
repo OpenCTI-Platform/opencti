@@ -16,8 +16,8 @@ import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import IndicatorHeader from './IndicatorHeader';
-import IndicatorAddObservableRefs from './IndicatorAddObservableRefs';
-import IndicatorRefPopover from './IndicatorRefPopover';
+import IndicatorAddObservableRefs from './IndicatorAddObservables';
+import IndicatorObservablePopover from './IndicatorObservablePopover';
 
 const styles = (theme) => ({
   linesContainer: {
@@ -221,10 +221,9 @@ class IndicatorObservablesComponent extends Component {
                 }
               />
               <ListItemSecondaryAction>
-                <IndicatorRefPopover
+                <IndicatorObservablePopover
                   indicatorId={indicator.id}
                   entityId={observableRef.id}
-                  relationId={observableRef.relation.id}
                 />
               </ListItemSecondaryAction>
             </ListItem>
@@ -253,7 +252,7 @@ const IndicatorObservables = createFragmentContainer(
     indicator: graphql`
       fragment IndicatorObservables_indicator on Indicator {
         id
-        observableRefs {
+        observables {
           edges {
             node {
               id
@@ -261,9 +260,6 @@ const IndicatorObservables = createFragmentContainer(
               observable_value
               created_at
               updated_at
-            }
-            relation {
-              id
             }
           }
         }

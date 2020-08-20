@@ -97,9 +97,6 @@ const SectorParentSectors = createFragmentContainer(
               name
               description
             }
-            relation {
-              id
-            }
           }
         }
       }

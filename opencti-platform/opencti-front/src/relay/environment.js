@@ -17,7 +17,10 @@ import * as PropTypes from 'prop-types';
 import {
   map, isEmpty, difference, filter, pathOr, isNil,
 } from 'ramda';
-import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern/node8';
+import {
+  urlMiddleware,
+  RelayNetworkLayer,
+} from 'react-relay-network-modern/node8';
 import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
@@ -63,7 +66,6 @@ const networkSubscriptions = (operation, variables) => execute(subscriptionLink,
   variables,
 });
 
-
 const network = new RelayNetworkLayer(
   [
     urlMiddleware({
@@ -90,8 +92,10 @@ export class QueryRenderer extends Component {
       variables, query, render, managedErrorTypes,
     } = this.props;
     return (
-      <QR environment={environment}
-        query={query} variables={variables}
+      <QR
+        environment={environment}
+        query={query}
+        variables={variables}
         render={(data) => {
           const { error } = data;
           const types = error ? map((e) => e.name, error) : [];
@@ -135,7 +139,9 @@ export const commitMutation = ({
         error.res.errors,
       );
       if (!isEmpty(authRequired)) {
-        MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
+        MESSAGING$.notifyError(
+          'Unauthorized action, please refresh your browser',
+        );
       } else {
         const messages = map(
           (e) => ({
@@ -150,7 +156,6 @@ export const commitMutation = ({
     }
   },
 });
-
 
 export const requestSubscription = (args) => RS(environment, args);
 

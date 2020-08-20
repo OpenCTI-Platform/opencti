@@ -62,7 +62,7 @@ const entityCampaignsTableTimeCampaignsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $relationType: String!
+    $relationship_type: String!
   ) {
     campaignsTimeSeries(
       objectId: $objectId
@@ -71,7 +71,7 @@ const entityCampaignsTableTimeCampaignsTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
-      relationType: $relationType
+      relationship_type: $relationship_type
     ) {
       date
       value
@@ -95,7 +95,7 @@ class EntityCampaignsTableTime extends Component {
       md,
       yd,
       entityId,
-      relationType,
+      relationship_type,
       variant,
       classes,
       startDate,
@@ -110,7 +110,7 @@ class EntityCampaignsTableTime extends Component {
       startDate: finalStartDate,
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: this.state.interval,
-      relationType: relationType || 'targets',
+      relationship_type: relationship_type || 'targets',
     };
     return (
       <QueryRenderer
@@ -223,13 +223,15 @@ class EntityCampaignsTableTime extends Component {
             {title || t('Campaigns')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-              <IconButton color="secondary"
-                aria-label="Update"
-                size="small"
-                classes={{ root: classes.updateButton }}
-                onClick={handleOpenConfig.bind(this, configuration)}>
-                <SettingsInputComponent fontSize="inherit" />
-              </IconButton>
+            <IconButton
+              color="secondary"
+              aria-label="Update"
+              size="small"
+              classes={{ root: classes.updateButton }}
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
+              <SettingsInputComponent fontSize="inherit" />
+            </IconButton>
           </Security>
           <div className="clearfix" />
           {this.renderContent()}
@@ -292,7 +294,7 @@ EntityCampaignsTableTime.propTypes = {
   yd: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(EntityCampaignsTableTime);

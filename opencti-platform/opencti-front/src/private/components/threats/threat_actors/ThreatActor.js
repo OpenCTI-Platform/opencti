@@ -11,12 +11,12 @@ import ThreatActorDetails from './ThreatActorDetails';
 import ThreatActorEdition from './ThreatActorEdition';
 import ThreatActorPopover from './ThreatActorPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityIncidentsChart from '../incidents/EntityIncidentsChart';
+import EntityXOpenCTIIncidentsChart from '../x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -32,8 +32,8 @@ class ThreatActorComponent extends Component {
     const { classes, threatActor } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={threatActor}
+        <StixDomainObjectHeader
+          stixDomainObject={threatActor}
           PopoverComponent={<ThreatActorPopover />}
         />
         <Grid
@@ -51,7 +51,7 @@ class ThreatActorComponent extends Component {
             <EntityLastReports entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={threatActor.id} />
+        <StixCoreObjectNotes entityId={threatActor.id} />
         <Grid
           container={true}
           spacing={3}
@@ -62,11 +62,14 @@ class ThreatActorComponent extends Component {
             <EntityCampaignsChart
               entityId={threatActor.id}
               inferred={true}
-              relationType="attributed-to"
+              relationshipType="attributed-to"
             />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={threatActor.id} inferred={true} />
+            <EntityXOpenCTIIncidentsChart
+              entityId={threatActor.id}
+              inferred={true}
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={threatActor.id} />
@@ -91,7 +94,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
     fragment ThreatActor_threatActor on ThreatActor {
       id
       name
-      alias
+      aliases
       ...ThreatActorOverview_threatActor
       ...ThreatActorDetails_threatActor
     }

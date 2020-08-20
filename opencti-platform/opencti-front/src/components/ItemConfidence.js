@@ -53,10 +53,10 @@ const inlineStyles = {
 class ItemConfidence extends Component {
   render() {
     const {
-      t, level, classes, variant,
+      t, confidence, classes, variant,
     } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    if (level === 1000) {
+    if (confidence === 1000) {
       return (
         <Chip
           classes={{ root: style }}
@@ -65,7 +65,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (level >= 85) {
+    if (confidence >= 80) {
       return (
         <Chip
           classes={{ root: style }}
@@ -74,7 +74,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (level >= 75) {
+    if (confidence >= 60) {
       return (
         <Chip
           classes={{ root: style }}
@@ -83,7 +83,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (level >= 50) {
+    if (confidence >= 40) {
       return (
         <Chip
           classes={{ root: style }}
@@ -92,7 +92,7 @@ class ItemConfidence extends Component {
         />
       );
     }
-    if (level >= 15) {
+    if (confidence >= 1) {
       return (
         <Chip
           classes={{ root: style }}
@@ -104,8 +104,8 @@ class ItemConfidence extends Component {
     return (
       <Chip
         classes={{ root: style }}
-        style={inlineStyles.blue}
-        label={t('Moderate')}
+        style={inlineStyles.blueGrey}
+        label={t('None')}
       />
     );
   }
@@ -114,7 +114,7 @@ class ItemConfidence extends Component {
 ItemConfidence.propTypes = {
   classes: PropTypes.object.isRequired,
   variant: PropTypes.string,
-  level: PropTypes.number,
+  confidence: PropTypes.number,
 };
 
 export default compose(inject18n, withStyles(styles))(ItemConfidence);

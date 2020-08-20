@@ -59,7 +59,10 @@ class TopMenuSector extends Component {
           <DomainOutlined className={classes.icon} fontSize="small" />
           {t('Sectors')}
         </Button>
-        <ArrowForwardIosOutlined color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/sectors/${sectorId}`}

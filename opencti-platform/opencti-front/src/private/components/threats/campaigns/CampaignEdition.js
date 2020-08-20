@@ -6,10 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  commitMutation,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import CampaignEditionContainer from './CampaignEditionContainer';
 import { campaignEditionOverviewFocus } from './CampaignEditionOverview';
@@ -88,8 +85,10 @@ class CampaignEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CampaignEditionContainer campaign={props.campaign}
-                    handleClose={this.handleClose.bind(this)}/>
+                  <CampaignEditionContainer
+                    campaign={props.campaign}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

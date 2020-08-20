@@ -98,7 +98,7 @@ class KillChainPhaseCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('phase_order', parseInt(values.phase_order, 10)),
+      assoc('x_opencti_order', parseInt(values.x_opencti_order, 10)),
     )(values);
     commitMutation({
       mutation: killChainPhaseMutation,
@@ -164,7 +164,7 @@ class KillChainPhaseCreation extends Component {
               initialValues={{
                 kill_chain_name: '',
                 phase_name: '',
-                phase_order: '',
+                x_opencti_order: '',
               }}
               validationSchema={killChainPhaseValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -187,7 +187,7 @@ class KillChainPhaseCreation extends Component {
                   />
                   <Field
                     component={TextField}
-                    name="phase_order"
+                    name="x_opencti_order"
                     label={t('Order')}
                     fullWidth={true}
                     type="number"

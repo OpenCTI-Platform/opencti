@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
-import EntityStixRelationsTable from '../common/stix_relations/EntityStixRelationsTable';
+import EntityStixCoreRelationshipsTable from '../common/stix_core_relationships/EntityStixCoreRelationshipsTable';
 
 const styles = () => ({
   container: {
@@ -23,14 +23,14 @@ class AttackPatternsDistribution extends Component {
     switch (configuration.graph_type) {
       case 'table':
         return (
-          <EntityStixRelationsTable
+          <EntityStixCoreRelationshipsTable
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType="Attack-Pattern"
-            relationType="uses"
+            relationshipType="uses"
             field="name"
             inferred={inferred}
             startDate={startDate}
@@ -39,14 +39,14 @@ class AttackPatternsDistribution extends Component {
         );
       default:
         return (
-          <EntityStixRelationsTable
+          <EntityStixCoreRelationshipsTable
             variant="explore"
             configuration={configuration}
             handleOpenConfig={handleOpenConfig.bind(this)}
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             entityType="Attack-Pattern"
-            relationType="uses"
+            relationshipType="uses"
             field="name"
             inferred={inferred}
             startDate={startDate}

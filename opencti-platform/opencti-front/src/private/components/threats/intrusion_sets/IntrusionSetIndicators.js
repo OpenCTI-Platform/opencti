@@ -7,9 +7,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import IntrusionSetPopover from './IntrusionSetPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -65,15 +65,15 @@ class IntrusionSetIndicatorsComponent extends Component {
     }
     return (
       <div className={className}>
-        <StixDomainEntityHeader
-          stixDomainEntity={intrusionSet}
+        <StixDomainObjectHeader
+          stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
         />
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation entityId={intrusionSet.id} {...routeProps} />
+            <StixCoreRelationship entityId={intrusionSet.id} {...routeProps} />
           )}
         />
         <Route
@@ -83,7 +83,7 @@ class IntrusionSetIndicatorsComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
                 entityId={intrusionSet.id}
-                relationType="indicates"
+                relationshipType="indicates"
                 entityLink={link}
                 onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
                 }
@@ -110,7 +110,7 @@ const IntrusionSetIndicators = createFragmentContainer(
       fragment IntrusionSetIndicators_intrusionSet on IntrusionSet {
         id
         name
-        alias
+        aliases
       }
     `,
   },

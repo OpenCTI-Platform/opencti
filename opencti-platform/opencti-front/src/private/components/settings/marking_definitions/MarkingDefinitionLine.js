@@ -51,7 +51,7 @@ class MarkingDefinitionLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon
-          style={{ color: node.color }}
+          style={{ color: node.x_opencti_color }}
           classes={{ root: classes.itemIcon }}
         >
           <CenterFocusStrong />
@@ -73,15 +73,15 @@ class MarkingDefinitionLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.color.width }}
+                style={{ width: dataColumns.x_opencti_color.width }}
               >
-                {node.color}
+                {node.x_opencti_color}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.level.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
-                {node.level}
+                {node.x_opencti_order}
               </div>
               <div
                 className={classes.bodyItem}
@@ -120,8 +120,8 @@ const MarkingDefinitionLineFragment = createFragmentContainer(
         id
         definition_type
         definition
-        level
-        color
+        x_opencti_order
+        x_opencti_color
         created
         modified
       }
@@ -159,13 +159,13 @@ class MarkingDefinitionLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.color.width }}
+                style={{ width: dataColumns.x_opencti_color.width }}
               >
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.level.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

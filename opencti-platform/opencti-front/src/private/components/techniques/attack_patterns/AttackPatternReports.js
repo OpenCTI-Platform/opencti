@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import AttackPatternPopover from './AttackPatternPopover';
 import Reports from '../../reports/Reports';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -49,8 +49,8 @@ class AttackPatternReportsComponent extends Component {
           withPadding ? classes.containerWithPadding : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={attackPattern}
+        <StixDomainObjectHeader
+          stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
         />
         <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -78,7 +78,7 @@ const AttackPatternReports = createFragmentContainer(
       fragment AttackPatternReports_attackPattern on AttackPattern {
         id
         name
-        alias
+        aliases
       }
     `,
   },

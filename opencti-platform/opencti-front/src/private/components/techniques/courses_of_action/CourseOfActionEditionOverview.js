@@ -19,8 +19,8 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -76,7 +76,7 @@ export const courseOfActionEditionOverviewFocus = graphql`
 const courseOfActionMutationRelationAdd = graphql`
   mutation CourseOfActionEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     courseOfActionEdit(id: $id) {
       relationAdd(input: $input) {
@@ -91,10 +91,11 @@ const courseOfActionMutationRelationAdd = graphql`
 const courseOfActionMutationRelationDelete = graphql`
   mutation CourseOfActionEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     courseOfActionEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CourseOfActionEditionOverview_courseOfAction
       }
     }
@@ -137,37 +138,30 @@ class CourseOfActionEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { courseOfAction } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], courseOfAction),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], courseOfAction),
-      relation: pathOr(
-        null,
-        ['createdByRef', 'relation', 'id'],
-        courseOfAction,
-      ),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], courseOfAction),
+      value: pathOr(null, ['createdBy', 'id'], courseOfAction),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: courseOfActionMutationRelationAdd,
         variables: {
           id: this.props.courseOfAction.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: courseOfActionMutationRelationDelete,
         variables: {
           id: this.props.courseOfAction.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -176,10 +170,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
           variables: {
             id: this.props.courseOfAction.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -187,14 +179,13 @@ class CourseOfActionEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { courseOfAction } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(courseOfAction);
 
@@ -207,10 +198,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
         variables: {
           id: this.props.courseOfAction.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -221,7 +210,8 @@ class CourseOfActionEditionOverviewComponent extends Component {
         mutation: courseOfActionMutationRelationDelete,
         variables: {
           id: this.props.courseOfAction.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -229,38 +219,28 @@ class CourseOfActionEditionOverviewComponent extends Component {
 
   render() {
     const { t, courseOfAction, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], courseOfAction) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], courseOfAction) === null
       ? ''
       : {
-        label: pathOr(
-          null,
-          ['createdByRef', 'node', 'name'],
-          courseOfAction,
-        ),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], courseOfAction),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          courseOfAction,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], courseOfAction),
+        value: pathOr(null, ['createdBy', 'id'], courseOfAction),
       };
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(courseOfAction);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('createdBy', createdBy),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(courseOfAction);
     return (
@@ -297,25 +277,25 @@ class CourseOfActionEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -340,25 +320,19 @@ const CourseOfActionEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

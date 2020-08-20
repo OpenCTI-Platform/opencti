@@ -23,10 +23,10 @@ const styles = () => ({
     float: 'right',
     overflowX: 'hidden',
   },
-  alias: {
+  aliases: {
     marginRight: 7,
   },
-  aliasInput: {
+  aliasesInput: {
     margin: '4px 0 0 10px',
     float: 'right',
   },
@@ -40,7 +40,8 @@ class ReportHeaderComponent extends Component {
         <Typography
           variant="h1"
           gutterBottom={true}
-          classes={{ root: classes.title }}>
+          classes={{ root: classes.title }}
+        >
           {truncate(report.name, 80)}
         </Typography>
         <div className={classes.popover}>
@@ -79,7 +80,7 @@ const ReportHeader = createFragmentContainer(ReportHeaderComponent, {
     fragment ReportHeader_report on Report {
       id
       name
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id
@@ -91,7 +92,4 @@ const ReportHeader = createFragmentContainer(ReportHeaderComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportHeader);
+export default compose(inject18n, withStyles(styles))(ReportHeader);

@@ -1,5 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
+import { elLoadByStixId } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query campaigns(
@@ -23,6 +24,7 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
+          standard_id
           name
           description
         }
@@ -39,7 +41,7 @@ const TIMESERIES_QUERY = gql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $relationType: String
+    $relationship_type: String
     $inferred: Boolean
   ) {
     campaignsTimeSeries(
@@ -49,7 +51,7 @@ const TIMESERIES_QUERY = gql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
-      relationType: $relationType
+      relationship_type: $relationship_type
       inferred: $inferred
     ) {
       date
@@ -62,6 +64,7 @@ const READ_QUERY = gql`
   query campaign($id: String!) {
     campaign(id: $id) {
       id
+      standard_id
       name
       description
       toStix
@@ -71,13 +74,13 @@ const READ_QUERY = gql`
 
 describe('Campaign resolver standard behavior', () => {
   let campaignInternalId;
-  let campaignMarkingDefinitionRelationId;
   const campaignStixId = 'campaign--76c42acb-c5d7-4f38-abf2-a8566ac89ac9';
   it('should campaign created', async () => {
     const CREATE_QUERY = gql`
       mutation CampaignAdd($input: CampaignAddInput) {
         campaignAdd(input: $input) {
           id
+          standard_id
           name
           description
         }
@@ -87,7 +90,7 @@ describe('Campaign resolver standard behavior', () => {
     const CAMPAIGN_TO_CREATE = {
       input: {
         name: 'Campaign',
-        stix_id_key: campaignStixId,
+        stix_id: campaignStixId,
         description: 'Campaign description',
         first_seen: '2020-03-24T10:51:20+00:00',
         last_seen: '2020-03-24T10:51:20+00:00',
@@ -134,16 +137,17 @@ describe('Campaign resolver standard behavior', () => {
     expect(queryResult.data.campaignsTimeSeries[2].value).toEqual(1);
   });
   it("should timeseries of an entity's campaigns", async () => {
+    const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        objectId: '82316ffd-a0ec-4519-a454-6566f8f5676c',
+        objectId: intrusionSet.internal_id,
         field: 'first_seen',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
         endDate: '2021-01-01T00:00:00+00:00',
         interval: 'month',
-        relationType: 'attributed-to',
+        relationship_type: 'attributed-to',
       },
     });
     expect(queryResult.data.campaignsTimeSeries.length).toEqual(13);
@@ -200,18 +204,15 @@ describe('Campaign resolver standard behavior', () => {
   });
   it('should add relation in campaign', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $input: RelationAddInput!) {
+      mutation CampaignEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         campaignEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on Campaign {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
-                      id
-                    }
-                    relation {
                       id
                     }
                   }
@@ -227,24 +228,20 @@ describe('Campaign resolver standard behavior', () => {
       variables: {
         id: campaignInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.campaignEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    campaignMarkingDefinitionRelationId =
-      queryResult.data.campaignEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.campaignEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in campaign', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $relationId: ID!) {
+      mutation CampaignEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         campaignEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
@@ -259,10 +256,11 @@ describe('Campaign resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: campaignInternalId,
-        relationId: campaignMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.campaignEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.campaignEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should campaign deleted', async () => {
     const DELETE_QUERY = gql`

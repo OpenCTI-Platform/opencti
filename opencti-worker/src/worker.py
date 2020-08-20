@@ -16,6 +16,7 @@ from requests.exceptions import RequestException
 from itertools import groupby
 from elasticsearch import Elasticsearch
 from pycti import OpenCTIApiClient
+from utils.constants import UnsupportedCreation
 
 
 class Consumer(threading.Thread):
@@ -46,6 +47,20 @@ class Consumer(threading.Thread):
         if res > 1:
             ctypes.pythonapi.PyThreadState_SetAsyncExc(thread_id, 0)
             logging.info("Unable to kill the thread")
+
+    def nack_message(self, channel, delivery_tag):
+        if channel.is_open:
+            logging.info(
+                "Message (delivery_tag=" + str(delivery_tag) + ") rejected"
+            )
+            channel.basic_nack(delivery_tag)
+        else:
+            logging.info(
+                "Message (delivery_tag="
+                + str(delivery_tag)
+                + ") NOT rejected (channel closed)"
+            )
+            pass
 
     def ack_message(self, channel, delivery_tag):
         if channel.is_open:
@@ -91,7 +106,7 @@ class Consumer(threading.Thread):
             token = data["token"]
         try:
             content = base64.b64decode(data["content"]).decode("utf-8")
-            types = data["entities_types"] if "entities_types" in data else []
+            types = data["entities_types"] if "entities_types" in data and len(data["entity_types"]) > 0 else None
             update = data["update"] if "update" in data else False
             if token:
                 self.api.set_token(token)
@@ -116,12 +131,22 @@ class Consumer(threading.Thread):
             cb = functools.partial(self.stop_consume, channel)
             connection.add_callback_threadsafe(cb)
             return False
-        except Exception as e:
-            logging.error("An unexpected error occurred: { " + str(e) + " }")
+        except UnsupportedCreation as ue:
+            logging.info(str(ue))
+            # If creation is not supported just acknowledge the content
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
-            if job_id is not None:
-                self.api.job.update_job(job_id, "error", [str(e)])
+            return True
+        except Exception as e:
+            logging.error(str(e))
+            # errorType = e.args[0]
+            # Wait 5 sec before putting back in the queue
+            time.sleep(5)
+            # Nack the message
+            cb = functools.partial(self.nack_message, channel, delivery_tag)
+            connection.add_callback_threadsafe(cb)
+            # if job_id is not None:
+            #     self.api.job.update_job(job_id, "error", [str(e)])
             return False
 
     def run(self):
@@ -209,7 +234,7 @@ class Worker:
         self.opencti_token = os.getenv("OPENCTI_TOKEN") or config["opencti"]["token"]
 
         # Check if openCTI is available
-        self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token)
+        self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token, self.log_level)
 
         # Configure logger
         numeric_level = getattr(logging, self.log_level.upper(), None)

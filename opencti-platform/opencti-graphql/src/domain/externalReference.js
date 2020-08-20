@@ -1,66 +1,98 @@
-import { pipe, assoc } from 'ramda';
+import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
   deleteEntityById,
-  deleteRelationById,
+  deleteRelationsByFromAndTo,
   executeWrite,
+  internalLoadEntityById,
   listEntities,
   loadEntityById,
-  TYPE_STIX_DOMAIN,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
+import {
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  isStixMetaRelationship,
+} from '../utils/idGenerator';
+import { ForbiddenAccess, FunctionalError } from '../config/errors';
 
 export const findById = (externalReferenceId) => {
-  return loadEntityById(externalReferenceId, 'External-Reference');
+  return loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
+
 export const findAll = (args) => {
-  return listEntities(['External-Reference'], ['source_name', 'description'], args);
+  return listEntities([ENTITY_TYPE_EXTERNAL_REFERENCE], ['source_name', 'description'], args);
 };
 
 export const addExternalReference = async (user, externalReference) => {
-  const created = await createEntity(user, externalReference, 'External-Reference', {
-    modelType: TYPE_STIX_DOMAIN,
+  const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE, {
     noLog: true,
   });
-  return notify(BUS_TOPICS.ExternalReference.ADDED_TOPIC, created, user);
+  return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);
 };
 
 export const externalReferenceDelete = async (user, externalReferenceId) => {
-  return deleteEntityById(user, externalReferenceId, 'External-Reference', { noLog: true });
+  return deleteEntityById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, { noLog: true });
 };
-export const externalReferenceAddRelation = (user, externalReferenceId, input) => {
-  const finalInput = pipe(assoc('through', 'external_references'), assoc('toType', 'External-Reference'))(input);
-  return createRelation(user, externalReferenceId, finalInput).then((relationData) => {
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, relationData, user);
+
+export const externalReferenceAddRelation = async (user, externalReferenceId, input) => {
+  const data = await internalLoadEntityById(externalReferenceId);
+  if (!data) {
+    throw FunctionalError('Cannot add the relation, External Reference cannot be found.');
+  }
+  if (data.entity_type !== ENTITY_TYPE_EXTERNAL_REFERENCE) {
+    throw ForbiddenAccess();
+  }
+  if (!isStixMetaRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
+  }
+  const finalInput = assoc('toId', externalReferenceId, input);
+  return createRelation(user, finalInput).then((relationData) => {
+    notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, relationData, user);
     return relationData;
   });
 };
-export const externalReferenceDeleteRelation = async (user, externalReferenceId, relationId) => {
-  await deleteRelationById(user, relationId, 'stix_relation_embedded');
-  const data = await loadEntityById(externalReferenceId, 'External-Reference');
-  return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, data, user);
+
+export const externalReferenceDeleteRelation = async (user, externalReferenceId, fromId, relationshipType) => {
+  const externalReference = await loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  if (!externalReference) {
+    throw FunctionalError('Cannot delete the relation, External-Reference cannot be found.');
+  }
+  if (!isStixMetaRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
+  }
+  await deleteRelationsByFromAndTo(
+    user,
+    fromId,
+    externalReferenceId,
+    relationshipType,
+    ABSTRACT_STIX_META_RELATIONSHIP
+  );
+  return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };
+
 export const externalReferenceEditField = (user, externalReferenceId, input) => {
   return executeWrite((wTx) => {
-    return updateAttribute(user, externalReferenceId, 'External-Reference', input, wTx, { noLog: true });
+    return updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, wTx, { noLog: true });
   }).then(async () => {
-    const externalReference = await loadEntityById(externalReferenceId, 'External-Reference');
-    return notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user);
+    const externalReference = await loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+    return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
   });
 };
 
-export const externalReferenceCleanContext = (user, externalReferenceId) => {
-  delEditContext(user, externalReferenceId);
-  return loadEntityById(externalReferenceId, 'External-Reference').then((externalReference) =>
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
+export const externalReferenceCleanContext = async (user, externalReferenceId) => {
+  await delEditContext(user, externalReferenceId);
+  return loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
   );
 };
-export const externalReferenceEditContext = (user, externalReferenceId, input) => {
-  setEditContext(user, externalReferenceId, input);
-  return loadEntityById(externalReferenceId, 'External-Reference').then((externalReference) =>
-    notify(BUS_TOPICS.ExternalReference.EDIT_TOPIC, externalReference, user)
+
+export const externalReferenceEditContext = async (user, externalReferenceId, input) => {
+  await setEditContext(user, externalReferenceId, input);
+  return loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE).then((externalReference) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user)
   );
 };

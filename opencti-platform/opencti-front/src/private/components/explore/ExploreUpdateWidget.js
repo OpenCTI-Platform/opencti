@@ -15,7 +15,7 @@ import * as Yup from 'yup';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import { stixDomainEntitiesLinesSearchQuery } from '../common/stix_domain_entities/StixDomainEntitiesLines';
+import { stixDomainObjectsLinesSearchQuery } from '../common/stix_domain_objects/StixDomainObjectsLines';
 import { fetchQuery } from '../../../relay/environment';
 import AutocompleteField from '../../../components/AutocompleteField';
 import ItemIcon from '../../../components/ItemIcon';
@@ -87,12 +87,12 @@ class ExploreUpdateWidget extends Component {
   }
 
   searchEntities(event) {
-    fetchQuery(stixDomainEntitiesLinesSearchQuery, {
+    fetchQuery(stixDomainObjectsLinesSearchQuery, {
       search: event && event.target.value !== 0 ? event.target.value : '',
       count: 10,
     }).then((data) => {
       const entities = pipe(
-        pathOr([], ['stixDomainEntities', 'edges']),
+        pathOr([], ['stixDomainObjects', 'edges']),
         map((n) => ({
           label: n.node.name,
           value: n.node.id,
@@ -201,8 +201,8 @@ class ExploreUpdateWidget extends Component {
                   <MenuItem value="CampaignsTimeseries">
                     {t('[Campaigns] Timeseries')}
                   </MenuItem>
-                  <MenuItem value="IncidentsTimeseries">
-                    {t('[Incidents] Timeseries')}
+                  <MenuItem value="XOpenCTIIncidentsTimeseries">
+                    {t('[XOpenCTIIncidents] Timeseries')}
                   </MenuItem>
                   <MenuItem value="AttackPatternsDistribution">
                     {t('[TTPs] Distribution')}

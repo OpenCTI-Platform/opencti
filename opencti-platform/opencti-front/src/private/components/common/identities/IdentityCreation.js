@@ -185,7 +185,7 @@ class IdentityCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['Organization', 'User']}
+                    detectDuplicate={['Organization', 'Individual']}
                   />
                   <Field
                     component={TextField}
@@ -214,7 +214,7 @@ class IdentityCreation extends Component {
                     <MenuItem value="Region">{t('Region')}</MenuItem>
                     <MenuItem value="Country">{t('Country')}</MenuItem>
                     <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
+                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
                   </Field>
                   <div className={classes.buttons}>
                     <Button
@@ -275,7 +275,7 @@ class IdentityCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['Organization', 'User']}
+                    detectDuplicate={['Organization', 'Individual']}
                   />
                   <Field
                     component={TextField}
@@ -316,7 +316,7 @@ class IdentityCreation extends Component {
                     ) : (
                       ''
                     )}
-                    <MenuItem value="User">{t('Person')}</MenuItem>
+                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
                   </Field>
                 </DialogContent>
                 <DialogActions>

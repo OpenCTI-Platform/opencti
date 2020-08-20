@@ -19,10 +19,10 @@ import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
-import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
+import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
-import StixObservablesExports from '../../private/components/common/stix_observables/StixObservablesExports';
+import StixObservablesExports from '../../private/components/common/stix_cyber_observables/StixCyberObservablesExports';
 
 const styles = (theme) => ({
   container: {
@@ -189,7 +189,7 @@ class ListLines extends Component {
                       key={filter[0]}
                       classes={{ root: classes.filter }}
                       label={`${t(`filter_${filter[0]}`)}: ${
-                        f.value === null ? t('No tag') : f.value
+                        f.value === null ? t('No label') : f.value
                       }`}
                       onDelete={handleRemoveFilter.bind(this, filter[0])}
                     />
@@ -307,9 +307,9 @@ class ListLines extends Component {
           {children}
         </List>
         {typeof handleToggleExports === 'function'
-        && exportEntityType !== 'Stix-Observable' ? (
+        && exportEntityType !== 'Stix-Cyber-Observable' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixDomainEntitiesExports
+            <StixDomainObjectsExports
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
@@ -321,7 +321,7 @@ class ListLines extends Component {
             ''
           )}
         {typeof handleToggleExports === 'function'
-        && exportEntityType === 'Stix-Observable' ? (
+        && exportEntityType === 'Stix-Cyber-Observable' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
             <StixObservablesExports
               open={openExports}

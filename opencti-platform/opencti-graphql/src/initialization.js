@@ -1,6 +1,6 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCreateIndexes, elIsAlive } from './database/elasticSearch';
+import { elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
 import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
@@ -20,61 +20,61 @@ const fs = require('fs');
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
 export const CAPABILITIES = [
-  { name: BYPASS, description: 'Bypass all capabilities', ordering: 1 },
+  { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 },
   {
     name: KNOWLEDGE_CAPABILITY,
     description: 'Access knowledge',
-    ordering: 100,
+    attribute_order: 100,
     dependencies: [
       {
         name: 'KNUPDATE',
         description: 'Create / Update knowledge',
-        ordering: 200,
-        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', ordering: 300 }],
+        attribute_order: 200,
+        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 }],
       },
-      { name: 'KNUPLOAD', description: 'Upload knowledge files', ordering: 400 },
-      { name: 'KNASKIMPORT', description: 'Import knowledge', ordering: 500 },
+      { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
+      { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
       {
         name: 'KNGETEXPORT',
         description: 'Download knowledge export',
-        ordering: 700,
-        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', ordering: 710 }],
+        attribute_order: 700,
+        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
       },
-      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', ordering: 800 },
+      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
     ],
   },
   {
     name: 'EXPLORE',
     description: 'Access exploration',
-    ordering: 1000,
+    attribute_order: 1000,
     dependencies: [
       {
         name: 'EXUPDATE',
         description: 'Create  / Update exploration',
-        ordering: 1100,
-        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', ordering: 1200 }],
+        attribute_order: 1100,
+        dependencies: [{ name: 'EXDELETE', description: 'Delete exploration', attribute_order: 1200 }],
       },
     ],
   },
   {
     name: 'MODULES',
     description: 'Access connectors',
-    ordering: 2000,
-    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', ordering: 2100 }],
+    attribute_order: 2000,
+    dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
   },
   {
     name: 'SETTINGS',
     description: 'Access administration',
-    ordering: 3000,
+    attribute_order: 3000,
     dependencies: [
-      { name: 'SETINFERENCES', description: 'Manage inference rules', ordering: 3100 },
-      { name: 'SETACCESSES', description: 'Manage credentials', ordering: 3200 },
-      { name: 'SETMARKINGS', description: 'Manage marking definitions', ordering: 3300 },
+      { name: 'SETINFERENCES', description: 'Manage inference rules', attribute_order: 3100 },
+      { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
+      { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     ],
   },
   {
     name: 'CONNECTORAPI',
-    ordering: 4000,
+    attribute_order: 4000,
     description: 'Connectors API usage: register, ping, export push ...',
   },
 ];
@@ -103,65 +103,87 @@ const checkSystemDependencies = async () => {
 };
 
 // Initialize
-const initializeSchema = async () => {
+const initializeSchema = async (purgeIndex = false) => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
   await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
   // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
-  // await elDeleteIndexes();
+  if (purgeIndex) {
+    await elDeleteIndexes();
+  }
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
   return true;
 };
 
 const createAttributesTypes = async () => {
-  await addAttribute({ type: 'report_class', value: 'Threat Report' });
-  await addAttribute({ type: 'report_class', value: 'Internal Report' });
-  await addAttribute({ type: 'role_played', value: 'C2 server' });
-  await addAttribute({ type: 'role_played', value: 'Relay node' });
+  await addAttribute({ type: 'report_types', value: 'threat-report' });
+  await addAttribute({ type: 'report_types', value: 'internal-report' });
+  await addAttribute({ type: 'malware_types', value: 'adware' });
+  await addAttribute({ type: 'malware_types', value: 'backdoor' });
+  await addAttribute({ type: 'malware_types', value: 'bot' });
+  await addAttribute({ type: 'malware_types', value: 'bootkit' });
+  await addAttribute({ type: 'malware_types', value: 'ddos' });
+  await addAttribute({ type: 'malware_types', value: 'downloader' });
+  await addAttribute({ type: 'malware_types', value: 'dropper' });
+  await addAttribute({ type: 'malware_types', value: 'exploit-kit' });
+  await addAttribute({ type: 'malware_types', value: 'keylogger' });
+  await addAttribute({ type: 'malware_types', value: 'ransomware' });
+  await addAttribute({ type: 'malware_types', value: 'remote-access-trojan' });
+  await addAttribute({ type: 'malware_types', value: 'resource-exploitation' });
+  await addAttribute({ type: 'malware_types', value: 'rogue-security-software' });
+  await addAttribute({ type: 'malware_types', value: 'rootkit' });
+  await addAttribute({ type: 'malware_types', value: 'screen-capture' });
+  await addAttribute({ type: 'malware_types', value: 'spyware' });
+  await addAttribute({ type: 'malware_types', value: 'trojan' });
+  await addAttribute({ type: 'malware_types', value: 'unknown' });
+  await addAttribute({ type: 'malware_types', value: 'virus' });
+  await addAttribute({ type: 'malware_types', value: 'webshell' });
+  await addAttribute({ type: 'malware_types', value: 'wiper' });
+  await addAttribute({ type: 'malware_types', value: 'worm' });
 };
 
 const createMarkingDefinitions = async () => {
   // Create marking defs
   await addMarkingDefinition(SYSTEM_USER, {
-    stix_id_key: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
+    stix_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
     definition_type: 'TLP',
     definition: 'TLP:WHITE',
-    color: '#ffffff',
-    level: 1,
+    x_opencti_color: '#ffffff',
+    x_opencti_order: 1,
   });
   await addMarkingDefinition(SYSTEM_USER, {
-    stix_id_key: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
+    stix_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
-    color: '#2e7d32',
-    level: 2,
+    x_opencti_color: '#2e7d32',
+    x_opencti_order: 2,
   });
   await addMarkingDefinition(SYSTEM_USER, {
-    stix_id_key: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
+    stix_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
-    color: '#d84315',
-    level: 3,
+    x_opencti_color: '#d84315',
+    x_opencti_order: 3,
   });
   await addMarkingDefinition(SYSTEM_USER, {
-    stix_id_key: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
+    stix_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     definition_type: 'TLP',
     definition: 'TLP:RED',
-    color: '#c62828',
-    level: 4,
+    x_opencti_color: '#c62828',
+    x_opencti_order: 4,
   });
 };
 
 export const createCapabilities = async (capabilities, parentName = '') => {
   for (let i = 0; i < capabilities.length; i += 1) {
     const capability = capabilities[i];
-    const { name, description, ordering } = capability;
+    const { name, description, attribute_order: AttributeOrder } = capability;
     const capabilityName = `${parentName}${name}`;
     // eslint-disable-next-line no-await-in-loop
-    await addCapability(SYSTEM_USER, { name: capabilityName, description, ordering });
+    await addCapability(SYSTEM_USER, { name: capabilityName, description, attribute_order: AttributeOrder });
     if (capability.dependencies && capability.dependencies.length > 0) {
       // eslint-disable-next-line no-await-in-loop
       await createCapabilities(capability.dependencies, `${capabilityName}_`);
@@ -220,13 +242,13 @@ const platformInit = async (noMigration = false) => {
   const needToBeInitialized = await isEmptyPlatform();
   if (needToBeInitialized) {
     logger.info(`[INIT] > New platform detected, initialization...`);
-    await initializeSchema();
+    await initializeSchema(true);
     await initializeData();
     await initializeAdminUser();
   } else {
     logger.info('[INIT] > Existing platform detected, migration...');
     // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
-    await initializeSchema();
+    await initializeSchema(false);
     // Always reset the admin user
     await initializeAdminUser();
     if (!noMigration) {

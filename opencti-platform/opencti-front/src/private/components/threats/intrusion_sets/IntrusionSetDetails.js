@@ -1,13 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, join, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Markdown from 'react-markdown';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -25,13 +26,22 @@ class IntrusionSetDetailsComponent extends Component {
     const {
       t, fld, classes, intrusionSet,
     } = this.props;
+    const secondaryMotivations = intrusionSet.secondary_motivations
+      ? map(
+        (secondaryMotivation) => t(`motivation_${secondaryMotivation}`),
+        intrusionSet.secondary_motivations,
+      )
+      : [];
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainEntityTags tags={intrusionSet.tags} id={intrusionSet.id} />
+          <StixDomainObjectLabels
+            labels={intrusionSet.objectLabel}
+            id={intrusionSet.id}
+          />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -56,20 +66,6 @@ class IntrusionSetDetailsComponent extends Component {
             {t('Last seen')}
           </Typography>
           {fld(intrusionSet.last_seen)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Sophistication')}
-          </Typography>
-          {t(
-            `${
-              intrusionSet.sophistication
-                ? `sophistication_${intrusionSet.sophistication}`
-                : 'sophistication_unkown'
-            }`,
-          )}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -103,15 +99,12 @@ class IntrusionSetDetailsComponent extends Component {
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Secondary motivation')}
+            {t('Secondary motivations')}
           </Typography>
-          {t(
-            `${
-              intrusionSet.secondary_motivation
-                ? `motivation_${intrusionSet.secondary_motivation}`
-                : 'motivation_unknown'
-            }`,
-          )}
+          <Markdown
+            className="markdown"
+            source={`+ ${join('\n\n+ ', secondaryMotivations)}`}
+          />
         </Paper>
       </div>
     );
@@ -133,24 +126,19 @@ const IntrusionSetDetails = createFragmentContainer(
         id
         first_seen
         last_seen
-        sophistication
         resource_level
         primary_motivation
-        secondary_motivation
+        secondary_motivations
         creator {
           id
           name
         }
-        tags {
+        objectLabel {
           edges {
             node {
               id
-              tag_type
               value
               color
-            }
-            relation {
-              id
             }
           }
         }

@@ -56,6 +56,21 @@ export const FunctionalError = (reason, data) =>
     ...data,
   });
 
+export const TYPE_DUPLICATE_ENTRY = 'DuplicateEntryError';
+export const DuplicateEntryError = (reason, data) =>
+  error(TYPE_DUPLICATE_ENTRY, 'Existing element (Grakn)', {
+    reason: reason || 'No reason specify',
+    category: CATEGORY_BUSINESS,
+    ...data,
+  });
+
+export const MissingReferenceError = (data) =>
+  error('MissingReferenceError', 'Element not found', {
+    reason: 'Missing reference to handle creation',
+    category: CATEGORY_BUSINESS,
+    ...data,
+  });
+
 export const ValidationError = (field, data) =>
   error('ValidationError', 'Validation error', {
     reason: `Invalid field ${field}`,

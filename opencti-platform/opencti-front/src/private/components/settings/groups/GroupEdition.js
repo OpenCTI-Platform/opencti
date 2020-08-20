@@ -51,36 +51,34 @@ const GroupEdition = ({
   const [currentTab, setTab] = useState(0);
   const { editContext } = group;
   return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}>
-            <Close fontSize="small" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a group')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <AppBar position="static" elevation={0} className={classes.appBar}>
-            <Tabs value={currentTab}
-              onChange={(event, value) => setTab(value)}>
-              <Tab label={t('Overview')} />
-              <Tab label={t('Permissions')} />
-            </Tabs>
-          </AppBar>
-          {currentTab === 0 && (
-            <GroupEditionOverview group={group} context={editContext} />
-          )}
-          {currentTab === 1 && (
-            <GroupEditionPermissions group={group} />
-          )}
-        </div>
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+        >
+          <Close fontSize="small" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update a group')}
+        </Typography>
+        <SubscriptionAvatars context={editContext} />
+        <div className="clearfix" />
       </div>
+      <div className={classes.container}>
+        <AppBar position="static" elevation={0} className={classes.appBar}>
+          <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
+            <Tab label={t('Overview')} />
+            <Tab label={t('Permissions')} />
+          </Tabs>
+        </AppBar>
+        {currentTab === 0 && (
+          <GroupEditionOverview group={group} context={editContext} />
+        )}
+        {currentTab === 1 && <GroupEditionPermissions group={group} />}
+      </div>
+    </div>
   );
 };
 

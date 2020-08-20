@@ -2,28 +2,30 @@ import {
   addReport,
   findAll,
   findById,
-  objectRefs,
-  observableRefs,
-  relationRefs,
+  objects,
   reportsDistributionByEntity,
   reportsNumber,
   reportsNumberByEntity,
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
   reportsTimeSeriesByEntity,
-  reportContainsStixDomainEntity,
-  reportContainsStixRelation,
-  reportContainsStixObservable,
+  reportContainsStixObjectOrStixRelationship,
 } from '../domain/report';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext,
-  stixDomainEntityEditField,
-} from '../domain/stixDomainEntity';
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
+} from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT,
+  RELATION_OBJECT_MARKING,
+} from '../utils/idGenerator';
 
 const reportResolvers = {
   Query: {
@@ -50,42 +52,33 @@ const reportResolvers = {
       }
       return [];
     },
-    reportContainsStixDomainEntity: (_, args) => {
-      return reportContainsStixDomainEntity(args.id, args.objectId);
-    },
-    reportContainsStixRelation: (_, args) => {
-      return reportContainsStixRelation(args.id, args.objectId);
-    },
-    reportContainsStixObservable: (_, args) => {
-      return reportContainsStixObservable(args.id, args.objectId);
+    reportContainsStixObjectOrStixRelationship: (_, args) => {
+      return reportContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   ReportsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.name`,
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.name`,
   },
   ReportsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
-    knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
   Report: {
-    objectRefs: (report, args) => objectRefs(report.id, args),
-    observableRefs: (report, args) => observableRefs(report.id, args),
-    relationRefs: (report, args) => relationRefs(report.id, args),
+    objects: (report, args) => objects(report.id, args),
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(user, id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId, toId, relationType }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType),
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
     reportAdd: (_, { input }, { user }) => addReport(user, input),
   },

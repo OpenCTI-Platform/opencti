@@ -12,10 +12,10 @@ import RegionPopover from './RegionPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 import RegionParentRegions from './RegionParentRegions';
 import RegionSubRegions from './RegionSubRegions';
 
@@ -33,8 +33,8 @@ class RegionComponent extends Component {
     const { classes, region } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={region}
+        <StixDomainObjectHeader
+          stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
         />
         <Grid
@@ -56,7 +56,7 @@ class RegionComponent extends Component {
             <EntityLastReports entityId={region.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={region.id} />
+        <StixCoreObjectNotes entityId={region.id} />
         <Grid
           container={true}
           spacing={3}
@@ -67,7 +67,10 @@ class RegionComponent extends Component {
             <EntityCampaignsChart entityId={region.id} inferred={true} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={region.id} inferred={true} />
+            <EntityXOpenCTIIncidentsChart
+              entityId={region.id}
+              inferred={true}
+            />
           </Grid>
           <Grid item={true} xs={4}>
             <EntityReportsChart entityId={region.id} />
@@ -100,7 +103,7 @@ const Region = createFragmentContainer(RegionComponent, {
         }
       }
       name
-      alias
+      x_opencti_aliases
       ...RegionOverview_region
       ...RegionSubRegions_region
       ...RegionParentRegions_region

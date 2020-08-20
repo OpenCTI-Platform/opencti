@@ -23,6 +23,7 @@ const LIST_QUERY = gql`
       edges {
         node {
           id
+          standard_id
           name
           description
         }
@@ -35,12 +36,14 @@ const READ_QUERY = gql`
   query attackPattern($id: String!) {
     attackPattern(id: $id) {
       id
+      standard_id
       name
       description
       killChainPhases {
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -48,6 +51,7 @@ const READ_QUERY = gql`
         edges {
           node {
             id
+            standard_id
           }
         }
       }
@@ -58,13 +62,13 @@ const READ_QUERY = gql`
 
 describe('AttackPattern resolver standard behavior', () => {
   let attackPatternInternalId;
-  let attackPatternMarkingDefinitionRelationId;
   const attackPatternStixId = 'attack-pattern--7dd8142a-e21b-4a29-b241-e63dac6a23ea';
   it('should attackPattern created', async () => {
     const CREATE_QUERY = gql`
       mutation AttackPatternAdd($input: AttackPatternAddInput) {
         attackPatternAdd(input: $input) {
           id
+          standard_id
           name
           description
         }
@@ -74,9 +78,10 @@ describe('AttackPattern resolver standard behavior', () => {
     const ATTACK_PATTERN_TO_CREATE = {
       input: {
         name: 'AttackPattern',
-        stix_id_key: attackPatternStixId,
+        x_mitre_id: 'T001',
+        stix_id: attackPatternStixId,
         description: 'AttackPattern description',
-        killChainPhases: ['2a2202bd-1da6-4668-9fc5-ad1017e974bc'],
+        killChainPhases: ['kill-chain-phase--3e240480-5564-5b6e-93d0-e213611f9c3a'],
       },
     };
     const attackPattern = await queryAsAdmin({
@@ -95,8 +100,8 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPattern.id).toEqual(attackPatternInternalId);
     expect(queryResult.data.attackPattern.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.attackPattern.killChainPhases.edges.length).toEqual(1);
-    expect(queryResult.data.attackPattern.killChainPhases.edges[0].node.id).toEqual(
-      '2a2202bd-1da6-4668-9fc5-ad1017e974bc'
+    expect(queryResult.data.attackPattern.killChainPhases.edges[0].node.standard_id).toEqual(
+      'kill-chain-phase--5bdd6c3c-6a3f-5a82-9299-37ed052b770e'
     );
   });
   it('should attackPattern loaded by stix id', async () => {
@@ -108,14 +113,14 @@ describe('AttackPattern resolver standard behavior', () => {
   it('should attackPattern coursesOfAction be accurate', async () => {
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
-      variables: { id: 'dcbadcd2-9359-48ac-8b86-88e38a092a2b' },
+      variables: { id: 'attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17' },
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.attackPattern).not.toBeNull();
-    expect(queryResult.data.attackPattern.id).toEqual('dcbadcd2-9359-48ac-8b86-88e38a092a2b');
+    expect(queryResult.data.attackPattern.standard_id).toEqual('attack-pattern--036e48f5-ce45-5333-b695-00a9c8b9dd6b');
     expect(queryResult.data.attackPattern.coursesOfAction.edges.length).toEqual(1);
-    expect(queryResult.data.attackPattern.coursesOfAction.edges[0].node.id).toEqual(
-      '326b7708-d4cf-4020-8cd1-9726b99895db'
+    expect(queryResult.data.attackPattern.coursesOfAction.edges[0].node.standard_id).toEqual(
+      'course-of-action--18f5414b-fae9-5a76-a7e5-163298d36f64'
     );
   });
   it('should list attackPatterns', async () => {
@@ -173,19 +178,17 @@ describe('AttackPattern resolver standard behavior', () => {
   });
   it('should add relation in attackPattern', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation AttackPatternEdit($id: ID!, $input: RelationAddInput!) {
+      mutation AttackPatternEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
         attackPatternEdit(id: $id) {
           relationAdd(input: $input) {
             id
             from {
               ... on AttackPattern {
-                markingDefinitions {
+                objectMarking {
                   edges {
                     node {
                       id
-                    }
-                    relation {
-                      id
+                      standard_id
                     }
                   }
                 }
@@ -200,27 +203,24 @@ describe('AttackPattern resolver standard behavior', () => {
       variables: {
         id: attackPatternInternalId,
         input: {
-          fromRole: 'so',
-          toRole: 'marking',
-          toId: '43f586bc-bcbc-43d1-ab46-43e5ab1a2c46',
-          through: 'object_marking_refs',
+          toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+          relationship_type: 'object-marking',
         },
       },
     });
-    expect(queryResult.data.attackPatternEdit.relationAdd.from.markingDefinitions.edges.length).toEqual(1);
-    attackPatternMarkingDefinitionRelationId =
-      queryResult.data.attackPatternEdit.relationAdd.from.markingDefinitions.edges[0].relation.id;
+    expect(queryResult.data.attackPatternEdit.relationAdd.from.objectMarking.edges.length).toEqual(1);
   });
   it('should delete relation in attackPattern', async () => {
     const RELATION_DELETE_QUERY = gql`
-      mutation AttackPatternEdit($id: ID!, $relationId: ID!) {
+      mutation AttackPatternEdit($id: ID!, $toId: String!, $relationship_type: String!) {
         attackPatternEdit(id: $id) {
-          relationDelete(relationId: $relationId) {
+          relationDelete(toId: $toId, relationship_type: $relationship_type) {
             id
-            markingDefinitions {
+            objectMarking {
               edges {
                 node {
                   id
+                  standard_id
                 }
               }
             }
@@ -232,10 +232,11 @@ describe('AttackPattern resolver standard behavior', () => {
       query: RELATION_DELETE_QUERY,
       variables: {
         id: attackPatternInternalId,
-        relationId: attackPatternMarkingDefinitionRelationId,
+        toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
+        relationship_type: 'object-marking',
       },
     });
-    expect(queryResult.data.attackPatternEdit.relationDelete.markingDefinitions.edges.length).toEqual(0);
+    expect(queryResult.data.attackPatternEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
   it('should attackPattern deleted', async () => {
     const DELETE_QUERY = gql`

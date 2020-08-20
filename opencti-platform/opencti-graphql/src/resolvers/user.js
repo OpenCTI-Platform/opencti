@@ -1,6 +1,6 @@
 import { filter } from 'ramda';
+import { withFilter } from 'graphql-subscriptions';
 import {
-  addPerson,
   addUser,
   findAll,
   findById,
@@ -12,61 +12,46 @@ import {
   getRoles,
   logout,
   meEditField,
-  removeRole,
-  roleRemoveCapability,
   setAuthenticationCookie,
   token,
   roleEditField,
   roleDelete,
   userDelete,
-  personDelete,
   userEditField,
-  personEditField,
   roleAddRelation,
+  roleDeleteRelation,
   userAddRelation,
-  personAddRelation,
   userDeleteRelation,
-  personDeleteRelation,
   userRenewToken,
-  organizations,
   groups,
   roleEditContext,
   roleCleanContext,
+  userEditContext,
+  userCleanContext,
 } from '../domain/user';
-import { logger } from '../config/conf';
-import { stixDomainEntityCleanContext, stixDomainEntityEditContext } from '../domain/stixDomainEntity';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { BUS_TOPICS, logger } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
-import { fetchEditContext } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
+import withCancel from '../graphql/subscriptionWrapper';
+import { ENTITY_TYPE_USER } from '../utils/idGenerator';
 
 const userResolvers = {
   Query: {
-    user: (_, { id }) => findById(id, { isUser: true }),
-    users: (_, args) => findAll(args, true),
-    person: (_, { id }) => findById(id),
-    persons: (_, args) => findAll(args),
+    user: (_, { id }) => findById(id),
+    users: (_, args) => findAll(args),
     role: (_, { id }) => findRoleById(id),
     roles: (_, args) => findRoles(args),
     capabilities: (_, args) => findCapabilities(args),
-    me: (_, args, { user }) => findById(user.id, { isUser: true }),
-  },
-  UsersOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
-  },
-  UsersFilter: {
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
+    me: (_, args, { user }) => findById(user.id),
   },
   User: {
-    organizations: (user) => organizations(user.id),
     groups: (user) => groups(user.id),
     roles: (user) => getRoles(user.id),
     capabilities: (user) => getCapabilities(user.id),
     token: (user, args, context) => token(user.id, args, context),
+    editContext: (user) => fetchEditContext(user.id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
@@ -104,30 +89,40 @@ const userResolvers = {
       contextPatch: ({ input }) => roleEditContext(user, id, input),
       contextClean: () => roleCleanContext(user, id),
       relationAdd: ({ input }) => roleAddRelation(user, id, input),
-      removeCapability: ({ name }) => roleRemoveCapability(user, id, name),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        roleDeleteRelation(user, id, toId, relationshipType),
     }),
     roleAdd: (_, { input }, { user }) => addRole(user, input),
     userEdit: (_, { id }, { user }) => ({
       delete: () => userDelete(user, id),
       fieldPatch: ({ input }) => userEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
+      contextPatch: ({ input }) => userEditContext(user, id, input),
+      contextClean: () => userCleanContext(user, id),
       tokenRenew: () => userRenewToken(user, id),
-      removeRole: ({ name }) => removeRole(id, name),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => userDeleteRelation(user, id, relationId),
-    }),
-    personEdit: (_, { id }, { user }) => ({
-      delete: () => personDelete(user, id),
-      fieldPatch: ({ input }) => personEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => personAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => personDeleteRelation(user, id, relationId),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        userDeleteRelation(user, id, toId, relationshipType),
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
-    personAdd: (_, { input }, { user }) => addPerson(user, input),
     userAdd: (_, { input }, { user }) => addUser(user, input),
+  },
+  Subscription: {
+    user: {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
+        userEditContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC),
+          (payload) => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id && payload.instance.id === id;
+          }
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          userCleanContext(user, id);
+        });
+      },
+    },
   },
 };
 

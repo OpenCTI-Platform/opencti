@@ -13,7 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemPatternType from '../../../../components/ItemPatternType';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -48,7 +48,7 @@ const styles = (theme) => ({
 class IndicatorLineComponent extends Component {
   render() {
     const {
-      fd, nsdt, classes, dataColumns, node, onTagClick,
+      fd, nsdt, classes, dataColumns, node, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -78,12 +78,12 @@ class IndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags
+                <StixCoreObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -100,9 +100,9 @@ class IndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['markingDefinitions', 'edges'], node)).map(
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -129,7 +129,7 @@ IndicatorLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   nsdt: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
@@ -137,13 +137,13 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
     fragment IndicatorLine_node on Indicator {
       id
       name
-      main_observable_type
       pattern_type
       valid_from
       valid_until
-      score
+      x_opencti_score
+      x_opencti_main_observable_type
       created
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id
@@ -151,16 +151,12 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
           }
         }
       }
-      tags {
+      objectLabel {
         edges {
           node {
             id
-            tag_type
             value
             color
-          }
-          relation {
-            id
           }
         }
       }
@@ -198,7 +194,7 @@ class IndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>
@@ -216,7 +212,7 @@ class IndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.markingDefinitions.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

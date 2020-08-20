@@ -11,11 +11,11 @@ import ToolDetails from './ToolDetails';
 import ToolEdition from './ToolEdition';
 import ToolPopover from './ToolPopover';
 import EntityLastReports from '../../reports/EntityLastReports';
-import EntityStixRelationsChart from '../../common/stix_relations/EntityStixRelationsChart';
+import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import EntityReportsChart from '../../reports/EntityReportsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixObjectNotes from '../../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -31,8 +31,8 @@ class ToolComponent extends Component {
     const { classes, tool } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={tool}
+        <StixDomainObjectHeader
+          stixDomainObject={tool}
           PopoverComponent={<ToolPopover />}
         />
         <Grid
@@ -50,7 +50,7 @@ class ToolComponent extends Component {
             <EntityLastReports entityId={tool.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={tool.id} />
+        <StixCoreObjectNotes entityId={tool.id} />
         <Grid
           container={true}
           spacing={3}
@@ -58,7 +58,10 @@ class ToolComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixRelationsChart entityId={tool.id} relationType="uses" />
+            <EntityStixCoreRelationshipsChart
+              entityId={tool.id}
+              relationshipType="uses"
+            />
           </Grid>
           <Grid item={true} xs={6}>
             <EntityReportsChart entityId={tool.id} />
@@ -83,7 +86,7 @@ const Tool = createFragmentContainer(ToolComponent, {
     fragment Tool_tool on Tool {
       id
       name
-      alias
+      aliases
       ...ToolOverview_tool
       ...ToolDetails_tool
     }

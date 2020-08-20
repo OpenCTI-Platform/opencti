@@ -14,6 +14,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { RELATION_EXTERNAL_REFERENCE } from '../utils/idGenerator';
 
 const externalReferenceResolvers = {
   Query: {
@@ -21,7 +22,7 @@ const externalReferenceResolvers = {
     externalReferences: (_, args) => findAll(args),
   },
   ExternalReferencesFilter: {
-    usedBy: `${REL_INDEX_PREFIX}external_references.internal_id_key`,
+    usedBy: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
   },
   ExternalReference: {
     editContext: (externalReference) => fetchEditContext(externalReference.id),
@@ -33,7 +34,8 @@ const externalReferenceResolvers = {
       contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => externalReferenceDeleteRelation(user, id, relationId),
+      relationDelete: ({ fromId, relationship_type: relationshipType }) =>
+        externalReferenceDeleteRelation(user, id, fromId, relationshipType),
     }),
     externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),
   },

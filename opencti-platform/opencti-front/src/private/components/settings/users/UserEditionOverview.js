@@ -73,7 +73,7 @@ export const userEditionOverviewRolesSearchQuery = graphql`
 const userEditionOverviewAddRole = graphql`
   mutation UserEditionOverviewAddRoleMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: InternalRelationshipAddInput
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {
@@ -86,9 +86,13 @@ const userEditionOverviewAddRole = graphql`
 `;
 
 const userEditionOverviewDeleteRole = graphql`
-  mutation UserEditionOverviewDeleteRoleMutation($id: ID!, $name: String!) {
+  mutation UserEditionOverviewDeleteRoleMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
     userEdit(id: $id) {
-      removeRole(name: $name) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...UserEditionOverview_user
       }
     }
@@ -164,10 +168,8 @@ class UserEditionOverviewComponent extends Component {
         variables: {
           id: user.id,
           input: {
-            fromRole: 'client',
-            toRole: 'position',
             toId: head(added).id,
-            through: 'user_role',
+            relationship_type: 'has-role',
           },
         },
       });
@@ -177,7 +179,8 @@ class UserEditionOverviewComponent extends Component {
         mutation: userEditionOverviewDeleteRole,
         variables: {
           id: user.id,
-          name: head(removed).name,
+          toId: head(removed).id,
+          relationship_type: 'has-role',
         },
       });
     }
@@ -195,7 +198,6 @@ class UserEditionOverviewComponent extends Component {
       assoc('roles', userRoles),
       pick([
         'name',
-        'description',
         'user_email',
         'firstname',
         'lastname',

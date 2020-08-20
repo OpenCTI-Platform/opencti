@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import OrganizationPopover from './OrganizationPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import EntityStixCyberObservables from '../../signatures/stix_cyber_observables/EntityStixCyberObservables';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -44,18 +44,15 @@ class OrganizationObservablesComponent extends Component {
             : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={organization}
+        <StixDomainObjectHeader
+          stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
         />
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={organization.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={organization.id} {...routeProps} />
           )}
         />
         <Route
@@ -63,9 +60,9 @@ class OrganizationObservablesComponent extends Component {
           path="/dashboard/entities/organizations/:organizationId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
+              <EntityStixCyberObservables
                 entityId={organization.id}
-                relationType="gathering"
+                relationshipType="part-of"
                 entityLink={link}
                 {...routeProps}
               />
@@ -91,7 +88,7 @@ const OrganizationObservables = createFragmentContainer(
       fragment OrganizationObservables_organization on Organization {
         id
         name
-        alias
+        aliases
       }
     `,
   },

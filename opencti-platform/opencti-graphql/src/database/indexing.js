@@ -4,6 +4,20 @@ import moment from 'moment';
 import { find, getSingleValueNumber } from './grakn';
 import { elCreateIndexes, elDeleteIndexes, elIndexElements } from './elasticSearch';
 import { logger } from '../config/conf';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_OBJECT,
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_WORKSPACE,
+  RELATION_MEMBER_OF,
+  STIX_SIGHTING_RELATIONSHIP,
+} from '../utils/idGenerator';
 
 const GROUP_NUMBER = 200; // Pagination size for query
 const GROUP_CONCURRENCY = 10; // Number of query in //
@@ -78,28 +92,28 @@ const index = async () => {
   // MigrationsStatus  - Not needed, migration related.
   // MigrationReference  - Not needed, migration related.
   // Token - Not needed, authentication
-  await indexElement('Settings');
-  await indexElement('Role');
-  await indexElement('Capability');
-  await indexElement('Tag');
-  await indexElement('Connector');
-  await indexElement('Group');
-  await indexElement('Workspace');
-  await indexElement('Stix-Domain');
-  await indexElement('Stix-Observable');
+  await indexElement(ENTITY_TYPE_SETTINGS);
+  await indexElement(ENTITY_TYPE_ROLE);
+  await indexElement(ENTITY_TYPE_CAPABILITY);
+  await indexElement(ENTITY_TYPE_LABEL);
+  await indexElement(ENTITY_TYPE_CONNECTOR);
+  await indexElement(ENTITY_TYPE_GROUP);
+  await indexElement(ENTITY_TYPE_WORKSPACE);
+  await indexElement(ABSTRACT_STIX_DOMAIN_OBJECT);
+  await indexElement(ABSTRACT_STIX_META_OBJECT);
+  await indexElement(ABSTRACT_STIX_CYBER_OBSERVABLE);
 
   // 04. Handle every entity subbing relation
   // migrate - Not needed, migration related.
   // authorize - Not needed, authentication
-  await indexElement('membership', true);
-  await indexElement('permission', true);
+  await indexElement(RELATION_MEMBER_OF, true);
   await indexElement('stix_relation', true, 'entity', 'entity');
   await indexElement('stix_relation', true, 'entity', 'relation');
   await indexElement('stix_relation', true, 'relation', 'relation');
   await indexElement('stix_observable_relation', true);
   await indexElement('relation_embedded', true);
   await indexElement('stix_relation_embedded', true);
-  await indexElement('stix_sighting', true);
+  await indexElement(STIX_SIGHTING_RELATIONSHIP, true);
 };
 
 export default index;

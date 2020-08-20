@@ -7,7 +7,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Person, PermIdentity } from '@material-ui/icons';
+import {
+  MoreVertOutlined,
+  PersonOutlined,
+  PermIdentityOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import UserPopover from './UserPopover';
@@ -52,7 +56,7 @@ class UserLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {external ? <PermIdentity /> : <Person />}
+          {external ? <PermIdentityOutlined /> : <PersonOutlined />}
         </ListItemIcon>
         <ListItemText
           primary={
@@ -83,9 +87,9 @@ class UserLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created)}
+                {fd(node.created_at)}
               </div>
             </div>
           }
@@ -116,7 +120,7 @@ const UserLineFragment = createFragmentContainer(UserLineComponent, {
       firstname
       external
       lastname
-      created
+      created_at
     }
   `,
 });
@@ -132,7 +136,7 @@ class UserLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Person />
+          <PersonOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -163,7 +167,7 @@ class UserLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
@@ -171,7 +175,7 @@ class UserLineDummyComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
+          <MoreVertOutlined />
         </ListItemSecondaryAction>
       </ListItem>
     );

@@ -109,13 +109,19 @@ class WorkspacePopover extends Component {
     const { classes, t, workspaceId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
-        <Menu anchorEl={this.state.anchorEl}
+        <Menu
+          anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
+          style={{ marginTop: 50 }}
+        >
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -125,24 +131,30 @@ class WorkspacePopover extends Component {
             </MenuItem>
           </Security>
         </Menu>
-        <Dialog open={this.state.displayDelete}
+        <Dialog
+          open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}>
+          onClose={this.handleCloseDelete.bind(this)}
+        >
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this workspace?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)}
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)}
+            <Button
+              onClick={this.submitDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>
@@ -159,7 +171,8 @@ class WorkspacePopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <WorkspaceEditionContainer workspace={props.workspace}
+                  <WorkspaceEditionContainer
+                    workspace={props.workspace}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

@@ -105,8 +105,8 @@ class Reports extends Component {
         width: '15%',
         isSortable: false,
       },
-      tags: {
-        label: 'Tags',
+      objectLabel: {
+        label: 'Labels',
         width: '20%',
         isSortable: false,
       },
@@ -115,12 +115,12 @@ class Reports extends Component {
         width: '10%',
         isSortable: true,
       },
-      object_status: {
+      x_opencti_report_status: {
         label: 'Status',
         width: '10%',
         isSortable: true,
       },
-      marking: {
+      objectMarking: {
         label: 'Marking',
         width: '15%',
         isSortable: false,
@@ -145,10 +145,10 @@ class Reports extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'object_status',
-          'tags',
+          'x_opencti_report_status',
+          'labelledBy',
           'createdBy',
-          'markingDefinitions',
+          'markedBy',
           'published_start_date',
           'published_end_date',
         ]}
@@ -162,7 +162,7 @@ class Reports extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -175,7 +175,7 @@ class Reports extends Component {
     const {
       displayCreate,
       match: {
-        params: { reportClass },
+        params: { reportType },
       },
       objectId,
       authorId,
@@ -183,18 +183,18 @@ class Reports extends Component {
     const {
       view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
-    const reportFilterClass = reportClass !== 'all' && reportClass !== undefined
-      ? reportClass.replace(/_/g, ' ')
+    const reportFilterClass = reportType !== 'all' && reportType !== undefined
+      ? reportType.replace(/_/g, ' ')
       : '';
     const finalFilters = convertFilters(filters);
     if (reportFilterClass) {
       finalFilters.push({
-        key: 'report_class',
+        key: 'report_types',
         values: [reportFilterClass],
       });
     }
     if (authorId) finalFilters.push({ key: 'createdBy', values: [authorId] });
-    if (objectId) finalFilters.push({ key: 'knowledgeContains', values: [objectId] });
+    if (objectId) finalFilters.push({ key: 'objectContains', values: [objectId] });
     const paginationOptions = {
       filters: finalFilters,
       search: searchTerm,

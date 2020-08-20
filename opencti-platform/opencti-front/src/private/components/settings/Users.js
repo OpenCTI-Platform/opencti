@@ -77,7 +77,7 @@ class Users extends Component {
         width: '15%',
         isSortable: true,
       },
-      created: {
+      created_at: {
         label: 'Creation date',
         width: '15%',
         isSortable: true,

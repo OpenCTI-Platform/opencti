@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import AttackPatternPopover from './AttackPatternPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -66,15 +66,15 @@ class AttackPatternIndicatorsComponent extends Component {
     }
     return (
       <div className={className}>
-        <StixDomainEntityHeader
-          stixDomainEntity={attackPattern}
+        <StixDomainObjectHeader
+          stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
         />
         <Route
           exact
           path="/dashboard/techniques/attack_patterns/:attackPatternId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={attackPattern.id}
               paddingRight={false}
               {...routeProps}
@@ -88,7 +88,7 @@ class AttackPatternIndicatorsComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
                 entityId={attackPattern.id}
-                relationType="indicates"
+                relationshipType="indicates"
                 entityLink={link}
                 {...routeProps}
               />
@@ -114,7 +114,7 @@ const AttackPatternIndicators = createFragmentContainer(
       fragment AttackPatternIndicators_attackPattern on AttackPattern {
         id
         name
-        alias
+        aliases
       }
     `,
   },

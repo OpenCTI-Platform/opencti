@@ -20,8 +20,8 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -77,7 +77,7 @@ export const attackPatternEditionOverviewFocus = graphql`
 const attackPatternMutationRelationAdd = graphql`
   mutation AttackPatternEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     attackPatternEdit(id: $id) {
       relationAdd(input: $input) {
@@ -92,10 +92,11 @@ const attackPatternMutationRelationAdd = graphql`
 const attackPatternMutationRelationDelete = graphql`
   mutation AttackPatternEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     attackPatternEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...AttackPatternEditionOverview_attackPattern
       }
     }
@@ -138,33 +139,31 @@ class AttackPatternEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { attackPattern } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], attackPattern),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], attackPattern),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], attackPattern),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], attackPattern),
+      value: pathOr(null, ['createdBy', 'id'], attackPattern),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
           id: this.props.attackPattern.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: attackPatternMutationRelationDelete,
         variables: {
           id: this.props.attackPattern.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -173,10 +172,8 @@ class AttackPatternEditionOverviewComponent extends Component {
           variables: {
             id: this.props.attackPattern.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -191,7 +188,6 @@ class AttackPatternEditionOverviewComponent extends Component {
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
 
@@ -204,10 +200,8 @@ class AttackPatternEditionOverviewComponent extends Component {
         variables: {
           id: this.props.attackPattern.id,
           input: {
-            fromRole: 'phase_belonging',
             toId: head(added).value,
-            toRole: 'kill_chain_phase',
-            through: 'kill_chain_phases',
+            relationship_type: 'kill-chain-phase',
           },
         },
       });
@@ -218,20 +212,20 @@ class AttackPatternEditionOverviewComponent extends Component {
         mutation: attackPatternMutationRelationDelete,
         variables: {
           id: this.props.attackPattern.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'kill-chain-phase',
         },
       });
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { attackPattern } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
 
@@ -242,12 +236,10 @@ class AttackPatternEditionOverviewComponent extends Component {
       commitMutation({
         mutation: attackPatternMutationRelationAdd,
         variables: {
-          id: head(added).value,
+          id: this.props.attackPattern.id,
           input: {
-            fromRole: 'so',
-            toId: this.props.attackPattern.id,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            toId: head(added).value,
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -258,7 +250,8 @@ class AttackPatternEditionOverviewComponent extends Component {
         mutation: attackPatternMutationRelationDelete,
         variables: {
           id: this.props.attackPattern.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -266,47 +259,36 @@ class AttackPatternEditionOverviewComponent extends Component {
 
   render() {
     const { t, attackPattern, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], attackPattern) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], attackPattern) === null
       ? ''
       : {
-        label: pathOr(
-          null,
-          ['createdByRef', 'node', 'name'],
-          attackPattern,
-        ),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], attackPattern),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          attackPattern,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], attackPattern),
+        value: pathOr(null, ['createdBy', 'id'], attackPattern),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(attackPattern);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(attackPattern);
     return (
@@ -355,25 +337,25 @@ class AttackPatternEditionOverviewComponent extends Component {
               }
               onChange={this.handleChangeKillChainPhases.bind(this)}
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -398,14 +380,11 @@ const AttackPatternEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
-          }
-          relation {
-            id
           }
         }
         killChainPhases {
@@ -414,22 +393,16 @@ const AttackPatternEditionOverview = createFragmentContainer(
               id
               kill_chain_name
               phase_name
-              phase_order
-            }
-            relation {
-              id
+              x_opencti_order
             }
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

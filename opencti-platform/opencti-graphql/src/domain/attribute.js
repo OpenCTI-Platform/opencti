@@ -4,10 +4,15 @@ import {
   executeWrite,
   queryAttributeValueByGraknId,
   queryAttributeValues,
-  reindexEntityAttribute,
-  reindexRelationAttribute,
+  reindexAttributeValue,
 } from '../database/grakn';
 import { logger } from '../config/conf';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  STIX_SIGHTING_RELATIONSHIP,
+} from '../utils/idGenerator';
 
 export const findById = (attributeId) => queryAttributeValueByGraknId(attributeId);
 
@@ -57,8 +62,10 @@ export const attributeUpdate = async (id, input) => {
   // Delete old attribute
   await deleteAttributeById(id);
   // Reindex all entities using this attribute
-  await reindexEntityAttribute(input.type, input.newValue);
-  await reindexRelationAttribute(input.type, input.newValue);
+  await reindexAttributeValue(ABSTRACT_STIX_DOMAIN_OBJECT, input.type, input.newValue);
+  await reindexAttributeValue(ABSTRACT_STIX_CYBER_OBSERVABLE, input.type, input.newValue);
+  await reindexAttributeValue(ABSTRACT_STIX_CORE_RELATIONSHIP, input.type, input.newValue);
+  await reindexAttributeValue(STIX_SIGHTING_RELATIONSHIP, input.type, input.newValue);
   // Return the new attribute
   return newAttribute;
 };

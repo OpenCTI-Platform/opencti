@@ -122,7 +122,4 @@ ExternalReferences.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-)(ExternalReferences);
+export default compose(inject18n, withRouter)(ExternalReferences);

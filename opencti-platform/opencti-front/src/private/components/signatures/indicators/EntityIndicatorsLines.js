@@ -17,7 +17,7 @@ class EntityIndicatorsLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'stixRelations',
+      'stixCoreRelationships',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -36,10 +36,14 @@ class EntityIndicatorsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixRelations', 'edges'], this.props.data)}
+        dataList={pathOr(
+          [],
+          ['stixCoreRelationships', 'edges'],
+          this.props.data,
+        )}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixRelations', 'pageInfo', 'globalCount'],
+          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<EntityIndicatorLine />}
@@ -59,7 +63,7 @@ EntityIndicatorsLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  stixRelations: PropTypes.object,
+  stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
   setNumberOfElements: PropTypes.func,
@@ -71,17 +75,17 @@ export const entityIndicatorsLinesQuery = graphql`
     $inferred: Boolean
     $fromId: String
     $toTypes: [String]
-    $relationType: String
-    $firstSeenStart: DateTime
-    $firstSeenStop: DateTime
-    $lastSeenStart: DateTime
-    $lastSeenStop: DateTime
-    $weights: [Int]
+    $relationship_type: String
+    $startTimeStart: DateTime
+    $startTimeStop: DateTime
+    $stopTimeStart: DateTime
+    $stopTimeStop: DateTime
+    $confidences: [Int]
     $count: Int!
     $cursor: ID
-    $orderBy: StixRelationsOrdering
+    $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
-    $filters: [StixRelationsFiltering]
+    $filters: [StixCoreRelationshipsFiltering]
   ) {
     ...EntityIndicatorsLines_data
       @arguments(
@@ -89,12 +93,12 @@ export const entityIndicatorsLinesQuery = graphql`
         inferred: $inferred
         fromId: $fromId
         toTypes: $toTypes
-        relationType: $relationType
-        firstSeenStart: $firstSeenStart
-        firstSeenStop: $firstSeenStop
-        lastSeenStart: $lastSeenStart
-        lastSeenStop: $lastSeenStop
-        weights: $weights
+        relationship_type: $relationship_type
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
+        confidences: $confidences
         count: $count
         cursor: $cursor
         orderBy: $orderBy
@@ -114,35 +118,38 @@ export default createPaginationContainer(
           inferred: { type: "Boolean" }
           fromId: { type: "String" }
           toTypes: { type: "[String]" }
-          relationType: { type: "String" }
-          firstSeenStart: { type: "DateTime" }
-          firstSeenStop: { type: "DateTime" }
-          lastSeenStart: { type: "DateTime" }
-          lastSeenStop: { type: "DateTime" }
-          weights: { type: "[Int]" }
+          relationship_type: { type: "String" }
+          startTimeStart: { type: "DateTime" }
+          startTimeStop: { type: "DateTime" }
+          stopTimeStart: { type: "DateTime" }
+          stopTimeStop: { type: "DateTime" }
+          confidences: { type: "[Int]" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
-          orderBy: { type: "StixRelationsOrdering", defaultValue: "first_seen" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[StixRelationsFiltering]" }
+          orderBy: {
+            type: "StixCoreRelationshipsOrdering"
+            defaultValue: start_time
+          }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
+          filters: { type: "[StixCoreRelationshipsFiltering]" }
         ) {
-        stixRelations(
+        stixCoreRelationships(
           search: $search
           inferred: $inferred
           fromId: $fromId
           toTypes: $toTypes
-          relationType: $relationType
-          firstSeenStart: $firstSeenStart
-          firstSeenStop: $firstSeenStop
-          lastSeenStart: $lastSeenStart
-          lastSeenStop: $lastSeenStop
-          weights: $weights
+          relationship_type: $relationship_type
+          startTimeStart: $startTimeStart
+          startTimeStop: $startTimeStop
+          stopTimeStart: $stopTimeStart
+          stopTimeStop: $stopTimeStop
+          confidences: $confidences
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_stixRelations") {
+        ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
               ...EntityIndicatorLine_node
@@ -160,7 +167,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixRelations;
+      return props.data && props.data.stixCoreRelationships;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -174,12 +181,12 @@ export default createPaginationContainer(
         inferred: fragmentVariables.inferred,
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
-        relationType: fragmentVariables.relationType,
-        firstSeenStart: fragmentVariables.firstSeenStart,
-        firstSeenStop: fragmentVariables.firstSeenStop,
-        lastSeenStart: fragmentVariables.lastSeenStart,
-        lastSeenStop: fragmentVariables.lastSeenStop,
-        weights: fragmentVariables.weights,
+        relationship_type: fragmentVariables.relationship_type,
+        startTimeStart: fragmentVariables.startTimeStart,
+        startTimeStop: fragmentVariables.startTimeStop,
+        stopTimeStart: fragmentVariables.stopTimeStart,
+        stopTimeStop: fragmentVariables.stopTimeStop,
+        confidences: fragmentVariables.confidences,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

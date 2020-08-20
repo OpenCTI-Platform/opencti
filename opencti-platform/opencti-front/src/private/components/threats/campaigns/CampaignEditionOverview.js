@@ -19,8 +19,8 @@ import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -76,7 +76,7 @@ export const campaignEditionOverviewFocus = graphql`
 const campaignMutationRelationAdd = graphql`
   mutation CampaignEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput!
   ) {
     campaignEdit(id: $id) {
       relationAdd(input: $input) {
@@ -91,10 +91,11 @@ const campaignMutationRelationAdd = graphql`
 const campaignMutationRelationDelete = graphql`
   mutation CampaignEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     campaignEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...CampaignEditionOverview_campaign
       }
     }
@@ -137,33 +138,31 @@ class CampaignEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { campaign } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], campaign),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], campaign),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], campaign),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], campaign),
+      value: pathOr(null, ['createdBy', 'id'], campaign),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: campaignMutationRelationAdd,
         variables: {
           id: this.props.campaign.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: campaignMutationRelationDelete,
         variables: {
           id: this.props.campaign.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -172,10 +171,8 @@ class CampaignEditionOverviewComponent extends Component {
           variables: {
             id: this.props.campaign.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -183,14 +180,13 @@ class CampaignEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { campaign } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(campaign);
 
@@ -203,10 +199,8 @@ class CampaignEditionOverviewComponent extends Component {
         variables: {
           id: this.props.campaign.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -217,7 +211,8 @@ class CampaignEditionOverviewComponent extends Component {
         mutation: campaignMutationRelationDelete,
         variables: {
           id: this.props.campaign.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -225,44 +220,23 @@ class CampaignEditionOverviewComponent extends Component {
 
   render() {
     const { t, campaign, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], campaign) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], campaign) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], campaign),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], campaign),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          campaign,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], campaign),
+        value: pathOr(null, ['createdBy', 'id'], campaign),
       };
-    const killChainPhases = pipe(
-      pathOr([], ['killChainPhases', 'edges']),
-      map((n) => ({
-        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-        value: n.node.id,
-        relationId: n.relation.id,
-      })),
-    )(campaign);
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(campaign);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
-      assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
-      pick([
-        'name',
-        'description',
-        'createdByRef',
-        'killChainPhases',
-        'markingDefinitions',
-      ]),
+      assoc('createdBy', createdBy),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(campaign);
     return (
       <Formik
@@ -298,25 +272,25 @@ class CampaignEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -341,25 +315,19 @@ const CampaignEditionOverview = createFragmentContainer(
         id
         name
         description
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

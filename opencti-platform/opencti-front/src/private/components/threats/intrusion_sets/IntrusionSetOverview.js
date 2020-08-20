@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, pathOr } from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,7 +35,7 @@ class IntrusionSetOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {intrusionSet.markingDefinitions.edges.length > 0 ? (
+          {intrusionSet.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
@@ -43,7 +43,7 @@ class IntrusionSetOverviewComponent extends Component {
                   label={markingDefinition.node.definition}
                 />
               ),
-              intrusionSet.markingDefinitions.edges,
+              intrusionSet.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -71,9 +71,7 @@ class IntrusionSetOverviewComponent extends Component {
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdByRef={pathOr(null, ['createdByRef', 'node'], intrusionSet)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', intrusionSet)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -109,7 +107,7 @@ const IntrusionSetOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
@@ -117,8 +115,8 @@ const IntrusionSetOverview = createFragmentContainer(
             }
           }
         }
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
@@ -129,7 +127,4 @@ const IntrusionSetOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IntrusionSetOverview);
+export default compose(inject18n, withStyles(styles))(IntrusionSetOverview);

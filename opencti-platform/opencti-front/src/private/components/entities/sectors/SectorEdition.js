@@ -6,10 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  commitMutation,
-  QueryRenderer,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SectorEditionContainer from './SectorEditionContainer';
 import { sectorEditionOverviewFocus } from './SectorEditionOverview';
@@ -68,16 +65,20 @@ class SectorEdition extends Component {
     const { classes, sectorId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
+        <Fab
+          onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}>
+          className={classes.editButton}
+        >
           <Edit />
         </Fab>
-        <Drawer open={this.state.open}
+        <Drawer
+          open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={sectorEditionQuery}
             variables={{ id: sectorId }}
@@ -85,7 +86,8 @@ class SectorEdition extends Component {
               if (props) {
                 // Done
                 return (
-                  <SectorEditionContainer sector={props.sector}
+                  <SectorEditionContainer
+                    sector={props.sector}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );

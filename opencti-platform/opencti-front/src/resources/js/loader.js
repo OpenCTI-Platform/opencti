@@ -8,7 +8,7 @@
  *
  * Inspired by http://requestlab.fr/ and http://disruptivebydesign.com/
  */
-!(function(a, b) {
+!(function (a, b) {
   function c(a) {
     a = a || {};
     for (let b = 1; b < arguments.length; b++) {
@@ -49,7 +49,7 @@
         ),
           b.addEventListener(
             "mousemove",
-            a => {
+            (a) => {
               (A = a.pageX), (B = a.pageY);
             },
             !1
@@ -123,7 +123,7 @@
         (this.parallaxOffsetY = 0),
         (this.position = {
           x: Math.ceil(Math.random() * r.width),
-          y: Math.ceil(Math.random() * r.height)
+          y: Math.ceil(Math.random() * r.height),
         }),
         (this.speed = {}),
         g.directionX)
@@ -204,7 +204,7 @@
     var G = !1;
     return (
       (g = c({}, a[e].defaults, g)),
-      (n.prototype.draw = function() {
+      (n.prototype.draw = function () {
         s.beginPath(),
           s.arc(
             this.position.x + this.parallaxOffsetX,
@@ -241,7 +241,7 @@
         }
         s.stroke(), s.closePath();
       }),
-      (n.prototype.updatePosition = function() {
+      (n.prototype.updatePosition = function () {
         if (g.parallax) {
           if (D && !C) {
             const a = (u - 0) / 60;
@@ -290,7 +290,7 @@
         }
         (this.position.x += this.speed.x), (this.position.y += this.speed.y);
       }),
-      (n.prototype.setStackPos = function(a) {
+      (n.prototype.setStackPos = function (a) {
         this.stackPos = a;
       }),
       h(),
@@ -298,14 +298,14 @@
         option: o,
         destroy: p,
         start: m,
-        pause: l
+        pause: l,
       }
     );
   }
 
   var e = "particleground";
   var f = a.jQuery;
-  (a[e] = function(a, b) {
+  (a[e] = function (a, b) {
     return new d(a, b);
   }),
     (a[e].defaults = {
@@ -325,16 +325,16 @@
       parallax: !0,
       parallaxMultiplier: 5,
       onInit() {},
-      onDestroy() {}
+      onDestroy() {},
     }),
     f &&
-      (f.fn[e] = function(a) {
+      (f.fn[e] = function (a) {
         if (typeof arguments[0] === "string") {
           let b;
           const c = arguments[0];
           const g = Array.prototype.slice.call(arguments, 1);
           return (
-            this.each(function() {
+            this.each(function () {
               f.data(this, `plugin_${e}`) &&
                 typeof f.data(this, `plugin_${e}`)[c] === "function" &&
                 (b = f.data(this, `plugin_${e}`)[c].apply(this, g));
@@ -344,7 +344,7 @@
         }
         return typeof a !== "object" && a
           ? void 0
-          : this.each(function() {
+          : this.each(function () {
               f.data(this, `plugin_${e}`) ||
                 f.data(this, `plugin_${e}`, new d(this, a));
             });
@@ -355,7 +355,7 @@
    * @see: http://paulirish.com/2011/requestanimationframe-for-smart-animating/
    * @see: http://my.opera.com/emoller/blog/2011/12/20/requestanimationframe-for-smart-er-animating
    * @license: MIT license
-   */ (function() {
+   */ (function () {
     for (
       var a = 0, b = ["ms", "moz", "webkit", "o"], c = 0;
       c < b.length && !window.requestAnimationFrame;
@@ -367,7 +367,7 @@
           window[`${b[c]}CancelRequestAnimationFrame`]);
     }
     window.requestAnimationFrame ||
-      (window.requestAnimationFrame = function(b) {
+      (window.requestAnimationFrame = function (b) {
         const c = new Date().getTime();
         const d = Math.max(0, 16 - (c - a));
         const e = window.setTimeout(() => {
@@ -376,7 +376,7 @@
         return (a = c + d), e;
       }),
       window.cancelAnimationFrame ||
-        (window.cancelAnimationFrame = function(a) {
+        (window.cancelAnimationFrame = function (a) {
           clearTimeout(a);
         });
   })();
@@ -392,7 +392,7 @@ particleground(document.getElementById("particles-foreground"), {
   curvedLines: false,
   proximity: 250, // How close two dots need to be before they join
   parallaxMultiplier: 10, // Lower the number is more extreme parallax
-  particleRadius: 4 // Dot size
+  particleRadius: 4, // Dot size
 });
 
 particleground(document.getElementById("particles-background"), {
@@ -406,5 +406,5 @@ particleground(document.getElementById("particles-background"), {
   curvedLines: false,
   proximity: 20, // How close two dots need to be before they join
   parallaxMultiplier: 20, // Lower the number is more extreme parallax
-  particleRadius: 2 // Dot size
+  particleRadius: 2, // Dot size
 });

@@ -65,25 +65,22 @@ IndicatorHeaderComponent.propTypes = {
   classes: PropTypes.object,
 };
 
-const IndicatorHeader = createFragmentContainer(
-  IndicatorHeaderComponent,
-  {
-    indicator: graphql`
-      fragment IndicatorHeader_indicator on Indicator {
-        id
-        entity_type
-        name
-        markingDefinitions {
-          edges {
-            node {
-              id
-              definition
-            }
+const IndicatorHeader = createFragmentContainer(IndicatorHeaderComponent, {
+  indicator: graphql`
+    fragment IndicatorHeader_indicator on Indicator {
+      id
+      entity_type
+      name
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
           }
         }
       }
-    `,
-  },
-);
+    }
+  `,
+});
 
 export default compose(withStyles(styles))(IndicatorHeader);

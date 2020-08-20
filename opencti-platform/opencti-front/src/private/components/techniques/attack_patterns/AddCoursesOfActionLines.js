@@ -28,9 +28,9 @@ const styles = (theme) => ({
 
 const addCoursesOfActionLinesMutationRelationAdd = graphql`
   mutation AddCoursesOfActionLinesRelationAddMutation(
-    $input: StixRelationAddInput!
+    $input: StixCoreRelationshipAddInput
   ) {
-    stixRelationAdd(input: $input) {
+    stixCoreRelationshipAdd(input: $input) {
       to {
         ...AttackPatternCoursesOfAction_attackPattern
       }
@@ -40,7 +40,7 @@ const addCoursesOfActionLinesMutationRelationAdd = graphql`
 
 export const addCoursesOfActionMutationRelationDelete = graphql`
   mutation AddCoursesOfActionLinesRelationDeleteMutation($id: ID!) {
-    stixRelationEdit(id: $id) {
+    stixCoreRelationshipEdit(id: $id) {
       delete
     }
   }
@@ -83,9 +83,7 @@ class AddCoursesOfActionLinesContainer extends Component {
       const input = {
         relationship_type: 'mitigates',
         fromId: courseOfAction.id,
-        fromRole: 'mitigation',
         toId: attackPatternId,
-        toRole: 'problem',
       };
       commitMutation({
         mutation: addCoursesOfActionLinesMutationRelationAdd,

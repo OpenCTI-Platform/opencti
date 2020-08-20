@@ -57,7 +57,8 @@ class AttackPatternCoursesOfActionComponent extends Component {
         const coursesOfAction = node.getLinkedRecord('coursesOfAction');
         const edges = coursesOfAction.getLinkedRecords('edges');
         const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id') !== courseOfActionEdge.node.id,
+          (n) => n.getLinkedRecord('node').getValue('id')
+            !== courseOfActionEdge.node.id,
           edges,
         );
         coursesOfAction.setLinkedRecords(newEdges, 'edges');
@@ -139,9 +140,6 @@ const AttackPatternCoursesOfAction = createFragmentContainer(
               id
               name
               description
-            }
-            relation {
-              id
             }
           }
         }

@@ -13,19 +13,19 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
   },
-  aliases: {
+  aliaseses: {
     float: 'right',
     overflowX: 'hidden',
     marginTop: '-5px',
   },
-  alias: {
+  aliases: {
     marginRight: 7,
   },
 });
 
 class ExploreHeaderComponent extends Component {
   render() {
-    const { classes, stixDomainEntity } = this.props;
+    const { classes, stixDomainObject } = this.props;
     return (
       <div style={{ marginBottom: 10 }}>
         <Typography
@@ -33,18 +33,19 @@ class ExploreHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {stixDomainEntity.name}
+          {propOr('-', 'name', stixDomainObject)}
         </Typography>
-        <div className={classes.aliases}>
-          {propOr([], 'alias', stixDomainEntity).map((label) => (label.length > 0 ? (
-              <Chip
-                key={label}
-                classes={{ root: classes.alias }}
-                label={label}
-              />
-          ) : (
-            ''
-          )))}
+        <div className={classes.aliaseses}>
+          {propOr(null, 'x_opencti_aliases', stixDomainObject)
+            || propOr([], 'aliases', stixDomainObject).map((label) => (label.length > 0 ? (
+                <Chip
+                  key={label}
+                  classes={{ root: classes.aliases }}
+                  label={label}
+                />
+            ) : (
+              ''
+            )))}
         </div>
         <div className="clearfix" />
       </div>
@@ -53,23 +54,105 @@ class ExploreHeaderComponent extends Component {
 }
 
 ExploreHeaderComponent.propTypes = {
-  stixDomainEntity: PropTypes.object,
+  stixDomainObject: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
 const ExploreHeader = createFragmentContainer(ExploreHeaderComponent, {
-  stixDomainEntity: graphql`
-    fragment ExploreHeader_stixDomainEntity on StixDomainEntity {
+  stixDomainObject: graphql`
+    fragment ExploreHeader_stixDomainObject on StixDomainObject {
       id
-      name
-      alias
+      ... on AttackPattern {
+        name
+        description
+        aliases
+      }
+      ... on Campaign {
+        name
+        description
+        aliases
+      }
+      ... on CourseOfAction {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Individual {
+        name
+        description
+        aliases
+      }
+      ... on Organization {
+        name
+        description
+        aliases
+      }
+      ... on Sector {
+        name
+        description
+        aliases
+      }
+      ... on Indicator {
+        name
+        description
+      }
+      ... on Infrastructure {
+        name
+        description
+      }
+      ... on IntrusionSet {
+        name
+        aliases
+        description
+      }
+      ... on Position {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on City {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Country {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Region {
+        name
+        description
+        x_opencti_aliases
+      }
+      ... on Malware {
+        name
+        aliases
+        description
+      }
+      ... on ThreatActor {
+        name
+        aliases
+        description
+      }
+      ... on Tool {
+        name
+        aliases
+        description
+      }
+      ... on Vulnerability {
+        name
+        description
+      }
+      ... on XOpenCTIIncident {
+        name
+        aliases
+        description
+      }
     }
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ExploreHeader);
+export default compose(inject18n, withStyles(styles))(ExploreHeader);

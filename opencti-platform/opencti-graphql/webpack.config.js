@@ -21,7 +21,7 @@ module.exports = (env, argv) => {
     resolve: {
       extensions: ['.wasm', '.mjs', '.js', '.json', '.graphql'],
     },
-    externals: [nodeExternals({ whitelist: [/^webpack/] })],
+    externals: [nodeExternals({ allowlist: [/^webpack/] })],
     watch: isDev,
     target: 'node',
     output: {

@@ -1,37 +1,37 @@
-import {
-  createEntity,
-  escapeString,
-  listEntities,
-  loadEntityById,
-  loadEntityByStixId,
-  loadWithConnectedRelations,
-} from '../database/grakn';
+import { assoc } from 'ramda';
+import { createEntity, escapeString, load, listEntities, loadEntityById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { TYPE_STIX_DOMAIN_ENTITY } from '../database/utils';
+import {
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ENTITY_TYPE_LOCATION_COUNTRY,
+  ENTITY_TYPE_LOCATION_REGION,
+  RELATION_LOCATED_AT,
+} from '../utils/idGenerator';
 
 export const findById = (countryId) => {
-  if (countryId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(countryId, 'Country');
-  }
-  return loadEntityById(countryId, 'Country');
+  return loadEntityById(countryId, ENTITY_TYPE_LOCATION_COUNTRY);
 };
+
 export const findAll = (args) => {
-  return listEntities(['Country'], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_LOCATION_COUNTRY], ['name', 'description', 'x_opencti_aliases'], args);
 };
-export const region = (countryId) => {
-  return loadWithConnectedRelations(
-    `match $to isa Region; $rel(localized:$from, location:$to) isa localization;
-   $from has internal_id_key "${escapeString(countryId)}"; get; offset 0; limit 1;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then((data) => (data ? data.node : undefined));
+
+export const region = async (countryId) => {
+  const element = await load(
+    `match $to isa ${ENTITY_TYPE_LOCATION_REGION}; 
+    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
+    $from has internal_id "${escapeString(countryId)}"; get;`,
+    ['to']
+  );
+  return element && element.to;
 };
 
 export const addCountry = async (user, country) => {
-  const created = await createEntity(user, country, 'Country', {
-    modelType: TYPE_STIX_DOMAIN_ENTITY,
-    stixIdType: 'identity',
-  });
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(
+    user,
+    assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_COUNTRY, country),
+    ENTITY_TYPE_LOCATION_COUNTRY
+  );
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

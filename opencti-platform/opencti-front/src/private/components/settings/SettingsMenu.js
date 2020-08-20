@@ -26,23 +26,28 @@ class SettingsMenu extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
-      <Drawer variant="permanent" anchor="right"
-        classes={{ paper: classes.drawer }}>
+      <Drawer
+        variant="permanent"
+        anchor="right"
+        classes={{ paper: classes.drawer }}
+      >
         <div className={classes.toolbar} />
         <MenuList component="nav">
-          <MenuItem component={Link} to={'/dashboard/settings'}
-            selected={
-              location.pathname === '/dashboard/settings'
-            }
-            dense={false}>
+          <MenuItem
+            component={Link}
+            to={'/dashboard/settings'}
+            selected={location.pathname === '/dashboard/settings'}
+            dense={false}
+          >
             <ListItemText primary={t('Configuration')} />
           </MenuItem>
           <Security needs={[SETTINGS_SETINFERENCES]}>
-            <MenuItem component={Link} to={'/dashboard/settings/inferences'}
-              selected={
-                location.pathname === '/dashboard/settings/inferences'
-              }
-              dense={false}>
+            <MenuItem
+              component={Link}
+              to={'/dashboard/settings/inferences'}
+              selected={location.pathname === '/dashboard/settings/inferences'}
+              dense={false}
+            >
               <ListItemText primary={t('Inferences')} />
             </MenuItem>
           </Security>
@@ -58,8 +63,4 @@ SettingsMenu.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(SettingsMenu);
+export default compose(inject18n, withRouter, withStyles(styles))(SettingsMenu);

@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import RegionPopover from './RegionPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import EntityStixCyberObservables from '../../signatures/stix_cyber_observables/EntityStixCyberObservables';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -44,18 +44,15 @@ class RegionObservablesComponent extends Component {
             : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={region}
+        <StixDomainObjectHeader
+          stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
         />
         <Route
           exact
           path="/dashboard/entities/regions/:regionId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={region.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={region.id} {...routeProps} />
           )}
         />
         <Route
@@ -63,9 +60,9 @@ class RegionObservablesComponent extends Component {
           path="/dashboard/entities/regions/:regionId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
+              <EntityStixCyberObservables
                 entityId={region.id}
-                relationType="localization"
+                relationshipType="localization"
                 entityLink={link}
                 {...routeProps}
               />
@@ -84,18 +81,15 @@ RegionObservablesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const RegionObservables = createFragmentContainer(
-  RegionObservablesComponent,
-  {
-    region: graphql`
-      fragment RegionObservables_region on Region {
-        id
-        name
-        alias
-      }
-    `,
-  },
-);
+const RegionObservables = createFragmentContainer(RegionObservablesComponent, {
+  region: graphql`
+    fragment RegionObservables_region on Region {
+      id
+      name
+      x_opencti_aliases
+    }
+  `,
+});
 
 export default compose(
   inject18n,

@@ -7,18 +7,18 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import Indicator from './Indicator';
 import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
-import StixObjectHistory from '../../common/stix_object/StixObjectHistory';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndicatorHeader from './IndicatorHeader';
 import IndicatorPopover from './IndicatorPopover';
-import EntityStixSightings from '../../common/stix_sightings/EntityStixSightings';
+import EntityStixSightingRelationships from '../../common/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Indicator {
         ...Indicator_indicator
         ...IndicatorEditionContainer_indicator
@@ -33,7 +33,6 @@ const indicatorQuery = graphql`
     indicator(id: $id) {
       id
       name
-      alias
       ...Indicator_indicator
       ...IndicatorHeader_indicator
       ...IndicatorOverview_indicator
@@ -73,7 +72,7 @@ class RootIndicator extends Component {
         <TopBar me={me || null} />
         <QueryRenderer
           query={indicatorQuery}
-          variables={{ id: indicatorId, relationType: 'indicates' }}
+          variables={{ id: indicatorId, relationship_type: 'indicates' }}
           render={({ props }) => {
             if (props && props.indicator) {
               return (
@@ -104,10 +103,10 @@ class RootIndicator extends Component {
                           indicator={props.indicator}
                           PopoverComponent={<IndicatorPopover />}
                         />
-                        <EntityStixSightings
+                        <EntityStixSightingRelationships
                           {...routeProps}
                           entityId={indicatorId}
-                          targetEntityTypes={[
+                          targetStixDomainObjectTypes={[
                             'Region',
                             'Country',
                             'City',
@@ -127,7 +126,7 @@ class RootIndicator extends Component {
                           indicator={props.indicator}
                           PopoverComponent={<IndicatorPopover />}
                         />
-                        <StixObjectHistory
+                        <StixCoreObjectHistory
                           {...routeProps}
                           entityId={indicatorId}
                         />
@@ -138,7 +137,10 @@ class RootIndicator extends Component {
                     exact
                     path="/dashboard/signatures/indicators/:indicatorId/knowledge/relations/:relationId"
                     render={(routeProps) => (
-                      <StixRelation entityId={indicatorId} {...routeProps} />
+                      <StixCoreRelationship
+                        entityId={indicatorId}
+                        {...routeProps}
+                      />
                     )}
                   />
                 </div>

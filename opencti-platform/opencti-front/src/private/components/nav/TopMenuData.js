@@ -72,8 +72,4 @@ TopMenuData.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopMenuData);
+export default compose(inject18n, withRouter, withStyles(styles))(TopMenuData);

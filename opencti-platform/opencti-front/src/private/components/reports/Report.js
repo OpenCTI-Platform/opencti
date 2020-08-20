@@ -10,10 +10,10 @@ import ReportHeader from './ReportHeader';
 import ReportOverview from './ReportOverview';
 import ReportIdentity from './ReportDetails';
 import ReportEdition from './ReportEdition';
-import EntityExternalReferences from '../common/external_references/EntityExternalReferences';
-import EntityStixRelationsDonut from '../common/stix_relations/EntityStixRelationsDonut';
+import EntityExternalReferences from '../common/external_references/StixDomainObjectExternalReferences';
+import EntityStixCoreRelationshipsDonut from '../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
-import StixObjectNotes from '../common/stix_object/StixObjectNotes';
+import StixCoreObjectNotes from '../common/stix_core_objects/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -45,7 +45,7 @@ class ReportComponent extends Component {
             <EntityExternalReferences entityId={report.id} />
           </Grid>
         </Grid>
-        <StixObjectNotes entityId={report.id} />
+        <StixCoreObjectNotes entityId={report.id} />
         <Grid
           container={true}
           spacing={3}
@@ -53,19 +53,19 @@ class ReportComponent extends Component {
           style={{ marginTop: 15 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={report.id}
-              entityType="Stix-Observable"
-              relationType="observable_refs"
+              entityType="Stix-Cyber-Observable"
+              relationshipType="object"
               field="entity_type"
               height={150}
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityStixRelationsDonut
+            <EntityStixCoreRelationshipsDonut
               entityId={report.id}
-              entityType="Stix-Domain-Entity"
-              relationType="object_refs"
+              entityType="Stix-Domain-Object"
+              relationshipType="object"
               field="entity_type"
               height={150}
             />

@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CountryPopover from './CountryPopover';
 import CountryKnowledgeBar from './CountryKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class CountryKnowledgeComponent extends Component {
     const link = `/dashboard/entities/countries/${country.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={country}
+        <StixDomainObjectHeader
+          stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
         />
         <CountryKnowledgeBar countryId={country.id} />
@@ -35,7 +35,7 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={country.id}
               paddingRight={true}
               {...routeProps}
@@ -46,9 +46,9 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={country.id}
-              stixDomainEntityType="country"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={country.id}
+              stixDomainObjectType="Country"
               {...routeProps}
             />
           )}
@@ -57,12 +57,12 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/cities"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="localization"
-              targetEntityTypes={['City']}
+              relationshipType="located-at"
+              targetStixDomainObjectTypes={['City']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -71,12 +71,12 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="localization"
-              targetEntityTypes={['Organization']}
+              relationshipType="located-at"
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -85,19 +85,19 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="targets"
-              targetEntityTypes={[
+              relationshipType="targets"
+              targetStixDomainObjectTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'X-OpenCTI-Incident',
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -118,7 +118,7 @@ const CountryKnowledge = createFragmentContainer(CountryKnowledgeComponent, {
     fragment CountryKnowledge_country on Country {
       id
       name
-      alias
+      x_opencti_aliases
     }
   `,
 });

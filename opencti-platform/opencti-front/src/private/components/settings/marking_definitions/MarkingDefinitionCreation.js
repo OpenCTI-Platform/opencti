@@ -73,8 +73,8 @@ const markingDefinitionMutation = graphql`
 const markingDefinitionValidation = (t) => Yup.object().shape({
   definition_type: Yup.string().required(t('This field is required')),
   definition: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-  level: Yup.number()
+  x_opencti_color: Yup.string().required(t('This field is required')),
+  x_opencti_order: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
@@ -105,9 +105,9 @@ class MarkingDefinitionCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(assoc('level', parseInt(values.level, 10)))(
-      values,
-    );
+    const finalValues = pipe(
+      assoc('x_opencti_order', parseInt(values.x_opencti_order, 10)),
+    )(values);
     commitMutation({
       mutation: markingDefinitionMutation,
       variables: {
@@ -172,8 +172,8 @@ class MarkingDefinitionCreation extends Component {
               initialValues={{
                 definition_type: '',
                 definition: '',
-                color: '',
-                level: '',
+                x_opencti_color: '',
+                x_opencti_order: '',
               }}
               validationSchema={markingDefinitionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -196,15 +196,15 @@ class MarkingDefinitionCreation extends Component {
                   />
                   <Field
                     component={ColorPickerField}
-                    name="color"
+                    name="x_opencti_color"
                     label={t('Color')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
                   <Field
                     component={TextField}
-                    name="level"
-                    label={t('Level')}
+                    name="x_opencti_order"
+                    label={t('Order')}
                     fullWidth={true}
                     type="number"
                     style={{ marginTop: 20 }}

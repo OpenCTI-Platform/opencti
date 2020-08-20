@@ -6,12 +6,12 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import RegionPopover from './RegionPopover';
 import RegionKnowledgeBar from './RegionKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -26,8 +26,8 @@ class RegionKnowledgeComponent extends Component {
     const link = `/dashboard/entities/regions/${region.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={region}
+        <StixDomainObjectHeader
+          stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
         />
         <RegionKnowledgeBar regionId={region.id} />
@@ -35,7 +35,7 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={region.id}
               paddingRight={true}
               {...routeProps}
@@ -46,9 +46,9 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={region.id}
-              stixDomainEntityType="region"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={region.id}
+              stixDomainObjectType="Region"
               {...routeProps}
             />
           )}
@@ -57,12 +57,12 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/countries"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={region.id}
-              relationType="localization"
-              targetEntityTypes={['Country']}
+              relationshipType="localization"
+              targetStixDomainObjectTypes={['Country']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -71,19 +71,19 @@ class RegionKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/threats"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={region.id}
-              relationType="targets"
-              targetEntityTypes={[
+              relationshipType="targets"
+              targetStixDomainObjectTypes={[
                 'Country',
                 'Threat-Actor',
                 'Intrusion-Set',
                 'Campaign',
-                'Incident',
+                'XOpenCTIIncident',
                 'Malware',
               ]}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -104,7 +104,7 @@ const RegionKnowledge = createFragmentContainer(RegionKnowledgeComponent, {
     fragment RegionKnowledge_region on Region {
       id
       name
-      alias
+      x_opencti_aliases
     }
   `,
 });

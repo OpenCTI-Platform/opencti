@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CampaignPopover from './CampaignPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import EntityIndicators from '../../signatures/indicators/EntityIndicators';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
   container: {
@@ -66,15 +66,15 @@ class CampaignIndicatorsComponent extends Component {
     }
     return (
       <div className={className}>
-        <StixDomainEntityHeader
-          stixDomainEntity={campaign}
+        <StixDomainObjectHeader
+          stixDomainObject={campaign}
           PopoverComponent={<CampaignPopover />}
         />
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation entityId={campaign.id} {...routeProps} />
+            <StixCoreRelationship entityId={campaign.id} {...routeProps} />
           )}
         />
         <Route
@@ -84,7 +84,7 @@ class CampaignIndicatorsComponent extends Component {
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
                 entityId={campaign.id}
-                relationType="indicates"
+                relationshipType="indicates"
                 entityLink={link}
                 onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
                 }
@@ -112,7 +112,7 @@ const CampaignIndicators = createFragmentContainer(
       fragment CampaignIndicators_campaign on Campaign {
         id
         name
-        alias
+        aliases
       }
     `,
   },

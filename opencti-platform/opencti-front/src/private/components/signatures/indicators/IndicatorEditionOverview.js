@@ -20,8 +20,8 @@ import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 import DatePickerField from '../../../../components/DatePickerField';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
@@ -78,7 +78,7 @@ export const indicatorEditionOverviewFocus = graphql`
 const indicatorMutationRelationAdd = graphql`
   mutation IndicatorEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     indicatorEdit(id: $id) {
       relationAdd(input: $input) {
@@ -93,10 +93,11 @@ const indicatorMutationRelationAdd = graphql`
 const indicatorMutationRelationDelete = graphql`
   mutation IndicatorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     indicatorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...IndicatorEditionOverview_indicator
       }
     }
@@ -105,7 +106,7 @@ const indicatorMutationRelationDelete = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  indicator_pattern: Yup.string().required(t('This field is required')),
+  pattern: Yup.string().required(t('This field is required')),
   valid_from: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
@@ -145,33 +146,30 @@ class IndicatorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { indicator } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], indicator),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], indicator),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], indicator),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], indicator),
+      value: pathOr(null, ['createdBy', 'id'], indicator),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: indicatorMutationRelationAdd,
         variables: {
           id: this.props.indicator.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: this.props.indicator.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -180,10 +178,8 @@ class IndicatorEditionOverviewComponent extends Component {
           variables: {
             id: this.props.indicator.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -191,14 +187,13 @@ class IndicatorEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { indicator } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(indicator);
 
@@ -211,10 +206,8 @@ class IndicatorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.indicator.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -225,7 +218,8 @@ class IndicatorEditionOverviewComponent extends Component {
         mutation: indicatorMutationRelationDelete,
         variables: {
           id: this.props.indicator.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -233,39 +227,33 @@ class IndicatorEditionOverviewComponent extends Component {
 
   render() {
     const { t, indicator, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], indicator) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], indicator) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], indicator),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], indicator),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          indicator,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], indicator),
+        value: pathOr(null, ['createdBy', 'id'], indicator),
       };
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(indicator);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('createdBy', createdBy),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
-        'indicator_pattern',
+        'pattern',
         'description',
         'valid_from',
         'valid_until',
         'score',
         'detection',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(indicator);
     return (
@@ -290,7 +278,7 @@ class IndicatorEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
-              name="indicator_pattern"
+              name="pattern"
               label={t('Indicator pattern')}
               fullWidth={true}
               multiline={true}
@@ -299,10 +287,7 @@ class IndicatorEditionOverviewComponent extends Component {
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="indicator_pattern"
-                />
+                <SubscriptionFocus context={context} fieldName="pattern" />
               }
             />
             <Field
@@ -357,39 +342,39 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
             <Field
-                component={SwitchField}
-                type="checkbox"
-                name="detection"
-                label={t('Detection')}
-                containerstyle={{ marginTop: 20 }}
-                onChange={this.handleSubmitField.bind(this)}
-                helperText={
-                  <SubscriptionFocus
-                      context={context}
-                      fieldName="negative"
-                  />
-                }
+              component={SwitchField}
+              type="checkbox"
+              name="x_opencti_detection"
+              label={t('Detection')}
+              containerstyle={{ marginTop: 20 }}
+              onChange={this.handleSubmitField.bind(this)}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_detection"
+                />
+              }
             />
           </Form>
         )}
@@ -413,30 +398,25 @@ const IndicatorEditionOverview = createFragmentContainer(
       fragment IndicatorEditionOverview_indicator on Indicator {
         id
         name
-        indicator_pattern
+        description
+        pattern
         valid_from
         valid_until
-        score
-        description
-        detection
-        createdByRef {
-          node {
+        x_opencti_score
+        x_opencti_detection
+        createdBy {
+          ... on Identity {
             id
             name
-          }
-          relation {
-            id
+            entity_type
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

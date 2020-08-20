@@ -8,9 +8,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import CityPopover from './CityPopover';
-import StixRelation from '../../common/stix_relations/StixRelation';
-import EntityStixObservables from '../../signatures/stix_observables/EntityStixObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import EntityStixCyberObservables from '../../signatures/stix_cyber_observables/EntityStixCyberObservables';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({
   container: {
@@ -44,18 +44,15 @@ class CityObservablesComponent extends Component {
             : classes.container
         }
       >
-        <StixDomainEntityHeader
-          stixDomainEntity={city}
+        <StixDomainObjectHeader
+          stixDomainObject={city}
           PopoverComponent={<CityPopover />}
         />
         <Route
           exact
           path="/dashboard/entities/cities/:cityId/observables/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
-              entityId={city.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={city.id} {...routeProps} />
           )}
         />
         <Route
@@ -63,9 +60,9 @@ class CityObservablesComponent extends Component {
           path="/dashboard/entities/cities/:cityId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityStixObservables
+              <EntityStixCyberObservables
                 entityId={city.id}
-                relationType="localization"
+                relationshipType="localization"
                 entityLink={link}
                 {...routeProps}
               />
@@ -84,18 +81,15 @@ CityObservablesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const CityObservables = createFragmentContainer(
-  CityObservablesComponent,
-  {
-    city: graphql`
-      fragment CityObservables_city on City {
-        id
-        name
-        alias
-      }
-    `,
-  },
-);
+const CityObservables = createFragmentContainer(CityObservablesComponent, {
+  city: graphql`
+    fragment CityObservables_city on City {
+      id
+      name
+      x_opencti_aliases
+    }
+  `,
+});
 
 export default compose(
   inject18n,
