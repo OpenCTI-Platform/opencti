@@ -548,6 +548,7 @@ class OpenCTIStix2:
         if "x_opencti_identity_type" in stix_object and LocationTypes.has_value(
             stix_object["x_opencti_identity_type"]
         ):
+            stix_object["id"] = stix_object["id"].replace("identity", "location")
             stix_object["type"] = "location"
 
         do_import = importer.get(
