@@ -22,6 +22,21 @@ const createApp = (apolloServer) => {
   app.use(cookieParser());
   app.use(compression());
   app.use(helmet());
+  app.use(helmet.frameguard());
+  app.use(helmet.expectCt({ enforce: true, maxAge: 30 }));
+  app.use(helmet.referrerPolicy());
+  app.use(
+    helmet.contentSecurityPolicy({
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        imgSrc: ["'self'"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+      },
+    })
+  );
   app.use(bodyParser.json({ limit: '100mb' }));
 
   const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
