@@ -831,7 +831,7 @@ class StixDomainObject:
             return False
 
     """
-        Add a Label object to Stix-Domain-Object object (labelging)
+        Add a Label object to Stix-Domain-Object object
 
         :param id: the id of the Stix-Domain-Object
         :param label_id: the id of the Label

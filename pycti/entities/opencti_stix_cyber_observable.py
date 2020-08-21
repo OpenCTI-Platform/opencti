@@ -1163,3 +1163,140 @@ class StixCyberObservable:
         else:
             self.opencti.log("error", "Missing parameters: id and identity_id")
             return False
+
+    """
+        Add a Label object to Stix-Cyber-Observable object
+
+        :param id: the id of the Stix-Cyber-Observable
+        :param label_id: the id of the Label
+        :return Boolean
+    """
+
+    def add_label(self, **kwargs):
+        id = kwargs.get("id", None)
+        label_id = kwargs.get("label_id", None)
+        if id is not None and label_id is not None:
+            custom_attributes = """
+                id
+                objectLabel {
+                    edges {
+                        node {
+                            id
+                            value
+                            color
+                        }
+                    }
+                }
+            """
+            stix_cyber_observable = self.read(id=id, customAttributes=custom_attributes)
+            if stix_cyber_observable is None:
+                self.opencti.log("error", "Cannot add label, entity not found")
+                return False
+            if label_id in stix_cyber_observable["labelsIds"]:
+                return True
+            else:
+                self.opencti.log(
+                    "info",
+                    "Adding label {"
+                    + label_id
+                    + "} to Stix-Cyber-Observable {"
+                    + id
+                    + "}",
+                )
+                query = """
+                   mutation StixCyberObservableAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                       stixCyberObservableEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "toId": label_id,
+                            "relationship_type": "object-label",
+                        },
+                    },
+                )
+                return True
+        else:
+            self.opencti.log("error", "Missing parameters: id and label_id")
+            return False
+
+    """
+        Add a External-Reference object to Stix-Cyber-Observable object (object_marking_refs)
+
+        :param id: the id of the Stix-Cyber-Observable
+        :param marking_definition_id: the id of the Marking-Definition
+        :return Boolean
+    """
+
+    def add_external_reference(self, **kwargs):
+        id = kwargs.get("id", None)
+        external_reference_id = kwargs.get("external_reference_id", None)
+        if id is not None and external_reference_id is not None:
+            custom_attributes = """
+                id
+                externalReferences {
+                    edges {
+                        node {
+                            id
+                            standard_id
+                            entity_type
+                            source_name
+                            description
+                            url
+                            hash
+                            external_id
+                            created
+                            modified
+                        }
+                    }
+                }
+            """
+            stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
+            if stix_domain_object is None:
+                self.opencti.log(
+                    "error", "Cannot add External-Reference, entity not found"
+                )
+                return False
+            if external_reference_id in stix_domain_object["externalReferencesIds"]:
+                return True
+            else:
+                self.opencti.log(
+                    "info",
+                    "Adding External-Reference {"
+                    + external_reference_id
+                    + "} to Stix-Cyber-Observable {"
+                    + id
+                    + "}",
+                )
+                query = """
+                   mutation StixCyberObservabletEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+                       stixCyberObservableEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "toId": external_reference_id,
+                            "relationship_type": "external-reference",
+                        },
+                    },
+                )
+                return True
+        else:
+            self.opencti.log(
+                "error", "Missing parameters: id and external_reference_id"
+            )
+            return False
