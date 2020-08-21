@@ -38,7 +38,7 @@ import {
   sendLog,
 } from './rabbitmq';
 // eslint-disable-next-line import/no-cycle
-import { generateStandardId, isFieldContributingToStandardId } from '../schema/identifier';
+import { generateInternalId, generateStandardId, isFieldContributingToStandardId } from '../schema/identifier';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 import {

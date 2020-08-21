@@ -1043,6 +1043,7 @@ define
     has name,
     has description,
     has x_opencti_aliases,
+    has x_mitre_id,
     plays mitigates_from,
     plays investigates_from,
     plays migrates_from,

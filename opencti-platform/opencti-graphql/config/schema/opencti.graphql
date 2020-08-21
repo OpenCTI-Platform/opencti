@@ -1484,7 +1484,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 input NoteAddInput {
   stix_id: String
-  attribute_abstract: String
+  attribute_abstract: String!
   content: String! @constraint(minLength: 2)
   authors: [String]
   revoked: Boolean
@@ -1602,7 +1602,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   # ObservedData
   first_observed: DateTime!
   last_observed: DateTime!
-  number_observed: Int
+  number_observed: Int!
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -1975,6 +1975,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   name: String!
   description: String
   x_opencti_aliases: [String]
+  x_mitre_id: String
   attackPatterns: AttackPatternConnection
   # Technical
   creator: User
@@ -1988,6 +1989,7 @@ input CourseOfActionAddInput {
   name: String! @constraint(minLength: 2)
   description: String!
   x_opencti_aliases: [String]
+  x_mitre_id: String
   confidence: Int
   revoked: Boolean
   lang: String
