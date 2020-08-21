@@ -23,8 +23,10 @@ class Identity:
                     parent_types
                     spec_version
                     name
-                    aliases
                     description
+                    roles
+                    contact_information
+                    x_opencti_aliases
                     created
                     modified
                     objectLabel {
@@ -92,7 +94,7 @@ class Identity:
             modified
             name
             description
-            aliases
+            x_opencti_aliases
             contact_information
             ... on Individual {
                 x_opencti_firstname
@@ -234,8 +236,9 @@ class Identity:
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
         description = kwargs.get("description", "")
-        aliases = kwargs.get("aliases", None)
         contact_information = kwargs.get("contact_information", None)
+        roles = kwargs.get("roles", None)
+        x_opencti_aliases = kwargs.get("x_opencti_aliases", None)
         x_opencti_organization_type = kwargs.get("x_opencti_organization_type", None)
         x_opencti_reliability = kwargs.get("x_opencti_reliability", None)
         x_opencti_firstname = kwargs.get("x_opencti_firstname", None)
@@ -257,8 +260,9 @@ class Identity:
                 "modified": modified,
                 "name": name,
                 "description": description,
-                "aliases": aliases,
                 "contact_information": contact_information,
+                "roles": roles,
+                "x_opencti_aliases": x_opencti_aliases,
                 "update": update,
             }
             if type == IdentityTypes.ORGANIZATION.value:
@@ -357,12 +361,13 @@ class Identity:
                 )
                 if "description" in stix_object
                 else "",
-                aliases=self.opencti.stix2.pick_aliases(stix_object),
                 contact_information=self.opencti.stix2.convert_markdown(
                     stix_object["contact_information"]
                 )
                 if "contact_information" in stix_object
                 else None,
+                roles=stix_object["roles"] if "roles" in stix_object else None,
+                x_opencti_aliases=self.opencti.stix2.pick_aliases(stix_object),
                 x_opencti_organization_type=stix_object["x_opencti_organization_type"]
                 if "x_opencti_organization_type" in stix_object
                 else None,

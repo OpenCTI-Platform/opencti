@@ -27,8 +27,10 @@ class Infrastructure:
                     parent_types
                     spec_version
                     name
-                    aliases
                     description
+                    roles
+                    contact_information
+                    x_opencti_aliases
                     created
                     modified
                     objectLabel {
