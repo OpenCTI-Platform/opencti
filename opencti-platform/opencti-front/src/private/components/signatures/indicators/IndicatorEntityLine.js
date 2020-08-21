@@ -139,7 +139,7 @@ class IndicatorEntityLineComponent extends Component {
                 style={{ width: dataColumns.weight.width }}
               >
                 <ItemConfidence
-                  confidence={node.inferred ? 99 : node.weight}
+                  confidence={node.inferred ? 1000 : node.weight}
                   variant="inList"
                 />
               </div>

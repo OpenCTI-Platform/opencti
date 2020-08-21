@@ -381,7 +381,7 @@ class StixCoreRelationshipContainer extends Component {
               <ItemConfidence
                 confidence={
                   stixCoreRelationship.inferred
-                    ? 99
+                    ? 1000
                     : stixCoreRelationship.confidence
                 }
               />

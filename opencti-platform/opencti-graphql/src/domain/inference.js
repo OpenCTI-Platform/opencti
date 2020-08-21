@@ -23,10 +23,10 @@ const inferences = {
     rule:
       'AttributionUsesRule sub rule,\n' +
       '    when {\n' +
-      '      $rel1_attribution_origin(origin: $origin, attribution: $entity) isa attributed-to;\n' +
-      '      $rel2_user_usage(user: $entity, usage: $object) isa uses;\n' +
+      '      $rel1_attributed-to_from_attributed-to_to(attributed-to_from: $subEntity, attributed-to_to: $entity) isa attributed-to;\n' +
+      '      $rel2_uses_from_uses_to(uses_from: $subEntity, uses_to: $object) isa uses;\n' +
       '    }, then {\n' +
-      '      (user: $origin, usage: $object) isa uses;\n' +
+      '      (uses_from: $entity, uses_to: $object) isa uses;\n' +
       '    };',
     description:
       'This rule can be used to infer the following fact: if an entity A uses an object B and the entity A is attributed to an entity C, the entity C is also using the object B.',
@@ -47,23 +47,23 @@ const inferences = {
   },
   'fcbd7aa7-680c-4796-9572-03463956880b': {
     id: 'fcbd7aa7-680c-4796-9572-03463956880b',
-    name: 'LocalizationLocalizationRule',
+    name: 'LocatedAtLocatedAtRule',
     rule:
-      'LocalizationLocalizationRule sub rule,\n' +
+      'LocatedAtLocatedAtRule sub rule,\n' +
       '    when {\n' +
-      '      $rel1_localized_location(location: $location, localized: $entity) isa localization;\n' +
-      '      $rel2_localized_location(location: $entity, localized: $subentity) isa localization;\n' +
+      '      $rel1_located-at_from_located-at_to(located-at_from: $subLocation, located-at_to: $location) isa located-at;\n' +
+      '      $rel2_located-at_from_located-at_to(located-at_from: $location, located-at_to: $parentLocation) isa located-at;\n' +
       '    }, then {\n' +
-      '      (location: $location, localized: $subentity) isa localization;\n' +
+      '      (located-at_from: $subLocation, located-at_to: $parentLocation) isa localization;\n' +
       '    };',
     description:
-      'This rule can be used to infer the following fact: if an entity A is localized in an entity B and the entity B is localized in an entity C, then the entity A is also localized in the entity C.',
+      'This rule can be used to infer the following fact: if an entity A is located in an entity B and the entity B is located in an entity C, then the entity A is also located in the entity C.',
   },
   'e6a6989b-7992-4f7e-9f07-741145423181': {
     id: 'e6a6989b-7992-4f7e-9f07-741145423181',
-    name: 'LocalizationOfTargetsRule',
+    name: 'LocationOfTargetsRule',
     rule:
-      '    LocalizationOfTargetsRule sub rule,\n' +
+      '    LocationOfTargetsRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_source_target(source: $entity, target: $target) isa targets;\n' +
       '      $rel2_localized_location(location: $location, localized: $rel1_source_target) isa localization;\n' +
@@ -94,11 +94,11 @@ const inferences = {
       '    MalwareUsageTargetsRule sub rule,\n' +
       '    when {\n' +
       '      $malware isa Malware;\n' +
-      '      $user isa Incident;\n' +
-      '      $rel1_source_target(source: $user, target: $target) isa targets;\n' +
-      '      $rel2_user_usage(user: $user, usage: $malware) isa uses;\n' +
+      '      $incident isa Incident;\n' +
+      '      $rel1_targets_from_targets_to(targets_from: $incident, targets_to: $target) isa targets;\n' +
+      '      $rel2_uses_from_uses_to(uses_from: $incident, uses_to: $malware) isa uses;\n' +
       '    }, then {\n' +
-      '      (source: $malware, target: $target) isa targets;\n' +
+      '      (targets_from: $malware, targets_to: $target) isa targets;\n' +
       '    };\n',
     description:
       'This rule can be used to infer the following fact: if an entity A is an Incident and targets an entity B, and the entity A uses a malware C, then the malware C targets the entity B.',

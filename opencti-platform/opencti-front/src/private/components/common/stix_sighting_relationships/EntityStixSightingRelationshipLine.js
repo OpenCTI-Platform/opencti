@@ -129,7 +129,7 @@ class EntityStixSightingRelationshipLineComponent extends Component {
                 style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
-                  confidence={node.inferred ? 99 : node.confidence}
+                  confidence={node.inferred ? 1000 : node.confidence}
                   variant="inList"
                 />
               </div>
