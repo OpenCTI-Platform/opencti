@@ -146,6 +146,13 @@ const entityContribution = {
     },
   },
 };
+export const isFieldContributingToStandardId = (type, key) => {
+  const properties = entityContribution.definition[type];
+  if (!properties) throw DatabaseError(`Unknown definition for type ${type}`);
+  if (properties.length === 0) return true;
+  const propertiesToKeep = R.flatten(R.map((t) => t.src, properties));
+  return R.includes(key, propertiesToKeep);
+};
 const filteredIdContributions = async (way, data) => {
   const propertiesToKeep = R.flatten(R.map((t) => t.src, way));
   const dataRelated = R.pick(propertiesToKeep, data);

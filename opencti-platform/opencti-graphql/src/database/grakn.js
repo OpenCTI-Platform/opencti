@@ -38,7 +38,7 @@ import {
   sendLog,
 } from './rabbitmq';
 // eslint-disable-next-line import/no-cycle
-import { generateInternalId, generateStandardId } from '../schema/identifier';
+import { generateStandardId, isFieldContributingToStandardId } from '../schema/identifier';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 import {
@@ -1306,6 +1306,7 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
   if (!currentInstanceData) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
+  // Format the data in regards of the operation for multiple attributes
   const isMultiple = R.includes(key, multipleAttributes);
   let finalVal;
   if (isMultiple) {
@@ -1326,19 +1327,27 @@ export const updateAttribute = async (user, id, type, input, wTx, options = {}) 
       return currentInstanceData;
     }
   }
-
+  const finalInput = R.assoc('value', finalVal, input);
   // --- take lock, ensure no one currently create or update this element
   let lock;
   try {
-    const finalInput = R.assoc('value', finalVal, input);
     // Try to get the lock in redis
-    lock = await lockResource(currentInstanceData.stix_id || currentInstanceData.internal_id);
+    lock = await lockResource(currentInstanceData.internal_id);
     // Update the attribute
     await innerUpdateAttribute(user, currentInstanceData, finalInput, wTx, options);
+    currentInstanceData = R.assoc(key, isMultiple ? finalVal : R.head(finalVal), currentInstanceData);
+    // If update is part of the key, update the standard_id
+    const instanceType = currentInstanceData.entity_type;
+    if (isFieldContributingToStandardId(instanceType, input.key)) {
+      const standardId = await generateStandardId(instanceType, currentInstanceData);
+      const standardInput = { key: 'standard_id', value: [standardId] };
+      await innerUpdateAttribute(user, currentInstanceData, standardInput, wTx, options);
+      currentInstanceData = R.assoc('standard_id', standardId, currentInstanceData);
+    }
   } finally {
     if (lock) await lock.unlock();
   }
-  return R.assoc(key, isMultiple ? finalVal : R.head(finalVal), currentInstanceData);
+  return currentInstanceData;
 };
 // endregion
 
