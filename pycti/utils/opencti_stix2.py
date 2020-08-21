@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import time
 import os
 import json
 import uuid
@@ -12,10 +11,10 @@ import datefinder
 import dateutil.parser
 import pytz
 
+from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 from pycti.utils.constants import (
     IdentityTypes,
     LocationTypes,
-    ContainerTypes,
     StixCyberObservableTypes,
 )
 
@@ -1351,198 +1350,41 @@ class OpenCTIStix2:
         if "objects" not in stix_bundle or len(stix_bundle["objects"]) == 0:
             raise ValueError("JSON data objects is empty")
 
+        stix2_splitter = OpenCTIStix2Splitter()
+        bundles = stix2_splitter.split_bundle(stix_bundle, False)
         # Import every elements in a specific order
         imported_elements = []
 
         # Marking definitions
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "marking-definition":
-                self.import_object(item, update, types)
-                imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info",
-            "Marking definitions imported in: %ssecs" % round(end_time - start_time),
-        )
+        for bundle in bundles:
+            for item in bundle["objects"]:
+                if item["type"] == "relationship":
+                    self.import_relationship(item, update, types)
+                elif item["type"] == "sighting":
+                    # Resolve the to
+                    to_ids = []
+                    if "where_sighted_refs" in item:
+                        for where_sighted_ref in item["where_sighted_refs"]:
+                            to_ids.append(where_sighted_ref)
 
-        # Identities
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "identity" and (types is None or "identity" in types):
-                # TODO REmove this, compatibility with v3.
-                if "x_opencti_identity_type" not in item or (
-                    "x_opencti_identity_type" in item
-                    and not LocationTypes.has_value(item["x_opencti_identity_type"])
-                ):
+                    # Import sighting_of_ref
+                    from_id = item["sighting_of_ref"]
+                    if len(to_ids) > 0:
+                        for to_id in to_ids:
+                            self.import_sighting(item, from_id, to_id, update)
+
+                    # Import observed_data_refs
+                    if "observed_data_refs" in item:
+                        for observed_data_ref in item["observed_data_refs"]:
+                            if len(to_ids) > 0:
+                                for to_id in to_ids:
+                                    self.import_sighting(
+                                        item, observed_data_ref, to_id, update
+                                    )
+                elif StixCyberObservableTypes.has_value(item["type"]):
+                    self.import_observable(item, update, types)
+                else:
                     self.import_object(item, update, types)
-                    imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Identities imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # StixCyberObservables
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if StixCyberObservableTypes.has_value(item["type"]):
-                self.import_observable(item)
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Observables imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # StixDomainObjects except Report/Opinion/Notes
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if (
-                not ContainerTypes.has_value(item["type"])
-                and item["type"] != "relationship"
-                and item["type"] != "sighting"
-            ):
-                self.import_object(item, update, types)
                 imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Objects imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # StixCyberObservableRelationships
-        # TODO
-
-        # StixRelationObjects
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "relationship":
-                split_source_ref = item["source_ref"].split("--")
-                split_target_ref = item["target_ref"].split("--")
-                if (
-                    not ContainerTypes.has_value(split_source_ref[0])
-                    and split_source_ref[0] != "relationship"
-                    and not ContainerTypes.has_value(split_target_ref[0])
-                    and split_target_ref[0] != "relationship"
-                ):
-                    self.import_relationship(item, update, types)
-                    imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Relationships imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # StixRelationObjects (with relationships)
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "relationship":
-                if item["type"] == "relationship" and (
-                    "relationship--" in item["source_ref"]
-                    or "relationship--" in item["target_ref"]
-                ):
-                    self.import_relationship(item, update, types)
-                    imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info",
-            "Relationships to relationships imported in: %ssecs"
-            % round(end_time - start_time),
-        )
-
-        # ObservedDatas
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "observed-data" and (
-                types is None or "observed-data" in types
-            ):
-                self.import_object(item, update, types)
-                imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Observed-Datas imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # StixSightingsObjects
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "sighting":
-                # Resolve the to
-                to_ids = []
-                if "where_sighted_refs" in item:
-                    for where_sighted_ref in item["where_sighted_refs"]:
-                        to_ids.append(where_sighted_ref)
-
-                # Import sighting_of_ref
-                from_id = item["sighting_of_ref"]
-                if len(to_ids) > 0:
-                    for to_id in to_ids:
-                        self.import_sighting(item, from_id, to_id, update)
-
-                # Import observed_data_refs
-                if "observed_data_refs" in item:
-                    for observed_data_ref in item["observed_data_refs"]:
-                        if len(to_ids) > 0:
-                            for to_id in to_ids:
-                                self.import_sighting(
-                                    item, observed_data_ref, to_id, update
-                                )
-                imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Sightings imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # Notes
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "note" and (types is None or "note" in types):
-                self.import_object(item, update, types)
-                imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Notes imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # Opinions
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "opinion" and (types is None or "opinion" in types):
-                self.import_object(item, update, types)
-                imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Opinions imported in: %ssecs" % round(end_time - start_time)
-        )
-
-        # StixRelationObjects (with containers)
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "relationship":
-                split_source_ref = item["source_ref"].split("--")
-                split_target_ref = item["target_ref"].split("--")
-                if (
-                    split_source_ref[0] != "report"
-                    and split_target_ref[0] != "report"
-                    and (
-                        ContainerTypes.has_value(split_source_ref[0])
-                        or ContainerTypes.has_value(split_target_ref[0])
-                    )
-                ):
-                    self.import_relationship(item, update, types)
-                    imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info",
-            "Relationships to containers imported in: %ssecs"
-            % round(end_time - start_time),
-        )
-
-        # Reports
-        start_time = time.time()
-        for item in stix_bundle["objects"]:
-            if item["type"] == "report" and (types is None or "report" in types):
-                self.import_object(item, update, types)
-                imported_elements.append({"id": item["id"], "type": item["type"]})
-        end_time = time.time()
-        self.opencti.log(
-            "info", "Reports imported in: %ssecs" % round(end_time - start_time)
-        )
 
         return imported_elements

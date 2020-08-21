@@ -54,19 +54,26 @@ class OpenCTIStix2Splitter:
         self.relationships.append(item)
         self.cache_index[item_id] = item  # Put in cache
 
-    def split_bundle(self, bundle) -> list:
+    def split_bundle(self, bundle, use_json=True) -> list:
         """splits a valid stix2 bundle into a list of bundles
 
         :param bundle: valid stix2 bundle
         :type bundle:
+        :param use_json: is JSON?
+        :type use_json:
         :raises Exception: if data is not valid JSON
         :return: returns a list of bundles
         :rtype: list
         """
-        try:
-            bundle_data = json.loads(bundle)
-        except:
-            raise Exception("File data is not a valid JSON")
+        if use_json:
+            try:
+                bundle_data = json.loads(bundle)
+            except:
+                raise Exception("File data is not a valid JSON")
+        else:
+            bundle_data = bundle
+            if "objects" not in bundle_data:
+                raise Exception("File data is not a valid bundle")
 
         raw_data = {}
         for item in bundle_data["objects"]:
@@ -84,17 +91,19 @@ class OpenCTIStix2Splitter:
 
         bundles = []
         for entity in self.entities:
-            bundles.append(self.stix2_create_bundle([entity]))
+            bundles.append(self.stix2_create_bundle([entity], use_json))
         for relationship in self.relationships:
-            bundles.append(self.stix2_create_bundle([relationship]))
+            bundles.append(self.stix2_create_bundle([relationship], use_json))
         return bundles
 
     @staticmethod
-    def stix2_create_bundle(items):
+    def stix2_create_bundle(items, use_json):
         """create a stix2 bundle with items
 
         :param items: valid stix2 items
         :type items:
+        :param use_json: use JSON?
+        :type use_json:
         :return: JSON of the stix2 bundle
         :rtype:
         """
@@ -105,4 +114,4 @@ class OpenCTIStix2Splitter:
             "spec_version": "2.1",
             "objects": items,
         }
-        return json.dumps(bundle)
+        return json.dumps(bundle) if use_json else bundle
