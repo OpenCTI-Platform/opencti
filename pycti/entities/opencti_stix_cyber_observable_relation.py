@@ -37,8 +37,10 @@ class StixCyberObservableRelation:
                     stix_id
                     stix_label
                     name
-                    alias
                     description
+                    roles
+                    contact_information
+                    x_opencti_aliases
                     created
                     modified
                 }

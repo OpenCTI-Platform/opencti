@@ -277,11 +277,13 @@ class OpenCTIApiClient:
                     raise ValueError(result["errors"][0]["data"]["reason"])
                 else:
                     logging.error(result["errors"][0]["message"])
+
                     raise ValueError(result["errors"][0]["message"])
             else:
                 return result
         else:
             logging.info(r.text)
+            raise ValueError(r.text)
 
     def fetch_opencti_file(self, fetch_uri, binary=False):
         """get file from the OpenCTI API
