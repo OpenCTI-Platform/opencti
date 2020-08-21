@@ -171,7 +171,7 @@ const createIndicatorFromObservable = async (user, observable) => {
         assoc('x_opencti_main_observable_type', observable.entity_type),
         assoc('basedOn', [observable.id])
       )(observable);
-      await addIndicator(user, indicatorToCreate, false);
+      await addIndicator(user, indicatorToCreate);
     }
   } catch (err) {
     logger.info(`Cannot create indicator`, { error: err });

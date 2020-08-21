@@ -1384,7 +1384,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   }
   // 03. Generate the ID
   const internalId = generateInternalId();
-  const standardId = generateStandardId(relationshipType, input);
+  const standardId = await generateStandardId(relationshipType, input);
   // 04. Check existing relationship
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
   if (isStixCoreRelationship(input.relationship_type)) {
@@ -1747,7 +1747,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
   }
   // Generate the internal id
   const internalId = input.internal_id || generateInternalId();
-  const standardId = generateStandardId(type, input);
+  const standardId = await generateStandardId(type, input);
 
   // Check if the entity exists
   const existingEntity = await internalLoadEntityById(standardId);

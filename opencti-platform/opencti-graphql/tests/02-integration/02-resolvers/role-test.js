@@ -1,7 +1,8 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { ENTITY_TYPE_CAPABILITY, generateInternalObjectId } from '../../../src/schema/identifier';
 import { elLoadByStandardId } from '../../../src/database/elasticSearch';
+import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
+import { generateStandardId } from '../../../src/schema/identifier';
 
 const LIST_QUERY = gql`
   query roles($first: Int, $after: ID, $orderBy: RolesOrdering, $orderMode: OrderingMode, $search: String) {
@@ -133,7 +134,7 @@ describe('Role resolver standard behavior', () => {
     expect(queryResult.data.roleEdit.contextClean.id).toEqual(roleInternalId);
   });
   it('should add relation in role', async () => {
-    const capabilityStandardId = generateInternalObjectId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
+    const capabilityStandardId = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
     const capability = await elLoadByStandardId(capabilityStandardId);
     capabilityId = capability.id;
     const RELATION_ADD_QUERY = gql`

@@ -151,7 +151,7 @@ export const getCapabilities = async (userId) => {
   );
   const capabilities = map((r) => r.capability, data);
   if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
-    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
+    const id = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, internal_id: id, name: BYPASS });
   }
   return capabilities;
@@ -206,10 +206,11 @@ export const roleEditContext = async (user, roleId, input) => {
 };
 // endregion
 
-export const assignRoleToUser = (user, userId, roleName) => {
+export const assignRoleToUser = async (user, userId, roleName) => {
+  const generateToId = await generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
   const assignInput = {
     fromId: userId,
-    toId: generateStandardId(ENTITY_TYPE_ROLE, { name: roleName }),
+    toId: generateToId,
     relationship_type: RELATION_HAS_ROLE,
   };
   return createRelation(user, assignInput, { noLog: true });

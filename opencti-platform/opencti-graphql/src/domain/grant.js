@@ -16,19 +16,18 @@ export const addRole = async (user, role) => {
     dissoc('capabilities')
   )(role);
   const roleEntity = await createEntity(user, roleToCreate, ENTITY_TYPE_ROLE, { noLog: true });
-  const relationPromises = map(
-    (capabilityName) =>
-      createRelation(
-        user,
-        {
-          fromId: roleEntity.id,
-          toId: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName }),
-          relationship_type: RELATION_HAS_CAPABILITY,
-        },
-        { noLog: true }
-      ),
-    capabilities
-  );
+  const relationPromises = map(async (capabilityName) => {
+    const generateToId = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
+    return createRelation(
+      user,
+      {
+        fromId: roleEntity.id,
+        toId: generateToId,
+        relationship_type: RELATION_HAS_CAPABILITY,
+      },
+      { noLog: true }
+    );
+  }, capabilities);
   await Promise.all(relationPromises);
   return roleEntity;
 };

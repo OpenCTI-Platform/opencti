@@ -178,7 +178,7 @@ describe('Note resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).not.toBeNull();
-    expect(queryResult.data.note.standard_id).toEqual('note--d64c3849-a260-529d-9156-3b72ae5fcb59');
+    expect(queryResult.data.note.standard_id).toEqual('note--0a12cb43-14b9-5dfa-b307-dfd2dafb906d');
     expect(queryResult.data.note.objects.edges.length).toEqual(4);
   });
   it('should note contains stix object or stix relationship accurate', async () => {

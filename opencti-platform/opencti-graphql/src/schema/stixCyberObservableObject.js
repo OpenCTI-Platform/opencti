@@ -1,12 +1,12 @@
 import * as R from 'ramda';
-import {ABSTRACT_STIX_CYBER_OBSERVABLE} from "./general";
+import { ABSTRACT_STIX_CYBER_OBSERVABLE } from './general';
 
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
 export const ENTITY_DIRECTORY = 'Directory';
 export const ENTITY_DOMAIN_NAME = 'Domain-Name';
 export const ENTITY_EMAIL_ADDR = 'Email-Addr';
 export const ENTITY_EMAIL_MESSAGE = 'Email-Message';
-// export const ENTITY_EMAIL_MIME_PART_TYPE = 'Email-Mime-Part-Type';
+export const ENTITY_EMAIL_MIME_PART_TYPE = 'Email-Mime-Part-Type';
 export const ENTITY_HASHED_OBSERVABLE_ARTIFACT = 'Artifact';
 export const ENTITY_HASHED_OBSERVABLE_STIX_FILE = 'StixFile';
 export const ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE = 'X509-Certificate';
@@ -20,8 +20,8 @@ export const ENTITY_SOFTWARE = 'Software';
 export const ENTITY_URL = 'Url';
 export const ENTITY_USER_ACCOUNT = 'User-Account';
 export const ENTITY_WINDOWS_REGISTRY_KEY = 'Windows-Registry-Key';
-// export const ENTITY_WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type';
-// export const ENTITY_X509_V3_EXTENSIONS_TYPE = 'X509-V3-Extensions-Type';
+export const ENTITY_WINDOWS_REGISTRY_VALUE_TYPE = 'Windows-Registry-Value-Type';
+export const ENTITY_X509_V3_EXTENSIONS_TYPE = 'X509-V3-Extensions-Type';
 export const ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY = 'X-OpenCTI-Cryptographic-Key';
 export const ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET = 'X-OpenCTI-Cryptocurrency-Wallet';
 export const ENTITY_X_OPENCTI_HOSTNAME = 'X-OpenCTI-Hostname';
@@ -39,9 +39,11 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_DOMAIN_NAME,
   ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
+  ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
+  ENTITY_X509_V3_EXTENSIONS_TYPE,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
@@ -52,6 +54,7 @@ const STIX_CYBER_OBSERVABLES = [
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY,
   ENTITY_X_OPENCTI_CRYPTOGRAPHIC_WALLET,
   ENTITY_X_OPENCTI_HOSTNAME,

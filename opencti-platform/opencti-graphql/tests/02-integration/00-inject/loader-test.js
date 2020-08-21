@@ -18,7 +18,8 @@ describe('Database provision', () => {
 
   it(
     'Should import creation succeed',
-    async () => {const httpServer = await listenServer();
+    async () => {
+      const httpServer = await listenServer();
       const execution = await execPython3(PYTHON_PATH, 'local_importer.py', importOpts);
       expect(execution).not.toBeNull();
       expect(execution.status).toEqual('success');
