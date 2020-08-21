@@ -107,7 +107,7 @@ const OrganizationReports = createFragmentContainer(
         id
         x_opencti_organization_type
         name
-        aliases
+        x_opencti_aliases
       }
     `,
   },

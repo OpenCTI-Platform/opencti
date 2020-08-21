@@ -81,13 +81,13 @@ const stixDomainObjectMutation = graphql`
           x_opencti_aliases
         }
         ... on Individual {
-          aliases
+          x_opencti_aliases
         }
         ... on Organization {
-          aliases
+          x_opencti_aliases
         }
         ... on Sector {
-          aliases
+          x_opencti_aliases
         }
         ... on Infrastructure {
           aliases

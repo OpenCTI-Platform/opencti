@@ -17,7 +17,7 @@ export const findById = (sectorId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], ['name', 'x_opencti_aliases'], args);
 };
 
 export const parentSectors = (sectorId) => {

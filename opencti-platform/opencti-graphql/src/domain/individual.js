@@ -14,7 +14,7 @@ export const findById = (individualId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_INDIVIDUAL], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_INDIVIDUAL], ['name', 'description', 'x_opencti_aliases'], args);
 };
 
 export const addIndividual = async (user, individual) => {

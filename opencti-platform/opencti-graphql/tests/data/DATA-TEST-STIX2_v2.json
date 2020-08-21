@@ -239,7 +239,7 @@
       "type": "identity",
       "spec_version": "2.1",
       "name": "CIRCL",
-      "aliases": ["Computer Incident", "Incident"],
+      "x_opencti_aliases": ["Computer Incident", "Incident"],
       "identity_class": "organization",
       "labels": ["identity"],
       "created": "2020-02-25T22:23:20.648Z",

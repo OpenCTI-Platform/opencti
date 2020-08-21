@@ -119,17 +119,17 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
           ... on Individual {
             name
             description
-            aliases
+            x_opencti_aliases
           }
           ... on Organization {
             name
             description
-            aliases
+            x_opencti_aliases
           }
           ... on Sector {
             name
             description
-            aliases
+            x_opencti_aliases
           }
           ... on Indicator {
             name
