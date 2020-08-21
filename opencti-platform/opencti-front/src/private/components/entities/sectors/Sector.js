@@ -100,7 +100,7 @@ const Sector = createFragmentContainer(SectorComponent, {
         }
       }
       name
-      aliases
+      x_opencti_aliases
       ...SectorOverview_sector
       ...SectorSubSectors_sector
       ...SectorParentSectors_sector

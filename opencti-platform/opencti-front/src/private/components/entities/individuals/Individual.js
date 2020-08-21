@@ -163,7 +163,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
     fragment Individual_individual on Individual {
       id
       name
-      aliases
+      x_opencti_aliases
       ...IndividualOverview_individual
       ...IndividualDetails_individual
     }

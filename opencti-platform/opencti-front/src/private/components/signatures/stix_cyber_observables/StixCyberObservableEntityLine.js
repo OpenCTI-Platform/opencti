@@ -136,10 +136,10 @@ class StixCyberObservableEntityLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
-                  confidence={node.inferred ? 99 : node.weight}
+                  confidence={node.inferred ? 1000 : node.confidence}
                   variant="inList"
                 />
               </div>

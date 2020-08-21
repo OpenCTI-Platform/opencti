@@ -169,7 +169,7 @@ const OrganizationKnowledge = createFragmentContainer(
       fragment OrganizationKnowledge_organization on Organization {
         id
         name
-        aliases
+        x_opencti_aliases
       }
     `,
   },

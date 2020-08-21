@@ -140,7 +140,7 @@ const IndividualKnowledge = createFragmentContainer(
       fragment IndividualKnowledge_individual on Individual {
         id
         name
-        aliases
+        x_opencti_aliases
       }
     `,
   },

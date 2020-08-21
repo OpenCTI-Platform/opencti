@@ -300,16 +300,16 @@ describe('Grakn attribute updater', () => {
     const type = 'Stix-Domain-Object';
     let identity = await internalLoadEntityById(stixId, { noCache });
     const identityId = identity.internal_id;
-    expect(identity.aliases.sort()).toEqual(['Computer Incident', 'Incident'].sort());
-    let input = { key: 'aliases', value: ['Computer', 'Test', 'Grakn'] };
+    expect(identity.x_opencti_aliases.sort()).toEqual(['Computer Incident', 'Incident'].sort());
+    let input = { key: 'x_opencti_aliases', value: ['Computer', 'Test', 'Grakn'] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
     identity = await internalLoadEntityById(stixId, { noCache });
-    expect(identity.aliases.sort()).toEqual(['Computer', 'Test', 'Grakn'].sort());
+    expect(identity.x_opencti_aliases.sort()).toEqual(['Computer', 'Test', 'Grakn'].sort());
     // Value back to before
-    input = { key: 'aliases', value: ['Computer Incident', 'Incident'] };
+    input = { key: 'x_opencti_aliases', value: ['Computer Incident', 'Incident'] };
     await executeWrite((wTx) => updateAttribute(ADMIN_USER, identityId, type, input, wTx));
     identity = await internalLoadEntityById(stixId, { noCache });
-    expect(identity.aliases.sort()).toEqual(['Computer Incident', 'Incident'].sort());
+    expect(identity.x_opencti_aliases.sort()).toEqual(['Computer Incident', 'Incident'].sort());
   });
 });
 
@@ -861,10 +861,10 @@ describe('Grakn element loader', () => {
     const stixId = 'identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132';
     const identity = await loadEntityById(stixId, ENTITY_TYPE_IDENTITY_ORGANIZATION, { noCache });
     expect(identity).not.toBeNull();
-    expect(identity.aliases).not.toBeNull();
-    expect(identity.aliases.length).toEqual(2);
-    expect(identity.aliases.includes('Computer Incident')).toBeTruthy();
-    expect(identity.aliases.includes('Incident')).toBeTruthy();
+    expect(identity.x_opencti_aliases).not.toBeNull();
+    expect(identity.x_opencti_aliases.length).toEqual(2);
+    expect(identity.x_opencti_aliases.includes('Computer Incident')).toBeTruthy();
+    expect(identity.x_opencti_aliases.includes('Incident')).toBeTruthy();
   });
 });
 

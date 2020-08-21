@@ -161,7 +161,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
       id
       x_opencti_organization_type
       name
-      aliases
+      x_opencti_aliases
       ...OrganizationOverview_organization
       ...OrganizationDetails_organization
     }

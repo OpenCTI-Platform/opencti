@@ -11,7 +11,7 @@ export const findById = (organizationId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_ORGANIZATION], ['name', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_ORGANIZATION], ['name', 'x_opencti_aliases'], args);
 };
 
 export const sectors = (organizationId) => {
