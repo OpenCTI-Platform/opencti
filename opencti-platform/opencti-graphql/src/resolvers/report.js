@@ -22,10 +22,10 @@ import {
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
   RELATION_CREATED_BY,
-  RELATION_OBJECT_LABEL,
   RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
 
 const reportResolvers = {
   Query: {

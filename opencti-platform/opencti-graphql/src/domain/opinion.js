@@ -14,12 +14,9 @@ import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findAll as findAllStixDomainEntities } from './stixDomainObject';
-import {
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (opinionId) => {
   return loadEntityById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);

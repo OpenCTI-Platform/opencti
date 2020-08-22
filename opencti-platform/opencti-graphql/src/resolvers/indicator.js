@@ -8,12 +8,8 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import {
-  RELATION_BASED_ON,
-  RELATION_CREATED_BY,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 
 const indicatorResolvers = {
   Query: {

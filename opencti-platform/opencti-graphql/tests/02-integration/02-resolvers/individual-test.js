@@ -105,7 +105,7 @@ describe('Individual resolver standard behavior', () => {
     expect(queryResult.data.individual).not.toBeNull();
     expect(queryResult.data.individual.organizations.edges.length).toEqual(1);
     expect(queryResult.data.individual.organizations.edges[0].node.standard_id).toEqual(
-      'identity--2ec05f6c-a298-54f3-bea2-639be5913eb9'
+      'identity--ac22683f-b9eb-57d5-9a9d-33893c35c6e7'
     );
   });
   it('should list individuals', async () => {

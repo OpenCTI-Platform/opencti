@@ -179,8 +179,8 @@ describe('Report resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.report).not.toBeNull();
-    expect(queryResult.data.report.standard_id).toEqual('report--eb147aa9-f6e7-5b5d-9026-63337bb48a45');
-    expect(queryResult.data.report.objects.edges.length).toEqual(18);
+    expect(queryResult.data.report.standard_id).toEqual('report--f3e554eb-60f5-587c-9191-4f25e9ba9f32');
+    expect(queryResult.data.report.objects.edges.length).toEqual(15);
   });
   it('should report contains stix object or stix relationship accurate', async () => {
     const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');

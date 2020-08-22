@@ -8,7 +8,6 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   escape,
-  executeWrite,
   listEntities,
   loadEntityById,
   timeSeriesEntities,
@@ -27,14 +26,13 @@ import { addStixCoreRelationship, findAll as findAllStixRelations } from './stix
 import { FunctionalError } from '../config/errors';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixCoreObject';
+import { isStixDomainObject } from '../schema/stixDomainObject';
 import {
-  RELATION_OBJECT,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  isStixMetaRelationship,
-  isStixDomainObject,
-} from '../utils/idGenerator';
+} from '../schema/general';
+import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 export const findAll = async (args) => {
   let types = [];
@@ -262,11 +260,8 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input)
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, wTx);
-  }).then(async (updatedStixDomainObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user)
-  );
+  const updatedStixDomainObject = await updateAttribute(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user);
 };
 
 export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomainObjectsIds, alias) => {

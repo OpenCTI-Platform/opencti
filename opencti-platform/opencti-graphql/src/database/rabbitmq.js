@@ -213,7 +213,7 @@ export const getRabbitMQVersion = () => {
     .catch(/* istanbul ignore next */ () => 'Disconnected');
 };
 
-export const sendLog = async (eventType, eventUser, eventData, eventExtraData = null) => {
+export const sendLog = async (eventType, eventUser, eventData, eventExtraData = {}) => {
   const finalEventData = await convertDataToStix(eventData, eventType, eventExtraData);
   const message = {
     event_type: eventType,

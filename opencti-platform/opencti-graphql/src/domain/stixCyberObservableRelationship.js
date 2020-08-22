@@ -7,14 +7,13 @@ import {
 import {
   createRelation,
   deleteRelationById,
-  executeWrite,
   getRelationInferredById,
   loadRelationById,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../utils/idGenerator';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 
 export const findAll = (args) =>
   stixCoreRelationshipFindAll(
@@ -50,24 +49,10 @@ export const stixCyberObservableRelationshipCleanContext = (user, stixCyberObser
 export const stixCyberObservableRelationshipEditContext = (user, stixCyberObservableRelationshipId, input) =>
   stixCoreRelationshipEditContext(user, stixCyberObservableRelationshipId, input);
 
-export const stixCyberObservableRelationshipEditField = (user, stixCyberObservableRelationshipId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(
-      user,
-      stixCyberObservableRelationshipId,
-      ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-      input,
-      wTx,
-      {
-        noLog: true,
-      }
-    );
-  }).then(async () => {
-    const stixCyberObservableRelationship = await loadRelationById(
-      stixCyberObservableRelationshipId,
-      'stix_observable_relation'
-    );
-    return notify(BUS_TOPICS.StixCyberObservableRelationship.EDIT_TOPIC, stixCyberObservableRelationship, user);
+export const stixCyberObservableRelationshipEditField = async (user, relationshipId, input) => {
+  const stixRelationship = await updateAttribute(user, relationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, input, {
+    noLog: true,
   });
+  return notify(BUS_TOPICS.StixCyberObservableRelationship.EDIT_TOPIC, stixRelationship, user);
 };
 // endregion

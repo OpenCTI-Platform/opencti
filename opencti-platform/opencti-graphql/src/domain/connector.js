@@ -2,15 +2,14 @@ import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
   createEntity,
   deleteEntityById,
-  executeWrite,
   find,
   loadEntityById,
   now,
+  patchAttribute,
   sinceNowInMinutes,
-  updateAttribute,
 } from '../database/grakn';
 import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
-import { ENTITY_TYPE_CONNECTOR } from '../utils/idGenerator';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
@@ -61,28 +60,18 @@ export const pingConnector = async (user, id, state) => {
   const creation = now();
   const connector = await loadEntityById(id, ENTITY_TYPE_CONNECTOR);
   if (connector.connector_state_reset === true) {
-    await executeWrite(async (wTx) => {
-      const stateInput = { key: 'connector_state_reset', value: [false] };
-      await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, stateInput, wTx, { noLog: true });
-    });
+    const statePatch = { connector_state_reset: false };
+    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, statePatch, { noLog: true });
   } else {
-    await executeWrite(async (wTx) => {
-      const updateInput = { key: 'updated_at', value: [creation] };
-      await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, updateInput, wTx, { noLog: true });
-      const stateInput = { key: 'connector_state', value: [state] };
-      await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, stateInput, wTx, { noLog: true });
-    });
+    const updatePatch = { updated_at: creation, connector_state: state };
+    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatePatch, { noLog: true });
   }
   return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
 };
 
 export const resetStateConnector = async (user, id) => {
-  await executeWrite(async (wTx) => {
-    const stateInput = { key: 'connector_state', value: [''] };
-    await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, stateInput, wTx, { noLog: true });
-    const stateResetInput = { key: 'connector_state_reset', value: [true] };
-    await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, stateResetInput, wTx, { noLog: true });
-  });
+  const patch = { connector_state: '', connector_state_reset: true };
+  await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
   return loadEntityById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 
@@ -93,14 +82,8 @@ export const registerConnector = async (user, connectorData) => {
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
-    await executeWrite(async (wTx) => {
-      const inputName = { key: 'name', value: [name] };
-      await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, inputName, wTx, { noLog: true });
-      const updatedInput = { key: 'updated_at', value: [now()] };
-      await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatedInput, wTx, { noLog: true });
-      const scopeInput = { key: 'connector_scope', value: [scope.join(',')] };
-      await updateAttribute(user, id, ENTITY_TYPE_CONNECTOR, scopeInput, wTx, { noLog: true });
-    });
+    const patch = { name, updated_at: now(), connector_scope: scope.join(',') };
+    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
     return loadEntityById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector

@@ -9,7 +9,8 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_CAMPAIGN } from '../utils/idGenerator';
+import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (campaignId) => {
   return loadEntityById(campaignId, ENTITY_TYPE_CAMPAIGN);

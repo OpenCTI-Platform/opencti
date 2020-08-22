@@ -1,19 +1,17 @@
 import { head, last, mapObjIndexed, pipe, values, join } from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
-import {
-  isInternalObject,
-  isInternalRelationship,
-  isStixCyberObservable,
-  isStixCoreRelationship,
-  isStixCyberObservableRelationship,
-  isStixMetaRelationship,
-  isStixMetaObject,
-  isStixDomainObject,
-  isStixSightingRelationship,
-  isStixRelationship,
-} from '../utils/idGenerator';
 import { DatabaseError } from '../config/errors';
+import { isInternalObject } from '../schema/internalObject';
+import { isStixMetaObject } from '../schema/stixMetaObject';
+import { isStixDomainObject } from '../schema/stixDomainObject';
+import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
+import { isInternalRelationship } from '../schema/internalRelationship';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import { isStixRelationship } from '../schema/stixRelationship';
 
 // Entities
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
@@ -168,7 +166,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
     } else {
       message += `\`${toType}\` with value \`${toValue}\`.`;
     }
-  } else if (eventType === 'update') {
+  } else if (eventExtraData.key && eventType === 'update') {
     message += `\`${eventExtraData.key}\` with \`${join(', ', eventExtraData.value)}\`.`;
   } else {
     message += `${eventData.entity_type} \`${name}\`.`;

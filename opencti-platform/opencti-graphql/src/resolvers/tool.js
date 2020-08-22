@@ -14,7 +14,7 @@ import {
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
 
 const toolResolvers = {
   Query: {

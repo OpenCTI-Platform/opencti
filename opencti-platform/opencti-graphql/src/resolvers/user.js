@@ -35,7 +35,7 @@ import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { ENTITY_TYPE_USER } from '../utils/idGenerator';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
 const userResolvers = {
   Query: {

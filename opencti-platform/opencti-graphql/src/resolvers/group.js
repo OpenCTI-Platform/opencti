@@ -13,8 +13,8 @@ import {
 } from '../domain/group';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { ENTITY_TYPE_GROUP } from '../utils/idGenerator';
 import withCancel from '../graphql/subscriptionWrapper';
+import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 
 const groupResolvers = {
   Query: {

@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { assoc, dissoc, invertObj, map, pipe, propOr, filter } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -7,7 +8,6 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   escape,
-  executeWrite,
   listEntities,
   loadEntityById,
   timeSeriesEntities,
@@ -28,12 +28,9 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { generateFileExportName, upload } from '../database/minio';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
 import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_META_RELATIONSHIP,
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
   ENTITY_EMAIL_MESSAGE,
-  ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE,
@@ -41,16 +38,14 @@ import {
   ENTITY_NETWORK_TRAFFIC,
   ENTITY_PROCESS,
   ENTITY_SOFTWARE,
-  ENTITY_TYPE_CONNECTOR,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
-  ENTITY_X509_V3_EXTENSIONS_TYPE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
-  isStixMetaRelationship,
-  RELATION_OBJECT,
-} from '../utils/idGenerator';
+} from '../schema/stixCyberObservableObject';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 
 export const findById = (stixCyberObservableId) => {
   return loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -99,7 +94,8 @@ export const stixCyberObservableAskEnrichment = async (id, connectorId) => {
 };
 
 export const indicators = (stixCyberObservableId) => {
-  // TODO
+  // TODO @Sam
+  logger.info(`Loading indicators`, { stixCyberObservableId });
   return null;
 };
 
@@ -110,9 +106,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_DIRECTORY:
       return stixCyberObservable.path || 'Unknown';
     case ENTITY_EMAIL_MESSAGE:
-      return stixCyberObservable.body || stixCyberObservable.subject || 'Unknown';
-    case ENTITY_EMAIL_MIME_PART_TYPE:
-      return stixCyberObservable.body || 'Unknown';
+      return stixCyberObservable.body || stixCyberObservable.subject;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
       return (
         stixCyberObservable.md5 ||
@@ -144,62 +138,78 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_USER_ACCOUNT:
       return stixCyberObservable.account_login || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_KEY:
-      return stixCyberObservable.attribute_key || 'Unknown';
-    case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
-      return stixCyberObservable.name || 'Unknown';
-    case ENTITY_X509_V3_EXTENSIONS_TYPE:
-      return stixCyberObservable.certificate_policies || 'Unknown';
+      return stixCyberObservable.attribute_key;
     default:
       return stixCyberObservable.value || 'Unknown';
   }
 };
 
-export const addStixCyberObservable = async (user, args) => {
-  if (!isStixCyberObservable(args.type)) {
-    throw FunctionalError(`Observable type ${args.type} is not supported.`);
+const createIndicatorFromObservable = async (user, observable) => {
+  try {
+    const entityType = observable.entity_type;
+    let key = entityType;
+    if (isStixCyberObservableHashedObservable(observable.entity_type)) {
+      if (observable.sha256) {
+        key = `${entityType}_sha256`;
+      } else if (observable.sha1) {
+        key = `${entityType}_sha1`;
+      } else if (observable.md5) {
+        key = `${entityType}_md5`;
+      }
+    }
+    const indicatorName = observableValue(observable);
+    const pattern = await createStixPattern(key, indicatorName);
+    if (pattern) {
+      const indicatorToCreate = pipe(
+        dissoc('internal_id'),
+        dissoc('stix_id'),
+        dissoc('observable_value'),
+        assoc('name', indicatorName),
+        assoc('description', `Simple indicator of observable {${indicatorName}}`),
+        assoc('pattern_type', 'stix'),
+        assoc('pattern', pattern),
+        assoc('x_opencti_main_observable_type', observable.entity_type),
+        assoc('basedOn', [observable.id])
+      )(observable);
+      await addIndicator(user, indicatorToCreate);
+    }
+  } catch (err) {
+    logger.info(`Cannot create indicator`, { error: err });
   }
-  const graphQLType = args.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
-  if (!args[graphQLType]) {
+};
+
+export const addStixCyberObservable = async (user, input) => {
+  // The input type must be a correct observable type
+  if (!isStixCyberObservable(input.type)) {
+    throw FunctionalError(`Observable type ${input.type} is not supported.`);
+  }
+  // If type is ok, get the correct data that represent the observable
+  const graphQLType = input.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
+  let observableInput = input[graphQLType];
+  if (!observableInput) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
-  const observableSyntaxResult = checkObservableSyntax(args.type, args[graphQLType]);
+  // Check the consistency of the observable.
+  const observableSyntaxResult = checkObservableSyntax(input.type, observableInput);
   if (observableSyntaxResult !== true) {
-    throw FunctionalError(`Observable of type ${args.type} is not correctly formatted.`, { observableSyntaxResult });
+    throw FunctionalError(`Observable of type ${input.type} is not correctly formatted.`, { observableSyntaxResult });
   }
-  const created = await createEntity(user, args[graphQLType], args.type);
-  await askEnrich(created.id, args.type);
-  // create the linked indicator
-  if (args.createIndicator) {
-    try {
-      const entityType = created.entity_type;
-      let key = entityType;
-      if (isStixCyberObservableHashedObservable(created.entity_type)) {
-        if (created.sha256) {
-          key = `${entityType}_sha256`;
-        } else if (created.sha1) {
-          key = `${entityType}_sha1`;
-        } else if (created.md5) {
-          key = `${entityType}_md5`;
-        }
-      }
-      const pattern = await createStixPattern(key, observableValue(created));
-      if (pattern) {
-        const indicatorToCreate = pipe(
-          dissoc('internal_id'),
-          dissoc('stix_id'),
-          dissoc('observable_value'),
-          assoc('name', observableValue(created)),
-          assoc('description', `Simple indicator of observable {${observableValue(created)}}`),
-          assoc('pattern_type', 'stix'),
-          assoc('pattern', pattern),
-          assoc('x_opencti_main_observable_type', created.entity_type),
-          assoc('basedOn', [created.id])
-        )(args[graphQLType]);
-        await addIndicator(user, indicatorToCreate, false);
-      }
-    } catch (err) {
-      logger.info(`Cannot create indicator`, { error: err });
-    }
+  // Adapt the input if needed
+  if (isStixCyberObservableHashedObservable(input.type)) {
+    const hashBlob = JSON.stringify(
+      R.pipe(
+        R.map((d) => [d.algorithm, d.hash]),
+        R.fromPairs
+      )(observableInput.hashes)
+    );
+    observableInput = R.assoc('hashes', hashBlob, observableInput);
+  }
+  // If everything ok, create adapt/create the observable and notify for enrichment
+  const created = await createEntity(user, observableInput, input.type);
+  await askEnrich(created.id, input.type);
+  // create the linked indicator if needed
+  if (input.createIndicator) {
+    await createIndicatorFromObservable(user, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].ADDED_TOPIC, created, user);
 };
@@ -259,13 +269,9 @@ export const stixCyberObservableDeleteRelation = async (user, stixCyberObservabl
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 
-export const stixCyberObservableEditField = (user, stixCyberObservableId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, input, wTx);
-  }).then(async () => {
-    const stixCyberObservable = await loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
-  });
+export const stixCyberObservableEditField = async (user, stixCyberObservableId, input) => {
+  const stixCyberObservable = await updateAttribute(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 // endregion
 

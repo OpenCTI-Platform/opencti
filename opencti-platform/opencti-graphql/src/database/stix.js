@@ -1,16 +1,15 @@
 import { assoc, dissoc, pick, pipe } from 'ramda';
 import { FunctionalError } from '../config/errors';
+import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';
 import {
-  isStixObject,
-  isStixCoreRelationship,
-  isStixMetaRelationship,
-  isStixSightingRelationship,
   isStixInternalMetaRelationship,
+  isStixMetaRelationship,
   RELATION_CREATED_BY,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
-  ENTITY_HASHED_OBSERVABLE_STIX_FILE,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import { isStixObject } from '../schema/stixCoreObject';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 export const STIX_SPEC_VERSION = '2.1';
 

@@ -1,12 +1,12 @@
 import { assoc, dissocPath, pipe } from 'ramda';
-import { createEntity, executeWrite, getGraknVersion, load, loadEntityById, updateAttribute } from '../database/grakn';
+import { createEntity, getGraknVersion, load, loadEntityById, updateAttribute } from '../database/grakn';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
 import { getMinIOVersion } from '../database/minio';
 import { version } from '../../package.json';
-import { ENTITY_TYPE_SETTINGS } from '../utils/idGenerator';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 export const getApplicationInfo = () => ({
   version,
@@ -58,11 +58,7 @@ export const settingsEditContext = (user, settingsId, input) => {
   );
 };
 
-export const settingsEditField = (user, settingsId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input, wTx, { noLog: true });
-  }).then(async () => {
-    const settings = await loadEntityById(settingsId, ENTITY_TYPE_SETTINGS);
-    return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
-  });
+export const settingsEditField = async (user, settingsId, input) => {
+  const settings = await updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input, { noLog: true });
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
 };

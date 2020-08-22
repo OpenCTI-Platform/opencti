@@ -28,13 +28,13 @@ import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
 import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
   RELATION_CREATED_BY,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  RELATION_RELATED_TO,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 
 const stixCyberObservableResolvers = {
   Query: {

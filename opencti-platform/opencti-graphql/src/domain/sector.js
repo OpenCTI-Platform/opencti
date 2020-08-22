@@ -10,7 +10,9 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY_SECTOR, RELATION_PART_OF } from '../utils/idGenerator';
+import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
+import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (sectorId) => {
   return loadEntityById(sectorId, ENTITY_TYPE_IDENTITY_SECTOR);

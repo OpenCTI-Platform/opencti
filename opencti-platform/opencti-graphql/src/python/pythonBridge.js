@@ -56,16 +56,6 @@ export const createStixPattern = async (observableType, observableValue) => {
   }
 };
 
-export const extractObservables = async (pattern) => {
-  try {
-    const result = await execPython3('./src/python', 'stix2_extract_observables.py', [pattern]);
-    return result.data;
-  } catch (err) {
-    logger.warn(`[Python3] extractObservables error > ${err.message}`);
-    return null;
-  }
-};
-
 export const checkIndicatorSyntax = async (patternType, indicatorValue) => {
   try {
     const result = await execPython3('./src/python', 'check_indicator.py', [patternType, indicatorValue]);

@@ -14,28 +14,34 @@ import { findAll as relationFindAll } from './stixCoreRelationship';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import { isStixCoreObject } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isStixCoreObject,
+} from '../schema/general';
+import {
   isStixMetaRelationship,
-  isStixRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+} from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
+import { isStixRelationship } from '../schema/stixRelationship';
 
 export const findAll = async (args) => {
   let types = [];

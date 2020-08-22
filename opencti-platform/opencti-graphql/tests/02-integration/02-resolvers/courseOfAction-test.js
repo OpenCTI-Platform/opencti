@@ -104,11 +104,11 @@ describe('CourseOfAction resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.courseOfAction).not.toBeNull();
     expect(queryResult.data.courseOfAction.standard_id).toEqual(
-      'course-of-action--18f5414b-fae9-5a76-a7e5-163298d36f64'
+      'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752'
     );
     expect(queryResult.data.courseOfAction.attackPatterns.edges.length).toEqual(1);
     expect(queryResult.data.courseOfAction.attackPatterns.edges[0].node.standard_id).toEqual(
-      'attack-pattern--036e48f5-ce45-5333-b695-00a9c8b9dd6b'
+      'attack-pattern--0e08590f-5a73-51ca-a2cb-0453cad9d2b7'
     );
   });
   it('should list coursesOfAction', async () => {

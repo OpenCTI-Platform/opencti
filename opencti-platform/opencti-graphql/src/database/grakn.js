@@ -37,40 +37,36 @@ import {
   EVENT_TYPE_UPDATE_REMOVE,
   sendLog,
 } from './rabbitmq';
+// eslint-disable-next-line import/no-cycle
+import { generateInternalId, generateStandardId, isFieldContributingToStandardId } from '../schema/identifier';
+import { lockResource } from './redis';
+import { STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
-  ENTITY_TYPE_LABEL,
-  generateInternalId,
-  generateStandardId,
-  getParentTypes,
   isAbstract,
-  isBasicObject,
-  isBasicRelationship,
-  isDatedInternalObject,
-  isInternalId,
-  isInternalObject,
-  isStixCoreObject,
-  isStixCoreRelationship,
-  isStixCyberObservableRelationship,
-  isStixDomainObject,
-  isStixId,
-  isStixMetaObject,
+} from '../schema/general';
+import { getParentTypes, isInternalId, isStixId } from '../schema/schemaUtils';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import {
   isStixMetaRelationship,
-  isStixObject,
-  isStixRelationShipExceptMeta,
-  isStixSightingRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
-import { lockResource } from './redis';
-import { STIX_SPEC_VERSION } from './stix';
+} from '../schema/stixMetaRelationship';
+import { isDatedInternalObject, isInternalObject } from '../schema/internalObject';
+import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { dictAttributes, dictReconstruction } from '../schema/fieldDataAdapter';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixDomainObject } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 // region global variables
 export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
@@ -443,6 +439,8 @@ const loadConcept = async (tx, concept, args = {}) => {
           const { dataType, label } = attribute;
           if (dataType === GraknDate) {
             transformedVal = moment(attribute.value).utc().toISOString();
+          } else if (dictAttributes[attribute.label]) {
+            transformedVal = dictReconstruction(attribute.label, attribute.value);
           } else if (dataType === GraknString) {
             transformedVal = attribute.value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
           }
@@ -1204,10 +1202,33 @@ const flatAttributesForObject = (data) => {
 // endregion
 
 // region mutation update
-const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) => {
+const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
   const { id } = instance;
-  const { noLog = false } = options;
-  const { key, value } = input; // value can be multi valued
+  const { forceUpdate = false, operation = 'replace' } = options;
+  const { key, value } = rawInput; // value can be multi valued
+  // Format the data in regards of the operation for multiple attributes
+  const isMultiple = R.includes(key, multipleAttributes);
+  let finalVal;
+  if (isMultiple) {
+    const currentValues = instance[key];
+    if (operation === 'add') {
+      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
+    } else if (operation === 'remove') {
+      finalVal = R.filter((n) => !R.includes(n, value), currentValues);
+    } else {
+      finalVal = value;
+    }
+    if (!forceUpdate && R.equals(finalVal.sort(), currentValues.sort())) {
+      return [];
+    }
+  } else {
+    finalVal = value;
+    if (!forceUpdate && R.equals(instance[key], R.head(value))) {
+      return [];
+    }
+  }
+  const input = R.assoc('value', finalVal, rawInput);
+  const updatedInputs = [input];
   // --- 01 Get the current attribute types
   const escapedKey = escape(key);
   const labelTypeQuery = `match $x type ${escapedKey}; get;`;
@@ -1220,7 +1241,7 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
     return escape(v);
-  }, value);
+  }, input.value);
   // --- Delete the old attribute
   const entityId = `${escapeString(id)}`;
   const deleteQuery = `match $x has internal_id "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
@@ -1242,124 +1263,143 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
   }
   // Adding dates elements
   const updateOperations = [];
-  const noLogOpts = R.assoc('noLog', true, options);
   if (R.includes(key, statsDateAttributes)) {
-    const dayValue = dayFormat(R.head(value));
-    const monthValue = monthFormat(R.head(value));
-    const yearValue = yearFormat(R.head(value));
+    const dayValue = dayFormat(R.head(input.value));
+    const monthValue = monthFormat(R.head(input.value));
+    const yearValue = yearFormat(R.head(input.value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
-    updateOperations.push(innerUpdateAttribute(user, instance, dayInput, wTx, noLogOpts));
+    updatedInputs.push(dayInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, dayInput, wTx));
     const monthInput = { key: `${key}_month`, value: [monthValue] };
-    updateOperations.push(innerUpdateAttribute(user, instance, monthInput, wTx, noLogOpts));
+    updatedInputs.push(monthInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, monthInput, wTx));
     const yearInput = { key: `${key}_year`, value: [yearValue] };
-    updateOperations.push(innerUpdateAttribute(user, instance, yearInput, wTx, noLogOpts));
+    updatedInputs.push(yearInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, yearInput, wTx));
   }
   // Update modified / updated_at
   if (isStixDomainObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
     const updatedAtInput = { key: 'updated_at', value: [today] };
-    updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput, wTx, noLogOpts));
+    updatedInputs.push(updatedAtInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput, wTx));
     const modifiedAtInput = { key: 'modified', value: [today] };
-    updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput, wTx, noLogOpts));
+    updatedInputs.push(modifiedAtInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput, wTx));
   }
   await Promise.all(updateOperations);
-  // Update elasticsearch
-  const esOperations = [];
-  const val = R.includes(key, multipleAttributes) ? value : R.head(value);
-  // eslint-disable-next-line no-nested-ternary
-  const typedVal = val === 'true' ? true : val === 'false' ? false : val;
-  const updateValueField = { [key]: typedVal };
-  const currentIndex = inferIndexFromConceptType(instance.entity_type);
-  esOperations.push(
-    elUpdate(currentIndex, instance.internal_id, { doc: updateValueField }).catch(
-      /* istanbul ignore next */ (err) =>
-        logger.error(`[ELASTIC] An error occured during the update of the element ${id}`, { error: err })
-    )
-  );
-  if (!noLog && escapedKey !== 'graph_data') {
-    esOperations.push(
-      sendLog(
-        EVENT_TYPE_UPDATE,
-        user,
-        {
-          id: instance.id,
-          stix_ids: instance.stix_ids,
-          entity_type: instance.entity_type,
-          [escapedKey]: R.includes(input.key, multipleAttributes) ? input.value : R.head(input.value),
-        },
-        { key: escapedKey, value: input.value }
-      )
-    );
-  }
-  await Promise.all(esOperations);
-  return id;
+  return updatedInputs;
 };
 
-export const updateAttribute = async (user, id, type, input, wTx, options = {}) => {
-  // TODO IF PART OF KEY CHANGE, CHANGE THE STIX_ID
-  const { forceUpdate = false, operation = 'replace' } = options;
-  const { key, value } = input; // value can be multi valued
-  let currentInstanceData;
+export const updateAttribute = async (user, id, type, inputs, options = {}) => {
+  const elements = Array.isArray(inputs) ? inputs : [inputs];
+  // const { noLog = false } = options;
+  let instance;
   if (isBasicRelationship(type)) {
-    currentInstanceData = await loadRelationById(id, type);
+    instance = await loadRelationById(id, type, options);
   } else {
-    currentInstanceData = await loadEntityById(id, type);
+    instance = await loadEntityById(id, type, options);
   }
-  if (!currentInstanceData) {
+  if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
-  const isMultiple = R.includes(key, multipleAttributes);
-  let finalVal;
-  if (isMultiple) {
-    const currentValues = currentInstanceData[key];
-    if (operation === 'add') {
-      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
-    } else if (operation === 'remove') {
-      finalVal = R.filter((n) => !R.includes(n, value), currentValues);
-    } else {
-      finalVal = value;
-    }
-    if (!forceUpdate && R.equals(finalVal.sort(), currentValues.sort())) {
-      return currentInstanceData;
-    }
-  } else {
-    finalVal = value;
-    if (!forceUpdate && R.equals(currentInstanceData[key], R.head(value))) {
-      return currentInstanceData;
-    }
-  }
-
   // --- take lock, ensure no one currently create or update this element
   let lock;
+  const updatedInputs = [];
   try {
-    const finalInput = R.assoc('value', finalVal, input);
     // Try to get the lock in redis
-    lock = await lockResource(currentInstanceData.stix_id || currentInstanceData.internal_id);
-    // Update the attribute
-    await innerUpdateAttribute(user, currentInstanceData, finalInput, wTx, options);
+    lock = await lockResource(instance.internal_id);
+    await executeWrite(async (wTx) => {
+      // Update all needed attributes
+      for (let index = 0; index < elements.length; index += 1) {
+        const input = elements[index];
+        // eslint-disable-next-line no-await-in-loop
+        const ins = await innerUpdateAttribute(user, instance, input, wTx, options);
+        updatedInputs.push(...ins);
+      }
+      // If update is part of the key, update the standard_id
+      const instanceType = instance.entity_type;
+      const isRelation = instance.base_type === BASE_TYPE_RELATION;
+      const keys = R.map((t) => t.key, elements);
+      if (!isRelation && isFieldContributingToStandardId(instanceType, keys)) {
+        // eslint-disable-next-line no-await-in-loop
+        const standardId = await generateStandardId(instanceType, instance);
+        const standardInput = { key: 'standard_id', value: [standardId] };
+        // eslint-disable-next-line no-await-in-loop
+        const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
+        // currentInstanceData = R.assoc('standard_id', standardId, currentInstanceData);
+        updatedInputs.push(...ins);
+      }
+    });
+    // Update elasticsearch and send logs
+    const postOperations = [];
+    const index = inferIndexFromConceptType(instance.entity_type);
+    const esData = R.mergeAll(
+      R.map((updatedInput) => {
+        const { key, value } = updatedInput;
+        const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+        // eslint-disable-next-line no-nested-ternary
+        const typedVal = val === 'true' ? true : val === 'false' ? false : val;
+        return { [key]: typedVal };
+      }, updatedInputs)
+    );
+    postOperations.push(elUpdate(index, instance.internal_id, { doc: esData }));
+    // Send log
+    // TODO @Sam
+    /*
+    const dataToLogSend = R.pipe(
+      R.filter((input) => input.key !== 'graph_data'),
+      R.map(({ key, value }) => ({ [key]: R.includes(key, multipleAttributes) ? value : R.head(value) })),
+      R.mergeAll
+    )(elements);
+    if (!noLog && !R.isEmpty(dataToLogSend)) {
+      const baseData = {
+        standard_id: instance.standard_id,
+        internal_id: instance.id,
+        entity_type: instance.entity_type,
+      };
+      if (instance.base_type === BASE_TYPE_RELATION) {
+        const from = await internalLoadEntityById(instance.fromId);
+      }
+      // eslint-disable-next-line camelcase
+      const { stix_ids, entity_type } = instance;
+      const eventData = { id: instance.id, stix_ids, entity_type, data: dataToLogSend };
+      esOperations.push(sendLog(EVENT_TYPE_UPDATE, user, eventData));
+    }
+    */
+    // Wait for all
+    await Promise.all(postOperations);
   } finally {
     if (lock) await lock.unlock();
   }
-  return R.assoc(key, isMultiple ? finalVal : R.head(finalVal), currentInstanceData);
+  // Return fully updated instance
+  const inputPairs = R.map((input) => {
+    const { key, value } = input;
+    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+    return { [key]: val };
+  }, updatedInputs);
+  const updatedData = R.mergeAll(inputPairs);
+  return R.mergeRight(instance, updatedData);
+};
+
+export const patchAttribute = async (user, id, type, patch, options = {}) => {
+  const inputs = R.pipe(
+    R.toPairs,
+    R.map((t) => {
+      const val = R.last(t);
+      return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
+    })
+  )(patch);
+  return updateAttribute(user, id, type, inputs, options);
 };
 // endregion
 
 // region mutation relation
-const upsertRelation = async (user, relationship, type, input) => {
-  if (!R.isNil(input.stix_id)) {
-    return executeWrite((wTx) => {
-      return updateAttribute(
-        user,
-        relationship.internal_id,
-        type,
-        {
-          key: 'stix_ids',
-          value: [input.stix_id],
-        },
-        wTx,
-        { operation: 'add' }
-      );
-    });
+const upsertRelation = async (user, relationship, type, data) => {
+  if (!R.isNil(data.stix_id)) {
+    const id = relationship.internal_id;
+    const patch = { stix_ids: [data.stix_id] };
+    return patchAttribute(user, id, type, patch, { operation: 'add' });
   }
   return relationship;
 };
@@ -1386,11 +1426,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   }
   // 03. Generate the ID
   const internalId = generateInternalId();
-  const standardId = generateStandardId(
-    relationshipType,
-    R.pipe(R.assoc('fromId', from.standard_id), R.assoc('toId', to.standard_id))(input)
-  );
-
+  const standardId = await generateStandardId(relationshipType, input);
   // 04. Check existing relationship
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
   if (isStixCoreRelationship(input.relationship_type)) {
@@ -1719,21 +1755,11 @@ export const createRelations = async (user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-const upsertEntity = async (user, entity, type, input) => {
-  if (!R.isNil(input.stix_id)) {
-    return executeWrite((wTx) => {
-      return updateAttribute(
-        user,
-        entity.internal_id,
-        type,
-        {
-          key: 'stix_ids',
-          value: [input.stix_id],
-        },
-        wTx,
-        { operation: 'add' }
-      );
-    });
+const upsertEntity = async (user, entity, type, data) => {
+  if (!R.isNil(data.stix_id)) {
+    const id = entity.internal_id;
+    const patch = { stix_ids: [data.stix_id] };
+    return patchAttribute(user, id, type, patch, { operation: 'add' });
   }
   return entity;
 };
@@ -1753,7 +1779,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
   }
   // Generate the internal id
   const internalId = input.internal_id || generateInternalId();
-  const standardId = generateStandardId(type, input);
+  const standardId = await generateStandardId(type, input);
 
   // Check if the entity exists
   const existingEntity = await internalLoadEntityById(standardId);
@@ -1764,6 +1790,8 @@ export const createEntity = async (user, input, type, opts = {}) => {
   const today = now();
   // Dissoc additional data
   let data = R.pipe(
+    R.assoc('internal_id', internalId),
+    R.assoc('entity_type', type),
     R.dissoc('update'),
     R.dissoc('createdBy'),
     R.dissoc('objectMarking'),
@@ -1773,8 +1801,6 @@ export const createEntity = async (user, input, type, opts = {}) => {
     R.dissoc('objects')
   )(input);
   // Default attributes
-  // Basic-Object
-  data = R.pipe(R.assoc('internal_id', internalId), R.assoc('entity_type', type))(data);
   // Internal-Object
   if (isInternalObject(type)) {
     data = R.assoc('standard_id', standardId, data);

@@ -4,7 +4,7 @@ import { includes, map, filter } from 'ramda';
 import { defaultFieldResolver } from 'graphql';
 import { AuthRequired, ForbiddenAccess } from '../config/errors';
 import { BYPASS } from '../domain/user';
-import { OPENCTI_ADMIN_UUID } from '../utils/idGenerator';
+import {OPENCTI_ADMIN_UUID} from "../schema/general";
 
 export const AUTH_DIRECTIVE = 'auth';
 

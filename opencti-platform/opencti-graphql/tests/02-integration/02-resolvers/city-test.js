@@ -103,8 +103,8 @@ describe('City resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.city).not.toBeNull();
-    expect(queryResult.data.city.standard_id).toEqual('location--8cd41ad1-5ffc-5ce5-bb8d-abe6cd79b598');
-    expect(queryResult.data.city.country.standard_id).toEqual('location--da7e1450-3d18-5f2d-990c-f2e797fd7f53');
+    expect(queryResult.data.city.standard_id).toEqual('location--b88c34a6-683e-56b9-92a7-a4ed189fde9a');
+    expect(queryResult.data.city.country.standard_id).toEqual('location--57dbce2d-8b33-5671-aada-05850948ed30');
   });
   it('should list cities', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

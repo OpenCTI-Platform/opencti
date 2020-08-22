@@ -4,7 +4,6 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationsByFromAndTo,
-  executeWrite,
   listEntities,
   listFromEntitiesThroughRelation,
   loadEntityById,
@@ -12,14 +11,10 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  ABSTRACT_INTERNAL_RELATIONSHIP,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_USER,
-  isInternalRelationship,
-  RELATION_MEMBER_OF,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { isInternalRelationship, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
+import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 
 export const findById = (groupId) => {
   return loadEntityById(groupId, ENTITY_TYPE_GROUP);
@@ -40,13 +35,9 @@ export const addGroup = async (user, group) => {
 
 export const groupDelete = (user, groupId) => deleteEntityById(user, groupId, ENTITY_TYPE_GROUP, { noLog: true });
 
-export const groupEditField = (user, groupId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input, wTx, { noLog: true });
-  }).then(async () => {
-    const group = await loadEntityById(groupId, ENTITY_TYPE_GROUP);
-    return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
-  });
+export const groupEditField = async (user, groupId, input) => {
+  const group = await updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input, { noLog: true });
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 
 export const groupAddRelation = async (user, groupId, input) => {

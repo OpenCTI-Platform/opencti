@@ -98,9 +98,9 @@ describe('Country resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.country).not.toBeNull();
-    expect(queryResult.data.country.standard_id).toEqual('location--da7e1450-3d18-5f2d-990c-f2e797fd7f53');
+    expect(queryResult.data.country.standard_id).toEqual('location--57dbce2d-8b33-5671-aada-05850948ed30');
     expect(queryResult.data.country.region).not.toBeNull();
-    expect(queryResult.data.country.region.standard_id).toEqual('location--cb729867-02b4-58b2-b9b9-193fd45be9dc');
+    expect(queryResult.data.country.region.standard_id).toEqual('location--5f92df88-37cd-5060-9aa8-bc58053a572b');
   });
   it('should list countries', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
