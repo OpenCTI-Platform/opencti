@@ -24,6 +24,7 @@ import {
   loadRelationById,
   monthFormat,
   now,
+  patchAttribute,
   prepareDate,
   queryAttributeValueByGraknId,
   queryAttributeValues,
@@ -32,7 +33,6 @@ import {
   sinceNowInMinutes,
   timeSeriesEntities,
   timeSeriesRelations,
-  updateAttr,
   yearFormat,
 } from '../../../src/database/grakn';
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
@@ -242,18 +242,18 @@ describe('Grakn loaders', () => {
 
 describe('Grakn attribute updater', () => {
   const noCacheCases = [[true], [false]];
-  it('should update fail for read only attributes', async () => {
+  it('should update fail for unknown attributes', async () => {
     const campaign = await elLoadByStixId('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
-    const input = { key: 'observable_value', value: ['test'] };
-    const update = updateAttr(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
+    const input = { observable_value: 'test' };
+    const update = patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
     expect(update).rejects.toThrow();
   });
   it('should update dont do anything if already the same', async () => {
     const campaign = await elLoadByStixId('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
-    const input = { key: 'description', value: ['A test campaign'] };
-    const update = await updateAttr(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, input);
+    const patch = { description: 'A test campaign' };
+    const update = await patchAttribute(ADMIN_USER, campaignId, ENTITY_TYPE_CAMPAIGN, patch);
     expect(update.internal_id).toEqual(campaignId);
   });
   it.each(noCacheCases)('should update date with dependencies', async (noCache) => {
@@ -262,8 +262,8 @@ describe('Grakn attribute updater', () => {
     const campaignId = campaign.internal_id;
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
     const type = 'Stix-Domain-Object';
-    let input = { key: 'first_seen', value: ['2020-02-20T08:45:43.366Z'] };
-    let update = await updateAttr(ADMIN_USER, campaignId, type, input);
+    let patch = { first_seen: '2020-02-20T08:45:43.366Z' };
+    let update = await patchAttribute(ADMIN_USER, campaignId, type, patch);
     expect(update.internal_id).toEqual(campaignId);
     campaign = await internalLoadEntityById(stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-20T08:45:43.366Z');
@@ -271,8 +271,8 @@ describe('Grakn attribute updater', () => {
     expect(campaign.first_seen_month).toEqual('2020-02');
     expect(campaign.first_seen_year).toEqual('2020');
     // Value back to before
-    input = { key: 'first_seen', value: ['2020-02-27T08:45:43.365Z'] };
-    update = await updateAttr(ADMIN_USER, campaignId, type, input);
+    patch = { first_seen: '2020-02-27T08:45:43.365Z' };
+    update = await patchAttribute(ADMIN_USER, campaignId, type, patch);
     expect(update.internal_id).toEqual(campaignId);
     campaign = await internalLoadEntityById(stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
@@ -283,13 +283,13 @@ describe('Grakn attribute updater', () => {
     let relation = await loadRelationById(stixId, ABSTRACT_STIX_CORE_RELATIONSHIP, { noCache });
     const relationId = relation.internal_id;
     // expect(relation.confidence).toEqual(1);
-    let input = { key: 'confidence', value: [5] };
-    await updateAttr(ADMIN_USER, relationId, RELATION_MITIGATES, input, { noCache });
+    let patch = { confidence: 5 };
+    await patchAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, patch, { noCache });
     relation = await loadRelationById(stixId, ABSTRACT_STIX_CORE_RELATIONSHIP, { noCache });
     expect(relation.confidence).toEqual(5);
     // Value back to before
-    input = { key: 'confidence', value: [1] };
-    await updateAttr(ADMIN_USER, relationId, RELATION_MITIGATES, input, { noCache });
+    patch = { confidence: 1 };
+    await patchAttribute(ADMIN_USER, relationId, RELATION_MITIGATES, patch, { noCache });
     relation = await loadRelationById(stixId, ABSTRACT_STIX_CORE_RELATIONSHIP, { noCache });
     expect(relation.confidence).toEqual(1);
   });
@@ -299,13 +299,13 @@ describe('Grakn attribute updater', () => {
     let identity = await internalLoadEntityById(stixId, { noCache });
     const identityId = identity.internal_id;
     expect(identity.x_opencti_aliases.sort()).toEqual(['Computer Incident', 'Incident'].sort());
-    let input = { key: 'x_opencti_aliases', value: ['Computer', 'Test', 'Grakn'] };
-    await updateAttr(ADMIN_USER, identityId, type, input);
+    let patch = { x_opencti_aliases: ['Computer', 'Test', 'Grakn'] };
+    await patchAttribute(ADMIN_USER, identityId, type, patch);
     identity = await internalLoadEntityById(stixId, { noCache });
     expect(identity.x_opencti_aliases.sort()).toEqual(['Computer', 'Test', 'Grakn'].sort());
     // Value back to before
-    input = { key: 'x_opencti_aliases', value: ['Computer Incident', 'Incident'] };
-    await updateAttr(ADMIN_USER, identityId, type, input);
+    patch = { x_opencti_aliases: ['Computer Incident', 'Incident'] };
+    await patchAttribute(ADMIN_USER, identityId, type, patch);
     identity = await internalLoadEntityById(stixId, { noCache });
     expect(identity.x_opencti_aliases.sort()).toEqual(['Computer Incident', 'Incident'].sort());
   });

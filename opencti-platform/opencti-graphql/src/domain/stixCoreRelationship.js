@@ -12,7 +12,7 @@ import {
   load,
   loadEntityById,
   loadRelationById,
-  updateAttr,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
@@ -147,7 +147,7 @@ export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
-  const updatedRelationship = await updateAttr(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input);
+  const updatedRelationship = await updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedRelationship, user);
 };
 

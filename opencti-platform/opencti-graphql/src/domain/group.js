@@ -7,7 +7,7 @@ import {
   listEntities,
   listFromEntitiesThroughRelation,
   loadEntityById,
-  updateAttr,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -36,7 +36,7 @@ export const addGroup = async (user, group) => {
 export const groupDelete = (user, groupId) => deleteEntityById(user, groupId, ENTITY_TYPE_GROUP, { noLog: true });
 
 export const groupEditField = async (user, groupId, input) => {
-  const group = await updateAttr(user, groupId, ENTITY_TYPE_GROUP, input, { noLog: true });
+  const group = await updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 

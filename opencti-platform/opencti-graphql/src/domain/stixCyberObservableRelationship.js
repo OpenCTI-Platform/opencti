@@ -9,7 +9,7 @@ import {
   deleteRelationById,
   getRelationInferredById,
   loadRelationById,
-  updateAttr,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -50,7 +50,7 @@ export const stixCyberObservableRelationshipEditContext = (user, stixCyberObserv
   stixCoreRelationshipEditContext(user, stixCyberObservableRelationshipId, input);
 
 export const stixCyberObservableRelationshipEditField = async (user, relationshipId, input) => {
-  const stixRelationship = await updateAttr(user, relationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, input, {
+  const stixRelationship = await updateAttribute(user, relationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, input, {
     noLog: true,
   });
   return notify(BUS_TOPICS.StixCyberObservableRelationship.EDIT_TOPIC, stixRelationship, user);

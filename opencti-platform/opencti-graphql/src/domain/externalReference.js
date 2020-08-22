@@ -8,7 +8,7 @@ import {
   internalLoadEntityById,
   listEntities,
   loadEntityById,
-  updateAttr,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
@@ -72,7 +72,7 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
 };
 
 export const externalReferenceEditField = async (user, externalReferenceId, input) => {
-  const externalReference = await updateAttr(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, {
+  const externalReference = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, {
     noLog: true,
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);

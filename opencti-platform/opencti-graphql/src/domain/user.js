@@ -32,7 +32,8 @@ import {
   load,
   loadEntityById,
   now,
-  updateAttr,
+  patchAttribute,
+  updateAttribute,
 } from '../database/grakn';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
@@ -249,7 +250,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
 };
 
 export const roleEditField = async (user, roleId, input) => {
-  const role = await updateAttr(user, roleId, ENTITY_TYPE_ROLE, input, { noLog: true });
+  const role = await updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
@@ -286,8 +287,8 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 export const userEditField = async (user, userId, input) => {
   const { key } = input;
   const value = key === 'password' ? [bcrypt.hashSync(head(input.value).toString(), 10)] : input.value;
-  const finalInput = { key, value };
-  const userToEdit = await updateAttr(user, userId, ENTITY_TYPE_USER, finalInput, { noLog: true });
+  const patch = { [key]: value };
+  const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
 };
 
@@ -452,10 +453,8 @@ export const initAdmin = async (email, password, tokenValue) => {
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
   if (admin) {
     // Update admin fields
-    const inputEmail = { key: 'user_email', value: [email] };
-    const inputPassword = { key: 'password', value: [bcrypt.hashSync(password, 10)] };
-    const inputExternal = { key: 'external', value: [true] };
-    await updateAttr(admin, admin.id, ENTITY_TYPE_USER, [inputEmail, inputPassword, inputExternal], { noLog: true });
+    const patch = { user_email: email, password: bcrypt.hashSync(password, 10), external: true };
+    await patchAttribute(admin, admin.id, ENTITY_TYPE_USER, patch, { noLog: true });
     // Renew the token
     await userRenewToken(admin, admin.id, tokenAdmin);
   } else {

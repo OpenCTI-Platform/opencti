@@ -7,7 +7,7 @@ import {
   deleteRelationById,
   listEntities,
   loadEntityById,
-  updateAttr,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
@@ -52,7 +52,7 @@ export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relat
 };
 
 export const killChainPhaseEditField = async (user, killChainPhaseId, input) => {
-  const killChainPhase = await updateAttr(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, { noLog: true });
+  const killChainPhase = await updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user);
 };
 

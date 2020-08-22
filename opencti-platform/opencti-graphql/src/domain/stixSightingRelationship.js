@@ -14,7 +14,7 @@ import {
   loadEntityById,
   loadRelationById,
   prepareDate,
-  updateAttr,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
@@ -131,7 +131,7 @@ export const stixSightingRelationshipDelete = async (user, stixSightingRelations
   return deleteRelationById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 export const stixSightingRelationshipEditField = async (user, relationshipId, input) => {
-  const stixSightingRelationship = await updateAttr(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input);
+  const stixSightingRelationship = await updateAttribute(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input);
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {

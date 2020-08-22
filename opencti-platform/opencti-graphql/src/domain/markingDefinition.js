@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteEntityById, listEntities, loadEntityById, updateAttr } from '../database/grakn';
+import { createEntity, deleteEntityById, listEntities, loadEntityById, updateAttribute } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
@@ -29,7 +29,7 @@ export const markingDefinitionDelete = (user, markingDefinitionId) =>
   deleteEntityById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 
 export const markingDefinitionEditField = async (user, markingDefinitionId, input) => {
-  const markingDefinition = await updateAttr(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input);
+  const markingDefinition = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
 };
 

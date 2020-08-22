@@ -12,7 +12,7 @@ import {
   load,
   loadEntityById,
   prepareDate,
-  updateAttr,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { findAll as findAllStixDomains } from './stixDomainObject';
@@ -118,7 +118,7 @@ export const workspaceDeleteRelation = async (user, workspaceId, toId, relations
 };
 
 export const workspaceEditField = async (user, workspaceId, input) => {
-  const workspace = await updateAttr(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, { noLog: true });
+  const workspace = await updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 // endregion
