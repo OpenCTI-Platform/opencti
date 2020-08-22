@@ -83,10 +83,8 @@ export const reportsTimeSeriesByAuthor = async (args) => {
 // TODO Migrate to ElasticSearch
 export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT}, has internal_id $from_id;
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
+    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
     $to has internal_id "${escapeString(args.objectId)}"; 
     ${args.reportType ? `$to has report_types "${escapeString(args.reportType)};"` : ''}
     ${args.endDate ? `$to has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
@@ -94,10 +92,8 @@ export const reportsNumberByEntity = (args) => ({
     count;`
   ),
   total: getSingleValueNumber(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT}, has internal_id $from_id;
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
+    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};
+    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
     $to has internal_id "${escapeString(args.objectId)}";
     ${args.reportType ? `$x has report_class "${escapeString(args.reportType)};"` : ''}
     get;

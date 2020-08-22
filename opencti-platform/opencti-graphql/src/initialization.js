@@ -239,21 +239,26 @@ const isEmptyPlatform = async () => {
 
 const platformInit = async (noMigration = false) => {
   await checkSystemDependencies();
-  const needToBeInitialized = await isEmptyPlatform();
-  if (needToBeInitialized) {
-    logger.info(`[INIT] > New platform detected, initialization...`);
-    await initializeSchema(true);
-    await initializeData();
-    await initializeAdminUser();
-  } else {
-    logger.info('[INIT] > Existing platform detected, migration...');
-    // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
-    await initializeSchema(false);
-    // Always reset the admin user
-    await initializeAdminUser();
-    if (!noMigration) {
-      await applyMigration();
+  try {
+    const needToBeInitialized = await isEmptyPlatform();
+    if (needToBeInitialized) {
+      logger.info(`[INIT] > New platform detected, initialization...`);
+      await initializeSchema(true);
+      await initializeData();
+      await initializeAdminUser();
+    } else {
+      logger.info('[INIT] > Existing platform detected, migration...');
+      // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
+      await initializeSchema(false);
+      // Always reset the admin user
+      await initializeAdminUser();
+      if (!noMigration) {
+        await applyMigration();
+      }
     }
+  } catch (e) {
+    logger.error(`[OPENCTI] platform init fail`, { error: e });
+    throw e;
   }
   return true;
 };

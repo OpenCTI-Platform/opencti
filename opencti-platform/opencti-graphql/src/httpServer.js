@@ -22,6 +22,7 @@ export const listenServer = async () => {
         resolve(httpServer);
       });
     } catch (e) {
+      logger.error(`[OPENCTI] Start http server fail`, { error: e });
       reject(e);
     }
   });

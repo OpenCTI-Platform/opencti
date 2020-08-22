@@ -5383,13 +5383,13 @@ graceful-fs@^4.1.11, graceful-fs@^4.1.15, graceful-fs@^4.1.2, graceful-fs@^4.1.6
   resolved "https://registry.yarnpkg.com/graceful-fs/-/graceful-fs-4.2.4.tgz#2256bde14d3632958c465ebc96dc467ca07a29fb"
   integrity sha512-WjKPNJF79dtJAVniUlGGWHYGz2jWxT6VhN/4m1NdkbZ2nOsEF+cI1Edgql5zCRhs/VsQYRvrXctxktVXZUkixw==
 
-grakn-client@^1.7.0:
-  version "1.7.0"
-  resolved "https://registry.yarnpkg.com/grakn-client/-/grakn-client-1.7.0.tgz#7da5e4c27a075885ddae0eb4553ebc256c3ea601"
-  integrity sha512-ATtb8kj2Zn0ZxFl5TtLyf+XeckUqhUWBQ73CEhYid8VtA6CX/FfaSl2uQSVJW8h+x7kB18lYWPAtXUcacrkxAw==
+grakn-client@^1.8.0:
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/grakn-client/-/grakn-client-1.8.0.tgz#9a230fa0c32957614388dd600182f4f4e4e45466"
+  integrity sha512-y0/WVJe1fElfOyGB2o2AvSRD8KYh5uVDu4ZFco8JNhlvCH2fOVdtmoGuMRjg263BqvAbhW/ZvA4qT/DfQ3t3CA==
   dependencies:
     google-protobuf "^3.6.0"
-    grpc "^1.24.1"
+    grpc "^1.24.3"
 
 graphql-constraint-directive@^2.0.3:
   version "2.0.3"
@@ -5548,7 +5548,7 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-grpc@^1.24.1:
+grpc@^1.24.3:
   version "1.24.3"
   resolved "https://registry.yarnpkg.com/grpc/-/grpc-1.24.3.tgz#92efe28dfc1250dca179b8133e40b4f2341473d9"
   integrity sha512-EDemzuZTfhM0hgrXqC4PtR76O3t+hTIYJYR5vgiW0yt2WJqo4mhxUqZUirzUQz34Psz7dbLp38C6Cl7Ij2vXRQ==

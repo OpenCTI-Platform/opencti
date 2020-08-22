@@ -30,13 +30,12 @@ export const subRegions = (regionId) => {
   return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
-export const isSubRegion = async (regionId, args) => {
+export const isSubRegion = async (regionId) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Region; 
     $rel(${RELATION_LOCATED_AT}_from:$subregion, ${RELATION_LOCATED_AT}_to:$parent) isa ${RELATION_LOCATED_AT}; 
     $subregion has internal_id "${escapeString(regionId)}"; 
-    get; count;`,
-    args
+    get; count;`
   );
   return numberOfParents > 0;
 };

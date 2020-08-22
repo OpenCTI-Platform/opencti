@@ -30,12 +30,11 @@ export const subSectors = (sectorId) => {
   return listFromEntitiesThroughRelation(sectorId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const isSubSector = async (sectorId, args) => {
+export const isSubSector = async (sectorId) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa ${ENTITY_TYPE_IDENTITY_SECTOR}; 
     $rel(${RELATION_PART_OF}_from:$subsector, ${RELATION_PART_OF}_to:$parent) isa ${RELATION_PART_OF}; 
-    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`,
-    args
+    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`
   );
   return numberOfParents > 0;
 };
