@@ -178,7 +178,7 @@ describe('Opinion resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
-    expect(queryResult.data.opinion.standard_id).toEqual('opinion--3ab741f2-2dd8-5452-b139-de1840aa02a2');
+    expect(queryResult.data.opinion.standard_id).toEqual('opinion--f84ef4ee-f9be-54cf-91cf-c9d8b0712970');
     expect(queryResult.data.opinion.objects.edges.length).toEqual(5);
   });
   it('should opinion contains stix object or stix relationship accurate', async () => {

@@ -5,7 +5,6 @@ import {
   deleteRelationById,
   deleteRelationsByFromAndTo,
   escapeString,
-  executeWrite,
   getRelationInferredById,
   getSingleValueNumber,
   listFromEntitiesThroughRelation,
@@ -19,25 +18,27 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { isInternalId, isStixId } from '../schema/schemaUtils';
+import { ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isInternalId,
-  isStixId,
   isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-  STIX_SIGHTING_RELATIONSHIP,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+} from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
 
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
@@ -129,13 +130,9 @@ export const addStixSightingRelationship = async (user, stixSightingRelationship
 export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
   return deleteRelationById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
-export const stixSightingRelationshipEditField = (user, stixSightingRelationshipId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP, input, wTx);
-  }).then(async () => {
-    const stixSightingRelationship = await loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
-  });
+export const stixSightingRelationshipEditField = async (user, relationshipId, input) => {
+  const stixSightingRelationship = await updateAttribute(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input);
+  return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
   const stixSightingRelationship = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);

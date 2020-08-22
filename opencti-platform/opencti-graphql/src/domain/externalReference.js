@@ -5,19 +5,16 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationsByFromAndTo,
-  executeWrite,
   internalLoadEntityById,
   listEntities,
   loadEntityById,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import {
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  isStixMetaRelationship,
-} from '../utils/idGenerator';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
+import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 
 export const findById = (externalReferenceId) => {
   return loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
@@ -74,13 +71,11 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };
 
-export const externalReferenceEditField = (user, externalReferenceId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, wTx, { noLog: true });
-  }).then(async () => {
-    const externalReference = await loadEntityById(externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
-    return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
+export const externalReferenceEditField = async (user, externalReferenceId, input) => {
+  const externalReference = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, {
+    noLog: true,
   });
+  return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };
 
 export const externalReferenceCleanContext = async (user, externalReferenceId) => {

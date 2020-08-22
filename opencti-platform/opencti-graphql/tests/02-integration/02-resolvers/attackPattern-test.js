@@ -101,7 +101,7 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPattern.toStix.length).toBeGreaterThan(5);
     expect(queryResult.data.attackPattern.killChainPhases.edges.length).toEqual(1);
     expect(queryResult.data.attackPattern.killChainPhases.edges[0].node.standard_id).toEqual(
-      'kill-chain-phase--5bdd6c3c-6a3f-5a82-9299-37ed052b770e'
+      'kill-chain-phase--56330302-292c-5ad4-bece-bacaa99c16e0'
     );
   });
   it('should attackPattern loaded by stix id', async () => {
@@ -117,10 +117,10 @@ describe('AttackPattern resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.attackPattern).not.toBeNull();
-    expect(queryResult.data.attackPattern.standard_id).toEqual('attack-pattern--036e48f5-ce45-5333-b695-00a9c8b9dd6b');
+    expect(queryResult.data.attackPattern.standard_id).toEqual('attack-pattern--0e08590f-5a73-51ca-a2cb-0453cad9d2b7');
     expect(queryResult.data.attackPattern.coursesOfAction.edges.length).toEqual(1);
     expect(queryResult.data.attackPattern.coursesOfAction.edges[0].node.standard_id).toEqual(
-      'course-of-action--18f5414b-fae9-5a76-a7e5-163298d36f64'
+      'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752'
     );
   });
   it('should list attackPatterns', async () => {

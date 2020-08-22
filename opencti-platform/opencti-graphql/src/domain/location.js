@@ -2,7 +2,8 @@ import { pipe, assoc, dissoc, filter } from 'ramda';
 import { createEntity, listEntities, loadEntityById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION, isStixDomainObjectLocation } from '../utils/idGenerator';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/general';
+import { isStixDomainObjectLocation } from '../schema/stixDomainObject';
 
 export const findById = async (locationId) => {
   return loadEntityById(locationId, ENTITY_TYPE_LOCATION);

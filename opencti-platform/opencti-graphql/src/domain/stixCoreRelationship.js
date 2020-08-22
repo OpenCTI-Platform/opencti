@@ -5,7 +5,6 @@ import {
   deleteRelationById,
   deleteRelationsByFromAndTo,
   escapeString,
-  executeWrite,
   getRelationInferredById,
   listFromEntitiesThroughRelation,
   listRelations,
@@ -19,20 +18,14 @@ import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
+import { isInternalId, isStixId } from '../schema/schemaUtils';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER_NOTE,
-  ENTITY_TYPE_CONTAINER_OPINION,
-  ENTITY_TYPE_CONTAINER_REPORT,
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
   ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isInternalId,
-  isStixCoreRelationship,
-  isStixId,
+} from '../schema/general';
+import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
@@ -40,7 +33,18 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  ENTITY_TYPE_CONTAINER_REPORT,
+} from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_EXTERNAL_REFERENCE,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
 
 export const findAll = async (args) => {
   return listRelations(propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -143,11 +147,8 @@ export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, wTx);
-  }).then(async (updatedStixCoreRelationship) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedStixCoreRelationship, user)
-  );
+  const updatedRelationship = await updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedRelationship, user);
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {

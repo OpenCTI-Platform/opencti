@@ -103,10 +103,10 @@ describe('Organization resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.organization).not.toBeNull();
-    expect(queryResult.data.organization.standard_id).toEqual('identity--2ec05f6c-a298-54f3-bea2-639be5913eb9');
+    expect(queryResult.data.organization.standard_id).toEqual('identity--ac22683f-b9eb-57d5-9a9d-33893c35c6e7');
     expect(queryResult.data.organization.sectors.edges.length).toEqual(1);
     expect(queryResult.data.organization.sectors.edges[0].node.standard_id).toEqual(
-      'identity--ec64e236-dc31-50ed-ab39-ece26c828282'
+      'identity--4fbfb4dc-d39c-55a2-8cfe-f602c762c3bb'
     );
   });
   it('should list organizations', async () => {

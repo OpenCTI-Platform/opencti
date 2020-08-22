@@ -26,31 +26,32 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   escapeString,
-  executeWrite,
   find,
   listEntities,
   listToEntitiesThroughRelation,
   load,
   loadEntityById,
   now,
+  patchAttribute,
   updateAttribute,
 } from '../database/grakn';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
-  ABSTRACT_INTERNAL_RELATIONSHIP,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_TOKEN,
   ENTITY_TYPE_USER,
-  generateStandardId,
+} from '../schema/internalObject';
+import {
   isInternalRelationship,
-  OPENCTI_ADMIN_UUID,
   RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
-} from '../utils/idGenerator';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+} from '../schema/internalRelationship';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
+import { generateStandardId } from '../schema/identifier';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -150,7 +151,7 @@ export const getCapabilities = async (userId) => {
   );
   const capabilities = map((r) => r.capability, data);
   if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
-    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
+    const id = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, internal_id: id, name: BYPASS });
   }
   return capabilities;
@@ -205,10 +206,11 @@ export const roleEditContext = async (user, roleId, input) => {
 };
 // endregion
 
-export const assignRoleToUser = (user, userId, roleName) => {
+export const assignRoleToUser = async (user, userId, roleName) => {
+  const generateToId = await generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
   const assignInput = {
     fromId: userId,
-    toId: generateStandardId(ENTITY_TYPE_ROLE, { name: roleName }),
+    toId: generateToId,
     relationship_type: RELATION_HAS_ROLE,
   };
   return createRelation(user, assignInput, { noLog: true });
@@ -247,13 +249,9 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
-export const roleEditField = (user, roleId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input, wTx, { noLog: true });
-  }).then(async () => {
-    const role = await loadEntityById(roleId, ENTITY_TYPE_ROLE);
-    return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
-  });
+export const roleEditField = async (user, roleId, input) => {
+  const role = await updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input, { noLog: true });
+  return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
 export const roleAddRelation = async (user, roleId, input) => {
@@ -286,16 +284,12 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 };
 
 // User related
-export const userEditField = (user, userId, input) => {
+export const userEditField = async (user, userId, input) => {
   const { key } = input;
   const value = key === 'password' ? [bcrypt.hashSync(head(input.value).toString(), 10)] : input.value;
-  const finalInput = { key, value };
-  return executeWrite((wTx) => {
-    return updateAttribute(user, userId, ENTITY_TYPE_USER, finalInput, wTx, { noLog: true });
-  }).then(async () => {
-    const userToEdit = await loadEntityById(userId, ENTITY_TYPE_USER);
-    return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
-  });
+  const patch = { [key]: value };
+  const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch, { noLog: true });
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
 };
 
 export const meEditField = (user, userId, input) => {
@@ -459,14 +453,8 @@ export const initAdmin = async (email, password, tokenValue) => {
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);
   if (admin) {
     // Update admin fields
-    await executeWrite(async (wTx) => {
-      const inputEmail = { key: 'user_email', value: [email] };
-      await updateAttribute(admin, admin.id, ENTITY_TYPE_USER, inputEmail, wTx);
-      const inputPassword = { key: 'password', value: [bcrypt.hashSync(password, 10)] };
-      await updateAttribute(admin, admin.id, ENTITY_TYPE_USER, inputPassword, wTx, { noLog: true });
-      const inputExternal = { key: 'external', value: [true] };
-      await updateAttribute(admin, admin.id, ENTITY_TYPE_USER, inputExternal, wTx, { noLog: true });
-    });
+    const patch = { user_email: email, password: bcrypt.hashSync(password, 10), external: true };
+    await patchAttribute(admin, admin.id, ENTITY_TYPE_USER, patch, { noLog: true });
     // Renew the token
     await userRenewToken(admin, admin.id, tokenAdmin);
   } else {

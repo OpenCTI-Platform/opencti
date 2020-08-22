@@ -1,11 +1,8 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
 import { createEntity, createRelation, deleteEntityById } from '../database/grakn';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_ROLE,
-  generateStandardId,
-  RELATION_HAS_CAPABILITY,
-} from '../utils/idGenerator';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
+import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
+import { generateStandardId } from '../schema/identifier';
 
 export const addCapability = async (user, capability) => {
   return createEntity(user, capability, ENTITY_TYPE_CAPABILITY, { noLog: true });
@@ -19,19 +16,18 @@ export const addRole = async (user, role) => {
     dissoc('capabilities')
   )(role);
   const roleEntity = await createEntity(user, roleToCreate, ENTITY_TYPE_ROLE, { noLog: true });
-  const relationPromises = map(
-    (capabilityName) =>
-      createRelation(
-        user,
-        {
-          fromId: roleEntity.id,
-          toId: generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName }),
-          relationship_type: RELATION_HAS_CAPABILITY,
-        },
-        { noLog: true }
-      ),
-    capabilities
-  );
+  const relationPromises = map(async (capabilityName) => {
+    const generateToId = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
+    return createRelation(
+      user,
+      {
+        fromId: roleEntity.id,
+        toId: generateToId,
+        relationship_type: RELATION_HAS_CAPABILITY,
+      },
+      { noLog: true }
+    );
+  }, capabilities);
   await Promise.all(relationPromises);
   return roleEntity;
 };

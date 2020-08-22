@@ -11,7 +11,7 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { PROVIDERS } from '../config/providers';
-import { ENTITY_TYPE_SETTINGS } from '../utils/idGenerator';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 const settingsResolvers = {
   Query: {

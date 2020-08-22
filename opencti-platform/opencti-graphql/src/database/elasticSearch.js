@@ -37,14 +37,14 @@ import {
 import conf, { logger } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
 import {
-  BASE_TYPE_RELATION,
-  getParentTypes,
-  isAbstract,
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../utils/idGenerator';
+} from '../schema/stixMetaRelationship';
+import { BASE_TYPE_RELATION, isAbstract } from '../schema/general';
+import { dictReconstruction } from '../schema/fieldDataAdapter';
+import { getParentTypes } from '../schema/schemaUtils';
 
 const dateFields = [
   'created',
@@ -747,10 +747,19 @@ const elInternalLoadById = async (id, type = null, elementTypes = ['internal_id'
   const response = total === 1 ? head(data.body.hits.hits) : null;
   if (!response) return response;
   const loadedElement = assoc('_index', response._index, response._source);
-  if (loadedElement.base_type === BASE_TYPE_RELATION) {
-    return elReconstructRelation(loadedElement);
+  // Dictionary are stored in STIX json format, we need to recreate what is expected by graphql
+  const transformedData = {};
+  const dataKeys = Object.keys(loadedElement);
+  for (let index = 0; index < dataKeys.length; index += 1) {
+    const dataKey = dataKeys[index];
+    const attributeValue = loadedElement[dataKey];
+    transformedData[dataKey] = dictReconstruction(dataKey, attributeValue);
   }
-  return loadedElement;
+  // Return the data and reconstruct the relation if needed
+  if (transformedData.base_type === BASE_TYPE_RELATION) {
+    return elReconstructRelation(transformedData);
+  }
+  return transformedData;
 };
 // endregion
 

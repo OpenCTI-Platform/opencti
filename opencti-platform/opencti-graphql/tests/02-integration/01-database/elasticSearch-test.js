@@ -358,7 +358,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(ENTITIES_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(92);
+    expect(data.edges.length).toEqual(89);
     const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('ENTITY');
@@ -373,7 +373,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(ENTITIES_INDICES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(62);
+    expect(data.edges.length).toEqual(59);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,
@@ -420,7 +420,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(86); // The 4 Default TLP Marking definitions + 1
+    expect(data.edges.length).toEqual(83); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
@@ -495,14 +495,14 @@ describe('Elasticsearch pagination', () => {
   it('should relation paginate everything', async () => {
     let data = await elPaginate(RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(160);
+    expect(data.edges.length).toEqual(145);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(160);
+    expect(data.length).toEqual(145);
     filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');
@@ -514,7 +514,7 @@ describe('Elasticsearch basic loader', () => {
     const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
     const data = await elLoadById(malware.internal_id);
     expect(data).not.toBeNull();
-    expect(data.standard_id).toEqual('malware--d684b00b-4088-508c-8e42-f23bf2936fac');
+    expect(data.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
     expect(data.entity_type).toEqual('Malware');

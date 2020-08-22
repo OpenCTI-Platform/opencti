@@ -5,7 +5,7 @@ import Migration from 'migrate/lib/migration';
 import { executeWrite, find, load, internalDirectWrite } from './grakn';
 import { logger } from '../config/conf';
 import { DatabaseError } from '../config/errors';
-import { RELATION_MIGRATES } from '../utils/idGenerator';
+import { RELATION_MIGRATES } from '../schema/internalRelationship';
 
 const normalizeMigrationName = (rawName) => {
   if (rawName.startsWith('./')) {

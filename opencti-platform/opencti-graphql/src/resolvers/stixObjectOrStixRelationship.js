@@ -1,6 +1,6 @@
 import { includes } from 'ramda';
 import { findById } from '../domain/stixObjectOrStixRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../utils/idGenerator';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 
 const stixObjectOrStixRelationshipResolvers = {
   Query: {

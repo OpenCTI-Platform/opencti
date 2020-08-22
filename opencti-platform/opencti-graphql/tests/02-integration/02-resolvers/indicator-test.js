@@ -46,7 +46,6 @@ const READ_QUERY = gql`
 
 describe('Indicator resolver standard behavior', () => {
   let indicatorInternalId;
-  let stixCyberObservableInternalId;
   const indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
   it('should indicator created', async () => {
     const CREATE_QUERY = gql`
@@ -84,9 +83,8 @@ describe('Indicator resolver standard behavior', () => {
     expect(indicator).not.toBeNull();
     expect(indicator.data.indicatorAdd).not.toBeNull();
     expect(indicator.data.indicatorAdd.name).toEqual('Indicator');
-    expect(indicator.data.indicatorAdd.observables.edges.length).toEqual(1);
+    expect(indicator.data.indicatorAdd.observables.edges.length).toEqual(0);
     indicatorInternalId = indicator.data.indicatorAdd.id;
-    stixCyberObservableInternalId = indicator.data.indicatorAdd.observables.edges[0].node.id;
   });
   it('should indicator loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: indicatorInternalId } });
@@ -231,17 +229,5 @@ describe('Indicator resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: indicatorStixId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.indicator).toBeNull();
-    const DELETE_STIX_CYBER_OBSERVABLE_QUERY = gql`
-      mutation stixCyberObservableDelete($id: ID!) {
-        stixCyberObservableEdit(id: $id) {
-          delete
-        }
-      }
-    `;
-    // Delete the observable
-    await queryAsAdmin({
-      query: DELETE_STIX_CYBER_OBSERVABLE_QUERY,
-      variables: { id: stixCyberObservableInternalId },
-    });
   });
 });

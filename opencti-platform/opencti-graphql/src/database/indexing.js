@@ -5,19 +5,21 @@ import { find, getSingleValueNumber } from './grakn';
 import { elCreateIndexes, elDeleteIndexes, elIndexElements } from './elasticSearch';
 import { logger } from '../config/conf';
 import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_OBJECT,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_LABEL,
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_WORKSPACE,
-  RELATION_MEMBER_OF,
-  STIX_SIGHTING_RELATIONSHIP,
-} from '../utils/idGenerator';
+} from '../schema/internalObject';
+import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_OBJECT,
+} from '../schema/general';
+import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const GROUP_NUMBER = 200; // Pagination size for query
 const GROUP_CONCURRENCY = 10; // Number of query in //
