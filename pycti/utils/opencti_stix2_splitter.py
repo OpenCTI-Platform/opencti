@@ -10,6 +10,8 @@ class OpenCTIStix2Splitter:
         self.relationships = []
 
     def enlist_entity_element(self, item_id, raw_data):
+        if item_id not in raw_data:
+            return
         nb_deps = 0
         item = raw_data[item_id]
         is_marking = item["id"].startswith("marking-definition--")
@@ -38,6 +40,8 @@ class OpenCTIStix2Splitter:
         self.cache_index[item_id] = item  # Put in cache
 
     def enlist_relation_element(self, item_id, raw_data):
+        if item_id not in raw_data:
+            return
         nb_deps = 0
         item = raw_data[item_id]
         source = item["source_ref"]
