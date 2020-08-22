@@ -7,13 +7,12 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   escapeString,
-  executeWrite,
   getSingleValueNumber,
   listEntities,
   load,
   loadEntityById,
   prepareDate,
-  updateAttribute,
+  updateAttr,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { findAll as findAllStixDomains } from './stixDomainObject';
@@ -118,13 +117,9 @@ export const workspaceDeleteRelation = async (user, workspaceId, toId, relations
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 
-export const workspaceEditField = (user, workspaceId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, wTx, { noLog: true });
-  }).then(async () => {
-    const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
-    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
-  });
+export const workspaceEditField = async (user, workspaceId, input) => {
+  const workspace = await updateAttr(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, { noLog: true });
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 // endregion
 

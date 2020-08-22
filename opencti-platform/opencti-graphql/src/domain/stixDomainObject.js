@@ -8,11 +8,10 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   escape,
-  executeWrite,
   listEntities,
   loadEntityById,
   timeSeriesEntities,
-  updateAttribute,
+  updateAttr,
 } from '../database/grakn';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { elCount } from '../database/elasticSearch';
@@ -261,11 +260,8 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input)
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input, wTx);
-  }).then(async (updatedStixDomainObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user)
-  );
+  const updatedStixDomainObject = await updateAttr(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user);
 };
 
 export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomainObjectsIds, alias) => {

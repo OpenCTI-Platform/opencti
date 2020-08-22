@@ -5,7 +5,6 @@ import {
   deleteRelationById,
   deleteRelationsByFromAndTo,
   escapeString,
-  executeWrite,
   getRelationInferredById,
   getSingleValueNumber,
   listFromEntitiesThroughRelation,
@@ -15,7 +14,7 @@ import {
   loadEntityById,
   loadRelationById,
   prepareDate,
-  updateAttribute,
+  updateAttr,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
@@ -131,13 +130,9 @@ export const addStixSightingRelationship = async (user, stixSightingRelationship
 export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
   return deleteRelationById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
-export const stixSightingRelationshipEditField = (user, stixSightingRelationshipId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP, input, wTx);
-  }).then(async () => {
-    const stixSightingRelationship = await loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-    return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
-  });
+export const stixSightingRelationshipEditField = async (user, relationshipId, input) => {
+  const stixSightingRelationship = await updateAttr(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input);
+  return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
   const stixSightingRelationship = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);

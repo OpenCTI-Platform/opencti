@@ -128,13 +128,13 @@ const entityContribution = {
       return data?.toLowerCase();
     },
     published(data) {
-      return data?.toISOString();
+      return data instanceof Date ? data.toISOString() : data;
     },
     first_observed(data) {
-      return data?.toISOString();
+      return data instanceof Date ? data.toISOString() : data;
     },
     last_observed(data) {
-      return data?.toISOString();
+      return data instanceof Date ? data.toISOString() : data;
     },
     hashes(data) {
       const hashDict = JSON.parse(data);
@@ -146,12 +146,15 @@ const entityContribution = {
     },
   },
 };
-export const isFieldContributingToStandardId = (type, key) => {
+export const isFieldContributingToStandardId = (type, keys) => {
   const properties = entityContribution.definition[type];
-  if (!properties) throw DatabaseError(`Unknown definition for type ${type}`);
+  if (!properties) {
+    throw DatabaseError(`Unknown definition for type ${type}`);
+  }
   if (properties.length === 0) return true;
   const propertiesToKeep = R.flatten(R.map((t) => t.src, properties));
-  return R.includes(key, propertiesToKeep);
+  const keysIncluded = R.filter((p) => R.includes(p, keys), propertiesToKeep);
+  return keysIncluded.length > 0;
 };
 const filteredIdContributions = async (way, data) => {
   const propertiesToKeep = R.flatten(R.map((t) => t.src, way));

@@ -5,7 +5,6 @@ import {
   deleteRelationById,
   deleteRelationsByFromAndTo,
   escapeString,
-  executeWrite,
   getRelationInferredById,
   listFromEntitiesThroughRelation,
   listRelations,
@@ -13,7 +12,7 @@ import {
   load,
   loadEntityById,
   loadRelationById,
-  updateAttribute,
+  updateAttr,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
@@ -148,11 +147,8 @@ export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input, wTx);
-  }).then(async (updatedStixCoreRelationship) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedStixCoreRelationship, user)
-  );
+  const updatedRelationship = await updateAttr(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedRelationship, user);
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {

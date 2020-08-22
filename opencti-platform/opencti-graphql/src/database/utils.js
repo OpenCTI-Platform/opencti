@@ -166,7 +166,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
     } else {
       message += `\`${toType}\` with value \`${toValue}\`.`;
     }
-  } else if (eventType === 'update') {
+  } else if (eventExtraData.key && eventType === 'update') {
     message += `\`${eventExtraData.key}\` with \`${join(', ', eventExtraData.value)}\`.`;
   } else {
     message += `${eventData.entity_type} \`${name}\`.`;

@@ -1,13 +1,6 @@
 import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  createEntity,
-  deleteEntityById,
-  executeWrite,
-  listEntities,
-  loadEntityById,
-  updateAttribute,
-} from '../database/grakn';
+import { createEntity, deleteEntityById, listEntities, loadEntityById, updateAttr } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 
@@ -31,13 +24,9 @@ export const addLabel = async (user, label) => {
 
 export const labelDelete = (user, labelId) => deleteEntityById(user, labelId, ENTITY_TYPE_LABEL, { noLog: true });
 
-export const labelEditField = (user, labelId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, labelId, ENTITY_TYPE_LABEL, input, wTx, { noLog: true });
-  }).then(async () => {
-    const label = await loadEntityById(labelId, ENTITY_TYPE_LABEL);
-    return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user);
-  });
+export const labelEditField = async (user, labelId, input) => {
+  const label = await updateAttr(user, labelId, ENTITY_TYPE_LABEL, input, { noLog: true });
+  return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user);
 };
 
 export const labelCleanContext = async (user, labelId) => {

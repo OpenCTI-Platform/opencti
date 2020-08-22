@@ -1202,10 +1202,33 @@ const flatAttributesForObject = (data) => {
 // endregion
 
 // region mutation update
-const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) => {
+const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
   const { id } = instance;
-  const { noLog = false } = options;
-  const { key, value } = input; // value can be multi valued
+  const { forceUpdate = false, operation = 'replace' } = options;
+  const { key, value } = rawInput; // value can be multi valued
+  const updatedInputs = [rawInput];
+  // Format the data in regards of the operation for multiple attributes
+  const isMultiple = R.includes(key, multipleAttributes);
+  let finalVal;
+  if (isMultiple) {
+    const currentValues = instance[key];
+    if (operation === 'add') {
+      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
+    } else if (operation === 'remove') {
+      finalVal = R.filter((n) => !R.includes(n, value), currentValues);
+    } else {
+      finalVal = value;
+    }
+    if (!forceUpdate && R.equals(finalVal.sort(), currentValues.sort())) {
+      return [];
+    }
+  } else {
+    finalVal = value;
+    if (!forceUpdate && R.equals(instance[key], R.head(value))) {
+      return [];
+    }
+  }
+  const input = R.assoc('value', finalVal, rawInput);
   // --- 01 Get the current attribute types
   const escapedKey = escape(key);
   const labelTypeQuery = `match $x type ${escapedKey}; get;`;
@@ -1218,7 +1241,7 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
     return escape(v);
-  }, value);
+  }, input.value);
   // --- Delete the old attribute
   const entityId = `${escapeString(id)}`;
   const deleteQuery = `match $x has internal_id "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
@@ -1242,131 +1265,128 @@ const innerUpdateAttribute = async (user, instance, input, wTx, options = {}) =>
   const updateOperations = [];
   const noLogOpts = R.assoc('noLog', true, options);
   if (R.includes(key, statsDateAttributes)) {
-    const dayValue = dayFormat(R.head(value));
-    const monthValue = monthFormat(R.head(value));
-    const yearValue = yearFormat(R.head(value));
+    const dayValue = dayFormat(R.head(input.value));
+    const monthValue = monthFormat(R.head(input.value));
+    const yearValue = yearFormat(R.head(input.value));
     const dayInput = { key: `${key}_day`, value: [dayValue] };
+    updatedInputs.push(dayInput);
     updateOperations.push(innerUpdateAttribute(user, instance, dayInput, wTx, noLogOpts));
     const monthInput = { key: `${key}_month`, value: [monthValue] };
+    updatedInputs.push(monthInput);
     updateOperations.push(innerUpdateAttribute(user, instance, monthInput, wTx, noLogOpts));
     const yearInput = { key: `${key}_year`, value: [yearValue] };
+    updatedInputs.push(yearInput);
     updateOperations.push(innerUpdateAttribute(user, instance, yearInput, wTx, noLogOpts));
   }
   // Update modified / updated_at
   if (isStixDomainObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
     const today = now();
     const updatedAtInput = { key: 'updated_at', value: [today] };
+    updatedInputs.push(updatedAtInput);
     updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput, wTx, noLogOpts));
     const modifiedAtInput = { key: 'modified', value: [today] };
+    updatedInputs.push(modifiedAtInput);
     updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput, wTx, noLogOpts));
   }
   await Promise.all(updateOperations);
-  // Update elasticsearch
-  const esOperations = [];
-  const val = R.includes(key, multipleAttributes) ? value : R.head(value);
-  // eslint-disable-next-line no-nested-ternary
-  const typedVal = val === 'true' ? true : val === 'false' ? false : val;
-  const updateValueField = { [key]: typedVal };
-  const currentIndex = inferIndexFromConceptType(instance.entity_type);
-  esOperations.push(
-    elUpdate(currentIndex, instance.internal_id, { doc: updateValueField }).catch(
-      /* istanbul ignore next */ (err) =>
-        logger.error(`[ELASTIC] An error occured during the update of the element ${id}`, { error: err })
-    )
-  );
-  if (!noLog && escapedKey !== 'graph_data') {
-    esOperations.push(
-      sendLog(
-        EVENT_TYPE_UPDATE,
-        user,
-        {
-          id: instance.id,
-          stix_ids: instance.stix_ids,
-          entity_type: instance.entity_type,
-          [escapedKey]: R.includes(input.key, multipleAttributes) ? input.value : R.head(input.value),
-        },
-        { key: escapedKey, value: input.value }
-      )
-    );
-  }
-  await Promise.all(esOperations);
-  return id;
+  return updatedInputs;
 };
 
-export const updateAttribute = async (user, id, type, input, wTx, options = {}) => {
-  // TODO IF PART OF KEY CHANGE, CHANGE THE STIX_ID
-  const { forceUpdate = false, operation = 'replace' } = options;
-  const { key, value } = input; // value can be multi valued
-  let currentInstanceData;
+export const updateAttr = async (user, id, type, rawInput, options = {}) => {
+  const inputs = Array.isArray(rawInput) ? rawInput : [rawInput];
+  const { noLog = false } = options;
+  let instance;
   if (isBasicRelationship(type)) {
-    currentInstanceData = await loadRelationById(id, type);
+    instance = await loadRelationById(id, type, options);
   } else {
-    currentInstanceData = await loadEntityById(id, type);
+    instance = await loadEntityById(id, type, options);
   }
-  if (!currentInstanceData) {
+  if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
-  // Format the data in regards of the operation for multiple attributes
-  const isMultiple = R.includes(key, multipleAttributes);
-  let finalVal;
-  if (isMultiple) {
-    const currentValues = currentInstanceData[key];
-    if (operation === 'add') {
-      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
-    } else if (operation === 'remove') {
-      finalVal = R.filter((n) => !R.includes(n, value), currentValues);
-    } else {
-      finalVal = value;
-    }
-    if (!forceUpdate && R.equals(finalVal.sort(), currentValues.sort())) {
-      return currentInstanceData;
-    }
-  } else {
-    finalVal = value;
-    if (!forceUpdate && R.equals(currentInstanceData[key], R.head(value))) {
-      return currentInstanceData;
+  // Check if attributes we want to update are existing for this instance.
+  const inputKeys = R.map((d) => d.key, inputs);
+  for (let indexKey = 0; indexKey < inputKeys.length; indexKey += 1) {
+    const inputKey = inputKeys[indexKey];
+    if (!Object.keys(instance).includes(inputKey)) {
+      throw FunctionalError(`This attribute doesnt exists in this entity`, { inputKey, instance });
     }
   }
-  const finalInput = R.assoc('value', finalVal, input);
   // --- take lock, ensure no one currently create or update this element
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(currentInstanceData.internal_id);
-    // Update the attribute
-    await innerUpdateAttribute(user, currentInstanceData, finalInput, wTx, options);
-    currentInstanceData = R.assoc(key, isMultiple ? finalVal : R.head(finalVal), currentInstanceData);
-    // If update is part of the key, update the standard_id
-    const instanceType = currentInstanceData.entity_type;
-    if (isFieldContributingToStandardId(instanceType, input.key)) {
-      const standardId = await generateStandardId(instanceType, currentInstanceData);
-      const standardInput = { key: 'standard_id', value: [standardId] };
-      await innerUpdateAttribute(user, currentInstanceData, standardInput, wTx, options);
-      currentInstanceData = R.assoc('standard_id', standardId, currentInstanceData);
+    lock = await lockResource(instance.internal_id);
+    const updatedInputs = [];
+    await executeWrite(async (wTx) => {
+      // Update all needed attributes
+      for (let index = 0; index < inputs.length; index += 1) {
+        const input = inputs[index];
+        // eslint-disable-next-line no-await-in-loop
+        const ins = await innerUpdateAttribute(user, instance, input, wTx, options);
+        updatedInputs.push(...ins);
+      }
+      // If update is part of the key, update the standard_id
+      const instanceType = instance.entity_type;
+      const isRelation = instance.base_type === BASE_TYPE_RELATION;
+      const keys = R.map((t) => t.key, inputs);
+      if (!isRelation && isFieldContributingToStandardId(instanceType, keys)) {
+        // eslint-disable-next-line no-await-in-loop
+        const standardId = await generateStandardId(instanceType, instance);
+        const standardInput = { key: 'standard_id', value: [standardId] };
+        // eslint-disable-next-line no-await-in-loop
+        const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
+        // currentInstanceData = R.assoc('standard_id', standardId, currentInstanceData);
+        updatedInputs.push(...ins);
+      }
+    });
+    // Update elasticsearch and send logs
+    const esOperations = [];
+    for (let inputIndex = 0; inputIndex < updatedInputs.length; inputIndex += 1) {
+      const updatedInput = updatedInputs[inputIndex];
+      const { key, value } = updatedInput;
+      const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+      // eslint-disable-next-line no-nested-ternary
+      const typedVal = val === 'true' ? true : val === 'false' ? false : val;
+      const updateValueField = { [key]: typedVal };
+      const currentIndex = inferIndexFromConceptType(instance.entity_type);
+      esOperations.push(elUpdate(currentIndex, instance.internal_id, { doc: updateValueField }));
     }
+    // Send log
+    const dataToLogSend = R.pipe(
+      R.filter((input) => input.key !== 'graph_data'),
+      R.map(({ key, value }) => ({ [key]: R.includes(key, multipleAttributes) ? value : R.head(value) })),
+      R.mergeAll
+    )(inputs);
+    if (!noLog && !R.isEmpty(dataToLogSend)) {
+      // eslint-disable-next-line camelcase
+      const { stix_ids, entity_type } = instance;
+      const eventData = { id: instance.id, stix_ids, entity_type, data: dataToLogSend };
+      esOperations.push(sendLog(EVENT_TYPE_UPDATE, user, eventData));
+    }
+    // Wait for all
+    await Promise.all(esOperations);
   } finally {
     if (lock) await lock.unlock();
   }
-  return currentInstanceData;
+  // Return fully updated instance
+  const inputPairs = R.map((input) => {
+    const { key, value } = input;
+    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+    return { [key]: val };
+  }, inputs);
+  const updatedData = R.mergeAll(inputPairs);
+  const updatedInstance = R.mergeRight(instance, updatedData);
+  return updatedInstance;
 };
 // endregion
 
 // region mutation relation
-const upsertRelation = async (user, relationship, type, input) => {
-  if (!R.isNil(input.stix_id)) {
-    return executeWrite((wTx) => {
-      return updateAttribute(
-        user,
-        relationship.internal_id,
-        type,
-        {
-          key: 'stix_ids',
-          value: [input.stix_id],
-        },
-        wTx,
-        { operation: 'add' }
-      );
-    });
+const upsertRelation = async (user, relationship, type, data) => {
+  if (!R.isNil(data.stix_id)) {
+    const id = relationship.internal_id;
+    const input = { key: 'stix_ids', value: [data.stix_id] };
+    return updateAttr(user, id, type, [input], { operation: 'add' });
   }
   return relationship;
 };
@@ -1722,21 +1742,11 @@ export const createRelations = async (user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-const upsertEntity = async (user, entity, type, input) => {
-  if (!R.isNil(input.stix_id)) {
-    return executeWrite((wTx) => {
-      return updateAttribute(
-        user,
-        entity.internal_id,
-        type,
-        {
-          key: 'stix_ids',
-          value: [input.stix_id],
-        },
-        wTx,
-        { operation: 'add' }
-      );
-    });
+const upsertEntity = async (user, entity, type, data) => {
+  if (!R.isNil(data.stix_id)) {
+    const id = entity.internal_id;
+    const input = { key: 'stix_ids', value: [data.stix_id] };
+    return updateAttr(user, id, type, [input], { operation: 'add' });
   }
   return entity;
 };

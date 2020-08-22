@@ -5,10 +5,9 @@ import {
   createRelation,
   deleteEntityById,
   deleteRelationById,
-  executeWrite,
   listEntities,
   loadEntityById,
-  updateAttribute,
+  updateAttr,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
@@ -52,13 +51,9 @@ export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relat
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, data, user);
 };
 
-export const killChainPhaseEditField = (user, killChainPhaseId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, wTx, { noLog: true });
-  }).then(async () => {
-    const killChainPhase = await loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
-    return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user);
-  });
+export const killChainPhaseEditField = async (user, killChainPhaseId, input) => {
+  const killChainPhase = await updateAttr(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, { noLog: true });
+  return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user);
 };
 
 export const killChainPhaseCleanContext = async (user, killChainPhaseId) => {

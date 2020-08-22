@@ -8,11 +8,10 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   escape,
-  executeWrite,
   listEntities,
   loadEntityById,
   timeSeriesEntities,
-  updateAttribute,
+  updateAttr,
 } from '../database/grakn';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
@@ -94,7 +93,7 @@ export const stixCyberObservableAskEnrichment = async (id, connectorId) => {
   return work;
 };
 
-export const indicators = (stixCyberObservableId) => {
+export const indicators = () => {
   // TODO
   return null;
 };
@@ -269,13 +268,9 @@ export const stixCyberObservableDeleteRelation = async (user, stixCyberObservabl
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 
-export const stixCyberObservableEditField = (user, stixCyberObservableId, input) => {
-  return executeWrite((wTx) => {
-    return updateAttribute(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, input, wTx);
-  }).then(async () => {
-    const stixCyberObservable = await loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
-  });
+export const stixCyberObservableEditField = async (user, stixCyberObservableId, input) => {
+  const stixCyberObservable = await updateAttr(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, input);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 // endregion
 
