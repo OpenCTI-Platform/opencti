@@ -4,9 +4,15 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
-import { HexagonOutline } from 'mdi-material-ui';
+import {
+  ArrowForwardIosOutlined,
+  DescriptionOutlined,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -33,13 +39,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuObservable extends Component {
+class TopMenuReport extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { observableId },
+        params: { reportId },
       },
       classes,
     } = this.props;
@@ -47,29 +53,30 @@ class TopMenuObservable extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures/observables"
+          to="/dashboard/reports/all"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <HexagonOutline className={classes.icon} fontSize="small" />
-          {t('Observables')}
+          <DescriptionOutlined className={classes.icon} fontSize="small" />
+          {t('Reports')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}`}
+          to={`/dashboard/reports/all/${reportId}`}
           variant={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}`
+            location.pathname === `/dashboard/reports/all/${reportId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}`
+            location.pathname === `/dashboard/reports/all/${reportId}`
               ? 'primary'
               : 'inherit'
           }
@@ -79,37 +86,53 @@ class TopMenuObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/links`}
+          to={`/dashboard/reports/all/${reportId}/entities`}
           variant={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}/links`
+            location.pathname === `/dashboard/reports/all/${reportId}/entities`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}/links`
+            location.pathname === `/dashboard/reports/all/${reportId}/entities`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Linked observables')}
+          {t('Entities')}
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/knowledge`}
+          to={`/dashboard/reports/all/${reportId}/observables`}
           variant={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/knowledge`
+            === `/dashboard/reports/all/${reportId}/observables`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/knowledge`
+            === `/dashboard/reports/all/${reportId}/observables`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Observables')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/reports/all/${reportId}/knowledge`}
+          variant={
+            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
               ? 'primary'
               : 'inherit'
           }
@@ -117,39 +140,37 @@ class TopMenuObservable extends Component {
         >
           {t('Knowledge')}
         </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/reports/all/${reportId}/files`}
+            variant={
+              location.pathname === `/dashboard/reports/all/${reportId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === `/dashboard/reports/all/${reportId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/sightings`}
+          to={`/dashboard/reports/all/${reportId}/history`}
           variant={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}/sightings`
+            location.pathname === `/dashboard/reports/all/${reportId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}/sightings`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Sightings')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/history`}
-          variant={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}/history`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/signatures/observables/${observableId}/history`
+            location.pathname === `/dashboard/reports/all/${reportId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -162,7 +183,7 @@ class TopMenuObservable extends Component {
   }
 }
 
-TopMenuObservable.propTypes = {
+TopMenuReport.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -174,4 +195,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuObservable);
+)(TopMenuReport);

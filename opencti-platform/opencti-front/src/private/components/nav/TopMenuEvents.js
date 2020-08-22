@@ -5,7 +5,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { HexagonOutline, ShieldSearch } from 'mdi-material-ui';
+import { PublicOutlined } from '@material-ui/icons';
+import {
+  Biohazard, DiamondOutline, Fire, ChessKnight,
+} from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -21,73 +24,66 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuSignatures extends Component {
+class TopMenuThreats extends Component {
   render() {
-    const {
-      t, location, classes, width,
-    } = this.props;
+    const { t, location, classes } = this.props;
     return (
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures/observables"
+          to="/dashboard/events/incidents"
           variant={
-            location.pathname.includes('/dashboard/signatures/observables')
+            location.pathname.includes('/dashboard/events/incidents')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/signatures/observables')
+            location.pathname.includes('/dashboard/events/incidents')
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          <HexagonOutline
-            className={width > 950 ? classes.icon : ''}
-            fontSize="small"
-          />
-          {width > 950 ? t('Observables') : ''}
+          <Fire className={classes.icon} fontSize="small" />
+          {t('Incidents')}
         </Button>
         <Button
           component={Link}
-          to="/dashboard/signatures/indicators"
+          to="/dashboard/threats/malwares"
           variant={
-            location.pathname.includes('/dashboard/signatures/indicators')
+            location.pathname.includes('/dashboard/threats/malwares')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/signatures/indicators')
+            location.pathname.includes('/dashboard/threats/malwares')
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          <ShieldSearch
-            className={width > 950 ? classes.icon : ''}
+          <Biohazard
+            className={classes.icon}
             fontSize="small"
           />
-          {width > 950 ? t('Indicators') : ''}
+          {t('Malwares')}
         </Button>
       </div>
     );
   }
 }
 
-TopMenuSignatures.propTypes = {
+TopMenuThreats.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
-  width: PropTypes.number,
 };
 
 export default compose(
   inject18n,
   withRouter,
-  windowDimensions(),
   withStyles(styles),
-)(TopMenuSignatures);
+)(TopMenuThreats);

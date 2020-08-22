@@ -7868,6 +7868,20 @@ type Query {
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixCyberObservablesDistribution(type: String): [Distribution] @auth(for: [KNOWLEDGE])
 
+  ######## STIX META RELATIONSHIPS
+  stixMetaRelationshipsDistribution(
+    fromId: String!
+    field: String!
+    operation: StatsOperation!
+    relationship_type: String
+    inferred: Boolean
+    toTypes: [String]
+    startDate: DateTime
+    endDate: DateTime
+    limit: Int
+    order: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
+
   ######## STIX CORE RELATIONSHIPS
 
   stixCoreRelationship(id: String): StixCoreRelationship @auth(for: [KNOWLEDGE])

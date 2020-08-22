@@ -4,7 +4,8 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { FlagOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
+import { Application } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -36,13 +37,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuRegion extends Component {
+class TopMenuTool extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { regionId },
+        params: { toolId },
       },
       classes,
     } = this.props;
@@ -50,14 +51,14 @@ class TopMenuRegion extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/regions"
+          to="/dashboard/techniques/tools"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <FlagOutlined className={classes.icon} fontSize="small" />
-          {t('Regions')}
+          <Application className={classes.icon} fontSize="small" />
+          {t('Tools')}
         </Button>
         <ArrowForwardIosOutlined
           color="inherit"
@@ -65,15 +66,15 @@ class TopMenuRegion extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}`}
+          to={`/dashboard/techniques/tools/${toolId}`}
           variant={
-            location.pathname === `/dashboard/entities/regions/${regionId}`
+            location.pathname === `/dashboard/techniques/tools/${toolId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/regions/${regionId}`
+            location.pathname === `/dashboard/techniques/tools/${toolId}`
               ? 'primary'
               : 'inherit'
           }
@@ -83,10 +84,10 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/knowledge`}
+          to={`/dashboard/techniques/tools/${toolId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/knowledge`,
+              `/dashboard/techniques/tools/${toolId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -94,7 +95,7 @@ class TopMenuRegion extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/knowledge`,
+              `/dashboard/techniques/tools/${toolId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -105,17 +106,17 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/reports`}
+          to={`/dashboard/techniques/tools/${toolId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/reports`
+            === `/dashboard/techniques/tools/${toolId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/reports`
+            === `/dashboard/techniques/tools/${toolId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -125,10 +126,10 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/observables`}
+          to={`/dashboard/techniques/tools/${toolId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/observables`,
+              `/dashboard/techniques/tools/${toolId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -136,29 +137,29 @@ class TopMenuRegion extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/observables`,
+              `/dashboard/techniques/tools/${toolId}/indicators`,
             )
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Observables')}
+          {t('Indicators')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/entities/regions/${regionId}/files`}
+            to={`/dashboard/techniques/tools/${toolId}/files`}
             variant={
               location.pathname
-              === `/dashboard/entities/regions/${regionId}/files`
+              === `/dashboard/techniques/tools/${toolId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/entities/regions/${regionId}/files`
+              === `/dashboard/techniques/tools/${toolId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -169,17 +170,17 @@ class TopMenuRegion extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/history`}
+          to={`/dashboard/techniques/tools/${toolId}/history`}
           variant={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/history`
+            === `/dashboard/techniques/tools/${toolId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/history`
+            === `/dashboard/techniques/tools/${toolId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -192,7 +193,7 @@ class TopMenuRegion extends Component {
   }
 }
 
-TopMenuRegion.propTypes = {
+TopMenuTool.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -200,8 +201,4 @@ TopMenuRegion.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopMenuRegion);
+export default compose(inject18n, withRouter, withStyles(styles))(TopMenuTool);

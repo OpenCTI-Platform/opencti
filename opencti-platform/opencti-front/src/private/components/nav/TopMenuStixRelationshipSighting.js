@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIosOutlined } from '@material-ui/icons';
-import { ProgressWrench } from 'mdi-material-ui';
+import { Application } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -37,13 +37,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuCourseOfAction extends Component {
+class TopMenuTool extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { courseOfActionId },
+        params: { toolId },
       },
       classes,
     } = this.props;
@@ -51,14 +51,14 @@ class TopMenuCourseOfAction extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/techniques/courses_of_action"
+          to="/dashboard/techniques/tools"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <ProgressWrench className={classes.icon} fontSize="small" />
-          {t('Courses of action')}
+          <Application className={classes.icon} fontSize="small" />
+          {t('Tools')}
         </Button>
         <ArrowForwardIosOutlined
           color="inherit"
@@ -66,17 +66,15 @@ class TopMenuCourseOfAction extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}`}
+          to={`/dashboard/techniques/tools/${toolId}`}
           variant={
-            location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
+            location.pathname === `/dashboard/techniques/tools/${toolId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
+            location.pathname === `/dashboard/techniques/tools/${toolId}`
               ? 'primary'
               : 'inherit'
           }
@@ -84,20 +82,84 @@ class TopMenuCourseOfAction extends Component {
         >
           {t('Overview')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/tools/${toolId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/techniques/tools/${toolId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/techniques/tools/${toolId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/tools/${toolId}/reports`}
+          variant={
+            location.pathname
+            === `/dashboard/techniques/tools/${toolId}/reports`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/techniques/tools/${toolId}/reports`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Reports')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/techniques/tools/${toolId}/indicators`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/techniques/tools/${toolId}/indicators`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/techniques/tools/${toolId}/indicators`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Indicators')}
+        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/files`}
+            to={`/dashboard/techniques/tools/${toolId}/files`}
             variant={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+              === `/dashboard/techniques/tools/${toolId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+              === `/dashboard/techniques/tools/${toolId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -108,17 +170,17 @@ class TopMenuCourseOfAction extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/history`}
+          to={`/dashboard/techniques/tools/${toolId}/history`}
           variant={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/history`
+            === `/dashboard/techniques/tools/${toolId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/history`
+            === `/dashboard/techniques/tools/${toolId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -131,7 +193,7 @@ class TopMenuCourseOfAction extends Component {
   }
 }
 
-TopMenuCourseOfAction.propTypes = {
+TopMenuTool.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -139,8 +201,4 @@ TopMenuCourseOfAction.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopMenuCourseOfAction);
+export default compose(inject18n, withRouter, withStyles(styles))(TopMenuTool);

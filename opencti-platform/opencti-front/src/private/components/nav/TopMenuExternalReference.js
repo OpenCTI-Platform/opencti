@@ -4,8 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined } from '@material-ui/icons';
-import { CityVariantOutline } from 'mdi-material-ui';
+import {
+  ArrowForwardIosOutlined,
+  DescriptionOutlined,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -37,13 +39,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuCity extends Component {
+class TopMenuReport extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { cityId },
+        params: { reportId },
       },
       classes,
     } = this.props;
@@ -51,14 +53,14 @@ class TopMenuCity extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/cities"
+          to="/dashboard/reports/all"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <CityVariantOutline className={classes.icon} fontSize="small" />
-          {t('Cities')}
+          <DescriptionOutlined className={classes.icon} fontSize="small" />
+          {t('Reports')}
         </Button>
         <ArrowForwardIosOutlined
           color="inherit"
@@ -66,15 +68,15 @@ class TopMenuCity extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}`}
+          to={`/dashboard/reports/all/${reportId}`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}`
+            location.pathname === `/dashboard/reports/all/${reportId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}`
+            location.pathname === `/dashboard/reports/all/${reportId}`
               ? 'primary'
               : 'inherit'
           }
@@ -84,59 +86,35 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/knowledge`}
+          to={`/dashboard/reports/all/${reportId}/entities`}
           variant={
-            location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/knowledge`,
-            )
+            location.pathname === `/dashboard/reports/all/${reportId}/entities`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/knowledge`,
-            )
+            location.pathname === `/dashboard/reports/all/${reportId}/entities`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Knowledge')}
+          {t('Entities')}
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/reports`}
+          to={`/dashboard/reports/all/${reportId}/observables`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname
+            === `/dashboard/reports/all/${reportId}/observables`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/cities/${cityId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/observables`,
-            )
+            location.pathname
+            === `/dashboard/reports/all/${reportId}/observables`
               ? 'primary'
               : 'inherit'
           }
@@ -144,18 +122,36 @@ class TopMenuCity extends Component {
         >
           {t('Observables')}
         </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/reports/all/${reportId}/knowledge`}
+          variant={
+            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
+        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/entities/cities/${cityId}/files`}
+            to={`/dashboard/reports/all/${reportId}/files`}
             variant={
-              location.pathname === `/dashboard/entities/cities/${cityId}/files`
+              location.pathname === `/dashboard/reports/all/${reportId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === `/dashboard/entities/cities/${cityId}/files`
+              location.pathname === `/dashboard/reports/all/${reportId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -166,15 +162,15 @@ class TopMenuCity extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/history`}
+          to={`/dashboard/reports/all/${reportId}/history`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/history`
+            location.pathname === `/dashboard/reports/all/${reportId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/history`
+            location.pathname === `/dashboard/reports/all/${reportId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -187,7 +183,7 @@ class TopMenuCity extends Component {
   }
 }
 
-TopMenuCity.propTypes = {
+TopMenuReport.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -195,4 +191,8 @@ TopMenuCity.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(TopMenuCity);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(TopMenuReport);

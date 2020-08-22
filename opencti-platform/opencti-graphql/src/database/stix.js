@@ -76,8 +76,6 @@ export const convertStixCoreRelationshipToStix = (data, extra = {}, onlyBase = t
     // Relation IDs
     assoc('source_ref', extra.from ? extra.from.standard_id : null),
     assoc('target_ref', extra.to ? extra.to.standard_id : null),
-    assoc('x_opencti_source_ref', extra.from ? extra.from.internal_id : null),
-    assoc('x_opencti_target_ref', extra.to ? extra.to.internal_id : null)
   )(data);
   if (onlyBase) {
     return pick(['id', 'type', 'spec_version'], data);

@@ -146,7 +146,6 @@ class EntityStixCoreRelationshipsDonut extends Component {
       field,
       operation: 'count',
     };
-    console.log(stixCoreRelationshipsDistributionVariables);
     return (
       <QueryRenderer
         query={

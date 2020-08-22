@@ -21,7 +21,7 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuTechniques extends Component {
+class TopMenuArsenal extends Component {
   render() {
     const { t, location, classes } = this.props;
     return (
@@ -107,7 +107,7 @@ class TopMenuTechniques extends Component {
   }
 }
 
-TopMenuTechniques.propTypes = {
+TopMenuArsenal.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   t: PropTypes.func,
@@ -118,4 +118,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuTechniques);
+)(TopMenuArsenal);

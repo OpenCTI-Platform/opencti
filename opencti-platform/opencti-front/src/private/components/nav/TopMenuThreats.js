@@ -97,47 +97,6 @@ class TopMenuThreats extends Component {
           />
           {width > 950 ? t('Campaigns') : ''}
         </Button>
-        <Button
-          component={Link}
-          to="/dashboard/threats/incidents"
-          variant={
-            location.pathname.includes('/dashboard/threats/incidents')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/incidents')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Fire className={width > 950 ? classes.icon : ''} fontSize="small" />
-          {width > 950 ? t('Incidents') : ''}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/threats/malwares"
-          variant={
-            location.pathname.includes('/dashboard/threats/malwares')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/malwares')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Biohazard
-            className={width > 950 ? classes.icon : ''}
-            fontSize="small"
-          />
-          {width > 950 ? t('Malwares') : ''}
-        </Button>
       </div>
     );
   }

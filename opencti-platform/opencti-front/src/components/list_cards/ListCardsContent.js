@@ -17,14 +17,14 @@ const styles = () => ({
   windowScrollerWrapper: {
     flex: '1 1 auto',
   },
-  bottomPad: {
-    padding: '0 0 30px 0',
+  defaultPad: {
+    padding: '0 15px 30px 15px',
   },
   rightPad: {
-    padding: '0 30px 30px 0',
+    padding: '0 0 30px 15px',
   },
   leftPad: {
-    padding: '0 0 30px 30px',
+    padding: '0 15px 30px 0',
   },
 });
 
@@ -126,16 +126,11 @@ class ListCardsContent extends Component {
       onLabelClick,
     } = this.props;
     const index = rowIndex * this.numberOfCardsPerLine() + columnIndex;
-    let className = classes.bottomPad;
-    switch (columnIndex) {
-      case 0:
-      case 1:
-        className = classes.rightPad;
-        break;
-      case 3:
-        className = classes.leftPad;
-        break;
-      default:
+    let className = classes.defaultPad;
+    if (index === 0) {
+      className = classes.leftPad;
+    } else if (index === this.numberOfCardsPerLine() - 1) {
+      className = classes.rightPad;
     }
     if (initialLoading || !this._isCellLoaded({ index })) {
       return (
@@ -198,35 +193,35 @@ class ListCardsContent extends Component {
                   <AutoSizer disableHeight>
                     {({ width }) => (
                       <ColumnSizer
-                        columnMaxWidth={440}
-                        columnMinWidth={150}
                         columnCount={this.numberOfCardsPerLine()}
                         width={width}
                       >
-                        {({ adjustedWidth, columnWidth }) => (
-                          <Grid
-                            ref={(ref) => {
-                              this.gridRef = ref;
-                              registerChild(ref);
-                            }}
-                            autoHeight={true}
-                            height={height}
-                            onRowsRendered={onRowsRendered}
-                            isScrolling={isScrolling}
-                            onScroll={onChildScroll}
-                            columnWidth={columnWidth}
-                            columnCount={this.numberOfCardsPerLine()}
-                            rowHeight={195}
-                            overscanColumnCount={this.numberOfCardsPerLine()}
-                            overscanRowCount={2}
-                            rowCount={rowCount}
-                            cellRenderer={this._cellRenderer}
-                            onSectionRendered={this._onSectionRendered}
-                            scrollToIndex={-1}
-                            scrollTop={scrollTop}
-                            width={adjustedWidth}
-                          />
-                        )}
+                        {({ adjustedWidth, getColumnWidth }) => {
+                          return (
+                              <Grid
+                                  ref={(ref) => {
+                                    this.gridRef = ref;
+                                    registerChild(ref);
+                                  }}
+                                  autoHeight={true}
+                                  height={height}
+                                  onRowsRendered={onRowsRendered}
+                                  isScrolling={isScrolling}
+                                  onScroll={onChildScroll}
+                                  columnWidth={getColumnWidth}
+                                  columnCount={this.numberOfCardsPerLine()}
+                                  rowHeight={195}
+                                  overscanColumnCount={this.numberOfCardsPerLine()}
+                                  overscanRowCount={2}
+                                  rowCount={rowCount}
+                                  cellRenderer={this._cellRenderer}
+                                  onSectionRendered={this._onSectionRendered}
+                                  scrollToIndex={-1}
+                                  scrollTop={scrollTop}
+                                  width={adjustedWidth}
+                              />
+                          );
+                        }}
                       </ColumnSizer>
                     )}
                   </AutoSizer>
