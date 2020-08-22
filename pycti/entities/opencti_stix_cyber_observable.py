@@ -117,10 +117,10 @@ class StixCyberObservable:
                 body
             }
             ... on HashedObservable {
-                md5
-                sha1
-                sha256
-                sha512                
+                hashes {
+                  algorithm
+                  hash
+                }               
             }
             ... on Artifact {
                 mime_type
@@ -586,23 +586,11 @@ class StixCyberObservable:
                     else None,
                 }
             elif type == "Artifact":
+                hashes = []
+                for key, value in observable_data["hashes"].items():
+                    hashes.append({"algorithm": key, "hash": value})
                 input_variables["Artifact"] = {
-                    "md5": observable_data["hashes"]["MD5"]
-                    if "hashes" in observable_data
-                    and "MD5" in observable_data["hashes"]
-                    else None,
-                    "sha1": observable_data["hashes"]["SHA-1"]
-                    if "hashes" in observable_data
-                    and "SHA-1" in observable_data["hashes"]
-                    else None,
-                    "sha256": observable_data["hashes"]["SHA-256"]
-                    if "hashes" in observable_data
-                    and "SHA-256" in observable_data["hashes"]
-                    else None,
-                    "sha512": observable_data["hashes"]["SHA-512"]
-                    if "hashes" in observable_data
-                    and "SHA-512" in observable_data["hashes"]
-                    else None,
+                    "hashes": hashes if len(hashes) > 0 else None,
                     "mime_type": observable_data["mime_type"]
                     if "mime_type" in observable_data
                     else None,
@@ -618,23 +606,11 @@ class StixCyberObservable:
                     else None,
                 }
             elif type == "StixFile":
+                hashes = []
+                for key, value in observable_data["hashes"].items():
+                    hashes.append({"algorithm": key, "hash": value})
                 input_variables["StixFile"] = {
-                    "md5": observable_data["hashes"]["MD5"]
-                    if "hashes" in observable_data
-                    and "MD5" in observable_data["hashes"]
-                    else None,
-                    "sha1": observable_data["hashes"]["SHA-1"]
-                    if "hashes" in observable_data
-                    and "SHA-1" in observable_data["hashes"]
-                    else None,
-                    "sha256": observable_data["hashes"]["SHA-256"]
-                    if "hashes" in observable_data
-                    and "SHA-256" in observable_data["hashes"]
-                    else None,
-                    "sha512": observable_data["hashes"]["SHA-512"]
-                    if "hashes" in observable_data
-                    and "SHA-512" in observable_data["hashes"]
-                    else None,
+                    "hashes": hashes if len(hashes) > 0 else None,
                     "extensions": observable_data["extensions"]
                     if "extensions" in observable_data
                     else None,
@@ -664,23 +640,11 @@ class StixCyberObservable:
                     else None,
                 }
             elif type == "X509-Certificate":
+                hashes = []
+                for key, value in observable_data["hashes"].items():
+                    hashes.append({"algorithm": key, "hash": value})
                 input_variables["X509Certificate"] = {
-                    "md5": observable_data["hashes"]["MD5"]
-                    if "hashes" in observable_data
-                    and "MD5" in observable_data["hashes"]
-                    else None,
-                    "sha1": observable_data["hashes"]["SHA-1"]
-                    if "hashes" in observable_data
-                    and "SHA-1" in observable_data["hashes"]
-                    else None,
-                    "sha256": observable_data["hashes"]["SHA-256"]
-                    if "hashes" in observable_data
-                    and "SHA-256" in observable_data["hashes"]
-                    else None,
-                    "sha512": observable_data["hashes"]["SHA-512"]
-                    if "hashes" in observable_data
-                    and "SHA-512" in observable_data["hashes"]
-                    else None,
+                    "hashes": hashes if len(hashes) > 0 else None,
                     "is_self_signed": observable_data["is_self_signed"]
                     if "is_self_signed" in observable_data
                     else False,
