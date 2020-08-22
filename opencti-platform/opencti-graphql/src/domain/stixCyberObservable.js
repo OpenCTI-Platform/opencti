@@ -93,8 +93,9 @@ export const stixCyberObservableAskEnrichment = async (id, connectorId) => {
   return work;
 };
 
-export const indicators = () => {
-  // TODO
+export const indicators = (stixCyberObservableId) => {
+  // TODO @Sam
+  logger.info(`Loading indicators`, { stixCyberObservableId });
   return null;
 };
 
