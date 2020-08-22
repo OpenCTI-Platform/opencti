@@ -7860,7 +7860,6 @@ type Query {
 
   ######## STIX META RELATIONSHIPS
   stixMetaRelationshipsDistribution(
-    fromId: String!
     field: String!
     operation: StatsOperation!
     relationship_type: String

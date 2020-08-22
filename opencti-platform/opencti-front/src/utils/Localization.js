@@ -317,7 +317,7 @@ const i18n = {
       General: 'Général',
       Versions: 'Versions',
       'Labels & Attributes': 'Labels & Attributs',
-      Evidences: '',
+      Observations: 'Observations',
       Labels: 'Labels',
       Label: 'Label',
       Accesses: 'Accès',

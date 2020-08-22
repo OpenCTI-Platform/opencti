@@ -121,15 +121,15 @@ const LeftBar = ({ t, location, classes }) => {
               </MenuItem>
               <MenuItem
                 component={Link}
-                to="/dashboard/evidences"
-                selected={location.pathname.includes('/dashboard/evidences')}
+                to="/dashboard/observations"
+                selected={location.pathname.includes('/dashboard/observations')}
                 dense={false}
                 classes={{ root: classes.menuItemNested }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <Binoculars />
                 </ListItemIcon>
-                <ListItemText primary={t('Evidences')} />
+                <ListItemText primary={t('Observations')} />
               </MenuItem>
             </MenuList>
           </Collapse>

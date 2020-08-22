@@ -1,5 +1,5 @@
 import { assoc, dissocPath, pipe } from 'ramda';
-import { createEntity, getGraknVersion, load, loadEntityById, updateAttribute } from '../database/grakn';
+import { createEntity, getGraknVersion, listEntities, load, loadEntityById, updateAttribute } from "../database/grakn";
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
@@ -20,10 +20,9 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const query = `match $settings isa ${ENTITY_TYPE_SETTINGS}; $settings has internal_id $settings_id; get;`;
-  const data = await load(query, ['settings']);
-  const settings = data && data.settings;
-  if (settings == null) return null;
+  const settingsList = await listEntities([ENTITY_TYPE_SETTINGS]);
+  const settings = settingsList.edges.length > 0 ? settingsList.edges[0].node : null;
+  if (settings === null) return null;
   const config = pipe(
     dissocPath(['app', 'admin']),
     dissocPath(['rabbitmq', 'password']),

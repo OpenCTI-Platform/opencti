@@ -1119,11 +1119,15 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (options) => {
-  const { fromId, field, operation } = options; // Mandatory fields
-  const { limit = 50, order, noCache = false, inferred = false } = options;
+  const { field, operation } = options; // Mandatory fields
+  const { fromId = null, limit = 50, order, noCache = false, inferred = false } = options;
   const { startDate, endDate, relationship_type: relationshipType, toTypes = [] } = options;
   let distributionData;
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_RELATIONSHIP;
+  let dateAttribute = 'start_time';
+  if (isStixMetaRelationship(entityType)) {
+    dateAttribute = 'created_at';
+  }
   // Using elastic can only be done if the distribution is a count on types
   if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
     distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
@@ -1135,10 +1139,10 @@ export const distributionRelations = async (options) => {
             R.map((toType) => `{ $to isa ${escape(toType)}; } or`, toTypes)
           )} { $to isa ${escape(R.head(toTypes))}; };`
         : ''
-    } $from has internal_id "${escapeString(fromId)}";
+    } ${fromId ? ` $from has internal_id "${escapeString(fromId)}"; ` : ''}
     ${
       startDate && endDate
-        ? `$rel has start_time $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
+        ? `$rel has ${dateAttribute} $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
     }
       $to has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
@@ -1146,6 +1150,7 @@ export const distributionRelations = async (options) => {
   }
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
+  if( field )
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntitiesThroughRelations = async (options) => {

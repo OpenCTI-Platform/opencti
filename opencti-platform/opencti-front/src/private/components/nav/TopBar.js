@@ -26,7 +26,7 @@ import TopMenuEvents from './TopMenuEvents';
 import TopMenuXOpenCTIIncident from './TopMenuXOpenCTIIncident';
 import TopMenuObservedData from './TopMenuObservedData';
 import TopMenuStixRelationshipSighting from './TopMenuStixRelationshipSighting';
-import TopMenuEvidences from './TopMenuEvidences';
+import TopMenuObservations from './TopMenuObservations';
 import TopMenuIndicator from './TopMenuIndicator';
 import TopMenuInfrastructure from './TopMenuInfrastructure';
 import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
@@ -194,25 +194,25 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname === '/dashboard/evidences'
-          || location.pathname.match('/dashboard/evidences/[a-z_]+$') ? (
-            <TopMenuEvidences />
+          {location.pathname === '/dashboard/observations'
+          || location.pathname.match('/dashboard/observations/[a-z_]+$') ? (
+            <TopMenuObservations />
             ) : (
               ''
             )}
-          {location.pathname.includes('/dashboard/evidences/indicators/') ? (
+          {location.pathname.includes('/dashboard/observations/indicators/') ? (
             <TopMenuIndicator />
           ) : (
             ''
           )}
           {location.pathname.includes(
-            '/dashboard/evidences/infrastructures/',
+            '/dashboard/observations/infrastructures/',
           ) ? (
             <TopMenuInfrastructure />
             ) : (
               ''
             )}
-          {location.pathname.includes('/dashboard/events/observables/') ? (
+          {location.pathname.includes('/dashboard/observations/observables/') ? (
             <TopMenuStixCyberObservable />
           ) : (
             ''
