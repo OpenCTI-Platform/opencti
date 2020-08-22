@@ -73,7 +73,7 @@ const graknStateStorage = {
         // Get current done migration
         const mig = head(filter((m) => m.title === set.lastRun, set.migrations));
         // We have only one instance of migration status.
-        const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $run;`;
+        const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $x has lastRun $run;`;
         logger.debug(`[MIGRATION] step 1`, { query: q1 });
         await wTx.query(q1);
         const q2 = `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`;

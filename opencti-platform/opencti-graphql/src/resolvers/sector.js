@@ -19,7 +19,7 @@ const sectorResolvers = {
   Sector: {
     parentSectors: (sector) => parentSectors(sector.id),
     subSectors: (sector) => subSectors(sector.id),
-    isSubSector: (sector, args) => isSubSector(sector.id, args),
+    isSubSector: (sector) => isSubSector(sector.id),
   },
   SectorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

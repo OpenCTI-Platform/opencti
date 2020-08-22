@@ -28,7 +28,6 @@ import { listenServer, restartServer } from './httpServer';
       /* eslint-enable */
     }
   } catch (e) {
-    logger.error(`[OPENCTI] GraphQL initialization fail`, { error: e });
     process.exit(1);
   }
 })();

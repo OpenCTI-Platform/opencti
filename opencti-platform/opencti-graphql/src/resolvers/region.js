@@ -18,7 +18,7 @@ const regionResolvers = {
   Region: {
     parentRegions: (region) => parentRegions(region.id),
     subRegions: (region) => subRegions(region.id),
-    isSubRegion: (region, args) => isSubRegion(region.id, args),
+    isSubRegion: (region) => isSubRegion(region.id),
   },
   RegionsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

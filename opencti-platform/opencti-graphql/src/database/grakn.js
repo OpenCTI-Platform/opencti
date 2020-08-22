@@ -73,7 +73,7 @@ export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
 export const UNTIL_END = 100000000000000; // "5138-11-16T09:46:40.000Z"
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
 const GraknString = 'String';
-const GraknDate = 'Date';
+const GraknDate = 'Datetime';
 
 export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 export const TYPE_STIX_DOMAIN = 'Stix-Domain';
@@ -255,7 +255,7 @@ export const graknIsAlive = async () => {
 export const getGraknVersion = () => {
   // It seems that Grakn server does not expose its version yet:
   // https://github.com/graknlabs/client-nodejs/issues/47
-  return '1.7.2';
+  return '1.8.1';
 };
 
 const getAliasInternalIdFilter = (query, alias) => {
@@ -426,7 +426,7 @@ const loadConcept = async (tx, concept, args = {}) => {
     const attributeType = await attribute.type();
     const attributeLabel = await attributeType.label();
     return {
-      dataType: await attributeType.dataType(),
+      dataType: await attributeType.valueType(),
       label: attributeLabel,
       value: await attribute.value(),
     };
@@ -1236,7 +1236,7 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   const labelAnswer = await labelIterator.next();
   // eslint-disable-next-line prettier/prettier
   const ansConcept = labelAnswer.map().get('x');
-  const attrType = await ansConcept.asRemote(wTx).dataType();
+  const attrType = await ansConcept.asRemote(wTx).valueType();
   const typedValues = R.map((v) => {
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
@@ -1244,9 +1244,10 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   }, input.value);
   // --- Delete the old attribute
   const entityId = `${escapeString(id)}`;
-  const deleteQuery = `match $x has internal_id "${entityId}", has ${escapedKey} $del via $d; delete $d;`;
+  const deleteQuery = `match $x has internal_id "${entityId}", has ${escapedKey} $del; delete $x has ${escapedKey} $del;`;
   logger.debug(`[GRAKN - infer: false] updateAttribute - delete`, { query: deleteQuery });
   await wTx.query(deleteQuery);
+  // TODO @Julien --- If no more ownership, delete the entire attribute
   if (typedValues.length > 0) {
     let graknValues;
     if (typedValues.length === 1) {
@@ -1429,7 +1430,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   const standardId = await generateStandardId(relationshipType, input);
   // 04. Check existing relationship
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
-  if (isStixCoreRelationship(input.relationship_type)) {
+  if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {
       listingArgs.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
       listingArgs.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
@@ -1438,7 +1439,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
       listingArgs.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months'));
       listingArgs.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months'));
     }
-  } else if (isStixSightingRelationship(input.relationship_type)) {
+  } else if (isStixSightingRelationship(relationshipType)) {
     if (!R.isNil(input.first_seen)) {
       listingArgs.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
       listingArgs.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
@@ -1448,13 +1449,13 @@ const createRelationRaw = async (user, input, opts = {}) => {
       listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months'));
     }
   }
-  const existingRelationships = await listRelations(input.relationship_type, listingArgs);
+  const existingRelationships = await listRelations(relationshipType, listingArgs);
   let existingRelationship = null;
   if (existingRelationships.edges.length > 0) {
     existingRelationship = R.head(existingRelationships.edges).node;
   }
   if (existingRelationship) {
-    return upsertRelation(user, existingRelationship, input.relationship_type, input);
+    return upsertRelation(user, existingRelationship, relationshipType, input);
   }
 
   // 05. Prepare the relation to be created
@@ -1922,29 +1923,28 @@ export const createEntity = async (user, input, type, opts = {}) => {
 
 const getElementsRelated = async (targetId, elements = [], options = {}) => {
   const eid = escapeString(targetId);
-  const read = `match $from has internal_id "${eid}"; 
-    $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    get;`;
+  const read = `match $from has internal_id "${eid}"; $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}; get;`;
   const connectedRelations = await find(read, ['rel'], options);
-  const connectedRelationsIds = R.map((r) => ({ id: r.rel.id, relDependency: true }), connectedRelations);
+  const connectedRelationsIds = R.map((r) => {
+    const { id, entity_type: entityType } = r.rel;
+    return { id, type: entityType, relDependency: true };
+  }, connectedRelations);
   elements.push(...connectedRelationsIds);
   await Promise.all(connectedRelationsIds.map(({ id }) => getElementsRelated(id, elements, options)));
   return elements;
 };
 
-const deleteElementById = async (elementId, isRelation, options = {}) => {
+const deleteElementById = async (elementId, elementType, isRelation, options = {}) => {
   // 00. Load everything we need to remove
-  const dependencies = [{ id: elementId, relDependency: isRelation }];
+  const dependencies = [{ id: elementId, type: elementType, relDependency: isRelation }];
   await getElementsRelated(elementId, dependencies, options);
   // 01. Delete dependencies.
   // Remove all dep in reverse order to handle correctly relations
   for (let i = dependencies.length - 1; i >= 0; i -= 1) {
-    const { id, relDependency } = dependencies[i];
+    const { id, type, relDependency } = dependencies[i];
     // eslint-disable-next-line no-await-in-loop
     await executeWrite(async (wTx) => {
-      const query = `match $x has internal_id "${id}"; delete $x;`;
+      const query = `match $x has internal_id "${id}"; delete $x isa ${type};`;
       logger.debug(`[GRAKN - infer: false] delete element ${id}`, { query });
       await wTx.query(query, { infer: false });
     }).then(async () => {
@@ -1971,7 +1971,7 @@ export const deleteEntityById = async (user, entityId, type, options = {}) => {
     throw DatabaseError(`Cant find entity to delete ${entityId}`);
   }
   // Delete entity and all dependencies
-  await deleteElementById(entityId, false, options);
+  await deleteElementById(entityId, entity.entity_type, false, options);
   // Send the log if everything fine
   if (!noLog) {
     await sendLog(EVENT_TYPE_DELETE, user, entity);
@@ -1986,7 +1986,7 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
   }
   const relation = await loadRelationById(relationId, type, options);
   if (relation === null) throw DatabaseError(`Cant find relation to delete ${relationId}`);
-  await deleteElementById(relationId, true, options);
+  await deleteElementById(relationId, relation.entity_type, true, options);
   // Send the log if everything fine
   if (!noLog) {
     const from = await elLoadById(relation.fromId);
@@ -2012,20 +2012,17 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   const toThing = await internalLoadEntityById(toId);
   const read = `match $from has internal_id "${fromThing.internal_id}"; 
     $to has internal_id "${toThing.internal_id}"; 
-    $rel($from, $to) isa ${relationshipType}, has internal_id $rel_id;
-    $from has internal_id $rel_from_id;
-    $to has internal_id $rel_to_id;
-    get;`;
+    $rel($from, $to) isa ${relationshipType}; get;`;
   const relationsToDelete = await find(read, ['rel']);
-  const relationsIds = R.map((r) => r.rel.id, relationsToDelete);
-  for (let i = 0; i < relationsIds.length; i += 1) {
+  for (let i = 0; i < relationsToDelete.length; i += 1) {
+    const r = relationsToDelete[i];
     // eslint-disable-next-line no-await-in-loop
-    await deleteRelationById(user, relationsIds[i], scopeType, opts);
+    await deleteRelationById(user, r.rel.id, r.rel.entity_type, opts);
   }
 };
 export const deleteAttributeById = async (id) => {
   return executeWrite(async (wTx) => {
-    const query = `match $x id ${escape(id)}; delete $x;`;
+    const query = `match $x id ${escape(id)}; delete $x isa thing;`;
     logger.debug(`[GRAKN - infer: false] deleteAttributeById`, { query });
     await wTx.query(query, { infer: false });
     return id;
@@ -2046,13 +2043,8 @@ export const getRelationInferredById = async (id) => {
     logger.debug(`[GRAKN - infer: true] getRelationInferredById`, { query });
     const answerIterator = await rTx.query(query, { infer: true });
     const answerConceptMap = await answerIterator.next();
-    const concepts = await getConcepts(
-      rTx,
-      [answerConceptMap],
-      extractQueryVars(query), //
-      [INFERRED_RELATION_KEY],
-      { noCache: true }
-    );
+    const vars = extractQueryVars(query);
+    const concepts = await getConcepts(rTx, [answerConceptMap], vars, [INFERRED_RELATION_KEY], { noCache: true });
     const relation = R.head(concepts).rel;
     const explanation = await answerConceptMap.explanation();
     const explanationAnswers = explanation.getAnswers();
