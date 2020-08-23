@@ -14,4 +14,5 @@ examples/*.pdf
 docs/_build
 Pipfile*
 .mypy_cache/
+.coverage
 .DS_Store
