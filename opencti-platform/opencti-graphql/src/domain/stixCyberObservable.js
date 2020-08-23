@@ -7,6 +7,8 @@ import {
   createRelations,
   deleteEntityById,
   deleteRelationsByFromAndTo,
+  distributionEntities,
+  distributionEntitiesThroughRelations,
   escape,
   listEntities,
   loadEntityById,
@@ -46,6 +48,8 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
+import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 
 export const findById = (stixCyberObservableId) => {
   return loadEntityById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -392,4 +396,13 @@ export const stixCyberObservableExportPush = async (user, entityId = null, file,
   // Upload the document in minio
   await upload(user, 'export', file, 'stix-observable', entityId, context, listArgs);
   return true;
+};
+
+export const stixCyberObservableDistribution = async (args) =>
+  distributionEntities(ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
+
+export const stixCyberObservableDistributionByEntity = async (args) => {
+  const { objectId } = args;
+  const filters = [{ isRelation: true, type: args.relationship_type, value: objectId }];
+  return distributionEntities(ABSTRACT_STIX_CYBER_OBSERVABLE, filters, args);
 };

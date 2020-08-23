@@ -18,6 +18,8 @@ import {
   stixCyberObservablesTimeSeries,
   stixCyberObservableExportAsk,
   stixCyberObservableExportPush,
+  stixCyberObservableDistribution,
+  stixCyberObservableDistributionByEntity,
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -42,6 +44,12 @@ const stixCyberObservableResolvers = {
     stixCyberObservables: (_, args) => findAll(args),
     stixCyberObservablesTimeSeries: (_, args) => stixCyberObservablesTimeSeries(args),
     stixCyberObservablesNumber: (_, args) => stixCyberObservablesNumber(args),
+    stixCyberObservablesDistribution: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return stixCyberObservableDistributionByEntity(args);
+      }
+      return stixCyberObservableDistribution(args);
+    },
     stixCyberObservablesExportFiles: (_, { first, context }) =>
       filesListing(first, 'export', 'stix-observable', null, context),
   },

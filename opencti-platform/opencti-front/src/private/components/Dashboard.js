@@ -13,16 +13,13 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
-import {
-  AssignmentOutlined,
-  LayersOutlined,
-  WorkOutline,
-  DescriptionOutlined,
-} from '@material-ui/icons';
-import { Database, HexagonOutline, GraphOutline } from 'mdi-material-ui';
+import { AssignmentOutlined, LayersOutlined } from '@material-ui/icons';
+import { Database, GraphOutline } from 'mdi-material-ui';
+import AreaChart from 'recharts/lib/chart/AreaChart';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Bar from 'recharts/lib/cartesian/Bar';
+import Area from 'recharts/lib/cartesian/Area';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
@@ -39,7 +36,6 @@ import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
-import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
   root: {
@@ -52,7 +48,6 @@ const styles = (theme) => ({
     position: 'relative',
   },
   paper: {
-    height: 420,
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
@@ -93,19 +88,31 @@ const styles = (theme) => ({
   },
   graphContainer: {
     width: '100%',
-    margin: '20px 0 0 -30px',
+    padding: '20px 20px 0 0',
   },
   labelsCloud: {
     width: '100%',
-    height: 400,
+    height: 300,
+  },
+  label: {
+    width: '100%',
+    height: 100,
+    padding: 15,
+  },
+  labelNumber: {
+    fontSize: 30,
+    fontWeight: 500,
+  },
+  labelValue: {
+    fontSize: 15,
   },
 });
 
 const inlineStyles = {
   itemAuthor: {
-    width: 100,
-    minWidth: 100,
-    maxWidth: 100,
+    width: 200,
+    minWidth: 200,
+    maxWidth: 200,
     paddingRight: 24,
     color: '#ffffff',
     whiteSpace: 'nowrap',
@@ -114,9 +121,9 @@ const inlineStyles = {
     textAlign: 'left',
   },
   itemType: {
-    width: 120,
-    minWidth: 120,
-    maxWidth: 120,
+    width: 100,
+    minWidth: 100,
+    maxWidth: 100,
     paddingRight: 24,
     color: '#ffffff',
     whiteSpace: 'nowrap',
@@ -125,9 +132,9 @@ const inlineStyles = {
     textAlign: 'left',
   },
   itemDate: {
-    width: 100,
-    minWidth: 100,
-    maxWidth: 100,
+    width: 120,
+    minWidth: 120,
+    maxWidth: 120,
     paddingRight: 24,
     color: '#ffffff',
     whiteSpace: 'nowrap',
@@ -158,6 +165,15 @@ const dashboardStixMetaRelationshipsDistributionQuery = graphql`
     ) {
       label
       value
+      entity {
+        ... on BasicObject {
+          entity_type
+        }
+        ... on Label {
+          value
+          color
+        }
+      }
     }
   }
 `;
@@ -183,40 +199,6 @@ const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
   }
 `;
 
-const dashboardLastReportsQuery = graphql`
-  query DashboardLastReportsQuery(
-    $first: Int
-    $orderBy: ReportsOrdering
-    $orderMode: OrderingMode
-  ) {
-    reports(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
-      edges {
-        node {
-          id
-          name
-          description
-          published
-          createdBy {
-            ... on Identity {
-              id
-              name
-              entity_type
-            }
-          }
-          objectMarking {
-            edges {
-              node {
-                id
-                definition
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
 const dashboardLastStixDomainObjectsQuery = graphql`
   query DashboardLastStixDomainObjectsQuery(
     $first: Int
@@ -234,215 +216,24 @@ const dashboardLastStixDomainObjectsQuery = graphql`
         node {
           id
           entity_type
-          updated_at
-          ... on AttackPattern {
-            name
-            description
-          }
-          ... on Campaign {
-            name
-            description
-          }
-          ... on CourseOfAction {
-            name
-            description
-          }
-          ... on Individual {
-            name
-            description
-          }
-          ... on Organization {
-            name
-            description
-          }
-          ... on Sector {
-            name
-            description
-          }
-          ... on Indicator {
-            name
-            description
-          }
-          ... on Infrastructure {
-            name
-            description
-          }
-          ... on IntrusionSet {
-            name
-            description
-          }
-          ... on Position {
-            name
-            description
-          }
-          ... on City {
-            name
-            description
-          }
-          ... on Country {
-            name
-            description
-          }
-          ... on Region {
-            name
-            description
-          }
-          ... on Malware {
-            name
-            description
-          }
-          ... on ThreatActor {
-            name
-            description
-          }
-          ... on Tool {
-            name
-            description
-          }
-          ... on Vulnerability {
-            name
-            description
-          }
-          ... on XOpenCTIIncident {
-            name
-            description
-          }
-          createdBy {
-            ... on Identity {
-              id
-              name
-              entity_type
-            }
-          }
-          objectMarking {
-            edges {
-              node {
-                id
-                definition
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const dashboardLastNotesQuery = graphql`
-  query DashboardLastNotesQuery(
-    $first: Int
-    $orderBy: NotesOrdering
-    $orderMode: OrderingMode
-  ) {
-    notes(first: $first, orderBy: $orderBy, orderMode: $orderMode) {
-      edges {
-        node {
-          id
-          attribute_abstract
-          content
-          created
-          createdBy {
-            ... on Identity {
-              id
-              name
-              entity_type
-            }
-          }
-          objectMarking {
-            edges {
-              node {
-                id
-                definition
-              }
-            }
-          }
-          objects {
-            edges {
-              node {
-                ... on BasicObject {
-                  id
-                  entity_type
-                }
-                ... on AttackPattern {
-                  name
-                }
-                ... on Campaign {
-                  name
-                }
-                ... on CourseOfAction {
-                  name
-                }
-                ... on Individual {
-                  name
-                }
-                ... on Organization {
-                  name
-                }
-                ... on Sector {
-                  name
-                }
-                ... on Indicator {
-                  name
-                }
-                ... on Infrastructure {
-                  name
-                }
-                ... on IntrusionSet {
-                  name
-                }
-                ... on Position {
-                  name
-                }
-                ... on City {
-                  name
-                }
-                ... on Country {
-                  name
-                }
-                ... on Region {
-                  name
-                }
-                ... on Malware {
-                  name
-                }
-                ... on ThreatActor {
-                  name
-                }
-                ... on Tool {
-                  name
-                }
-                ... on Vulnerability {
-                  name
-                }
-                ... on XOpenCTIIncident {
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`;
-
-const dashboardLastObservablesQuery = graphql`
-  query DashboardLastObservablesQuery(
-    $first: Int
-    $orderBy: StixCyberObservablesOrdering
-    $orderMode: OrderingMode
-  ) {
-    stixCyberObservables(
-      first: $first
-      orderBy: $orderBy
-      orderMode: $orderMode
-    ) {
-      edges {
-        node {
-          id
-          entity_type
-          observable_value
           created_at
+          ... on Report {
+            name
+          }
+          ... on Note {
+            attribute_abstract
+          }
+          ... on Opinion {
+            opinion
+            explanation
+          }
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
           objectMarking {
             edges {
               node {
@@ -453,6 +244,18 @@ const dashboardLastObservablesQuery = graphql`
           }
         }
       }
+    }
+  }
+`;
+
+const dashboardStixCyberObservablesDistributionQuery = graphql`
+  query DashboardStixCyberObservablesDistributionQuery(
+    $field: String!
+    $operation: String!
+  ) {
+    stixCyberObservablesDistribution(field: $field, operation: $operation) {
+      label
+      value
     }
   }
 `;
@@ -494,17 +297,17 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
 `;
 
 class Dashboard extends Component {
+  hexToRGB(hex, transp = 0.1) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgb(${r}, ${g}, ${b}, ${transp})`;
+  }
+
   render() {
     const {
-      t, n, nsd, classes,
+      t, n, nsd, mtd, classes,
     } = this.props;
-    const stixDomainObjectsTimeSeriesVariables = {
-      field: 'created_at',
-      operation: 'count',
-      startDate: yearsAgo(1),
-      endDate: now(),
-      interval: 'day',
-    };
     return (
       <div className={classes.root}>
         <Security
@@ -630,37 +433,160 @@ class Dashboard extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={4}>
               <Typography variant="h4" gutterBottom={true}>
-                {t('Last ingested analysis')}
+                {t('Top Labels (3 last months)')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper
+                classes={{ root: classes.paper }}
+                elevation={2}
+                style={{ height: 300 }}
+              >
                 <QueryRenderer
                   query={dashboardStixMetaRelationshipsDistributionQuery}
                   variables={{
-                    field: 'value',
+                    field: 'internal_id',
                     operation: 'count',
                     relationship_type: 'object-label',
+                    toTypes: ['Label'],
                     startDate: monthsAgo(3),
                     endDate: now(),
-                    limit: 12,
+                    limit: 9,
                   }}
                   render={({ props }) => {
-                    if (props && props.stixMetaRelationshipsDistribution) {
+                    if (
+                      props
+                      && props.stixMetaRelationshipsDistribution
+                      && props.stixMetaRelationshipsDistribution.length > 0
+                    ) {
                       return (
                         <div className={classes.labelsCloud}>
-                          <Grid container={true} spacing={3}>
+                          <Grid container={true} spacing={0}>
                             {props.stixMetaRelationshipsDistribution.map(
                               (line) => (
-                                <Grid item={true} xs={3}>
-                                  <div className={classes.label}>
-                                    {line.label}
-                                    {line.value}
+                                <Grid
+                                  key={line.label}
+                                  item={true}
+                                  xs={4}
+                                  style={{ padding: 0 }}
+                                >
+                                  <div
+                                    className={classes.label}
+                                    style={{
+                                      color: line.entity.color,
+                                      borderColor: line.entity.color,
+                                      backgroundColor: this.hexToRGB(
+                                        line.entity.color,
+                                      ),
+                                    }}
+                                  >
+                                    <div className={classes.labelNumber}>
+                                      {n(line.value)}
+                                    </div>
+                                    <div className={classes.labelValue}>
+                                      {line.entity.value}
+                                    </div>
                                   </div>
                                 </Grid>
                               ),
                             )}
                           </Grid>
+                        </div>
+                      );
+                    }
+                    if (props) {
+                      return (
+                        <div
+                          style={{
+                            display: 'table',
+                            height: '100%',
+                            width: '100%',
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: 'table-cell',
+                              verticalAlign: 'middle',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {t('No entities of this type has been found.')}
+                          </span>
+                        </div>
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+                />
+              </Paper>
+            </Grid>
+            <Grid item={true} xs={8}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Ingested entities')}
+              </Typography>
+              <Paper
+                classes={{ root: classes.paper }}
+                elevation={2}
+                style={{ height: 300 }}
+              >
+                <QueryRenderer
+                  query={dashboardStixDomainObjectsTimeSeriesQuery}
+                  variables={{
+                    field: 'created_at',
+                    operation: 'count',
+                    startDate: yearsAgo(1),
+                    endDate: now(),
+                    interval: 'month',
+                  }}
+                  render={({ props }) => {
+                    if (props && props.stixDomainObjectsTimeSeries) {
+                      return (
+                        <div className={classes.graphContainer}>
+                          <ResponsiveContainer height={270} width="100%">
+                            <AreaChart
+                              data={props.stixDomainObjectsTimeSeries}
+                              margin={{
+                                top: 0,
+                                right: 0,
+                                bottom: 0,
+                                left: -10,
+                              }}
+                            >
+                              <CartesianGrid
+                                strokeDasharray="2 2"
+                                stroke="#0f181f"
+                              />
+                              <XAxis
+                                dataKey="date"
+                                stroke="#ffffff"
+                                interval={0}
+                                textAnchor="end"
+                                tickFormatter={mtd}
+                              />
+                              <YAxis stroke="#ffffff" />
+                              <Tooltip
+                                cursor={{
+                                  fill: 'rgba(0, 0, 0, 0.2)',
+                                  stroke: 'rgba(0, 0, 0, 0.2)',
+                                  strokeWidth: 2,
+                                }}
+                                contentStyle={{
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  fontSize: 12,
+                                  borderRadius: 10,
+                                }}
+                                labelFormatter={nsd}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="value"
+                                stroke={Theme.palette.primary.main}
+                                strokeWidth={2}
+                                fill={Theme.palette.primary.main}
+                                fillOpacity={0.1}
+                              />
+                            </AreaChart>
+                          </ResponsiveContainer>
                         </div>
                       );
                     }
@@ -670,12 +596,111 @@ class Dashboard extends Component {
               </Paper>
             </Grid>
           </Grid>
-          <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
+          <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
+            <Grid item={true} xs={4}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Observables distribution')}
+              </Typography>
+              <Paper
+                classes={{ root: classes.paper }}
+                elevation={2}
+                style={{ height: 420 }}
+              >
+                <QueryRenderer
+                  query={dashboardStixCyberObservablesDistributionQuery}
+                  variables={{ field: 'entity_type', operation: 'count' }}
+                  render={({ props }) => {
+                    if (
+                      props
+                      && props.stixCyberObservablesDistribution
+                      && props.stixCyberObservablesDistribution.length > 0
+                    ) {
+                      return (
+                        <div className={classes.graphContainer}>
+                          <ResponsiveContainer height={420} width="100%">
+                            <BarChart
+                              layout="vertical"
+                              data={props.stixCyberObservablesDistribution}
+                              margin={{
+                                top: 0,
+                                right: 0,
+                                bottom: 20,
+                                left: 20,
+                              }}
+                            >
+                              <XAxis
+                                type="number"
+                                dataKey="value"
+                                stroke="#ffffff"
+                              />
+                              <YAxis
+                                stroke="#ffffff"
+                                dataKey="label"
+                                type="category"
+                                angle={-30}
+                                textAnchor="end"
+                              />
+                              <CartesianGrid
+                                strokeDasharray="2 2"
+                                stroke="#0f181f"
+                              />
+                              <Tooltip
+                                cursor={{
+                                  fill: 'rgba(0, 0, 0, 0.2)',
+                                  stroke: 'rgba(0, 0, 0, 0.2)',
+                                  strokeWidth: 2,
+                                }}
+                                contentStyle={{
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  fontSize: 12,
+                                  borderRadius: 10,
+                                }}
+                              />
+                              <Bar
+                                fill={Theme.palette.primary.main}
+                                dataKey="value"
+                                barSize={20}
+                              />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      );
+                    }
+                    if (props) {
+                      return (
+                        <div
+                          style={{
+                            display: 'table',
+                            height: '100%',
+                            width: '100%',
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: 'table-cell',
+                              verticalAlign: 'middle',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {t('No entities of this type has been found.')}
+                          </span>
+                        </div>
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+                />
+              </Paper>
+            </Grid>
+            <Grid item={true} xs={8}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Last ingested analysis')}
               </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
+              <Paper
+                classes={{ root: classes.paper }}
+                elevation={2}
+                style={{ height: 420 }}
+              >
                 <QueryRenderer
                   query={dashboardLastStixDomainObjectsQuery}
                   variables={{
@@ -685,7 +710,11 @@ class Dashboard extends Component {
                     types: ['Report', 'Note', 'Opinion'],
                   }}
                   render={({ props }) => {
-                    if (props && props.stixDomainObjects) {
+                    if (
+                      props
+                      && props.stixDomainObjects
+                      && props.stixDomainObjects.edges.length > 0
+                    ) {
                       return (
                         <List>
                           {props.stixDomainObjects.edges.map(
@@ -717,6 +746,11 @@ class Dashboard extends Component {
                                       color="#00bcd4"
                                     />
                                   </ListItemIcon>
+                                  <div style={inlineStyles.itemType}>
+                                    {t(
+                                      `entity_${stixDomainObject.entity_type}`,
+                                    )}
+                                  </div>
                                   <ListItemText
                                     primary={
                                       <div className={classes.itemText}>
@@ -761,88 +795,25 @@ class Dashboard extends Component {
                         </List>
                       );
                     }
-                    return <Loader variant="inElement" />;
-                  }}
-                />
-              </Paper>
-            </Grid>
-            <Grid item={true} lg={6} xs={12} style={{ marginBottom: 30 }}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t('Last observables')}
-              </Typography>
-              <Paper classes={{ root: classes.paper }} elevation={2}>
-                <QueryRenderer
-                  query={dashboardLastObservablesQuery}
-                  variables={{
-                    first: 8,
-                    orderBy: 'created_at',
-                    orderMode: 'desc',
-                  }}
-                  render={({ props }) => {
-                    if (props && props.stixCyberObservables) {
+                    if (props) {
                       return (
-                        <List>
-                          {props.stixCyberObservables.edges.map(
-                            (stixCyberObservableEdge) => {
-                              const stixCyberObservable = stixCyberObservableEdge.node;
-                              const objectMarking = head(
-                                pathOr(
-                                  [],
-                                  ['objectMarking', 'edges'],
-                                  stixCyberObservable,
-                                ),
-                              );
-                              return (
-                                <ListItem
-                                  key={stixCyberObservable.id}
-                                  dense={true}
-                                  button={true}
-                                  classes={{ root: classes.item }}
-                                  divider={true}
-                                  component={Link}
-                                  to={`/dashboard/signatures/observables/${stixCyberObservable.id}`}
-                                >
-                                  <ListItemIcon>
-                                    <HexagonOutline color="primary" />
-                                  </ListItemIcon>
-                                  <ListItemText
-                                    primary={
-                                      <div className={classes.itemText}>
-                                        {stixCyberObservable.observable_value}
-                                      </div>
-                                    }
-                                  />
-                                  <div style={inlineStyles.itemType}>
-                                    {t(
-                                      `observable_${stixCyberObservable.entity_type}`,
-                                    )}
-                                  </div>
-                                  <div style={inlineStyles.itemDate}>
-                                    {nsd(stixCyberObservable.created_at)}
-                                  </div>
-                                  <div
-                                    style={{
-                                      width: 110,
-                                      maxWidth: 110,
-                                      minWidth: 110,
-                                      paddingRight: 20,
-                                    }}
-                                  >
-                                    {objectMarking ? (
-                                      <ItemMarking
-                                        key={objectMarking.node.id}
-                                        label={objectMarking.node.definition}
-                                        variant="inList"
-                                      />
-                                    ) : (
-                                      ''
-                                    )}
-                                  </div>
-                                </ListItem>
-                              );
-                            },
-                          )}
-                        </List>
+                        <div
+                          style={{
+                            display: 'table',
+                            height: '100%',
+                            width: '100%',
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: 'table-cell',
+                              verticalAlign: 'middle',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {t('No entities of this type has been found.')}
+                          </span>
+                        </div>
                       );
                     }
                     return <Loader variant="inElement" />;
@@ -862,7 +833,7 @@ Dashboard.propTypes = {
   t: PropTypes.func,
   n: PropTypes.func,
   nsd: PropTypes.func,
-  md: PropTypes.func,
+  mtd: PropTypes.func,
   history: PropTypes.object,
 };
 

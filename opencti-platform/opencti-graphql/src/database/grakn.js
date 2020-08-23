@@ -1150,7 +1150,10 @@ export const distributionRelations = async (options) => {
   }
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if( field )
+  if (field === 'internal_id') {
+    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
+    return R.map((n) => R.assoc('entity', elLoadById(n.label), n), data);
+  }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntitiesThroughRelations = async (options) => {
