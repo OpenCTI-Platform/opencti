@@ -12,7 +12,7 @@ import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternPopover from './AttackPatternPopover';
 import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
 import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
-import EntityReportsChart from '../../reports/EntityReportsChart';
+import EntityReportsChart from '../../analysis/reports/EntityReportsChart';
 import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';

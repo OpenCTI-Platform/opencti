@@ -124,8 +124,8 @@ export const addReport = async (user, report) => {
   let confidence = 20;
   if (report.createdBy) {
     const identity = await findIdentityById(report.createdBy);
-    if (identity.reliability) {
-      switch (identity.reliability) {
+    if (identity.x_opencti_reliability) {
+      switch (identity.x_opencti_reliability) {
         case 'A':
           confidence = 80;
           break;

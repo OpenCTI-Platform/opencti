@@ -10,7 +10,7 @@ import StixCyberObservableHeader from './StixCyberObservableHeader';
 import StixCyberObservableOverview from './StixCyberObservableOverview';
 import StixCyberObservableDetails from './StixCyberObservableDetails';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
-import EntityLastReports from '../../reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/EntityLastReports';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';

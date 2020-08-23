@@ -19,7 +19,7 @@ import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import EntityReportsPie from '../../reports/EntityReportsPie';
+import EntityReportsPie from '../../analysis/reports/EntityReportsPie';
 import EntityStixCoreRelationshipsRadar from '../stix_core_relationships/EntityStixCoreRelationshipsRadar';
 import StixDomainObjectGlobalKillChain, {
   stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery,

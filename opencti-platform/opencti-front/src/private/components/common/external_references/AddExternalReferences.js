@@ -17,7 +17,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, {
   addExternalReferencesLinesQuery,
 } from './AddExternalReferencesLines';
-import ExternalReferenceCreation from './ExternalReferenceCreation';
+import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
 
 const styles = (theme) => ({
   drawerPaper: {

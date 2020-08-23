@@ -12,7 +12,7 @@ import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
 import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
 import EntityStixCoreRelationshipsPie from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
-import EntityReportsChart from '../../reports/EntityReportsChart';
+import EntityReportsChart from '../../analysis/reports/EntityReportsChart';
 import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';

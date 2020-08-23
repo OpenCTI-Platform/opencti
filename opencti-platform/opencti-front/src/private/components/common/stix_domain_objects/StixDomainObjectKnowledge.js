@@ -13,7 +13,7 @@ import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import EntityReportsPie from '../../reports/EntityReportsPie';
+import EntityReportsPie from '../../analysis/reports/EntityReportsPie';
 import EntityStixCoreRelationshipsDonut from '../stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityStixCoreRelationshipsChart from '../stix_core_relationships/EntityStixCoreRelationshipsChart';
 import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleEntityStixCoreRelationships';

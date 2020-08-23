@@ -32,7 +32,7 @@ import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionO
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreRelationshipInferences from './StixCoreRelationshipInferences';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
-import EntityLastReports from '../../reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/EntityLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectNotes from '../stix_core_objects/StixCoreObjectNotes';
 

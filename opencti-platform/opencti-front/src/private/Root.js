@@ -10,16 +10,17 @@ import LeftBar from './components/nav/LeftBar';
 import Dashboard from './components/Dashboard';
 import Search from './components/Search';
 import RootImport from './components/import/Root';
-import RootThreats from './components/threats/Root';
+import RootAnalysis from './components/analysis/Root';
+import RootEvents from './components/events/Root';
 import RootTechniques from './components/techniques/Root';
 import RootSignatures from './components/signatures/Root';
 import RootEntities from './components/entities/Root';
 import Workspaces from './components/workspaces/Workspaces';
 import RootSettings from './components/settings/Root';
 import RootWorkspace from './components/workspaces/Root';
-import Reports from './components/reports/Reports';
-import RootReport from './components/reports/Root';
-import ExternalReferences from './components/common/external_references/ExternalReferences';
+import Reports from './components/analysis/Reports';
+import RootReport from './components/analysis/reports/Root';
+import ExternalReferences from './components/analysis/external_references/ExternalReferences';
 import RootData from './components/data/Root';
 import Profile from './components/Profile';
 import Message from '../components/Message';
@@ -99,8 +100,12 @@ const Root = () => {
                         )}
                       />
                       <BoundaryRoute
-                        path="/dashboard/threats"
-                        component={RootThreats}
+                        path="/dashboard/analysis"
+                        component={RootAnalysis}
+                      />
+                      <BoundaryRoute
+                          path="/dashboard/events"
+                          component={RootEvents}
                       />
                       <BoundaryRoute
                         path="/dashboard/techniques"
@@ -109,11 +114,6 @@ const Root = () => {
                       <BoundaryRoute
                         path="/dashboard/signatures"
                         component={RootSignatures}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/reports"
-                        render={() => <Redirect to="/dashboard/reports/all" />}
                       />
                       <BoundaryRoute
                         exact

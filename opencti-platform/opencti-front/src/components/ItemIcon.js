@@ -13,6 +13,8 @@ import {
   CenterFocusStrongOutlined,
   ShortTextOutlined,
   WorkOutline,
+  FeedbackOutlined,
+  LanguageOutlined,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -58,6 +60,8 @@ const iconSelector = (type, variant, fontSize, color) => {
           role="img"
         />
       );
+    case 'External-Reference':
+      return <LanguageOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Label':
       return <LabelOutline style={style} fontSize={fontSize} role="img" />;
     case 'Attack-Pattern':
@@ -69,7 +73,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Observed-Data':
       return '/dashboard/containers/observed_datas';
     case 'Opinion':
-      return '/dashboard/containers/opinions';
+      return <FeedbackOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Report':
       return (
         <DescriptionOutlined style={style} fontSize={fontSize} role="img" />

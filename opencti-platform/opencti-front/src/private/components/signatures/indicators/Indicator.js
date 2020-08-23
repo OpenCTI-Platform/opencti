@@ -10,7 +10,7 @@ import IndicatorHeader from './IndicatorHeader';
 import IndicatorOverview from './IndicatorOverview';
 import IndicatorDetails from './IndicatorDetails';
 import IndicatorEdition from './IndicatorEdition';
-import EntityLastReports from '../../reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/EntityLastReports';
 import IndicatorEntities from './IndicatorEntities';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
