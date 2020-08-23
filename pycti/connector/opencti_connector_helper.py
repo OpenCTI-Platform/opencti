@@ -1,11 +1,12 @@
 import datetime
 import threading
+import uuid
+
 import pika
 import logging
 import json
 import time
 import base64
-import uuid
 import os
 
 from typing import Callable, Dict, List, Optional, Union
@@ -231,10 +232,6 @@ class OpenCTIConnectorHelper:
         )
         self.ping.start()
 
-        # Initialize caching
-        self.cache_index = {}
-        self.cache_added = []
-
     def set_state(self, state) -> None:
         """sets the connector state
 
@@ -281,7 +278,6 @@ class OpenCTIConnectorHelper:
 
     def date_now(self) -> str:
         """get the current date (UTC)
-
         :return: current datetime for utc
         :rtype: str
         """

@@ -126,7 +126,7 @@ class Indicator:
     def list(self, **kwargs):
         """List Indicator objects
 
-        The list method accepts the following \**kwargs:
+        The list method accepts the following kwargs:
 
         :param list filters: (optional) the filters to apply
         :param str search: (optional) a search keyword to apply for the listing
@@ -221,7 +221,7 @@ class Indicator:
         read can be either used with a known OpenCTI entity `id` or by using a
         valid filter to search and return a single Indicator entity or None.
 
-        The list method accepts the following \**kwargs.
+        The list method accepts the following kwargs.
 
         Note: either `id` or `filters` is required.
 

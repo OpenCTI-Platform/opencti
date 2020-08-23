@@ -119,7 +119,7 @@ class ThreatActor:
     def list(self, **kwargs) -> dict:
         """List Threat-Actor objects
 
-        The list method accepts the following \**kwargs:
+        The list method accepts the following kwargs:
 
         :param list filters: (optional) the filters to apply
         :param str search: (optional) a search keyword to apply for the listing
@@ -189,7 +189,7 @@ class ThreatActor:
         read can be either used with a known OpenCTI entity `id` or by using a
         valid filter to search and return a single Threat-Actor entity or None.
 
-        The list method accepts the following \**kwargs.
+        The list method accepts the following kwargs.
 
         Note: either `id` or `filters` is required.
 
@@ -238,7 +238,7 @@ class ThreatActor:
         By setting `update` to `True` it acts like an upsert and updates
         fields of an existing Threat-Actor entity.
 
-        The create method accepts the following \**kwargs.
+        The create method accepts the following kwargs.
 
         Note: `name` and `description` or `stix_id` is required.
 
