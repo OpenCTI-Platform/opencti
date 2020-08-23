@@ -1,4 +1,5 @@
 // Admin user initialization
+import { v4 as uuid } from 'uuid';
 import { logger } from './config/conf';
 import { elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
 import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
@@ -103,19 +104,29 @@ const checkSystemDependencies = async () => {
 };
 
 // Initialize
-const initializeSchema = async (purgeIndex = false) => {
+const initializeSchema = async () => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
   await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
   // Create default indexes
-  // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
-  if (purgeIndex) {
-    await elDeleteIndexes();
-  }
+  await elDeleteIndexes();
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
   return true;
+};
+
+const initializeMigration = async () => {
+  logger.info('[INIT] > Creating migration structure');
+  const time = new Date().getTime();
+  const lastRunInit = `${parseInt(time, 10) + 1}-init`;
+  await internalDirectWrite(
+    `insert $x isa MigrationStatus, 
+        has entity_type "MigrationStatus",
+        has lastRun "${lastRunInit}", 
+        has internal_id "${uuid()}", 
+        has standard_id "migration-status--${uuid()}";`
+  );
 };
 
 const createAttributesTypes = async () => {
@@ -243,13 +254,12 @@ const platformInit = async (noMigration = false) => {
     const needToBeInitialized = await isEmptyPlatform();
     if (needToBeInitialized) {
       logger.info(`[INIT] > New platform detected, initialization...`);
-      await initializeSchema(true);
+      await initializeSchema();
+      await initializeMigration();
       await initializeData();
       await initializeAdminUser();
     } else {
-      logger.info('[INIT] > Existing platform detected, migration...');
-      // TODO To remove with https://github.com/OpenCTI-Platform/opencti/issues/673
-      await initializeSchema(false);
+      logger.info('[INIT] > Existing platform detected, initialization...');
       // Always reset the admin user
       await initializeAdminUser();
       if (!noMigration) {
@@ -257,7 +267,7 @@ const platformInit = async (noMigration = false) => {
       }
     }
   } catch (e) {
-    logger.error(`[OPENCTI] platform init fail`, { error: e });
+    logger.error(`[OPENCTI] > Platform init fail`, { error: e });
     throw e;
   }
   return true;

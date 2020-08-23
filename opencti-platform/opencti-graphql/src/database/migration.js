@@ -1,8 +1,8 @@
 import { v4 as uuid } from 'uuid';
-import { filter, head, last, map } from 'ramda';
+import { filter, head, map } from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
-import { executeWrite, find, load, internalDirectWrite } from './grakn';
+import { executeWrite, find, load } from './grakn';
 import { logger } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
@@ -29,27 +29,8 @@ const retrieveMigrations = () => {
 const graknStateStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
-    const migration = await load(`match $status isa MigrationStatus; $status has internal_id $status_id; get;`, [
-      'status',
-    ]);
-    if (!migration) {
-      // If no migration found, initialize
-      logger.info('[MIGRATION] > Fresh platform detected, creating migration structure');
-      const lastExistingMigration = last(retrieveMigrations());
-      let time = new Date().getTime();
-      if (lastExistingMigration) {
-        [time] = lastExistingMigration.title.split('-');
-      }
-      const lastRunInit = `${parseInt(time, 10) + 1}-init`;
-      await internalDirectWrite(
-        `insert $x isa MigrationStatus, 
-        has entity_type "MigrationStatus",
-        has lastRun "${lastRunInit}", 
-        has internal_id "${uuid()}", 
-        has standard_id "migrationstatus--${uuid()}";`
-      );
-      return fn(null, { lastRun: lastRunInit, migrations: [] });
-    }
+    const getStatus = `match $status isa MigrationStatus; $status has internal_id $status_id; get;`;
+    const migration = await load(getStatus, ['status']);
     // If migrations found, convert to current status
     const query = `match $from isa MigrationStatus; 
     $rel(${RELATION_MIGRATES}_from:$from, ${RELATION_MIGRATES}_to:$to) isa ${RELATION_MIGRATES}; get;`;
@@ -83,6 +64,7 @@ const graknStateStorage = {
         const q3 = `insert $x isa MigrationReference,
           has entity_type "MigrationReference",
           has internal_id "${uuid()}",
+          has standard_id "migration-reference--${uuid()}",
           has title "${mig.title}",
           has timestamp ${mig.timestamp};`;
         logger.debug(`[MIGRATION] step 3`, { query: q3 });
@@ -91,7 +73,8 @@ const graknStateStorage = {
         // Attach the reference to the migration status.
         const q4 = `match $status isa MigrationStatus; 
           $ref isa MigrationReference, has title "${mig.title}"; 
-          insert (${RELATION_MIGRATES}_from: $status, ${RELATION_MIGRATES}_to: $ref) isa ${RELATION_MIGRATES}, has internal_id "${uuid()}";`;
+          insert (${RELATION_MIGRATES}_from: $status, ${RELATION_MIGRATES}_to: $ref) isa ${RELATION_MIGRATES}, 
+          has internal_id "${uuid()}", has standard_id "migrates--${uuid()}";`;
         logger.debug(`[MIGRATION] step 4`, { query: q4 });
         await wTx.query(q4);
         logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);
@@ -108,7 +91,7 @@ const applyMigration = () => {
   const set = new MigrationSet(graknStateStorage);
   return new Promise((resolve, reject) => {
     graknStateStorage.load((err, state) => {
-      if (err) throw DatabaseError('[OPENCT Error applying migration', err);
+      if (err) throw DatabaseError('[MIGRATION] Error applying migration', err);
       // Set last run date on the set
       set.lastRun = state.lastRun;
       // Read migrations from webpack
@@ -126,6 +109,8 @@ const applyMigration = () => {
        Plays migrations that doesnt have matching name / timestamp */
       if (migrationToApply.length > 0) {
         logger.info(`[MIGRATION] > ${migrationToApply.length} migrations will be executed`);
+      } else {
+        logger.info(`[MIGRATION] > Platform already up to date, nothing to migrate`);
       }
       for (let index = 0; index < migrationToApply.length; index += 1) {
         const migSet = migrationToApply[index];
@@ -142,7 +127,7 @@ const applyMigration = () => {
           logger.error('[GRAKN] Error during migration');
           reject(migrationError);
         }
-        logger.info('[MIGRATION] > Migration process completed, platform is up to date');
+        logger.info('[MIGRATION] > Migration process completed');
         resolve();
       });
     });
