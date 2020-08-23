@@ -13,7 +13,7 @@ import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixDomainObjectExternalReferencesLines, {
   stixDomainObjectExternalReferencesLinesQuery,
-} from './StixDomainObjectExternalReferencesLines';
+} from './StixCoreObjectExternalReferencesLines';
 
 const styles = (theme) => ({
   paper: {
@@ -39,7 +39,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectExternalReferences extends Component {
+class StixCoreObjectExternalReferences extends Component {
   render() {
     const { t, classes, entityId } = this.props;
     return (
@@ -99,7 +99,7 @@ class StixDomainObjectExternalReferences extends Component {
   }
 }
 
-StixDomainObjectExternalReferences.propTypes = {
+StixCoreObjectExternalReferences.propTypes = {
   entityId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -110,4 +110,4 @@ StixDomainObjectExternalReferences.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainObjectExternalReferences);
+)(StixCoreObjectExternalReferences);

@@ -33,12 +33,6 @@ export const findAll = async (args) => {
 };
 
 // Entities tab
-export const objects = (reportId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
-  const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
-  return findAllStixDomainEntities(finalArgs);
-};
-
 export const reportContainsStixObjectOrStixRelationship = async (reportId, thingId) => {
   const args = {
     filters: [

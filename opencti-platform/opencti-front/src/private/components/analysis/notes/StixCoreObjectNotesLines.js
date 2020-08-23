@@ -24,8 +24,8 @@ import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { commitMutation } from '../../../../relay/environment';
-import AddExternalReferences from './AddExternalReferences';
-import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
+import AddNotes from './AddNotes';
+import { noteMutationRelationDelete } from './AddNotesLines';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
@@ -57,20 +57,20 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class StixDomainObjectExternalReferencesLinesContainer extends Component {
+class StixCoreObjectNotesLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = {
       displayDialog: false,
-      removeExternalReference: null,
+      removeNote: null,
       removing: false,
     };
   }
 
-  handleOpenDialog(externalReferenceEdge) {
+  handleOpenDialog(noteEdge) {
     const openedState = {
       displayDialog: true,
-      removeExternalReference: externalReferenceEdge,
+      removeNote: noteEdge,
     };
     this.setState(openedState);
   }
@@ -78,21 +78,21 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
   handleCloseDialog() {
     const closedState = {
       displayDialog: false,
-      removeExternalReference: null,
+      removeNote: null,
     };
     this.setState(closedState);
   }
 
   handleRemoval() {
     this.setState({ removing: true });
-    this.removeExternalReference(this.state.removeExternalReference);
+    this.removeNote(this.state.removeNote);
   }
 
-  removeExternalReference(externalReferenceEdge) {
+  removeNote(noteEdge) {
     commitMutation({
-      mutation: externalReferenceMutationRelationDelete,
+      mutation: noteMutationRelationDelete,
       variables: {
-        id: externalReferenceEdge.node.id,
+        id: noteEdge.node.id,
         fromId: this.props.entityId,
         relationship_type: 'external-reference',
       },
@@ -100,9 +100,9 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
         const entity = store.get(this.props.entityId);
         const conn = ConnectionHandler.getConnection(
           entity,
-          'Pagination_externalReferences',
+          'Pagination_notes',
         );
-        ConnectionHandler.deleteNode(conn, externalReferenceEdge.node.id);
+        ConnectionHandler.deleteNode(conn, noteEdge.node.id);
       },
       onCompleted: () => {
         this.setState({ removing: false });
@@ -121,44 +121,44 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
           {t('External references')}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddExternalReferences
+          <AddNotes
             entityId={entityId}
-            entityExternalReferences={
-              data.stixDomainObject.externalReferences.edges
+            entityNotes={
+              data.stixCoreObject.notes.edges
             }
           />
         </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <List>
-            {data.stixDomainObject.externalReferences.edges.map(
-              (externalReferenceEdge) => {
-                const externalReference = externalReferenceEdge.node;
-                const externalReferenceId = externalReference.external_id
-                  ? `(${externalReference.external_id})`
+            {data.stixCoreObject.notes.edges.map(
+              (noteEdge) => {
+                const note = noteEdge.node;
+                const noteId = note.external_id
+                  ? `(${note.external_id})`
                   : '';
-                if (externalReference.url) {
+                if (note.url) {
                   return (
                     <ListItem
-                      key={externalReference.id}
+                      key={note.id}
                       dense={true}
                       divider={true}
                       button={true}
                       component="a"
-                      href={externalReference.url}
+                      href={note.url}
                     >
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatar }}>
-                          {externalReference.source_name.substring(0, 1)}
+                          {note.source_name.substring(0, 1)}
                         </Avatar>
                       </ListItemIcon>
                       <ListItemText
-                        primary={`${externalReference.source_name} ${externalReferenceId}`}
+                        primary={`${note.source_name} ${noteId}`}
                         secondary={truncate(
-                          externalReference.description !== null
-                            && externalReference.description.length > 0
-                            ? externalReference.description
-                            : externalReference.url,
+                          note.description !== null
+                            && note.description.length > 0
+                            ? note.description
+                            : note.url,
                           90,
                         )}
                       />
@@ -167,7 +167,7 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
                           aria-label="Remove"
                           onClick={this.handleOpenDialog.bind(
                             this,
-                            externalReferenceEdge,
+                            noteEdge,
                           )}
                         >
                           <LinkOff />
@@ -178,26 +178,26 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
                 }
                 return (
                   <ListItem
-                    key={externalReference.id}
+                    key={note.id}
                     dense={true}
                     divider={true}
                     button={false}
                   >
                     <ListItemIcon>
                       <Avatar classes={{ root: classes.avatar }}>
-                        {externalReference.source_name.substring(0, 1)}
+                        {note.source_name.substring(0, 1)}
                       </Avatar>
                     </ListItemIcon>
                     <ListItemText
-                      primary={`${externalReference.source_name} ${externalReferenceId}`}
-                      secondary={truncate(externalReference.description, 120)}
+                      primary={`${note.source_name} ${noteId}`}
+                      secondary={truncate(note.description, 120)}
                     />
                     <ListItemSecondaryAction>
                       <IconButton
                         aria-label="Remove"
                         onClick={this.handleOpenDialog.bind(
                           this,
-                          externalReferenceEdge,
+                          noteEdge,
                         )}
                       >
                         <LinkOff />
@@ -242,7 +242,7 @@ class StixDomainObjectExternalReferencesLinesContainer extends Component {
   }
 }
 
-StixDomainObjectExternalReferencesLinesContainer.propTypes = {
+StixCoreObjectNotesLinesContainer.propTypes = {
   id: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -251,29 +251,29 @@ StixDomainObjectExternalReferencesLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixDomainObjectExternalReferencesLinesQuery = graphql`
-  query StixDomainObjectExternalReferencesLinesQuery(
+export const stixCoreObjectNotesLinesQuery = graphql`
+  query StixCoreObjectNotesLinesQuery(
     $count: Int!
     $id: String
   ) {
-    ...StixDomainObjectExternalReferencesLines_data
+    ...StixCoreObjectNotesLines_data
       @arguments(count: $count, id: $id)
   }
 `;
 
-const StixDomainObjectExternalReferencesLines = createPaginationContainer(
-  StixDomainObjectExternalReferencesLinesContainer,
+const StixCoreObjectNotesLines = createPaginationContainer(
+  StixCoreObjectNotesLinesContainer,
   {
     data: graphql`
-      fragment StixDomainObjectExternalReferencesLines_data on Query
+      fragment StixCoreObjectNotesLines_data on Query
         @argumentDefinitions(
           count: { type: "Int", defaultValue: 25 }
           id: { type: "String" }
         ) {
-        stixDomainObject(id: $id) {
+        stixCoreObject(id: $id) {
           id
-          externalReferences(first: $count)
-            @connection(key: "Pagination_externalReferences") {
+          notes(first: $count)
+            @connection(key: "Pagination_notes") {
             edges {
               node {
                 id
@@ -292,7 +292,7 @@ const StixDomainObjectExternalReferencesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixDomainObject.externalReferences;
+      return props.data && props.data.stixCoreObject.notes;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -306,11 +306,11 @@ const StixDomainObjectExternalReferencesLines = createPaginationContainer(
         id: fragmentVariables.id,
       };
     },
-    query: stixDomainObjectExternalReferencesLinesQuery,
+    query: stixCoreObjectNotesLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainObjectExternalReferencesLines);
+)(StixCoreObjectNotesLines);

@@ -14,7 +14,7 @@ import GlobalLinkFactory from '../../../../components/graph_node/GlobalLinkFacto
 import GlobalLabelFactory from '../../../../components/graph_node/GlobalLabelFactory';
 import RelationNodeFactory from '../../../../components/graph_node/RelationNodeFactory';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import ReportHeader from './ReportHeader';
+import ReportHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, {
   reportKnowledgeGraphQuery,
 } from './ReportKnowledgeGraph';
@@ -97,7 +97,7 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
         name
         focusOn
       }
-      ...ReportHeader_report
+      ...ContainerHeader_container
     }
   `,
 });

@@ -7,10 +7,14 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
 import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
+import ItemCreator from '../../../../components/ItemCreator';
+import ItemRevoked from '../../../../components/ItemRevoked';
+import StixDomainObjectLabels from './StixDomainObjectLabels';
 
 const styles = () => ({
   paper: {
@@ -38,7 +42,7 @@ class StixDomainObjectOverview extends Component {
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('Basic informations')}
+          {t('Basic information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
@@ -69,9 +73,25 @@ class StixDomainObjectOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Creation date (in this platform)')}
+                {t('STIX version')}
               </Typography>
-              {fldt(stixDomainObject.created_at)}
+              <Button
+                variant="outlined"
+                size="small"
+                style={{ cursor: 'default' }}
+              >
+                {stixDomainObject.spec_version}
+              </Button>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Author')}
+              </Typography>
+              <ItemAuthor
+                createdBy={propOr(null, 'createdBy', stixDomainObject)}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -93,10 +113,11 @@ class StixDomainObjectOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
-                {t('Author')}
+                {t('Revoked')}
               </Typography>
-              <ItemAuthor
-                createdBy={propOr(null, 'createdBy', stixDomainObject)}
+              <ItemRevoked
+                status={stixDomainObject.revoked}
+                label={stixDomainObject.revoked ? t('Yes') : t('No')}
               />
             </Grid>
             <Grid item={true} xs={6}>
@@ -116,11 +137,15 @@ class StixDomainObjectOverview extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              <pre style={{ margin: 0 }}>
+              <pre style={{ margin: '0 0 20px 0' }}>
                 {stixDomainObject.stix_ids.length > 0
                   ? stixDomainObject.stix_ids.map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>
+              <StixDomainObjectLabels
+                labels={stixDomainObject.objectLabel}
+                id={stixDomainObject.id}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -129,6 +154,22 @@ class StixDomainObjectOverview extends Component {
                 {t('Confidence level')}
               </Typography>
               <ItemConfidence confidence={stixDomainObject.confidence} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Creation date (in this platform)')}
+              </Typography>
+              {fldt(stixDomainObject.created_at)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Creator')}
+              </Typography>
+              <ItemCreator creator={stixDomainObject.creator} />
             </Grid>
           </Grid>
         </Paper>

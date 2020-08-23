@@ -13,8 +13,8 @@ import StixCyberObservableEdition from './StixCyberObservableEdition';
 import EntityLastReports from '../../analysis/reports/EntityLastReports';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import EntityExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {

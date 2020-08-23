@@ -10,15 +10,14 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
-import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import ReportAddObservablesLines, {
-  reportAddObservablesLinesQuery,
-} from './ReportAddObservablesLines';
-import StixCyberObservableCreation from '../../signatures/stix_cyber_observables/StixCyberObservableCreation';
+import { QueryRenderer } from '../../../../relay/environment';
+import AddNotesLines, {
+  addNotesLinesQuery,
+} from './AddNotesLines';
+import NoteCreation from './NoteCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -33,10 +32,8 @@ const styles = (theme) => ({
     padding: 0,
   },
   createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 280,
-    zIndex: 1100,
+    float: 'left',
+    marginTop: -15,
   },
   title: {
     float: 'left',
@@ -67,7 +64,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportAddObservables extends Component {
+class AddNotes extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -78,7 +75,7 @@ class ReportAddObservables extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, search: '' });
   }
 
   handleSearch(keyword) {
@@ -86,25 +83,24 @@ class ReportAddObservables extends Component {
   }
 
   render() {
-    const { t, classes, reportId } = this.props;
+    const {
+      t, classes, entityId, entityNotes,
+    } = this.props;
     const paginationOptions = {
       search: this.state.search,
-      orderBy: 'created_at',
-      orderMode: 'desc',
     };
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <IconButton
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
+          onClick={this.handleOpen.bind(this)}
+          classes={{ root: classes.createButton }}
         >
-          <Add />
-        </Fab>
+          <Add fontSize="small" />
+        </IconButton>
         <Drawer
           open={this.state.open}
-          keepMounted={true}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
@@ -118,7 +114,7 @@ class ReportAddObservables extends Component {
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add observables')}
+              {t('Add external references')}
             </Typography>
             <div className={classes.search}>
               <SearchInput
@@ -130,15 +126,18 @@ class ReportAddObservables extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={reportAddObservablesLinesQuery}
-              variables={{ count: 50, ...paginationOptions }}
+              query={addNotesLinesQuery}
+              variables={{
+                search: this.state.search,
+                count: 20,
+              }}
               render={({ props }) => {
                 if (props) {
                   return (
-                    <ReportAddObservablesLines
-                      reportId={reportId}
+                    <AddNotesLines
+                      entityId={entityId}
+                      entityNotes={entityNotes}
                       data={props}
-                      paginationOptions={this.props.paginationOptions}
                     />
                   );
                 }
@@ -173,7 +172,7 @@ class ReportAddObservables extends Component {
             />
           </div>
         </Drawer>
-        <StixCyberObservableCreation
+        <NoteCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
@@ -184,12 +183,11 @@ class ReportAddObservables extends Component {
   }
 }
 
-ReportAddObservables.propTypes = {
-  reportId: PropTypes.string,
+AddNotes.propTypes = {
+  entityId: PropTypes.string,
+  entityNotes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
-  paginationOptions: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportAddObservables);
+export default compose(inject18n, withStyles(styles))(AddNotes);

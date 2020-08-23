@@ -13,7 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
-import ReportObjectPopover from './ReportObjectPopover';
+import ContainerObjectPopover from '../../analysis/containers/ContainerObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
@@ -46,7 +46,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportStixDomainObjectLineComponent extends Component {
+class ContainerStixCoreObjectLineComponent extends Component {
   render() {
     const {
       t,
@@ -54,7 +54,7 @@ class ReportStixDomainObjectLineComponent extends Component {
       classes,
       node,
       dataColumns,
-      reportId,
+      containerId,
       paginationOptions,
     } = this.props;
     return (
@@ -114,8 +114,8 @@ class ReportStixDomainObjectLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <ReportObjectPopover
-            reportId={reportId}
+          <ContainerObjectPopover
+            containerId={containerId}
             toId={node.id}
             relationshipType="object"
             paginationKey="Pagination_objects"
@@ -127,8 +127,8 @@ class ReportStixDomainObjectLineComponent extends Component {
   }
 }
 
-ReportStixDomainObjectLineComponent.propTypes = {
-  reportId: PropTypes.string,
+ContainerStixCoreObjectLineComponent.propTypes = {
+  containerId: PropTypes.string,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -137,11 +137,11 @@ ReportStixDomainObjectLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
-const ReportStixDomainObjectLineFragment = createFragmentContainer(
-  ReportStixDomainObjectLineComponent,
+const ContainerStixCoreObjectLineFragment = createFragmentContainer(
+  ContainerStixCoreObjectLineComponent,
   {
     node: graphql`
-      fragment ReportStixDomainObjectLine_node on StixDomainObject {
+      fragment ContainerStixCoreObjectLine_node on StixCoreObject {
         id
         entity_type
         created_at
@@ -220,12 +220,12 @@ const ReportStixDomainObjectLineFragment = createFragmentContainer(
   },
 );
 
-export const ReportStixDomainObjectLine = compose(
+export const ContainerStixCoreObjectLine = compose(
   inject18n,
   withStyles(styles),
-)(ReportStixDomainObjectLineFragment);
+)(ContainerStixCoreObjectLineFragment);
 
-class ReportStixDomainObjectLineDummyComponent extends Component {
+class ContainerStixCoreObjectLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -277,12 +277,12 @@ class ReportStixDomainObjectLineDummyComponent extends Component {
   }
 }
 
-ReportStixDomainObjectLineDummyComponent.propTypes = {
+ContainerStixCoreObjectLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const ReportStixDomainObjectLineDummy = compose(
+export const ContainerStixCoreObjectLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ReportStixDomainObjectLineDummyComponent);
+)(ContainerStixCoreObjectLineDummyComponent);

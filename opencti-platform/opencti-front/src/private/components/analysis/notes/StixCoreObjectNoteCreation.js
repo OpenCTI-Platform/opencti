@@ -15,7 +15,7 @@ import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import ObjectMarkingField from '../form/ObjectMarkingField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 
 const styles = (theme) => ({
   drawerPaper: {

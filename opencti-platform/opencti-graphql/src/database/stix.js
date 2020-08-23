@@ -1,4 +1,5 @@
-import { assoc, dissoc, pick, pipe } from 'ramda';
+import { assoc, dissoc, pick, pipe, head, includes } from 'ramda';
+import * as R from 'ramda';
 import { FunctionalError } from '../config/errors';
 import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';
@@ -10,10 +11,11 @@ import {
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { multipleAttributes } from './grakn';
 
 export const STIX_SPEC_VERSION = '2.1';
 
-export const buildStixData = (entityData, onlyBase = false) => {
+export const buildStixData = (entityData, extra = {}, onlyBase = false) => {
   let type = entityData.entity_type;
   if (isStixDomainObjectIdentity(type)) {
     type = 'Identity';
@@ -22,90 +24,39 @@ export const buildStixData = (entityData, onlyBase = false) => {
   } else if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
     type = 'File';
   }
-  const finalData = pipe(
+  let finalData = pipe(
     dissoc('standard_id'),
     dissoc('internal_id'),
     assoc('id', entityData.standard_id),
     dissoc('entity_type'),
-    assoc('type', type.toLowerCase()),
-    // Reserved keywords in Grakn
-    dissoc('attribute_abstract'),
-    assoc('abstract', entityData.attribute_abstract),
-    dissoc('attribute_date'),
-    assoc('date', entityData.attribute_date),
-    dissoc('attribute_key'),
-    assoc('key', entityData.attribute_key)
+    assoc('type', type.toLowerCase())
   )(entityData);
-  if (!onlyBase) {
-    return pick(['id', 'type', 'spec_version'], entityData);
+  // Relationships
+  if (isStixCoreRelationship(type)) {
+    finalData = pipe(
+      assoc('source_ref', extra.from ? extra.from.standard_id : null),
+      assoc('target_ref', extra.to ? extra.to.standard_id : null)
+    )(finalData);
   }
-  return finalData;
-};
-
-const convertStixObjectToStix = (data, onlyBase) => {
-  const finalData = pipe(
-    dissoc('standard_id'),
-    dissoc('internal_id'),
-    assoc('id', data.standard_id),
-    assoc('x_opencti_id', data.internal_id),
-    dissoc('entity_type'),
-    assoc('type', data.entity_type.toLowerCase()),
-    // Reserved keywords in Grakn
-    dissoc('attribute_abstract'),
-    assoc('abstract', data.attribute_abstract),
-    dissoc('attribute_date'),
-    assoc('date', data.attribute_date),
-    dissoc('attribute_key'),
-    assoc('key', data.attribute_key)
-  )(data);
-  if (onlyBase) {
-    return pick(['id', 'type', 'spec_version'], data);
+  // Reserved keywords in Grakn
+  if (finalData.attribute_abstract) {
+    finalData = pipe(dissoc('attribute_abstract'), assoc('abstract', entityData.attribute_abstract))(finalData);
   }
-  return finalData;
-};
-
-export const convertStixCoreRelationshipToStix = (data, extra = {}, onlyBase = true) => {
-  const finalData = pipe(
-    dissoc('standard_id'),
-    dissoc('internal_id'),
-    assoc('id', data.standard_id),
-    assoc('x_opencti_id', data.internal_id),
-    dissoc('entity_type'),
-    assoc('type', 'relationship'),
-    // Relation IDs
-    assoc('source_ref', extra.from ? extra.from.standard_id : null),
-    assoc('target_ref', extra.to ? extra.to.standard_id : null),
-  )(data);
-  if (onlyBase) {
-    return pick(['id', 'type', 'spec_version'], data);
+  if (finalData.attribute_date) {
+    finalData = pipe(dissoc('attribute_date'), assoc('date', entityData.attribute_date))(finalData);
   }
-  return finalData;
-};
-
-export const convertStixSightingRelationshipToStix = async (data, extra = {}, onlyBase = true) => {
-  const finalData = pipe(
-    dissoc('standard_id'),
-    dissoc('internal_id'),
-    assoc('id', data.standard_id),
-    assoc('x_opencti_id', data.internal_id),
-    dissoc('entity_type'),
-    assoc('type', 'relationship'),
-    // Reserved keywords in Grakn
-    dissoc('attribute_count'),
-    assoc('count', data.attribute_count),
-    // Relation IDs
-    assoc('sighting_of_ref', extra.from ? extra.from.standard_id : null),
-    assoc('where_sighted_refs', extra.to ? [extra.to.standard_id] : null)
-  )(data);
+  if (finalData.attribute_date) {
+    finalData = pipe(dissoc('attribute_key'), assoc('key', entityData.attribute_key))(finalData);
+  }
   if (onlyBase) {
-    return pick(['id', 'type', 'spec_version'], data);
+    return pick(['id', 'type', 'spec_version', 'source_ref', 'target_ref', 'start_time', 'stop_time'], finalData);
   }
   return finalData;
 };
 
 export const convertStixMetaRelationshipToStix = (data, extra) => {
   const entityType = data.entity_type;
-  let finalData = convertStixObjectToStix(extra.from, true);
+  let finalData = buildStixData(extra.from, {}, true);
   if (isStixInternalMetaRelationship(entityType)) {
     finalData = assoc(entityType.replace('-', '_'), [buildStixData(extra.to)], finalData);
   } else {
@@ -125,17 +76,28 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
   }
   const entityType = data.entity_type;
   const onlyBase = eventType === 'delete';
+  let finalData;
   if (isStixObject(entityType)) {
-    return convertStixObjectToStix(data, onlyBase);
+    finalData = buildStixData(data, {}, onlyBase);
   }
   if (isStixCoreRelationship(entityType)) {
-    return convertStixCoreRelationshipToStix(data, eventExtraData, onlyBase);
+    finalData = buildStixData(data, eventExtraData, onlyBase);
   }
   if (isStixSightingRelationship(entityType)) {
-    return convertStixSightingRelationshipToStix(data, eventExtraData, onlyBase);
+    finalData = buildStixData(data, eventExtraData, onlyBase);
   }
   if (isStixMetaRelationship(entityType)) {
-    return convertStixMetaRelationshipToStix(data, eventExtraData);
+    finalData = convertStixMetaRelationshipToStix(data, eventExtraData);
   }
-  throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
+  if (!finalData) {
+    throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
+  }
+  if (eventType === 'update') {
+    return assoc(
+      eventExtraData.key,
+      includes(eventExtraData.key, multipleAttributes) ? eventExtraData.value : head(eventExtraData.value),
+      finalData
+    );
+  }
+  return finalData;
 };

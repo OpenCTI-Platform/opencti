@@ -1,17 +1,21 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
-import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
-import Report from './Report';
-import ReportEntities from './ReportStixDomainObjects';
-import ReportKnowledge from './ReportKnowledge';
-import ReportObservables from './ReportStixCyberObservables';
-import FileManager from '../../common/files/FileManager';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import ReportHeader from './ReportHeader';
-import Loader from '../../../../components/Loader';
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { Route, withRouter } from "react-router-dom";
+import graphql from "babel-plugin-relay/macro";
+import {
+  QueryRenderer,
+  requestSubscription,
+} from "../../../../relay/environment";
+import TopBar from "../../nav/TopBar";
+import Report from "./Report";
+import ReportKnowledge from "./ReportKnowledge";
+import ReportObservables from "../../common/containers/ContainerStixCyberObservables";
+import FileManager from "../../common/files/FileManager";
+import StixCoreObjectHistory from "../../common/stix_core_objects/StixCoreObjectHistory";
+import ReportHeader from "../../common/containers/ContainerHeader";
+import Loader from "../../../../components/Loader";
+import ContainerStixCoreObjects from "../../common/containers/ContainerStixCoreObjects";
+import ContainerStixCyberObservables from "../../common/containers/ContainerStixCyberObservables";
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -30,13 +34,13 @@ const subscription = graphql`
 const reportQuery = graphql`
   query RootReportQuery($id: String!) {
     report(id: $id) {
+      standard_id
       ...Report_report
-      ...ReportHeader_report
-      ...ReportOverview_report
       ...ReportDetails_report
       ...ReportKnowledge_report
-      ...ReportStixDomainObjects_report
       ...ReportStixCyberObservables_report
+      ...ContainerHeader_container
+      ...ContainerStixCoreObjects_container
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -95,7 +99,26 @@ class RootReport extends Component {
                     exact
                     path="/dashboard/analysis/reports/:reportId/entities"
                     render={(routeProps) => (
-                      <ReportEntities {...routeProps} report={props.report} />
+                      <React.Fragment>
+                        <ReportHeader report={props.report} />
+                        <ContainerStixCoreObjects
+                          {...routeProps}
+                          container={props.report}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/analysis/reports/:reportId/observables"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <ReportHeader report={props.report} />
+                        <ContainerStixCyberObservables
+                          {...routeProps}
+                          container={props.report}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route
@@ -139,7 +162,7 @@ class RootReport extends Component {
                         <ReportHeader report={props.report} />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={reportId}
+                          entityStandardId={props.report.standard_id}
                         />
                       </React.Fragment>
                     )}

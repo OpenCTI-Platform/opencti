@@ -10,34 +10,30 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
-import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import ReportAddObjectsLines, {
-  reportAddObjectsLinesQuery,
-} from './ReportAddObjectsLines';
-import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
+import { QueryRenderer } from '../../../../relay/environment';
+import AddExternalReferencesLines, {
+  addExternalReferencesLinesQuery,
+} from './AddExternalReferencesLines';
+import ExternalReferenceCreation from './ExternalReferenceCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
+    position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
     padding: 0,
   },
   createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1100,
-  },
-  createButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 280,
-    zIndex: 1100,
+    float: 'left',
+    marginTop: -15,
   },
   title: {
     float: 'left',
@@ -68,7 +64,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportAddObjects extends Component {
+class AddExternalReferences extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -79,7 +75,7 @@ class ReportAddObjects extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, search: '' });
   }
 
   handleSearch(keyword) {
@@ -88,35 +84,23 @@ class ReportAddObjects extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      reportId,
-      knowledgeGraph,
-      withPadding,
-      defaultCreatedBy,
-      defaultMarkingDefinition,
-      reportObjects,
+      t, classes, entityId, entityExternalReferences,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
-      orderBy: 'created_at',
-      orderMode: 'desc',
     };
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <IconButton
           color="secondary"
           aria-label="Add"
-          className={
-            withPadding ? classes.createButtonWithPadding : classes.createButton
-          }
+          onClick={this.handleOpen.bind(this)}
+          classes={{ root: classes.createButton }}
         >
-          <Add />
-        </Fab>
+          <Add fontSize="small" />
+        </IconButton>
         <Drawer
           open={this.state.open}
-          keepMounted={true}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
@@ -130,7 +114,7 @@ class ReportAddObjects extends Component {
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add entities')}
+              {t('Add external references')}
             </Typography>
             <div className={classes.search}>
               <SearchInput
@@ -142,22 +126,18 @@ class ReportAddObjects extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={reportAddObjectsLinesQuery}
+              query={addExternalReferencesLinesQuery}
               variables={{
                 search: this.state.search,
-                orderBy: 'created_at',
-                orderMode: 'desc',
-                count: 100,
+                count: 20,
               }}
               render={({ props }) => {
                 if (props) {
                   return (
-                    <ReportAddObjectsLines
-                      reportId={reportId}
+                    <AddExternalReferencesLines
+                      entityId={entityId}
+                      entityExternalReferences={entityExternalReferences}
                       data={props}
-                      paginationOptions={this.props.paginationOptions}
-                      knowledgeGraph={knowledgeGraph}
-                      reportObjects={reportObjects}
                     />
                   );
                 }
@@ -192,30 +172,22 @@ class ReportAddObjects extends Component {
             />
           </div>
         </Drawer>
-        <StixDomainObjectCreation
+        <ExternalReferenceCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinition={defaultMarkingDefinition}
         />
       </div>
     );
   }
 }
 
-ReportAddObjects.propTypes = {
-  reportId: PropTypes.string,
+AddExternalReferences.propTypes = {
+  entityId: PropTypes.string,
+  entityExternalReferences: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
-  paginationOptions: PropTypes.object,
-  knowledgeGraph: PropTypes.bool,
-  withPadding: PropTypes.bool,
-  defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinition: PropTypes.object,
-  reportObjects: PropTypes.array,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportAddObjects);
+export default compose(inject18n, withStyles(styles))(AddExternalReferences);

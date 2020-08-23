@@ -8,7 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import ReportPopover from './ReportPopover';
+import ContainerPopover from '../../analysis/containers/ContainerPopover';
 
 const styles = () => ({
   title: {
@@ -32,9 +32,9 @@ const styles = () => ({
   },
 });
 
-class ReportHeaderComponent extends Component {
+class ContainerHeaderComponent extends Component {
   render() {
-    const { classes, report, variant } = this.props;
+    const { classes, container, variant } = this.props;
     return (
       <div>
         <Typography
@@ -42,14 +42,14 @@ class ReportHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {truncate(report.name, 80)}
+          {truncate(container.name, 80)}
         </Typography>
         <div className={classes.popover}>
-          <ReportPopover reportId={report.id} />
+          <ContainerPopover containerId={container.id} />
         </div>
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
-            {pathOr([], ['objectMarking', 'edges'], report).map(
+            {pathOr([], ['objectMarking', 'edges'], container).map(
               (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}
@@ -67,17 +67,17 @@ class ReportHeaderComponent extends Component {
   }
 }
 
-ReportHeaderComponent.propTypes = {
-  report: PropTypes.object,
+ContainerHeaderComponent.propTypes = {
+  container: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const ReportHeader = createFragmentContainer(ReportHeaderComponent, {
-  report: graphql`
-    fragment ReportHeader_report on Report {
+const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
+  container: graphql`
+    fragment ContainerHeader_container on Container {
       id
       name
       objectMarking {
@@ -92,4 +92,4 @@ const ReportHeader = createFragmentContainer(ReportHeaderComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ReportHeader);
+export default compose(inject18n, withStyles(styles))(ContainerHeader);

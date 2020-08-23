@@ -6,13 +6,13 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ContainerHeader from '../../common/containers/ContainerHeader';
-import ReportDetails from './ReportDetails';
-import ReportEdition from './ReportEdition';
+import NoteHeader from './NoteHeader';
+import NoteDetails from './NoteDetails';
+import NoteEdition from './NoteEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import EntityExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../notes/StixCoreObjectNotes';
+import StixCoreObjectNotes from './StixCoreObjectNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 
 const styles = () => ({
@@ -24,22 +24,22 @@ const styles = () => ({
   },
 });
 
-class ReportComponent extends Component {
+class NoteComponent extends Component {
   render() {
-    const { classes, report } = this.props;
+    const { classes, note } = this.props;
     return (
       <div className={classes.container}>
-        <ContainerHeader report={report} />
+        <NoteHeader note={note} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6}>
-            <StixDomainObjectOverview stixDomainObject={report} />
+            <StixDomainObjectOverview stixDomainObject={note} />
           </Grid>
           <Grid item={true} xs={6}>
-            <ReportDetails report={report} />
+            <NoteDetails note={note} />
           </Grid>
         </Grid>
         <Grid
@@ -49,30 +49,30 @@ class ReportComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <EntityExternalReferences entityId={report.id} />
+            <EntityExternalReferences entityId={note.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory entityStandardId={report.standard_id} />
+            <StixCoreObjectLatestHistory entityStandardId={note.standard_id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={report.id} />
+        <StixCoreObjectNotes entityId={note.id} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ReportEdition reportId={report.id} />
+          <NoteEdition noteId={note.id} />
         </Security>
       </div>
     );
   }
 }
 
-ReportComponent.propTypes = {
-  report: PropTypes.object,
+NoteComponent.propTypes = {
+  note: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const Report = createFragmentContainer(ReportComponent, {
-  report: graphql`
-    fragment Report_report on Report {
+const Note = createFragmentContainer(NoteComponent, {
+  note: graphql`
+    fragment Note_note on Note {
       id
       standard_id
       stix_ids
@@ -102,10 +102,10 @@ const Report = createFragmentContainer(ReportComponent, {
           }
         }
       }
-      ...ReportDetails_report
-      ...ContainerHeader_container
+      ...NoteHeader_note
+      ...NoteDetails_note
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Report);
+export default compose(inject18n, withStyles(styles))(Note);

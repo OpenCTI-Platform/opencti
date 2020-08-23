@@ -13,7 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import ReportRefPopover from './ReportObjectPopover';
+import ContainerRefPopover from '../../analysis/containers/ContainerObjectPopover';
 
 const styles = (theme) => ({
   item: {
@@ -45,7 +45,7 @@ const styles = (theme) => ({
   },
 });
 
-class ReportStixCyberObservableLineComponent extends Component {
+class ContainerStixCyberObservableLineComponent extends Component {
   render() {
     const {
       t,
@@ -53,7 +53,7 @@ class ReportStixCyberObservableLineComponent extends Component {
       classes,
       node,
       dataColumns,
-      reportId,
+      containerId,
       paginationOptions,
     } = this.props;
     return (
@@ -113,8 +113,8 @@ class ReportStixCyberObservableLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <ReportRefPopover
-            reportId={reportId}
+          <ContainerRefPopover
+            containerId={containerId}
             toId={node.id}
             relationshipType="observable_refs"
             paginationKey="Pagination_observableRefs"
@@ -126,8 +126,8 @@ class ReportStixCyberObservableLineComponent extends Component {
   }
 }
 
-ReportStixCyberObservableLineComponent.propTypes = {
-  reportId: PropTypes.string,
+ContainerStixCyberObservableLineComponent.propTypes = {
+  containerId: PropTypes.string,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -136,11 +136,11 @@ ReportStixCyberObservableLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
-const ReportStixCyberObservableLineFragment = createFragmentContainer(
-  ReportStixCyberObservableLineComponent,
+const ContainerStixCyberObservableLineFragment = createFragmentContainer(
+  ContainerStixCyberObservableLineComponent,
   {
     node: graphql`
-      fragment ReportStixCyberObservableLine_node on StixCyberObservable {
+      fragment ContainerStixCyberObservableLine_node on StixCyberObservable {
         id
         observable_value
         entity_type
@@ -166,12 +166,12 @@ const ReportStixCyberObservableLineFragment = createFragmentContainer(
   },
 );
 
-export const ReportStixCyberObservableLine = compose(
+export const ContainerStixCyberObservableLine = compose(
   inject18n,
   withStyles(styles),
-)(ReportStixCyberObservableLineFragment);
+)(ContainerStixCyberObservableLineFragment);
 
-class ReportStixCyberObservableLineDummyComponent extends Component {
+class ContainerStixCyberObservableLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -223,12 +223,12 @@ class ReportStixCyberObservableLineDummyComponent extends Component {
   }
 }
 
-ReportStixCyberObservableLineDummyComponent.propTypes = {
+ContainerStixCyberObservableLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const ReportStixCyberObservableLineDummy = compose(
+export const ContainerStixCyberObservableLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ReportStixCyberObservableLineDummyComponent);
+)(ContainerStixCyberObservableLineDummyComponent);

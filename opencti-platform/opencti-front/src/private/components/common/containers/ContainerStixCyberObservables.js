@@ -7,38 +7,40 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../../relay/environment';
-import ReportHeader from './ReportHeader';
+import ContainerHeader from './ContainerHeader';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ReportStixDomainObjectsLines, {
-  reportStixDomainObjectsLinesQuery,
-} from './ReportStixDomainObjectsLines';
+import ContainerStixCyberObservablesLines, {
+  containerStixCyberObservablesLinesQuery,
+} from './ContainerStixCyberObservablesLines';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectsRightBar from '../../common/stix_domain_objects/StixDomainObjectsRightBar';
+import ContainerAddObservables from '../../analysis/containers/ContainerAddObservables';
+import StixCyberObservablesRightBar from '../../signatures/stix_cyber_observables/StixCyberObservablesRightBar';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 90px 0',
+    padding: '0 250px 0 0',
   },
 });
 
-class ReportStixDomainObjectsComponent extends Component {
+class ContainerStixCyberObservablesComponent extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-${props.report.id}-stix-domain-entities`,
+      `view-container-${props.container.id}-stix-observables`,
     );
     this.state = {
-      sortBy: propOr('name', 'sortBy', params),
+      sortBy: propOr('created_at', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      stixDomainObjectsTypes: propOr([], 'stixDomainObjectsTypes', params),
+      types: [],
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -48,7 +50,7 @@ class ReportStixDomainObjectsComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-report-${this.props.report.id}-stix-domain-entities`,
+      `view-container-${this.props.container.id}-stix-observables`,
       this.state,
     );
   }
@@ -63,30 +65,6 @@ class ReportStixDomainObjectsComponent extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
-  }
-
-  handleToggleStixDomainObjectType(type) {
-    if (this.state.stixDomainObjectsTypes.includes(type)) {
-      this.setState(
-        {
-          stixDomainObjectsTypes: filter(
-            (t) => t !== type,
-            this.state.stixDomainObjectsTypes,
-          ),
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          stixDomainObjectsTypes: append(
-            type,
-            this.state.stixDomainObjectsTypes,
-          ),
-        },
-        () => this.saveView(),
-      );
-    }
   }
 
   handleToggle(type) {
@@ -105,12 +83,12 @@ class ReportStixDomainObjectsComponent extends Component {
   }
 
   render() {
-    const { report, classes } = this.props;
+    const { container, classes } = this.props;
     const {
       sortBy,
       orderAsc,
       searchTerm,
-      stixDomainObjectsTypes,
+      types,
       openExports,
       numberOfElements,
     } = this.state;
@@ -120,9 +98,9 @@ class ReportStixDomainObjectsComponent extends Component {
         width: '15%',
         isSortable: true,
       },
-      name: {
-        label: 'Name',
-        width: '30%',
+      observable_value: {
+        label: 'Value',
+        width: '35%',
         isSortable: true,
       },
       createdBy: {
@@ -141,15 +119,14 @@ class ReportStixDomainObjectsComponent extends Component {
       },
     };
     const paginationOptions = {
-      types: stixDomainObjectsTypes,
-      filters: null,
+      types,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div className={classes.container}>
-        <ReportHeader report={report} />
+        <ContainerHeader container={container} />
         <br />
         <ListLines
           sortBy={sortBy}
@@ -157,16 +134,15 @@ class ReportStixDomainObjectsComponent extends Component {
           dataColumns={dataColumns}
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
-          keyword={searchTerm}
           secondaryAction={true}
           numberOfElements={numberOfElements}
         >
           <QueryRenderer
-            query={reportStixDomainObjectsLinesQuery}
-            variables={{ id: report.id, count: 25, ...paginationOptions }}
+            query={containerStixCyberObservablesLinesQuery}
+            variables={{ id: container.id, count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <ReportStixDomainObjectsLines
-                report={props ? props.report : null}
+              <ContainerStixCyberObservablesLines
+                container={props ? props.container : null}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
@@ -175,11 +151,15 @@ class ReportStixDomainObjectsComponent extends Component {
             )}
           />
         </ListLines>
-        <StixDomainObjectsRightBar
-          stixDomainObjectsTypes={stixDomainObjectsTypes}
-          handleToggleStixDomainObjectType={this.handleToggleStixDomainObjectType.bind(
-            this,
-          )}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ContainerAddObservables
+            containerId={container.id}
+            paginationOptions={paginationOptions}
+          />
+        </Security>
+        <StixCyberObservablesRightBar
+          types={types}
+          handleToggle={this.handleToggle.bind(this)}
           openExports={openExports}
         />
       </div>
@@ -187,24 +167,27 @@ class ReportStixDomainObjectsComponent extends Component {
   }
 }
 
-ReportStixDomainObjectsComponent.propTypes = {
-  report: PropTypes.object,
+ContainerStixCyberObservablesComponent.propTypes = {
+  container: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
   history: PropTypes.object,
 };
 
-const ReportStixDomainObjects = createFragmentContainer(
-  ReportStixDomainObjectsComponent,
+const ContainerStixCyberObservables = createFragmentContainer(
+  ContainerStixCyberObservablesComponent,
   {
-    report: graphql`
-      fragment ReportStixDomainObjects_report on Report {
+    container: graphql`
+      fragment ContainerStixCyberObservables_container on Container {
         id
-        ...ReportHeader_report
+        ...ContainerHeader_container
       }
     `,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ReportStixDomainObjects);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(ContainerStixCyberObservables);

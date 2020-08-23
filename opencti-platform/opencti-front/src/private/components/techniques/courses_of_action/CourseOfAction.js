@@ -10,13 +10,13 @@ import CourseOfActionOverview from './CourseOfActionOverview';
 import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
-import EntityExternalReferences from '../../common/external_references/StixDomainObjectExternalReferences';
+import EntityExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import EntityStixCoreRelationshipsPie from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
 import EntityReportsChart from '../../analysis/reports/EntityReportsChart';
 import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {

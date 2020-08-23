@@ -1212,16 +1212,16 @@ const flatAttributesForObject = (data) => {
 // region mutation update
 const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
   const { id } = instance;
-  const { forceUpdate = false, operation = 'replace' } = options;
+  const { forceUpdate = false, operation = EVENT_TYPE_UPDATE } = options;
   const { key, value } = rawInput; // value can be multi valued
   // Format the data in regards of the operation for multiple attributes
   const isMultiple = R.includes(key, multipleAttributes);
   let finalVal;
   if (isMultiple) {
     const currentValues = instance[key];
-    if (operation === 'add') {
+    if (operation === EVENT_TYPE_UPDATE_ADD) {
       finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
-    } else if (operation === 'remove') {
+    } else if (operation === EVENT_TYPE_UPDATE_REMOVE) {
       finalVal = R.filter((n) => !R.includes(n, value), currentValues);
     } else {
       finalVal = value;
@@ -1302,7 +1302,10 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
 
 export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
-  // const { noLog = false } = options;
+  const { noLog = false, operation = EVENT_TYPE_UPDATE } = options;
+  if (operation !== EVENT_TYPE_UPDATE && elements.length > 1) {
+    throw FunctionalError(`Unsupported operation`, { operation, elements });
+  }
   let instance;
   if (isBasicRelationship(type)) {
     instance = await loadRelationById(id, type, options);
@@ -1353,29 +1356,27 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       }, updatedInputs)
     );
     postOperations.push(elUpdate(index, instance.internal_id, { doc: esData }));
-    // Send log
-    // TODO @Sam
-    /*
-    const dataToLogSend = R.pipe(
-      R.filter((input) => input.key !== 'graph_data'),
-      R.map(({ key, value }) => ({ [key]: R.includes(key, multipleAttributes) ? value : R.head(value) })),
-      R.mergeAll
-    )(elements);
+    const dataToLogSend = R.filter((input) => input.key !== 'graph_data', elements);
     if (!noLog && !R.isEmpty(dataToLogSend)) {
       const baseData = {
         standard_id: instance.standard_id,
         internal_id: instance.id,
         entity_type: instance.entity_type,
+        spec_version: instance.spec_version,
       };
+      let from;
+      let to;
       if (instance.base_type === BASE_TYPE_RELATION) {
-        const from = await internalLoadEntityById(instance.fromId);
+        const fromPromise = internalLoadEntityById(instance.fromId);
+        const toPromise = internalLoadEntityById(instance.toId);
+        const [fromEntity, toEntity] = await Promise.all([fromPromise, toPromise]);
+        from = fromEntity;
+        to = toEntity;
       }
-      // eslint-disable-next-line camelcase
-      const { stix_ids, entity_type } = instance;
-      const eventData = { id: instance.id, stix_ids, entity_type, data: dataToLogSend };
-      esOperations.push(sendLog(EVENT_TYPE_UPDATE, user, eventData));
+      for (const dataLog of dataToLogSend) {
+        postOperations.push(sendLog(operation, user, baseData, { key: dataLog.key, value: dataLog.value, from, to }));
+      }
     }
-    */
     // Wait for all
     await Promise.all(postOperations);
   } finally {
@@ -1405,10 +1406,10 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 
 // region mutation relation
 const upsertRelation = async (user, relationship, type, data) => {
-  if (!R.isNil(data.stix_id)) {
+  if (!R.isNil(data.stix_id) && relationship.stix_ids.length < 3) {
     const id = relationship.internal_id;
     const patch = { stix_ids: [data.stix_id] };
-    return patchAttribute(user, id, type, patch, { operation: 'add' });
+    return patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
   return relationship;
 };
@@ -1765,10 +1766,10 @@ export const createRelations = async (user, inputs, opts = {}) => {
 
 // region mutation entity
 const upsertEntity = async (user, entity, type, data) => {
-  if (!R.isNil(data.stix_id)) {
+  if (!R.isNil(data.stix_id) && entity.stix_ids.length < 5) {
     const id = entity.internal_id;
     const patch = { stix_ids: [data.stix_id] };
-    return patchAttribute(user, id, type, patch, { operation: 'add' });
+    return patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
   return entity;
 };

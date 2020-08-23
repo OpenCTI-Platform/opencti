@@ -16,7 +16,7 @@ import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationshi
 import EntityReportsChart from '../../analysis/reports/EntityReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {

@@ -5,23 +5,21 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  ReportStixDomainObjectLine,
-  ReportStixDomainObjectLineDummy,
-} from './ReportStixDomainObjectLine';
+  ContainerStixCyberObservableLine,
+  ContainerStixCyberObservableLineDummy,
+} from './ContainerStixCyberObservableLine';
 import { setNumberOfElements } from '../../../../utils/Number';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import ReportAddObjects from './ReportAddObjects';
 
 const nbOfRowsToLoad = 50;
 
-class ReportStixDomainObjectsLines extends Component {
+class ContainerStixCyberObservablesLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
       'objects',
       this.props.setNumberOfElements.bind(this),
-      'report',
+      'container',
     );
   }
 
@@ -30,70 +28,62 @@ class ReportStixDomainObjectsLines extends Component {
       initialLoading,
       dataColumns,
       relay,
-      report,
+      container,
       paginationOptions,
     } = this.props;
     return (
-      <div>
-        <ListLinesContent
-          initialLoading={initialLoading}
-          loadMore={relay.loadMore.bind(this)}
-          hasMore={relay.hasMore.bind(this)}
-          isLoading={relay.isLoading.bind(this)}
-          dataList={pathOr([], ['objects', 'edges'], report)}
-          paginationOptions={paginationOptions}
-          globalCount={pathOr(
-            nbOfRowsToLoad,
-            ['objects', 'pageInfo', 'globalCount'],
-            report,
-          )}
-          LineComponent={
-            <ReportStixDomainObjectLine reportId={propOr(null, 'id', report)} />
-          }
-          DummyLineComponent={<ReportStixDomainObjectLineDummy />}
-          dataColumns={dataColumns}
-          nbOfRowsToLoad={nbOfRowsToLoad}
-        />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ReportAddObjects
-            reportId={propOr(null, 'id', report)}
-            reportObjects={pathOr([], ['objects', 'edges'], report)}
-            paginationOptions={paginationOptions}
-            withPadding={true}
+      <ListLinesContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={pathOr([], ['objects', 'edges'], container)}
+        paginationOptions={paginationOptions}
+        globalCount={pathOr(
+          nbOfRowsToLoad,
+          ['objects', 'pageInfo', 'globalCount'],
+          container,
+        )}
+        LineComponent={
+          <ContainerStixCyberObservableLine
+            containerId={propOr(null, 'id', container)}
           />
-        </Security>
-      </div>
+        }
+        DummyLineComponent={<ContainerStixCyberObservableLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+      />
     );
   }
 }
 
-ReportStixDomainObjectsLines.propTypes = {
+ContainerStixCyberObservablesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
-  report: PropTypes.object,
+  container: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
   setNumberOfElements: PropTypes.func,
 };
 
-export const reportStixDomainObjectsLinesQuery = graphql`
-  query ReportStixDomainObjectsLinesQuery(
+export const containerStixCyberObservablesLinesQuery = graphql`
+  query ContainerStixCyberObservablesLinesQuery(
     $id: String!
-    $search: String
     $types: [String]
+    $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixObjectOrStixRelationshipsOrdering
     $orderMode: OrderingMode
     $filters: [StixObjectOrStixRelationshipsFiltering]
   ) {
-    report(id: $id) {
-      ...ReportStixDomainObjectsLines_report
+    container(id: $id) {
+      ...ContainerStixCyberObservablesLines_container
         @arguments(
-          search: $search
           types: $types
+          search: $search
           count: $count
           cursor: $cursor
           orderBy: $orderBy
@@ -105,10 +95,10 @@ export const reportStixDomainObjectsLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  ReportStixDomainObjectsLines,
+  ContainerStixCyberObservablesLines,
   {
-    report: graphql`
-      fragment ReportStixDomainObjectsLines_report on Report
+    container: graphql`
+      fragment ContainerStixCyberObservablesLines_container on Container
         @argumentDefinitions(
           types: { type: "[String]" }
           search: { type: "String" }
@@ -133,10 +123,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_objects") {
           edges {
             node {
-              ... on BasicObject {
-                id
-              }
-              ...ReportStixDomainObjectLine_node
+              ...ContainerStixCyberObservableLine_node
             }
           }
           pageInfo {
@@ -151,7 +138,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.report && props.report.objects;
+      return props.container && props.container.objects;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -164,13 +151,13 @@ export default createPaginationContainer(
         id: fragmentVariables.id,
         count,
         cursor,
-        search: fragmentVariables.search,
         types: fragmentVariables.types,
+        search: fragmentVariables.search,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,
       };
     },
-    query: reportStixDomainObjectsLinesQuery,
+    query: containerStixCyberObservablesLinesQuery,
   },
 );

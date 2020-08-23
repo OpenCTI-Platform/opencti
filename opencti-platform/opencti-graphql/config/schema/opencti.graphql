@@ -1316,6 +1316,41 @@ input CampaignAddInput {
 }
 
 ############## Containers
+enum ContainersOrdering {
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  objectMarking
+  objectLabel
+}
+enum ContainersFilter {
+  attribute_abstract
+  content
+  authors
+  created
+  modified
+  created_at
+  updated_at
+  createdBy
+  markedBy
+  labelledBy
+  objectContains
+}
+input ContainersFiltering {
+  key: ContainersFilter!
+  values: [String]!
+  operator: String
+}
+type ContainerConnection {
+  pageInfo: PageInfo!
+  edges: [ContainerEdge]
+}
+type ContainerEdge {
+  cursor: String!
+  node: Container!
+}
 interface Container {
   id: ID! # internal_id
   standard_id: String!
@@ -7508,6 +7543,17 @@ type Query {
     inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Containers
+  container(id: String): Container @auth(for: [KNOWLEDGE])
+  containers(
+    first: Int
+    after: ID
+    orderBy: NotesOrdering
+    orderMode: OrderingMode
+    filters: [NotesFiltering]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): ContainerConnection @auth(for: [KNOWLEDGE])
   note(id: String): Note @auth(for: [KNOWLEDGE])
   notes(
     first: Int

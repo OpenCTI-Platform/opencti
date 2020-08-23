@@ -10,30 +10,34 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
+import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
+import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import { QueryRenderer } from '../../../../relay/environment';
-import AddExternalReferencesLines, {
-  addExternalReferencesLinesQuery,
-} from './AddExternalReferencesLines';
-import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
+import ContainerAddObjectsLines, {
+  containerAddObjectsLinesQuery,
+} from './ContainerAddObjectsLines';
+import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-    position: 'fixed',
     backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
     padding: 0,
   },
   createButton: {
-    float: 'left',
-    marginTop: -15,
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 1100,
+  },
+  createButtonWithPadding: {
+    position: 'fixed',
+    bottom: 30,
+    right: 280,
+    zIndex: 1100,
   },
   title: {
     float: 'left',
@@ -64,7 +68,7 @@ const styles = (theme) => ({
   },
 });
 
-class AddExternalReferences extends Component {
+class ContainerAddStixCoreObjects extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false, search: '' };
@@ -75,7 +79,7 @@ class AddExternalReferences extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false, search: '' });
+    this.setState({ open: false });
   }
 
   handleSearch(keyword) {
@@ -84,23 +88,35 @@ class AddExternalReferences extends Component {
 
   render() {
     const {
-      t, classes, entityId, entityExternalReferences,
+      t,
+      classes,
+      containerId,
+      knowledgeGraph,
+      withPadding,
+      defaultCreatedBy,
+      defaultMarkingDefinition,
+      containerObjects,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
+      orderBy: 'created_at',
+      orderMode: 'desc',
     };
     return (
       <div>
-        <IconButton
+        <Fab
+          onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          onClick={this.handleOpen.bind(this)}
-          classes={{ root: classes.createButton }}
+          className={
+            withPadding ? classes.createButtonWithPadding : classes.createButton
+          }
         >
-          <Add fontSize="small" />
-        </IconButton>
+          <Add />
+        </Fab>
         <Drawer
           open={this.state.open}
+          keepMounted={true}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
@@ -114,7 +130,7 @@ class AddExternalReferences extends Component {
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add external references')}
+              {t('Add entities')}
             </Typography>
             <div className={classes.search}>
               <SearchInput
@@ -126,18 +142,22 @@ class AddExternalReferences extends Component {
           </div>
           <div className={classes.container}>
             <QueryRenderer
-              query={addExternalReferencesLinesQuery}
+              query={containerAddObjectsLinesQuery}
               variables={{
                 search: this.state.search,
-                count: 20,
+                orderBy: 'created_at',
+                orderMode: 'desc',
+                count: 100,
               }}
               render={({ props }) => {
                 if (props) {
                   return (
-                    <AddExternalReferencesLines
-                      entityId={entityId}
-                      entityExternalReferences={entityExternalReferences}
+                    <ContainerAddObjectsLines
+                      containerId={containerId}
                       data={props}
+                      paginationOptions={this.props.paginationOptions}
+                      knowledgeGraph={knowledgeGraph}
+                      containerObjects={containerObjects}
                     />
                   );
                 }
@@ -172,22 +192,30 @@ class AddExternalReferences extends Component {
             />
           </div>
         </Drawer>
-        <ExternalReferenceCreation
+        <StixDomainObjectCreation
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinition={defaultMarkingDefinition}
         />
       </div>
     );
   }
 }
 
-AddExternalReferences.propTypes = {
-  entityId: PropTypes.string,
-  entityExternalReferences: PropTypes.array,
+ContainerAddStixCoreObjects.propTypes = {
+  containerId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  fld: PropTypes.func,
+  paginationOptions: PropTypes.object,
+  knowledgeGraph: PropTypes.bool,
+  withPadding: PropTypes.bool,
+  defaultCreatedBy: PropTypes.object,
+  defaultMarkingDefinition: PropTypes.object,
+  containerObjects: PropTypes.array,
 };
 
-export default compose(inject18n, withStyles(styles))(AddExternalReferences);
+export default compose(inject18n, withStyles(styles))(ContainerAddStixCoreObjects);

@@ -38,7 +38,7 @@ import distributeElements from '../../../../utils/DagreHelper';
 import { serializeGraph } from '../../../../utils/GraphHelper';
 import { dateFormat } from '../../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
-import ReportAddObjects from './ReportAddObjects';
+import ReportAddObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import StixCoreRelationshipEdition, {

@@ -67,9 +67,6 @@ const reportResolvers = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
-  Report: {
-    objects: (report, args) => objects(report.id, args),
-  },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),

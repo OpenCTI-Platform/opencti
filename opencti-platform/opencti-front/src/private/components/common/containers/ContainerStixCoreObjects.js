@@ -7,40 +7,38 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../../relay/environment';
-import ReportHeader from './ReportHeader';
+import ContainerHeader from './ContainerHeader';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ReportStixCyberObservablesLines, {
-  reportStixCyberObservablesLinesQuery,
-} from './ReportStixCyberObservablesLines';
+import ContainerStixCoreObjectsLines, {
+  containerStixCoreObjectsLinesQuery,
+} from './ContainerStixCoreObjectsLines';
+import StixDomainObjectsRightBar from '../stix_domain_objects/StixDomainObjectsRightBar';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
-import ReportAddObservables from './ReportAddObservables';
-import StixCyberObservablesRightBar from '../../signatures/stix_cyber_observables/StixCyberObservablesRightBar';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 250px 0 0',
+    padding: '0 260px 90px 0',
   },
 });
 
-class ReportStixCyberObservablesComponent extends Component {
+class ContainerStixCoreObjectsComponent extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-${props.report.id}-stix-observables`,
+      `view-container-${props.container.id}-stix-domain-entities`,
     );
     this.state = {
-      sortBy: propOr('created_at', 'sortBy', params),
+      sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      types: [],
+      stixCoreObjectsTypes: propOr([], 'stixCoreObjectsTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -50,7 +48,7 @@ class ReportStixCyberObservablesComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-report-${this.props.report.id}-stix-observables`,
+      `view-container-${this.props.container.id}-stix-domain-entities`,
       this.state,
     );
   }
@@ -65,6 +63,27 @@ class ReportStixCyberObservablesComponent extends Component {
 
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
+  }
+
+  handleToggleStixCoreObjectType(type) {
+    if (this.state.stixCoreObjectsTypes.includes(type)) {
+      this.setState(
+        {
+          stixCoreObjectsTypes: filter(
+            (t) => t !== type,
+            this.state.stixCoreObjectsTypes,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          stixCoreObjectsTypes: append(type, this.state.stixCoreObjectsTypes),
+        },
+        () => this.saveView(),
+      );
+    }
   }
 
   handleToggle(type) {
@@ -83,12 +102,12 @@ class ReportStixCyberObservablesComponent extends Component {
   }
 
   render() {
-    const { report, classes } = this.props;
+    const { container, classes } = this.props;
     const {
       sortBy,
       orderAsc,
       searchTerm,
-      types,
+      stixCoreObjectsTypes,
       openExports,
       numberOfElements,
     } = this.state;
@@ -98,9 +117,9 @@ class ReportStixCyberObservablesComponent extends Component {
         width: '15%',
         isSortable: true,
       },
-      observable_value: {
-        label: 'Value',
-        width: '35%',
+      name: {
+        label: 'Name',
+        width: '30%',
         isSortable: true,
       },
       createdBy: {
@@ -119,14 +138,15 @@ class ReportStixCyberObservablesComponent extends Component {
       },
     };
     const paginationOptions = {
-      types,
+      types: stixCoreObjectsTypes,
+      filters: null,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div className={classes.container}>
-        <ReportHeader report={report} />
+        <ContainerHeader container={container} />
         <br />
         <ListLines
           sortBy={sortBy}
@@ -134,15 +154,16 @@ class ReportStixCyberObservablesComponent extends Component {
           dataColumns={dataColumns}
           handleSort={this.handleSort.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
+          keyword={searchTerm}
           secondaryAction={true}
           numberOfElements={numberOfElements}
         >
           <QueryRenderer
-            query={reportStixCyberObservablesLinesQuery}
-            variables={{ id: report.id, count: 25, ...paginationOptions }}
+            query={containerStixCoreObjectsLinesQuery}
+            variables={{ id: container.id, count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <ReportStixCyberObservablesLines
-                report={props ? props.report : null}
+              <ContainerStixCoreObjectsLines
+                container={props ? props.container : null}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 initialLoading={props === null}
@@ -151,15 +172,11 @@ class ReportStixCyberObservablesComponent extends Component {
             )}
           />
         </ListLines>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ReportAddObservables
-            reportId={report.id}
-            paginationOptions={paginationOptions}
-          />
-        </Security>
-        <StixCyberObservablesRightBar
-          types={types}
-          handleToggle={this.handleToggle.bind(this)}
+        <StixDomainObjectsRightBar
+          stixCoreObjectsTypes={stixCoreObjectsTypes}
+          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
+            this,
+          )}
           openExports={openExports}
         />
       </div>
@@ -167,27 +184,24 @@ class ReportStixCyberObservablesComponent extends Component {
   }
 }
 
-ReportStixCyberObservablesComponent.propTypes = {
-  report: PropTypes.object,
+ContainerStixCoreObjectsComponent.propTypes = {
+  container: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,
   history: PropTypes.object,
 };
 
-const ReportStixCyberObservables = createFragmentContainer(
-  ReportStixCyberObservablesComponent,
+const ContainerStixCoreObjects = createFragmentContainer(
+  ContainerStixCoreObjectsComponent,
   {
-    report: graphql`
-      fragment ReportStixCyberObservables_report on Report {
+    container: graphql`
+      fragment ContainerStixCoreObjects_container on Container {
         id
-        ...ReportHeader_report
+        ...ContainerHeader_container
       }
     `,
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ReportStixCyberObservables);
+export default compose(inject18n, withStyles(styles))(ContainerStixCoreObjects);

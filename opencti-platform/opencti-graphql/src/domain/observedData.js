@@ -27,12 +27,6 @@ export const findAll = async (args) => {
 };
 
 // All entities
-export const objects = (observedDataId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
-  const finalArgs = assoc('filters', append({ key, values: [observedDataId] }, propOr([], 'filters', args)), args);
-  return findAllStixDomainEntities(finalArgs);
-};
-
 export const observedDataContainsStixObjectOrStixRelationship = async (observedDataId, thingId) => {
   const args = {
     filters: [

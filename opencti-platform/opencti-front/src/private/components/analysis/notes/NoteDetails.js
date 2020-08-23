@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ItemStatus from '../../../../components/ReportStatus';
+import ItemStatus from '../../../../components/NoteStatus';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
@@ -22,9 +22,9 @@ const styles = () => ({
   },
 });
 
-class ReportDetailsComponent extends Component {
+class NoteDetailsComponent extends Component {
   render() {
-    const { t, classes, report } = this.props;
+    const { t, classes, note } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -36,7 +36,7 @@ class ReportDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
-              <Markdown className="markdown" source={report.description} />
+              <Markdown className="markdown" source={note.description} />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -45,18 +45,18 @@ class ReportDetailsComponent extends Component {
               <ItemStatus
                 label={t(
                   `${
-                    report.x_opencti_report_status
-                      ? `report_status_${report.x_opencti_report_status}`
-                      : 'report_status_0'
+                    note.x_opencti_note_status
+                      ? `note_status_${note.x_opencti_note_status}`
+                      : 'note_status_0'
                   }`,
                 )}
-                status={report.x_opencti_report_status}
+                status={note.x_opencti_note_status}
               />
             </Grid>
           </Grid>
           <EntityStixCoreRelationshipsDonut
             variant="inLine"
-            entityId={report.id}
+            entityId={note.id}
             entityType="Stix-Core-Object"
             relationshipType="object"
             field="entity_type"
@@ -68,21 +68,21 @@ class ReportDetailsComponent extends Component {
   }
 }
 
-ReportDetailsComponent.propTypes = {
-  report: PropTypes.object,
+NoteDetailsComponent.propTypes = {
+  note: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
-  report: graphql`
-    fragment ReportDetails_report on Report {
+const NoteDetails = createFragmentContainer(NoteDetailsComponent, {
+  note: graphql`
+    fragment NoteDetails_note on Note {
       id
       description
-      x_opencti_report_status
+      x_opencti_note_status
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(ReportDetails);
+export default compose(inject18n, withStyles(styles))(NoteDetails);

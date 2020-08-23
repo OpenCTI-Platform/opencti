@@ -22,11 +22,11 @@ import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { reportObjectPopoverDeletionMutation } from './ReportObjectPopover';
+import { containerObjectPopoverDeletionMutation } from '../../analysis/containers/ContainerObjectPopover';
 import {
-  reportKnowledgeGraphtMutationRelationAdd,
-  reportKnowledgeGraphtMutationRelationDelete,
-} from './ReportKnowledgeGraph';
+  containerKnowledgeGraphtMutationRelationAdd,
+  containerKnowledgeGraphtMutationRelationDelete,
+} from '../../analysis/containers/ContainerKnowledgeGraph';
 
 const styles = (theme) => ({
   container: {
@@ -64,23 +64,23 @@ const styles = (theme) => ({
   },
 });
 
-export const reportMutationRelationAdd = graphql`
-  mutation ReportAddObjectsLinesRelationAddMutation(
+export const containerMutationRelationAdd = graphql`
+  mutation ContainerAddObjectsLinesRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
   ) {
-    reportEdit(id: $id) {
+    containerEdit(id: $id) {
       relationAdd(input: $input) {
         id
         to {
-          ...ReportStixDomainObjectLine_node
+          ...ContainerStixDomainObjectLine_node
         }
       }
     }
   }
 `;
 
-class ReportAddObjectsLinesContainer extends Component {
+class ContainerAddObjectsLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {}, addedStixCoreObjects: [] };
@@ -88,22 +88,22 @@ class ReportAddObjectsLinesContainer extends Component {
 
   toggleStixCore(stixCore) {
     const {
-      reportId,
+      containerId,
       paginationOptions,
       knowledgeGraph,
-      reportObjects,
+      containerObjects,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const reportObjectsIds = map((n) => n.node.id, reportObjects);
+    const containerObjectsIds = map((n) => n.node.id, containerObjects);
     const alreadyAdded = addedStixCoreObjects.includes(stixCore.id)
-      || reportObjectsIds.includes(stixCore.id);
+      || containerObjectsIds.includes(stixCore.id);
 
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
-          mutation: reportKnowledgeGraphtMutationRelationDelete,
+          mutation: containerKnowledgeGraphtMutationRelationDelete,
           variables: {
-            id: reportId,
+            id: containerId,
             toId: stixCore.id,
             relationship_type: 'object_refs',
           },
@@ -118,15 +118,15 @@ class ReportAddObjectsLinesContainer extends Component {
         });
       } else {
         commitMutation({
-          mutation: reportObjectPopoverDeletionMutation,
+          mutation: containerObjectPopoverDeletionMutation,
           variables: {
-            id: reportId,
+            id: containerId,
             toId: stixCore.id,
             relationship_type: 'object',
           },
           updater: (store) => {
             const conn = ConnectionHandler.getConnection(
-              store.get(reportId),
+              store.get(containerId),
               'Pagination_objects',
               this.props.paginationOptions,
             );
@@ -149,9 +149,9 @@ class ReportAddObjectsLinesContainer extends Component {
       };
       if (knowledgeGraph) {
         commitMutation({
-          mutation: reportKnowledgeGraphtMutationRelationAdd,
+          mutation: containerKnowledgeGraphtMutationRelationAdd,
           variables: {
-            id: reportId,
+            id: containerId,
             input,
           },
           onCompleted: () => {
@@ -165,19 +165,19 @@ class ReportAddObjectsLinesContainer extends Component {
         });
       } else {
         commitMutation({
-          mutation: reportMutationRelationAdd,
+          mutation: containerMutationRelationAdd,
           variables: {
-            id: reportId,
+            id: containerId,
             input,
           },
           updater: (store) => {
             const payload = store
-              .getRootField('reportEdit')
+              .getRootField('containerEdit')
               .getLinkedRecord('relationAdd', { input })
               .getLinkedRecord('to');
             const newEdge = payload.setLinkedRecord(payload, 'node');
             const conn = ConnectionHandler.getConnection(
-              store.get(reportId),
+              store.get(containerId),
               'Pagination_objects',
               paginationOptions,
             );
@@ -214,14 +214,14 @@ class ReportAddObjectsLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, reportObjects,
+      t, classes, data, containerObjects,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = map((n) => n.node, data.stixCoreObjects.edges);
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
     const stixCoreObjects = byType(stixCoreObjectsNodes);
     const stixCoreObjectsTypes = keys(stixCoreObjects);
-    const reportObjectsIds = map((n) => n.node.id, reportObjects);
+    const containerObjectsIds = map((n) => n.node.id, containerObjects);
     return (
       <div className={classes.container}>
         {stixCoreObjectsTypes.length > 0 ? (
@@ -250,7 +250,7 @@ class ReportAddObjectsLinesContainer extends Component {
                 <List classes={{ root: classes.list }}>
                   {stixCoreObjects[type].map((stixCoreObject) => {
                     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-                      || reportObjectsIds.includes(stixCoreObject.id);
+                      || containerObjectsIds.includes(stixCoreObject.id);
                     return (
                       <Tooltip
                         classes={{ tooltip: classes.tooltip }}
@@ -303,8 +303,8 @@ class ReportAddObjectsLinesContainer extends Component {
   }
 }
 
-ReportAddObjectsLinesContainer.propTypes = {
-  reportId: PropTypes.string,
+ContainerAddObjectsLinesContainer.propTypes = {
+  containerId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -312,18 +312,18 @@ ReportAddObjectsLinesContainer.propTypes = {
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
   knowledgeGraph: PropTypes.bool,
-  reportObjects: PropTypes.array,
+  containerObjects: PropTypes.array,
 };
 
-export const reportAddObjectsLinesQuery = graphql`
-  query ReportAddObjectsLinesQuery(
+export const containerAddObjectsLinesQuery = graphql`
+  query ContainerAddObjectsLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    ...ReportAddObjectsLines_data
+    ...ContainerAddObjectsLines_data
       @arguments(
         search: $search
         count: $count
@@ -334,11 +334,11 @@ export const reportAddObjectsLinesQuery = graphql`
   }
 `;
 
-const ReportAddObjectsLines = createPaginationContainer(
-  ReportAddObjectsLinesContainer,
+const ContainerAddObjectsLines = createPaginationContainer(
+  ContainerAddObjectsLinesContainer,
   {
     data: graphql`
-      fragment ReportAddObjectsLines_data on Query
+      fragment ContainerAddObjectsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
@@ -457,8 +457,8 @@ const ReportAddObjectsLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: reportAddObjectsLinesQuery,
+    query: containerAddObjectsLinesQuery,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ReportAddObjectsLines);
+export default compose(inject18n, withStyles(styles))(ContainerAddObjectsLines);
