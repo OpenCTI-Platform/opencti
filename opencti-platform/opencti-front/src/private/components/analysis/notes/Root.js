@@ -1,17 +1,17 @@
-import React, { Component } from "react";
-import * as PropTypes from "prop-types";
-import { Route, withRouter } from "react-router-dom";
-import graphql from "babel-plugin-relay/macro";
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { Route, withRouter } from 'react-router-dom';
+import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
   requestSubscription,
-} from "../../../../relay/environment";
-import TopBar from "../../nav/TopBar";
-import Note from "./Note";
-import FileManager from "../../common/files/FileManager";
-import StixCoreObjectHistory from "../../common/stix_core_objects/StixCoreObjectHistory";
-import NoteHeader from "./NoteHeader";
-import Loader from "../../../../components/Loader";
+} from '../../../../relay/environment';
+import TopBar from '../../nav/TopBar';
+import Note from './Note';
+import FileManager from '../../common/files/FileManager';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import ContainerHeader from '../../common/containers/ContainerHeader';
+import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -33,7 +33,7 @@ const noteQuery = graphql`
       ...Note_note
       ...NoteDetails_note
       ...ContainerHeader_container
-      ...ContainerStixCoreObjects_container
+      ...ContainerStixDomainObjects_container
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -93,7 +93,7 @@ class RootNote extends Component {
                     path="/dashboard/analysis/notes/:noteId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <NoteHeader note={props.note} />
+                        <ContainerHeader container={props.note} />
                         <FileManager
                           {...routeProps}
                           id={noteId}
@@ -109,7 +109,7 @@ class RootNote extends Component {
                     path="/dashboard/analysis/notes/:noteId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <NoteHeader note={props.note} />
+                        <ContainerHeader note={props.note} />
                         <StixCoreObjectHistory
                           {...routeProps}
                           entityStandardId={props.note.standard_id}

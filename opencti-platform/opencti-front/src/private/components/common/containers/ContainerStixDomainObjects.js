@@ -9,9 +9,9 @@ import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../../relay/environment';
 import ContainerHeader from './ContainerHeader';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixCoreObjectsLines, {
-  containerStixCoreObjectsLinesQuery,
-} from './ContainerStixCoreObjectsLines';
+import ContainerStixDomainObjectsLines, {
+  containerStixDomainObjectsLinesQuery,
+} from './ContainerStixDomainObjectsLines';
 import StixDomainObjectsRightBar from '../stix_domain_objects/StixDomainObjectsRightBar';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -26,7 +26,7 @@ const styles = () => ({
   },
 });
 
-class ContainerStixCoreObjectsComponent extends Component {
+class ContainerStixDomainObjectsComponent extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
@@ -38,7 +38,7 @@ class ContainerStixCoreObjectsComponent extends Component {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      stixCoreObjectsTypes: propOr([], 'stixCoreObjectsTypes', params),
+      stixDomainObjectsTypes: propOr([], 'stixDomainObjectsTypes', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -65,13 +65,13 @@ class ContainerStixCoreObjectsComponent extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleToggleStixCoreObjectType(type) {
-    if (this.state.stixCoreObjectsTypes.includes(type)) {
+  handleToggleStixDomainObjectType(type) {
+    if (this.state.stixDomainObjectsTypes.includes(type)) {
       this.setState(
         {
-          stixCoreObjectsTypes: filter(
+          stixDomainObjectsTypes: filter(
             (t) => t !== type,
-            this.state.stixCoreObjectsTypes,
+            this.state.stixDomainObjectsTypes,
           ),
         },
         () => this.saveView(),
@@ -79,7 +79,7 @@ class ContainerStixCoreObjectsComponent extends Component {
     } else {
       this.setState(
         {
-          stixCoreObjectsTypes: append(type, this.state.stixCoreObjectsTypes),
+          stixDomainObjectsTypes: append(type, this.state.stixDomainObjectsTypes),
         },
         () => this.saveView(),
       );
@@ -107,7 +107,7 @@ class ContainerStixCoreObjectsComponent extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      stixCoreObjectsTypes,
+      stixDomainObjectsTypes,
       openExports,
       numberOfElements,
     } = this.state;
@@ -138,7 +138,7 @@ class ContainerStixCoreObjectsComponent extends Component {
       },
     };
     const paginationOptions = {
-      types: stixCoreObjectsTypes,
+      types: stixDomainObjectsTypes,
       filters: null,
       search: searchTerm,
       orderBy: sortBy,
@@ -159,10 +159,10 @@ class ContainerStixCoreObjectsComponent extends Component {
           numberOfElements={numberOfElements}
         >
           <QueryRenderer
-            query={containerStixCoreObjectsLinesQuery}
+            query={containerStixDomainObjectsLinesQuery}
             variables={{ id: container.id, count: 25, ...paginationOptions }}
             render={({ props }) => (
-              <ContainerStixCoreObjectsLines
+              <ContainerStixDomainObjectsLines
                 container={props ? props.container : null}
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
@@ -173,8 +173,8 @@ class ContainerStixCoreObjectsComponent extends Component {
           />
         </ListLines>
         <StixDomainObjectsRightBar
-          stixCoreObjectsTypes={stixCoreObjectsTypes}
-          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
+          stixDomainObjectsTypes={stixDomainObjectsTypes}
+          handleToggleStixDomainObjectType={this.handleToggleStixDomainObjectType.bind(
             this,
           )}
           openExports={openExports}
@@ -184,7 +184,7 @@ class ContainerStixCoreObjectsComponent extends Component {
   }
 }
 
-ContainerStixCoreObjectsComponent.propTypes = {
+ContainerStixDomainObjectsComponent.propTypes = {
   container: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -192,11 +192,11 @@ ContainerStixCoreObjectsComponent.propTypes = {
   history: PropTypes.object,
 };
 
-const ContainerStixCoreObjects = createFragmentContainer(
-  ContainerStixCoreObjectsComponent,
+const ContainerStixDomainObjects = createFragmentContainer(
+  ContainerStixDomainObjectsComponent,
   {
     container: graphql`
-      fragment ContainerStixCoreObjects_container on Container {
+      fragment ContainerStixDomainObjects_container on Container {
         id
         ...ContainerHeader_container
       }
@@ -204,4 +204,4 @@ const ContainerStixCoreObjects = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ContainerStixCoreObjects);
+export default compose(inject18n, withStyles(styles))(ContainerStixDomainObjects);

@@ -8,7 +8,7 @@ import Typography from '@material-ui/core/Typography';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import ContainerPopover from '../../analysis/containers/ContainerPopover';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   title: {
@@ -34,7 +34,9 @@ const styles = () => ({
 
 class ContainerHeaderComponent extends Component {
   render() {
-    const { classes, container, variant } = this.props;
+    const {
+      classes, container, variant, PopoverComponent,
+    } = this.props;
     return (
       <div>
         <Typography
@@ -42,11 +44,16 @@ class ContainerHeaderComponent extends Component {
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {truncate(container.name, 80)}
+          {truncate(
+            container.name || container.attribute_abstract || container.opinion,
+            80,
+          )}
         </Typography>
-        <div className={classes.popover}>
-          <ContainerPopover containerId={container.id} />
-        </div>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <div className={classes.popover}>
+            {React.cloneElement(PopoverComponent, { id: container.id })}
+          </div>
+        </Security>
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
             {pathOr([], ['objectMarking', 'edges'], container).map(
@@ -69,6 +76,7 @@ class ContainerHeaderComponent extends Component {
 
 ContainerHeaderComponent.propTypes = {
   container: PropTypes.object,
+  PopoverComponent: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -79,7 +87,15 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
   container: graphql`
     fragment ContainerHeader_container on Container {
       id
-      name
+      ... on Report {
+        name
+      }
+      ... on Note {
+        attribute_abstract
+      }
+      ... on Opinion {
+        opinion
+      }
       objectMarking {
         edges {
           node {

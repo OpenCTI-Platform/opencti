@@ -1,6 +1,6 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, Redirect, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import { makeStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../relay/environment';
@@ -20,7 +20,6 @@ import RootSettings from './components/settings/Root';
 import RootWorkspace from './components/workspaces/Root';
 import Reports from './components/analysis/Reports';
 import RootReport from './components/analysis/reports/Root';
-import ExternalReferences from './components/analysis/external_references/ExternalReferences';
 import RootData from './components/data/Root';
 import Profile from './components/Profile';
 import Message from '../components/Message';
@@ -104,8 +103,8 @@ const Root = () => {
                         component={RootAnalysis}
                       />
                       <BoundaryRoute
-                          path="/dashboard/events"
-                          component={RootEvents}
+                        path="/dashboard/events"
+                        component={RootEvents}
                       />
                       <BoundaryRoute
                         path="/dashboard/techniques"
@@ -114,11 +113,6 @@ const Root = () => {
                       <BoundaryRoute
                         path="/dashboard/signatures"
                         component={RootSignatures}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/reports/references"
-                        component={ExternalReferences}
                       />
                       <BoundaryRoute
                         exact

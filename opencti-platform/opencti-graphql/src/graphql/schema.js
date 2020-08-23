@@ -44,6 +44,7 @@ import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
+import containerResolvers from '../resolvers/container';
 import noteResolvers from '../resolvers/note';
 import observedDataResolvers from '../resolvers/observedData';
 import opinionResolvers from '../resolvers/opinion';
@@ -90,6 +91,7 @@ const createSchema = () => {
     attackPatternResolvers,
     campaignResolvers,
     // Containers
+    containerResolvers,
     noteResolvers,
     observedDataResolvers,
     opinionResolvers,

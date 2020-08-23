@@ -40,13 +40,13 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-export const reportObjectPopoverDeletionMutation = graphql`
-  mutation ReportObjectPopoverDeletionMutation(
+export const containerStixCoreObjectPopoverDeletionMutation = graphql`
+  mutation ContainerStixCoreObjectPopoverDeletionMutation(
     $id: ID!
     $toId: String!
     $relationship_type: String!
   ) {
-    reportEdit(id: $id) {
+    containerEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         id
       }
@@ -54,7 +54,7 @@ export const reportObjectPopoverDeletionMutation = graphql`
   }
 `;
 
-class ReportObjectPopover extends Component {
+class ContainerStixCoreObjectPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -84,7 +84,7 @@ class ReportObjectPopover extends Component {
 
   submitDelete() {
     const {
-      reportId,
+      containerId,
       toId,
       relationshipType,
       paginationKey,
@@ -92,16 +92,16 @@ class ReportObjectPopover extends Component {
     } = this.props;
     this.setState({ deleting: true });
     commitMutation({
-      mutation: reportObjectPopoverDeletionMutation,
+      mutation: containerStixCoreObjectPopoverDeletionMutation,
       variables: {
-        id: reportId,
+        id: containerId,
         toId,
         relationship_type: relationshipType,
       },
       updater: (store) => {
         if (toId) {
           const conn = ConnectionHandler.getConnection(
-            store.get(reportId),
+            store.get(containerId),
             paginationKey,
             paginationOptions,
           );
@@ -143,7 +143,7 @@ class ReportObjectPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to remove the entity from this report?')}
+              {t('Do you want to remove the entity from this container?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -168,8 +168,8 @@ class ReportObjectPopover extends Component {
   }
 }
 
-ReportObjectPopover.propTypes = {
-  reportId: PropTypes.string,
+ContainerStixCoreObjectPopover.propTypes = {
+  containerId: PropTypes.string,
   toId: PropTypes.string,
   relationshipType: PropTypes.string,
   paginationKey: PropTypes.string,
@@ -178,4 +178,7 @@ ReportObjectPopover.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportObjectPopover);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(ContainerStixCoreObjectPopover);

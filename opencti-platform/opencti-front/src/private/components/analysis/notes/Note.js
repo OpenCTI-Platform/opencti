@@ -6,7 +6,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import NoteHeader from './NoteHeader';
+import ContainerHeader from '../../common/containers/ContainerHeader';
 import NoteDetails from './NoteDetails';
 import NoteEdition from './NoteEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
@@ -29,7 +29,7 @@ class NoteComponent extends Component {
     const { classes, note } = this.props;
     return (
       <div className={classes.container}>
-        <NoteHeader note={note} />
+        <ContainerHeader container={note} />
         <Grid
           container={true}
           spacing={3}
@@ -102,8 +102,8 @@ const Note = createFragmentContainer(NoteComponent, {
           }
         }
       }
-      ...NoteHeader_note
       ...NoteDetails_note
+      ...ContainerHeader_container
     }
   `,
 });

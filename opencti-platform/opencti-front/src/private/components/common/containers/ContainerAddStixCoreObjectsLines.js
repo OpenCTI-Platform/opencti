@@ -22,11 +22,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { containerObjectPopoverDeletionMutation } from '../../analysis/containers/ContainerObjectPopover';
-import {
-  containerKnowledgeGraphtMutationRelationAdd,
-  containerKnowledgeGraphtMutationRelationDelete,
-} from '../../analysis/containers/ContainerKnowledgeGraph';
+import { containerStixCoreObjectPopoverDeletionMutation } from './ContainerStixCoreObjectPopover';
 
 const styles = (theme) => ({
   container: {
@@ -64,8 +60,8 @@ const styles = (theme) => ({
   },
 });
 
-export const containerMutationRelationAdd = graphql`
-  mutation ContainerAddObjectsLinesRelationAddMutation(
+export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
+  mutation ContainerAddStixCoreObjectsLinesRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
   ) {
@@ -73,44 +69,66 @@ export const containerMutationRelationAdd = graphql`
       relationAdd(input: $input) {
         id
         to {
-          ...ContainerStixDomainObjectLine_node
+          ... on StixDomainObject {
+            ...ContainerStixDomainObjectLine_node
+          }
+          ... on StixCyberObservable {
+            ...ContainerStixCyberObservableLine_node
+          }
         }
       }
     }
   }
 `;
 
-class ContainerAddObjectsLinesContainer extends Component {
+export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
+  mutation ContainerAddStixCoreObjectsLinesRelationDeleteMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    containerEdit(id: $id) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
+        id
+      }
+    }
+  }
+`;
+
+class ContainerAddStixCoreObjectsLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {}, addedStixCoreObjects: [] };
   }
 
-  toggleStixCore(stixCore) {
+  toggleStixCoreObject(stixCoreObject) {
     const {
       containerId,
       paginationOptions,
       knowledgeGraph,
-      containerObjects,
+      containerStixCoreObjects,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const containerObjectsIds = map((n) => n.node.id, containerObjects);
-    const alreadyAdded = addedStixCoreObjects.includes(stixCore.id)
-      || containerObjectsIds.includes(stixCore.id);
+    const containerStixCoreObjectsIds = map(
+      (n) => n.node.id,
+      containerStixCoreObjects,
+    );
+    const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
+      || containerStixCoreObjectsIds.includes(stixCoreObject.id);
 
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
-          mutation: containerKnowledgeGraphtMutationRelationDelete,
+          mutation: containerAddStixCoreObjectsLinesRelationDeleteMutation,
           variables: {
             id: containerId,
-            toId: stixCore.id,
-            relationship_type: 'object_refs',
+            toId: stixCoreObject.id,
+            relationship_type: 'object',
           },
           onCompleted: () => {
             this.setState({
               addedStixCoreObjects: filter(
-                (n) => n !== stixCore.id,
+                (n) => n !== stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
@@ -118,24 +136,24 @@ class ContainerAddObjectsLinesContainer extends Component {
         });
       } else {
         commitMutation({
-          mutation: containerObjectPopoverDeletionMutation,
+          mutation: containerStixCoreObjectPopoverDeletionMutation,
           variables: {
             id: containerId,
-            toId: stixCore.id,
-            relationship_type: 'object',
+            toId: stixCoreObject.id,
+            relationship_type: 'stixCoreObject',
           },
           updater: (store) => {
             const conn = ConnectionHandler.getConnection(
               store.get(containerId),
-              'Pagination_objects',
+              'Pagination_stixCoreObjects',
               this.props.paginationOptions,
             );
-            ConnectionHandler.deleteNode(conn, stixCore.id);
+            ConnectionHandler.deleteNode(conn, stixCoreObject.id);
           },
           onCompleted: () => {
             this.setState({
               addedStixCoreObjects: filter(
-                (n) => n !== stixCore.id,
+                (n) => n !== stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
@@ -144,12 +162,12 @@ class ContainerAddObjectsLinesContainer extends Component {
       }
     } else {
       const input = {
-        toId: stixCore.id,
+        toId: stixCoreObject.id,
         relationship_type: 'object',
       };
       if (knowledgeGraph) {
         commitMutation({
-          mutation: containerKnowledgeGraphtMutationRelationAdd,
+          mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
           variables: {
             id: containerId,
             input,
@@ -157,7 +175,7 @@ class ContainerAddObjectsLinesContainer extends Component {
           onCompleted: () => {
             this.setState({
               addedStixCoreObjects: append(
-                stixCore.id,
+                stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
@@ -165,7 +183,7 @@ class ContainerAddObjectsLinesContainer extends Component {
         });
       } else {
         commitMutation({
-          mutation: containerMutationRelationAdd,
+          mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
           variables: {
             id: containerId,
             input,
@@ -178,7 +196,7 @@ class ContainerAddObjectsLinesContainer extends Component {
             const newEdge = payload.setLinkedRecord(payload, 'node');
             const conn = ConnectionHandler.getConnection(
               store.get(containerId),
-              'Pagination_objects',
+              'Pagination_stixCoreObjects',
               paginationOptions,
             );
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -186,7 +204,7 @@ class ContainerAddObjectsLinesContainer extends Component {
           onCompleted: () => {
             this.setState({
               addedStixCoreObjects: append(
-                stixCore.id,
+                stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
@@ -214,14 +232,17 @@ class ContainerAddObjectsLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, containerObjects,
+      t, classes, data, containerStixCoreObjects,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = map((n) => n.node, data.stixCoreObjects.edges);
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
     const stixCoreObjects = byType(stixCoreObjectsNodes);
     const stixCoreObjectsTypes = keys(stixCoreObjects);
-    const containerObjectsIds = map((n) => n.node.id, containerObjects);
+    const containerStixCoreObjectsIds = map(
+      (n) => n.node.id,
+      containerStixCoreObjects,
+    );
     return (
       <div className={classes.container}>
         {stixCoreObjectsTypes.length > 0 ? (
@@ -250,7 +271,7 @@ class ContainerAddObjectsLinesContainer extends Component {
                 <List classes={{ root: classes.list }}>
                   {stixCoreObjects[type].map((stixCoreObject) => {
                     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-                      || containerObjectsIds.includes(stixCoreObject.id);
+                      || containerStixCoreObjectsIds.includes(stixCoreObject.id);
                     return (
                       <Tooltip
                         classes={{ tooltip: classes.tooltip }}
@@ -303,7 +324,7 @@ class ContainerAddObjectsLinesContainer extends Component {
   }
 }
 
-ContainerAddObjectsLinesContainer.propTypes = {
+ContainerAddStixCoreObjectsLinesContainer.propTypes = {
   containerId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -312,18 +333,18 @@ ContainerAddObjectsLinesContainer.propTypes = {
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
   knowledgeGraph: PropTypes.bool,
-  containerObjects: PropTypes.array,
+  containerStixCoreObjects: PropTypes.array,
 };
 
-export const containerAddObjectsLinesQuery = graphql`
-  query ContainerAddObjectsLinesQuery(
+export const containerAddStixCoreObjectsLinesQuery = graphql`
+  query ContainerAddStixCoreObjectsLinesQuery(
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    ...ContainerAddObjectsLines_data
+    ...ContainerAddStixCoreObjectsLines_data
       @arguments(
         search: $search
         count: $count
@@ -334,11 +355,11 @@ export const containerAddObjectsLinesQuery = graphql`
   }
 `;
 
-const ContainerAddObjectsLines = createPaginationContainer(
-  ContainerAddObjectsLinesContainer,
+const ContainerAddStixCoreObjectsLines = createPaginationContainer(
+  ContainerAddStixCoreObjectsLinesContainer,
   {
     data: graphql`
-      fragment ContainerAddObjectsLines_data on Query
+      fragment ContainerAddStixCoreObjectsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
@@ -457,8 +478,11 @@ const ContainerAddObjectsLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: containerAddObjectsLinesQuery,
+    query: containerAddStixCoreObjectsLinesQuery,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ContainerAddObjectsLines);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(ContainerAddStixCoreObjectsLines);

@@ -77,21 +77,15 @@ class NoteLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.source_name.width }}
+                style={{ width: dataColumns.attribute_abstract.width }}
               >
-                {node.source_name}
+                {node.attribute_abstract}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.external_id.width }}
+                style={{ width: dataColumns.content.width }}
               >
-                {node.external_id}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.url.width }}
-              >
-                {node.url}
+                {node.content}
               </div>
               <div
                 className={classes.bodyItem}
@@ -103,10 +97,7 @@ class NoteLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <NotePopover
-            noteId={node.id}
-            paginationOptions={paginationOptions}
-          />
+          <NotePopover noteId={node.id} paginationOptions={paginationOptions} />
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -122,19 +113,16 @@ NoteLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const NoteLineFragment = createFragmentContainer(
-  NoteLineComponent,
-  {
-    node: graphql`
-      fragment NoteLine_node on Note {
-        id
-        attribute_abstract
-        content
-        created
-      }
-    `,
-  },
-);
+const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
+  node: graphql`
+    fragment NoteLine_node on Note {
+      id
+      attribute_abstract
+      content
+      created
+    }
+  `,
+});
 
 export const NoteLine = compose(
   inject18n,
@@ -154,21 +142,15 @@ class NoteLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.source_name.width }}
+                style={{ width: dataColumns.attribute_abstract.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.external_id.width }}
+                style={{ width: dataColumns.content.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.url.width }}
-              >
-                <div className="fakeItem" style={{ width: '60%' }} />
               </div>
               <div
                 className={classes.bodyItem}

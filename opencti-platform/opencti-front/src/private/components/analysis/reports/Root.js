@@ -14,7 +14,7 @@ import FileManager from "../../common/files/FileManager";
 import StixCoreObjectHistory from "../../common/stix_core_objects/StixCoreObjectHistory";
 import ReportHeader from "../../common/containers/ContainerHeader";
 import Loader from "../../../../components/Loader";
-import ContainerStixCoreObjects from "../../common/containers/ContainerStixCoreObjects";
+import ContainerStixCoreObjects from "../../common/containers/ContainerStixDomainObjects";
 import ContainerStixCyberObservables from "../../common/containers/ContainerStixCyberObservables";
 
 const subscription = graphql`
@@ -38,9 +38,9 @@ const reportQuery = graphql`
       ...Report_report
       ...ReportDetails_report
       ...ReportKnowledge_report
-      ...ReportStixCyberObservables_report
       ...ContainerHeader_container
-      ...ContainerStixCoreObjects_container
+      ...ContainerStixDomainObjects_container
+      ...ContainerStixCyberObservables_container
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }

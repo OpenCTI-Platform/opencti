@@ -96,7 +96,6 @@ const ReportEditionFragment = createFragmentContainer(ReportEditionContainer, {
     fragment ReportEditionContainer_report on Report {
       id
       ...ReportEditionOverview_report
-      ...ReportEditionOverview_report
       editContext {
         name
         focusOn

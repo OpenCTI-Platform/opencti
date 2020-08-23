@@ -27,19 +27,20 @@ const styles = (theme) => ({
   },
 });
 
-const noteLinesMutationRelationAdd = graphql`
-  mutation AddNotesLinesRelationAddMutation(
+const reportLinesMutationRelationAdd = graphql`
+  mutation AddReportsLinesRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput!
   ) {
-    noteEdit(id: $id) {
+    reportEdit(id: $id) {
       relationAdd(input: $input) {
         id
         to {
-          ... on Note {
+          ... on Report {
             id
-            attribute_abstract
-            content
+            name
+            description
+            published
           }
         }
       }
@@ -47,13 +48,13 @@ const noteLinesMutationRelationAdd = graphql`
   }
 `;
 
-export const noteMutationRelationDelete = graphql`
-  mutation AddNotesLinesRelationDeleteMutation(
+export const reportMutationRelationDelete = graphql`
+  mutation AddReportsLinesRelationDeleteMutation(
     $id: ID!
     $toId: String!
     $relationship_type: String!
   ) {
-    noteEdit(id: $id) {
+    reportEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         id
       }
@@ -63,50 +64,50 @@ export const noteMutationRelationDelete = graphql`
 
 const sharedUpdater = (store, entityId, newEdge) => {
   const entity = store.get(entityId);
-  const conn = ConnectionHandler.getConnection(entity, 'Pagination_notes');
+  const conn = ConnectionHandler.getConnection(entity, 'Pagination_reports');
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class AddNotesLinesContainer extends Component {
-  toggleNote(note) {
-    const { entityId, entityNotes } = this.props;
-    const entityNotesIds = map((n) => n.node.id, entityNotes);
-    const alreadyAdded = entityNotesIds.includes(note.id);
+class AddReportsLinesContainer extends Component {
+  toggleReport(report) {
+    const { entityId, entityReports } = this.props;
+    const entityReportsIds = map((n) => n.node.id, entityReports);
+    const alreadyAdded = entityReportsIds.includes(report.id);
 
     if (alreadyAdded) {
-      const existingNote = head(
-        filter((n) => n.node.id === note.id, entityNotes),
+      const existingReport = head(
+        filter((n) => n.node.id === report.id, entityReports),
       );
       commitMutation({
-        mutation: noteMutationRelationDelete,
+        mutation: reportMutationRelationDelete,
         variables: {
-          id: existingNote.id,
-          toId: entityId,
-          relationship_type: 'object',
+          id: entityId,
+          toId: existingReport.id,
+          relationship_type: 'external-reference',
         },
         updater: (store) => {
           const entity = store.get(entityId);
           const conn = ConnectionHandler.getConnection(
             entity,
-            'Pagination_notes',
+            'Pagination_reports',
           );
-          ConnectionHandler.deleteNode(conn, note.id);
+          ConnectionHandler.deleteNode(conn, report.id);
         },
       });
     } else {
       const input = {
-        toId: entityId,
-        relationship_type: 'object',
+        fromId: entityId,
+        relationship_type: 'external-reference',
       };
       commitMutation({
-        mutation: noteLinesMutationRelationAdd,
+        mutation: reportLinesMutationRelationAdd,
         variables: {
-          id: note.id,
+          id: report.id,
           input,
         },
         updater: (store) => {
           const payload = store
-            .getRootField('noteEdit')
+            .getRootField('reportEdit')
             .getLinkedRecord('relationAdd', { input });
           const relationId = payload.getValue('id');
           const node = payload.getLinkedRecord('to');
@@ -120,37 +121,37 @@ class AddNotesLinesContainer extends Component {
   }
 
   render() {
-    const { classes, data, entityNotes } = this.props;
-    const entityNotesIds = map((n) => n.node.id, entityNotes);
+    const { classes, data, entityReports } = this.props;
+    const entityReportsIds = map((n) => n.node.id, entityReports);
     return (
       <List>
-        {data.notes.edges.map((noteNode) => {
-          const note = noteNode.node;
-          const alreadyAdded = entityNotesIds.includes(note.id);
-          const noteId = note.external_id ? `(${note.external_id})` : '';
+        {data.reports.edges.map((reportNode) => {
+          const report = reportNode.node;
+          const alreadyAdded = entityReportsIds.includes(report.id);
+          const reportId = report.external_id ? `(${report.external_id})` : '';
           return (
             <ListItem
-              key={note.id}
+              key={report.id}
               classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
-              onClick={this.toggleNote.bind(this, note)}
+              onClick={this.toggleReport.bind(this, report)}
             >
               <ListItemIcon>
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
                   <Avatar classes={{ root: classes.avatar }}>
-                    {note.source_name.substring(0, 1)}
+                    {report.source_name.substring(0, 1)}
                   </Avatar>
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={`${note.source_name} ${noteId}`}
+                primary={`${report.source_name} ${reportId}`}
                 secondary={truncate(
-                  note.description !== null && note.description.length > 0
-                    ? note.description
-                    : note.url,
+                  report.description !== null && report.description.length > 0
+                    ? report.description
+                    : report.url,
                   120,
                 )}
               />
@@ -162,9 +163,9 @@ class AddNotesLinesContainer extends Component {
   }
 }
 
-AddNotesLinesContainer.propTypes = {
+AddReportsLinesContainer.propTypes = {
   entityId: PropTypes.string,
-  entityNotes: PropTypes.array,
+  entityReports: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -172,30 +173,31 @@ AddNotesLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const addNotesLinesQuery = graphql`
-  query AddNotesLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddNotesLines_data
+export const addReportsLinesQuery = graphql`
+  query AddReportsLinesQuery($search: String, $count: Int!, $cursor: ID) {
+    ...AddReportsLines_data
       @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
-const AddNotesLines = createPaginationContainer(
-  AddNotesLinesContainer,
+const AddReportsLines = createPaginationContainer(
+  AddReportsLinesContainer,
   {
     data: graphql`
-      fragment AddNotesLines_data on Query
+      fragment AddReportsLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           count: { type: "Int", defaultValue: 25 }
           cursor: { type: "ID" }
         ) {
-        notes(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_notes") {
+        reports(search: $search, first: $count, after: $cursor)
+          @connection(key: "Pagination_reports") {
           edges {
             node {
               id
-              attribute_abstract
-              content
+              name
+              description
+              published
             }
           }
         }
@@ -205,7 +207,7 @@ const AddNotesLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.notes;
+      return props.data && props.data.reports;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -219,8 +221,8 @@ const AddNotesLines = createPaginationContainer(
         cursor,
       };
     },
-    query: addNotesLinesQuery,
+    query: addReportsLinesQuery,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(AddNotesLines);
+export default compose(inject18n, withStyles(styles))(AddReportsLines);

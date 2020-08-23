@@ -34,9 +34,9 @@ class NoteDetailsComponent extends Component {
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
+                {t('Content')}
               </Typography>
-              <Markdown className="markdown" source={note.description} />
+              <Markdown className="markdown" source={note.content} />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -79,8 +79,8 @@ const NoteDetails = createFragmentContainer(NoteDetailsComponent, {
   note: graphql`
     fragment NoteDetails_note on Note {
       id
-      description
-      x_opencti_note_status
+      attribute_abstract
+      content
     }
   `,
 });

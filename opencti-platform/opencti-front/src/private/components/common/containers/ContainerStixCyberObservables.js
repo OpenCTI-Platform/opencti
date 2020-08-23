@@ -17,7 +17,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
-import ContainerAddObservables from '../../analysis/containers/ContainerAddObservables';
+import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 import StixCyberObservablesRightBar from '../../signatures/stix_cyber_observables/StixCyberObservablesRightBar';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
@@ -152,7 +152,7 @@ class ContainerStixCyberObservablesComponent extends Component {
           />
         </ListLines>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerAddObservables
+          <ContainerAddStixCoreObjects
             containerId={container.id}
             paginationOptions={paginationOptions}
           />

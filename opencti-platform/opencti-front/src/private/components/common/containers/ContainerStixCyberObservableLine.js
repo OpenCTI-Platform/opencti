@@ -13,7 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import { HexagonOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import ContainerRefPopover from '../../analysis/containers/ContainerObjectPopover';
+import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 
 const styles = (theme) => ({
   item: {
@@ -113,11 +113,11 @@ class ContainerStixCyberObservableLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <ContainerRefPopover
+          <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}
-            relationshipType="observable_refs"
-            paginationKey="Pagination_observableRefs"
+            relationshipType="object"
+            paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}
           />
         </ListItemSecondaryAction>

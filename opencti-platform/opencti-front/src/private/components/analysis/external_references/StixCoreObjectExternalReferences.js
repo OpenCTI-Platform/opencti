@@ -11,8 +11,8 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Avatar from '@material-ui/core/Avatar';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixDomainObjectExternalReferencesLines, {
-  stixDomainObjectExternalReferencesLinesQuery,
+import StixCoreObjectExternalReferencesLines, {
+  stixCoreObjectExternalReferencesLinesQuery,
 } from './StixCoreObjectExternalReferencesLines';
 
 const styles = (theme) => ({
@@ -44,12 +44,12 @@ class StixCoreObjectExternalReferences extends Component {
     const { t, classes, entityId } = this.props;
     return (
       <QueryRenderer
-        query={stixDomainObjectExternalReferencesLinesQuery}
+        query={stixCoreObjectExternalReferencesLinesQuery}
         variables={{ id: entityId, count: 200 }}
         render={({ props }) => {
           if (props) {
             return (
-              <StixDomainObjectExternalReferencesLines
+              <StixCoreObjectExternalReferencesLines
                 entityId={entityId}
                 data={props}
               />

@@ -57,28 +57,28 @@ class NoteEditionContainer extends Component {
     } = this.props;
     const { editContext } = note;
     return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
-            <Close fontSize="small" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a note')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
+        <div>
+          <div className={classes.header}>
+            <IconButton
+                aria-label="Close"
+                className={classes.closeButton}
+                onClick={handleClose.bind(this)}
+            >
+              <Close fontSize="small" />
+            </IconButton>
+            <Typography variant="h6" classes={{ root: classes.title }}>
+              {t('Update a note')}
+            </Typography>
+            <SubscriptionAvatars context={editContext} />
+            <div className="clearfix" />
+          </div>
+          <div className={classes.container}>
+            <NoteEditionOverview
+                note={this.props.note}
+                context={editContext}
+            />
+          </div>
         </div>
-        <div className={classes.container}>
-          <NoteEditionOverview
-            note={this.props.note}
-            context={editContext}
-          />
-        </div>
-      </div>
     );
   }
 }
@@ -96,7 +96,6 @@ const NoteEditionFragment = createFragmentContainer(NoteEditionContainer, {
     fragment NoteEditionContainer_note on Note {
       id
       ...NoteEditionOverview_note
-      ...NoteEditionOverview_note
       editContext {
         name
         focusOn
@@ -106,6 +105,6 @@ const NoteEditionFragment = createFragmentContainer(NoteEditionContainer, {
 });
 
 export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
+    inject18n,
+    withStyles(styles, { withTheme: true }),
 )(NoteEditionFragment);

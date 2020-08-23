@@ -13,7 +13,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
-import ContainerObjectPopover from '../../analysis/containers/ContainerObjectPopover';
+import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
@@ -46,7 +46,7 @@ const styles = (theme) => ({
   },
 });
 
-class ContainerStixCoreObjectLineComponent extends Component {
+class ContainerStixDomainObjectLineComponent extends Component {
   render() {
     const {
       t,
@@ -114,7 +114,7 @@ class ContainerStixCoreObjectLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
-          <ContainerObjectPopover
+          <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}
             relationshipType="object"
@@ -127,7 +127,7 @@ class ContainerStixCoreObjectLineComponent extends Component {
   }
 }
 
-ContainerStixCoreObjectLineComponent.propTypes = {
+ContainerStixDomainObjectLineComponent.propTypes = {
   containerId: PropTypes.string,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
@@ -137,11 +137,11 @@ ContainerStixCoreObjectLineComponent.propTypes = {
   paginationOptions: PropTypes.object,
 };
 
-const ContainerStixCoreObjectLineFragment = createFragmentContainer(
-  ContainerStixCoreObjectLineComponent,
+const ContainerStixDomainObjectLineFragment = createFragmentContainer(
+  ContainerStixDomainObjectLineComponent,
   {
     node: graphql`
-      fragment ContainerStixCoreObjectLine_node on StixCoreObject {
+      fragment ContainerStixDomainObjectLine_node on StixDomainObject {
         id
         entity_type
         created_at
@@ -220,12 +220,12 @@ const ContainerStixCoreObjectLineFragment = createFragmentContainer(
   },
 );
 
-export const ContainerStixCoreObjectLine = compose(
+export const ContainerStixDomainObjectLine = compose(
   inject18n,
   withStyles(styles),
-)(ContainerStixCoreObjectLineFragment);
+)(ContainerStixDomainObjectLineFragment);
 
-class ContainerStixCoreObjectLineDummyComponent extends Component {
+class ContainerStixDomainObjectLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -277,12 +277,12 @@ class ContainerStixCoreObjectLineDummyComponent extends Component {
   }
 }
 
-ContainerStixCoreObjectLineDummyComponent.propTypes = {
+ContainerStixDomainObjectLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const ContainerStixCoreObjectLineDummy = compose(
+export const ContainerStixDomainObjectLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(ContainerStixCoreObjectLineDummyComponent);
+)(ContainerStixDomainObjectLineDummyComponent);

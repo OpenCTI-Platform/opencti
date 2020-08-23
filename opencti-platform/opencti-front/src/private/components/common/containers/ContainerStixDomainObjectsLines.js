@@ -5,16 +5,16 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr, propOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  ContainerStixCoreObjectLine,
-  ContainerStixCoreObjectLineDummy,
-} from './ContainerStixCoreObjectLine';
+  ContainerStixDomainObjectLine,
+  ContainerStixDomainObjectLineDummy,
+} from './ContainerStixDomainObjectLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import ContainerAddObjects from '../../analysis/containers/ContainerAddObjects';
+import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const nbOfRowsToLoad = 50;
 
-class ContainerStixCoreObjectsLines extends Component {
+class ContainerStixDomainObjectsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -48,16 +48,16 @@ class ContainerStixCoreObjectsLines extends Component {
             container,
           )}
           LineComponent={
-            <ContainerStixCoreObjectLine
+            <ContainerStixDomainObjectLine
               containerId={propOr(null, 'id', container)}
             />
           }
-          DummyLineComponent={<ContainerStixCoreObjectLineDummy />}
+          DummyLineComponent={<ContainerStixDomainObjectLineDummy />}
           dataColumns={dataColumns}
           nbOfRowsToLoad={nbOfRowsToLoad}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerAddObjects
+          <ContainerAddStixCoreObjects
             containerId={propOr(null, 'id', container)}
             containerObjects={pathOr([], ['objects', 'edges'], container)}
             paginationOptions={paginationOptions}
@@ -69,7 +69,7 @@ class ContainerStixCoreObjectsLines extends Component {
   }
 }
 
-ContainerStixCoreObjectsLines.propTypes = {
+ContainerStixDomainObjectsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -80,8 +80,8 @@ ContainerStixCoreObjectsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const containerStixCoreObjectsLinesQuery = graphql`
-  query ContainerStixCoreObjectsLinesQuery(
+export const containerStixDomainObjectsLinesQuery = graphql`
+  query ContainerStixDomainObjectsLinesQuery(
     $id: String!
     $search: String
     $types: [String]
@@ -92,7 +92,7 @@ export const containerStixCoreObjectsLinesQuery = graphql`
     $filters: [StixObjectOrStixRelationshipsFiltering]
   ) {
     container(id: $id) {
-      ...ContainerStixCoreObjectsLines_container
+      ...ContainerStixDomainObjectsLines_container
         @arguments(
           search: $search
           types: $types
@@ -107,10 +107,10 @@ export const containerStixCoreObjectsLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  ContainerStixCoreObjectsLines,
+  ContainerStixDomainObjectsLines,
   {
     container: graphql`
-      fragment ContainerStixCoreObjectsLines_container on Container
+      fragment ContainerStixDomainObjectsLines_container on Container
         @argumentDefinitions(
           types: { type: "[String]" }
           search: { type: "String" }
@@ -138,7 +138,7 @@ export default createPaginationContainer(
               ... on BasicObject {
                 id
               }
-              ...ContainerStixCoreObjectLine_node
+              ...ContainerStixDomainObjectLine_node
             }
           }
           pageInfo {
@@ -173,6 +173,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: containerStixCoreObjectsLinesQuery,
+    query: containerStixDomainObjectsLinesQuery,
   },
 );
