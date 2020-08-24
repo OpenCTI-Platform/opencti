@@ -60,8 +60,8 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { isDatedInternalObject, isInternalObject } from '../schema/internalObject';
-import { isBasicObject, isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
+import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { dictAttributes, dictReconstruction } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixDomainObject } from '../schema/stixDomainObject';
@@ -1275,12 +1275,7 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
 export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   // const { noLog = false } = options;
-  let instance;
-  if (isBasicRelationship(type)) {
-    instance = await loadById(id, type, options);
-  } else {
-    instance = await loadById(id, type, options);
-  }
+  const instance = await loadById(id, type, options);
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
