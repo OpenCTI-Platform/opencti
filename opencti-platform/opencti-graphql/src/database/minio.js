@@ -3,7 +3,7 @@ import { assoc, concat, isEmpty, isNil, map, sort } from 'ramda';
 import querystring from 'querystring';
 import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
-import { internalLoadEntityById, now, sinceNowInMinutes } from './grakn';
+import { internalLoadById, now, sinceNowInMinutes } from './grakn';
 import { buildPagination } from './utils';
 import { deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
 
@@ -143,7 +143,7 @@ export const upload = async (
   };
   let finalEntityType = entityType;
   if (entityId && !finalEntityType) {
-    const entity = await internalLoadEntityById(entityId);
+    const entity = await internalLoadById(entityId);
     finalEntityType = entity.entity_type;
   }
   // eslint-disable-next-line prettier/prettier

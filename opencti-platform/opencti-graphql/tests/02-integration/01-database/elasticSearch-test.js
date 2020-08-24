@@ -14,8 +14,7 @@ import {
   elIndexElements,
   elIndexExists,
   elIsAlive,
-  elLoadById,
-  elLoadByStixId,
+  elLoadByIds,
   elPaginate,
   elReconstructRelation,
   elVersion,
@@ -85,14 +84,14 @@ describe('Elasticsearch document loader', () => {
     expect(indexedData).toEqual(documentBody);
     const documentWithIndex = assoc('_index', 'test_index', documentBody);
     // Load by internal Id
-    const dataThroughInternal = await elLoadById(internalId, null, ['test_index']);
+    const dataThroughInternal = await elLoadByIds(internalId, null, ['test_index']);
     expect(dataThroughInternal).toEqual(documentWithIndex);
     // Load by stix id
-    const dataThroughStix = await elLoadByStixId(standardId, null, ['test_index']);
+    const dataThroughStix = await elLoadByIds(standardId, null, ['test_index']);
     expect(dataThroughStix).toEqual(documentWithIndex);
     // Try to delete
     await elDeleteByField('test_index', 'internal_id', internalId);
-    const removedInternal = await elLoadById(internalId, null, ['test_index']);
+    const removedInternal = await elLoadByIds(internalId, null, ['test_index']);
     expect(removedInternal).toBeNull();
   });
 });
@@ -104,7 +103,7 @@ describe('Elasticsearch computation', () => {
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
-    const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    const mostRecentMalware = await elLoadByIds('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresCount = await elCount(ENTITIES_INDICES, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
@@ -127,7 +126,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Indicator')).toEqual(3);
   });
   it('should entity aggregation with date accurate', async () => {
-    const mostRecentMalware = await elLoadByStixId('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
+    const mostRecentMalware = await elLoadByIds('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
     const malwaresAggregation = await elAggregationCount(
       'Stix-Domain-Object',
       'entity_type',
@@ -141,7 +140,7 @@ describe('Elasticsearch computation', () => {
   });
   it('should entity aggregation with relation accurate', async () => {
     // Aggregate with relation filter on marking definition TLP:RED
-    const marking = await elLoadByStixId('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
+    const marking = await elLoadByIds('marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27');
     const malwaresAggregation = await elAggregationCount(
       'Stix-Domain-Object',
       'entity_type',
@@ -154,7 +153,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Report')).toEqual(1);
   });
   it('should relation aggregation accurate', async () => {
-    const testingReport = await elLoadByStixId('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
+    const testingReport = await elLoadByIds('report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const reportRelationsAggregation = await elAggregationRelationsCount(
       'stix-meta-relationship',
       null,
@@ -173,7 +172,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Sector')).toEqual(1);
   });
   it('should relation aggregation with date accurate', async () => {
-    const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const intrusionSet = await elLoadByIds('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     const intrusionRelationsAggregation = await elAggregationRelationsCount(
       'stix-core-relationship',
       '2020-02-29T00:00:00Z',
@@ -242,7 +241,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2020')).toEqual(14);
   });
   it('should year histogram with relation filter accurate', async () => {
-    const attackPattern = await elLoadByStixId('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
+    const attackPattern = await elLoadByIds('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
       'Stix-Domain-Object',
       'created',
@@ -256,7 +255,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2019')).toEqual(1);
   });
   it('should year histogram with relation filter accurate', async () => {
-    const attackPattern = await elLoadByStixId('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
+    const attackPattern = await elLoadByIds('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
     const data = await elHistogramCount(
       'Stix-Domain-Object',
       'created',
@@ -511,8 +510,8 @@ describe('Elasticsearch pagination', () => {
 
 describe('Elasticsearch basic loader', () => {
   it('should entity load by internal id', async () => {
-    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
-    const data = await elLoadById(malware.internal_id);
+    const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
+    const data = await elLoadByIds(malware.internal_id);
     expect(data).not.toBeNull();
     expect(data.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     expect(data.revoked).toBeFalsy();
@@ -520,14 +519,14 @@ describe('Elasticsearch basic loader', () => {
     expect(data.entity_type).toEqual('Malware');
   });
   it('should entity load by stix id', async () => {
-    const data = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
+    const data = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
     expect(data).not.toBeNull();
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');
     expect(data.entity_type).toEqual('Malware');
   });
   it('should relation reconstruct', async () => {
-    const data = await elLoadByStixId('relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
+    const data = await elLoadByIds('relationship--8d2200a8-f9ef-4345-95d1-ba3ed49606f9');
     expect(data).not.toBeNull();
     expect(data.fromRole).toEqual('indicates_from');
     expect(data.toRole).toEqual('indicates_to');
@@ -537,14 +536,14 @@ describe('Elasticsearch basic loader', () => {
 
 describe('Elasticsearch reindex', () => {
   it('should relation correctly indexed', async () => {
-    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const malwareInternalId = malware.internal_id;
-    const attackPattern = await elLoadByStixId('attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17');
+    const attackPattern = await elLoadByIds('attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17');
     const attackPatternId = attackPattern.internal_id;
     // relationship_type -> uses
     // source_ref -> malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
     // target_ref -> attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
-    const data = await elLoadByStixId('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
+    const data = await elLoadByIds('relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
     expect(data).not.toBeNull();
     expect(data.connections.length).toEqual(2);
     const connections = map((c) => c.internal_id, data.connections);

@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listFromEntitiesThroughRelation, loadEntityById } from '../database/grakn';
+import { createEntity, listEntities, listFromEntitiesThroughRelation, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
@@ -6,7 +6,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
 
 export const findById = (attackPatternId) => {
-  return loadEntityById(attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
+  return loadById(attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const findAll = (args) => {

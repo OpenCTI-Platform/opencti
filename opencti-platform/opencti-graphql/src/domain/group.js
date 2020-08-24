@@ -6,7 +6,7 @@ import {
   deleteRelationsByFromAndTo,
   listEntities,
   listFromEntitiesThroughRelation,
-  loadEntityById,
+  loadById,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -17,7 +17,7 @@ import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 
 export const findById = (groupId) => {
-  return loadEntityById(groupId, ENTITY_TYPE_GROUP);
+  return loadById(groupId, ENTITY_TYPE_GROUP);
 };
 
 export const findAll = (args) => {
@@ -41,7 +41,7 @@ export const groupEditField = async (user, groupId, input) => {
 };
 
 export const groupAddRelation = async (user, groupId, input) => {
-  const group = await loadEntityById(groupId, ENTITY_TYPE_GROUP);
+  const group = await loadById(groupId, ENTITY_TYPE_GROUP);
   if (!group) {
     throw FunctionalError('Cannot add the relation, Group cannot be found.');
   }
@@ -61,7 +61,7 @@ export const groupAddRelation = async (user, groupId, input) => {
 };
 
 export const groupDeleteRelation = async (user, groupId, fromId, toId, relationshipType) => {
-  const group = await loadEntityById(groupId, ENTITY_TYPE_GROUP);
+  const group = await loadById(groupId, ENTITY_TYPE_GROUP);
   if (!group) {
     throw FunctionalError('Cannot delete the relation, Group cannot be found.');
   }
@@ -82,10 +82,10 @@ export const groupDeleteRelation = async (user, groupId, fromId, toId, relations
 
 export const groupCleanContext = async (user, groupId) => {
   await delEditContext(user, groupId);
-  return loadEntityById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return loadById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };
 
 export const groupEditContext = async (user, groupId, input) => {
   await setEditContext(user, groupId, input);
-  return loadEntityById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return loadById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };

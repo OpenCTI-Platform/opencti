@@ -9,6 +9,7 @@ import {
   FunctionalError,
   MissingReferenceError,
   TYPE_DUPLICATE_ENTRY,
+  TYPE_LOCK_ERROR,
 } from '../config/errors';
 import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries, inferIndexFromConceptType, utcDate } from './utils';
@@ -19,8 +20,7 @@ import {
   elDeleteInstanceIds,
   elHistogramCount,
   elIndexElements,
-  elLoadById,
-  elLoadByStixId,
+  elLoadByIds,
   elPaginate,
   elRemoveRelationConnection,
   elUpdate,
@@ -410,7 +410,7 @@ const loadConcept = async (tx, concept, args = {}) => {
   if (!concept._inferred && useCache(args)) {
     // Sometimes we already know the internal id because we specify it in the query.
     const conceptInternalId = internalId || (await resolveInternalIdOfConcept(tx, concept.id, internalIdAttribute));
-    const conceptFromCache = await elLoadById(conceptInternalId, null, [index]);
+    const conceptFromCache = await elLoadByIds(conceptInternalId, null, [index]);
     if (!conceptFromCache) {
       /* istanbul ignore next */
       logger.info(`[ELASTIC] ${conceptInternalId} not indexed yet, loading with Grakn`);
@@ -947,52 +947,32 @@ export const load = async (query, entities, options) => {
   }
   return R.head(data);
 };
-const internalLoadEntityByStixId = async (id, args = {}) => {
-  const { type } = args;
-  if (useCache(args)) return elLoadByStixId(id, type);
-  const stixId = `${escapeString(id)}`;
-  const query = `match $x isa ${type || 'thing'}; $x has internal_id $x_id;
-  { $x has standard_id "${stixId}";} or { $x has stix_ids "${stixId}";}; get;`;
+
+const loadElementById = async (ids, type, args = {}) => {
+  const qType = type || 'thing';
+  const workingIds = Array.isArray(ids) ? ids : [ids];
+  const searchIds = R.map((id) => {
+    const eid = escapeString(id);
+    return `{ $x has internal_id "${eid}";} or { $x has standard_id "${eid}";} or { $x has stix_ids "${eid}";}`;
+  }, workingIds);
+  const attrIds = searchIds.join(' or ');
+  const query = `match $x isa ${qType}; ${attrIds}; get;`;
   const element = await load(query, ['x'], args);
   return element ? element.x : null;
 };
-export const internalLoadEntityById = async (id, args = {}) => {
+
+export const internalLoadById = async (id, args = {}) => {
   const { type } = args;
-  if (isStixId(id)) return internalLoadEntityByStixId(id, args);
-  if (useCache(args)) return elLoadById(id, type);
-  const query = `match $x isa ${type || 'thing'}; $x has internal_id "${escapeString(id)}"; get;`;
-  const element = await load(query, ['x'], args);
-  return element ? element.x : null;
+  if (useCache(args)) return elLoadByIds(id, type);
+  return loadElementById(id, type, args);
 };
-export const loadEntityById = async (id, type, args = {}) => {
-  if (R.isNil(type)) throw FunctionalError(`You need to specify a type when loading an entity (id)`);
-  return internalLoadEntityById(id, R.assoc('type', type, args));
-};
-const loadRelationByStixId = async (id, type, args = {}) => {
-  if (R.isNil(type)) throw FunctionalError(`You need to specify a type when loading a relation (stix)`);
-  if (useCache(args)) return elLoadByStixId(id, type);
-  const eid = escapeString(id);
-  const query = `match $rel isa ${type}; { $rel has internal_id "${eid}"; } 
-  or { $rel has standard_id "${eid}"; }
-  or { $rel has stix_ids "${eid}";};
-  get;`;
-  const element = await load(query, ['rel'], args);
-  return element ? element.rel : null;
-};
-export const loadRelationById = async (id, type, args = {}) => {
-  if (R.isNil(type)) throw FunctionalError(`You need to specify a type when loading a relation (id)`);
-  if (isStixId(id)) return loadRelationByStixId(id, type, args);
-  if (useCache(args)) return elLoadById(id, type);
-  const eid = escapeString(id);
-  const query = `match $rel isa ${type}, has internal_id "${eid}"; get;`;
-  const element = await load(query, ['rel'], args);
-  return element ? element.rel : null;
-};
+
 export const loadById = async (id, type, args = {}) => {
-  if (useCache(args)) return elLoadById(id);
-  if (isBasicObject(type)) return loadEntityById(id, type, args);
-  if (isBasicRelationship(type)) return loadRelationById(id, type, args);
-  throw FunctionalError(`Type ${type} is unknown.`);
+  if (R.isNil(type) || R.isEmpty(type)) {
+    throw FunctionalError(`You need to specify a type when loading a element`);
+  }
+  const loadArgs = R.assoc('type', type, args);
+  return internalLoadById(id, loadArgs);
 };
 // endregion
 
@@ -1297,9 +1277,9 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   // const { noLog = false } = options;
   let instance;
   if (isBasicRelationship(type)) {
-    instance = await loadRelationById(id, type, options);
+    instance = await loadById(id, type, options);
   } else {
-    instance = await loadEntityById(id, type, options);
+    instance = await loadById(id, type, options);
   }
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
@@ -1360,7 +1340,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         entity_type: instance.entity_type,
       };
       if (instance.base_type === BASE_TYPE_RELATION) {
-        const from = await internalLoadEntityById(instance.fromId);
+        const from = await internalLoadById(instance.fromId);
       }
       // eslint-disable-next-line camelcase
       const { stix_ids, entity_type } = instance;
@@ -1419,8 +1399,8 @@ const createRelationRaw = async (user, input, opts = {}) => {
   // Check dependencies
   const fromRole = `${relationshipType}_from`;
   const toRole = `${relationshipType}_to`;
-  const fromPromise = internalLoadEntityById(fromId);
-  const toPromise = internalLoadEntityById(toId);
+  const fromPromise = internalLoadById(fromId);
+  const toPromise = internalLoadById(toId);
   const [from, to] = await Promise.all([fromPromise, toPromise]);
   if (!from || !to) {
     throw MissingReferenceError({ input, from, to });
@@ -1563,7 +1543,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     });
   } catch (err) {
     // Lock cant be acquired after 5 sec, assume relation already exists.
-    if (err.name === 'LockError') {
+    if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Operation still in progress (redis lock)', { id: internalId });
     }
     throw err;
@@ -1728,7 +1708,7 @@ export const createRelation = async (user, input, opts = {}) => {
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
-      const existingRelationship = loadRelationById(err.data.id, input.relationship_type);
+      const existingRelationship = loadById(err.data.id, input.relationship_type);
       return upsertRelation(user, existingRelationship, input.relationship_type, input);
     }
     throw err;
@@ -1772,7 +1752,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
   if (input.createdBy) idsToResolve.push({ id: input.createdBy });
   R.forEach((marking) => idsToResolve.push({ id: marking }), input.markingDefinitions || []);
   R.forEach((object) => idsToResolve.push({ id: object }), input.objects || []);
-  const elemPromise = (ref) => internalLoadEntityById(ref.id).then((e) => ({ ref, available: e !== null }));
+  const elemPromise = (ref) => internalLoadById(ref.id).then((e) => ({ ref, available: e !== null }));
   const checkIds = await Promise.all(R.map(elemPromise, idsToResolve));
   const notResolvedElements = R.filter((c) => !c.available, checkIds);
   if (notResolvedElements.length > 0) {
@@ -1781,9 +1761,9 @@ export const createEntity = async (user, input, type, opts = {}) => {
   // Generate the internal id
   const internalId = input.internal_id || generateInternalId();
   const standardId = await generateStandardId(type, input);
-
   // Check if the entity exists
-  const existingEntity = await internalLoadEntityById(standardId);
+  const participantIds = R.isNil(input.stix_id) ? [standardId] : [input.stix_id, standardId];
+  const existingEntity = await internalLoadById(participantIds);
   if (existingEntity) {
     return upsertEntity(user, existingEntity, type, input);
   }
@@ -1869,7 +1849,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
   let lock;
   try {
     // Try to get the lock in redis
-    lock = await lockResource(internalId);
+    lock = await lockResource(participantIds);
     // Create the input
     await executeWrite(async (wTx) => {
       logger.debug(`[GRAKN - infer: false] createEntity`, { query });
@@ -1878,11 +1858,11 @@ export const createEntity = async (user, input, type, opts = {}) => {
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
-      const existingEntityRefreshed = await loadEntityById(err.data.id, type);
+      const existingEntityRefreshed = await loadById(err.data.id, type);
       return upsertEntity(user, existingEntityRefreshed, type, input);
     }
     // Lock cant be acquired after 5 sec, throw
-    if (err.name === 'LockError') {
+    if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Operation still in progress (redis lock)', { id: internalId });
     }
     throw err;
@@ -1966,7 +1946,7 @@ export const deleteEntityById = async (user, entityId, type, options = {}) => {
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   // Check consistency
-  const entity = await loadEntityById(entityId, type, options);
+  const entity = await loadById(entityId, type, options);
   if (entity === null) {
     throw DatabaseError(`Cant find entity to delete ${entityId}`);
   }
@@ -1984,13 +1964,13 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
     /* istanbul ignore next */
     throw FunctionalError(`You need to specify a type when deleting a relation`);
   }
-  const relation = await loadRelationById(relationId, type, options);
+  const relation = await loadById(relationId, type, options);
   if (relation === null) throw DatabaseError(`Cant find relation to delete ${relationId}`);
   await deleteElementById(relationId, relation.entity_type, true, options);
   // Send the log if everything fine
   if (!noLog) {
-    const from = await elLoadById(relation.fromId);
-    const to = await elLoadById(relation.toId);
+    const from = await elLoadByIds(relation.fromId);
+    const to = await elLoadByIds(relation.toId);
     if (isStixMetaRelationship(relation.entity_type)) {
       if (relation.entity_type === RELATION_CREATED_BY) {
         await sendLog(EVENT_TYPE_UPDATE, user, relation, { from, to });
@@ -2008,8 +1988,8 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   if (R.isNil(scopeType)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
   }
-  const fromThing = await internalLoadEntityById(fromId);
-  const toThing = await internalLoadEntityById(toId);
+  const fromThing = await internalLoadById(fromId);
+  const toThing = await internalLoadById(toId);
   const read = `match $from has internal_id "${fromThing.internal_id}"; 
     $to has internal_id "${toThing.internal_id}"; 
     $rel($from, $to) isa ${relationshipType}; get;`;
@@ -2041,7 +2021,7 @@ export const getRelationInferredById = async (id) => {
     const decodedQuery = Buffer.from(id, 'base64').toString('ascii');
     const query = `match ${decodedQuery} get;`;
     logger.debug(`[GRAKN - infer: true] getRelationInferredById`, { query });
-    const answerIterator = await rTx.query(query, { infer: true });
+    const answerIterator = await rTx.query(query, { infer: true, explain: true });
     const answerConceptMap = await answerIterator.next();
     const vars = extractQueryVars(query);
     const concepts = await getConcepts(rTx, [answerConceptMap], vars, [INFERRED_RELATION_KEY], { noCache: true });

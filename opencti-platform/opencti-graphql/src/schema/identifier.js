@@ -4,7 +4,7 @@ import * as R from 'ramda';
 import jsonCanonicalize from 'canonicalize';
 import { DatabaseError } from '../config/errors';
 // eslint-disable-next-line import/no-cycle
-import { internalLoadEntityById } from '../database/grakn';
+import { internalLoadById } from '../database/grakn';
 import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
 import * as D from './stixDomainObject';
@@ -110,15 +110,15 @@ const entityContribution = {
   },
   resolvers: {
     async from(id) {
-      const fromEntity = await internalLoadEntityById(id);
+      const fromEntity = await internalLoadById(id);
       return fromEntity && fromEntity.standard_id;
     },
     async src(id) {
-      const srcEntity = await internalLoadEntityById(id);
+      const srcEntity = await internalLoadById(id);
       return srcEntity && srcEntity.standard_id;
     },
     async dst(id) {
-      const dstEntity = await internalLoadEntityById(id);
+      const dstEntity = await internalLoadById(id);
       return dstEntity && dstEntity.standard_id;
     },
     name(data) {

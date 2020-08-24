@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { elLoadByStixId } from '../../../src/database/elasticSearch';
+import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query countries(
@@ -91,7 +91,7 @@ describe('Country resolver standard behavior', () => {
     expect(queryResult.data.country.id).toEqual(countryInternalId);
   });
   it('should country region be accurate', async () => {
-    const country = await elLoadByStixId('location--5acd8b26-51c2-4608-86ed-e9edd43ad971');
+    const country = await elLoadByIds('location--5acd8b26-51c2-4608-86ed-e9edd43ad971');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: country.internal_id },

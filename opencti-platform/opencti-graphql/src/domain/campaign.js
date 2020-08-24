@@ -1,19 +1,12 @@
 import { assoc, pipe, isNil } from 'ramda';
-import {
-  createEntity,
-  listEntities,
-  loadEntityById,
-  timeSeriesEntities,
-  FROM_START,
-  UNTIL_END,
-} from '../database/grakn';
+import { createEntity, listEntities, loadById, timeSeriesEntities, FROM_START, UNTIL_END } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (campaignId) => {
-  return loadEntityById(campaignId, ENTITY_TYPE_CAMPAIGN);
+  return loadById(campaignId, ENTITY_TYPE_CAMPAIGN);
 };
 
 export const findAll = (args) => {

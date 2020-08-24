@@ -11,8 +11,7 @@ import {
   listRelations,
   listToEntitiesThroughRelation,
   load,
-  loadEntityById,
-  loadRelationById,
+  loadById,
   prepareDate,
   updateAttribute,
 } from '../database/grakn';
@@ -47,7 +46,7 @@ export const findById = (stixSightingRelationshipId) => {
   if (!isStixId(stixSightingRelationshipId) && !isInternalId(stixSightingRelationshipId)) {
     return getRelationInferredById(stixSightingRelationshipId);
   }
-  return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  return loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 
 export const stixSightingRelationshipsNumber = (args) => ({
@@ -135,7 +134,7 @@ export const stixSightingRelationshipEditField = async (user, relationshipId, in
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
 };
 export const stixSightingRelationshipAddRelation = async (user, stixSightingRelationshipId, input) => {
-  const stixSightingRelationship = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  const stixSightingRelationship = await loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
   if (!stixSightingRelationship) {
     throw FunctionalError(`Cannot add the relation, ${ABSTRACT_STIX_META_RELATIONSHIP} cannot be found.`);
   }
@@ -154,7 +153,7 @@ export const stixSightingRelationshipDeleteRelation = async (
   toId,
   relationshipType
 ) => {
-  const stixSightingRelationship = await loadEntityById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  const stixSightingRelationship = await loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
   if (!stixSightingRelationship) {
     throw FunctionalError(`Cannot delete the relation, ${STIX_SIGHTING_RELATIONSHIP} cannot be found.`);
   }
@@ -175,13 +174,13 @@ export const stixSightingRelationshipDeleteRelation = async (
 // region context
 export const stixSightingRelationshipCleanContext = (user, stixSightingRelationshipId) => {
   delEditContext(user, stixSightingRelationshipId);
-  return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
+  return loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
     notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user)
   );
 };
 export const stixSightingRelationshipEditContext = (user, stixSightingRelationshipId, input) => {
   setEditContext(user, stixSightingRelationshipId, input);
-  return loadRelationById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
+  return loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP).then((stixSightingRelationship) =>
     notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user)
   );
 };

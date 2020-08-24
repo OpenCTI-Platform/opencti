@@ -2,7 +2,7 @@ import { v4 as uuid } from 'uuid';
 import { assoc, filter, map, pipe } from 'ramda';
 import moment from 'moment';
 import { now, sinceNowInMinutes } from '../database/grakn';
-import { elDeleteByField, elIndex, elLoadById, elPaginate, INDEX_JOBS } from '../database/elasticSearch';
+import { elDeleteByField, elIndex, elLoadByIds, elPaginate, INDEX_JOBS } from '../database/elasticSearch';
 import { loadConnectorById } from './connector';
 
 // region utils
@@ -22,7 +22,7 @@ export const workToExportFile = (work) => {
 // endregion
 
 export const connectorForWork = async (id) => {
-  const work = await elLoadById(id, null, INDEX_JOBS);
+  const work = await elLoadByIds(id, null, INDEX_JOBS);
   if (work) return loadConnectorById(work.connector_id);
   return null;
 };
@@ -140,7 +140,7 @@ export const createWork = async (connector, entityType = null, entityId = null, 
 };
 
 export const updateJob = async (jobId, status, messages) => {
-  const job = await elLoadById(jobId, null, INDEX_JOBS);
+  const job = await elLoadByIds(jobId, null, INDEX_JOBS);
   const updatedJob = pipe(assoc('job_status', status), assoc('messages', messages), assoc('updated_at', now()))(job);
   await elIndex(INDEX_JOBS, updatedJob);
   return updatedJob;

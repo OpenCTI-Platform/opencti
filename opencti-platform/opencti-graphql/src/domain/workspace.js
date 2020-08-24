@@ -10,7 +10,7 @@ import {
   getSingleValueNumber,
   listEntities,
   load,
-  loadEntityById,
+  loadById,
   prepareDate,
   updateAttribute,
 } from '../database/grakn';
@@ -24,7 +24,7 @@ import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 
 // region grakn fetch
 export const findById = (workspaceId) => {
-  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  return loadById(workspaceId, ENTITY_TYPE_WORKSPACE);
 };
 
 export const findAll = (args) => {
@@ -73,7 +73,7 @@ export const workspaceDelete = (user, workspaceId) =>
   deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE, { noLog: true });
 
 export const workspaceAddRelation = async (user, workspaceId, input) => {
-  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  const workspace = await loadById(workspaceId, ENTITY_TYPE_WORKSPACE);
   if (!workspace) {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_WORKSPACE} cannot be found.`);
   }
@@ -88,7 +88,7 @@ export const workspaceAddRelation = async (user, workspaceId, input) => {
 };
 
 export const workspaceAddRelations = async (user, workspaceId, input) => {
-  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  const workspace = await loadById(workspaceId, ENTITY_TYPE_WORKSPACE);
   if (!workspace) {
     throw FunctionalError('Cannot add the relation, Stix-Domain-Object cannot be found.');
   }
@@ -100,13 +100,13 @@ export const workspaceAddRelations = async (user, workspaceId, input) => {
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) =>
+  return loadById(workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) =>
     notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user)
   );
 };
 
 export const workspaceDeleteRelation = async (user, workspaceId, toId, relationshipType) => {
-  const workspace = await loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE);
+  const workspace = await loadById(workspaceId, ENTITY_TYPE_WORKSPACE);
   if (!workspace) {
     throw FunctionalError('Cannot delete the relation, Stix-Domain-Object cannot be found.');
   }
@@ -126,14 +126,14 @@ export const workspaceEditField = async (user, workspaceId, input) => {
 // region context
 export const workspaceCleanContext = (user, workspaceId) => {
   delEditContext(user, workspaceId);
-  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
+  return loadById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
     notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user)
   );
 };
 
 export const workspaceEditContext = (user, workspaceId, input) => {
   setEditContext(user, workspaceId, input);
-  return loadEntityById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
+  return loadById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspace) =>
     notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user)
   );
 };

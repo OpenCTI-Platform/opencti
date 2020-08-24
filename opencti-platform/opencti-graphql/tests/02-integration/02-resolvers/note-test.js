@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
 import { now } from '../../../src/database/grakn';
-import { elLoadByStixId } from '../../../src/database/elasticSearch';
+import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query notes(
@@ -148,7 +148,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note.id).toEqual(noteInternalId);
   });
   it('should note stix objects sor stix relationships accurate', async () => {
-    const note = await elLoadByStixId('note--573f623c-bf68-4f19-9500-d618f0d00af0');
+    const note = await elLoadByIds('note--573f623c-bf68-4f19-9500-d618f0d00af0');
     datasetNoteInternalId = note.internal_id;
     const NOTE_STIX_DOMAIN_ENTITIES = gql`
       query note($id: String!) {
@@ -182,8 +182,8 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note.objects.edges.length).toEqual(4);
   });
   it('should note contains stix object or stix relationship accurate', async () => {
-    const intrusionSet = await elLoadByStixId('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const stixRelationship = await elLoadByStixId('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    const intrusionSet = await elLoadByIds('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const stixRelationship = await elLoadByIds('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
     const NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
       query noteContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
         noteContainsStixObjectOrStixRelationship(
@@ -233,7 +233,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries notes for entity to be accurate', async () => {
-    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     datasetMalwareInternalId = malware.internal_id;
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
@@ -251,7 +251,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries notes for author to be accurate', async () => {
-    const identity = await elLoadByStixId('identity--7b82b010-b1c0-4dae-981f-7756374a17df');
+    const identity = await elLoadByIds('identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {

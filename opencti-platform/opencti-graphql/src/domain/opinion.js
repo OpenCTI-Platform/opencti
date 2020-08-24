@@ -6,7 +6,7 @@ import {
   escapeString,
   getSingleValueNumber,
   listEntities,
-  loadEntityById,
+  loadById,
   prepareDate,
   timeSeriesEntities,
 } from '../database/grakn';
@@ -19,7 +19,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelation
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (opinionId) => {
-  return loadEntityById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);
+  return loadById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
 export const findAll = async (args) => {
   return listEntities([ENTITY_TYPE_CONTAINER_OPINION], ['name', 'description'], args);

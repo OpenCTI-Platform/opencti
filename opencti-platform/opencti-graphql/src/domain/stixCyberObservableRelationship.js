@@ -8,7 +8,7 @@ import {
   createRelation,
   deleteRelationById,
   getRelationInferredById,
-  loadRelationById,
+  loadById,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -24,7 +24,7 @@ export const findById = (stixCyberObservableRelationshipId) => {
   if (stixCyberObservableRelationshipId.length !== 36) {
     return getRelationInferredById(stixCyberObservableRelationshipId);
   }
-  return loadRelationById(stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
+  return loadById(stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
 };
 
 // region mutations

@@ -1,5 +1,5 @@
 import { assoc } from 'ramda';
-import { createEntity, escapeString, listEntities, loadEntityById, load } from '../database/grakn';
+import { createEntity, escapeString, listEntities, loadById, load } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_POSITION } from '../schema/stixDomainObject';
@@ -7,7 +7,7 @@ import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (positionId) => {
-  return loadEntityById(positionId, ENTITY_TYPE_LOCATION_POSITION);
+  return loadById(positionId, ENTITY_TYPE_LOCATION_POSITION);
 };
 
 export const findAll = (args) => {

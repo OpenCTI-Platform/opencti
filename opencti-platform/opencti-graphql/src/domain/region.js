@@ -6,7 +6,7 @@ import {
   listEntities,
   listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
-  loadEntityById,
+  loadById,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -15,7 +15,7 @@ import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (regionId) => {
-  return loadEntityById(regionId, ENTITY_TYPE_LOCATION_REGION);
+  return loadById(regionId, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const findAll = (args) => {

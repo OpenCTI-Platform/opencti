@@ -1,5 +1,5 @@
 import { head } from 'ramda';
-import { internalLoadEntityById } from '../../../src/database/grakn';
+import { internalLoadById } from '../../../src/database/grakn';
 import {
   deleteFile,
   downloadFile,
@@ -12,7 +12,7 @@ import {
 import { listenServer, stopServer } from '../../../src/httpServer';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
-import { elLoadByStixId } from '../../../src/database/elasticSearch';
+import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const streamConverter = (stream) => {
   return new Promise((resolve) => {
@@ -44,7 +44,7 @@ describe('Minio basic and utils', () => {
     const exportType = 'all';
     const connector = { name: 'ExportFileStix' };
     const maxMarking = { definition: 'TLP:RED' };
-    const entity = await internalLoadEntityById('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const entity = await internalLoadById('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
     const expectedName = '_TLP:RED_(ExportFileStix)_Malware-Paradise Ransomware_all.json';
     expect(fileExportName).toEqual(expect.stringContaining(expectedName));
@@ -68,7 +68,7 @@ describe('Minio file listing', () => {
   let importFileId;
   let importOpts;
   it('should resolve the malware', async () => {
-    const malware = await elLoadByStixId('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     malwareId = malware.internal_id;
     exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
     exportFileId = `export/malware/${malwareId}/${exportFileName}`;
