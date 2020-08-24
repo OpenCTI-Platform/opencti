@@ -1,5 +1,6 @@
 .idea
 .env
+.clinic
 build
 dist
 node_modules

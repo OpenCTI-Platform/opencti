@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { elLoadByStixId } from '../../../src/database/elasticSearch';
+import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query organizations(
@@ -96,7 +96,7 @@ describe('Organization resolver standard behavior', () => {
     expect(queryResult.data.organization.id).toEqual(organizationInternalId);
   });
   it('should organization sectors be accurate', async () => {
-    const organization = await elLoadByStixId('identity--c017f212-546b-4f21-999d-97d3dc558f7b');
+    const organization = await elLoadByIds('identity--c017f212-546b-4f21-999d-97d3dc558f7b');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: organization.internal_id },

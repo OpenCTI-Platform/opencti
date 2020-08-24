@@ -6,7 +6,7 @@ import {
   createRelation,
   listEntities,
   listToEntitiesThroughRelation,
-  loadEntityById,
+  loadById,
   now,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -106,7 +106,7 @@ const computeValidUntil = async (indicator) => {
 };
 
 export const findById = (indicatorId) => {
-  return loadEntityById(indicatorId, ENTITY_TYPE_INDICATOR);
+  return loadById(indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
 export const findAll = (args) => {

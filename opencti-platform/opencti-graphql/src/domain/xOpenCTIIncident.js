@@ -1,12 +1,12 @@
 import { assoc, pipe } from 'ramda';
-import { createEntity, listEntities, loadEntityById, now, timeSeriesEntities } from '../database/grakn';
+import { createEntity, listEntities, loadById, now, timeSeriesEntities } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_X_OPENCTI_INCIDENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (incidentId) => {
-  return loadEntityById(incidentId, ENTITY_TYPE_X_OPENCTI_INCIDENT);
+  return loadById(incidentId, ENTITY_TYPE_X_OPENCTI_INCIDENT);
 };
 
 export const findAll = (args) => {

@@ -6,7 +6,7 @@ import {
   escapeString,
   getSingleValueNumber,
   listEntities,
-  loadEntityById,
+  loadById,
   prepareDate,
   timeSeriesEntities,
 } from '../database/grakn';
@@ -25,7 +25,7 @@ export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = (reportId) => {
-  return loadEntityById(reportId, ENTITY_TYPE_CONTAINER_REPORT);
+  return loadById(reportId, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
 export const findAll = async (args) => {

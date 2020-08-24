@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { elLoadByStixId } from '../../../src/database/elasticSearch';
+import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
   query XOpenCTIIncidents(
@@ -135,7 +135,7 @@ describe('XOpenCTIIncident resolver standard behavior', () => {
     expect(queryResult.data.xOpenCTIIncidentsTimeSeries[2].value).toEqual(1);
   });
   it("should timeseries of an entity's XOpenCTIIncidents", async () => {
-    const campaign = await elLoadByStixId('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaign = await elLoadByIds('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {

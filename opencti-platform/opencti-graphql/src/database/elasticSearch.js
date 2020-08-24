@@ -713,10 +713,27 @@ export const elPaginate = async (indexName, options = {}) => {
       }
     );
 };
-const elInternalLoadById = async (id, type = null, elementTypes = ['internal_id'], indices = DATA_INDICES) => {
+
+export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
-  const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
-  const should = { bool: { should: map((term) => ({ term }), idsTermsPerType), minimum_should_match: 1 } };
+  const workingIds = Array.isArray(ids) ? ids : [ids];
+  const idsTermsPerType = [];
+  const elementTypes = ['internal_id', 'standard_id', 'stix_ids'];
+  for (let index = 0; index < workingIds.length; index += 1) {
+    const id = workingIds[index];
+    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+      const elementType = elementTypes[indexType];
+      const term = { [`${elementType}.keyword`]: id };
+      idsTermsPerType.push({ term });
+    }
+  }
+  // const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
+  const should = {
+    bool: {
+      should: idsTermsPerType,
+      minimum_should_match: 1,
+    },
+  };
   mustTerms.push(should);
   if (type) {
     const shouldType = {
@@ -743,7 +760,7 @@ const elInternalLoadById = async (id, type = null, elementTypes = ['internal_id'
   const total = data.body.hits.total.value;
   /* istanbul ignore if */
   if (total > 1) {
-    const errorMeta = { id, elementTypes, hits: data.body.hits.hits };
+    const errorMeta = { ids, elementTypes, hits: data.body.hits.hits };
     throw DatabaseError('Expect only one response', errorMeta);
   }
   const response = total === 1 ? head(data.body.hits.hits) : null;
@@ -765,15 +782,6 @@ const elInternalLoadById = async (id, type = null, elementTypes = ['internal_id'
 };
 // endregion
 
-export const elLoadById = (id, type = null, indices = DATA_INDICES) => {
-  return elInternalLoadById(id, type, ['internal_id'], indices);
-};
-export const elLoadByStandardId = (id, type = null, indices = DATA_INDICES) => {
-  return elInternalLoadById(id, type, ['standard_id'], indices);
-};
-export const elLoadByStixId = (id, type = null, indices = DATA_INDICES) => {
-  return elInternalLoadById(id, type, ['standard_id', 'stix_ids'], indices);
-};
 export const elBulk = async (args) => {
   return el.bulk(args);
 };
@@ -796,6 +804,7 @@ export const elReindex = async (indices) => {
     })
   );
 };
+
 export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
@@ -856,9 +865,9 @@ export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) =
   });
 };
 export const elRemoveRelationConnection = async (relationId) => {
-  const relation = await elLoadById(relationId);
-  const from = await elLoadById(relation.fromId);
-  const to = await elLoadById(relation.toId);
+  const relation = await elLoadByIds(relationId);
+  const from = await elLoadByIds(relation.fromId);
+  const to = await elLoadByIds(relation.toId);
   const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
   // Update the from entity
   await elUpdate(from._index, relation.fromId, {
@@ -903,7 +912,7 @@ const prepareIndexing = async (elements) => {
           );
         }
         const connections = [];
-        const [from, to] = await Promise.all([elLoadById(thing.fromId), elLoadById(thing.toId)]);
+        const [from, to] = await Promise.all([elLoadByIds(thing.fromId), elLoadByIds(thing.toId)]);
         connections.push({
           internal_id: from.internal_id,
           types: [thing.fromType, ...getParentTypes(thing.toType)],
@@ -960,7 +969,7 @@ export const elIndexElements = async (elements, retry = 5) => {
   const elementsToUpdate = await Promise.all(
     // For each from, generate the
     map(async (entityId) => {
-      const entity = await elLoadById(entityId);
+      const entity = await elLoadByIds(entityId);
       const targets = impactedEntities[entityId];
       // Build document fields to update ( per relation type )
       // rel_membership: [{ internal_id: ID, types: [] }]
@@ -970,7 +979,7 @@ export const elIndexElements = async (elements, retry = 5) => {
           const data = targetsByRelation[relType];
           const resolvedData = await Promise.all(
             map(async (d) => {
-              const resolvedTarget = await elLoadById(d.to);
+              const resolvedTarget = await elLoadByIds(d.to);
               return resolvedTarget.internal_id;
             }, data)
           );

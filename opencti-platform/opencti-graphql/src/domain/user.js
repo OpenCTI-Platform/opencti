@@ -30,7 +30,7 @@ import {
   listEntities,
   listToEntitiesThroughRelation,
   load,
-  loadEntityById,
+  loadById,
   now,
   patchAttribute,
   updateAttribute,
@@ -84,7 +84,7 @@ export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 
 export const findById = async (userId) => {
-  const data = await loadEntityById(userId, ENTITY_TYPE_USER);
+  const data = await loadById(userId, ENTITY_TYPE_USER);
   return data ? dissoc('password', data) : data;
 };
 
@@ -170,7 +170,7 @@ export const getRoleCapabilities = async (roleId) => {
 };
 
 export const findRoleById = (roleId) => {
-  return loadEntityById(roleId, ENTITY_TYPE_ROLE);
+  return loadById(roleId, ENTITY_TYPE_ROLE);
 };
 
 export const findRoles = (args) => {
@@ -193,14 +193,14 @@ export const roleDelete = async (user, roleId) => {
 
 export const roleCleanContext = async (user, roleId) => {
   await delEditContext(user, roleId);
-  return loadEntityById(roleId, ENTITY_TYPE_ROLE).then((role) =>
+  return loadById(roleId, ENTITY_TYPE_ROLE).then((role) =>
     notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user)
   );
 };
 
 export const roleEditContext = async (user, roleId, input) => {
   await setEditContext(user, roleId, input);
-  return loadEntityById(roleId, ENTITY_TYPE_ROLE).then((role) =>
+  return loadById(roleId, ENTITY_TYPE_ROLE).then((role) =>
     notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user)
   );
 };
@@ -255,7 +255,7 @@ export const roleEditField = async (user, roleId, input) => {
 };
 
 export const roleAddRelation = async (user, roleId, input) => {
-  const role = await loadEntityById(roleId, ENTITY_TYPE_ROLE);
+  const role = await loadById(roleId, ENTITY_TYPE_ROLE);
   if (!role) {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_ROLE} cannot be found.`);
   }
@@ -270,7 +270,7 @@ export const roleAddRelation = async (user, roleId, input) => {
 };
 
 export const roleDeleteRelation = async (user, roleId, toId, relationshipType) => {
-  const role = await loadEntityById(roleId, ENTITY_TYPE_ROLE);
+  const role = await loadById(roleId, ENTITY_TYPE_ROLE);
   if (!role) {
     throw FunctionalError('Cannot delete the relation, Role cannot be found.');
   }
@@ -307,7 +307,7 @@ export const userDelete = async (user, userId) => {
 };
 
 export const userAddRelation = async (user, userId, input) => {
-  const userData = await loadEntityById(userId, ENTITY_TYPE_USER);
+  const userData = await loadById(userId, ENTITY_TYPE_USER);
   if (!userData) {
     throw FunctionalError(`Cannot add the relation, ${ENTITY_TYPE_USER} cannot be found.`);
   }
@@ -322,7 +322,7 @@ export const userAddRelation = async (user, userId, input) => {
 };
 
 export const userDeleteRelation = async (user, userId, toId, relationshipType) => {
-  const userData = await loadEntityById(userId, ENTITY_TYPE_USER);
+  const userData = await loadById(userId, ENTITY_TYPE_USER);
   if (!userData) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
@@ -400,7 +400,7 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
     relationship_type: RELATION_AUTHORIZED_BY,
   };
   await createRelation(user, input, { noLog: true });
-  return loadEntityById(userId, ENTITY_TYPE_USER);
+  return loadById(userId, ENTITY_TYPE_USER);
 };
 
 export const findByTokenUUID = async (tokenValue) => {
@@ -475,14 +475,14 @@ export const initAdmin = async (email, password, tokenValue) => {
 // region context
 export const userCleanContext = async (user, userId) => {
   await delEditContext(user, userId);
-  return loadEntityById(userId, ENTITY_TYPE_USER).then((userToReturn) =>
+  return loadById(userId, ENTITY_TYPE_USER).then((userToReturn) =>
     notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user)
   );
 };
 
 export const userEditContext = async (user, userId, input) => {
   await setEditContext(user, userId, input);
-  return loadEntityById(userId, ENTITY_TYPE_USER).then((userToReturn) =>
+  return loadById(userId, ENTITY_TYPE_USER).then((userToReturn) =>
     notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToReturn, user)
   );
 };

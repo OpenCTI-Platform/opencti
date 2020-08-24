@@ -1,5 +1,5 @@
 import { assoc, dissocPath, pipe } from 'ramda';
-import { createEntity, getGraknVersion, listEntities, load, loadEntityById, updateAttribute } from "../database/grakn";
+import { createEntity, getGraknVersion, loadById, updateAttribute, listEntities } from '../database/grakn';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
@@ -45,14 +45,14 @@ export const addSettings = async (user, settings) => {
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadEntityById(settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
+  return loadById(settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadEntityById(settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
+  return loadById(settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };

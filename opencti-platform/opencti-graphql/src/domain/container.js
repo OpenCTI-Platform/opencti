@@ -3,7 +3,7 @@ import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { findAll as findAllStixCoreObjects } from './stixCoreObject';
 import { findAll as findAllStixCoreRelationships } from './stixCoreRelationship';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { listEntities, loadEntityById } from '../database/grakn';
+import { listEntities, loadById } from '../database/grakn';
 import { ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -15,7 +15,7 @@ export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
 export const findById = async (identityId) => {
-  return loadEntityById(identityId, ENTITY_TYPE_CONTAINER);
+  return loadById(identityId, ENTITY_TYPE_CONTAINER);
 };
 
 export const findAll = async (args) => {

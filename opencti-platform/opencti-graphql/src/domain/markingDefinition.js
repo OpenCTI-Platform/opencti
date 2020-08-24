@@ -1,11 +1,11 @@
 import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteEntityById, listEntities, loadEntityById, updateAttribute } from '../database/grakn';
+import { createEntity, deleteEntityById, listEntities, loadById, updateAttribute } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const findById = (markingDefinitionId) => {
-  return loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+  return loadById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const findAll = (args) => {
@@ -35,14 +35,14 @@ export const markingDefinitionEditField = async (user, markingDefinitionId, inpu
 
 export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {
   await delEditContext(user, markingDefinitionId);
-  return loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
+  return loadById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
     notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };
 
 export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
   await setEditContext(user, markingDefinitionId, input);
-  return loadEntityById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
+  return loadById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
     notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };

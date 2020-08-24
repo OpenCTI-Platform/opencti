@@ -1,11 +1,11 @@
-import { createEntity, listEntities, loadEntityById } from '../database/grakn';
+import { createEntity, listEntities, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (threatActorId) => {
-  return loadEntityById(threatActorId, ENTITY_TYPE_THREAT_ACTOR);
+  return loadById(threatActorId, ENTITY_TYPE_THREAT_ACTOR);
 };
 
 export const findAll = (args) => {

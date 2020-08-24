@@ -6,7 +6,7 @@ import {
   deleteEntityById,
   deleteRelationById,
   listEntities,
-  loadEntityById,
+  loadById,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -14,7 +14,7 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixMetaRelationship';
 
 export const findById = (killChainPhaseId) => {
-  return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const findAll = (args) => {
@@ -47,7 +47,7 @@ export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
 
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
   await deleteRelationById(user, relationId, RELATION_KILL_CHAIN_PHASE);
-  const data = await loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  const data = await loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, data, user);
 };
 
@@ -58,14 +58,14 @@ export const killChainPhaseEditField = async (user, killChainPhaseId, input) => 
 
 export const killChainPhaseCleanContext = async (user, killChainPhaseId) => {
   await delEditContext(user, killChainPhaseId);
-  return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
+  return loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
     notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user)
   );
 };
 
 export const killChainPhaseEditContext = async (user, killChainPhaseId, input) => {
   await setEditContext(user, killChainPhaseId, input);
-  return loadEntityById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
+  return loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
     notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user)
   );
 };

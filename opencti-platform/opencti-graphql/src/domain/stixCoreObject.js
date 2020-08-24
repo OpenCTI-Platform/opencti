@@ -3,12 +3,12 @@ import {
   createRelation,
   deleteRelationsByFromAndTo,
   escapeString,
-  internalLoadEntityById,
+  internalLoadById,
   listEntities,
   listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
   load,
-  loadEntityById,
+  loadById,
 } from '../database/grakn';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { notify } from '../database/redis';
@@ -54,7 +54,7 @@ export const findAll = async (args) => {
   return listEntities(types, ['standard_id'], args);
 };
 
-export const findById = async (stixCoreObjectId) => loadEntityById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
 export const createdBy = async (stixCoreObjectId) => {
   const element = await load(
@@ -110,7 +110,7 @@ export const stixCoreRelationships = (stixCoreObjectId, args) => {
 };
 
 export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) => {
-  const data = await internalLoadEntityById(stixCoreObjectId);
+  const data = await internalLoadById(stixCoreObjectId);
   if (!isStixCoreObject(data.type) || !isStixRelationship(input.relationship_type)) {
     throw ForbiddenAccess();
   }
@@ -119,7 +119,7 @@ export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) =
 };
 
 export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId, relationshipType) => {
-  const stixCoreObject = await loadEntityById(stixCoreObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  const stixCoreObject = await loadById(stixCoreObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the relation, Stix-Core-Object cannot be found.');
   }

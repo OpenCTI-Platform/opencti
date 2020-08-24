@@ -3,7 +3,7 @@ import {
   createEntity,
   deleteEntityById,
   find,
-  loadEntityById,
+  loadById,
   now,
   patchAttribute,
   sinceNowInMinutes,
@@ -25,7 +25,7 @@ const completeConnector = (connector) => {
 // endregion
 
 // region grakn fetch
-export const loadConnectorById = (id) => loadEntityById(id, ENTITY_TYPE_CONNECTOR);
+export const loadConnectorById = (id) => loadById(id, ENTITY_TYPE_CONNECTOR);
 export const connectors = () => {
   const query = `match $c isa ${ENTITY_TYPE_CONNECTOR}; get;`;
   return find(query, ['c']).then((elements) => map((conn) => completeConnector(conn.c), elements));
@@ -58,7 +58,7 @@ export const connectorsForImport = async (scope, onlyAlive = false) =>
 // region mutations
 export const pingConnector = async (user, id, state) => {
   const creation = now();
-  const connector = await loadEntityById(id, ENTITY_TYPE_CONNECTOR);
+  const connector = await loadById(id, ENTITY_TYPE_CONNECTOR);
   if (connector.connector_state_reset === true) {
     const statePatch = { connector_state_reset: false };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, statePatch, { noLog: true });
@@ -66,25 +66,25 @@ export const pingConnector = async (user, id, state) => {
     const updatePatch = { updated_at: creation, connector_state: state };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatePatch, { noLog: true });
   }
-  return loadEntityById(id, 'Connector').then((data) => completeConnector(data));
+  return loadById(id, 'Connector').then((data) => completeConnector(data));
 };
 
 export const resetStateConnector = async (user, id) => {
   const patch = { connector_state: '', connector_state_reset: true };
   await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
-  return loadEntityById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+  return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 
 export const registerConnector = async (user, connectorData) => {
   const { id, name, type, scope } = connectorData;
-  const connector = await loadEntityById(id, ENTITY_TYPE_CONNECTOR);
+  const connector = await loadById(id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
     const patch = { name, updated_at: now(), connector_scope: scope.join(',') };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
-    return loadEntityById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+    return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
   const connectorToCreate = { internal_id: id, name, connector_type: type, connector_scope: scope.join(',') };

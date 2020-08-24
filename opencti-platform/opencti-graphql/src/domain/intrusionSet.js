@@ -1,12 +1,12 @@
 import { assoc, pipe, isNil } from 'ramda';
-import { createEntity, listEntities, loadEntityById, FROM_START, UNTIL_END } from '../database/grakn';
+import { createEntity, listEntities, loadById, FROM_START, UNTIL_END } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
 export const findById = (intrusionSetId) => {
-  return loadEntityById(intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
+  return loadById(intrusionSetId, ENTITY_TYPE_INTRUSION_SET);
 };
 
 export const findAll = (args) => {
