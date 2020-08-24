@@ -64,8 +64,8 @@ export const externalReferenceMutationRelationDelete = graphql`
   }
 `;
 
-const sharedUpdater = (store, entityId, newEdge) => {
-  const entity = store.get(entityId);
+const sharedUpdater = (store, stixCoreObjectId, newEdge) => {
+  const entity = store.get(stixCoreObjectId);
   const conn = ConnectionHandler.getConnection(
     entity,
     'Pagination_externalReferences',
@@ -75,12 +75,12 @@ const sharedUpdater = (store, entityId, newEdge) => {
 
 class AddExternalReferencesLinesContainer extends Component {
   toggleExternalReference(externalReference) {
-    const { entityId, entityExternalReferences } = this.props;
-    const entityExternalReferencesIds = map(
+    const { stixCoreObjectId, stixCoreObjectExternalReferences } = this.props;
+    const stixCoreObjectExternalReferencesIds = map(
       (n) => n.node.id,
-      entityExternalReferences,
+      stixCoreObjectExternalReferences,
     );
-    const alreadyAdded = entityExternalReferencesIds.includes(
+    const alreadyAdded = stixCoreObjectExternalReferencesIds.includes(
       externalReference.id,
     );
 
@@ -88,18 +88,18 @@ class AddExternalReferencesLinesContainer extends Component {
       const existingExternalReference = head(
         filter(
           (n) => n.node.id === externalReference.id,
-          entityExternalReferences,
+          stixCoreObjectExternalReferences,
         ),
       );
       commitMutation({
         mutation: externalReferenceMutationRelationDelete,
         variables: {
-          id: entityId,
-          toId: existingExternalReference.id,
+          id: existingExternalReference.node.id,
+          fromId: stixCoreObjectId,
           relationship_type: 'external-reference',
         },
         updater: (store) => {
-          const entity = store.get(entityId);
+          const entity = store.get(stixCoreObjectId);
           const conn = ConnectionHandler.getConnection(
             entity,
             'Pagination_externalReferences',
@@ -109,7 +109,7 @@ class AddExternalReferencesLinesContainer extends Component {
       });
     } else {
       const input = {
-        fromId: entityId,
+        fromId: stixCoreObjectId,
         relationship_type: 'external-reference',
       };
       commitMutation({
@@ -127,23 +127,23 @@ class AddExternalReferencesLinesContainer extends Component {
           const relation = store.get(relationId);
           payload.setLinkedRecord(node, 'node');
           payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, entityId, payload);
+          sharedUpdater(store, stixCoreObjectId, payload);
         },
       });
     }
   }
 
   render() {
-    const { classes, data, entityExternalReferences } = this.props;
-    const entityExternalReferencesIds = map(
+    const { classes, data, stixCoreObjectExternalReferences } = this.props;
+    const stixCoreObjectExternalReferencesIds = map(
       (n) => n.node.id,
-      entityExternalReferences,
+      stixCoreObjectExternalReferences,
     );
     return (
       <List>
         {data.externalReferences.edges.map((externalReferenceNode) => {
           const externalReference = externalReferenceNode.node;
-          const alreadyAdded = entityExternalReferencesIds.includes(
+          const alreadyAdded = stixCoreObjectExternalReferencesIds.includes(
             externalReference.id,
           );
           const externalReferenceId = externalReference.external_id
@@ -188,8 +188,8 @@ class AddExternalReferencesLinesContainer extends Component {
 }
 
 AddExternalReferencesLinesContainer.propTypes = {
-  entityId: PropTypes.string,
-  entityExternalReferences: PropTypes.array,
+  stixCoreObjectId: PropTypes.string,
+  stixCoreObjectExternalReferences: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,

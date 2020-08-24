@@ -32,17 +32,38 @@ export const findAll = async (args) => {
 // Entities tab
 export const objects = async (containerId, args) => {
   const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
-  const finalArgs = assoc('filters', append({ key, values: [containerId] }, propOr([], 'filters', args)), args);
+  const stixCoreObjectArgs = assoc(
+    'filters',
+    append({ key, values: [containerId] }, propOr([], 'filters', args)),
+    args
+  );
+  const relationFilter = {
+    relation: 'object',
+    fromRole: 'object_to',
+    toRole: 'object_from',
+    id: containerId,
+  };
+  const stixCoreRelationshipsArgs = assoc('relationFilter', relationFilter, args);
   if (args.types && args.types.length > 0) {
-    if (isStixCoreObject(args.types[0])) {
-      return findAllStixCoreObjects(finalArgs);
+    let haveStixCoreObjectInTypes = false;
+    let haveStixCoreRelationshipInTypes = false;
+    for (const type of args.types) {
+      if (isStixCoreObject(type)) {
+        haveStixCoreObjectInTypes = true;
+      }
+      if (isStixCoreRelationship(type)) {
+        haveStixCoreRelationshipInTypes = true;
+      }
     }
-    if (isStixCoreRelationship(args.types[0])) {
-      return findAllStixCoreRelationships(finalArgs);
+    if (haveStixCoreObjectInTypes && !haveStixCoreRelationshipInTypes) {
+      return findAllStixCoreObjects(stixCoreObjectArgs);
+    }
+    if (haveStixCoreRelationshipInTypes && !haveStixCoreObjectInTypes) {
+      return findAllStixCoreRelationships(stixCoreRelationshipsArgs);
     }
   }
-  const stixCoreObjects = await findAllStixCoreObjects(finalArgs);
-  const stixCoreRelationships = await findAllStixCoreRelationships(finalArgs);
+  const stixCoreObjects = await findAllStixCoreObjects(stixCoreObjectArgs);
+  const stixCoreRelationships = await findAllStixCoreRelationships(stixCoreRelationshipsArgs);
   return assoc('edges', concat(stixCoreObjects.edges, stixCoreRelationships.edges), stixCoreObjects);
 };
 // endregion

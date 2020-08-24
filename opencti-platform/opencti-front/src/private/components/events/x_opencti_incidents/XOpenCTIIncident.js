@@ -50,7 +50,7 @@ class XOpenCTIIncidentComponent extends Component {
             <EntityLastReports entityId={xOpenCTIIncident.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={xOpenCTIIncident.id} />
+        <StixCoreObjectNotes stixCoreObjectId={xOpenCTIIncident.id} />
         <Grid
           container={true}
           spacing={3}

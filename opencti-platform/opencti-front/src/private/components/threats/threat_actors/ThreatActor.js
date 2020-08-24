@@ -51,7 +51,7 @@ class ThreatActorComponent extends Component {
             <EntityLastReports entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={threatActor.id} />
+        <StixCoreObjectNotes stixCoreObjectId={threatActor.id} />
         <Grid
           container={true}
           spacing={3}

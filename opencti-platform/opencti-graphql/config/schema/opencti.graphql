@@ -916,9 +916,9 @@ interface StixCoreObject {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1009,9 +1009,9 @@ interface StixDomainObject {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1122,9 +1122,9 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1247,9 +1247,9 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1366,9 +1366,9 @@ interface Container {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1463,9 +1463,9 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1591,9 +1591,9 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1716,9 +1716,9 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1845,9 +1845,9 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -1974,9 +1974,9 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2095,9 +2095,9 @@ interface Identity {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2213,9 +2213,9 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2344,9 +2344,9 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2469,9 +2469,9 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2605,9 +2605,9 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2741,9 +2741,9 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2858,9 +2858,9 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -2991,9 +2991,9 @@ interface Location {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3102,9 +3102,9 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3226,9 +3226,9 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3343,9 +3343,9 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3458,9 +3458,9 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3584,9 +3584,9 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3711,9 +3711,9 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3841,9 +3841,9 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -3962,9 +3962,9 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4082,9 +4082,9 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4199,9 +4199,9 @@ interface StixCyberObservable {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4276,9 +4276,9 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4370,9 +4370,9 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4468,9 +4468,9 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4557,9 +4557,9 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4649,9 +4649,9 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4751,9 +4751,9 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4854,9 +4854,9 @@ interface HashedObservable {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -4933,9 +4933,9 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5034,9 +5034,9 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5143,9 +5143,9 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5253,9 +5253,9 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5344,9 +5344,9 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5435,9 +5435,9 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5525,9 +5525,9 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5615,9 +5615,9 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5725,9 +5725,9 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5827,9 +5827,9 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -5927,9 +5927,9 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6017,9 +6017,9 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6135,9 +6135,9 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6229,9 +6229,9 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6323,9 +6323,9 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6443,9 +6443,9 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6533,9 +6533,9 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6623,9 +6623,9 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6713,9 +6713,9 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -6803,9 +6803,9 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7091,9 +7091,9 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   stixCoreRelationships(
     first: Int
     after: ID
@@ -7220,9 +7220,9 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   externalReferences(first: Int): ExternalReferenceConnection
-  reports: ReportConnection
-  notes: NoteConnection
-  opinions: OpinionConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
   # Technical
   creator: User
   toStix: String

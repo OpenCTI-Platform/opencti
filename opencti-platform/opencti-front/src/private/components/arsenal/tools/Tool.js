@@ -50,7 +50,7 @@ class ToolComponent extends Component {
             <EntityLastReports entityId={tool.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={tool.id} />
+        <StixCoreObjectNotes stixCoreObjectId={tool.id} />
         <Grid
           container={true}
           spacing={3}

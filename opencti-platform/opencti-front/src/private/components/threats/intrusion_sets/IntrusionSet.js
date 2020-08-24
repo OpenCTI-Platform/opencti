@@ -51,7 +51,7 @@ class IntrusionSetComponent extends Component {
             <EntityLastReports entityId={intrusionSet.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={intrusionSet.id} />
+        <StixCoreObjectNotes stixCoreObjectId={intrusionSet.id} />
         <Grid
           container={true}
           spacing={3}

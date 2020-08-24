@@ -93,11 +93,11 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
       mutation: externalReferenceMutationRelationDelete,
       variables: {
         id: externalReferenceEdge.node.id,
-        fromId: this.props.entityId,
+        fromId: this.props.stixCoreObjectId,
         relationship_type: 'external-reference',
       },
       updater: (store) => {
-        const entity = store.get(this.props.entityId);
+        const entity = store.get(this.props.stixCoreObjectId);
         const conn = ConnectionHandler.getConnection(
           entity,
           'Pagination_externalReferences',
@@ -113,7 +113,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, entityId, data,
+      t, classes, stixCoreObjectId, data,
     } = this.props;
     return (
       <div style={{ height: '100%' }}>
@@ -122,8 +122,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddExternalReferences
-            entityId={entityId}
-            entityExternalReferences={
+            stixCoreObjectId={stixCoreObjectId}
+            stixCoreObjectExternalReferences={
               data.stixCoreObject.externalReferences.edges
             }
           />
@@ -243,7 +243,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
 }
 
 StixCoreObjectExternalReferencesLinesContainer.propTypes = {
-  id: PropTypes.string,
+  stixCoreObjectId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,

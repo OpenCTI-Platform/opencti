@@ -10,9 +10,8 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import NoteDetails from './NoteDetails';
 import NoteEdition from './NoteEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import EntityExternalReferences from '../external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from './StixCoreObjectNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import NotePopover from './NotePopover';
 
@@ -50,13 +49,12 @@ class NoteComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <EntityExternalReferences entityId={note.id} />
+            <StixCoreObjectExternalReferences stixCoreObjectId={note.id} />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory entityStandardId={note.standard_id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={note.id} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <NoteEdition noteId={note.id} />
         </Security>

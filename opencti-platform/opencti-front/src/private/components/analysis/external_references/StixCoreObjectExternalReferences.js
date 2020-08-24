@@ -41,16 +41,16 @@ const styles = (theme) => ({
 
 class StixCoreObjectExternalReferences extends Component {
   render() {
-    const { t, classes, entityId } = this.props;
+    const { t, classes, stixCoreObjectId } = this.props;
     return (
       <QueryRenderer
         query={stixCoreObjectExternalReferencesLinesQuery}
-        variables={{ id: entityId, count: 200 }}
+        variables={{ id: stixCoreObjectId, count: 200 }}
         render={({ props }) => {
           if (props) {
             return (
               <StixCoreObjectExternalReferencesLines
-                entityId={entityId}
+                stixCoreObjectId={stixCoreObjectId}
                 data={props}
               />
             );
@@ -100,7 +100,7 @@ class StixCoreObjectExternalReferences extends Component {
 }
 
 StixCoreObjectExternalReferences.propTypes = {
-  entityId: PropTypes.string,
+  stixCoreObjectId: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

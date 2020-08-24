@@ -84,6 +84,12 @@ const i18n = {
         'Souhaitez-vous supprimer cet attribut ?',
       'Do you want to remove this external reference?':
         'Souhaitez-vous supprimer cette référence externe ?',
+      'Do you want to remove this note?':
+        'Souhaitez-vous supprimer cette note ?',
+      'Do you want to remove this report?':
+        'Souhaitez-vous supprimer ce rapport ?',
+      'Do you want to remove this opinion?':
+        'Souhaitez-vous supprimer cette opinion ?',
       'Do you want to remove the observable from this indicator?':
         'Souhaitez-vous supprimer cet observable de cet indicateur ?',
       'Do you want to delete this role?': 'Souhaitez-vous supprimer ce rôle ?',

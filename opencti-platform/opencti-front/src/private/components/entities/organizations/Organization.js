@@ -84,7 +84,7 @@ class OrganizationComponent extends Component {
               <EntityLastReports authorId={organization.id} />
             </Grid>
           </Grid>
-          <StixCoreObjectNotes entityId={organization.id} />
+          <StixCoreObjectNotes stixCoreObjectId={organization.id} />
           <Grid
             container={true}
             spacing={3}
@@ -124,7 +124,7 @@ class OrganizationComponent extends Component {
             <EntityLastReports entityId={organization.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={organization.id} />
+        <StixCoreObjectNotes stixCoreObjectId={organization.id} />
         <Grid
           container={true}
           spacing={3}

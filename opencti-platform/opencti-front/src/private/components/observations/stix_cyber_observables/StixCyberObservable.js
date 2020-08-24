@@ -13,7 +13,7 @@ import StixCyberObservableEdition from './StixCyberObservableEdition';
 import EntityLastReports from '../../analysis/reports/EntityLastReports';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import EntityExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
 const styles = () => ({
@@ -62,7 +62,7 @@ class StixCyberObservableComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={5}>
-            <EntityExternalReferences entityId={stixCyberObservable.id} />
+            <StixCoreObjectExternalReferences stixCoreObjectId={stixCyberObservable.id} />
           </Grid>
         </Grid>
         <StixCoreObjectNotes

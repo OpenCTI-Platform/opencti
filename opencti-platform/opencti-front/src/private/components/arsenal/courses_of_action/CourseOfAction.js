@@ -10,7 +10,7 @@ import CourseOfActionOverview from './CourseOfActionOverview';
 import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
-import EntityExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import EntityStixCoreRelationshipsPie from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
 import EntityReportsChart from '../../analysis/reports/EntityReportsChart';
 import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
@@ -48,10 +48,10 @@ class CourseOfActionComponent extends Component {
             <CourseOfActionDetails courseOfAction={courseOfAction} />
           </Grid>
           <Grid item={true} xs={4}>
-            <EntityExternalReferences entityId={courseOfAction.id} />
+            <StixCoreObjectExternalReferences stixCoreObjectId={courseOfAction.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={courseOfAction.id} />
+        <StixCoreObjectNotes stixCoreObjectId={courseOfAction.id} />
         <Grid
           container={true}
           spacing={3}

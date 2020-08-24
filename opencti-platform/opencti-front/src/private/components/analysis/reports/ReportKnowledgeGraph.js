@@ -38,7 +38,7 @@ import distributeElements from '../../../../utils/DagreHelper';
 import { serializeGraph } from '../../../../utils/GraphHelper';
 import { dateFormat } from '../../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
-import ReportAddObjects from '../../common/containers/ContainerAddStixCoreObjects';
+import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import StixCoreRelationshipEdition, {
@@ -896,14 +896,14 @@ class ReportKnowledgeGraphComponent extends Component {
           maxNumberPointsPerLink={0}
           actionStoppedFiring={this.handleMovesChange.bind(this)}
         />
-        <ReportAddObjects
-          reportId={report.id}
-          reportObjects={report.objects.edges}
+        <ContainerAddStixCoreObjects
+          containerId={report.id}
+          containerStixCoreObjects={report.objects.edges}
           knowledgeGraph={true}
           defaultCreatedBy={propOr(null, 'createdBy', report)}
           defaultMarkingDefinition={
-            pathOr([], ['markingDefinitions', 'edges'], report).length > 0
-              ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node
+            pathOr([], ['objectMarking', 'edges'], report).length > 0
+              ? pathOr([], ['objectMarking', 'edges'], report)[0].node
               : null
           }
         />
@@ -918,8 +918,8 @@ class ReportKnowledgeGraphComponent extends Component {
           handleResult={this.handleResultRelationCreation.bind(this)}
           defaultCreatedBy={propOr(null, 'createdBy', report)}
           defaultMarkingDefinition={
-            pathOr([], ['markingDefinitions', 'edges'], report).length > 0
-              ? pathOr([], ['markingDefinitions', 'edges'], report)[0].node
+            pathOr([], ['objectMarking', 'edges'], report).length > 0
+              ? pathOr([], ['objectMarking', 'edges'], report)[0].node
               : null
           }
         />

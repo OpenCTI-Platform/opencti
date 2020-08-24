@@ -167,7 +167,6 @@ class Notes extends Component {
 
   render() {
     const {
-      displayCreate,
       match: {
         params: { noteType },
       },

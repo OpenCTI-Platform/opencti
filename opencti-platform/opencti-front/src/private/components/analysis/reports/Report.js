@@ -10,7 +10,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportDetails from './ReportDetails';
 import ReportEdition from './ReportEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import EntityExternalReferences from '../external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../notes/StixCoreObjectNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -50,13 +50,13 @@ class ReportComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <EntityExternalReferences entityId={report.id} />
+            <StixCoreObjectExternalReferences stixCoreObjectId={report.id} />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory entityStandardId={report.standard_id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={report.id} />
+        <StixCoreObjectNotes stixCoreObjectId={report.id} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportEdition reportId={report.id} />
         </Security>

@@ -56,7 +56,7 @@ class SectorComponent extends Component {
             <EntityLastReports entityId={sector.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={sector.id} />
+        <StixCoreObjectNotes stixCoreObjectId={sector.id} />
         <Grid
           container={true}
           spacing={3}

@@ -10,26 +10,17 @@ import { QueryRenderer } from '../../../../relay/environment';
 class StixCoreObjectNotes extends Component {
   render() {
     const {
-      t, entityId, inputType, marginTop,
+      t, stixCoreObjectId, inputType, marginTop,
     } = this.props;
-    let filter = 'objectContains';
-    if (inputType === 'observableRefs') {
-      filter = 'observablesContains';
-    }
     return (
       <QueryRenderer
         query={stixCoreObjectNotesCardsQuery}
-        variables={{
-          filters: [{ key: filter, values: [entityId] }],
-          first: 200,
-          orderBy: 'created',
-          orderMode: 'desc',
-        }}
+        variables={{ id: stixCoreObjectId, count: 200 }}
         render={({ props }) => {
           if (props) {
             return (
               <StixCoreObjectNotesCards
-                entityId={entityId}
+                stixCoreObjectId={stixCoreObjectId}
                 inputType={inputType}
                 data={props}
                 marginTop={marginTop}
@@ -55,7 +46,7 @@ class StixCoreObjectNotes extends Component {
 
 StixCoreObjectNotes.propTypes = {
   t: PropTypes.func,
-  entityId: PropTypes.string,
+  stixCoreObjectId: PropTypes.string,
   inputType: PropTypes.string,
   marginTop: PropTypes.number,
 };

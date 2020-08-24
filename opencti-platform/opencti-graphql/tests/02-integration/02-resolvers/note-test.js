@@ -147,7 +147,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note).not.toBeNull();
     expect(queryResult.data.note.id).toEqual(noteInternalId);
   });
-  it('should note stix objects sor stix relationships accurate', async () => {
+  it('should note stix objects or stix relationships accurate', async () => {
     const note = await elLoadByIds('note--573f623c-bf68-4f19-9500-d618f0d00af0');
     datasetNoteInternalId = note.internal_id;
     const NOTE_STIX_DOMAIN_ENTITIES = gql`

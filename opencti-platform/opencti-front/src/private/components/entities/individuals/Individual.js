@@ -86,7 +86,7 @@ class IndividualComponent extends Component {
               <EntityLastReports authorId={individual.id} />
             </Grid>
           </Grid>
-          <StixCoreObjectNotes entityId={individual.id} />
+          <StixCoreObjectNotes stixCoreObjectId={individual.id} />
           <Grid
             container={true}
             spacing={3}
@@ -127,7 +127,7 @@ class IndividualComponent extends Component {
             <EntityLastReports entityId={individual.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={individual.id} />
+        <StixCoreObjectNotes stixCoreObjectId={individual.id} />
         <Grid
           container={true}
           spacing={3}

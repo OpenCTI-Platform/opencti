@@ -35,12 +35,8 @@ const noteLinesMutationRelationAdd = graphql`
     noteEdit(id: $id) {
       relationAdd(input: $input) {
         id
-        to {
-          ... on Note {
-            id
-            attribute_abstract
-            content
-          }
+        from {
+          ...StixCoreObjectNoteCard_node
         }
       }
     }
@@ -72,7 +68,6 @@ class AddNotesLinesContainer extends Component {
     const { entityId, entityNotes } = this.props;
     const entityNotesIds = map((n) => n.node.id, entityNotes);
     const alreadyAdded = entityNotesIds.includes(note.id);
-
     if (alreadyAdded) {
       const existingNote = head(
         filter((n) => n.node.id === note.id, entityNotes),
@@ -80,7 +75,7 @@ class AddNotesLinesContainer extends Component {
       commitMutation({
         mutation: noteMutationRelationDelete,
         variables: {
-          id: existingNote.id,
+          id: existingNote.node.id,
           toId: entityId,
           relationship_type: 'object',
         },
@@ -109,7 +104,7 @@ class AddNotesLinesContainer extends Component {
             .getRootField('noteEdit')
             .getLinkedRecord('relationAdd', { input });
           const relationId = payload.getValue('id');
-          const node = payload.getLinkedRecord('to');
+          const node = payload.getLinkedRecord('from');
           const relation = store.get(relationId);
           payload.setLinkedRecord(node, 'node');
           payload.setLinkedRecord(relation, 'relation');
@@ -208,7 +203,6 @@ const AddNotesLines = createPaginationContainer(
               id
               attribute_abstract
               content
-              
             }
           }
         }

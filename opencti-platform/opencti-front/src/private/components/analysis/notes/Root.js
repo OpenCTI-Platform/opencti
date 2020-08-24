@@ -12,6 +12,7 @@ import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
+import ReportPopover from '../reports/ReportPopover';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -93,7 +94,10 @@ class RootNote extends Component {
                     path="/dashboard/analysis/notes/:noteId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <ContainerHeader container={props.note} />
+                        <ContainerHeader
+                          container={props.note}
+                          PopoverComponent={<ReportPopover />}
+                        />
                         <FileManager
                           {...routeProps}
                           id={noteId}
@@ -109,7 +113,10 @@ class RootNote extends Component {
                     path="/dashboard/analysis/notes/:noteId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <ContainerHeader note={props.note} />
+                        <ContainerHeader
+                          container={props.note}
+                          PopoverComponent={<ReportPopover />}
+                        />
                         <StixCoreObjectHistory
                           {...routeProps}
                           entityStandardId={props.note.standard_id}

@@ -51,7 +51,7 @@ class CampaignComponent extends Component {
             <EntityLastReports entityId={campaign.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={campaign.id} />
+        <StixCoreObjectNotes stixCoreObjectId={campaign.id} />
         <Grid
           container={true}
           spacing={3}

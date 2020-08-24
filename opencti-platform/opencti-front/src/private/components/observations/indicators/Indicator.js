@@ -14,7 +14,7 @@ import EntityLastReports from '../../analysis/reports/EntityLastReports';
 import IndicatorEntities from './IndicatorEntities';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
-import EntityExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 
 const styles = () => ({
   container: {
@@ -58,10 +58,10 @@ class IndicatorComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={5}>
-            <EntityExternalReferences entityId={indicator.id} />
+            <StixCoreObjectExternalReferences stixCoreObjectId={indicator.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={indicator.id} marginTop={25} />
+        <StixCoreObjectNotes stixCoreObjectId={indicator.id} marginTop={25} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorEdition indicatorId={indicator.id} />
         </Security>

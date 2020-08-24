@@ -49,7 +49,7 @@ const styles = (theme) => ({
 class NoteLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, node, dataColumns, onLabelClick,
+      fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -124,7 +124,6 @@ NoteLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
-  t: PropTypes.func,
   onLabelClick: PropTypes.func,
 };
 

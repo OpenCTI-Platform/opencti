@@ -1332,7 +1332,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       }, updatedInputs)
     );
     postOperations.push(elUpdate(index, instance.internal_id, { doc: esData }));
-    const dataToLogSend = R.filter((input) => input.key !== 'graph_data', elements);
+    const dataToLogSend = R.filter((input) => input.key !== 'x_opencti_graph_data', elements);
     if (!noLog && !R.isEmpty(dataToLogSend)) {
       const baseData = {
         standard_id: instance.standard_id,

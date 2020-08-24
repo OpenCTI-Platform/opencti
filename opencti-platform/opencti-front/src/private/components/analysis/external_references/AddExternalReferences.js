@@ -84,7 +84,10 @@ class AddExternalReferences extends Component {
 
   render() {
     const {
-      t, classes, entityId, entityExternalReferences,
+      t,
+      classes,
+      stixCoreObjectId,
+      stixCoreObjectExternalReferences,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -135,8 +138,10 @@ class AddExternalReferences extends Component {
                 if (props) {
                   return (
                     <AddExternalReferencesLines
-                      entityId={entityId}
-                      entityExternalReferences={entityExternalReferences}
+                      stixCoreObjectId={stixCoreObjectId}
+                      stixCoreObjectExternalReferences={
+                        stixCoreObjectExternalReferences
+                      }
                       data={props}
                     />
                   );
@@ -184,8 +189,8 @@ class AddExternalReferences extends Component {
 }
 
 AddExternalReferences.propTypes = {
-  entityId: PropTypes.string,
-  entityExternalReferences: PropTypes.array,
+  stixCoreObjectId: PropTypes.string,
+  stixCoreObjectExternalReferences: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

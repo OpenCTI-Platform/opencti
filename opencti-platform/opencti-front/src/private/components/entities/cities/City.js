@@ -47,7 +47,7 @@ class CityComponent extends Component {
             <EntityLastReports entityId={city.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={city.id} />
+        <StixCoreObjectNotes stixCoreObjectId={city.id} />
         <Grid
           container={true}
           spacing={3}
