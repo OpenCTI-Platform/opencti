@@ -41,7 +41,7 @@ Classes
 - :py:class:`OpenCTIConnectorHelper`:
   Python API for OpenCTI connector
 
-- :py:class:`Tag`:
+- :py:class:`Label`:
   Undocumented.
 
 - :py:class:`MarkingDefinition`:
@@ -53,25 +53,28 @@ Classes
 - :py:class:`KillChainPhase`:
   Undocumented.
 
-- :py:class:`StixEntity`:
+- :py:class:`StixObjectOrStixRelationship`:
   Undocumented.
 
-- :py:class:`StixDomainEntity`:
+- :py:class:`StixDomainObject`:
   Undocumented.
 
-- :py:class:`StixObservable`:
+- :py:class:`StixCyberObservable`:
   Undocumented.
 
-- :py:class:`StixRelation`:
+- :py:class:`StixCoreRelationship`:
   Undocumented.
 
-- :py:class:`StixSighting`:
+- :py:class:`StixSightingRelationship`:
   Undocumented.
 
-- :py:class:`StixObservableRelation`:
+- :py:class:`StixCyberObservableRelation`:
   Undocumented.
 
 - :py:class:`Identity`:
+  Undocumented.
+
+- :py:class:`Location`:
   Undocumented.
 
 - :py:class:`ThreatActor`:
@@ -80,10 +83,13 @@ Classes
 - :py:class:`IntrusionSet`:
   Undocumented.
 
+- :py:class:`Infrastructure`:
+  Main Infrastructure class for OpenCTI
+
 - :py:class:`Campaign`:
   Undocumented.
 
-- :py:class:`Incident`:
+- :py:class:`XOpenCTIIncident`:
   Undocumented.
 
 - :py:class:`Malware`:
@@ -107,20 +113,23 @@ Classes
 - :py:class:`Note`:
   Undocumented.
 
+- :py:class:`ObservedData`:
+  Undocumented.
+
 - :py:class:`Opinion`:
   Undocumented.
 
 - :py:class:`Indicator`:
-  Undocumented.
+  Main Indicator class for OpenCTI
 
 - :py:class:`OpenCTIStix2`:
   Python API for Stix2 in OpenCTI
 
-- :py:class:`ObservableTypes`:
-  These are the possible values for OpenCTI's observable types.
+- :py:class:`OpenCTIStix2Splitter`:
+  Undocumented.
 
-- :py:class:`CustomProperties`:
-  These are the custom properties used by OpenCTI.
+- :py:class:`StixCyberObservableTypes`:
+  An enumeration.
 
 
 .. autoclass:: OpenCTIApiClient
@@ -165,11 +174,11 @@ Classes
    .. inheritance-diagram:: OpenCTIConnectorHelper
       :parts: 1
 
-.. autoclass:: Tag
+.. autoclass:: Label
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: Tag
+   .. inheritance-diagram:: Label
       :parts: 1
 
 .. autoclass:: MarkingDefinition
@@ -193,46 +202,46 @@ Classes
    .. inheritance-diagram:: KillChainPhase
       :parts: 1
 
-.. autoclass:: StixEntity
+.. autoclass:: StixObjectOrStixRelationship
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: StixEntity
+   .. inheritance-diagram:: StixObjectOrStixRelationship
       :parts: 1
 
-.. autoclass:: StixDomainEntity
+.. autoclass:: StixDomainObject
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: StixDomainEntity
+   .. inheritance-diagram:: StixDomainObject
       :parts: 1
 
-.. autoclass:: StixObservable
+.. autoclass:: StixCyberObservable
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: StixObservable
+   .. inheritance-diagram:: StixCyberObservable
       :parts: 1
 
-.. autoclass:: StixRelation
+.. autoclass:: StixCoreRelationship
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: StixRelation
+   .. inheritance-diagram:: StixCoreRelationship
       :parts: 1
 
-.. autoclass:: StixSighting
+.. autoclass:: StixSightingRelationship
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: StixSighting
+   .. inheritance-diagram:: StixSightingRelationship
       :parts: 1
 
-.. autoclass:: StixObservableRelation
+.. autoclass:: StixCyberObservableRelation
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: StixObservableRelation
+   .. inheritance-diagram:: StixCyberObservableRelation
       :parts: 1
 
 .. autoclass:: Identity
@@ -240,6 +249,13 @@ Classes
 
    .. rubric:: Inheritance
    .. inheritance-diagram:: Identity
+      :parts: 1
+
+.. autoclass:: Location
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: Location
       :parts: 1
 
 .. autoclass:: ThreatActor
@@ -256,6 +272,13 @@ Classes
    .. inheritance-diagram:: IntrusionSet
       :parts: 1
 
+.. autoclass:: Infrastructure
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: Infrastructure
+      :parts: 1
+
 .. autoclass:: Campaign
    :members:
 
@@ -263,11 +286,11 @@ Classes
    .. inheritance-diagram:: Campaign
       :parts: 1
 
-.. autoclass:: Incident
+.. autoclass:: XOpenCTIIncident
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: Incident
+   .. inheritance-diagram:: XOpenCTIIncident
       :parts: 1
 
 .. autoclass:: Malware
@@ -319,6 +342,13 @@ Classes
    .. inheritance-diagram:: Note
       :parts: 1
 
+.. autoclass:: ObservedData
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: ObservedData
+      :parts: 1
+
 .. autoclass:: Opinion
    :members:
 
@@ -340,16 +370,16 @@ Classes
    .. inheritance-diagram:: OpenCTIStix2
       :parts: 1
 
-.. autoclass:: ObservableTypes
+.. autoclass:: OpenCTIStix2Splitter
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: ObservableTypes
+   .. inheritance-diagram:: OpenCTIStix2Splitter
       :parts: 1
 
-.. autoclass:: CustomProperties
+.. autoclass:: StixCyberObservableTypes
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: CustomProperties
+   .. inheritance-diagram:: StixCyberObservableTypes
       :parts: 1

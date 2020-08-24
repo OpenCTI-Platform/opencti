@@ -1,8 +1,8 @@
 requests==2.24.0
 PyYAML==5.3.1
-setuptools==49.2.0
+setuptools==49.6.0
 python-dateutil==2.8.1
-datefinder==0.7.0
+datefinder==0.7.1
 stix2==2.0.2
 pytz==2020.1
 pika==1.1.0
