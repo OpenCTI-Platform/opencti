@@ -33,9 +33,9 @@ import {
   SubscriptionFocus,
 } from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
-import ObjectMarkingField from '../form/ObjectMarkingField';
-import CreatedByField from '../form/CreatedByField';
-import ConfidenceField from '../form/ConfidenceField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({

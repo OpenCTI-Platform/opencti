@@ -33,12 +33,12 @@ import StixSightingRelationshipCreationFromRelationStixDomainObjectsLines, {
 import StixSightingRelationshipCreationFromRelationStixCyberObservablesLines, {
   stixSightingRelationshipCreationFromRelationStixCyberObservablesLinesQuery,
 } from './StixSightingRelationshipCreationFromRelationStixCyberObservablesLines';
-import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
+import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
-import CreatedByField from '../form/CreatedByField';
-import ObjectMarkingField from '../form/ObjectMarkingField';
-import ConfidenceField from '../form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({

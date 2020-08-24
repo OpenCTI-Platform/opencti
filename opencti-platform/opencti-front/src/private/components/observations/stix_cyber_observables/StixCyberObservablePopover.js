@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { attackPatternEditionQuery } from './AttackPatternEdition';
-import AttackPatternEditionContainer from './AttackPatternEditionContainer';
+import { stixCyberObservableEditionQuery } from './StixCyberObservableEdition';
+import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -47,15 +47,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const AttackPatternPopoverDeletionMutation = graphql`
-  mutation AttackPatternPopoverDeletionMutation($id: ID!) {
-    attackPatternEdit(id: $id) {
+const StixCyberObservablePopoverDeletionMutation = graphql`
+  mutation StixCyberObservablePopoverDeletionMutation($id: ID!) {
+    stixCyberObservableEdit(id: $id) {
       delete
     }
   }
 `;
 
-class AttackPatternPopover extends Component {
+class StixCyberObservablePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,14 +86,14 @@ class AttackPatternPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: AttackPatternPopoverDeletionMutation,
+      mutation: StixCyberObservablePopoverDeletionMutation,
       variables: {
-        id: this.props.id,
+        id: this.props.stixCyberObservableId,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/techniques/attack_patterns');
+        this.props.history.push('/dashboard/observations/observables');
       },
     });
   }
@@ -108,7 +108,7 @@ class AttackPatternPopover extends Component {
   }
 
   render() {
-    const { classes, t, id } = this.props;
+    const { classes, t, stixCyberObservableId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -141,7 +141,7 @@ class AttackPatternPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this attack pattern?')}
+              {t('Do you want to delete this observable?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -168,13 +168,13 @@ class AttackPatternPopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={attackPatternEditionQuery}
-            variables={{ id }}
+            query={stixCyberObservableEditionQuery}
+            variables={{ id: stixCyberObservableId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <AttackPatternEditionContainer
-                    attackPattern={props.attackPattern}
+                  <StixCyberObservableEditionContainer
+                    stixCyberObservable={props.stixCyberObservable}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -188,8 +188,8 @@ class AttackPatternPopover extends Component {
   }
 }
 
-AttackPatternPopover.propTypes = {
-  id: PropTypes.string,
+StixCyberObservablePopover.propTypes = {
+  stixCyberObservableId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -199,4 +199,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(AttackPatternPopover);
+)(StixCyberObservablePopover);

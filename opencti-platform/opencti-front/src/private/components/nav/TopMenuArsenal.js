@@ -30,13 +30,13 @@ class TopMenuArsenal extends Component {
           component={Link}
           to="/dashboard/techniques/attack_patterns"
           variant={
-            location.pathname === '/dashboard/techniques/attack_patterns'
+            location.pathname === '/dashboard/arsenal/attack_patterns'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/techniques/attack_patterns'
+            location.pathname === '/dashboard/arsenal/attack_patterns'
               ? 'primary'
               : 'inherit'
           }
@@ -49,13 +49,13 @@ class TopMenuArsenal extends Component {
           component={Link}
           to="/dashboard/techniques/courses_of_action"
           variant={
-            location.pathname === '/dashboard/techniques/courses_of_action'
+            location.pathname === '/dashboard/arsenal/courses_of_action'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/techniques/courses_of_action'
+            location.pathname === '/dashboard/arsenal/courses_of_action'
               ? 'primary'
               : 'inherit'
           }
@@ -68,13 +68,13 @@ class TopMenuArsenal extends Component {
           component={Link}
           to="/dashboard/techniques/tools"
           variant={
-            location.pathname === '/dashboard/techniques/tools'
+            location.pathname === '/dashboard/arsenal/tools'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/techniques/tools'
+            location.pathname === '/dashboard/arsenal/tools'
               ? 'primary'
               : 'inherit'
           }
@@ -87,13 +87,13 @@ class TopMenuArsenal extends Component {
           component={Link}
           to="/dashboard/techniques/vulnerabilities"
           variant={
-            location.pathname === '/dashboard/techniques/vulnerabilities'
+            location.pathname === '/dashboard/arsenal/vulnerabilities'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/techniques/vulnerabilities'
+            location.pathname === '/dashboard/arsenal/vulnerabilities'
               ? 'primary'
               : 'inherit'
           }

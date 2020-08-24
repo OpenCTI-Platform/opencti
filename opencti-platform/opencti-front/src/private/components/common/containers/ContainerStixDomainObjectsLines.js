@@ -92,6 +92,7 @@ export const containerStixDomainObjectsLinesQuery = graphql`
     $filters: [StixObjectOrStixRelationshipsFiltering]
   ) {
     container(id: $id) {
+      id
       ...ContainerStixDomainObjectsLines_container
         @arguments(
           search: $search

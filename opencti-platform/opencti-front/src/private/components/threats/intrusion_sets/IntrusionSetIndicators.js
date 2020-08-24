@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import EntityIndicators from '../../signatures/indicators/EntityIndicators';
+import EntityIndicators from '../../observations/indicators/EntityIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({

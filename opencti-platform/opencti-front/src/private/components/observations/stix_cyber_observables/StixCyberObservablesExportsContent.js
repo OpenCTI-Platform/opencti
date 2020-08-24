@@ -12,7 +12,7 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import StixCyberObservablesExportCreation from './StixCyberObservablesExportCreation';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import FileLine from '../files/FileLine';
+import FileLine from '../../common/files/FileLine';
 import inject18n from '../../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT_KNASKEXPORT,

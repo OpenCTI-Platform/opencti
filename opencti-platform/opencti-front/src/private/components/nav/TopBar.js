@@ -233,7 +233,7 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes('/dashboard/events/campaigns/') ? (
+          {location.pathname.includes('/dashboard/threats/campaigns/') ? (
             <TopMenuCampaign />
           ) : (
             ''

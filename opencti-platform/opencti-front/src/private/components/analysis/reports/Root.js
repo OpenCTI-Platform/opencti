@@ -1,21 +1,21 @@
-import React, { Component } from "react";
-import * as PropTypes from "prop-types";
-import { Route, withRouter } from "react-router-dom";
-import graphql from "babel-plugin-relay/macro";
+import React, { Component } from 'react';
+import * as PropTypes from 'prop-types';
+import { Route, withRouter } from 'react-router-dom';
+import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
   requestSubscription,
-} from "../../../../relay/environment";
-import TopBar from "../../nav/TopBar";
-import Report from "./Report";
-import ReportKnowledge from "./ReportKnowledge";
-import ReportObservables from "../../common/containers/ContainerStixCyberObservables";
-import FileManager from "../../common/files/FileManager";
-import StixCoreObjectHistory from "../../common/stix_core_objects/StixCoreObjectHistory";
-import ReportHeader from "../../common/containers/ContainerHeader";
-import Loader from "../../../../components/Loader";
-import ContainerStixCoreObjects from "../../common/containers/ContainerStixDomainObjects";
-import ContainerStixCyberObservables from "../../common/containers/ContainerStixCyberObservables";
+} from '../../../../relay/environment';
+import TopBar from '../../nav/TopBar';
+import Report from './Report';
+import ReportPopover from './ReportPopover';
+import ReportKnowledge from './ReportKnowledge';
+import FileManager from '../../common/files/FileManager';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import ContainerHeader from '../../common/containers/ContainerHeader';
+import Loader from '../../../../components/Loader';
+import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
+import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -100,8 +100,11 @@ class RootReport extends Component {
                     path="/dashboard/analysis/reports/:reportId/entities"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <ReportHeader report={props.report} />
-                        <ContainerStixCoreObjects
+                        <ContainerHeader
+                          container={props.report}
+                          PopoverComponent={<ReportPopover />}
+                        />
+                        <ContainerStixDomainObjects
                           {...routeProps}
                           container={props.report}
                         />
@@ -113,7 +116,10 @@ class RootReport extends Component {
                     path="/dashboard/analysis/reports/:reportId/observables"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <ReportHeader report={props.report} />
+                        <ContainerHeader
+                          container={props.report}
+                          PopoverComponent={<ReportPopover />}
+                        />
                         <ContainerStixCyberObservables
                           {...routeProps}
                           container={props.report}
@@ -130,20 +136,13 @@ class RootReport extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/analysis/reports/:reportId/observables"
-                    render={(routeProps) => (
-                      <ReportObservables
-                        {...routeProps}
-                        report={props.report}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/analysis/reports/:reportId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <ReportHeader report={props.report} />
+                        <ContainerHeader
+                          container={props.report}
+                          PopoverComponent={<ReportPopover />}
+                        />
                         <FileManager
                           {...routeProps}
                           id={reportId}
@@ -159,7 +158,10 @@ class RootReport extends Component {
                     path="/dashboard/analysis/reports/:reportId/history"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <ReportHeader report={props.report} />
+                        <ContainerHeader
+                          container={props.report}
+                          PopoverComponent={<ReportPopover />}
+                        />
                         <StixCoreObjectHistory
                           {...routeProps}
                           entityStandardId={props.report.standard_id}

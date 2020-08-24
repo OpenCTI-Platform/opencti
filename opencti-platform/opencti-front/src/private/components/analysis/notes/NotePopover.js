@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { noteEditionQuery } from './NoteEdition';
 import NoteEditionContainer from './NoteEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -87,7 +89,7 @@ class NotePopover extends Component {
     commitMutation({
       mutation: NotePopoverDeletionMutation,
       variables: {
-        id: this.props.noteId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -107,7 +109,7 @@ class NotePopover extends Component {
   }
 
   render() {
-    const { classes, t, noteId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -167,7 +169,7 @@ class NotePopover extends Component {
         >
           <QueryRenderer
             query={noteEditionQuery}
-            variables={{ id: noteId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -187,14 +189,10 @@ class NotePopover extends Component {
 }
 
 NotePopover.propTypes = {
-  noteId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(NotePopover);
+export default compose(inject18n, withRouter, withStyles(styles))(NotePopover);

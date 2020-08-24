@@ -2,7 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
-import { compose } from 'ramda';
+import {
+  compose, evolve, path, pluck,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -19,6 +21,9 @@ import { Add, Close } from '@material-ui/icons';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -65,14 +70,9 @@ const styles = (theme) => ({
 });
 
 const noteCreationMutation = graphql`
-  mutation NoteCreationMutation(
-    $input: NoteAddInput!
-  ) {
+  mutation NoteCreationMutation($input: NoteAddInput!) {
     noteAdd(input: $input) {
-      id
-      attribute_abstract
-      content
-      created
+      ...NoteLine_node
     }
   }
 `;
@@ -107,10 +107,18 @@ class NoteCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
+    const adaptedValues = evolve(
+      {
+        createdBy: path(['value']),
+        objectMarking: pluck('value'),
+        objectLabel: pluck('value'),
+      },
+      values,
+    );
     commitMutation({
       mutation: noteCreationMutation,
       variables: {
-        input: values,
+        input: adaptedValues,
       },
       updater: (store) => {
         const payload = store.getRootField('noteAdd');
@@ -166,52 +174,58 @@ class NoteCreation extends Component {
             >
               <Close fontSize="small" />
             </IconButton>
-            <Typography variant="h6">
-              {t('Create an external reference')}
-            </Typography>
+            <Typography variant="h6">{t('Create a note')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
               initialValues={{
-                source_name: '',
-                external_id: '',
-                url: '',
-                description: '',
+                attribute_abstract: '',
+                content: '',
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
               }}
               validationSchema={noteValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
-              {({ submitForm, handleReset, isSubmitting }) => (
+              {({
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
+                values,
+              }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
-                    name="source_name"
-                    label={t('Source name')}
+                    name="attribute_abstract"
+                    label={t('Abstract')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
-                    name="external_id"
-                    label={t('External ID')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="url"
-                    label={t('URL')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="description"
-                    label={t('Description')}
+                    name="content"
+                    label={t('Content')}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <div className={classes.buttons}>
                     <Button
@@ -259,47 +273,55 @@ class NoteCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              source_name: inputValue,
-              external_id: '',
-              url: '',
-              description: '',
+              attribute_abstract: inputValue,
+              content: '',
+              createdBy: '',
+              objectMarking: [],
+              objectLabel: [],
             }}
             validationSchema={noteValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onResetContextual.bind(this)}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
               <Form>
-                <DialogTitle>{t('Create an external reference')}</DialogTitle>
+                <DialogTitle>{t('Create a note')}</DialogTitle>
                 <DialogContent>
                   <Field
                     component={TextField}
-                    name="source_name"
-                    label={t('Source name')}
+                    name="attribute_abstract"
+                    label={t('Abstract')}
                     fullWidth={true}
                   />
                   <Field
                     component={TextField}
-                    name="external_id"
-                    label={t('External ID')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="url"
-                    label={t('URL')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="description"
-                    label={t('Description')}
+                    name="content"
+                    label={t('Content')}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{ marginTop: 20, width: '100%' }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                 </DialogContent>
                 <DialogActions>

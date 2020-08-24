@@ -12,14 +12,11 @@ import Search from './components/Search';
 import RootImport from './components/import/Root';
 import RootAnalysis from './components/analysis/Root';
 import RootEvents from './components/events/Root';
-import RootTechniques from './components/techniques/Root';
-import RootSignatures from './components/signatures/Root';
+import RootObservations from './components/observations/Root';
+import RootThreats from './components/threats/Root';
+import RootArsenal from './components/arsenal/Root';
 import RootEntities from './components/entities/Root';
-import Workspaces from './components/workspaces/Workspaces';
 import RootSettings from './components/settings/Root';
-import RootWorkspace from './components/workspaces/Root';
-import Reports from './components/analysis/Reports';
-import RootReport from './components/analysis/reports/Root';
 import RootData from './components/data/Root';
 import Profile from './components/Profile';
 import Message from '../components/Message';
@@ -107,56 +104,20 @@ const Root = () => {
                         component={RootEvents}
                       />
                       <BoundaryRoute
-                        path="/dashboard/techniques"
-                        component={RootTechniques}
+                        path="/dashboard/observations"
+                        component={RootObservations}
                       />
                       <BoundaryRoute
-                        path="/dashboard/signatures"
-                        component={RootSignatures}
+                        path="/dashboard/threats"
+                        component={RootThreats}
                       />
                       <BoundaryRoute
-                        exact
-                        path="/dashboard/reports/:reportClass"
-                        render={(routeProps) => (
-                          <Reports displayCreate={true} {...routeProps} />
-                        )}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/reports/all/:reportId"
-                        render={(routeProps) => (
-                          <RootReport {...routeProps} me={props.me} />
-                        )}
+                          path="/dashboard/arsenal"
+                          component={RootArsenal}
                       />
                       <BoundaryRoute
                         path="/dashboard/entities"
                         component={RootEntities}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/explore"
-                        render={(routeProps) => (
-                          <Workspaces {...routeProps} workspaceType="explore" />
-                        )}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/explore/:workspaceId"
-                        render={(routeProps) => (
-                          <RootWorkspace
-                            {...routeProps}
-                            workspaceType="explore"
-                          />
-                        )}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/investigate/:workspaceId"
-                        render={(routeProps) => (
-                          <RootWorkspace
-                            {...routeProps}
-                            workspaceType="investigate"
-                          />
-                        )}
                       />
                       <BoundaryRoute
                         path="/dashboard/data"

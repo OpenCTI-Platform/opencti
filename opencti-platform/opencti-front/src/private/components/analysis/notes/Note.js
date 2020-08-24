@@ -14,6 +14,7 @@ import EntityExternalReferences from '../external_references/StixCoreObjectExter
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from './StixCoreObjectNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import NotePopover from './NotePopover';
 
 const styles = () => ({
   container: {
@@ -29,7 +30,7 @@ class NoteComponent extends Component {
     const { classes, note } = this.props;
     return (
       <div className={classes.container}>
-        <ContainerHeader container={note} />
+        <ContainerHeader container={note} PopoverComponent={<NotePopover />} />
         <Grid
           container={true}
           spacing={3}

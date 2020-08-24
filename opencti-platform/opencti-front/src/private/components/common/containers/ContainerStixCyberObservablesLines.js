@@ -9,6 +9,8 @@ import {
   ContainerStixCyberObservableLineDummy,
 } from './ContainerStixCyberObservableLine';
 import { setNumberOfElements } from '../../../../utils/Number';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const nbOfRowsToLoad = 50;
 
@@ -32,27 +34,37 @@ class ContainerStixCyberObservablesLines extends Component {
       paginationOptions,
     } = this.props;
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['objects', 'edges'], container)}
-        paginationOptions={paginationOptions}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['objects', 'pageInfo', 'globalCount'],
-          container,
-        )}
-        LineComponent={
-          <ContainerStixCyberObservableLine
+      <div>
+        <ListLinesContent
+          initialLoading={initialLoading}
+          loadMore={relay.loadMore.bind(this)}
+          hasMore={relay.hasMore.bind(this)}
+          isLoading={relay.isLoading.bind(this)}
+          dataList={pathOr([], ['objects', 'edges'], container)}
+          paginationOptions={paginationOptions}
+          globalCount={pathOr(
+            nbOfRowsToLoad,
+            ['objects', 'pageInfo', 'globalCount'],
+            container,
+          )}
+          LineComponent={
+            <ContainerStixCyberObservableLine
+              containerId={propOr(null, 'id', container)}
+            />
+          }
+          DummyLineComponent={<ContainerStixCyberObservableLineDummy />}
+          dataColumns={dataColumns}
+          nbOfRowsToLoad={nbOfRowsToLoad}
+        />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ContainerAddStixCoreObjects
             containerId={propOr(null, 'id', container)}
+            containerObjects={pathOr([], ['objects', 'edges'], container)}
+            paginationOptions={paginationOptions}
+            withPadding={true}
           />
-        }
-        DummyLineComponent={<ContainerStixCyberObservableLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-      />
+        </Security>
+      </div>
     );
   }
 }

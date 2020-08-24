@@ -32,7 +32,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import StixCyberObservableRelationCreationFromEntityLines, {
   stixCyberObservableRelationshipCreationFromEntityLinesQuery,
 } from './StixCyberObservableRelationshipCreationFromEntityLines';
-import StixCyberObservableCreation from '../../signatures/stix_cyber_observables/StixCyberObservableCreation';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { attributesQuery } from '../../settings/attributes/AttributesLines';

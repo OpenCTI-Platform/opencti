@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { stixCyberObservableEditionQuery } from './StixCyberObservableEdition';
-import StixCyberObservableEditionContainer from './StixCyberObservableEditionContainer';
+import { indicatorEditionQuery } from './IndicatorEdition';
+import IndicatorEditionContainer from './IndicatorEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -47,15 +47,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const StixCyberObservablePopoverDeletionMutation = graphql`
-  mutation StixCyberObservablePopoverDeletionMutation($id: ID!) {
-    stixCyberObservableEdit(id: $id) {
+const IndicatorPopoverDeletionMutation = graphql`
+  mutation IndicatorPopoverDeletionMutation($id: ID!) {
+    indicatorEdit(id: $id) {
       delete
     }
   }
 `;
 
-class StixCyberObservablePopover extends Component {
+class IndicatorPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,14 +86,14 @@ class StixCyberObservablePopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: StixCyberObservablePopoverDeletionMutation,
+      mutation: IndicatorPopoverDeletionMutation,
       variables: {
-        id: this.props.stixCyberObservableId,
+        id: this.props.indicatorId,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/signatures/observables');
+        this.props.history.push('/dashboard/observations/indicators');
       },
     });
   }
@@ -108,7 +108,7 @@ class StixCyberObservablePopover extends Component {
   }
 
   render() {
-    const { classes, t, stixCyberObservableId } = this.props;
+    const { classes, t, indicatorId } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -141,7 +141,7 @@ class StixCyberObservablePopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this observable?')}
+              {t('Do you want to delete this indicator?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -168,13 +168,13 @@ class StixCyberObservablePopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={stixCyberObservableEditionQuery}
-            variables={{ id: stixCyberObservableId }}
+            query={indicatorEditionQuery}
+            variables={{ id: indicatorId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCyberObservableEditionContainer
-                    stixCyberObservable={props.stixCyberObservable}
+                  <IndicatorEditionContainer
+                    indicator={props.indicator}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -188,8 +188,8 @@ class StixCyberObservablePopover extends Component {
   }
 }
 
-StixCyberObservablePopover.propTypes = {
-  stixCyberObservableId: PropTypes.string,
+IndicatorPopover.propTypes = {
+  indicatorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -199,4 +199,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(StixCyberObservablePopover);
+)(IndicatorPopover);

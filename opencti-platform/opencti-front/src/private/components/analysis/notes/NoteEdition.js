@@ -64,38 +64,38 @@ class NoteEdition extends Component {
   render() {
     const { classes, noteId } = this.props;
     return (
-        <div>
-          <Fab
-              onClick={this.handleOpen.bind(this)}
-              color="secondary"
-              aria-label="Edit"
-              className={classes.editButton}
-          >
-            <Edit />
-          </Fab>
-          <Drawer
-              open={this.state.open}
-              anchor="right"
-              classes={{ paper: classes.drawerPaper }}
-              onClose={this.handleClose.bind(this)}
-          >
-            <QueryRenderer
-                query={noteEditionQuery}
-                variables={{ id: noteId }}
-                render={({ props }) => {
-                  if (props) {
-                    return (
-                        <NoteEditionContainer
-                            note={props.note}
-                            handleClose={this.handleClose.bind(this)}
-                        />
-                    );
-                  }
-                  return <Loader variant="inElement" />;
-                }}
-            />
-          </Drawer>
-        </div>
+      <div>
+        <Fab
+          onClick={this.handleOpen.bind(this)}
+          color="secondary"
+          aria-label="Edit"
+          className={classes.editButton}
+        >
+          <Edit />
+        </Fab>
+        <Drawer
+          open={this.state.open}
+          anchor="right"
+          classes={{ paper: classes.drawerPaper }}
+          onClose={this.handleClose.bind(this)}
+        >
+          <QueryRenderer
+            query={noteEditionQuery}
+            variables={{ id: noteId }}
+            render={({ props }) => {
+              if (props) {
+                return (
+                  <NoteEditionContainer
+                    note={props.note}
+                    handleClose={this.handleClose.bind(this)}
+                  />
+                );
+              }
+              return <Loader variant="inElement" />;
+            }}
+          />
+        </Drawer>
+      </div>
     );
   }
 }
@@ -109,6 +109,6 @@ NoteEdition.propTypes = {
 };
 
 export default compose(
-    inject18n,
-    withStyles(styles, { withTheme: true }),
+  inject18n,
+  withStyles(styles, { withTheme: true }),
 )(NoteEdition);

@@ -776,9 +776,9 @@ export const listRelations = async (relationshipType, args) => {
   const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
-  if (askForConnections === false && (haveTargetFilters || fromTypesFilter || toTypesFilter || search)) {
+  /*if (askForConnections === false && (haveTargetFilters || fromTypesFilter || toTypesFilter || search)) {
     throw DatabaseError('Cant list relation with types filtering or search if from or to id are not specified');
-  }
+  }*/
   const offset = after ? cursorToOffset(after) : 0;
   const isRelationOrderBy = orderBy && R.includes('.', orderBy);
   // Handle relation type(s)

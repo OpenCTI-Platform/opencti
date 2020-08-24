@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { indicatorEditionQuery } from './IndicatorEdition';
-import IndicatorEditionContainer from './IndicatorEditionContainer';
+import { courseOfActionEditionQuery } from './CourseOfActionEdition';
+import CourseOfActionEditionContainer from './CourseOfActionEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -47,15 +47,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const IndicatorPopoverDeletionMutation = graphql`
-  mutation IndicatorPopoverDeletionMutation($id: ID!) {
-    indicatorEdit(id: $id) {
+const CourseOfActionPopoverDeletionMutation = graphql`
+  mutation CourseOfActionPopoverDeletionMutation($id: ID!) {
+    courseOfActionEdit(id: $id) {
       delete
     }
   }
 `;
 
-class IndicatorPopover extends Component {
+class CourseOfActionPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,14 +86,14 @@ class IndicatorPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: IndicatorPopoverDeletionMutation,
+      mutation: CourseOfActionPopoverDeletionMutation,
       variables: {
-        id: this.props.indicatorId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/signatures/indicators');
+        this.props.history.push('/dashboard/arsenal/courses_of_action');
       },
     });
   }
@@ -108,7 +108,7 @@ class IndicatorPopover extends Component {
   }
 
   render() {
-    const { classes, t, indicatorId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -141,7 +141,7 @@ class IndicatorPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this indicator?')}
+              {t('Do you want to delete this course of action?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -168,13 +168,13 @@ class IndicatorPopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={indicatorEditionQuery}
-            variables={{ id: indicatorId }}
+            query={courseOfActionEditionQuery}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <IndicatorEditionContainer
-                    indicator={props.indicator}
+                  <CourseOfActionEditionContainer
+                    courseOfAction={props.courseOfAction}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -188,8 +188,8 @@ class IndicatorPopover extends Component {
   }
 }
 
-IndicatorPopover.propTypes = {
-  indicatorId: PropTypes.string,
+CourseOfActionPopover.propTypes = {
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
@@ -199,4 +199,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(IndicatorPopover);
+)(CourseOfActionPopover);

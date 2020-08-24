@@ -7,7 +7,6 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../../relay/environment';
-import ContainerHeader from './ContainerHeader';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixCyberObservablesLines, {
   containerStixCyberObservablesLinesQuery,
@@ -17,13 +16,11 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
-import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
-import StixCyberObservablesRightBar from '../../signatures/stix_cyber_observables/StixCyberObservablesRightBar';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 
 const styles = () => ({
   container: {
-    margin: 0,
+    margin: '20px 0 0 0',
     padding: '0 250px 0 0',
   },
 });
@@ -119,15 +116,13 @@ class ContainerStixCyberObservablesComponent extends Component {
       },
     };
     const paginationOptions = {
-      types,
+      types: types.length > 0 ? types : ['Stix-Cyber-Observable'],
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
       <div className={classes.container}>
-        <ContainerHeader container={container} />
-        <br />
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -151,12 +146,6 @@ class ContainerStixCyberObservablesComponent extends Component {
             )}
           />
         </ListLines>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerAddStixCoreObjects
-            containerId={container.id}
-            paginationOptions={paginationOptions}
-          />
-        </Security>
         <StixCyberObservablesRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}

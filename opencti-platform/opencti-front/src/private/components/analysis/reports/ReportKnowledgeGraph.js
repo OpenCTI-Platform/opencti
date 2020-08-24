@@ -161,6 +161,7 @@ const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
       id
       start_time
       stop_time
+      confidence
       relationship_type
     }
   }
@@ -266,15 +267,23 @@ class ReportKnowledgeGraphComponent extends Component {
 
   componentDidUpdate(prevProps) {
     const model = this.props.engine.getDiagramModel();
+    const propsNodes = filter(
+      (n) => !n.node.relationship_type,
+      this.props.report.objects.edges,
+    );
+    const prevPropsNodes = filter(
+      (n) => !n.node.relationship_type,
+      prevProps.report.objects.edges,
+    );
     const added = differenceWith(
       (x, y) => x.node.id === y.node.id,
-      this.props.report.objectRefs.edges,
-      prevProps.report.objectRefs.edges,
+      propsNodes,
+      prevPropsNodes,
     );
     const removed = differenceWith(
       (x, y) => x.node.id === y.node.id,
-      prevProps.report.objectRefs.edges,
-      this.props.report.objectRefs.edges,
+      prevPropsNodes,
+      prevPropsNodes,
     );
     // if a node has been added, add in graph
     if (added.length > 0) {
@@ -338,8 +347,14 @@ class ReportKnowledgeGraphComponent extends Component {
   initialize() {
     const model = new DiagramModel();
     // prepare nodes & relations
-    const nodes = this.props.report.objectRefs.edges;
-    const relations = this.props.report.relationRefs.edges;
+    const nodes = filter(
+      (n) => !n.node.relationship_type,
+      this.props.report.objects.edges,
+    );
+    const relations = filter(
+      (n) => n.node.relationship_type,
+      this.props.report.objects.edges,
+    );
 
     // decode graph data if any
     let graphData = {};
@@ -962,12 +977,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 id
                 entity_type
               }
-              ... on BasicRelationship {
-                id
-                entity_type
-                created_at
-                updated_at
-              }
               ... on StixObject {
                 created_at
                 updated_at
@@ -1043,6 +1052,154 @@ const ReportKnowledgeGraph = createFragmentContainer(
               ... on XOpenCTIIncident {
                 name
                 description
+              }
+              ... on BasicRelationship {
+                id
+                entity_type
+              }
+              ... on StixCoreRelationship {
+                relationship_type
+                start_time
+                stop_time
+                confidence
+                from {
+                  ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on AttackPattern {
+                    name
+                  }
+                  ... on Campaign {
+                    name
+                  }
+                  ... on CourseOfAction {
+                    name
+                  }
+                  ... on Individual {
+                    name
+                  }
+                  ... on Organization {
+                    name
+                  }
+                  ... on Sector {
+                    name
+                  }
+                  ... on Indicator {
+                    name
+                  }
+                  ... on Infrastructure {
+                    name
+                  }
+                  ... on IntrusionSet {
+                    name
+                  }
+                  ... on Position {
+                    name
+                  }
+                  ... on City {
+                    name
+                  }
+                  ... on Country {
+                    name
+                  }
+                  ... on Region {
+                    name
+                  }
+                  ... on Malware {
+                    name
+                  }
+                  ... on ThreatActor {
+                    name
+                  }
+                  ... on Tool {
+                    name
+                  }
+                  ... on Vulnerability {
+                    name
+                  }
+                  ... on XOpenCTIIncident {
+                    name
+                  }
+                  ... on StixCyberObservable {
+                    observable_value
+                  }
+                }
+                to {
+                  ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                  }
+                  ... on AttackPattern {
+                    name
+                  }
+                  ... on Campaign {
+                    name
+                  }
+                  ... on CourseOfAction {
+                    name
+                  }
+                  ... on Individual {
+                    name
+                  }
+                  ... on Organization {
+                    name
+                  }
+                  ... on Sector {
+                    name
+                  }
+                  ... on Indicator {
+                    name
+                  }
+                  ... on Infrastructure {
+                    name
+                  }
+                  ... on IntrusionSet {
+                    name
+                  }
+                  ... on Position {
+                    name
+                  }
+                  ... on City {
+                    name
+                  }
+                  ... on Country {
+                    name
+                  }
+                  ... on Region {
+                    name
+                  }
+                  ... on Malware {
+                    name
+                  }
+                  ... on ThreatActor {
+                    name
+                  }
+                  ... on Tool {
+                    name
+                  }
+                  ... on Vulnerability {
+                    name
+                  }
+                  ... on XOpenCTIIncident {
+                    name
+                  }
+                  ... on StixCyberObservable {
+                    observable_value
+                  }
+                }
               }
             }
           }

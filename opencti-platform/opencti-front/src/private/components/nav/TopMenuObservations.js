@@ -32,13 +32,13 @@ class TopMenuObservations extends Component {
                     component={Link}
                     to="/dashboard/signatures/observables"
                     variant={
-                        location.pathname.includes('/dashboard/signatures/observables')
+                        location.pathname.includes('/dashboard/observations/observables')
                           ? 'contained'
                           : 'text'
                     }
                     size="small"
                     color={
-                        location.pathname.includes('/dashboard/signatures/observables')
+                        location.pathname.includes('/dashboard/observations/observables')
                           ? 'primary'
                           : 'inherit'
                     }
@@ -54,13 +54,13 @@ class TopMenuObservations extends Component {
                     component={Link}
                     to="/dashboard/signatures/indicators"
                     variant={
-                        location.pathname.includes('/dashboard/signatures/indicators')
+                        location.pathname.includes('/dashboard/observations/indicators')
                           ? 'contained'
                           : 'text'
                     }
                     size="small"
                     color={
-                        location.pathname.includes('/dashboard/signatures/indicators')
+                        location.pathname.includes('/dashboard/observations/indicators')
                           ? 'primary'
                           : 'inherit'
                     }

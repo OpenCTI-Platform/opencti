@@ -2,20 +2,20 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import {
-  map, filter, head, compose,
+  map, filter, head, compose, pathOr,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
-import { CheckCircle } from '@material-ui/icons';
+import { CheckCircle, WorkOutline } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
   avatar: {
@@ -140,20 +140,32 @@ class AddNotesLinesContainer extends Component {
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
-                  <Avatar classes={{ root: classes.avatar }}>
-                    {note.source_name.substring(0, 1)}
-                  </Avatar>
+                  <WorkOutline />
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={`${note.source_name} ${noteId}`}
-                secondary={truncate(
-                  note.description !== null && note.description.length > 0
-                    ? note.description
-                    : note.url,
-                  120,
-                )}
+                primary={`${note.attribute_abstract} ${noteId}`}
+                secondary={truncate(note.content, 120)}
               />
+              <div style={{ marginRight: 50 }}>
+                {pathOr('', ['createdBy', 'name'], note)}
+              </div>
+              <div style={{ marginRight: 50 }}>
+                {pathOr([], ['objectMarking', 'edges'], note).length > 0 ? (
+                  map(
+                    (markingDefinition) => (
+                      <ItemMarking
+                        key={markingDefinition.node.id}
+                        label={markingDefinition.node.definition}
+                        variant="inList"
+                      />
+                    ),
+                    note.objectMarking.edges,
+                  )
+                ) : (
+                  <ItemMarking label="TLP:WHITE" variant="inList" />
+                )}
+              </div>
             </ListItem>
           );
         })}
@@ -196,6 +208,7 @@ const AddNotesLines = createPaginationContainer(
               id
               attribute_abstract
               content
+              
             }
           }
         }

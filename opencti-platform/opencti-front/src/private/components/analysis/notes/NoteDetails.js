@@ -9,7 +9,6 @@ import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ItemStatus from '../../../../components/NoteStatus';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
@@ -39,19 +38,7 @@ class NoteDetailsComponent extends Component {
               <Markdown className="markdown" source={note.content} />
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Processing status')}
-              </Typography>
-              <ItemStatus
-                label={t(
-                  `${
-                    note.x_opencti_note_status
-                      ? `note_status_${note.x_opencti_note_status}`
-                      : 'note_status_0'
-                  }`,
-                )}
-                status={note.x_opencti_note_status}
-              />
+              test
             </Grid>
           </Grid>
           <EntityStixCoreRelationshipsDonut

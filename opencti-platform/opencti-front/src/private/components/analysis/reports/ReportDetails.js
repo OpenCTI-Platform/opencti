@@ -32,13 +32,13 @@ class ReportDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={8}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
               <Markdown className="markdown" source={report.description} />
             </Grid>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={4}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Processing status')}
               </Typography>

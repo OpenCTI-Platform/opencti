@@ -7,7 +7,6 @@ import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../../relay/environment';
-import ContainerHeader from './ContainerHeader';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ContainerStixDomainObjectsLines, {
   containerStixDomainObjectsLinesQuery,
@@ -21,7 +20,7 @@ import inject18n from '../../../../components/i18n';
 
 const styles = () => ({
   container: {
-    margin: 0,
+    margin: '20px 0 0 0',
     padding: '0 260px 90px 0',
   },
 });
@@ -38,7 +37,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      stixDomainObjectsTypes: propOr([], 'stixDomainObjectsTypes', params),
+      types: propOr([], 'types', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -65,27 +64,6 @@ class ContainerStixDomainObjectsComponent extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleToggleStixDomainObjectType(type) {
-    if (this.state.stixDomainObjectsTypes.includes(type)) {
-      this.setState(
-        {
-          stixDomainObjectsTypes: filter(
-            (t) => t !== type,
-            this.state.stixDomainObjectsTypes,
-          ),
-        },
-        () => this.saveView(),
-      );
-    } else {
-      this.setState(
-        {
-          stixDomainObjectsTypes: append(type, this.state.stixDomainObjectsTypes),
-        },
-        () => this.saveView(),
-      );
-    }
-  }
-
   handleToggle(type) {
     if (this.state.types.includes(type)) {
       this.setState(
@@ -107,9 +85,9 @@ class ContainerStixDomainObjectsComponent extends Component {
       sortBy,
       orderAsc,
       searchTerm,
-      stixDomainObjectsTypes,
       openExports,
       numberOfElements,
+      types,
     } = this.state;
     const dataColumns = {
       entity_type: {
@@ -119,7 +97,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       },
       name: {
         label: 'Name',
-        width: '30%',
+        width: '40%',
         isSortable: true,
       },
       createdBy: {
@@ -138,7 +116,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       },
     };
     const paginationOptions = {
-      types: stixDomainObjectsTypes,
+      types: types.length > 0 ? types : ['Stix-Domain-Object'],
       filters: null,
       search: searchTerm,
       orderBy: sortBy,
@@ -146,8 +124,6 @@ class ContainerStixDomainObjectsComponent extends Component {
     };
     return (
       <div className={classes.container}>
-        <ContainerHeader container={container} />
-        <br />
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -173,10 +149,8 @@ class ContainerStixDomainObjectsComponent extends Component {
           />
         </ListLines>
         <StixDomainObjectsRightBar
-          stixDomainObjectsTypes={stixDomainObjectsTypes}
-          handleToggleStixDomainObjectType={this.handleToggleStixDomainObjectType.bind(
-            this,
-          )}
+          types={types}
+          handleToggle={this.handleToggle.bind(this)}
           openExports={openExports}
         />
       </div>
@@ -204,4 +178,7 @@ const ContainerStixDomainObjects = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(ContainerStixDomainObjects);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(ContainerStixDomainObjects);

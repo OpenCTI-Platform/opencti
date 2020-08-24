@@ -32,10 +32,6 @@ const styles = (theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
-  },
   itemIconDisabled: {
     color: theme.palette.grey[700],
   },
@@ -113,7 +109,7 @@ class ContainerStixDomainObjectLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
+        <ListItemSecondaryAction>
           <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}

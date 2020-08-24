@@ -10,7 +10,7 @@ import Paper from '@material-ui/core/Paper/Paper';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectNoteCard from './StixCoreObjectNoteCard';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotesCreation from './StixCoreObjectNoteCreation';
+import AddNotes from './AddNotes';
 
 const styles = () => ({
   paper: {
@@ -23,7 +23,7 @@ const styles = () => ({
 class StixCoreObjectNotesComponent extends Component {
   render() {
     const {
-      t, classes, entityId, inputType, data, marginTop,
+      t, classes, entityId, data, marginTop,
     } = this.props;
     const notes = pathOr([], ['notes', 'edges'], data);
     return (
@@ -32,46 +32,22 @@ class StixCoreObjectNotesComponent extends Component {
           {t('Notes about this entity')}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreObjectNotesCreation
-            entityId={entityId}
-            onCreate={this.props.relay.refetch.bind(this)}
-            inputType={inputType}
-          />
+          <AddNotes entityId={entityId} entityNotes={notes} />
         </Security>
         <div className="clearfix" />
-        <Paper
-          classes={{ root: classes.paper }}
-          elevation={2}
-          style={{ height: notes.length === 0 ? 200 : '100%' }}
-        >
-          {notes.length > 0 ? (
-            <Grid container={true} spacing={3}>
-              {notes.map((noteEdge) => {
-                const note = noteEdge.node;
-                return (
-                  <Grid key={note.id} item={true} xs={3}>
-                    <StixCoreObjectNoteCard
-                      node={note}
-                      onUpdate={this.props.relay.refetch.bind(this)}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
-          ) : (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No notes about this entity yet.')}
-              </span>
-            </div>
-          )}
-        </Paper>
+        <Grid container={true} spacing={3}>
+          {notes.map((noteEdge) => {
+            const note = noteEdge.node;
+            return (
+              <Grid key={note.id} item={true} xs={4}>
+                <StixCoreObjectNoteCard
+                  node={note}
+                  onUpdate={this.props.relay.refetch.bind(this)}
+                />
+              </Grid>
+            );
+          })}
+        </Grid>
       </div>
     );
   }
@@ -79,7 +55,6 @@ class StixCoreObjectNotesComponent extends Component {
 
 StixCoreObjectNotesComponent.propTypes = {
   entityId: PropTypes.string,
-  inputType: PropTypes.string,
   marginTop: PropTypes.number,
   data: PropTypes.object,
   classes: PropTypes.object,

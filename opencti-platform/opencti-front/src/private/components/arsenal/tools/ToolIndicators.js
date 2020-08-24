@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { Route, withRouter } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
@@ -7,9 +7,9 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
-import MalwarePopover from './MalwarePopover';
+import ToolPopover from './ToolPopover';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import EntityIndicators from '../../signatures/indicators/EntityIndicators';
+import EntityIndicators from '../../observations/indicators/EntityIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
@@ -38,13 +38,13 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '5px 0 0 0',
+    margin: '5px 0 40px 0',
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
   },
 });
 
-class MalwareIndicatorsComponent extends Component {
+class ToolIndicatorsComponent extends Component {
   constructor(props) {
     super(props);
     this.state = { withPadding: false };
@@ -52,12 +52,12 @@ class MalwareIndicatorsComponent extends Component {
 
   render() {
     const { withPadding } = this.state;
-    const { classes, malware, location } = this.props;
-    const link = `/dashboard/threats/malwares/${malware.id}/indicators`;
+    const { classes, tool, location } = this.props;
+    const link = `/dashboard/techniques/tools/${tool.id}/indicators`;
     let className = classes.containerWithPadding;
     if (
       location.pathname.includes(
-        `/dashboard/threats/malwares/${malware.id}/indicators/relations/`,
+        `/dashboard/techniques/tools/${tool.id}/indicators/relations/`,
       )
     ) {
       className = classes.containerWithoutPadding;
@@ -67,27 +67,29 @@ class MalwareIndicatorsComponent extends Component {
     return (
       <div className={className}>
         <StixDomainObjectHeader
-          stixDomainObject={malware}
-          PopoverComponent={<MalwarePopover />}
+          stixDomainObject={tool}
+          PopoverComponent={<ToolPopover />}
         />
         <Route
           exact
-          path="/dashboard/threats/malwares/:malwareId/indicators/relations/:relationId"
+          path="/dashboard/techniques/tools/:toolId/indicators/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship entityId={malware.id} {...routeProps} />
+            <StixCoreRelationship
+              entityId={tool.id}
+              paddingRight={false}
+              {...routeProps}
+            />
           )}
         />
         <Route
           exact
-          path="/dashboard/threats/malwares/:malwareId/indicators"
+          path="/dashboard/techniques/tools/:toolId/indicators"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityIndicators
-                entityId={malware.id}
+                entityId={tool.id}
                 relationshipType="indicates"
                 entityLink={link}
-                onChangeOpenExports={(openExports) => this.setState({ withPadding: openExports })
-                }
                 {...routeProps}
               />
             </Paper>
@@ -98,16 +100,16 @@ class MalwareIndicatorsComponent extends Component {
   }
 }
 
-MalwareIndicatorsComponent.propTypes = {
-  malware: PropTypes.object,
+ToolIndicatorsComponent.propTypes = {
+  tool: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const MalwareIndicators = createFragmentContainer(MalwareIndicatorsComponent, {
-  malware: graphql`
-    fragment MalwareIndicators_malware on Malware {
+const ToolIndicators = createFragmentContainer(ToolIndicatorsComponent, {
+  tool: graphql`
+    fragment ToolIndicators_tool on Tool {
       id
       name
       aliases
@@ -119,4 +121,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(MalwareIndicators);
+)(ToolIndicators);

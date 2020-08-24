@@ -1,36 +1,28 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import { Link } from 'react-router-dom';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Avatar from '@material-ui/core/Avatar';
-import { MoreVertOutlined } from '@material-ui/icons';
-import { compose } from 'ramda';
-import { Link } from 'react-router-dom';
+import {
+  KeyboardArrowRightOutlined,
+  DescriptionOutlined,
+} from '@material-ui/icons';
+import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import NotePopover from './NotePopover';
+import ItemMarking from '../../../../components/ItemMarking';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-    backgroundColor: theme.palette.primary.main,
-  },
-  avatarDisabled: {
-    width: 24,
-    height: 24,
   },
   bodyItem: {
     height: 20,
@@ -57,7 +49,7 @@ const styles = (theme) => ({
 class NoteLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, paginationOptions,
+      t, fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -68,9 +60,7 @@ class NoteLineComponent extends Component {
         to={`/dashboard/analysis/notes/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Avatar classes={{ root: classes.avatar }}>
-            {node.source_name.substring(0, 1)}
-          </Avatar>
+          <DescriptionOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -83,9 +73,19 @@ class NoteLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.content.width }}
+                style={{ width: dataColumns.createdBy.width }}
               >
-                {node.content}
+                {pathOr('', ['createdBy', 'name'], node)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <StixCoreObjectLabels
+                  variant="inList"
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
+                />
               </div>
               <div
                 className={classes.bodyItem}
@@ -93,12 +93,27 @@ class NoteLineComponent extends Component {
               >
                 {fd(node.created)}
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
+                  (markingDefinition) => (
+                    <ItemMarking
+                      key={markingDefinition.node.id}
+                      variant="inList"
+                      label={markingDefinition.node.definition}
+                      color={markingDefinition.node.x_opencti_color}
+                    />
+                  ),
+                )}
+              </div>
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <NotePopover noteId={node.id} paginationOptions={paginationOptions} />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -107,10 +122,10 @@ class NoteLineComponent extends Component {
 NoteLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  me: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
+  t: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
@@ -120,6 +135,31 @@ const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
       attribute_abstract
       content
       created
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
     }
   `,
 });
@@ -135,7 +175,7 @@ class NoteLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Avatar classes={{ root: classes.avatarDisabled }}>A</Avatar>
+          <DescriptionOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -148,30 +188,42 @@ class NoteLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.content.width }}
+                style={{ width: dataColumns.createdBy.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.objectLabel.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                <div className="fakeItem" style={{ width: 140 }} />
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.objectMarking.width }}
+              >
+                <div className="fakeItem" style={{ width: 100 }} />
               </div>
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }
 }
 
 NoteLineDummyComponent.propTypes = {
-  dataColumns: PropTypes.object,
   classes: PropTypes.object,
+  dataColumns: PropTypes.object,
 };
 
 export const NoteLineDummy = compose(

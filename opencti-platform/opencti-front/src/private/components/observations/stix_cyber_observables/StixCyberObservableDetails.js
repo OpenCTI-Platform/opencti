@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableLabels from '../../common/stix_cyber_observables/StixCyberObservableLabels';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -34,7 +34,7 @@ class StixCyberObservableDetailsComponent extends Component {
           </Typography>
           <pre>{stixCyberObservable.observable_value}</pre>
           <div style={{ marginTop: 20 }}>
-            <StixCyberObservableLabels
+            <StixCoreObjectLabels
               labels={stixCyberObservable.objectLabel}
               id={stixCyberObservable.id}
             />

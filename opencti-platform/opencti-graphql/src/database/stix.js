@@ -92,7 +92,7 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
   if (!finalData) {
     throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
   }
-  if (eventType === 'update') {
+  if (eventType === 'update' && eventExtraData.key) {
     return assoc(
       eventExtraData.key,
       includes(eventExtraData.key, multipleAttributes) ? eventExtraData.value : head(eventExtraData.value),

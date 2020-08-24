@@ -111,11 +111,10 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     const { addedStixCoreObjects } = this.state;
     const containerStixCoreObjectsIds = map(
       (n) => n.node.id,
-      containerStixCoreObjects,
+      containerStixCoreObjects || [],
     );
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
       || containerStixCoreObjectsIds.includes(stixCoreObject.id);
-
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
@@ -140,12 +139,12 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
           variables: {
             id: containerId,
             toId: stixCoreObject.id,
-            relationship_type: 'stixCoreObject',
+            relationship_type: 'object',
           },
           updater: (store) => {
             const conn = ConnectionHandler.getConnection(
               store.get(containerId),
-              'Pagination_stixCoreObjects',
+              'Pagination_objects',
               this.props.paginationOptions,
             );
             ConnectionHandler.deleteNode(conn, stixCoreObject.id);
@@ -196,7 +195,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             const newEdge = payload.setLinkedRecord(payload, 'node');
             const conn = ConnectionHandler.getConnection(
               store.get(containerId),
-              'Pagination_stixCoreObjects',
+              'Pagination_objects',
               paginationOptions,
             );
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -241,7 +240,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     const stixCoreObjectsTypes = keys(stixCoreObjects);
     const containerStixCoreObjectsIds = map(
       (n) => n.node.id,
-      containerStixCoreObjects,
+      containerStixCoreObjects || [],
     );
     return (
       <div className={classes.container}>
@@ -282,7 +281,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                           classes={{ root: classes.menuItem }}
                           divider={true}
                           button={true}
-                          onClick={this.toggleStixCore.bind(
+                          onClick={this.toggleStixCoreObject.bind(
                             this,
                             stixCoreObject,
                           )}

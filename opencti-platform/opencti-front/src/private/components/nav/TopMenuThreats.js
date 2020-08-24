@@ -6,9 +6,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { PublicOutlined } from '@material-ui/icons';
-import {
-  Biohazard, DiamondOutline, Fire, ChessKnight,
-} from 'mdi-material-ui';
+import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({

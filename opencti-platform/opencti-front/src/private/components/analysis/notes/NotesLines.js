@@ -5,16 +5,23 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { NoteLine, NoteLineDummy } from './NoteLine';
+import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
 class NotesLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'notes',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
-      initialLoading,
-      dataColumns,
-      relay,
-      paginationOptions,
+      initialLoading, dataColumns, relay, onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -32,7 +39,7 @@ class NotesLines extends Component {
         DummyLineComponent={<NoteLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -46,6 +53,9 @@ NotesLines.propTypes = {
   relay: PropTypes.object,
   notes: PropTypes.object,
   initialLoading: PropTypes.bool,
+  searchTerm: PropTypes.string,
+  onLabelClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const notesLinesQuery = graphql`
@@ -55,6 +65,7 @@ export const notesLinesQuery = graphql`
     $cursor: ID
     $orderBy: NotesOrdering
     $orderMode: OrderingMode
+    $filters: [NotesFiltering]
   ) {
     ...NotesLines_data
       @arguments(
@@ -63,6 +74,7 @@ export const notesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -78,6 +90,7 @@ export default createPaginationContainer(
           cursor: { type: "ID" }
           orderBy: { type: "NotesOrdering", defaultValue: created }
           orderMode: { type: "OrderingMode", defaultValue: desc }
+          filters: { type: "[NotesFiltering]" }
         ) {
         notes(
           search: $search
@@ -85,9 +98,29 @@ export default createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_notes") {
           edges {
             node {
+              id
+              attribute_abstract
+              content
+              created
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
               ...NoteLine_node
             }
           }
@@ -113,11 +146,12 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        search: fragmentVariables.search,
         count,
         cursor,
+        search: fragmentVariables.search,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: notesLinesQuery,

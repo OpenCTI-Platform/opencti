@@ -22,7 +22,7 @@ import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
-import StixObservablesExports from '../../private/components/common/stix_cyber_observables/StixCyberObservablesExports';
+import StixObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 
 const styles = (theme) => ({
   container: {

@@ -239,7 +239,7 @@ class StixCyberObservables extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixDomainObjectsRightBar
           stixDomainObjectsTypes={stixDomainObjectsTypes}
-          handleToggleStixDomainObjectType={this.handleToggle.bind(this)}
+          handleToggle={this.handleToggle.bind(this)}
         />
       </div>
     );

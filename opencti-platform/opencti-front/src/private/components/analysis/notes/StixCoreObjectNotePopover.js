@@ -17,7 +17,7 @@ import { MoreVertOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectNoteEdition from './StixCoreObjectNoteEdition';
+import NoteEdition from './NoteEdition';
 
 const styles = (theme) => ({
   container: {
@@ -46,7 +46,7 @@ const stixCoreObjectNotePopoverCleanContext = graphql`
   mutation StixCoreObjectNotePopoverCleanContextMutation($id: ID!) {
     noteEdit(id: $id) {
       contextClean {
-        ...StixCoreObjectNoteEdition_note
+        ...NoteEditionOverview_note
       }
     }
   }
@@ -63,7 +63,7 @@ const stixCoreObjectNotePopoverDeletionMutation = graphql`
 const stixCoreObjectNotePopoverEditionQuery = graphql`
   query StixCoreObjectNotePopoverEditionQuery($id: String!) {
     note(id: $id) {
-      ...StixCoreObjectNoteEdition_note
+      ...NoteEditionOverview_note
     }
   }
 `;
@@ -160,7 +160,7 @@ class StixCoreObjectNotePopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCoreObjectNoteEdition
+                  <NoteEdition
                     note={props.note}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />

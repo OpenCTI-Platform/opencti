@@ -9,7 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import RegionPopover from './RegionPopover';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import EntityStixCyberObservables from '../../signatures/stix_cyber_observables/EntityStixCyberObservables';
+import EntityStixCyberObservables from '../../observations/stix_cyber_observables/EntityStixCyberObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = () => ({

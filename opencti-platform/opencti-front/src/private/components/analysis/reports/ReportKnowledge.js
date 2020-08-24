@@ -14,11 +14,12 @@ import GlobalLinkFactory from '../../../../components/graph_node/GlobalLinkFacto
 import GlobalLabelFactory from '../../../../components/graph_node/GlobalLabelFactory';
 import RelationNodeFactory from '../../../../components/graph_node/RelationNodeFactory';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
-import ReportHeader from '../../common/containers/ContainerHeader';
+import ContainerHeader from '../../common/containers/ContainerHeader';
 import ReportKnowledgeGraph, {
   reportKnowledgeGraphQuery,
 } from './ReportKnowledgeGraph';
 import Loader from '../../../../components/Loader';
+import ReportPopover from './ReportPopover';
 
 const styles = (theme) => ({
   container: {
@@ -61,7 +62,11 @@ class ReportKnowledgeComponent extends Component {
         >
           <div> &nbsp; </div>
         </Drawer>
-        <ReportHeader report={report} variant="noMarking" />
+        <ContainerHeader
+          container={report}
+          variant="noMarking"
+          PopoverComponent={<ReportPopover />}
+        />
         <SubscriptionAvatars context={editContext} variant="inGraph" />
         <QueryRenderer
           query={reportKnowledgeGraphQuery}

@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { vulnerabilityEditionQuery } from './VulnerabilityEdition';
-import VulnerabilityEditionContainer from './VulnerabilityEditionContainer';
+import { toolEditionQuery } from './ToolEdition';
+import ToolEditionContainer from './ToolEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -47,15 +47,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const VulnerabilityPopoverDeletionMutation = graphql`
-  mutation VulnerabilityPopoverDeletionMutation($id: ID!) {
-    vulnerabilityEdit(id: $id) {
+const ToolPopoverDeletionMutation = graphql`
+  mutation ToolPopoverDeletionMutation($id: ID!) {
+    toolEdit(id: $id) {
       delete
     }
   }
 `;
 
-class VulnerabilityPopover extends Component {
+class ToolPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,14 +86,14 @@ class VulnerabilityPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: VulnerabilityPopoverDeletionMutation,
+      mutation: ToolPopoverDeletionMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/techniques/vulnerabilities');
+        this.props.history.push('/dashboard/arsenal/tools');
       },
     });
   }
@@ -141,7 +141,7 @@ class VulnerabilityPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this vulnerability?')}
+              {t('Do you want to delete this tool?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -168,13 +168,13 @@ class VulnerabilityPopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={vulnerabilityEditionQuery}
+            query={toolEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <VulnerabilityEditionContainer
-                    vulnerability={props.vulnerability}
+                  <ToolEditionContainer
+                    tool={props.tool}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -188,15 +188,11 @@ class VulnerabilityPopover extends Component {
   }
 }
 
-VulnerabilityPopover.propTypes = {
+ToolPopover.propTypes = {
   id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(VulnerabilityPopover);
+export default compose(inject18n, withRouter, withStyles(styles))(ToolPopover);

@@ -9,7 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import AttackPatternPopover from './AttackPatternPopover';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import EntityIndicators from '../../signatures/indicators/EntityIndicators';
+import EntityIndicators from '../../observations/indicators/EntityIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({

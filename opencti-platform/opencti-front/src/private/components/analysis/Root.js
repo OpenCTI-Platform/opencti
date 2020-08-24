@@ -5,6 +5,7 @@ import { BoundaryRoute } from '../Error';
 import Reports from './Reports';
 import RootReport from './reports/Root';
 import Notes from './Notes';
+import RootNote from './notes/Root';
 import ExternalReferences from './ExternalReferences';
 
 class Root extends Component {
@@ -32,6 +33,10 @@ class Root extends Component {
           exact
           path="/dashboard/analysis/notes"
           component={Notes}
+        />
+        <BoundaryRoute
+          path="/dashboard/analysis/notes/:noteId"
+          render={(routeProps) => <RootNote {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

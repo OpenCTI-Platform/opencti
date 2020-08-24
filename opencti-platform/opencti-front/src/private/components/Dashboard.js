@@ -754,7 +754,9 @@ class Dashboard extends Component {
                                   <ListItemText
                                     primary={
                                       <div className={classes.itemText}>
-                                        {stixDomainObject.name}
+                                        {stixDomainObject.name
+                                          || stixDomainObject.attribute_abstract
+                                          || stixDomainObject.opinion}
                                       </div>
                                     }
                                   />

@@ -17,8 +17,8 @@ import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer, commitMutation } from '../../../../relay/environment';
-import { toolEditionQuery } from './ToolEdition';
-import ToolEditionContainer from './ToolEditionContainer';
+import { attackPatternEditionQuery } from './AttackPatternEdition';
+import AttackPatternEditionContainer from './AttackPatternEditionContainer';
 import Loader from '../../../../components/Loader';
 import Security, {
   KNOWLEDGE_KNUPDATE_KNDELETE,
@@ -47,15 +47,15 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const ToolPopoverDeletionMutation = graphql`
-  mutation ToolPopoverDeletionMutation($id: ID!) {
-    toolEdit(id: $id) {
+const AttackPatternPopoverDeletionMutation = graphql`
+  mutation AttackPatternPopoverDeletionMutation($id: ID!) {
+    attackPatternEdit(id: $id) {
       delete
     }
   }
 `;
 
-class ToolPopover extends Component {
+class AttackPatternPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -86,14 +86,14 @@ class ToolPopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: ToolPopoverDeletionMutation,
+      mutation: AttackPatternPopoverDeletionMutation,
       variables: {
         id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/techniques/tools');
+        this.props.history.push('/dashboard/arsenal/attack_patterns');
       },
     });
   }
@@ -141,7 +141,7 @@ class ToolPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this tool?')}
+              {t('Do you want to delete this attack pattern?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -168,13 +168,13 @@ class ToolPopover extends Component {
           onClose={this.handleCloseEdit.bind(this)}
         >
           <QueryRenderer
-            query={toolEditionQuery}
+            query={attackPatternEditionQuery}
             variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <ToolEditionContainer
-                    tool={props.tool}
+                  <AttackPatternEditionContainer
+                    attackPattern={props.attackPattern}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -188,11 +188,15 @@ class ToolPopover extends Component {
   }
 }
 
-ToolPopover.propTypes = {
+AttackPatternPopover.propTypes = {
   id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(ToolPopover);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(AttackPatternPopover);
