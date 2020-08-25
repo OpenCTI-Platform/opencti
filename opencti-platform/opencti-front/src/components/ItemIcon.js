@@ -15,6 +15,8 @@ import {
   WorkOutline,
   FeedbackOutlined,
   LanguageOutlined,
+  WifiTetheringOutlined,
+  Visibility,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -71,7 +73,9 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Note':
       return <WorkOutline style={style} fontSize={fontSize} role="img" />;
     case 'Observed-Data':
-      return '/dashboard/containers/observed_datas';
+      return (
+        <WifiTetheringOutlined style={style} fontSize={fontSize} role="img" />
+      );
     case 'Opinion':
       return <FeedbackOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Report':
@@ -141,6 +145,8 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'X-OpenCTI-Text':
     case 'X-OpenCTI-User-Agent':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
+    case 'stix-sighting-relationship':
+      return <Visibility style={style} fontSize={fontSize} role="img" />;
     case 'stix-core-relationship':
     case 'targets':
     case 'uses':

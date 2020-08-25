@@ -36,7 +36,7 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuReport extends Component {
+class TopMenuNote extends Component {
   render() {
     const {
       t,
@@ -124,7 +124,7 @@ class TopMenuReport extends Component {
   }
 }
 
-TopMenuReport.propTypes = {
+TopMenuNote.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -136,4 +136,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuReport);
+)(TopMenuNote);

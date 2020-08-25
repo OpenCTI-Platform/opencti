@@ -138,8 +138,9 @@ const stixDomainObjectMutationRelationDelete = graphql`
 
 const stixDomainObjectValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  aliases: Yup.string(),
   description: Yup.string(),
+  aliases: Yup.string(),
+  x_opencti_aliases: Yup.string(),
 });
 
 class StixDomainObjectEditionContainer extends Component {
@@ -259,7 +260,10 @@ class StixDomainObjectEditionContainer extends Component {
             id: this.props.stixDomainObject.id,
             input: {
               key: name,
-              value: name === 'aliases' ? split(',', value) : value,
+              value:
+                name === 'aliases' || name === 'x_opencti_aliases'
+                  ? split(',', value)
+                  : value,
             },
           },
         });
@@ -285,12 +289,27 @@ class StixDomainObjectEditionContainer extends Component {
         value: n.node.id,
       })),
     )(stixDomainObject);
-    const initialValues = pipe(
-      assoc('aliases', join(',', stixDomainObject.aliases)),
+    let initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
-      pick(['name', 'aliases', 'description', 'createdBy', 'objectMarking']),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(stixDomainObject);
+    if ('aliases' in stixDomainObject) {
+      initialValues = assoc(
+        'aliases',
+        stixDomainObject.aliases ? join(',', stixDomainObject.aliases) : '',
+        initialValues,
+      );
+    }
+    if ('x_opencti_aliases' in stixDomainObject) {
+      initialValues = assoc(
+        'x_opencti_aliases',
+        stixDomainObject.x_opencti_aliases
+          ? join(',', stixDomainObject.x_opencti_aliases)
+          : '',
+        initialValues,
+      );
+    }
     return (
       <div>
         <div className={classes.header}>
@@ -329,21 +348,44 @@ class StixDomainObjectEditionContainer extends Component {
                     />
                   }
                 />
-                <Field
-                  component={TextField}
-                  name="aliases"
-                  label={t('Aliases separated by commas')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  onFocus={this.handleChangeFocus.bind(this)}
-                  onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="aliases"
-                    />
-                  }
-                />
+                {'aliases' in stixDomainObject ? (
+                  <Field
+                    component={TextField}
+                    name="aliases"
+                    label={t('Aliases separated by commas')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onSubmit={this.handleSubmitField.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="aliases"
+                      />
+                    }
+                  />
+                ) : (
+                  ''
+                )}
+                {'x_opencti_aliases' in stixDomainObject ? (
+                  <Field
+                    component={TextField}
+                    name="x_opencti_aliases"
+                    label={t('Aliases separated by commas')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                    onFocus={this.handleChangeFocus.bind(this)}
+                    onSubmit={this.handleSubmitField.bind(this)}
+                    helperText={
+                      <SubscriptionFocus
+                        context={editContext}
+                        fieldName="x_opencti_aliases"
+                      />
+                    }
+                  />
+                ) : (
+                  ''
+                )}
                 <Field
                   component={TextField}
                   name="description"
@@ -412,26 +454,32 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         ... on AttackPattern {
           name
           description
+          aliases
         }
         ... on Campaign {
           name
           description
+          aliases
         }
         ... on CourseOfAction {
           name
           description
+          x_opencti_aliases
         }
         ... on Individual {
           name
           description
+          x_opencti_aliases
         }
         ... on Organization {
           name
           description
+          x_opencti_aliases
         }
         ... on Sector {
           name
           description
+          x_opencti_aliases
         }
         ... on Indicator {
           name
@@ -444,34 +492,42 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         ... on IntrusionSet {
           name
           description
+          aliases
         }
         ... on Position {
           name
           description
+          x_opencti_aliases
         }
         ... on City {
           name
           description
+          x_opencti_aliases
         }
         ... on Country {
           name
           description
+          x_opencti_aliases
         }
         ... on Region {
           name
           description
+          x_opencti_aliases
         }
         ... on Malware {
           name
           description
+          aliases
         }
         ... on ThreatActor {
           name
           description
+          aliases
         }
         ... on Tool {
           name
           description
+          aliases
         }
         ... on Vulnerability {
           name
@@ -480,6 +536,7 @@ const StixDomainObjectEditionFragment = createFragmentContainer(
         ... on XOpenCTIIncident {
           name
           description
+          aliases
         }
         createdBy {
           ... on Identity {

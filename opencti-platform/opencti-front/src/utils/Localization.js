@@ -89,9 +89,11 @@ const i18n = {
       'Do you want to remove this report?':
         'Souhaitez-vous supprimer ce rapport ?',
       'Do you want to remove this opinion?':
-        'Souhaitez-vous supprimer cette opinion ?',
+        'Souhaitez-vous supprimer cette opinions ?',
       'Do you want to remove the observable from this indicator?':
         'Souhaitez-vous supprimer cet observable de cet indicateur ?',
+      'Do you want to remove the entity from this container?':
+        'Souhaitez-vous supprimer cette entité de ce conteneur ?',
       'Do you want to delete this role?': 'Souhaitez-vous supprimer ce rôle ?',
       'Do you want to delete this label?':
         'Souhaitez-vous supprimer ce label ?',
@@ -360,6 +362,7 @@ const i18n = {
       Report: 'Report',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
+      'Related entities': 'Entités liées',
       'Indicators composed with this observable':
         'Indicateurs composés avec cet observable',
       Overview: 'Aperçu',
@@ -367,7 +370,7 @@ const i18n = {
       Entities: 'Entités',
       'entitie(s)': 'entité(s)',
       Observables: 'Observables',
-      Sightings: 'Observations',
+      Sightings: 'Détections',
       Category: 'Catégorie',
       Constituent: 'Bénéficiaire',
       Enabled: 'Activé',
@@ -511,6 +514,7 @@ const i18n = {
       Download: 'Télécharger',
       'Exported files': 'Fichiers exportés',
       'Inference explanation': "Explication de l'inférence",
+      Explanation: 'Explication',
       entity: 'entité',
       entities: 'entités',
       Relation: 'Relation',

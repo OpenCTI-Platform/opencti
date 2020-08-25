@@ -151,6 +151,7 @@ class ListLines extends Component {
       exportContext,
       numberOfElements,
       availableFilterKeys,
+      noHeaders,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -181,6 +182,12 @@ class ListLines extends Component {
           ) : (
             ''
           )}
+          {(!availableFilterKeys || availableFilterKeys.length === 0)
+          && !noHeaders ? (
+            <div style={{ height: 38 }}> &nbsp; </div>
+            ) : (
+              ''
+            )}
           <div className={classes.filters}>
             {map(
               (filter) => map(
@@ -270,40 +277,44 @@ class ListLines extends Component {
               : classes.linesContainer,
           }}
         >
-          <ListItem
-            classes={{ root: classes.item }}
-            divider={false}
-            style={{ paddingTop: 0 }}
-          >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                &nbsp;
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
-                    dataColumn[0],
-                    dataColumn[1].label,
-                    dataColumn[1].width,
-                    dataColumn[1].isSortable,
-                  ))}
-                </div>
-              }
-            />
-            {secondaryAction ? (
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-            ) : (
-              ''
-            )}
-          </ListItem>
+          {!noHeaders ? (
+            <ListItem
+              classes={{ root: classes.item }}
+              divider={false}
+              style={{ paddingTop: 0 }}
+            >
+              <ListItemIcon>
+                <span
+                  style={{
+                    padding: '0 8px 0 8px',
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                >
+                  &nbsp;
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
+                      dataColumn[0],
+                      dataColumn[1].label,
+                      dataColumn[1].width,
+                      dataColumn[1].isSortable,
+                    ))}
+                  </div>
+                }
+              />
+              {secondaryAction ? (
+                <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+              ) : (
+                ''
+              )}
+            </ListItem>
+          ) : (
+            ''
+          )}
           {children}
         </List>
         {typeof handleToggleExports === 'function'
@@ -366,6 +377,7 @@ ListLines.propTypes = {
   bottomNav: PropTypes.bool,
   numberOfElements: PropTypes.object,
   availableFilterKeys: PropTypes.array,
+  noHeaders: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

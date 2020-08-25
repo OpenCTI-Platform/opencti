@@ -179,7 +179,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).not.toBeNull();
     expect(queryResult.data.note.standard_id).toEqual('note--0a12cb43-14b9-5dfa-b307-dfd2dafb906d');
-    expect(queryResult.data.note.objects.edges.length).toEqual(4);
+    expect(queryResult.data.note.objects.edges.length).toEqual(5);
   });
   it('should note contains stix object or stix relationship accurate', async () => {
     const intrusionSet = await elLoadByIds('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');

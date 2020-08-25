@@ -19,9 +19,9 @@ const styles = () => ({
   },
 });
 
-class NoteDetailsComponent extends Component {
+class OpinionDetailsComponent extends Component {
   render() {
-    const { t, classes, note } = this.props;
+    const { t, classes, opinion } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -29,38 +29,38 @@ class NoteDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Typography variant="h3" gutterBottom={true}>
-            {t('Abstract')}
+            {t('Opinion')}
           </Typography>
-          <Markdown className="markdown" source={note.attribute_abstract} />
+          <Markdown className="markdown" source={opinion.opinion} />
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Content')}
+            {t('Explanation')}
           </Typography>
-          <Markdown className="markdown" source={note.content} />
+          <Markdown className="markdown" source={opinion.explanation} />
         </Paper>
       </div>
     );
   }
 }
 
-NoteDetailsComponent.propTypes = {
-  note: PropTypes.object,
+OpinionDetailsComponent.propTypes = {
+  opinion: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const NoteDetails = createFragmentContainer(NoteDetailsComponent, {
-  note: graphql`
-    fragment NoteDetails_note on Note {
+const OpinionDetails = createFragmentContainer(OpinionDetailsComponent, {
+  opinion: graphql`
+    fragment OpinionDetails_opinion on Opinion {
       id
-      attribute_abstract
-      content
+      opinion
+      explanation
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(NoteDetails);
+export default compose(inject18n, withStyles(styles))(OpinionDetails);

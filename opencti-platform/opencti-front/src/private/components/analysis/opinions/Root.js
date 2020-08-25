@@ -7,7 +7,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import Note from './Note';
+import Opinion from './Opinion';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -15,11 +15,11 @@ import Loader from '../../../../components/Loader';
 import ReportPopover from '../reports/ReportPopover';
 
 const subscription = graphql`
-  subscription RootNoteSubscription($id: ID!) {
+  subscription RootOpinionSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Note {
-        ...Note_note
-        ...NoteEditionContainer_note
+      ... on Opinion {
+        ...Opinion_opinion
+        ...OpinionEditionContainer_opinion
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -27,12 +27,12 @@ const subscription = graphql`
   }
 `;
 
-const noteQuery = graphql`
-  query RootNoteQuery($id: String!) {
-    note(id: $id) {
+const opinionQuery = graphql`
+  query RootOpinionQuery($id: String!) {
+    opinion(id: $id) {
       standard_id
-      ...Note_note
-      ...NoteDetails_note
+      ...Opinion_opinion
+      ...OpinionDetails_opinion
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
       ...ContainerStixObjectsOrStixRelationships_container
@@ -48,16 +48,16 @@ const noteQuery = graphql`
   }
 `;
 
-class RootNote extends Component {
+class RootOpinion extends Component {
   componentDidMount() {
     const {
       match: {
-        params: { noteId },
+        params: { opinionId },
       },
     } = this.props;
     const sub = requestSubscription({
       subscription,
-      variables: { id: noteId },
+      variables: { id: opinionId },
     });
     this.setState({ sub });
   }
@@ -70,57 +70,57 @@ class RootNote extends Component {
     const {
       me,
       match: {
-        params: { noteId },
+        params: { opinionId },
       },
     } = this.props;
     return (
       <div>
         <TopBar me={me || null} />
         <QueryRenderer
-          query={noteQuery}
-          variables={{ id: noteId }}
+          query={opinionQuery}
+          variables={{ id: opinionId }}
           render={({ props }) => {
-            if (props && props.note) {
+            if (props && props.opinion) {
               return (
                 <div>
                   <Route
                     exact
-                    path="/dashboard/analysis/notes/:noteId"
+                    path="/dashboard/analysis/opinions/:opinionId"
                     render={(routeProps) => (
-                      <Note {...routeProps} note={props.note} />
+                      <Opinion {...routeProps} opinion={props.opinion} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/analysis/notes/:noteId/files"
+                    path="/dashboard/analysis/opinions/:opinionId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <ContainerHeader
-                          container={props.note}
+                          container={props.opinion}
                           PopoverComponent={<ReportPopover />}
                         />
                         <FileManager
                           {...routeProps}
-                          id={noteId}
+                          id={opinionId}
                           connectorsExport={props.connectorsForExport}
                           connectorsImport={props.connectorsForImport}
-                          entity={props.note}
+                          entity={props.opinion}
                         />
                       </React.Fragment>
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/analysis/notes/:noteId/history"
+                    path="/dashboard/analysis/opinions/:opinionId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <ContainerHeader
-                          container={props.note}
+                          container={props.opinion}
                           PopoverComponent={<ReportPopover />}
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityStandardId={props.note.standard_id}
+                          entityStandardId={props.opinion.standard_id}
                         />
                       </React.Fragment>
                     )}
@@ -136,10 +136,10 @@ class RootNote extends Component {
   }
 }
 
-RootNote.propTypes = {
+RootOpinion.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
 };
 
-export default withRouter(RootNote);
+export default withRouter(RootOpinion);

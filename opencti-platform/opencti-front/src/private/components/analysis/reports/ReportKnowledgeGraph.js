@@ -45,6 +45,8 @@ import StixCoreRelationshipEdition, {
   stixCoreRelationshipEditionDeleteMutation,
 } from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 
+const ignoredTypes = ['Note', 'Opinion', 'Report'];
+
 const styles = () => ({
   container: {
     position: 'relative',
@@ -151,6 +153,9 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
         name
         description
       }
+      ... on StixCyberObservable {
+        observable_value
+      }
     }
   }
 `;
@@ -167,7 +172,7 @@ const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
   }
 `;
 
-export const reportKnowledgeGraphtMutationRelationAdd = graphql`
+export const reportKnowledgeGraphtMutationRelationAddMutation = graphql`
   mutation ReportKnowledgeGraphRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
@@ -183,7 +188,7 @@ export const reportKnowledgeGraphtMutationRelationAdd = graphql`
   }
 `;
 
-export const reportKnowledgeGraphtMutationRelationDelete = graphql`
+export const reportKnowledgeGraphtMutationRelationDeleteMutation = graphql`
   mutation ReportKnowledgeGraphRelationDeleteMutation(
     $id: ID!
     $toId: String!
@@ -268,11 +273,13 @@ class ReportKnowledgeGraphComponent extends Component {
   componentDidUpdate(prevProps) {
     const model = this.props.engine.getDiagramModel();
     const propsNodes = filter(
-      (n) => !n.node.relationship_type,
+      (n) => !n.node.relationship_type
+        && !includes(n.node.entity_type, ignoredTypes),
       this.props.report.objects.edges,
     );
     const prevPropsNodes = filter(
-      (n) => !n.node.relationship_type,
+      (n) => !n.node.relationship_type
+        && !includes(n.node.entity_type, ignoredTypes),
       prevProps.report.objects.edges,
     );
     const added = differenceWith(
@@ -348,7 +355,8 @@ class ReportKnowledgeGraphComponent extends Component {
     const model = new DiagramModel();
     // prepare nodes & relations
     const nodes = filter(
-      (n) => !n.node.relationship_type,
+      (n) => !n.node.relationship_type
+        && !includes(n.node.entity_type, ignoredTypes),
       this.props.report.objects.edges,
     );
     const relations = filter(
@@ -549,11 +557,11 @@ class ReportKnowledgeGraphComponent extends Component {
         // handle entity deletion
         if (node.type === 'entity') {
           commitMutation({
-            mutation: reportKnowledgeGraphtMutationRelationDelete,
+            mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
             variables: {
               id: this.props.report.id,
               toId: node.extras.id,
-              relationship_type: 'object_refs',
+              relationship_type: 'object',
             },
           });
         }
@@ -570,11 +578,11 @@ class ReportKnowledgeGraphComponent extends Component {
               });
             } else {
               commitMutation({
-                mutation: reportKnowledgeGraphtMutationRelationDelete,
+                mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
                 variables: {
                   id: this.props.report.id,
                   toId: node.extras.id,
-                  relationship_type: 'object_refs',
+                  relationship_type: 'object',
                 },
               });
             }
@@ -675,13 +683,11 @@ class ReportKnowledgeGraphComponent extends Component {
       lastLinkLastSeen: result.stop_time,
     });
     const input = {
-      fromRole: 'knowledge_aggregation',
-      toRole: 'so',
       toId: result.id,
-      through: 'object_refs',
+      relationship_type: 'object',
     };
     commitMutation({
-      mutation: reportKnowledgeGraphtMutationRelationAdd,
+      mutation: reportKnowledgeGraphtMutationRelationAddMutation,
       variables: {
         id: this.props.report.id,
         input,
@@ -747,13 +753,13 @@ class ReportKnowledgeGraphComponent extends Component {
       fetchQuery(reportKnowledgeGraphStixCoreObjectQuery, {
         id: editEntityId,
       }).then((data) => {
-        const { stixEntity } = data;
+        const { stixCoreObject } = data;
         const model = this.props.engine.getDiagramModel();
         const nodeObject = model.getNode(currentNode);
         nodeObject.setExtras({
           id: currentNode.extras.id,
-          name: stixEntity.name,
-          type: stixEntity.entity_type,
+          name: stixCoreObject.name || stixCoreObject.observable_value,
+          type: stixCoreObject.entity_type,
         });
         this.props.engine.repaintCanvas();
       });

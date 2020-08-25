@@ -1198,7 +1198,10 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   const isMultiple = R.includes(key, multipleAttributes);
   let finalVal;
   if (isMultiple) {
-    const currentValues = instance[key];
+    let currentValues = instance[key];
+    if (!currentValues) {
+      currentValues = [];
+    }
     if (operation === EVENT_TYPE_UPDATE_ADD) {
       finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
     } else if (operation === EVENT_TYPE_UPDATE_REMOVE) {

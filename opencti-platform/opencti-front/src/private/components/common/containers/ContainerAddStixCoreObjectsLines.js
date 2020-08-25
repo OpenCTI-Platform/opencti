@@ -22,7 +22,10 @@ import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { containerStixCoreObjectPopoverDeletionMutation } from './ContainerStixCoreObjectPopover';
+import {
+  reportKnowledgeGraphtMutationRelationAddMutation,
+  reportKnowledgeGraphtMutationRelationDeleteMutation,
+} from '../../analysis/reports/ReportKnowledgeGraph';
 
 const styles = (theme) => ({
   container: {
@@ -118,7 +121,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
-          mutation: containerAddStixCoreObjectsLinesRelationDeleteMutation,
+          mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
           variables: {
             id: containerId,
             toId: stixCoreObject.id,
@@ -135,7 +138,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
         });
       } else {
         commitMutation({
-          mutation: containerStixCoreObjectPopoverDeletionMutation,
+          mutation: containerAddStixCoreObjectsLinesRelationDeleteMutation,
           variables: {
             id: containerId,
             toId: stixCoreObject.id,
@@ -166,7 +169,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
       };
       if (knowledgeGraph) {
         commitMutation({
-          mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
+          mutation: reportKnowledgeGraphtMutationRelationAddMutation,
           variables: {
             id: containerId,
             input,

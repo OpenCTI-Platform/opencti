@@ -86,7 +86,7 @@ class RootXOpenCTIIncident extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId"
+                    path="/dashboard/events/incidents/:incidentId"
                     render={(routeProps) => (
                       <XOpenCTIIncident
                         {...routeProps}
@@ -96,7 +96,7 @@ class RootXOpenCTIIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/reports"
+                    path="/dashboard/events/incidents/:incidentId/reports"
                     render={(routeProps) => (
                       <XOpenCTIIncidentReports
                         {...routeProps}
@@ -106,15 +106,15 @@ class RootXOpenCTIIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/knowledge"
+                    path="/dashboard/v/incidents/:incidentId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/threats/incidents/${incidentId}/knowledge/overview`}
+                        to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/incidents/:incidentId/knowledge"
+                    path="/dashboard/events/incidents/:incidentId/knowledge"
                     render={(routeProps) => (
                       <XOpenCTIIncidentKnowledge
                         {...routeProps}
@@ -123,7 +123,7 @@ class RootXOpenCTIIncident extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/threats/incidents/:incidentId/observables"
+                    path="/dashboard/events/incidents/:incidentId/observables"
                     render={(routeProps) => (
                       <XOpenCTIIncidentObservables
                         {...routeProps}
@@ -133,7 +133,7 @@ class RootXOpenCTIIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/files"
+                    path="/dashboard/events/incidents/:incidentId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -151,7 +151,7 @@ class RootXOpenCTIIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/incidents/:incidentId/history"
+                    path="/dashboard/events/incidents/:incidentId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader

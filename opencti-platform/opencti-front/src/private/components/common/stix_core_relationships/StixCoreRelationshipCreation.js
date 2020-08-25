@@ -28,6 +28,7 @@ import { truncate } from '../../../../utils/String';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
+import ConfidenceField from '../form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -170,14 +171,15 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   confidence: Yup.number()
     .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
+    .integer(t('The value must be a number')),
   start_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+    .nullable()
+    .default(null)
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
   stop_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+    .nullable()
+    .default(null)
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
   description: Yup.string(),
 });
 
@@ -194,8 +196,14 @@ class StixCoreRelationshipCreation extends Component {
     const finalValues = pipe(
       assoc('fromId', this.props.from.id),
       assoc('toId', this.props.to.id),
-      assoc('start_time', parse(values.start_time).format()),
-      assoc('stop_time', parse(values.stop_time).format()),
+      assoc(
+        'start_time',
+        values.start_time ? parse(values.start_time).format() : null,
+      ),
+      assoc(
+        'stop_time',
+        values.stop_time ? parse(values.stop_time).format() : null,
+      ),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -271,7 +279,7 @@ class StixCoreRelationshipCreation extends Component {
       : relationshipTypes.includes('related-to')
         ? 'related-to'
         : '';
-    const defaultConfidence = confidence || 3;
+    const defaultConfidence = confidence || 15;
     const defaultStartTime = startTime || null;
     const defaultEndTime = stopTime || null;
     const initialValues = {
@@ -399,18 +407,12 @@ class StixCoreRelationshipCreation extends Component {
                   relationshipTypes,
                 )}
               </Field>
-              <Field
-                component={SelectField}
+              <ConfidenceField
                 name="confidence"
                 label={t('Confidence level')}
                 fullWidth={true}
                 containerstyle={{ marginTop: 20, width: '100%' }}
-              >
-                <MenuItem value={1}>{t('Low')}</MenuItem>
-                <MenuItem value={2}>{t('Moderate')}</MenuItem>
-                <MenuItem value={3}>{t('Good')}</MenuItem>
-                <MenuItem value={4}>{t('Strong')}</MenuItem>
-              </Field>
+              />
               <Field
                 component={DatePickerField}
                 name="start_time"

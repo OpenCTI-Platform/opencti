@@ -6,6 +6,8 @@ import Reports from './Reports';
 import RootReport from './reports/Root';
 import Notes from './Notes';
 import RootNote from './notes/Root';
+import Opinions from './Opinions';
+import RootOpinion from './opinions/Root';
 import ExternalReferences from './ExternalReferences';
 
 class Root extends Component {
@@ -37,6 +39,15 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/analysis/notes/:noteId"
           render={(routeProps) => <RootNote {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/analysis/opinions"
+          component={Opinions}
+        />
+        <BoundaryRoute
+          path="/dashboard/analysis/opinions/:opinionId"
+          render={(routeProps) => <RootOpinion {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

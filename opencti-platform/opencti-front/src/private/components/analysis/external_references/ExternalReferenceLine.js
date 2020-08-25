@@ -7,8 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import Avatar from '@material-ui/core/Avatar';
-import { MoreVertOutlined } from '@material-ui/icons';
+import { MoreVertOutlined, LanguageOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ExternalReferencePopover from './ExternalReferencePopover';
@@ -61,9 +60,7 @@ class ExternalReferenceLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Avatar classes={{ root: classes.avatar }}>
-            {node.source_name.substring(0, 1)}
-          </Avatar>
+          <LanguageOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -141,7 +138,7 @@ class ExternalReferenceLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Avatar classes={{ root: classes.avatarDisabled }}>A</Avatar>
+          <LanguageOutlined />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -7,7 +7,10 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, WorkOutline } from '@material-ui/icons';
+import {
+  KeyboardArrowRightOutlined,
+  FeedbackOutlined,
+} from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
@@ -43,7 +46,7 @@ const styles = (theme) => ({
   },
 });
 
-class NoteLineComponent extends Component {
+class OpinionLineComponent extends Component {
   render() {
     const {
       fd, classes, node, dataColumns, onLabelClick,
@@ -54,19 +57,19 @@ class NoteLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/analysis/notes/${node.id}`}
+        to={`/dashboard/analysis/opinions/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <WorkOutline />
+          <FeedbackOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.attribute_abstract.width }}
+                style={{ width: dataColumns.opinion.width }}
               >
-                {node.attribute_abstract}
+                {node.opinion}
               </div>
               <div
                 className={classes.bodyItem}
@@ -116,7 +119,7 @@ class NoteLineComponent extends Component {
   }
 }
 
-NoteLineComponent.propTypes = {
+OpinionLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -124,12 +127,12 @@ NoteLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
+const OpinionLineFragment = createFragmentContainer(OpinionLineComponent, {
   node: graphql`
-    fragment NoteLine_node on Note {
+    fragment OpinionLine_node on Opinion {
       id
-      attribute_abstract
-      content
+      opinion
+      explanation
       created
       createdBy {
         ... on Identity {
@@ -160,25 +163,25 @@ const NoteLineFragment = createFragmentContainer(NoteLineComponent, {
   `,
 });
 
-export const NoteLine = compose(
+export const OpinionLine = compose(
   inject18n,
   withStyles(styles),
-)(NoteLineFragment);
+)(OpinionLineFragment);
 
-class NoteLineDummyComponent extends Component {
+class OpinionLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <WorkOutline />
+          <FeedbackOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.attribute_abstract.width }}
+                style={{ width: dataColumns.opinion.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -217,12 +220,12 @@ class NoteLineDummyComponent extends Component {
   }
 }
 
-NoteLineDummyComponent.propTypes = {
+OpinionLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const NoteLineDummy = compose(
+export const OpinionLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(NoteLineDummyComponent);
+)(OpinionLineDummyComponent);
