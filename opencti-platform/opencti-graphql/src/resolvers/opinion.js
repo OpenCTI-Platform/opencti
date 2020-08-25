@@ -2,7 +2,6 @@ import {
   addOpinion,
   findAll,
   findById,
-  objects,
   opinionsDistributionByEntity,
   opinionsNumber,
   opinionsNumberByEntity,

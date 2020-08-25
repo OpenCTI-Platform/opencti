@@ -1,5 +1,4 @@
 import { assoc, dissoc, pick, pipe, head, includes } from 'ramda';
-import * as R from 'ramda';
 import { FunctionalError } from '../config/errors';
 import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';

@@ -2,7 +2,6 @@ import {
   addReport,
   findAll,
   findById,
-  objects,
   reportsDistributionByEntity,
   reportsNumber,
   reportsNumberByEntity,

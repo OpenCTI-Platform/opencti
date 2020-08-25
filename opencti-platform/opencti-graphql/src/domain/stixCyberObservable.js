@@ -47,8 +47,6 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
-import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 
 export const findById = (stixCyberObservableId) => {
   return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
