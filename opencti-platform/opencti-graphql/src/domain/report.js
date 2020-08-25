@@ -1,4 +1,4 @@
-import { assoc, append, propOr, pipe } from 'ramda';
+import { assoc, propOr, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -13,7 +13,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
-import { findAll as findAllStixDomainEntities } from './stixDomainObject';
 import { findById as findIdentityById } from './identity';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';

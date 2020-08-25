@@ -8,7 +8,6 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  distributionEntitiesThroughRelations,
   escape,
   listEntities,
   loadById,
