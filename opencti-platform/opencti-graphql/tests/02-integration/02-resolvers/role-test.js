@@ -134,7 +134,7 @@ describe('Role resolver standard behavior', () => {
     expect(queryResult.data.roleEdit.contextClean.id).toEqual(roleInternalId);
   });
   it('should add relation in role', async () => {
-    const capabilityStandardId = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
+    const capabilityStandardId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
     const capability = await elLoadByIds(capabilityStandardId);
     capabilityId = capability.id;
     const RELATION_ADD_QUERY = gql`

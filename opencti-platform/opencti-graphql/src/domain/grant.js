@@ -17,7 +17,7 @@ export const addRole = async (user, role) => {
   )(role);
   const roleEntity = await createEntity(user, roleToCreate, ENTITY_TYPE_ROLE, { noLog: true });
   const relationPromises = map(async (capabilityName) => {
-    const generateToId = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
+    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
     return createRelation(
       user,
       {

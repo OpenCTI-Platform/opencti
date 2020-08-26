@@ -714,7 +714,7 @@ export const elPaginate = async (indexName, options = {}) => {
     );
 };
 
-export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
+export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
   const workingIds = Array.isArray(ids) ? ids : [ids];
   const idsTermsPerType = [];
@@ -746,6 +746,7 @@ export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
   }
   const query = {
     index: indices,
+    size: 1000,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
     body: {
       query: {
@@ -757,28 +758,35 @@ export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
   };
   logger.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
   const data = await el.search(query);
-  const total = data.body.hits.total.value;
+  const hits = [];
+  for (let index = 0; index < data.body.hits.hits.length; index += 1) {
+    const hit = data.body.hits.hits[index];
+    const loadedElement = assoc('_index', hit._index, hit._source);
+    // Dictionary are stored in STIX json format, we need to recreate what is expected by graphql
+    let transformedData = {};
+    const dataKeys = Object.keys(loadedElement);
+    for (let indexKey = 0; indexKey < dataKeys.length; indexKey += 1) {
+      const dataKey = dataKeys[indexKey];
+      const attributeValue = loadedElement[dataKey];
+      transformedData[dataKey] = dictReconstruction(dataKey, attributeValue);
+    }
+    // Return the data and reconstruct the relation if needed
+    if (transformedData.base_type === BASE_TYPE_RELATION) {
+      transformedData = elReconstructRelation(transformedData);
+    }
+    hits.push(transformedData);
+  }
+  return hits;
+};
+
+export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
+  const hits = await elFindByIds(ids, type, indices);
   /* istanbul ignore if */
-  if (total > 1) {
-    const errorMeta = { ids, elementTypes, hits: data.body.hits.hits };
+  if (hits.length > 1) {
+    const errorMeta = { ids, type, hits: hits.length };
     throw DatabaseError('Expect only one response', errorMeta);
   }
-  const response = total === 1 ? head(data.body.hits.hits) : null;
-  if (!response) return response;
-  const loadedElement = assoc('_index', response._index, response._source);
-  // Dictionary are stored in STIX json format, we need to recreate what is expected by graphql
-  const transformedData = {};
-  const dataKeys = Object.keys(loadedElement);
-  for (let index = 0; index < dataKeys.length; index += 1) {
-    const dataKey = dataKeys[index];
-    const attributeValue = loadedElement[dataKey];
-    transformedData[dataKey] = dictReconstruction(dataKey, attributeValue);
-  }
-  // Return the data and reconstruct the relation if needed
-  if (transformedData.base_type === BASE_TYPE_RELATION) {
-    return elReconstructRelation(transformedData);
-  }
-  return transformedData;
+  return head(hits);
 };
 // endregion
 

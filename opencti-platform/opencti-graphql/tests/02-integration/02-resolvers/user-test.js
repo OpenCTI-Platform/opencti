@@ -132,7 +132,7 @@ describe('User resolver standard behavior', () => {
     expect(queryResult.data.user.capabilities[0].name).toEqual('KNOWLEDGE');
   });
   it('should user remove role', async () => {
-    const roleStandardId = await generateStandardId(ENTITY_TYPE_ROLE, { name: 'Default' });
+    const roleStandardId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Default' });
     const role = await elLoadByIds(roleStandardId);
     const REMOTE_ROLE_QUERY = gql`
       mutation UserEditRemoveRole($id: ID!, $toId: String!, $relationship_type: String!) {

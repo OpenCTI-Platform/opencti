@@ -136,8 +136,7 @@ class Consumer(threading.Thread):
             connection.add_callback_threadsafe(cb)
             return False
         except Exception as e:
-            logging.error(str(e))
-            if self.processing_count <= 5:
+            if e.args[0]["name"] != "UnsupportedError" and self.processing_count <= 5:
                 time.sleep(2)
                 logging.info(
                     "Message (delivery_tag="
@@ -148,6 +147,7 @@ class Consumer(threading.Thread):
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
             else:
+                logging.error(str(e))
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)

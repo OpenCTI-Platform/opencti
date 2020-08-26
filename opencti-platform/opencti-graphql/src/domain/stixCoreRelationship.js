@@ -17,7 +17,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
-import { isInternalId, isStixId } from '../schema/schemaUtils';
+import { isAnId } from '../schema/schemaUtils';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -50,7 +50,7 @@ export const findAll = async (args) => {
 };
 
 export const findById = (stixCoreRelationshipId) => {
-  if (!isStixId(stixCoreRelationshipId) && !isInternalId(stixCoreRelationshipId)) {
+  if (!isAnId(stixCoreRelationshipId)) {
     return getRelationInferredById(stixCoreRelationshipId);
   }
   return loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
@@ -146,7 +146,12 @@ export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
-  const updatedRelationship = await updateAttribute(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP, input);
+  const updatedRelationship = await updateAttribute(
+    user,
+    stixCoreRelationshipId,
+    ABSTRACT_STIX_CORE_RELATIONSHIP,
+    input
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, updatedRelationship, user);
 };
 

@@ -166,23 +166,18 @@ export const clearAccessCache = async (tokenUUID) => {
 // endregion
 
 export const lockResource = async (resources) => {
-  if (resources && resources.length > 0) {
-    const redisClient = await getClient();
-    // Retry during 5 secs
-    const redlock = new Redlock([redisClient], { retryCount: 10, retryDelay: 500 });
-    const lock = await redlock.lock(resources, 10000); // Force unlock after 10 secs
-    return {
-      unlock: async () => {
-        try {
-          await lock.unlock();
-        } catch (e) {
-          logger.debug(e, 'Failed to unlock resource', { resources });
-        }
-      },
-    };
-  }
+  const redisClient = await getClient();
+  // Retry during 5 secs
+  const redlock = new Redlock([redisClient], { retryCount: 10, retryDelay: 500 });
+  const lock = await redlock.lock(resources, 10000); // Force unlock after 10 secs
   return {
     extend: () => true,
-    unlock: () => {},
+    unlock: async () => {
+      try {
+        await lock.unlock();
+      } catch (e) {
+        logger.debug(e, 'Failed to unlock resource', { resources });
+      }
+    },
   };
 };

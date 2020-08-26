@@ -49,6 +49,14 @@ export const UnknownError = (reason, data) =>
     ...data,
   });
 
+const UNSUPPORTED_ERROR = 'UnsupportedError';
+export const UnsupportedError = (reason, data) =>
+  error(UNSUPPORTED_ERROR, 'Unsupported element', {
+    reason: reason || 'No reason specify',
+    category: CATEGORY_BUSINESS,
+    ...data,
+  });
+
 export const FunctionalError = (reason, data) =>
   error('FunctionalError', 'Business validation', {
     reason: reason || 'No reason specify',

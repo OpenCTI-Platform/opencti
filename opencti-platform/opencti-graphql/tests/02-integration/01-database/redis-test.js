@@ -6,7 +6,7 @@ import {
   delUserContext,
   fetchEditContext,
   getAccessCache,
-  getRedisVersion,
+  getRedisVersion, lockResource,
   setEditContext,
   storeAccessCache,
 } from '../../../src/database/redis';
@@ -17,6 +17,15 @@ describe('Redis basic and utils', () => {
     // Just wait one second to let redis client initialize
     const redisVersion = await getRedisVersion();
     expect(redisVersion).toEqual(expect.stringMatching(/^6\./g));
+  });
+});
+
+describe('Redis should lock', () => {
+  it('should redis lock mono', async () => {
+    const lock = await lockResource(['id1', 'id2']);
+    const lock2Promise = lockResource(['id3', 'id2']);
+    setTimeout(() => lock.unlock(), 3000);
+    await lock2Promise;
   });
 });
 

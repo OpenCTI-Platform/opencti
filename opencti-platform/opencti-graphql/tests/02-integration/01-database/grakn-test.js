@@ -531,7 +531,7 @@ describe('Grakn relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(21);
     const stixMetaRelationships = await listRelations('stix-meta-relationship', { noCache });
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(117);
+    expect(stixMetaRelationships.edges.length).toEqual(123);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('uses', { noCache, fromRole: 'uses_from', toRole: 'uses_to' });
@@ -807,7 +807,7 @@ describe('Grakn element loader', () => {
     expect(element.id).toEqual(internalId);
     // Wrong type
     element = await loadById(internalId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, { noCache });
-    expect(element).toBeNull();
+    expect(element).toBeUndefined();
   });
   it.each(noCacheCases)('should load entity by id (noCache = %s)', async (noCache) => {
     // No type

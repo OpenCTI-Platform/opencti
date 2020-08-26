@@ -9,7 +9,7 @@ import helmet from 'helmet';
 import { isEmpty } from 'ramda';
 import path from 'path';
 import nconf from 'nconf';
-import { logger, OPENCTI_TOKEN } from './config/conf';
+import { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
@@ -18,6 +18,8 @@ const createApp = (apolloServer) => {
   // Init the http server
   const app = express();
   const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
+  const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/'];
+  if (DEV_MODE) scriptSrc.push("'unsafe-eval'");
   app.use(session({ secret: sessionSecret, saveUninitialized: true, resave: true }));
   app.use(cookieParser());
   app.use(compression());
@@ -29,9 +31,15 @@ const createApp = (apolloServer) => {
     helmet.contentSecurityPolicy({
       directives: {
         defaultSrc: ["'self'"],
-        scriptSrc: ["'self'", "'unsafe-inline'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        imgSrc: ["'self'"],
+        scriptSrc,
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          'http://cdn.jsdelivr.net/npm/@apollographql/',
+          'https://fonts.googleapis.com/',
+        ],
+        fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
+        imgSrc: ["'self'", 'http://cdn.jsdelivr.net/npm/@apollographql/'],
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
       },

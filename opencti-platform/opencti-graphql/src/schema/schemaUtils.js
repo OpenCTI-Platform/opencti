@@ -41,9 +41,11 @@ import { isBasicRelationship, isStixRelationship } from './stixRelationship';
 import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
 
-export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
-
-export const isInternalId = (id) => validator.isUUID(id);
+const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
+const isInternalId = (id) => validator.isUUID(id);
+export const isAnId = (id) => {
+  return isStixId(id) || isInternalId(id);
+};
 
 export const convertEntityTypeToStixType = (type) => {
   switch (type) {

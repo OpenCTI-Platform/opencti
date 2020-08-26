@@ -2,9 +2,7 @@
 import { v4 as uuidv4, v5 as uuidv5 } from 'uuid';
 import * as R from 'ramda';
 import jsonCanonicalize from 'canonicalize';
-import { DatabaseError } from '../config/errors';
-// eslint-disable-next-line import/no-cycle
-import { internalLoadById } from '../database/grakn';
+import { DatabaseError, UnsupportedError } from '../config/errors';
 import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
 import * as D from './stixDomainObject';
@@ -109,17 +107,14 @@ const entityContribution = {
     [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL
   },
   resolvers: {
-    async from(id) {
-      const fromEntity = await internalLoadById(id);
-      return fromEntity && fromEntity.standard_id;
+    from(from) {
+      return from?.standard_id;
     },
-    async src(id) {
-      const srcEntity = await internalLoadById(id);
-      return srcEntity && srcEntity.standard_id;
+    src(src) {
+      return src?.standard_id;
     },
-    async dst(id) {
-      const dstEntity = await internalLoadById(id);
-      return dstEntity && dstEntity.standard_id;
+    dst(dst) {
+      return dst?.standard_id;
     },
     name(data) {
       return data?.toLowerCase();
@@ -156,7 +151,7 @@ export const isFieldContributingToStandardId = (type, keys) => {
   const keysIncluded = R.filter((p) => R.includes(p, keys), propertiesToKeep);
   return keysIncluded.length > 0;
 };
-const filteredIdContributions = async (way, data) => {
+const filteredIdContributions = (way, data) => {
   const propertiesToKeep = R.flatten(R.map((t) => t.src, way));
   const dataRelated = R.pick(propertiesToKeep, data);
   if (R.isEmpty(dataRelated)) return {};
@@ -171,7 +166,7 @@ const filteredIdContributions = async (way, data) => {
     const resolver = entityContribution.resolvers[src];
     if (resolver) {
       // eslint-disable-next-line no-await-in-loop
-      objectData[destKey] = value ? await resolver(value) : value;
+      objectData[destKey] = value ? resolver(value) : value;
     } else {
       objectData[destKey] = value;
     }
@@ -179,7 +174,7 @@ const filteredIdContributions = async (way, data) => {
   return R.filter((keyValue) => !R.isEmpty(keyValue) && !R.isNil(keyValue), objectData);
 };
 
-const generateDataUUID = async (type, data) => {
+const generateDataUUID = (type, data) => {
   const properties = entityContribution.definition[type];
   if (!properties) throw DatabaseError(`Unknown definition for type ${type}`);
   if (properties.length === 0) return data;
@@ -192,35 +187,35 @@ const generateDataUUID = async (type, data) => {
     for (let index = 0; index < properties.length; index += 1) {
       const way = properties[index];
       // eslint-disable-next-line no-await-in-loop
-      uuidData = await filteredIdContributions(way, data);
+      uuidData = filteredIdContributions(way, data);
       if (!R.isEmpty(uuidData)) break; // Stop as soon as a correct id is find
     }
   } else {
-    uuidData = await filteredIdContributions(properties, data);
+    uuidData = filteredIdContributions(properties, data);
   }
   return uuidData;
 };
-const generateStixUUID = async (type, data) => {
-  const dataUUID = await generateDataUUID(type, data);
+const generateStixUUID = (type, data) => {
+  const dataUUID = generateDataUUID(type, data);
   return idGen(dataUUID, OASIS_NAMESPACE);
 };
-const generateObjectUUID = async (type, data) => {
-  const dataUUID = await generateDataUUID(type, data);
+const generateObjectUUID = (type, data) => {
+  const dataUUID = generateDataUUID(type, data);
   return idGen(dataUUID, OPENCTI_NAMESPACE);
 };
 
-const generateObjectId = async (type, data) => {
-  const uuid = await generateObjectUUID(type, data);
+const generateObjectId = (type, data) => {
+  const uuid = generateObjectUUID(type, data);
   return `${convertEntityTypeToStixType(type)}--${uuid}`;
 };
-const generateStixId = async (type, data) => {
-  const uuid = await generateStixUUID(type, data);
+const generateStixId = (type, data) => {
+  const uuid = generateStixUUID(type, data);
   return `${convertEntityTypeToStixType(type)}--${uuid}`;
 };
 
 export const generateInternalId = () => uuidv4();
 
-export const generateStandardId = async (type, data) => {
+export const generateStandardId = (type, data) => {
   // Entities
   if (isStixMetaObject(type)) return generateStixId(type, data);
   if (isStixDomainObject(type)) return generateStixId(type, data);
@@ -232,5 +227,5 @@ export const generateStandardId = async (type, data) => {
   if (isStixMetaRelationship(type)) return `relationship-meta--${generateInternalId()}`;
   if (isStixSightingRelationship(type)) return `sighting--${generateInternalId()}`;
   // Unknown
-  throw DatabaseError(`Cant generate an id for ${type}`);
+  throw UnsupportedError(`${type} is not supported by the platform`);
 };

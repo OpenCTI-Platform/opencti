@@ -10,6 +10,7 @@ import {
   MissingReferenceError,
   TYPE_DUPLICATE_ENTRY,
   TYPE_LOCK_ERROR,
+  UnsupportedError,
 } from '../config/errors';
 import conf, { logger } from '../config/conf';
 import { buildPagination, fillTimeSeries, inferIndexFromConceptType, utcDate } from './utils';
@@ -18,6 +19,7 @@ import {
   elAggregationRelationsCount,
   elBulk,
   elDeleteInstanceIds,
+  elFindByIds,
   elHistogramCount,
   elIndexElements,
   elLoadByIds,
@@ -37,7 +39,6 @@ import {
   EVENT_TYPE_UPDATE_REMOVE,
   sendLog,
 } from './rabbitmq';
-// eslint-disable-next-line import/no-cycle
 import { generateInternalId, generateStandardId, isFieldContributingToStandardId } from '../schema/identifier';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
@@ -48,7 +49,7 @@ import {
   BASE_TYPE_RELATION,
   isAbstract,
 } from '../schema/general';
-import { getParentTypes, isInternalId, isStixId } from '../schema/schemaUtils';
+import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
   isStixMetaRelationship,
@@ -527,19 +528,6 @@ const loadConcept = async (tx, concept, args = {}) => {
       return relationData;
     });
 };
-// endregion
-
-// region Loader list
-const getSingleValue = (query, infer = false) => {
-  return executeRead(async (rTx) => {
-    logger.debug(`[GRAKN - infer: ${infer}] getSingleValue`, { query });
-    const iterator = await rTx.query(query, { infer });
-    return iterator.next();
-  });
-};
-export const getSingleValueNumber = (query, infer = false) => {
-  return getSingleValue(query, infer).then((data) => data.number());
-};
 const getConcepts = async (tx, answers, conceptQueryVars, entities, conceptOpts = {}) => {
   const { infer = false, noCache = false } = conceptOpts;
   const plainEntities = R.filter((e) => !R.isEmpty(e) && !R.isNil(e), entities);
@@ -611,7 +599,26 @@ export const find = async (query, entities, findOpts = {}) => {
     return data;
   });
 };
+export const load = async (query, entities, options) => {
+  const data = await find(query, entities, options);
+  if (data.length > 1) {
+    logger.debug('[GRAKN] Maybe you should use list instead for multiple results', { query });
+  }
+  return R.head(data);
+};
+// endregion
 
+// region Loader list
+const getSingleValue = (query, infer = false) => {
+  return executeRead(async (rTx) => {
+    logger.debug(`[GRAKN - infer: ${infer}] getSingleValue`, { query });
+    const iterator = await rTx.query(query, { infer });
+    return iterator.next();
+  });
+};
+export const getSingleValueNumber = (query, infer = false) => {
+  return getSingleValue(query, infer).then((data) => data.number());
+};
 export const listToEntitiesThroughRelation = (fromId, fromType, relationType, toEntityType) => {
   return find(
     `match $to isa ${toEntityType}; 
@@ -622,7 +629,6 @@ export const listToEntitiesThroughRelation = (fromId, fromType, relationType, to
     { paginationKey: 'to' }
   );
 };
-
 export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType) => {
   return find(
     `match $from isa ${fromEntityType}; 
@@ -949,15 +955,7 @@ export const listRelations = async (relationshipType, args) => {
 // endregion
 
 // region Loader element
-export const load = async (query, entities, options) => {
-  const data = await find(query, entities, options);
-  if (data.length > 1) {
-    logger.debug('[GRAKN] Maybe you should use list instead for multiple results', { query });
-  }
-  return R.head(data);
-};
-
-const loadElementById = async (ids, type, args = {}) => {
+const findElementById = async (ids, type, args = {}) => {
   const qType = type || 'thing';
   const workingIds = Array.isArray(ids) ? ids : [ids];
   const searchIds = R.map((id) => {
@@ -966,16 +964,26 @@ const loadElementById = async (ids, type, args = {}) => {
   }, workingIds);
   const attrIds = searchIds.join(' or ');
   const query = `match $x isa ${qType}; ${attrIds}; get;`;
-  const element = await load(query, ['x'], args);
-  return element ? element.x : null;
+  const elements = await find(query, ['x'], args);
+  return R.map((t) => t.x, elements);
 };
-
-export const internalLoadById = async (id, args = {}) => {
+const loadElementById = async (ids, type, args = {}) => {
+  const elements = await findElementById(ids, type, args);
+  if (elements.length > 1) {
+    throw DatabaseError('Expect only one response', { ids, type, hits: elements.length });
+  }
+  return R.head(elements);
+};
+const internalFindByIds = (ids, args = {}) => {
+  const { type } = args;
+  if (useCache(args)) return elFindByIds(ids, type);
+  return findElementById(ids, type, args);
+};
+export const internalLoadById = (id, args = {}) => {
   const { type } = args;
   if (useCache(args)) return elLoadByIds(id, type);
   return loadElementById(id, type, args);
 };
-
 export const loadById = async (id, type, args = {}) => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError(`You need to specify a type when loading a element`);
@@ -1196,6 +1204,50 @@ const flatAttributesForObject = (data) => {
     R.filter((f) => f.value !== undefined)
   )(elements);
 };
+const depsKeys = [
+  { src: 'fromId', dst: 'from' },
+  { src: 'toId', dst: 'to' },
+  { src: 'createdBy' },
+  { src: 'objectMarking' },
+  { src: 'objectLabel' },
+  { src: 'killChainPhases' },
+  { src: 'externalReferences' },
+  { src: 'objects' },
+];
+const inputResolveRefs = async (input) => {
+  const deps = [];
+  let expectedSize = 0;
+  for (let index = 0; index < depsKeys.length; index += 1) {
+    const { src, dst } = depsKeys[index];
+    const destKey = dst || src;
+    let id = input[src];
+    if (!R.isNil(id) && !R.isEmpty(id)) {
+      const isListing = Array.isArray(id);
+      if (isListing) id = R.uniq(id); // We can have duplicate due to id generaton (external ref for example)
+      expectedSize += isListing ? id.length : 1;
+      // Handle specific case of object label that can be directly the value instead of the key.
+      if (src === 'objectLabel') {
+        id = R.map((label) => (isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: label })), id);
+      }
+      const keyPromise = isListing ? internalFindByIds(id) : internalLoadById(id);
+      const dataPromise = keyPromise.then((data) => ({ [destKey]: data }));
+      deps.push(dataPromise);
+    }
+  }
+  const resolved = await Promise.all(deps);
+  const resolvedCount = R.sum(
+    R.map((r) => {
+      const [, val] = R.head(Object.entries(r));
+      if (!val || val.length === 0) return 0;
+      return Array.isArray(val) ? R.uniq(val).length : 1;
+    }, resolved)
+  );
+  const patch = R.mergeAll(resolved);
+  if (expectedSize !== resolvedCount) {
+    throw MissingReferenceError({ input, resolved });
+  }
+  return R.mergeRight(input, patch);
+};
 // endregion
 
 // region mutation update
@@ -1323,7 +1375,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       const keys = R.map((t) => t.key, elements);
       if (!isRelation && isFieldContributingToStandardId(instanceType, keys)) {
         // eslint-disable-next-line no-await-in-loop
-        const standardId = await generateStandardId(instanceType, instance);
+        const standardId = generateStandardId(instanceType, instance);
         const standardInput = { key: 'standard_id', value: [standardId] };
         // eslint-disable-next-line no-await-in-loop
         const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
@@ -1401,30 +1453,26 @@ const upsertRelation = async (user, relationship, type, data) => {
   }
   return relationship;
 };
+const addInnerRelation = async (user, from, to, type, opts) => {
+  const targets = Array.isArray(to) ? to : [to];
+  if (!to || R.isEmpty(targets)) return undefined;
+  const relations = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < targets.length; i += 1) {
+    const target = targets[i];
+    const input = { from, to: target, relationship_type: type };
+    // eslint-disable-next-line no-await-in-loop,no-use-before-define
+    const rel = await createRelationRaw(user, input, opts);
+    relations.push(rel);
+  }
+  return relations;
+};
 const createRelationRaw = async (user, input, opts = {}) => {
-  const { fromId, toId, relationship_type: relationshipType } = input;
+  const { from, to, relationship_type: relationshipType } = input;
   const { noLog = false } = opts;
-  // 01. First fix the direction of the relation
-  if (!fromId || !toId) throw FunctionalError(`Relation without from or to`, { input });
-  if (fromId === toId) {
-    /* istanbul ignore next */
-    throw FunctionalError(`You cant create a relation with the same source and target`, {
-      from: input.fromId,
-      relationshipType,
-    });
-  }
-  // Check dependencies
-  const fromRole = `${relationshipType}_from`;
-  const toRole = `${relationshipType}_to`;
-  const fromPromise = internalLoadById(fromId);
-  const toPromise = internalLoadById(toId);
-  const [from, to] = await Promise.all([fromPromise, toPromise]);
-  if (!from || !to) {
-    throw MissingReferenceError({ input, from, to });
-  }
   // 03. Generate the ID
   const internalId = generateInternalId();
-  const standardId = await generateStandardId(relationshipType, input);
+  const standardId = generateStandardId(relationshipType, input);
   // 04. Check existing relationship
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
   if (isStixCoreRelationship(relationshipType)) {
@@ -1454,7 +1502,6 @@ const createRelationRaw = async (user, input, opts = {}) => {
   if (existingRelationship) {
     return upsertRelation(user, existingRelationship, relationshipType, input);
   }
-
   // 05. Prepare the relation to be created
   const today = now();
   let relationAttributes = {};
@@ -1532,43 +1579,31 @@ const createRelationRaw = async (user, input, opts = {}) => {
       )(relationAttributes);
     }
   }
-  let lock;
-  try {
-    // Try to get the lock in redis
-    lock = await lockResource(internalId);
-    // 04. Create the relation
-    await executeWrite(async (wTx) => {
-      // Build final query
-      let query = `match $from isa ${input.fromType ? input.fromType : 'thing'}; 
-      $from has internal_id "${from.internal_id}"; 
-      $to has internal_id "${to.internal_id}";
+  // 04. Create the relation
+  const fromRole = `${relationshipType}_from`;
+  const toRole = `${relationshipType}_to`;
+  await executeWrite(async (wTx) => {
+    // Build final query
+    let query = `match $from isa ${input.fromType ? input.fromType : 'thing'}; 
+      $from has internal_id "${from.internal_id}"; $to has internal_id "${to.internal_id}";
       insert $rel(${fromRole}: $from, ${toRole}: $to) isa ${relationshipType},`;
-      const queryElements = flatAttributesForObject(relationAttributes);
-      const nbElements = queryElements.length;
-      for (let index = 0; index < nbElements; index += 1) {
-        const { key, value } = queryElements[index];
-        const insert = prepareAttribute(value);
-        const separator = index + 1 === nbElements ? ';' : ',';
-        query += `has ${key} ${insert}${separator} `;
-      }
-      logger.debug(`[GRAKN - infer: false] createRelation`, { query });
-      const iterator = await wTx.query(query);
-      const txRelation = await iterator.next();
-      if (txRelation === null) {
-        throw MissingReferenceError({ input });
-      }
-    });
-  } catch (err) {
-    // Lock cant be acquired after 5 sec, assume relation already exists.
-    if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Operation still in progress (redis lock)', { id: internalId });
+    const queryElements = flatAttributesForObject(relationAttributes);
+    const nbElements = queryElements.length;
+    for (let index = 0; index < nbElements; index += 1) {
+      const { key, value } = queryElements[index];
+      const insert = prepareAttribute(value);
+      const separator = index + 1 === nbElements ? ';' : ',';
+      query += `has ${key} ${insert}${separator} `;
     }
-    throw err;
-  } finally {
-    if (lock) await lock.unlock();
-  }
+    logger.debug(`[GRAKN - infer: false] createRelation`, { query });
+    const iterator = await wTx.query(query);
+    const txRelation = await iterator.next();
+    if (txRelation === null) {
+      throw MissingReferenceError({ input });
+    }
+  });
   // 06. Prepare the final data with Grakn IDs
-  const createdRel = R.pipe(
+  const created = R.pipe(
     R.assoc('id', internalId),
     R.assoc('fromId', from.internal_id),
     R.assoc('fromRole', fromRole),
@@ -1585,158 +1620,66 @@ const createRelationRaw = async (user, input, opts = {}) => {
   )(relationAttributes);
   const postOperations = [];
   // 07. Index the relation and the modification in the base entity
-  postOperations.push(elIndexElements([createdRel]));
+  postOperations.push(elIndexElements([created]));
   // 08. Send logs
   if (!noLog) {
     if (isStixMetaRelationship(relationshipType)) {
       const eventType = relationshipType === RELATION_CREATED_BY ? EVENT_TYPE_UPDATE : EVENT_TYPE_UPDATE_ADD;
-      postOperations.push(sendLog(eventType, user, createdRel, { from, to }));
+      postOperations.push(sendLog(eventType, user, created, { from, to }));
     } else {
-      postOperations.push(sendLog(EVENT_TYPE_CREATE, user, createdRel, { from, to }));
+      postOperations.push(sendLog(EVENT_TYPE_CREATE, user, created, { from, to }));
     }
+  }
+  // Complete with eventual relations (will eventually update the index)
+  if (isStixCoreRelationship(relationshipType)) {
+    postOperations.push(
+      addInnerRelation(user, created, input.createdBy, RELATION_CREATED_BY, opts),
+      addInnerRelation(user, created, input.objectMarking, RELATION_OBJECT_MARKING, opts),
+      addInnerRelation(user, created, input.killChainPhases, RELATION_KILL_CHAIN_PHASE, opts)
+    );
   }
   await Promise.all(postOperations);
   // 09. Return result if no need to reverse the relations from and to
-  return createdRel;
-};
-const addCreatedBy = async (user, fromInternalId, createdById, opts = {}) => {
-  if (!createdById) return undefined;
-  const input = {
-    fromId: fromInternalId,
-    toId: createdById,
-    relationship_type: RELATION_CREATED_BY,
-  };
-  return createRelationRaw(user, input, opts);
-};
-const addMarkingDef = async (user, fromInternalId, markingDefId, opts = {}) => {
-  if (!markingDefId) return undefined;
-  const input = {
-    fromId: fromInternalId,
-    toId: markingDefId,
-    relationship_type: RELATION_OBJECT_MARKING,
-  };
-  return createRelationRaw(user, input, opts);
-};
-const addMarkingDefs = async (user, internalId, markingDefIds, opts = {}) => {
-  if (!markingDefIds || R.isEmpty(markingDefIds)) return undefined;
-  const markings = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < markingDefIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const marking = await addMarkingDef(user, internalId, markingDefIds[i], opts);
-    markings.push(marking);
-  }
-  return markings;
-};
-const addLabel = async (user, fromInternalId, labelInput, opts = {}) => {
-  if (!labelInput) return undefined;
-  let labelId = labelInput;
-  if (!isStixId(labelInput) && !isInternalId(labelInput)) {
-    const labels = await listEntities([ENTITY_TYPE_LABEL], ['value'], {
-      filters: [{ key: 'value', values: [labelInput], operator: 'eq' }],
-    });
-    if (labels.edges.length === 0) {
-      throw FunctionalError(`The label ${labelInput} does not exist, please create it before using it`);
-    }
-    labelId = R.head(labels.edges).node.id;
-  }
-  const input = {
-    fromId: fromInternalId,
-    toId: labelId,
-    relationship_type: RELATION_OBJECT_LABEL,
-  };
-  return createRelationRaw(user, input, opts);
-};
-const addLabels = async (user, internalId, labelIds, opts = {}) => {
-  if (!labelIds || R.isEmpty(labelIds)) return undefined;
-  const labels = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < labelIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const tag = await addLabel(user, internalId, labelIds[i], opts);
-    labels.push(tag);
-  }
-  return labels;
-};
-const addExternalReference = async (user, fromInternalId, externalReferenceId, opts = {}) => {
-  if (!externalReferenceId) return undefined;
-  const input = {
-    fromId: fromInternalId,
-    toId: externalReferenceId,
-    relationship_type: RELATION_EXTERNAL_REFERENCE,
-  };
-  return createRelationRaw(user, input, opts);
-};
-const addExternalReferences = async (user, internalId, externalReferenceIds, opts = {}) => {
-  if (!externalReferenceIds || R.isEmpty(externalReferenceIds)) return undefined;
-  const externalReferences = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < externalReferenceIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const externalReference = await addExternalReference(user, internalId, externalReferenceIds[i], opts);
-    externalReferences.push(externalReference);
-  }
-  return externalReferences;
-};
-const addKillChain = async (user, fromInternalId, killChainId, opts = {}) => {
-  if (!killChainId) return undefined;
-  const input = {
-    fromId: fromInternalId,
-    toId: killChainId,
-    relationship_type: RELATION_KILL_CHAIN_PHASE,
-  };
-  return createRelationRaw(user, input, opts);
-};
-const addKillChains = async (user, internalId, killChainIds, opts = {}) => {
-  if (!killChainIds || R.isEmpty(killChainIds)) return undefined;
-  const killChains = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < killChainIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const killChain = await addKillChain(user, internalId, killChainIds[i], opts);
-    killChains.push(killChain);
-  }
-  return killChains;
-};
-const addObject = async (user, fromInternalId, stixObjectId, opts = {}) => {
-  if (!stixObjectId) return undefined;
-  const input = {
-    fromId: fromInternalId,
-    toId: stixObjectId,
-    relationship_type: RELATION_OBJECT,
-  };
-  return createRelationRaw(user, input, opts);
-};
-const addObjects = async (user, internalId, stixObjectIds, opts = {}) => {
-  if (!stixObjectIds || R.isEmpty(stixObjectIds)) return undefined;
-  const objects = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < stixObjectIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
-    const object = await addObject(user, internalId, stixObjectIds[i], opts);
-    objects.push(object);
-  }
-  return objects;
+  return created;
 };
 export const createRelation = async (user, input, opts = {}) => {
-  let relation;
+  let lock;
+  const { fromId, toId, relationship_type: relationshipType } = input;
+  if (fromId === toId) {
+    /* istanbul ignore next */
+    throw UnsupportedError(`You cant create a relation with the same source and target`, {
+      from: input.fromId,
+      relationshipType,
+    });
+  }
+  // We need to check existing dependencies
+  const resolvedInput = await inputResolveRefs(input);
+  const { from, to } = resolvedInput;
+  // Build lock ids
+  const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
+  const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
+  const lockIds = [lockFrom, lockTo];
+  if (!R.isNil(resolvedInput.stix_id)) lockIds.push(resolvedInput.stix_id);
   try {
-    relation = await createRelationRaw(user, input, opts);
+    // Try to get the lock in redis
+    lock = await lockResource(lockIds);
+    // noinspection UnnecessaryLocalVariableJS
+    const creation = await createRelationRaw(user, resolvedInput, opts);
+    // Return created element after waiting for it.
+    return creation;
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
       const existingRelationship = loadById(err.data.id, input.relationship_type);
       return upsertRelation(user, existingRelationship, input.relationship_type, input);
     }
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw DatabaseError('Operation still in progress (redis lock)', { lockIds });
+    }
     throw err;
+  } finally {
+    if (lock) await lock.unlock();
   }
-  // Complete with eventual relations (will eventually update the index)
-  await Promise.all([
-    addCreatedBy(user, relation.id, input.createdBy, opts),
-    addMarkingDefs(user, relation.id, input.markingDefinitions, opts),
-    addKillChains(user, relation.id, input.killChainPhases, opts),
-  ]);
-  return relation;
 };
 /* istanbul ignore next */
 export const createRelations = async (user, inputs, opts = {}) => {
@@ -1761,23 +1704,10 @@ const upsertEntity = async (user, entity, type, data) => {
   }
   return entity;
 };
-export const createEntity = async (user, input, type, opts = {}) => {
+const createRawEntity = async (user, standardId, input, type, opts = {}) => {
   const { noLog = false } = opts;
-  // We need to check existing dependencies
-  // Except, Labels and KillChains that are embedded in same execution.
-  const idsToResolve = [];
-  if (input.createdBy) idsToResolve.push({ id: input.createdBy });
-  R.forEach((marking) => idsToResolve.push({ id: marking }), input.markingDefinitions || []);
-  R.forEach((object) => idsToResolve.push({ id: object }), input.objects || []);
-  const elemPromise = (ref) => internalLoadById(ref.id).then((e) => ({ ref, available: e !== null }));
-  const checkIds = await Promise.all(R.map(elemPromise, idsToResolve));
-  const notResolvedElements = R.filter((c) => !c.available, checkIds);
-  if (notResolvedElements.length > 0) {
-    throw MissingReferenceError({ input: R.map((n) => n.ref, notResolvedElements) });
-  }
   // Generate the internal id
   const internalId = input.internal_id || generateInternalId();
-  const standardId = await generateStandardId(type, input);
   // Check if the entity exists
   const participantIds = R.isNil(input.stix_id) ? [standardId] : [input.stix_id, standardId];
   const existingEntity = await internalLoadById(participantIds);
@@ -1863,58 +1793,68 @@ export const createEntity = async (user, input, type, opts = {}) => {
       query += `has ${key} ${insert}${separator} `;
     }
   }
-  let lock;
-  try {
-    // Try to get the lock in redis
-    lock = await lockResource(participantIds);
-    // Create the input
-    await executeWrite(async (wTx) => {
-      logger.debug(`[GRAKN - infer: false] createEntity`, { query });
-      await wTx.query(query);
-    });
-  } catch (err) {
-    if (err.name === TYPE_DUPLICATE_ENTRY) {
-      logger.warn(err.message, { input, ...err.data });
-      const existingEntityRefreshed = await loadById(err.data.id, type);
-      return upsertEntity(user, existingEntityRefreshed, type, input);
-    }
-    // Lock cant be acquired after 5 sec, throw
-    if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Operation still in progress (redis lock)', { id: internalId });
-    }
-    throw err;
-  } finally {
-    if (lock) await lock.unlock();
-  }
+  // Create the input
+  await executeWrite(async (wTx) => {
+    logger.debug(`[GRAKN - infer: false] createEntity`, { query });
+    await wTx.query(query);
+  });
   // Transaction succeed, complete the result to send it back
-  const completedData = R.pipe(
+  const created = R.pipe(
     R.assoc('id', internalId),
     R.assoc('base_type', BASE_TYPE_ENTITY),
     R.assoc('parent_types', getParentTypes(type))
   )(data);
   // Transaction succeed, index the result
   try {
-    await elIndexElements([completedData]);
+    await elIndexElements([created]);
   } catch (err) {
-    throw DatabaseError('Cannot index input', { error: err, data: completedData });
+    throw DatabaseError('Cannot index input', { error: err, data: created });
   }
   const postOperations = [];
   // Send creation log
-  if (!noLog) postOperations.push(sendLog(EVENT_TYPE_CREATE, user, completedData));
+  if (!noLog) postOperations.push(sendLog(EVENT_TYPE_CREATE, user, created));
   // Complete with eventual relations (will eventually update the index)
   if (isStixCoreObject(type)) {
     postOperations.push(
-      addCreatedBy(user, internalId, input.createdBy, opts),
-      addMarkingDefs(user, internalId, input.objectMarking, opts),
-      addLabels(user, internalId, input.objectLabel, opts), // Embedded in same execution.
-      addKillChains(user, internalId, input.killChainPhases, opts), // Embedded in same execution.
-      addExternalReferences(user, internalId, input.externalReferences, opts),
-      addObjects(user, internalId, input.objects, opts)
+      addInnerRelation(user, created, input.createdBy, RELATION_CREATED_BY, opts),
+      addInnerRelation(user, created, input.objectMarking, RELATION_OBJECT_MARKING, opts),
+      addInnerRelation(user, created, input.objectLabel, RELATION_OBJECT_LABEL, opts),
+      addInnerRelation(user, created, input.killChainPhases, RELATION_KILL_CHAIN_PHASE, opts),
+      addInnerRelation(user, created, input.externalReferences, RELATION_EXTERNAL_REFERENCE, opts),
+      addInnerRelation(user, created, input.objects, RELATION_OBJECT, opts)
     );
   }
   await Promise.all(postOperations);
   // Simply return the data
-  return completedData;
+  return created;
+};
+export const createEntity = async (user, input, type, opts = {}) => {
+  let lock;
+  // We need to check existing dependencies
+  const resolvedInput = await inputResolveRefs(input);
+  // Generate the internal id
+  const standardId = generateStandardId(type, resolvedInput);
+  const participantIds = R.isNil(resolvedInput.stix_id) ? standardId : [resolvedInput.stix_id, standardId];
+  try {
+    // Try to get the lock in redis
+    lock = await lockResource(participantIds);
+    // noinspection UnnecessaryLocalVariableJS
+    const creation = await createRawEntity(user, standardId, resolvedInput, type, opts);
+    // Return created element after waiting for it.
+    return creation;
+  } catch (err) {
+    if (err.name === TYPE_DUPLICATE_ENTRY) {
+      logger.warn(err.message, { input, ...err.data });
+      const existingEntityRefreshed = await loadById(err.data.id, type);
+      return upsertEntity(user, existingEntityRefreshed, type, resolvedInput);
+    }
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw DatabaseError('Operation still in progress (redis lock)', { participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 // endregion
 

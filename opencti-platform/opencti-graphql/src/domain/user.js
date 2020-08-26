@@ -151,7 +151,7 @@ export const getCapabilities = async (userId) => {
   );
   const capabilities = map((r) => r.capability, data);
   if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
-    const id = await generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
+    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, internal_id: id, name: BYPASS });
   }
   return capabilities;
@@ -193,21 +193,17 @@ export const roleDelete = async (user, roleId) => {
 
 export const roleCleanContext = async (user, roleId) => {
   await delEditContext(user, roleId);
-  return loadById(roleId, ENTITY_TYPE_ROLE).then((role) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user)
-  );
+  return loadById(roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
 };
 
 export const roleEditContext = async (user, roleId, input) => {
   await setEditContext(user, roleId, input);
-  return loadById(roleId, ENTITY_TYPE_ROLE).then((role) =>
-    notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user)
-  );
+  return loadById(roleId, ENTITY_TYPE_ROLE).then((role) => notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user));
 };
 // endregion
 
 export const assignRoleToUser = async (user, userId, roleName) => {
-  const generateToId = await generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
+  const generateToId = generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
   const assignInput = {
     fromId: userId,
     toId: generateToId,
