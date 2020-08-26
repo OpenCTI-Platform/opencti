@@ -109,7 +109,7 @@ class ReportPopover extends Component {
   }
 
   render() {
-    const { classes, t, reportId } = this.props;
+    const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -169,7 +169,7 @@ class ReportPopover extends Component {
         >
           <QueryRenderer
             query={reportEditionQuery}
-            variables={{ id: reportId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
@@ -189,7 +189,7 @@ class ReportPopover extends Component {
 }
 
 ReportPopover.propTypes = {
-  reportId: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

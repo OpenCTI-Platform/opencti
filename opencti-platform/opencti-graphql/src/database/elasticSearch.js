@@ -242,7 +242,7 @@ export const elDeleteIndexes = async (indexesToDelete = DATA_INDICES) => {
 };
 
 export const elCount = (indexName, options = {}) => {
-  const { endDate = null, types = null, relationshipType = null, fromId = null } = options;
+  const { endDate = null, types = null, relationshipType = null, fromId = null, toTypes = null } = options;
   let must = [];
   if (endDate !== null) {
     must = append(
@@ -298,6 +298,23 @@ export const elCount = (indexName, options = {}) => {
           should: {
             match_phrase: { 'connections.internal_id': fromId },
           },
+          minimum_should_match: 1,
+        },
+      },
+      must
+    );
+  }
+  if (toTypes !== null) {
+    const filters = [];
+    for (let index = 0; index < toTypes.length; index += 1) {
+      filters.push({
+        match_phrase: { 'connections.types': toTypes[index] },
+      });
+    }
+    must = append(
+      {
+        bool: {
+          should: filters,
           minimum_should_match: 1,
         },
       },

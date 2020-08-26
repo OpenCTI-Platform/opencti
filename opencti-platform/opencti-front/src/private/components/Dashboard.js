@@ -13,8 +13,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
-import { AssignmentOutlined, LayersOutlined } from '@material-ui/icons';
-import { Database, GraphOutline } from 'mdi-material-ui';
+import { DescriptionOutlined } from '@material-ui/icons';
+import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
 import AreaChart from 'recharts/lib/chart/AreaChart';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
@@ -391,7 +391,7 @@ class Dashboard extends Component {
                           <div className={classes.number}>{n(total)}</div>
                           <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <AssignmentOutlined
+                            <DescriptionOutlined
                               color="inherit"
                               fontSize="large"
                             />
@@ -421,7 +421,7 @@ class Dashboard extends Component {
                           <div className={classes.number}>{n(total)}</div>
                           <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <LayersOutlined color="inherit" fontSize="large" />
+                            <HexagonMultipleOutline color="inherit" fontSize="large" />
                           </div>
                         </CardContent>
                       );

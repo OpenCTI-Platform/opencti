@@ -147,7 +147,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
 
     // Extract all regions
     const regions = pipe(
-      filter((n) => n.node.to.entity_type === 'region'),
+      filter((n) => n.node.to.entity_type === 'Region'),
       map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
@@ -156,7 +156,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
       })),
     )(data.stixCoreRelationships.edges);
     const countries = pipe(
-      filter((n) => n.node.to.entity_type === 'country'),
+      filter((n) => n.node.to.entity_type === 'Country'),
       map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
@@ -177,7 +177,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
       pluck('region', countries),
     );
     const cities = pipe(
-      filter((n) => n.node.to.entity_type === 'city'),
+      filter((n) => n.node.to.entity_type === 'City'),
       map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
@@ -248,12 +248,12 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           : `${stixCoreRelationship.startTimeYear} - ${stixCoreRelationship.stopTimeYear}`,
         stixCoreRelationship,
       );
-      if (stixCoreRelationship.to.entity_type === 'region') {
+      if (stixCoreRelationship.to.entity_type === 'Region') {
         finalRegions[stixCoreRelationship.to.id].relations.push(
           stixCoreRelationship,
         );
       }
-      if (stixCoreRelationship.to.entity_type === 'country') {
+      if (stixCoreRelationship.to.entity_type === 'Country') {
         if (stixCoreRelationship.to.region) {
           finalRegions[stixCoreRelationship.to.region.id].countries[
             stixCoreRelationship.to.id
@@ -262,7 +262,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           if (!(unknownRegionId in finalRegions)) {
             finalRegions[unknownRegionId] = {
               id: unknownRegionId,
-              name: 'Unknown',
+              name: t('Unknown'),
               countries: {},
               relations: [],
             };
@@ -270,7 +270,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           finalRegions[unknownRegionId].relations.push(stixCoreRelationship);
         }
       }
-      if (stixCoreRelationship.to.entity_type === 'city') {
+      if (stixCoreRelationship.to.entity_type === 'City') {
         if (stixCoreRelationship.to.country) {
           if (stixCoreRelationship.to.country.region) {
             finalRegions[stixCoreRelationship.to.country.region.id].countries[
@@ -282,7 +282,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
             if (!(unknownRegionId in finalRegions)) {
               finalRegions[unknownRegionId] = {
                 id: unknownRegionId,
-                name: 'Unknown',
+                name: t('Unknown'),
                 countries: {},
                 relations: [],
               };
@@ -310,7 +310,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           if (!(unknownRegionId in finalRegions)) {
             finalRegions[unknownRegionId] = {
               id: unknownRegionId,
-              name: 'Unknown',
+              name: t('Unknown'),
               countries: {},
               relations: [],
             };
@@ -318,7 +318,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
           if (!(unknownCountryId in finalRegions[unknownRegionId].countries)) {
             finalRegions[unknownRegionId].countries[unknownCountryId] = {
               id: unknownCountryId,
-              name: 'Unknown',
+              name: t('Unknown'),
               cities: {},
               relations: [],
             };

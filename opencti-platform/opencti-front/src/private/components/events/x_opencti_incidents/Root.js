@@ -10,7 +10,6 @@ import TopBar from '../../nav/TopBar';
 import XOpenCTIIncident from './XOpenCTIIncident';
 import XOpenCTIIncidentReports from './XOpenCTIIncidentReports';
 import XOpenCTIIncidentKnowledge from './XOpenCTIIncidentKnowledge';
-import XOpenCTIIncidentObservables from './XOpenCTIIncidentObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
@@ -34,12 +33,12 @@ const XOpenCTIIncidentQuery = graphql`
   query RootXOpenCTIIncidentQuery($id: String!) {
     xOpenCTIIncident(id: $id) {
       id
+      standard_id
       name
       aliases
       ...XOpenCTIIncident_xOpenCTIIncident
       ...XOpenCTIIncidentReports_xOpenCTIIncident
       ...XOpenCTIIncidentKnowledge_xOpenCTIIncident
-      ...XOpenCTIIncidentObservables_xOpenCTIIncident
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -123,15 +122,6 @@ class RootXOpenCTIIncident extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/events/incidents/:incidentId/observables"
-                    render={(routeProps) => (
-                      <XOpenCTIIncidentObservables
-                        {...routeProps}
-                        xOpenCTIIncident={props.xOpenCTIIncident}
-                      />
-                    )}
-                  />
-                  <Route
                     exact
                     path="/dashboard/events/incidents/:incidentId/files"
                     render={(routeProps) => (
@@ -160,7 +150,7 @@ class RootXOpenCTIIncident extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={incidentId}
+                          entityStandardId={props.xOpenCTIIncident.standard_id}
                         />
                       </React.Fragment>
                     )}

@@ -36,6 +36,7 @@ import { createRefetchContainer } from 'react-relay';
 import Tooltip from '@material-ui/core/Tooltip';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
+import Theme from '../../../../components/ThemeDark';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
@@ -81,7 +82,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       'stroke',
       'font',
     ];
-    const svgElems = Array.from(targetElem.getElementsByLabelName('svg'));
+    const svgElems = Array.from(targetElem.getElementsByTagName('svg'));
     function recurseElementChildren(node) {
       if (!node.style) return;
       const inlineStyles = getComputedStyle(node);
@@ -113,7 +114,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     html2canvas(container, {
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#303030',
+      backgroundColor: Theme.palette.background.default,
     }).then((canvas) => {
       canvas.toBlob((blob) => {
         fileDownload(blob, 'KillChain.png', 'image/png');

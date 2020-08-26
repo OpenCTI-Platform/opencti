@@ -7,7 +7,7 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
-import { AssignmentOutlined, DeviceHubOutlined } from '@material-ui/icons';
+import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -33,18 +33,21 @@ const styles = (theme) => ({
     color: theme.palette.secondary.main,
   },
   number: {
+    marginTop: 10,
     float: 'left',
-    color: theme.palette.primary.main,
-    fontSize: 40,
+    fontSize: 30,
   },
   title: {
     marginTop: 5,
     textTransform: 'uppercase',
     fontSize: 12,
+    fontWeight: 500,
+    color: '#a8a8a8',
   },
   icon: {
     position: 'absolute',
-    top: 30,
+    color: theme.palette.primary.main,
+    top: 35,
     right: 20,
   },
   graphContainer: {
@@ -87,7 +90,11 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
 class StixDomainObjectKnowledge extends Component {
   render() {
     const {
-      t, classes, stixDomainObjectId, stixDomainObjectType,
+      t,
+      n,
+      classes,
+      stixDomainObjectId,
+      stixDomainObjectType,
     } = this.props;
     const link = `${resolveLink(
       stixDomainObjectType,
@@ -113,17 +120,13 @@ class StixDomainObjectKnowledge extends Component {
                     const difference = total - props.reportsNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="last month"
-                        />
-                        <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total reports')}
                         </div>
+                        <div className={classes.number}>{n(total)}</div>
+                        <ItemNumberDifference difference={difference} />
                         <div className={classes.icon}>
-                          <AssignmentOutlined
+                          <DescriptionOutlined
                             color="inherit"
                             fontSize="large"
                           />

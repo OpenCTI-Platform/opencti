@@ -72,7 +72,7 @@ const styles = (theme) => ({
   createButtonWithPadding: {
     position: 'fixed',
     bottom: 30,
-    right: 290,
+    right: 240,
     zIndex: 1001,
   },
   title: {

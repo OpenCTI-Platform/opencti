@@ -1,8 +1,10 @@
 import { distributionRelations, loadById } from '../database/grakn';
+import { stixMetaRelationshipsNumber } from '../domain/stixMetaRelationship';
 
 const stixMetaRelationshipResolvers = {
   Query: {
     stixMetaRelationshipsDistribution: (_, args) => distributionRelations(args),
+    stixMetaRelationshipsNumber: (_, args) => stixMetaRelationshipsNumber(args),
   },
   StixMetaRelationship: {
     from: (rel) => loadById(rel.fromId, rel.fromType),

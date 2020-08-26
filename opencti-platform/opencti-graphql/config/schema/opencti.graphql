@@ -7903,7 +7903,8 @@ type Query {
   stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
   stixCyberObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
-  stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution] @auth(for: [KNOWLEDGE])
+  stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
+    @auth(for: [KNOWLEDGE])
 
   ######## STIX META RELATIONSHIPS
   stixMetaRelationshipsDistribution(
@@ -7918,6 +7919,8 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
+  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number
+    @auth(for: [KNOWLEDGE])
 
   ######## STIX CORE RELATIONSHIPS
 
@@ -7994,8 +7997,13 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  stixCoreRelationshipsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number
-    @auth(for: [KNOWLEDGE])
+  stixCoreRelationshipsNumber(
+    type: String
+    fromId: String
+    toTypes: [String]
+    endDate: DateTime
+    inferred: Boolean
+  ): Number @auth(for: [KNOWLEDGE])
 
   ######## STIX SIGHTING RELATIONSHIPS
 

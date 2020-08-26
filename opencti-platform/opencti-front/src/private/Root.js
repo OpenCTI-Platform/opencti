@@ -65,7 +65,6 @@ const rootQuery = graphql`
 `;
 
 const Root = () => {
-  const paddingRight = 24;
   const classes = useStyles();
   return (
     <QueryRenderer
@@ -80,7 +79,7 @@ const Root = () => {
                   <TopBar />
                   <LeftBar />
                   <Message />
-                  <main className={classes.content} style={{ paddingRight }}>
+                  <main className={classes.content} style={{ paddingRight: 24 }}>
                     <div className={classes.toolbar} />
                     <Switch>
                       <BoundaryRoute

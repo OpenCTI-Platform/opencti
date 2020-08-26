@@ -5,19 +5,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  EntityStixCyberObservableLine,
-  EntityStixCyberObservableLineDummy,
-} from './EntityStixCyberObservableLine';
+  StixCoreObjectStixCyberObservableLine,
+  StixCoreObjectStixCyberObservableLineDummy,
+} from './StixCoreObjectStixCyberObservableLine';
 
 const nbOfRowsToLoad = 50;
 
-class EntityStixCyberObservablesLines extends Component {
+class StixCoreObjectStixCyberObservablesLines extends Component {
   render() {
     const {
       initialLoading,
       dataColumns,
       relay,
-      entityLink,
+      stixCoreObjectLink,
       paginationOptions,
     } = this.props;
     return (
@@ -36,18 +36,18 @@ class EntityStixCyberObservablesLines extends Component {
           ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<EntityStixCyberObservableLine />}
-        DummyLineComponent={<EntityStixCyberObservableLineDummy />}
+        LineComponent={<StixCoreObjectStixCyberObservableLine />}
+        DummyLineComponent={<StixCoreObjectStixCyberObservableLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
-        entityLink={entityLink}
+        stixCoreObjectLink={stixCoreObjectLink}
       />
     );
   }
 }
 
-EntityStixCyberObservablesLines.propTypes = {
+StixCoreObjectStixCyberObservablesLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -55,11 +55,11 @@ EntityStixCyberObservablesLines.propTypes = {
   relay: PropTypes.object,
   stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
-  entityLink: PropTypes.string,
+  stixCoreObjectLink: PropTypes.string,
 };
 
-export const entityStixCyberObservablesLinesQuery = graphql`
-  query EntityStixCyberObservablesLinesPaginationQuery(
+export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
+  query StixCoreObjectStixCyberObservablesLinesPaginationQuery(
     $inferred: Boolean
     $fromId: String
     $toTypes: [String]
@@ -74,7 +74,7 @@ export const entityStixCyberObservablesLinesQuery = graphql`
     $orderBy: StixCoreRelationshipsOrdering
     $orderMode: OrderingMode
   ) {
-    ...EntityStixCyberObservablesLines_data
+    ...StixCoreObjectStixCyberObservablesLines_data
       @arguments(
         inferred: $inferred
         fromId: $fromId
@@ -94,10 +94,10 @@ export const entityStixCyberObservablesLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  EntityStixCyberObservablesLines,
+  StixCoreObjectStixCyberObservablesLines,
   {
     data: graphql`
-      fragment EntityStixCyberObservablesLines_data on Query
+      fragment StixCoreObjectStixCyberObservablesLines_data on Query
         @argumentDefinitions(
           inferred: { type: "Boolean" }
           fromId: { type: "String" }
@@ -133,7 +133,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
-              ...EntityStixCyberObservableLine_node
+              ...StixCoreObjectStixCyberObservableLine_node
             }
           }
           pageInfo {
@@ -173,6 +173,6 @@ export default createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: entityStixCyberObservablesLinesQuery,
+    query: stixCoreObjectStixCyberObservablesLinesQuery,
   },
 );

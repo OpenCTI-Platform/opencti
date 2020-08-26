@@ -9,7 +9,11 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListSubheader from '@material-ui/core/ListSubheader';
-import { BugReport, WifiTetheringOutlined } from '@material-ui/icons';
+import {
+  VisibilityOutlined,
+  WifiTetheringOutlined,
+  BugReportOutlined,
+} from '@material-ui/icons';
 import {
   Gauge,
   LockPattern,
@@ -18,17 +22,24 @@ import {
   SourcePull,
   Biohazard,
   Fire,
+  DiamondOutline,
+  ChessKnight,
+  HexagonMultipleOutline,
+  ShieldSearch,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
-    width: 240,
+    width: 200,
     position: 'fixed',
     overflow: 'auto',
     padding: 0,
     backgroundColor: theme.palette.background.navLight,
+  },
+  item: {
+    height: 38,
   },
   toolbar: theme.mixins.toolbar,
 });
@@ -50,43 +61,46 @@ class StixCoreObjectKnowledgeBar extends Component {
         classes={{ paper: classes.drawer }}
       >
         <div className={classes.toolbar} />
-        <MenuList component="nav">
+        <MenuList style={{ paddingBottom: 0 }} component="nav">
           <MenuItem
             component={Link}
-            to={`${stixCoreObjectLink}/knowledge/overview`}
-            selected={
-              location.pathname === `${stixCoreObjectLink}/knowledge/overview`
-            }
+            to={`${stixCoreObjectLink}/overview`}
+            selected={location.pathname === `${stixCoreObjectLink}/overview`}
             dense={false}
             classes={{ root: classes.item }}
           >
-            <ListItemIcon>
+            <ListItemIcon style={{ minWidth: 35 }}>
               <Gauge />
             </ListItemIcon>
             <ListItemText primary={t('Overview')} />
           </MenuItem>
         </MenuList>
-        {isInAvailableSection(['attribution', 'victimology']) ? (
+        {isInAvailableSection([
+          'attribution',
+          'victimology',
+          'intrusion_sets',
+          'campaigns',
+        ]) ? (
           <MenuList
+            style={{ paddingBottom: 0 }}
             component="nav"
             subheader={
-              <ListSubheader component="div" id="nested-list-subheader">
-                {t('Strategic')}
+              <ListSubheader style={{ height: 35 }}>
+                {t('Threats')}
               </ListSubheader>
             }
           >
             {includes('attribution', availableSections) ? (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/knowledge/attribution`}
+                to={`${stixCoreObjectLink}/attribution`}
                 selected={
-                  location.pathname
-                  === `${stixCoreObjectLink}/knowledge/attribution`
+                  location.pathname === `${stixCoreObjectLink}/attribution`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
-                <ListItemIcon>
+                <ListItemIcon style={{ minWidth: 35 }}>
                   <SourcePull />
                 </ListItemIcon>
                 <ListItemText primary={t('Attribution')} />
@@ -97,18 +111,210 @@ class StixCoreObjectKnowledgeBar extends Component {
             {includes('victimology', availableSections) ? (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/knowledge/victimology`}
+                to={`${stixCoreObjectLink}/victimology`}
                 selected={
-                  location.pathname
-                  === `${stixCoreObjectLink}/knowledge/victimology`
+                  location.pathname === `${stixCoreObjectLink}/victimology`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
-                <ListItemIcon>
+                <ListItemIcon style={{ minWidth: 35 }}>
                   <Target />
                 </ListItemIcon>
                 <ListItemText primary={t('Victimology')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('intrusion_sets', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/intrusion_sets`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/intrusion_sets`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <DiamondOutline />
+                </ListItemIcon>
+                <ListItemText primary={t('Intrusion Sets')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('campaigns', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/campaigns`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/campaigns`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ChessKnight />
+                </ListItemIcon>
+                <ListItemText primary={t('Campaigns')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+          </MenuList>
+          ) : (
+            ''
+          )}
+        {isInAvailableSection([
+          'attack_patterns',
+          'malwares',
+          'tools',
+          'vulnerabilities',
+        ]) ? (
+          <MenuList
+            style={{ paddingBottom: 0 }}
+            component="nav"
+            subheader={
+              <ListSubheader style={{ height: 35 }}>
+                {t('Arsenal')}
+              </ListSubheader>
+            }
+          >
+            {includes('attack_patterns', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/attack_patterns`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/attack_patterns`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <LockPattern />
+                </ListItemIcon>
+                <ListItemText primary={t('Attack patterns')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('malwares', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/malwares`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/malwares`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <Biohazard />
+                </ListItemIcon>
+                <ListItemText primary={t('Malwares')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('tools', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/tools`}
+                selected={location.pathname === `${stixCoreObjectLink}/tools`}
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <Application />
+                </ListItemIcon>
+                <ListItemText primary={t('Tools')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('vulnerabilities', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/vulnerabilities`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/vulnerabilities`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <BugReportOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Vulnerabilities')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+          </MenuList>
+          ) : (
+            ''
+          )}
+        {isInAvailableSection(['observables', 'indicators', 'observables']) ? (
+          <MenuList
+            style={{ paddingBottom: 0 }}
+            component="nav"
+            subheader={
+              <ListSubheader style={{ height: 35 }}>
+                {t('Observations')}
+              </ListSubheader>
+            }
+          >
+            {includes('observables', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/observables`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/observables`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <HexagonMultipleOutline />
+                </ListItemIcon>
+                <ListItemText primary={t('Observables')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('indicators', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/indicators`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/indicators`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <ShieldSearch />
+                </ListItemIcon>
+                <ListItemText primary={t('Indicators')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('infrastructures', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/infrastructures`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/infrastructures`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <BugReportOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Infrastructures')} />
               </MenuItem>
             ) : (
               ''
@@ -119,9 +325,10 @@ class StixCoreObjectKnowledgeBar extends Component {
         )}
         {isInAvailableSection(['incidents', 'observed_data', 'sightings']) ? (
           <MenuList
+            style={{ paddingBottom: 0 }}
             component="nav"
             subheader={
-              <ListSubheader component="div" id="nested-list-subheader">
+              <ListSubheader style={{ height: 35 }}>
                 {t('Events')}
               </ListSubheader>
             }
@@ -129,15 +336,14 @@ class StixCoreObjectKnowledgeBar extends Component {
             {includes('incidents', availableSections) ? (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/knowledge/incidents`}
+                to={`${stixCoreObjectLink}/incidents`}
                 selected={
-                  location.pathname
-                  === `${stixCoreObjectLink}/knowledge/incidents`
+                  location.pathname === `${stixCoreObjectLink}/incidents`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
-                <ListItemIcon>
+                <ListItemIcon style={{ minWidth: 35 }}>
                   <Fire />
                 </ListItemIcon>
                 <ListItemText primary={t('Incidents')} />
@@ -148,18 +354,35 @@ class StixCoreObjectKnowledgeBar extends Component {
             {includes('observed_data', availableSections) ? (
               <MenuItem
                 component={Link}
-                to={`${stixCoreObjectLink}/knowledge/observed_data`}
+                to={`${stixCoreObjectLink}/observed_data`}
                 selected={
-                  location.pathname
-                  === `${stixCoreObjectLink}/knowledge/observed_data`
+                  location.pathname === `${stixCoreObjectLink}/observed_data`
                 }
                 dense={false}
                 classes={{ root: classes.item }}
               >
-                <ListItemIcon>
+                <ListItemIcon style={{ minWidth: 35 }}>
                   <WifiTetheringOutlined />
                 </ListItemIcon>
                 <ListItemText primary={t('Observed data')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
+            {includes('sightings', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/sightings`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/sightings`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <VisibilityOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Sightings')} />
               </MenuItem>
             ) : (
               ''
@@ -168,66 +391,6 @@ class StixCoreObjectKnowledgeBar extends Component {
         ) : (
           ''
         )}
-
-        <MenuList component="nav">
-          <MenuItem
-            component={Link}
-            to={`${stixCoreObjectLink}/knowledge/malwares`}
-            selected={
-              location.pathname === `${stixCoreObjectLink}/knowledge/malwares`
-            }
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon>
-              <Biohazard />
-            </ListItemIcon>
-            <ListItemText primary={t('Malwares')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`${stixCoreObjectLink}/knowledge/ttp`}
-            selected={
-              location.pathname === `${stixCoreObjectLink}/knowledge/ttp`
-            }
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon>
-              <LockPattern />
-            </ListItemIcon>
-            <ListItemText primary={t('Attack patterns')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`${stixCoreObjectLink}/knowledge/tools`}
-            selected={
-              location.pathname === `${stixCoreObjectLink}/knowledge/tools`
-            }
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon>
-              <Application />
-            </ListItemIcon>
-            <ListItemText primary={t('Tools')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to={`${stixCoreObjectLink}/knowledge/vulnerabilities`}
-            selected={
-              location.pathname
-              === `${stixCoreObjectLink}/knowledge/vulnerabilities`
-            }
-            dense={false}
-            classes={{ root: classes.item }}
-          >
-            <ListItemIcon>
-              <BugReport />
-            </ListItemIcon>
-            <ListItemText primary={t('Vulnerabilities')} />
-          </MenuItem>
-        </MenuList>
       </Drawer>
     );
   }

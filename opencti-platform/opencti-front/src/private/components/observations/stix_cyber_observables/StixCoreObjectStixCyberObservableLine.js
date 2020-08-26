@@ -41,7 +41,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityStixCyberObservableLineComponent extends Component {
+class StixCoreObjectStixCyberObservableLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -50,9 +50,9 @@ class EntityStixCyberObservableLineComponent extends Component {
       dataColumns,
       node,
       paginationOptions,
-      entityLink,
+      stixCoreObjectLink,
     } = this.props;
-    const link = `${entityLink}/relations/${node.id}`;
+    const link = `${stixCoreObjectLink}/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -115,9 +115,9 @@ class EntityStixCyberObservableLineComponent extends Component {
   }
 }
 
-EntityStixCyberObservableLineComponent.propTypes = {
+StixCoreObjectStixCyberObservableLineComponent.propTypes = {
   dataColumns: PropTypes.object,
-  entityLink: PropTypes.string,
+  stixCoreObjectLink: PropTypes.string,
   paginationOptions: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -125,11 +125,11 @@ EntityStixCyberObservableLineComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const EntityStixCyberObservableLineFragment = createFragmentContainer(
-  EntityStixCyberObservableLineComponent,
+const StixCoreObjectStixCyberObservableLineFragment = createFragmentContainer(
+  StixCoreObjectStixCyberObservableLineComponent,
   {
     node: graphql`
-      fragment EntityStixCyberObservableLine_node on StixCoreRelationship {
+      fragment StixCoreObjectStixCyberObservableLine_node on StixCoreRelationship {
         id
         confidence
         start_time
@@ -150,12 +150,12 @@ const EntityStixCyberObservableLineFragment = createFragmentContainer(
   },
 );
 
-export const EntityStixCyberObservableLine = compose(
+export const StixCoreObjectStixCyberObservableLine = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCyberObservableLineFragment);
+)(StixCoreObjectStixCyberObservableLineFragment);
 
-class EntityStixCyberObservableLineDummyComponent extends Component {
+class StixCoreObjectStixCyberObservableLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -192,7 +192,7 @@ class EntityStixCyberObservableLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.confidence.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
               </div>
@@ -207,12 +207,12 @@ class EntityStixCyberObservableLineDummyComponent extends Component {
   }
 }
 
-EntityStixCyberObservableLineDummyComponent.propTypes = {
+StixCoreObjectStixCyberObservableLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const EntityStixCyberObservableLineDummy = compose(
+export const StixCoreObjectStixCyberObservableLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCyberObservableLineDummyComponent);
+)(StixCoreObjectStixCyberObservableLineDummyComponent);

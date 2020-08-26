@@ -17,7 +17,6 @@ import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 
 const styles = (theme) => ({
   item: {
-    paddingLeft: 10,
     height: 50,
   },
   itemIcon: {
@@ -54,6 +53,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
       entityLink,
     } = this.props;
     const link = `${entityLink}/relations/${node.id}`;
+    const isReversed = node.from.id === entityId;
     const element = node.from.id === entityId ? node.to : node.from;
     return (
       <ListItem
@@ -64,7 +64,9 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <VectorRadius />
+          <VectorRadius
+            style={{ transform: isReversed ? 'rotate(-90deg)' : 'none' }}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

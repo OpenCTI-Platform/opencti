@@ -148,7 +148,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     // Extract all sectors
     const sectors = pipe(
       filter(
-        (n) => n.node.to.entity_type === 'sector' && !n.node.to.isSubSector,
+        (n) => n.node.to.entity_type === 'Sector' && !n.node.to.isSubSector,
       ),
       map((n) => ({
         id: n.node.to.id,
@@ -159,7 +159,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     )(data.stixCoreRelationships.edges);
     const subSectors = pipe(
       filter(
-        (n) => n.node.to.entity_type === 'sector' && n.node.to.isSubSector,
+        (n) => n.node.to.entity_type === 'Sector' && n.node.to.isSubSector,
       ),
       map((n) => ({
         id: n.node.to.id,
@@ -180,7 +180,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       pluck('parentSectors', subSectors),
     );
     const organizations = pipe(
-      filter((n) => n.node.to.entity_type === 'organization'),
+      filter((n) => n.node.to.entity_type === 'Organization'),
       map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
@@ -253,7 +253,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           : `${stixCoreRelationship.startTimeYear} - ${stixCoreRelationship.stopTimeYear}`,
         stixCoreRelationship,
       );
-      if (stixCoreRelationship.to.entity_type === 'sector') {
+      if (stixCoreRelationship.to.entity_type === 'Sector') {
         if (stixCoreRelationship.to.isSubSector) {
           const parentSectorId = head(
             stixCoreRelationship.to.parentSectors.edges,
@@ -267,7 +267,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           );
         }
       }
-      if (stixCoreRelationship.to.entity_type === 'organization') {
+      if (stixCoreRelationship.to.entity_type === 'Organization') {
         if (stixCoreRelationship.to.sectors.edges.length > 0) {
           const sector = head(stixCoreRelationship.to.sectors.edges).node;
           if (sector.isSubSector) {
@@ -282,7 +282,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           if (!(unknownSectorId in finalSectors)) {
             finalSectors[unknownSectorId] = {
               id: unknownSectorId,
-              name: 'Unknown',
+              name: t('Unknown'),
               relations: [],
             };
           }
@@ -645,6 +645,7 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                   entity_type
                 }
                 ... on Organization {
+                  name
                   sectors {
                     edges {
                       node {

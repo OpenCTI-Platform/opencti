@@ -7,8 +7,8 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
-import { ShieldSearch } from 'mdi-material-ui';
-import { AssignmentOutlined, DeviceHubOutlined } from '@material-ui/icons';
+import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
+import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -42,18 +42,21 @@ const styles = (theme) => ({
     color: theme.palette.secondary.main,
   },
   number: {
+    marginTop: 10,
     float: 'left',
-    color: theme.palette.primary.main,
-    fontSize: 40,
+    fontSize: 30,
   },
   title: {
     marginTop: 5,
     textTransform: 'uppercase',
     fontSize: 12,
+    fontWeight: 500,
+    color: '#a8a8a8',
   },
   icon: {
     position: 'absolute',
-    top: 30,
+    color: theme.palette.primary.main,
+    top: 35,
     right: 20,
   },
   bottomNav: {
@@ -65,7 +68,7 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '5px 0 70px 0',
+    margin: '10px 0 70px 0',
     padding: '15px 15px 15px 15px',
     borderRadius: 6,
   },
@@ -87,12 +90,14 @@ const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery(
     $type: String
     $fromId: String
+    $toTypes: [String]
     $endDate: DateTime
     $inferred: Boolean
   ) {
     stixCoreRelationshipsNumber(
       type: $type
       fromId: $fromId
+      toTypes: $toTypes
       endDate: $endDate
       inferred: $inferred
     ) {
@@ -119,7 +124,12 @@ class StixDomainObjectThreatKnowledge extends Component {
   render() {
     const { inferred } = this.state;
     const {
-      t, classes, stixDomainObjectId, stixDomainObjectType,
+      t,
+      n,
+      classes,
+      stixDomainObjectId,
+      stixDomainObjectType,
+      displayObservablesStats,
     } = this.props;
     const link = `${resolveLink(
       stixDomainObjectType,
@@ -173,17 +183,13 @@ class StixDomainObjectThreatKnowledge extends Component {
                     const difference = total - props.reportsNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="last month"
-                        />
-                        <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total reports')}
                         </div>
+                        <div className={classes.number}>{n(total)}</div>
+                        <ItemNumberDifference difference={difference} />
                         <div className={classes.icon}>
-                          <AssignmentOutlined
+                          <DescriptionOutlined
                             color="inherit"
                             fontSize="large"
                           />
@@ -212,7 +218,9 @@ class StixDomainObjectThreatKnowledge extends Component {
                 }
                 variables={{
                   fromId: stixDomainObjectId,
-                  type: 'indicates',
+                  toTypes: displayObservablesStats
+                    ? ['Stix-Cyber-Observable']
+                    : 'Indicator',
                   endDate: monthsAgo(1),
                   inferred,
                 }}
@@ -222,17 +230,22 @@ class StixDomainObjectThreatKnowledge extends Component {
                     const difference = total - props.stixCoreRelationshipsNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="last month"
-                        />
-                        <div className="clearfix" />
                         <div className={classes.title}>
-                          {t('Total indicators')}
+                          {displayObservablesStats
+                            ? t('Total observables')
+                            : t('Total indicators')}
                         </div>
+                        <div className={classes.number}>{n(total)}</div>
+                        <ItemNumberDifference difference={difference} />
                         <div className={classes.icon}>
-                          <ShieldSearch color="inherit" fontSize="large" />
+                          {displayObservablesStats ? (
+                            <HexagonMultipleOutline
+                              color="inherit"
+                              fontSize="large"
+                            />
+                          ) : (
+                            <ShieldSearch color="inherit" fontSize="large" />
+                          )}
                         </div>
                       </CardContent>
                     );
@@ -267,15 +280,11 @@ class StixDomainObjectThreatKnowledge extends Component {
                     const difference = total - props.stixCoreRelationshipsNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="last month"
-                        />
-                        <div className="clearfix" />
                         <div className={classes.title}>
                           {t('Total relations')}
                         </div>
+                        <div className={classes.number}>{n(total)}</div>
+                        <ItemNumberDifference difference={difference} />
                         <div className={classes.icon}>
                           <DeviceHubOutlined color="inherit" fontSize="large" />
                         </div>
@@ -348,6 +357,7 @@ class StixDomainObjectThreatKnowledge extends Component {
 StixDomainObjectThreatKnowledge.propTypes = {
   stixDomainObjectId: PropTypes.string,
   stixDomainObjectType: PropTypes.string,
+  displayObservablesStats: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
