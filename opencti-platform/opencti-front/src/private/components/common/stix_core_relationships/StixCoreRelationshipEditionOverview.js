@@ -16,7 +16,6 @@ import {
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import MenuItem from '@material-ui/core/MenuItem';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import { Close } from '@material-ui/icons';
@@ -38,6 +37,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
+import ConfidenceField from '../form/ConfidenceField';
 
 const styles = (theme) => ({
   header: {
@@ -378,7 +378,7 @@ const StixCoreRelationshipEditionContainer = ({
         >
           {({ setFieldValue }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
+              <ConfidenceField
                 component={SelectField}
                 name="confidence"
                 onFocus={handleChangeFocus}
@@ -386,19 +386,9 @@ const StixCoreRelationshipEditionContainer = ({
                 label={t('Confidence level')}
                 fullWidth={true}
                 containerstyle={{ width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={editContext}
-                    fieldName="confidence"
-                  />
-                }
-              >
-                <MenuItem value="0">{t('None')}</MenuItem>
-                <MenuItem value="20">{t('Low')}</MenuItem>
-                <MenuItem value="40">{t('Moderate')}</MenuItem>
-                <MenuItem value="60">{t('Good')}</MenuItem>
-                <MenuItem value="80">{t('Strong')}</MenuItem>
-              </Field>
+                editContext={editContext}
+                variant="edit"
+              />
               <Field
                 component={DatePickerField}
                 name="start_time"

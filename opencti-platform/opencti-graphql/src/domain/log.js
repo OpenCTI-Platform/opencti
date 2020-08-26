@@ -11,7 +11,7 @@ export const creator = async (entityId) =>
   elPaginate(INDEX_HISTORY, {
     filters: [
       { key: 'event_type', values: [EVENT_TYPE_CREATE] },
-      { key: 'event_data.x_opencti_id', values: [entityId] },
+      { key: 'event_data.id', values: [entityId] },
     ],
     connectionFormat: false,
   }).then((logs) =>

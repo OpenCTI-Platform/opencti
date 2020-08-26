@@ -19,13 +19,13 @@ import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import EntityReportsPie from '../../reports/EntityReportsPie';
+import EntityReportsPie from '../../analysis/reports/StixCoreObjectReportsPie';
 import EntityStixCoreRelationshipsRadar from '../stix_core_relationships/EntityStixCoreRelationshipsRadar';
 import StixDomainObjectGlobalKillChain, {
   stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectGlobalKillChain';
 import Loader from '../../../../components/Loader';
-import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleEntityStixCoreRelationships';
+import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = (theme) => ({
   card: {
@@ -311,7 +311,7 @@ class StixDomainObjectThreatKnowledge extends Component {
           </Grid>
           <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
             <SimpleEntityStixCoreRelationships
-              entityId={stixDomainObjectId}
+              stixObjectOrStixRelationshipId={stixDomainObjectId}
               relationshipType="related-to"
               targetStixDomainObjectTypes={['Stix-Domain-Object']}
               entityLink={link}

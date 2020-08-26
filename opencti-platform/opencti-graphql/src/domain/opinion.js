@@ -1,4 +1,4 @@
-import { assoc, append, propOr, pipe } from 'ramda';
+import { assoc, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -13,7 +13,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
-import { findAll as findAllStixDomainEntities } from './stixDomainObject';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
@@ -26,11 +25,6 @@ export const findAll = async (args) => {
 };
 
 // Entities tab
-export const objects = (noteId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
-  const finalArgs = assoc('filters', append({ key, values: [noteId] }, propOr([], 'filters', args)), args);
-  return findAllStixDomainEntities(finalArgs);
-};
 
 export const opinionContainsStixObjectOrStixRelationship = async (opinionId, thingId) => {
   const args = {

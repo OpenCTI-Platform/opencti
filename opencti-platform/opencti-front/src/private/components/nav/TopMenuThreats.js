@@ -6,9 +6,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { PublicOutlined } from '@material-ui/icons';
-import {
-  Biohazard, DiamondOutline, Fire, ChessKnight,
-} from 'mdi-material-ui';
+import { DiamondOutline, ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -96,47 +94,6 @@ class TopMenuThreats extends Component {
             fontSize="small"
           />
           {width > 950 ? t('Campaigns') : ''}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/threats/incidents"
-          variant={
-            location.pathname.includes('/dashboard/threats/incidents')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/incidents')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Fire className={width > 950 ? classes.icon : ''} fontSize="small" />
-          {width > 950 ? t('Incidents') : ''}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/threats/malwares"
-          variant={
-            location.pathname.includes('/dashboard/threats/malwares')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/threats/malwares')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Biohazard
-            className={width > 950 ? classes.icon : ''}
-            fontSize="small"
-          />
-          {width > 950 ? t('Malwares') : ''}
         </Button>
       </div>
     );

@@ -139,7 +139,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
     expect(queryResult.data.opinion.id).toEqual(opinionInternalId);
-    expect(queryResult.data.opinion.toStix.length).toBeGreaterThan(5);
+    expect(queryResult.data.opinion.toStix.length).toBeGreaterThan(6);
   });
   it('should opinion loaded by stix id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: opinionStixId } });
@@ -179,7 +179,7 @@ describe('Opinion resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.opinion).not.toBeNull();
     expect(queryResult.data.opinion.standard_id).toEqual('opinion--f84ef4ee-f9be-54cf-91cf-c9d8b0712970');
-    expect(queryResult.data.opinion.objects.edges.length).toEqual(5);
+    expect(queryResult.data.opinion.objects.edges.length).toEqual(6);
   });
   it('should opinion contains stix object or stix relationship accurate', async () => {
     const intrusionSet = await elLoadByIds('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');

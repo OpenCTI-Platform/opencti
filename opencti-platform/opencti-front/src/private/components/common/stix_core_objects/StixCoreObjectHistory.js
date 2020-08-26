@@ -35,7 +35,7 @@ class StixCoreObjectHistory extends Component {
   }
 
   render() {
-    const { classes, t, entityId } = this.props;
+    const { classes, t, entityStandardId } = this.props;
     const { entitySearchTerm, relationsSearchTerm } = this.state;
     return (
       <Grid
@@ -63,7 +63,7 @@ class StixCoreObjectHistory extends Component {
             query={stixCoreObjectHistoryLinesQuery}
             variables={{
               filters: [
-                { key: 'entity_id', values: [entityId] },
+                { key: 'entity_id', values: [entityStandardId] },
                 {
                   key: 'event_type',
                   values: ['create', 'update', 'update_add', 'update_remove'],
@@ -78,7 +78,7 @@ class StixCoreObjectHistory extends Component {
               if (props) {
                 return (
                   <StixCoreObjectHistoryLines
-                    entityId={entityId}
+                    entityStandardId={entityStandardId}
                     data={props}
                     isRelationLog={false}
                   />
@@ -110,7 +110,7 @@ class StixCoreObjectHistory extends Component {
               filters: [
                 {
                   key: 'connection_id',
-                  values: [entityId],
+                  values: [entityStandardId],
                   operator: 'wildcard',
                 },
                 {
@@ -127,7 +127,7 @@ class StixCoreObjectHistory extends Component {
               if (props) {
                 return (
                   <StixCoreObjectHistoryLines
-                    entityId={entityId}
+                    entityStandardId={entityStandardId}
                     data={props}
                     isRelationLog={true}
                   />
@@ -144,7 +144,7 @@ class StixCoreObjectHistory extends Component {
 
 StixCoreObjectHistory.propTypes = {
   t: PropTypes.func,
-  entityId: PropTypes.string,
+  entityStandardId: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(StixCoreObjectHistory);

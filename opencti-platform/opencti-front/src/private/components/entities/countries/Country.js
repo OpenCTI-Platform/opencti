@@ -9,13 +9,13 @@ import inject18n from '../../../../components/i18n';
 import CountryOverview from './CountryOverview';
 import CountryEdition from './CountryEdition';
 import CountryPopover from './CountryPopover';
-import EntityLastReports from '../../reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
-import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
+import EntityXOpenCTIIncidentsChart from '../../events/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -47,7 +47,7 @@ class CountryComponent extends Component {
             <EntityLastReports entityId={country.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={country.id} />
+        <StixCoreObjectNotes stixCoreObjectId={country.id} />
         <Grid
           container={true}
           spacing={3}

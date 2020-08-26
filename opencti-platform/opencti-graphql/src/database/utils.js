@@ -112,6 +112,10 @@ const extractEntityMainValue = (entityData) => {
     mainValue = entityData.definition;
   } else if (entityData.value) {
     mainValue = entityData.value;
+  } else if (entityData.attribute_abstract) {
+    mainValue = entityData.attribute_abstract;
+  } else if (entityData.opinion) {
+    mainValue = entityData.opinion;
   } else if (entityData.observable_value) {
     mainValue = entityData.observable_value;
   } else if (entityData.indicator_pattern) {

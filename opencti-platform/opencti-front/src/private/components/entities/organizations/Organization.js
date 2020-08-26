@@ -10,13 +10,13 @@ import OrganizationOverview from './OrganizationOverview';
 import OrganizationDetails from './OrganizationDetails';
 import OrganizationEdition from './OrganizationEdition';
 import OrganizationPopover from './OrganizationPopover';
-import EntityLastReports from '../../reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
-import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
+import EntityXOpenCTIIncidentsChart from '../../events/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
@@ -84,7 +84,7 @@ class OrganizationComponent extends Component {
               <EntityLastReports authorId={organization.id} />
             </Grid>
           </Grid>
-          <StixCoreObjectNotes entityId={organization.id} />
+          <StixCoreObjectNotes stixCoreObjectId={organization.id} />
           <Grid
             container={true}
             spacing={3}
@@ -124,7 +124,7 @@ class OrganizationComponent extends Component {
             <EntityLastReports entityId={organization.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={organization.id} />
+        <StixCoreObjectNotes stixCoreObjectId={organization.id} />
         <Grid
           container={true}
           spacing={3}

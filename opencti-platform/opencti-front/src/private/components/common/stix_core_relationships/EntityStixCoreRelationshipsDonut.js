@@ -10,12 +10,9 @@ import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
@@ -129,9 +126,10 @@ class EntityStixCoreRelationshipsDonut extends Component {
       t,
       entityId,
       entityType,
+      variant,
       relationshipType,
       field,
-      variant,
+      height,
       inferred,
       startDate,
       endDate,
@@ -146,7 +144,6 @@ class EntityStixCoreRelationshipsDonut extends Component {
       field,
       operation: 'count',
     };
-    console.log(stixCoreRelationshipsDistributionVariables);
     return (
       <QueryRenderer
         query={
@@ -160,15 +157,12 @@ class EntityStixCoreRelationshipsDonut extends Component {
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             return (
-              <ResponsiveContainer
-                height={variant === 'explore' ? '90%' : 280}
-                width="100%"
-              >
+              <ResponsiveContainer height={height} width="100%">
                 <PieChart
                   margin={{
-                    top: 25,
-                    right: 12,
-                    bottom: 25,
+                    top: variant === 'inLine' ? 40 : 0,
+                    right: 0,
+                    bottom: 0,
                     left: 0,
                   }}
                 >
@@ -178,15 +172,20 @@ class EntityStixCoreRelationshipsDonut extends Component {
                     nameKey="label"
                     cx="50%"
                     cy="50%"
-                    innerRadius={60}
-                    outerRadius={80}
+                    innerRadius={70}
+                    outerRadius={100}
                     fill="#82ca9d"
                     label={this.renderLabel}
                     labelLine={true}
+                    paddingAngle={5}
                   >
                     {props.stixCoreRelationshipsDistribution.map(
                       (entry, index) => (
-                        <Cell key={index} fill={itemColor(entry.label)} />
+                        <Cell
+                          key={index}
+                          fill={itemColor(entry.label)}
+                          stroke="#28353a"
+                        />
                       ),
                     )}
                   </Pie>
@@ -229,56 +228,31 @@ class EntityStixCoreRelationshipsDonut extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      variant,
-      title,
-      entityType,
-      configuration,
-      handleOpenConfig,
+      t, classes, title, entityType, variant, height,
     } = this.props;
-    if (variant === 'explore') {
-      return (
-        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left', padding: '10px 0 0 10px' }}
-          >
-            {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
-          </Typography>
-          <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton
-              color="secondary"
-              aria-label="Update"
-              size="small"
-              classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}
-            >
-              <SettingsInputComponent fontSize="inherit" />
-            </IconButton>
-          </Security>
-          <div className="clearfix" />
-          {this.renderContent()}
-        </Paper>
-      );
-    }
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {title || `${t('Distribution:')} ${t(`entity_${entityType}`)}`}
+      <div style={{ height: height || '100%' }}>
+        <Typography
+          variant={variant === 'inLine' ? 'h3' : 'h4'}
+          gutterBottom={true}
+        >
+          {title || `${t('Distribution:')} ${t(`entity_${entityType}s`)}`}
         </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          {this.renderContent()}
-        </Paper>
+        {variant === 'inLine' ? (
+          this.renderContent()
+        ) : (
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            {this.renderContent()}
+          </Paper>
+        )}
       </div>
     );
   }
 }
 
 EntityStixCoreRelationshipsDonut.propTypes = {
-  variant: PropTypes.string,
   title: PropTypes.string,
+  variant: PropTypes.string,
   entityId: PropTypes.string,
   relationshipType: PropTypes.string,
   entityType: PropTypes.string,

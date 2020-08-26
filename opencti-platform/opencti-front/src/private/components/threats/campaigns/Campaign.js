@@ -10,13 +10,13 @@ import CampaignOverview from './CampaignOverview';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import CampaignPopover from './CampaignPopover';
-import EntityLastReports from '../../reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
-import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenCTIIncidentsChart from '../x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
+import EntityXOpenCTIIncidentsChart from '../../events/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -51,7 +51,7 @@ class CampaignComponent extends Component {
             <EntityLastReports entityId={campaign.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={campaign.id} />
+        <StixCoreObjectNotes stixCoreObjectId={campaign.id} />
         <Grid
           container={true}
           spacing={3}

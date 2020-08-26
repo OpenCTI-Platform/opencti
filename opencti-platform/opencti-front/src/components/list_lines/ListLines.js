@@ -22,7 +22,7 @@ import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
-import StixObservablesExports from '../../private/components/common/stix_cyber_observables/StixCyberObservablesExports';
+import StixObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 
 const styles = (theme) => ({
   container: {
@@ -151,6 +151,7 @@ class ListLines extends Component {
       exportContext,
       numberOfElements,
       availableFilterKeys,
+      noHeaders,
     } = this.props;
     let className = classes.container;
     if (noBottomPadding) {
@@ -181,6 +182,12 @@ class ListLines extends Component {
           ) : (
             ''
           )}
+          {(!availableFilterKeys || availableFilterKeys.length === 0)
+          && !noHeaders ? (
+            <div style={{ height: 38 }}> &nbsp; </div>
+            ) : (
+              ''
+            )}
           <div className={classes.filters}>
             {map(
               (filter) => map(
@@ -270,40 +277,44 @@ class ListLines extends Component {
               : classes.linesContainer,
           }}
         >
-          <ListItem
-            classes={{ root: classes.item }}
-            divider={false}
-            style={{ paddingTop: 0 }}
-          >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                &nbsp;
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
-                    dataColumn[0],
-                    dataColumn[1].label,
-                    dataColumn[1].width,
-                    dataColumn[1].isSortable,
-                  ))}
-                </div>
-              }
-            />
-            {secondaryAction ? (
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-            ) : (
-              ''
-            )}
-          </ListItem>
+          {!noHeaders ? (
+            <ListItem
+              classes={{ root: classes.item }}
+              divider={false}
+              style={{ paddingTop: 0 }}
+            >
+              <ListItemIcon>
+                <span
+                  style={{
+                    padding: '0 8px 0 8px',
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                >
+                  &nbsp;
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
+                      dataColumn[0],
+                      dataColumn[1].label,
+                      dataColumn[1].width,
+                      dataColumn[1].isSortable,
+                    ))}
+                  </div>
+                }
+              />
+              {secondaryAction ? (
+                <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+              ) : (
+                ''
+              )}
+            </ListItem>
+          ) : (
+            ''
+          )}
           {children}
         </List>
         {typeof handleToggleExports === 'function'
@@ -343,7 +354,7 @@ ListLines.propTypes = {
   t: PropTypes.func,
   children: PropTypes.object,
   handleSearch: PropTypes.func,
-  handleSort: PropTypes.func.isRequired,
+  handleSort: PropTypes.func,
   handleChangeView: PropTypes.func,
   disableCards: PropTypes.bool,
   enableDuplicates: PropTypes.bool,
@@ -359,13 +370,14 @@ ListLines.propTypes = {
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string,
-  orderAsc: PropTypes.bool.isRequired,
+  orderAsc: PropTypes.bool,
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   secondaryAction: PropTypes.bool,
   bottomNav: PropTypes.bool,
   numberOfElements: PropTypes.object,
   availableFilterKeys: PropTypes.array,
+  noHeaders: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

@@ -2,19 +2,19 @@
 export const resolveLink = (type) => {
   switch (type) {
     case 'Attack-Pattern':
-      return '/dashboard/ttps/attack_patterns';
+      return '/dashboard/arsenal/attack_patterns';
     case 'Campaign':
       return '/dashboard/threats/campaigns';
     case 'Note':
-      return '/dashboard/containers/notes';
+      return '/dashboard/analysis/notes';
     case 'Observed-Data':
-      return '/dashboard/containers/observed_datas';
+      return '/dashboard/events/observed_datas';
     case 'Opinion':
-      return '/dashboard/containers/opinions';
+      return '/dashboard/analysis/opinions';
     case 'Report':
-      return '/dashboard/containers/reports';
+      return '/dashboard/analysis/reports';
     case 'Course-Of-Action':
-      return '/dashboard/ttps/courses_of_action';
+      return '/dashboard/arsenal/courses_of_action';
     case 'Individual':
       return '/dashboard/entities/individuals';
     case 'Organization':
@@ -22,29 +22,29 @@ export const resolveLink = (type) => {
     case 'Sector':
       return '/dashboard/entities/sectors';
     case 'Indicator':
-      return '/dashboard/ttps/indicators';
+      return '/dashboard/observations/indicators';
     case 'Infrastructure':
-      return '/dashboard/ttps/infrastructures';
+      return '/dashboard/observations/infrastructures';
     case 'Intrusion-Set':
       return '/dashboard/threats/intrusion_sets';
     case 'City':
-      return '/dashboard/entities/geo/cities';
+      return '/dashboard/entities/locations';
     case 'Country':
-      return '/dashboard/entities/geo/countries';
+      return '/dashboard/entities/locations';
     case 'Region':
-      return '/dashboard/entities/geo/regions';
+      return '/dashboard/entities/locations';
     case 'Position':
-      return '/dashboard/entities/geo/positions';
+      return '/dashboard/entities/locations';
     case 'Malware':
-      return '/dashboard/threats/malwares';
+      return '/dashboard/arsenal/malwares';
     case 'Threat-Actor':
       return '/dashboard/threats/threat_actors';
     case 'Tool':
-      return '/dashboard/ttps/tools';
+      return '/dashboard/arsenal/tools';
     case 'Vulnerability':
-      return '/dashboard/entities/vulnerabilities';
-    case 'XOpenCTIIncident':
-      return '/dashboard/threats/incidents';
+      return '/dashboard/arsenal/vulnerabilities';
+    case 'X-OpenCTI-Incident':
+      return '/dashboard/events/incidents';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
@@ -53,7 +53,7 @@ export const resolveLink = (type) => {
     case 'Email-Message':
     case 'Email-Mime-Part-Type':
     case 'Artifact':
-    case 'File':
+    case 'StixFile':
     case 'X509-Certificate':
     case 'IPv4-Addr':
     case 'IPv6-Addr':
@@ -71,7 +71,7 @@ export const resolveLink = (type) => {
     case 'X-OpenCTI-Cryptocurrency-Wallet':
     case 'X-OpenCTI-Text':
     case 'X-OpenCTI-User-Agent':
-      return '/dashboard/signatures/observables';
+      return '/dashboard/observations/observables';
     default:
       return null;
   }

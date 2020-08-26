@@ -756,7 +756,7 @@ export const listRelations = async (relationshipType, args) => {
   const searchFields = ['name', 'description'];
   const { first = 1000, after, orderBy, relationFilter, inferred = false } = args;
   let useInference = inferred;
-  const { filters = [], search, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
+  const { filters = [], search, elementId, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
   const {
     startTimeStart,
     startTimeStop,
@@ -772,7 +772,7 @@ export const listRelations = async (relationshipType, args) => {
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
   const definedRoles = !R.isNil(fromRole) || !R.isNil(toRole);
-  const askForConnections = !R.isNil(fromId) || !R.isNil(toId) || definedRoles;
+  const askForConnections = !R.isNil(elementId) || !R.isNil(fromId) || !R.isNil(toId) || definedRoles;
   const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
@@ -795,6 +795,9 @@ export const listRelations = async (relationshipType, args) => {
       if (relationId) {
         finalFilters.push({ key: `internal_id`, values: [relationId] });
       }
+    }
+    if (elementId) {
+      finalFilters.push({ key: 'connections.internal_id', values: [elementId] });
     }
     if (fromId) {
       finalFilters.push({ key: 'connections.internal_id', values: [fromId] });
@@ -864,6 +867,7 @@ export const listRelations = async (relationshipType, args) => {
     )(searchFields);
     attributesFilters.push(`${searchFilter};`);
   }
+  if (elementId) attributesFilters.push(`$element has internal_id "${escapeString(elementId)}";`);
   if (fromId) attributesFilters.push(`$from has internal_id "${escapeString(fromId)}";`);
   if (toId) attributesFilters.push(`$to has internal_id "${escapeString(toId)}";`);
   if (startTimeStart || startTimeStop) {
@@ -929,9 +933,14 @@ export const listRelations = async (relationshipType, args) => {
   const queryAttributesFields = R.join(' ', attributesFields);
   const queryAttributesFilters = R.join(' ', attributesFilters);
   const queryRelationsFields = R.join(' ', relationsFields);
-  const querySource = askForConnections
-    ? `$rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to)`
-    : '$rel';
+  let querySource;
+  if (elementId) {
+    querySource = `$rel($element)`;
+  } else {
+    querySource = askForConnections
+      ? `$rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to)`
+      : '$rel';
+  }
   const baseQuery = `match ${querySource} isa ${relationToGet}; 
   ${queryFromTypes} ${queryToTypes} ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
   const listArgs = R.assoc('inferred', useInference, args);
@@ -1099,11 +1108,15 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (options) => {
-  const { fromId, field, operation } = options; // Mandatory fields
-  const { limit = 50, order, noCache = false, inferred = false } = options;
+  const { field, operation } = options; // Mandatory fields
+  const { fromId = null, limit = 50, order, noCache = false, inferred = false } = options;
   const { startDate, endDate, relationship_type: relationshipType, toTypes = [] } = options;
   let distributionData;
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_RELATIONSHIP;
+  let dateAttribute = 'start_time';
+  if (isStixMetaRelationship(entityType)) {
+    dateAttribute = 'created_at';
+  }
   // Using elastic can only be done if the distribution is a count on types
   if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
     distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
@@ -1115,10 +1128,10 @@ export const distributionRelations = async (options) => {
             R.map((toType) => `{ $to isa ${escape(toType)}; } or`, toTypes)
           )} { $to isa ${escape(R.head(toTypes))}; };`
         : ''
-    } $from has internal_id "${escapeString(fromId)}";
+    } ${fromId ? ` $from has internal_id "${escapeString(fromId)}"; ` : ''}
     ${
       startDate && endDate
-        ? `$rel has start_time $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
+        ? `$rel has ${dateAttribute} $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
     }
       $to has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
@@ -1126,6 +1139,10 @@ export const distributionRelations = async (options) => {
   }
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
+  if (field === 'internal_id') {
+    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
+    return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
+  }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntitiesThroughRelations = async (options) => {
@@ -1184,16 +1201,19 @@ const flatAttributesForObject = (data) => {
 // region mutation update
 const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
   const { id } = instance;
-  const { forceUpdate = false, operation = 'replace' } = options;
+  const { forceUpdate = false, operation = EVENT_TYPE_UPDATE } = options;
   const { key, value } = rawInput; // value can be multi valued
   // Format the data in regards of the operation for multiple attributes
   const isMultiple = R.includes(key, multipleAttributes);
   let finalVal;
   if (isMultiple) {
-    const currentValues = instance[key];
-    if (operation === 'add') {
+    let currentValues = instance[key];
+    if (!currentValues) {
+      currentValues = [];
+    }
+    if (operation === EVENT_TYPE_UPDATE_ADD) {
       finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
-    } else if (operation === 'remove') {
+    } else if (operation === EVENT_TYPE_UPDATE_REMOVE) {
       finalVal = R.filter((n) => !R.includes(n, value), currentValues);
     } else {
       finalVal = value;
@@ -1274,6 +1294,10 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
 
 export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
+  const { noLog = false, operation = EVENT_TYPE_UPDATE } = options;
+  if (operation !== EVENT_TYPE_UPDATE && elements.length > 1) {
+    throw FunctionalError(`Unsupported operation`, { operation, elements });
+  }
   // const { noLog = false } = options;
   const instance = await loadById(id, type, options);
   if (!instance) {
@@ -1320,29 +1344,27 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       }, updatedInputs)
     );
     postOperations.push(elUpdate(index, instance.internal_id, { doc: esData }));
-    // Send log
-    // TODO @Sam
-    /*
-    const dataToLogSend = R.pipe(
-      R.filter((input) => input.key !== 'graph_data'),
-      R.map(({ key, value }) => ({ [key]: R.includes(key, multipleAttributes) ? value : R.head(value) })),
-      R.mergeAll
-    )(elements);
+    const dataToLogSend = R.filter((input) => input.key !== 'x_opencti_graph_data', elements);
     if (!noLog && !R.isEmpty(dataToLogSend)) {
       const baseData = {
         standard_id: instance.standard_id,
         internal_id: instance.id,
         entity_type: instance.entity_type,
+        spec_version: instance.spec_version,
       };
+      let from;
+      let to;
       if (instance.base_type === BASE_TYPE_RELATION) {
-        const from = await internalLoadById(instance.fromId);
+        const fromPromise = internalLoadById(instance.fromId);
+        const toPromise = internalLoadById(instance.toId);
+        const [fromEntity, toEntity] = await Promise.all([fromPromise, toPromise]);
+        from = fromEntity;
+        to = toEntity;
       }
-      // eslint-disable-next-line camelcase
-      const { stix_ids, entity_type } = instance;
-      const eventData = { id: instance.id, stix_ids, entity_type, data: dataToLogSend };
-      esOperations.push(sendLog(EVENT_TYPE_UPDATE, user, eventData));
+      for (const dataLog of dataToLogSend) {
+        postOperations.push(sendLog(operation, user, baseData, { key: dataLog.key, value: dataLog.value, from, to }));
+      }
     }
-    */
     // Wait for all
     await Promise.all(postOperations);
   } finally {
@@ -1372,10 +1394,10 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 
 // region mutation relation
 const upsertRelation = async (user, relationship, type, data) => {
-  if (!R.isNil(data.stix_id)) {
+  if (!R.isNil(data.stix_id) && relationship.stix_ids.length < 3) {
     const id = relationship.internal_id;
     const patch = { stix_ids: [data.stix_id] };
-    return patchAttribute(user, id, type, patch, { operation: 'add' });
+    return patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
   return relationship;
 };
@@ -1732,10 +1754,10 @@ export const createRelations = async (user, inputs, opts = {}) => {
 
 // region mutation entity
 const upsertEntity = async (user, entity, type, data) => {
-  if (!R.isNil(data.stix_id)) {
+  if (!R.isNil(data.stix_id) && entity.stix_ids.length < 5) {
     const id = entity.internal_id;
     const patch = { stix_ids: [data.stix_id] };
-    return patchAttribute(user, id, type, patch, { operation: 'add' });
+    return patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
   return entity;
 };

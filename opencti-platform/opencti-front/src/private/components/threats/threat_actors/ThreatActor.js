@@ -10,13 +10,13 @@ import ThreatActorOverview from './ThreatActorOverview';
 import ThreatActorDetails from './ThreatActorDetails';
 import ThreatActorEdition from './ThreatActorEdition';
 import ThreatActorPopover from './ThreatActorPopover';
-import EntityLastReports from '../../reports/EntityLastReports';
-import EntityXOpenCTIIncidentsChart from '../x_opencti_incidents/EntityXOpenCTIIncidentsChart';
-import EntityReportsChart from '../../reports/EntityReportsChart';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import EntityXOpenCTIIncidentsChart from '../../events/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
 const styles = () => ({
   container: {
@@ -51,7 +51,7 @@ class ThreatActorComponent extends Component {
             <EntityLastReports entityId={threatActor.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={threatActor.id} />
+        <StixCoreObjectNotes stixCoreObjectId={threatActor.id} />
         <Grid
           container={true}
           spacing={3}

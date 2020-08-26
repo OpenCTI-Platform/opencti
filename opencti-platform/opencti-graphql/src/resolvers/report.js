@@ -2,7 +2,6 @@ import {
   addReport,
   findAll,
   findById,
-  objects,
   reportsDistributionByEntity,
   reportsNumber,
   reportsNumberByEntity,
@@ -66,9 +65,6 @@ const reportResolvers = {
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-  },
-  Report: {
-    objects: (report, args) => objects(report.id, args),
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({

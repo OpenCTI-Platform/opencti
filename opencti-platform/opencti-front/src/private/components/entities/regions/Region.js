@@ -9,13 +9,13 @@ import inject18n from '../../../../components/i18n';
 import RegionOverview from './RegionOverview';
 import RegionEdition from './RegionEdition';
 import RegionPopover from './RegionPopover';
-import EntityLastReports from '../../reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
-import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityXOpenCTIIncidentsChart from '../../threats/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
+import EntityXOpenCTIIncidentsChart from '../../events/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../common/stix_core_objects/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 import RegionParentRegions from './RegionParentRegions';
 import RegionSubRegions from './RegionSubRegions';
 
@@ -56,7 +56,7 @@ class RegionComponent extends Component {
             <EntityLastReports entityId={region.id} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes entityId={region.id} />
+        <StixCoreObjectNotes stixCoreObjectId={region.id} />
         <Grid
           container={true}
           spacing={3}

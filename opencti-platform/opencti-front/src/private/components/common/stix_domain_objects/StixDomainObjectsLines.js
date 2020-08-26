@@ -210,6 +210,22 @@ StixDomainObjectsContainer.propTypes = {
   fld: PropTypes.func,
 };
 
+export const stixDomainObjectsLinesSubTypesQuery = graphql`
+  query StixDomainObjectsLinesSubTypesQuery(
+    $type: String!
+    $includeParents: Boolean
+  ) {
+    subTypes(type: $type, includeParents: $includeParents) {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+  }
+`;
+
 export const stixDomainObjectsLinesQuery = graphql`
   query StixDomainObjectsLinesQuery(
     $search: String

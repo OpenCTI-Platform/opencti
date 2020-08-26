@@ -1,24 +1,22 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
+import { assoc, compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Toolbar from '@material-ui/core/Toolbar';
-import IconButton from '@material-ui/core/IconButton';
 import MenuList from '@material-ui/core/MenuList';
 import MenuItem from '@material-ui/core/MenuItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Divider from '@material-ui/core/Divider';
 import Drawer from '@material-ui/core/Drawer';
+import Collapse from '@material-ui/core/Collapse';
 import {
   DashboardOutlined,
-  ExploreOutlined,
   AssignmentOutlined,
-  DeviceHubOutlined,
-  KeyboardArrowLeftOutlined,
-  KeyboardArrowRightOutlined,
   LayersOutlined,
-  GroupWorkOutlined,
+  ExpandLess,
+  ExpandMore,
 } from '@material-ui/icons';
 import {
   CogOutline,
@@ -26,26 +24,17 @@ import {
   Binoculars,
   FlaskOutline,
   FolderTableOutline,
+  Timetable,
+  Brain,
+  GlobeModel,
 } from 'mdi-material-ui';
-import { compose } from 'ramda';
-import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE,
-  EXPLORE,
-  SETTINGS,
-  MODULES,
-} from '../../../utils/Security';
+import Security, { KNOWLEDGE, SETTINGS } from '../../../utils/Security';
 
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
-    width: 60,
-    backgroundColor: theme.palette.background.nav,
-  },
-  drawerPaperOpen: {
-    minHeight: '100vh',
-    width: 220,
+    width: 180,
     backgroundColor: theme.palette.background.nav,
   },
   menuList: {
@@ -65,359 +54,169 @@ const styles = (theme) => ({
   toolbar: theme.mixins.toolbar,
   menuItem: {
     height: 40,
+    padding: '6px 10px 6px 10px',
+  },
+  menuItemNested: {
+    height: 40,
+    padding: '6px 10px 6px 25px',
   },
 });
 
 const LeftBar = ({ t, location, classes }) => {
-  const [open, setOpen] = useState(false);
-  const toggle = () => {
-    setOpen(!open);
-  };
+  const [open, setOpen] = useState({ activities: true, knowledge: true });
+  const toggle = (key) => setOpen(assoc(key, !open[key], open));
   return (
-    <div>
-      <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
-        <div className={classes.toolbar} />
+    <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
+      <Toolbar />
+      <MenuList component="nav">
+        <MenuItem
+          component={Link}
+          to="/dashboard"
+          selected={location.pathname === '/dashboard'}
+          dense={false}
+          classes={{ root: classes.menuItem }}
+        >
+          <ListItemIcon style={{ minWidth: 35 }}>
+            <DashboardOutlined />
+          </ListItemIcon>
+          <ListItemText primary={t('Dashboard')} />
+        </MenuItem>
+        <Security needs={[KNOWLEDGE]}>
+          <MenuItem
+            dense={false}
+            classes={{ root: classes.menuItem }}
+            onClick={() => toggle('activities')}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <Brain />
+            </ListItemIcon>
+            <ListItemText primary={t('Activities')} />
+            {open.activities ? <ExpandLess /> : <ExpandMore />}
+          </MenuItem>
+          <Collapse in={open.activities}>
+            <MenuList component="nav" disablePadding={true}>
+              <MenuItem
+                component={Link}
+                to="/dashboard/analysis"
+                selected={location.pathname.includes('/dashboard/analysis')}
+                dense={false}
+                classes={{ root: classes.menuItemNested }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <AssignmentOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Analysis')} />
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/events"
+                selected={location.pathname.includes('/dashboard/events')}
+                dense={false}
+                classes={{ root: classes.menuItemNested }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <Timetable />
+                </ListItemIcon>
+                <ListItemText primary={t('Events')} />
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/observations"
+                selected={location.pathname.includes('/dashboard/observations')}
+                dense={false}
+                classes={{ root: classes.menuItemNested }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <Binoculars />
+                </ListItemIcon>
+                <ListItemText primary={t('Observations')} />
+              </MenuItem>
+            </MenuList>
+          </Collapse>
+          <MenuItem
+            dense={false}
+            classes={{ root: classes.menuItem }}
+            onClick={() => toggle('knowledge')}
+          >
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <GlobeModel />
+            </ListItemIcon>
+            <ListItemText primary={t('Knowledge')} />
+            {open.knowledge ? <ExpandLess /> : <ExpandMore />}
+          </MenuItem>
+          <Collapse in={open.knowledge}>
+            <MenuList component="nav" disablePadding={true}>
+              <MenuItem
+                component={Link}
+                to="/dashboard/threats"
+                selected={location.pathname.includes('/dashboard/threats')}
+                dense={false}
+                classes={{ root: classes.menuItemNested }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <FlaskOutline />
+                </ListItemIcon>
+                <ListItemText primary={t('Threats')} />
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/arsenal"
+                selected={location.pathname.includes('/dashboard/arsenal')}
+                dense={false}
+                classes={{ root: classes.menuItemNested }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <LayersOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Arsenal')} />
+              </MenuItem>
+              <MenuItem
+                component={Link}
+                to="/dashboard/entities"
+                selected={location.pathname.includes('/dashboard/entities')}
+                dense={false}
+                classes={{ root: classes.menuItemNested }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <FolderTableOutline />
+                </ListItemIcon>
+                <ListItemText primary={t('Entities')} />
+              </MenuItem>
+            </MenuList>
+          </Collapse>
+        </Security>
+      </MenuList>
+      <Security needs={[SETTINGS]}>
+        <Divider />
         <MenuList component="nav">
           <MenuItem
             component={Link}
-            to="/dashboard"
-            selected={location.pathname === '/dashboard'}
+            to="/dashboard/data"
+            selected={location.pathname.includes('/dashboard/data')}
             dense={false}
             classes={{ root: classes.menuItem }}
           >
-            <ListItemIcon>
-              <DashboardOutlined />
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <Database />
             </ListItemIcon>
+            <ListItemText primary={t('Data')} />
           </MenuItem>
-          <Security needs={[KNOWLEDGE]}>
-            <MenuItem
-              component={Link}
-              to="/dashboard/threats"
-              selected={location.pathname.includes('/dashboard/threats')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <FlaskOutline />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/techniques"
-              selected={location.pathname.includes('/dashboard/techniques')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <LayersOutlined />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/signatures"
-              selected={location.pathname.includes('/dashboard/signatures')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Binoculars />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/reports"
-              selected={location.pathname.includes('/dashboard/reports')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <AssignmentOutlined />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/entities"
-              selected={location.pathname.includes('/dashboard/entities')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <FolderTableOutline />
-              </ListItemIcon>
-            </MenuItem>
-          </Security>
-        </MenuList>
-        <Security needs={[EXPLORE]}>
-          <Divider />
-          <MenuList component="nav">
-            <MenuItem
-              component={Link}
-              to="/dashboard/explore"
-              selected={location.pathname.includes('/dashboard/explore')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <ExploreOutlined />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              disabled={true}
-              to="/dashboard/investigate"
-              selected={location.pathname.includes('/dashboard/investigate')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <DeviceHubOutlined />
-              </ListItemIcon>
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              disabled={true}
-              to="/dashboard/correlate"
-              selected={location.pathname.includes('/dashboard/correlate')}
-              dense={false}
-            >
-              <ListItemIcon>
-                <GroupWorkOutlined />
-              </ListItemIcon>
-            </MenuItem>
-          </MenuList>
-        </Security>
-        <Security needs={[MODULES, SETTINGS]}>
-          <Divider />
-          <MenuList component="nav">
-            <Security needs={[MODULES]}>
-              <MenuItem
-                component={Link}
-                to="/dashboard/data"
-                selected={location.pathname.includes('/dashboard/data')}
-                dense={false}
-                classes={{ root: classes.menuItem }}
-              >
-                <ListItemIcon>
-                  <Database />
-                </ListItemIcon>
-              </MenuItem>
-            </Security>
-            <Security needs={[SETTINGS]}>
-              <MenuItem
-                component={Link}
-                to="/dashboard/settings"
-                selected={location.pathname.includes('/dashboard/settings')}
-                dense={false}
-                style={{ marginBottom: 50 }}
-                classes={{ root: classes.menuItem }}
-              >
-                <ListItemIcon>
-                  <CogOutline />
-                </ListItemIcon>
-              </MenuItem>
-            </Security>
-          </MenuList>
-        </Security>
-        <MenuList component="nav" classes={{ root: classes.menuList }}>
           <MenuItem
-            onClick={toggle}
+            component={Link}
+            to="/dashboard/settings"
+            selected={location.pathname.includes('/dashboard/settings')}
             dense={false}
-            style={{ position: 'absolute', bottom: 10, width: '100%' }}
             classes={{ root: classes.menuItem }}
+            style={{ marginBottom: 50 }}
           >
-            <ListItemIcon>
-              <KeyboardArrowRightOutlined />
+            <ListItemIcon style={{ minWidth: 35 }}>
+              <CogOutline />
             </ListItemIcon>
+            <ListItemText primary={t('Settings')} />
           </MenuItem>
         </MenuList>
-      </Drawer>
-      <Drawer
-        open={open}
-        classes={{ paper: classes.drawerPaperOpen }}
-        onClose={toggle}
-      >
-        <Toolbar>
-          <IconButton
-            classes={{ root: classes.logoButton }}
-            color="inherit"
-            aria-label="Menu"
-            component={Link}
-            to="/dashboard"
-          >
-            <img src={logo} alt="logo" className={classes.logo} />
-          </IconButton>
-        </Toolbar>
-        <MenuList component="nav">
-          <MenuItem
-            component={Link}
-            to="/dashboard"
-            onClick={toggle}
-            selected={location.pathname === '/dashboard'}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon>
-              <DashboardOutlined />
-            </ListItemIcon>
-            <ListItemText primary={t('Dashboard')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to="/dashboard/threats"
-            onClick={toggle}
-            selected={location.pathname.includes('/dashboard/threats')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon>
-              <FlaskOutline />
-            </ListItemIcon>
-            <ListItemText primary={t('Threats')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to="/dashboard/techniques"
-            onClick={toggle}
-            selected={location.pathname.includes('/dashboard/techniques')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon>
-              <LayersOutlined />
-            </ListItemIcon>
-            <ListItemText primary={t('Techniques')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to="/dashboard/signatures"
-            onClick={toggle}
-            selected={location.pathname.includes('/dashboard/signatures')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon>
-              <Binoculars />
-            </ListItemIcon>
-            <ListItemText primary={t('Signatures')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to="/dashboard/reports"
-            onClick={toggle}
-            selected={location.pathname.includes('/dashboard/reports')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon>
-              <AssignmentOutlined />
-            </ListItemIcon>
-            <ListItemText primary={t('Reports')} />
-          </MenuItem>
-          <MenuItem
-            component={Link}
-            to="/dashboard/entities"
-            onClick={toggle}
-            selected={location.pathname.includes('/dashboard/entities')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon>
-              <FolderTableOutline />
-            </ListItemIcon>
-            <ListItemText primary={t('Entities')} />
-          </MenuItem>
-        </MenuList>
-        <Security needs={[EXPLORE]}>
-          <Divider />
-          <MenuList component="nav">
-            <MenuItem
-              component={Link}
-              to="/dashboard/explore"
-              onClick={toggle}
-              selected={location.pathname.includes('/dashboard/explore')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <ExploreOutlined />
-              </ListItemIcon>
-              <ListItemText primary={t('Explore')} />
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              disabled={true}
-              to="/dashboard/investigate"
-              onClick={toggle}
-              selected={location.pathname.includes('/dashboard/investigate')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <DeviceHubOutlined />
-              </ListItemIcon>
-              <ListItemText primary={t('Investigate')} />
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              disabled={true}
-              to="/dashboard/correlate"
-              onClick={toggle}
-              selected={location.pathname.includes('/dashboard/correlate')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <GroupWorkOutlined />
-              </ListItemIcon>
-              <ListItemText primary={t('Correlate')} />
-            </MenuItem>
-          </MenuList>
-        </Security>
-        <Security needs={[SETTINGS]}>
-          <Divider />
-          <MenuList component="nav">
-            <MenuItem
-              component={Link}
-              to="/dashboard/data"
-              onClick={toggle}
-              selected={location.pathname.includes('/dashboard/data')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-            >
-              <ListItemIcon>
-                <Database />
-              </ListItemIcon>
-              <ListItemText primary={t('Data management')} />
-            </MenuItem>
-            <MenuItem
-              component={Link}
-              to="/dashboard/settings"
-              onClick={toggle}
-              selected={location.pathname.includes('/dashboard/settings')}
-              dense={false}
-              classes={{ root: classes.menuItem }}
-              style={{ marginBottom: 50 }}
-            >
-              <ListItemIcon>
-                <CogOutline />
-              </ListItemIcon>
-              <ListItemText primary={t('Settings')} />
-            </MenuItem>
-          </MenuList>
-        </Security>
-        <MenuList component="nav" classes={{ root: classes.menuList }}>
-          <MenuItem
-            onClick={toggle}
-            dense={false}
-            style={{ position: 'absolute', bottom: 10, width: '100%' }}
-          >
-            <ListItemIcon>
-              <KeyboardArrowLeftOutlined />
-            </ListItemIcon>
-          </MenuItem>
-        </MenuList>
-      </Drawer>
-    </div>
+      </Security>
+    </Drawer>
   );
 };
 

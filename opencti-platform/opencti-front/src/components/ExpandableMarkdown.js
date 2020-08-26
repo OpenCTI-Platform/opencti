@@ -22,7 +22,7 @@ const ExpandableMarkdown = (props) => {
           </IconButton>
         </div>
       )}
-      <div style={{ paddingTop: 10 }}>
+      <div style={{ marginTop: -5 }}>
         <Markdown
           {...props}
           source={expand ? source : truncate(source, limit)}

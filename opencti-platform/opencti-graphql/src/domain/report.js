@@ -1,4 +1,4 @@
-import { assoc, append, propOr, pipe } from 'ramda';
+import { assoc, propOr, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
@@ -13,7 +13,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
-import { findAll as findAllStixDomainEntities } from './stixDomainObject';
 import { findById as findIdentityById } from './identity';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
@@ -33,12 +32,6 @@ export const findAll = async (args) => {
 };
 
 // Entities tab
-export const objects = (reportId, args) => {
-  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
-  const finalArgs = assoc('filters', append({ key, values: [reportId] }, propOr([], 'filters', args)), args);
-  return findAllStixDomainEntities(finalArgs);
-};
-
 export const reportContainsStixObjectOrStixRelationship = async (reportId, thingId) => {
   const args = {
     filters: [
@@ -124,8 +117,8 @@ export const addReport = async (user, report) => {
   let confidence = 20;
   if (report.createdBy) {
     const identity = await findIdentityById(report.createdBy);
-    if (identity.reliability) {
-      switch (identity.reliability) {
+    if (identity.x_opencti_reliability) {
+      switch (identity.x_opencti_reliability) {
         case 'A':
           confidence = 80;
           break;

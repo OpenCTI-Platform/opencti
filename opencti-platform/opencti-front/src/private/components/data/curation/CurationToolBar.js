@@ -314,7 +314,7 @@ class CurationToolBar extends Component {
                     {pathOr('', ['createdBy', 'name'], element)}
                   </div>
                   <div style={{ marginRight: 50 }}>
-                    {pathOr([], ['markingDefinitions', 'edges'], element)
+                    {pathOr([], ['objectMarking', 'edges'], element)
                       .length > 0 ? (
                         map(
                           (markingDefinition) => (

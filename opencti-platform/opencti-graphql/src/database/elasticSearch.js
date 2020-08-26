@@ -372,7 +372,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     return map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
   });
 };
-export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) => {
+export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = null) => {
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
@@ -385,9 +385,11 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId) =
       },
     });
   }
-  filters.push({
-    match_phrase: { 'connections.internal_id': fromId },
-  });
+  if (fromId) {
+    filters.push({
+      match_phrase: { 'connections.internal_id': fromId },
+    });
+  }
   for (let index = 0; index < toTypes.length; index += 1) {
     filters.push({
       match_phrase: { 'connections.types': toTypes[index] },

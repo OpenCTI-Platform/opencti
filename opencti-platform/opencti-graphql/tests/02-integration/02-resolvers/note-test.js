@@ -147,7 +147,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note).not.toBeNull();
     expect(queryResult.data.note.id).toEqual(noteInternalId);
   });
-  it('should note stix objects sor stix relationships accurate', async () => {
+  it('should note stix objects or stix relationships accurate', async () => {
     const note = await elLoadByIds('note--573f623c-bf68-4f19-9500-d618f0d00af0');
     datasetNoteInternalId = note.internal_id;
     const NOTE_STIX_DOMAIN_ENTITIES = gql`
@@ -179,7 +179,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.note).not.toBeNull();
     expect(queryResult.data.note.standard_id).toEqual('note--0a12cb43-14b9-5dfa-b307-dfd2dafb906d');
-    expect(queryResult.data.note.objects.edges.length).toEqual(4);
+    expect(queryResult.data.note.objects.edges.length).toEqual(5);
   });
   it('should note contains stix object or stix relationship accurate', async () => {
     const intrusionSet = await elLoadByIds('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');

@@ -390,7 +390,6 @@ class StixDomainObjectHeader extends Component {
 
 StixDomainObjectHeader.propTypes = {
   stixDomainObject: PropTypes.object,
-  isOpenctiAlias: PropTypes.bool,
   PopoverComponent: PropTypes.object,
   variant: PropTypes.string,
   classes: PropTypes.object,

@@ -2,7 +2,6 @@ import {
   addNote,
   findAll,
   findById,
-  objects,
   noteContainsStixObjectOrStixRelationship,
   notesDistributionByEntity,
   notesNumber,
@@ -66,9 +65,6 @@ const noteResolvers = {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
     objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-  },
-  Note: {
-    objects: (note, args) => objects(note.id, args),
   },
   Mutation: {
     noteEdit: (_, { id }, { user }) => ({
