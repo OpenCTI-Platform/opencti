@@ -10,10 +10,10 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
-import XOpenCTIIncidentKnowledgeBar from './XOpenCTIIncidentKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const styles = () => ({
   container: {
@@ -32,8 +32,9 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           stixDomainObject={xOpenCTIIncident}
           PopoverComponent={<XOpenCTIIncidentPopover />}
         />
-        <XOpenCTIIncidentKnowledgeBar
-          xOpenCTIIncidentId={xOpenCTIIncident.id}
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={`/dashboard/events/${xOpenCTIIncident.id}`}
+          availableSections={['attribution', 'victimology', 'malwares', '']}
         />
         <Route
           exact
@@ -77,6 +78,17 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/events/incidents/:incidentId/knowledge/victimology"
+          render={(routeProps) => (
+            <StixDomainObjectVictimology
+              stixDomainObjectId={xOpenCTIIncident.id}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/events/incidents/:incidentId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixCoreRelationships
@@ -85,17 +97,6 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/events/incidents/:incidentId/knowledge/victimology"
-          render={(routeProps) => (
-            <StixDomainObjectVictimology
-              stixDomainObjectId={xOpenCTIIncident.id}
-              entityLink={link}
               {...routeProps}
             />
           )}
