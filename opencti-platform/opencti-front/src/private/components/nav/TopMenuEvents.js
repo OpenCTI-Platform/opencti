@@ -62,7 +62,7 @@ class TopMenuThreats extends Component {
           classes={{ root: classes.button }}
         >
           <WifiTetheringOutlined className={classes.icon} fontSize="small" />
-          {t('Observed data')}
+          {t('Observed datas')}
         </Button>
         <Button
           component={Link}

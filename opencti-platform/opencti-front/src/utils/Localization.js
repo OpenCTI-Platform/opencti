@@ -345,6 +345,8 @@ const i18n = {
       Campaigns: 'Campagnes',
       Campaign: 'Campagne',
       Incidents: 'Incidents',
+      'Observed datas': 'Données observées',
+      'Observed data': 'Donnée observée',
       Incident: 'Incident',
       Malwares: 'Codes malveillants',
       Malware: 'Code malveillant',
@@ -1114,6 +1116,7 @@ const i18n = {
       INTERNAL_IMPORT_FILE: 'Files import',
       INTERNAL_EXPORT_FILE: 'Files export',
       INTERNAL_ENRICHMENT: 'Enrichment',
+      'Observed datas': 'Observed data',
     },
   },
 };
