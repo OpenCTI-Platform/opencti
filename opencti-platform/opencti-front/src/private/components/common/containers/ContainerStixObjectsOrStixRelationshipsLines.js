@@ -120,7 +120,7 @@ export default createPaginationContainer(
         count: totalCount,
       };
     },
-    getVariables(props, { count, cursor }, fragmentVariables) {
+    getVariables(props, { count }, fragmentVariables) {
       return {
         id: fragmentVariables.id,
         count,

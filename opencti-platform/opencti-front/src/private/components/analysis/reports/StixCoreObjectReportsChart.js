@@ -34,8 +34,8 @@ const styles = () => ({
   },
 });
 
-const entityReportsChartReportsTimeSeriesQuery = graphql`
-  query EntityReportsChartReportsTimeSeriesQuery(
+const stixCoreObjectReportsChartReportsTimeSeriesQuery = graphql`
+  query StixCoreObjectReportsChartReportsTimeSeriesQuery(
     $objectId: String
     $authorId: String
     $reportClass: String
@@ -61,7 +61,7 @@ const entityReportsChartReportsTimeSeriesQuery = graphql`
   }
 `;
 
-class EntityReportsChart extends Component {
+class StixCoreObjectReportsChart extends Component {
   constructor(props) {
     super(props);
     this.state = { period: 36, interval: 2 };
@@ -87,7 +87,7 @@ class EntityReportsChart extends Component {
 
   render() {
     const {
-      t, md, classes, entityId, authorId, reportType,
+      t, md, classes, stixCoreObjectId, authorId, reportType,
     } = this.props;
     let reportsTimeSeriesVariables;
     if (authorId) {
@@ -104,7 +104,7 @@ class EntityReportsChart extends Component {
     } else {
       reportsTimeSeriesVariables = {
         authorId: null,
-        objectId: entityId,
+        objectId: stixCoreObjectId,
         reportType: reportType || null,
         field: 'published',
         operation: 'count',
@@ -151,7 +151,7 @@ class EntityReportsChart extends Component {
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={entityReportsChartReportsTimeSeriesQuery}
+            query={stixCoreObjectReportsChartReportsTimeSeriesQuery}
             variables={reportsTimeSeriesVariables}
             render={({ props }) => {
               if (props && props.reportsTimeSeries) {
@@ -238,8 +238,8 @@ class EntityReportsChart extends Component {
   }
 }
 
-EntityReportsChart.propTypes = {
-  entityId: PropTypes.string,
+StixCoreObjectReportsChart.propTypes = {
+  stixCoreObjectId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
   reportType: PropTypes.string,
@@ -248,4 +248,4 @@ EntityReportsChart.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityReportsChart);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectReportsChart);

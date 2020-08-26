@@ -78,7 +78,7 @@ class IndicatorEntityLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
-                  {t(`relation_${node.relationship_type}`)}
+                  {t(`relationship_${node.relationship_type}`)}
                 </div>
               ) : (
                 ''

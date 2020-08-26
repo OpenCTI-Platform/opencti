@@ -32,7 +32,7 @@ import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionO
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreRelationshipInferences from './StixCoreRelationshipInferences';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
-import EntityLastReports from '../../analysis/reports/EntityLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 
@@ -247,7 +247,7 @@ class StixCoreRelationshipContainer extends Component {
             }}
           >
             <strong>
-              {t(`relation_${stixCoreRelationship.relationship_type}`)}
+              {t(`relationship_${stixCoreRelationship.relationship_type}`)}
             </strong>
             {stixCoreRelationship.relationship_type === 'indicates'
             && !stixCoreRelationship.inferred ? (

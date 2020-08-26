@@ -3,13 +3,13 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
-import ItemCreator from '../../../../components/ItemCreator';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -32,42 +32,51 @@ class XOpenCTIIncidentDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels
-            labels={xOpenCTIIncident.objectLabel}
-            id={xOpenCTIIncident.id}
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown
+                source={xOpenCTIIncident.description}
+                limit={400}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('First seen')}
+              </Typography>
+              {fld(xOpenCTIIncident.first_seen)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Last seen')}
+              </Typography>
+              {fld(xOpenCTIIncident.last_seen)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Objective')}
+              </Typography>
+              <ExpandableMarkdown
+                source={xOpenCTIIncident.objective}
+                limit={100}
+              />
+            </Grid>
+          </Grid>
+          <EntityStixCoreRelationshipsDonut
+            entityId={xOpenCTIIncident.id}
+            entityType="Stix-Cyber-Observable"
+            relationshipType="related-to"
+            field="entity_type"
+            height={200}
+            variant='inLine'
+            inferred={true}
           />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          <ItemCreator creator={xOpenCTIIncident.creator} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('First seen')}
-          </Typography>
-          {fld(xOpenCTIIncident.first_seen)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Last seen')}
-          </Typography>
-          {fld(xOpenCTIIncident.last_seen)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Objective')}
-          </Typography>
-          <Markdown className="markdown" source={xOpenCTIIncident.objective} />
         </Paper>
       </div>
     );
@@ -90,19 +99,7 @@ const XOpenCTIXOpenCTIIncidentDetails = createFragmentContainer(
         first_seen
         last_seen
         objective
-        creator {
-          id
-          name
-        }
-        objectLabel {
-          edges {
-            node {
-              id
-              value
-              color
-            }
-          }
-        }
+        description
       }
     `,
   },

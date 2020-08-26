@@ -106,7 +106,7 @@ class RootXOpenCTIIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/v/incidents/:incidentId/knowledge"
+                    path="/dashboard/events/incidents/:incidentId/knowledge"
                     render={() => (
                       <Redirect
                         to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}

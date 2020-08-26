@@ -142,7 +142,7 @@ class EntityStixCoreRelationshipsTableTime extends Component {
                       )}
                     </TableCell>
                     <TableCell align="right">{`${t('Number of')} ${t(
-                      `relation_${relationship_type}`,
+                      `relationship_${relationship_type}`,
                     )}s`}</TableCell>
                   </TableRow>
                 </TableHead>
@@ -272,7 +272,7 @@ class EntityStixCoreRelationshipsTableTime extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || t(`relation_${relationship_type}`)}
+          {title || t(`relationship_${relationship_type}`)}
         </Typography>
         <div style={{ float: 'right', marginTop: -6 }}>
           <Chip

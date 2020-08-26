@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -8,13 +8,13 @@ import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemRevoked from '../../../../components/ItemRevoked';
 import StixDomainObjectLabels from './StixDomainObjectLabels';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = () => ({
   paper: {
@@ -46,7 +46,7 @@ class StixDomainObjectOverview extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -60,19 +60,34 @@ class StixDomainObjectOverview extends Component {
                     'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
                   )}
                 >
-                  <InformationOutline
-                    fontSize="small"
-                    color={Theme.palette.primary.main}
-                  />
+                  <InformationOutline fontSize="small" color="primary" />
                 </Tooltip>
               </div>
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>{stixDomainObject.standard_id}</pre>
+            </Grid>
+            <Grid item={true} xs={12}>
               <Typography
                 variant="h3"
                 gutterBottom={true}
-                style={{ marginTop: 20 }}
+                style={{ float: 'left' }}
               >
+                {t('Other STIX IDs')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
+                <Tooltip title={t('Other known STIX IDs for this entity.')}>
+                  <InformationOutline fontSize="small" color="primary" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <pre style={{ margin: 0 }}>
+                {stixDomainObject.stix_ids.length > 0
+                  ? stixDomainObject.stix_ids.map((stixId) => `${stixId}\n`)
+                  : '-'}
+              </pre>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
                 {t('STIX version')}
               </Typography>
               <Button
@@ -82,6 +97,32 @@ class StixDomainObjectOverview extends Component {
               >
                 {stixDomainObject.spec_version}
               </Button>
+              {stixDomainObject.objectMarking ? (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Marking')}
+                  </Typography>
+                  {stixDomainObject.objectMarking.edges.length > 0 ? (
+                    map(
+                      (markingDefinition) => (
+                        <ItemMarking
+                          key={markingDefinition.node.id}
+                          label={markingDefinition.node.definition}
+                        />
+                      ),
+                      stixDomainObject.objectMarking.edges,
+                    )
+                  ) : (
+                    <ItemMarking label="TLP:WHITE" />
+                  )}
+                </div>
+              ) : (
+                ''
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -108,40 +149,25 @@ class StixDomainObjectOverview extends Component {
                 {t('Modification date')}
               </Typography>
               {fldt(stixDomainObject.modified)}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Revoked')}
-              </Typography>
-              <ItemRevoked
-                status={stixDomainObject.revoked}
-                label={stixDomainObject.revoked ? t('Yes') : t('No')}
-              />
+              {!stixDomainObject.objectMarking ? (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Revoked')}
+                  </Typography>
+                  <ItemRevoked
+                    status={stixDomainObject.revoked}
+                    label={stixDomainObject.revoked ? t('Yes') : t('No')}
+                  />
+                </div>
+              ) : (
+                ''
+              )}
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ float: 'left' }}
-              >
-                {t('Other STIX IDs')}
-              </Typography>
-              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip title={t('Other known STIX IDs for this entity.')}>
-                  <InformationOutline
-                    fontSize="small"
-                    color={Theme.palette.primary.main}
-                  />
-                </Tooltip>
-              </div>
-              <div className="clearfix" />
-              <pre style={{ margin: '0 0 20px 0' }}>
-                {stixDomainObject.stix_ids.length > 0
-                  ? stixDomainObject.stix_ids.map((stixId) => `${stixId}\n`)
-                  : '-'}
-              </pre>
               <StixDomainObjectLabels
                 labels={stixDomainObject.objectLabel}
                 id={stixDomainObject.id}
@@ -170,6 +196,23 @@ class StixDomainObjectOverview extends Component {
                 {t('Creator')}
               </Typography>
               <ItemCreator creator={stixDomainObject.creator} />
+              {stixDomainObject.objectMarking ? (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Revoked')}
+                  </Typography>
+                  <ItemRevoked
+                    status={stixDomainObject.revoked}
+                    label={stixDomainObject.revoked ? t('Yes') : t('No')}
+                  />
+                </div>
+              ) : (
+                ''
+              )}
             </Grid>
           </Grid>
         </Paper>

@@ -6,16 +6,17 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import XOpenCTIIncidentOverview from './XOpenCTIIncidentOverview';
 import XOpenCTIIncidentDetails from './XOpenCTIIncidentDetails';
 import XOpenCTIIncidentEdition from './XOpenCTIIncidentEdition';
 import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
-import EntityLastReports from '../../analysis/reports/EntityLastReports';
-import EntityReportsChart from '../../analysis/reports/EntityReportsChart';
-import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import StixCoreObjectLastReports from '../../analysis/reports/StixCoreObjectLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
   container: {
@@ -40,37 +41,49 @@ class XOpenCTIIncidentComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={3}>
-            <XOpenCTIIncidentOverview xOpenCTIIncident={xOpenCTIIncident} />
-          </Grid>
-          <Grid item={true} xs={3}>
-            <XOpenCTIIncidentDetails xOpenCTIIncident={xOpenCTIIncident} />
+          <Grid item={true} xs={6}>
+            <StixDomainObjectOverview stixDomainObject={xOpenCTIIncident} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={xOpenCTIIncident.id} />
+            <XOpenCTIIncidentDetails xOpenCTIIncident={xOpenCTIIncident} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes stixCoreObjectId={xOpenCTIIncident.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 15 }}
+          style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <EntityStixCoreRelationshipsDonut
-              entityId={xOpenCTIIncident.id}
-              entityType="Stix-Cyber-Observable"
-              relationshipType="related-to"
-              field="entity_type"
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={xOpenCTIIncident.id}
+              stixObjectOrStixRelationshipLink="/dashboard/events/incidents/knowledge"
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityReportsChart entityId={xOpenCTIIncident.id} />
+            <StixCoreObjectLastReports stixCoreObjectId={xOpenCTIIncident.id} />
           </Grid>
         </Grid>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
+        >
+          <Grid item={true} xs={6}>
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={xOpenCTIIncident.id}
+            />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <StixCoreObjectLatestHistory
+              entityStandardId={xOpenCTIIncident.standard_id}
+            />
+          </Grid>
+        </Grid>
+        <StixCoreObjectNotes stixCoreObjectId={xOpenCTIIncident.id} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <XOpenCTIIncidentEdition XOpenCTIIncidentId={xOpenCTIIncident.id} />
+          <XOpenCTIIncidentEdition xOpenCTIIncidentId={xOpenCTIIncident.id} />
         </Security>
       </div>
     );
@@ -89,9 +102,45 @@ const XOpenCTIXOpenCTIIncident = createFragmentContainer(
     xOpenCTIIncident: graphql`
       fragment XOpenCTIIncident_xOpenCTIIncident on XOpenCTIIncident {
         id
+        standard_id
+        stix_ids
+        spec_version
+        revoked
+        confidence
+        created
+        modified
+        created_at
+        updated_at
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        creator {
+          name
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+              x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
         name
         aliases
-        ...XOpenCTIIncidentOverview_xOpenCTIIncident
         ...XOpenCTIIncidentDetails_xOpenCTIIncident
       }
     `,

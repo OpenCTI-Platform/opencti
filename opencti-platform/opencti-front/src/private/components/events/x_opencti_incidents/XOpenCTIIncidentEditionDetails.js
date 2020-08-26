@@ -81,7 +81,7 @@ class XOpenCTIIncidentEditionDetailsComponent extends Component {
     commitMutation({
       mutation: XOpenCTIIncidentEditionDetailsFocus,
       variables: {
-        id: this.props.XOpenCTIIncident.id,
+        id: this.props.xOpenCTIIncident.id,
         input: {
           focusOn: name,
         },
@@ -96,7 +96,7 @@ class XOpenCTIIncidentEditionDetailsComponent extends Component {
         commitMutation({
           mutation: XOpenCTIIncidentMutationFieldPatch,
           variables: {
-            id: this.props.XOpenCTIIncident.id,
+            id: this.props.xOpenCTIIncident.id,
             input: { key: name, value },
           },
         });
@@ -105,12 +105,12 @@ class XOpenCTIIncidentEditionDetailsComponent extends Component {
   }
 
   render() {
-    const { t, XOpenCTIIncident, context } = this.props;
+    const { t, xOpenCTIIncident, context } = this.props;
     const initialValues = pipe(
-      assoc('first_seen', dateFormat(XOpenCTIIncident.first_seen)),
-      assoc('last_seen', dateFormat(XOpenCTIIncident.last_seen)),
+      assoc('first_seen', dateFormat(xOpenCTIIncident.first_seen)),
+      assoc('last_seen', dateFormat(xOpenCTIIncident.last_seen)),
       pick(['first_seen', 'last_seen', 'objective']),
-    )(XOpenCTIIncident);
+    )(xOpenCTIIncident);
 
     return (
       <Formik

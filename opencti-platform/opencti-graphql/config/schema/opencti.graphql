@@ -1574,7 +1574,7 @@ type ObservedDataConnection {
 }
 type ObservedDataEdge {
   cursor: String!
-  node: Note!
+  node: ObservedData!
 }
 type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   id: ID! # internal_id
@@ -7929,11 +7929,11 @@ type Query {
     orderMode: OrderingMode
     fromId: String
     fromRole: String
-    inferred: Boolean
+    fromTypes: [String]
     toId: String
     toRole: String
-    fromTypes: [String]
     toTypes: [String]
+    inferred: Boolean
     relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
@@ -7949,6 +7949,29 @@ type Query {
     filterMode: FilterMode
     stix: Boolean
   ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
+  stixCoreRelationshipsOfElement(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    elementId: String!
+    inferred: Boolean
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+    stix: Boolean
+  ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
+
   stixCoreRelationshipsTimeSeries(
     fromId: String
     relationship_type: String

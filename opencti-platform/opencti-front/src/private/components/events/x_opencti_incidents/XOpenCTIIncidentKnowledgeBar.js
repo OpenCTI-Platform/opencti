@@ -22,14 +22,11 @@ import inject18n from '../../../../components/i18n';
 const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
-    width: 260,
+    width: 240,
     position: 'fixed',
     overflow: 'auto',
     padding: 0,
     backgroundColor: theme.palette.background.navLight,
-  },
-  item: {
-    padding: '0 0 0 15px',
   },
   toolbar: theme.mixins.toolbar,
 });
@@ -62,7 +59,6 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText
               primary={t('Overview')}
-              secondary={t('Synthesis of knowledge')}
             />
           </MenuItem>
           <MenuItem
@@ -78,10 +74,7 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
             <ListItemIcon>
               <SourcePull />
             </ListItemIcon>
-            <ListItemText
-              primary={t('Attribution')}
-              secondary={t('Origins of this XOpenCTIIncident')}
-            />
+            <ListItemText primary={t('Attribution')} />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -96,10 +89,7 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
             <ListItemIcon>
               <Target />
             </ListItemIcon>
-            <ListItemText
-              primary={t('Victimology')}
-              secondary={t('Targeted in this XOpenCTIIncident')}
-            />
+            <ListItemText primary={t('Victimology')} />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -114,10 +104,7 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
             <ListItemIcon>
               <Biohazard />
             </ListItemIcon>
-            <ListItemText
-              primary={t('Malwares')}
-              secondary={t('Used in this XOpenCTIIncident')}
-            />
+            <ListItemText primary={t('Malwares')} />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -132,10 +119,7 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
             <ListItemIcon>
               <LockPattern />
             </ListItemIcon>
-            <ListItemText
-              primary={t('Techniques')}
-              secondary={t('Used in this XOpenCTIIncident')}
-            />
+            <ListItemText primary={t('Attack patterns')} />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -150,10 +134,7 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
             <ListItemIcon>
               <Application />
             </ListItemIcon>
-            <ListItemText
-              primary={t('Tools')}
-              secondary={t('Used in this XOpenCTIIncident')}
-            />
+            <ListItemText primary={t('Tools')} />
           </MenuItem>
           <MenuItem
             component={Link}
@@ -168,10 +149,7 @@ class XOpenCTIXOpenCTIIncidentKnowledgeBar extends Component {
             <ListItemIcon>
               <BugReport />
             </ListItemIcon>
-            <ListItemText
-              primary={t('Vulnerabilities')}
-              secondary={t('Targeted in this XOpenCTIIncident')}
-            />
+            <ListItemText primary={t('Vulnerabilities')} />
           </MenuItem>
         </MenuList>
       </Drawer>

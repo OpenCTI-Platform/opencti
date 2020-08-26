@@ -570,13 +570,13 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
                         {map(
                           (type) => (
                             <MenuItem key={type} value={type}>
-                              {t(`relation_${type}`)}
+                              {t(`relationship_${type}`)}
                             </MenuItem>
                           ),
                           relationshipTypes,
                         )}
                         <MenuItem value="linked">
-                          {t('relation_linked')}
+                          {t('relationship_linked')}
                         </MenuItem>
                       </Field>
                       <Field

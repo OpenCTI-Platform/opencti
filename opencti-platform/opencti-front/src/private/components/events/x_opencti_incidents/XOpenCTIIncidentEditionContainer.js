@@ -57,9 +57,9 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
 
   render() {
     const {
-      t, classes, handleClose, xOpenCTIIncidentId,
+      t, classes, handleClose, xOpenCTIIncident,
     } = this.props;
-    const { editContext } = xOpenCTIIncidentId;
+    const { editContext } = xOpenCTIIncident;
     return (
       <div>
         <div className={classes.header}>
@@ -88,13 +88,13 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
           </AppBar>
           {this.state.currentTab === 0 && (
             <XOpenCTIIncidentEditionOverview
-              xOpenCTIIncidentId={xOpenCTIIncidentId}
+                xOpenCTIIncident={xOpenCTIIncident}
               context={editContext}
             />
           )}
           {this.state.currentTab === 1 && (
             <XOpenCTIIncidentEditionDetails
-              xOpenCTIIncidentId={xOpenCTIIncidentId}
+                xOpenCTIIncident={xOpenCTIIncident}
               context={editContext}
             />
           )}
@@ -107,7 +107,7 @@ class XOpenCTIXOpenCTIIncidentEditionContainer extends Component {
 XOpenCTIXOpenCTIIncidentEditionContainer.propTypes = {
   handleClose: PropTypes.func,
   classes: PropTypes.object,
-  xOpenCTIIncidentId: PropTypes.object,
+  xOpenCTIIncident: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
 };

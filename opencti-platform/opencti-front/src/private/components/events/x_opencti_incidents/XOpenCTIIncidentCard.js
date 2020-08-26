@@ -92,7 +92,7 @@ class XOpenCTIIncidentCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/dashboard/threats/XOpenCTIIncidents/${node.id}`}
+          to={`/dashboard/events/incidents/${node.id}`}
         >
           <CardHeader
             classes={{ root: classes.header }}

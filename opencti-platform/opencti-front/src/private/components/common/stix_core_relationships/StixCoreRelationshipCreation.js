@@ -401,7 +401,7 @@ class StixCoreRelationshipCreation extends Component {
                 {map(
                   (type) => (
                     <MenuItem key={type} value={type}>
-                      {t(`relation_${type}`)}
+                      {t(`relationship_${type}`)}
                     </MenuItem>
                   ),
                   relationshipTypes,
@@ -546,7 +546,7 @@ class StixCoreRelationshipCreation extends Component {
                       display: 'inline-block',
                     }}
                   >
-                    {t(`relation_${relation.node.relationship_type}`)}
+                    {t(`relationship_${relation.node.relationship_type}`)}
                     <br />
                     {t('First obs.')} {nsd(relation.node.start_time)}
                     <br />

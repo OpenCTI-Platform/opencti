@@ -6,10 +6,10 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import XOpenCTIIncidentEditionContainer from './XOpenCTIIncidentEditionContainer';
-import { XOpenCTIIncidentEditionOverviewFocus } from './XOpenCTIIncidentEditionOverview';
+import ObservedDataEditionContainer from './ObservedDataEditionContainer';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { observedDataEditionOverviewFocus } from './ObservedDataEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -32,15 +32,15 @@ const styles = (theme) => ({
   },
 });
 
-export const XOpenCTIIncidentEditionQuery = graphql`
-  query XOpenCTIIncidentEditionContainerQuery($id: String!) {
-    xOpenCTIIncident(id: $id) {
-      ...XOpenCTIIncidentEditionContainer_xOpenCTIIncident
+export const observedDataEditionQuery = graphql`
+  query ObservedDataEditionContainerQuery($id: String!) {
+    observedData(id: $id) {
+      ...ObservedDataEditionContainer_observedData
     }
   }
 `;
 
-class XOpenCTIXOpenCTIIncidentEdition extends Component {
+class ObservedDataEdition extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -52,9 +52,9 @@ class XOpenCTIXOpenCTIIncidentEdition extends Component {
 
   handleClose() {
     commitMutation({
-      mutation: XOpenCTIIncidentEditionOverviewFocus,
+      mutation: observedDataEditionOverviewFocus,
       variables: {
-        id: this.props.xOpenCTIIncidentId,
+        id: this.props.observedDataId,
         input: { focusOn: '' },
       },
     });
@@ -62,7 +62,7 @@ class XOpenCTIXOpenCTIIncidentEdition extends Component {
   }
 
   render() {
-    const { classes, xOpenCTIIncidentId } = this.props;
+    const { classes, observedDataId } = this.props;
     return (
       <div>
         <Fab
@@ -80,13 +80,13 @@ class XOpenCTIXOpenCTIIncidentEdition extends Component {
           onClose={this.handleClose.bind(this)}
         >
           <QueryRenderer
-            query={XOpenCTIIncidentEditionQuery}
-            variables={{ id: xOpenCTIIncidentId }}
+            query={observedDataEditionQuery}
+            variables={{ id: observedDataId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <XOpenCTIIncidentEditionContainer
-                    xOpenCTIIncident={props.xOpenCTIIncident}
+                  <ObservedDataEditionContainer
+                    observedData={props.observedData}
                     handleClose={this.handleClose.bind(this)}
                   />
                 );
@@ -100,8 +100,9 @@ class XOpenCTIXOpenCTIIncidentEdition extends Component {
   }
 }
 
-XOpenCTIXOpenCTIIncidentEdition.propTypes = {
-  xOpenCTIIncidentId: PropTypes.string,
+ObservedDataEdition.propTypes = {
+  observedDataId: PropTypes.string,
+  me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -110,4 +111,4 @@ XOpenCTIXOpenCTIIncidentEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(XOpenCTIXOpenCTIIncidentEdition);
+)(ObservedDataEdition);

@@ -69,8 +69,8 @@ const inlineStyles = {
   },
 };
 
-const entityLastReportsQuery = graphql`
-  query EntityLastReportsQuery(
+const stixCoreObjectLastReportsQuery = graphql`
+  query StixCoreObjectLastReportsQuery(
     $first: Int
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
@@ -108,25 +108,14 @@ const entityLastReportsQuery = graphql`
   }
 `;
 
-class EntityLastReports extends Component {
+class StixCoreObjectLastReports extends Component {
   render() {
     const {
-      t,
-      nsd,
-      classes,
-      entityId,
-      stixCyberObservableId,
-      authorId,
+      t, nsd, classes, stixCoreObjectId, authorId,
     } = this.props;
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
-    if (entityId) filters.push({ key: 'objectContains', values: [entityId] });
-    if (stixCyberObservableId) {
-      filters.push({
-        key: 'observablesContains',
-        values: [stixCyberObservableId],
-      });
-    }
+    if (stixCoreObjectId) filters.push({ key: 'objectContains', values: [stixCoreObjectId] });
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -136,7 +125,7 @@ class EntityLastReports extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={entityLastReportsQuery}
+            query={stixCoreObjectLastReportsQuery}
             variables={{
               first: 8,
               orderBy: 'published',
@@ -150,7 +139,7 @@ class EntityLastReports extends Component {
                     {props.reports.edges.map((reportEdge) => {
                       const report = reportEdge.node;
                       const markingDefinition = head(
-                        pathOr([], ['markingDefinitions', 'edges'], report),
+                        pathOr([], ['objectMarking', 'edges'], report),
                       );
                       return (
                         <ListItem
@@ -160,7 +149,7 @@ class EntityLastReports extends Component {
                           classes={{ root: classes.item }}
                           divider={true}
                           component={Link}
-                          to={`/dashboard/reports/all/${report.id}`}
+                          to={`/dashboard/analysis/reports/${report.id}`}
                         >
                           <ListItemIcon>
                             <DescriptionOutlined color="primary" />
@@ -229,13 +218,15 @@ class EntityLastReports extends Component {
   }
 }
 
-EntityLastReports.propTypes = {
-  entityId: PropTypes.string,
-  stixCyberObservableId: PropTypes.string,
+StixCoreObjectLastReports.propTypes = {
+  stixCoreObjectId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityLastReports);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectLastReports);

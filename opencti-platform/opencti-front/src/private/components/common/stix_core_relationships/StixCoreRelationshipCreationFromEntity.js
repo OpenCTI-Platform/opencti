@@ -645,7 +645,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 {map(
                   (type) => (
                     <MenuItem key={type} value={type}>
-                      {t(`relation_${type}`)}
+                      {t(`relationship_${type}`)}
                     </MenuItem>
                   ),
                   relationshipTypes,

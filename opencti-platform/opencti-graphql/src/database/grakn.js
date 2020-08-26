@@ -756,7 +756,7 @@ export const listRelations = async (relationshipType, args) => {
   const searchFields = ['name', 'description'];
   const { first = 1000, after, orderBy, relationFilter, inferred = false } = args;
   let useInference = inferred;
-  const { filters = [], search, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
+  const { filters = [], search, elementId, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
   const {
     startTimeStart,
     startTimeStop,
@@ -772,7 +772,7 @@ export const listRelations = async (relationshipType, args) => {
   // Else, just ask for the relation only.
   // fromType or toType only allow if fromId or toId available
   const definedRoles = !R.isNil(fromRole) || !R.isNil(toRole);
-  const askForConnections = !R.isNil(fromId) || !R.isNil(toId) || definedRoles;
+  const askForConnections = !R.isNil(elementId) || !R.isNil(fromId) || !R.isNil(toId) || definedRoles;
   const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
@@ -795,6 +795,9 @@ export const listRelations = async (relationshipType, args) => {
       if (relationId) {
         finalFilters.push({ key: `internal_id`, values: [relationId] });
       }
+    }
+    if (elementId) {
+      finalFilters.push({ key: 'connections.internal_id', values: [elementId] });
     }
     if (fromId) {
       finalFilters.push({ key: 'connections.internal_id', values: [fromId] });
@@ -864,6 +867,7 @@ export const listRelations = async (relationshipType, args) => {
     )(searchFields);
     attributesFilters.push(`${searchFilter};`);
   }
+  if (elementId) attributesFilters.push(`$element has internal_id "${escapeString(elementId)}";`);
   if (fromId) attributesFilters.push(`$from has internal_id "${escapeString(fromId)}";`);
   if (toId) attributesFilters.push(`$to has internal_id "${escapeString(toId)}";`);
   if (startTimeStart || startTimeStop) {
@@ -929,9 +933,14 @@ export const listRelations = async (relationshipType, args) => {
   const queryAttributesFields = R.join(' ', attributesFields);
   const queryAttributesFilters = R.join(' ', attributesFilters);
   const queryRelationsFields = R.join(' ', relationsFields);
-  const querySource = askForConnections
-    ? `$rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to)`
-    : '$rel';
+  let querySource;
+  if (elementId) {
+    querySource = `$rel($element)`;
+  } else {
+    querySource = askForConnections
+      ? `$rel(${fromRole ? `${fromRole}:` : ''}$from, ${toRole ? `${toRole}:` : ''}$to)`
+      : '$rel';
+  }
   const baseQuery = `match ${querySource} isa ${relationToGet}; 
   ${queryFromTypes} ${queryToTypes} ${queryRelationsFields} ${queryAttributesFields} ${queryAttributesFilters} get;`;
   const listArgs = R.assoc('inferred', useInference, args);

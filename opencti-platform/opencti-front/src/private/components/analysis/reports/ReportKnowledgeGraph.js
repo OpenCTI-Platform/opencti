@@ -873,7 +873,7 @@ class ReportKnowledgeGraphComponent extends Component {
           color="primary"
           className={classes.icon}
           onClick={this.zoomToFit.bind(this)}
-          style={{ left: 90 }}
+          style={{ left: 200 }}
         >
           <AspectRatio />
         </IconButton>
@@ -881,7 +881,7 @@ class ReportKnowledgeGraphComponent extends Component {
           color="primary"
           className={classes.icon}
           onClick={this.distribute.bind(this, 'LR')}
-          style={{ left: 140 }}
+          style={{ left: 250 }}
         >
           <GraphOutline style={{ transform: 'rotate(-90deg)' }} />
         </IconButton>
@@ -889,7 +889,7 @@ class ReportKnowledgeGraphComponent extends Component {
           color="primary"
           className={classes.icon}
           onClick={this.distribute.bind(this, 'TB')}
-          style={{ left: 190 }}
+          style={{ left: 300 }}
         >
           <GraphOutline />
         </IconButton>

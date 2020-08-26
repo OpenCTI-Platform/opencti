@@ -125,6 +125,7 @@ const relationsTypesMapping = {
   Tool_Position: ['targets'],
   'X-OpenCTI-Incident_Intrusion-Set': ['attributed-to'],
   'X-OpenCTI-Incident_Threat-Actor': ['attributed-to'],
+  'X-OpenCTI-Incident_Campaign': ['attributed-to'],
   'X-OpenCTI-Incident_Infrastructure': ['compromises', 'uses'],
   'X-OpenCTI-Incident_Region': ['originates-from', 'targets'],
   'X-OpenCTI-Incident_Country': ['originates-from', 'targets'],

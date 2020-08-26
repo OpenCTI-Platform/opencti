@@ -6,11 +6,11 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Markdown from 'react-markdown';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import ItemStatus from '../../../../components/ReportStatus';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -36,7 +36,7 @@ class ReportDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
-              <Markdown className="markdown" source={report.description} />
+              <ExpandableMarkdown source={report.description} limit={300} />
             </Grid>
             <Grid item={true} xs={4}>
               <Typography variant="h3" gutterBottom={true}>
@@ -60,7 +60,7 @@ class ReportDetailsComponent extends Component {
             entityType="Stix-Core-Object"
             relationshipType="object"
             field="entity_type"
-            height={200}
+            height={260}
           />
         </Paper>
       </div>

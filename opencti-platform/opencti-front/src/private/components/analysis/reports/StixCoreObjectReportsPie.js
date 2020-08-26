@@ -50,8 +50,8 @@ const renderCustomizedLabel = ({
   );
 };
 
-const entityReportsPieReportsDistributionQuery = graphql`
-  query EntityReportsPieReportsDistributionQuery(
+const stixCoreObjectReportsPieReportsDistributionQuery = graphql`
+  query StixCoreObjectReportsPieReportsDistributionQuery(
     $objectId: String
     $field: String!
     $operation: StatsOperation!
@@ -67,13 +67,13 @@ const entityReportsPieReportsDistributionQuery = graphql`
   }
 `;
 
-class EntityReportsPie extends Component {
+class StixCoreObjectReportsPie extends Component {
   render() {
     const {
-      t, classes, entityId, field,
+      t, classes, stixCoreObjectId, field,
     } = this.props;
     const reportsDistributionVariables = {
-      objectId: entityId,
+      objectId: stixCoreObjectId,
       field: field || 'report_types',
       operation: 'count',
     };
@@ -84,7 +84,7 @@ class EntityReportsPie extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={entityReportsPieReportsDistributionQuery}
+            query={stixCoreObjectReportsPieReportsDistributionQuery}
             variables={reportsDistributionVariables}
             render={({ props }) => {
               if (
@@ -165,11 +165,11 @@ class EntityReportsPie extends Component {
   }
 }
 
-EntityReportsPie.propTypes = {
-  entityId: PropTypes.string,
+StixCoreObjectReportsPie.propTypes = {
+  stixCoreObjectId: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(EntityReportsPie);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectReportsPie);

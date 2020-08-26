@@ -115,7 +115,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
     commitMutation({
       mutation: XOpenCTIIncidentEditionOverviewFocus,
       variables: {
-        id: this.props.XOpenCTIIncident.id,
+        id: this.props.xOpenCTIIncident.id,
         input: {
           focusOn: name,
         },
@@ -130,7 +130,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
         commitMutation({
           mutation: XOpenCTIIncidentMutationFieldPatch,
           variables: {
-            id: this.props.XOpenCTIIncident.id,
+            id: this.props.xOpenCTIIncident.id,
             input: { key: name, value },
           },
         });
@@ -149,7 +149,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
       commitMutation({
         mutation: XOpenCTIIncidentMutationRelationAdd,
         variables: {
-          id: this.props.XOpenCTIIncident.id,
+          id: this.props.xOpenCTIIncident.id,
           input: {
             toId: value.value,
             relationship_type: 'created-by',
@@ -160,7 +160,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
       commitMutation({
         mutation: XOpenCTIIncidentMutationRelationDelete,
         variables: {
-          id: this.props.XOpenCTIIncident.id,
+          id: this.props.xOpenCTIIncident.id,
           toId: currentCreatedBy.value,
           relationship_type: 'created-by',
         },
@@ -169,7 +169,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
         commitMutation({
           mutation: XOpenCTIIncidentMutationRelationAdd,
           variables: {
-            id: this.props.XOpenCTIIncident.id,
+            id: this.props.xOpenCTIIncident.id,
             input: {
               toId: value.value,
               relationship_type: 'created-by',
@@ -197,7 +197,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
       commitMutation({
         mutation: XOpenCTIIncidentMutationRelationAdd,
         variables: {
-          id: this.props.XOpenCTIIncident.id,
+          id: this.props.xOpenCTIIncident.id,
           input: {
             toId: head(added).value,
             relationship_type: 'object-marking',
@@ -210,7 +210,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
       commitMutation({
         mutation: XOpenCTIIncidentMutationRelationDelete,
         variables: {
-          id: this.props.XOpenCTIIncident.id,
+          id: this.props.xOpenCTIIncident.id,
           toId: head(removed).value,
           relationship_type: 'object-marking',
         },
@@ -219,12 +219,12 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
   }
 
   render() {
-    const { t, xOpenCTIIncidentId, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], xOpenCTIIncidentId) === null
+    const { t, xOpenCTIIncident, context } = this.props;
+    const createdBy = pathOr(null, ['createdBy', 'name'], xOpenCTIIncident) === null
       ? ''
       : {
-        label: pathOr(null, ['createdBy', 'name'], xOpenCTIIncidentId),
-        value: pathOr(null, ['createdBy', 'id'], xOpenCTIIncidentId),
+        label: pathOr(null, ['createdBy', 'name'], xOpenCTIIncident),
+        value: pathOr(null, ['createdBy', 'id'], xOpenCTIIncident),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -232,14 +232,14 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
       })),
-    )(xOpenCTIIncidentId);
+    )(xOpenCTIIncident);
     const objectMarking = pipe(
       pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
       })),
-    )(xOpenCTIIncidentId);
+    )(xOpenCTIIncident);
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
@@ -251,7 +251,7 @@ class XOpenCTIIncidentEditionOverviewComponent extends Component {
         'killChainPhases',
         'objectMarking',
       ]),
-    )(xOpenCTIIncidentId);
+    )(xOpenCTIIncident);
     return (
       <Formik
         enableReinitialize={true}
@@ -317,7 +317,7 @@ XOpenCTIIncidentEditionOverviewComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
-  xOpenCTIIncidentId: PropTypes.object,
+  xOpenCTIIncident: PropTypes.object,
   context: PropTypes.array,
 };
 

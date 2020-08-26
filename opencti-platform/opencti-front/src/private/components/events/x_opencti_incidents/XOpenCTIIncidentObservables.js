@@ -32,39 +32,39 @@ const styles = () => ({
 
 class XOpenCTIIncidentObservablesComponent extends Component {
   render() {
-    const { classes, XOpenCTIIncident, location } = this.props;
-    const link = `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncident.id}/observables`;
+    const { classes, xOpenCTIIncident, location } = this.props;
+    const link = `/dashboard/events/incidents/${xOpenCTIIncident.id}/observables`;
     return (
       <div
         className={
           location.pathname.includes(
-            `/dashboard/threats/XOpenCTIIncidents/${XOpenCTIIncident.id}/observables/relations/`,
+            `/dashboard/events/incidents/${xOpenCTIIncident.id}/observables/relations/`,
           )
             ? classes.containerWithoutPadding
             : classes.container
         }
       >
         <StixDomainObjectHeader
-          stixDomainObject={XOpenCTIIncident}
+          stixDomainObject={xOpenCTIIncident}
           PopoverComponent={<XOpenCTIIncidentPopover />}
         />
         <Route
           exact
-          path="/dashboard/threats/XOpenCTIIncidents/:XOpenCTIIncidentId/observables/relations/:relationId"
+          path="/dashboard/events/incidents/:incidentId/observables/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
-              entityId={XOpenCTIIncident.id}
+              entityId={xOpenCTIIncident.id}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/threats/XOpenCTIIncidents/:XOpenCTIIncidentId/observables"
+          path="/dashboard/events/incidents/:incidentId/observables"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
               <EntityStixCyberObservables
-                entityId={XOpenCTIIncident.id}
+                entityId={xOpenCTIIncident.id}
                 relationshipType="related-to"
                 entityLink={link}
                 {...routeProps}
@@ -78,7 +78,7 @@ class XOpenCTIIncidentObservablesComponent extends Component {
 }
 
 XOpenCTIIncidentObservablesComponent.propTypes = {
-  XOpenCTIIncident: PropTypes.object,
+  xOpenCTIIncident: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

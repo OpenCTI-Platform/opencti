@@ -91,7 +91,7 @@ class RelationNodeWidget extends Component {
           }}
         >
           <div className={classes.label}>
-            <strong>{t(`relation_${extras.type}`)}</strong>
+            <strong>{t(`relationship_${extras.type}`)}</strong>
           </div>
           <div
             className={classes.port}

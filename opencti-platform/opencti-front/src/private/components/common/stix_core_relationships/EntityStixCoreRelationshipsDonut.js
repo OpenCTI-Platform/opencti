@@ -160,7 +160,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
               <ResponsiveContainer height={height} width="100%">
                 <PieChart
                   margin={{
-                    top: variant === 'inLine' ? 80 : 0,
+                    top: variant === 'inLine' ? 40 : 0,
                     right: 0,
                     bottom: 0,
                     left: 0,
@@ -228,10 +228,10 @@ class EntityStixCoreRelationshipsDonut extends Component {
 
   render() {
     const {
-      t, classes, title, entityType, variant,
+      t, classes, title, entityType, variant, height,
     } = this.props;
     return (
-      <div style={{ height: '100%', marginTop: variant === 'inLine' ? 20 : 0 }}>
+      <div style={{ height: height || '100%' }}>
         <Typography
           variant={variant === 'inLine' ? 'h3' : 'h4'}
           gutterBottom={true}

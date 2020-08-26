@@ -37,6 +37,7 @@ const stixCoreRelationshipResolvers = {
   Query: {
     stixCoreRelationship: (_, { id }) => findById(id),
     stixCoreRelationships: (_, args) => findAll(args),
+    stixCoreRelationshipsOfElement: (_, args) => findAll(args),
     stixCoreRelationshipsTimeSeries: (_, args) => timeSeriesRelations(args),
     stixCoreRelationshipsDistribution: (_, args) => distributionRelations(args),
     stixCoreRelationshipsNumber: (_, args) => stixCoreRelationshipsNumber(args),

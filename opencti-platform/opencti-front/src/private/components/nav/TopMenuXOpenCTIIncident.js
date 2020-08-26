@@ -51,7 +51,7 @@ class TopMenuXOpenCTIIncident extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/threats/incidents"
+          to="/dashboard/events/incidents"
           variant="contained"
           size="small"
           color="inherit"
@@ -66,15 +66,15 @@ class TopMenuXOpenCTIIncident extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/threats/incidents/${incidentId}`}
+          to={`/dashboard/events/incidents/${incidentId}`}
           variant={
-            location.pathname === `/dashboard/threats/incidents/${incidentId}`
+            location.pathname === `/dashboard/events/incidents/${incidentId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/threats/incidents/${incidentId}`
+            location.pathname === `/dashboard/events/incidents/${incidentId}`
               ? 'primary'
               : 'inherit'
           }
@@ -84,10 +84,10 @@ class TopMenuXOpenCTIIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/incidents/${incidentId}/knowledge`}
+          to={`/dashboard/events/incidents/${incidentId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/threats/incidents/${incidentId}/knowledge`,
+              `/dashboard/events/incidents/${incidentId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -95,7 +95,7 @@ class TopMenuXOpenCTIIncident extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/threats/incidents/${incidentId}/knowledge`,
+              `/dashboard/events/incidents/${incidentId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -106,17 +106,17 @@ class TopMenuXOpenCTIIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/incidents/${incidentId}/reports`}
+          to={`/dashboard/events/incidents/${incidentId}/reports`}
           variant={
             location.pathname
-            === `/dashboard/threats/incidents/${incidentId}/reports`
+            === `/dashboard/events/incidents/${incidentId}/reports`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/incidents/${incidentId}/reports`
+            === `/dashboard/events/incidents/${incidentId}/reports`
               ? 'primary'
               : 'inherit'
           }
@@ -126,10 +126,10 @@ class TopMenuXOpenCTIIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/incidents/${incidentId}/observables`}
+          to={`/dashboard/events/incidents/${incidentId}/observables`}
           variant={
             location.pathname.includes(
-              `/dashboard/threats/incidents/${incidentId}/observables`,
+              `/dashboard/events/incidents/${incidentId}/observables`,
             )
               ? 'contained'
               : 'text'
@@ -137,7 +137,7 @@ class TopMenuXOpenCTIIncident extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/threats/incidents/${incidentId}/observables`,
+              `/dashboard/events/incidents/${incidentId}/observables`,
             )
               ? 'primary'
               : 'inherit'
@@ -149,17 +149,17 @@ class TopMenuXOpenCTIIncident extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/threats/incidents/${incidentId}/files`}
+            to={`/dashboard/events/incidents/${incidentId}/files`}
             variant={
               location.pathname
-              === `/dashboard/threats/incidents/${incidentId}/files`
+              === `/dashboard/events/incidents/${incidentId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/threats/incidents/${incidentId}/files`
+              === `/dashboard/events/incidents/${incidentId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -170,17 +170,17 @@ class TopMenuXOpenCTIIncident extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/threats/incidents/${incidentId}/history`}
+          to={`/dashboard/events/incidents/${incidentId}/history`}
           variant={
             location.pathname
-            === `/dashboard/threats/incidents/${incidentId}/history`
+            === `/dashboard/events/incidents/${incidentId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/incidents/${incidentId}/history`
+            === `/dashboard/events/incidents/${incidentId}/history`
               ? 'primary'
               : 'inherit'
           }

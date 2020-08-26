@@ -174,7 +174,7 @@ class StixCoreObjectNoteCardComponent extends Component {
               </div>
               <div className="clearfix" />
             </div>
-            <Divider variant="light" />
+            <Divider variant="fullWidth" />
             <Typography
               variant="h3"
               gutterBottom={true}

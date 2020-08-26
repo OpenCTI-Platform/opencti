@@ -326,7 +326,7 @@ const TopBar = ({
                 }
                 classes={{ root: classes.button }}
               >
-                <ExploreOutlined fontSize="medium" />
+                <ExploreOutlined fontSize="default" />
               </IconButton>
             </Tooltip>
           </Security>
@@ -347,7 +347,7 @@ const TopBar = ({
                 }
                 classes={{ root: classes.button }}
               >
-                <UploadOutline fontSize="medium" />
+                <UploadOutline fontSize="default" />
               </IconButton>
             </Tooltip>
           </Security>
@@ -359,7 +359,7 @@ const TopBar = ({
             onClick={handleOpenMenu}
             color="inherit"
           >
-            <AccountCircleOutlined fontSize="medium" />
+            <AccountCircleOutlined fontSize="default" />
           </IconButton>
           <Menu
             id="menu-appbar"
