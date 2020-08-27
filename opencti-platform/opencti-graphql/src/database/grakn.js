@@ -1294,12 +1294,15 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
     if (attrType === GraknDate) return prepareDate(v);
     return escape(v);
   }, input.value);
-  // --- Delete the old attribute
+  // --- Delete the old attribute reference of the entity
   const entityId = `${escapeString(id)}`;
   const deleteQuery = `match $x has internal_id "${entityId}", has ${escapedKey} $del; delete $x has ${escapedKey} $del;`;
-  logger.debug(`[GRAKN - infer: false] updateAttribute - delete`, { query: deleteQuery });
+  logger.debug(`[GRAKN - infer: false] updateAttribute - delete reference`, { query: deleteQuery });
   await wTx.query(deleteQuery);
-  // TODO @Julien --- If no more ownership, delete the entire attribute
+  // --- Delete the entire attribute if its now an orphan
+  const orphanQuery = `match $x isa ${escapedKey}; not { $y has ${escapedKey} $x; }; delete $x isa ${escapedKey};`;
+  logger.debug(`[GRAKN - infer: false] updateAttribute - delete orphan`, { query: deleteQuery });
+  await wTx.query(orphanQuery);
   if (typedValues.length > 0) {
     let graknValues;
     if (typedValues.length === 1) {
@@ -1413,6 +1416,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         from = fromEntity;
         to = toEntity;
       }
+      // eslint-disable-next-line no-restricted-syntax
       for (const dataLog of dataToLogSend) {
         postOperations.push(sendLog(operation, user, baseData, { key: dataLog.key, value: dataLog.value, from, to }));
       }
