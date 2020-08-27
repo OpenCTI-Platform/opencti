@@ -14,9 +14,14 @@ import {
 } from '../schema/internalObject';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import {
+  ABSTRACT_INTERNAL_OBJECT,
+  ABSTRACT_INTERNAL_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
 } from '../schema/general';
 import { RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -94,13 +99,7 @@ const index = async () => {
   // MigrationsStatus  - Not needed, migration related.
   // MigrationReference  - Not needed, migration related.
   // Token - Not needed, authentication
-  await indexElement(ENTITY_TYPE_SETTINGS);
-  await indexElement(ENTITY_TYPE_ROLE);
-  await indexElement(ENTITY_TYPE_CAPABILITY);
-  await indexElement(ENTITY_TYPE_LABEL);
-  await indexElement(ENTITY_TYPE_CONNECTOR);
-  await indexElement(ENTITY_TYPE_GROUP);
-  await indexElement(ENTITY_TYPE_WORKSPACE);
+  await indexElement(ABSTRACT_INTERNAL_OBJECT);
   await indexElement(ABSTRACT_STIX_DOMAIN_OBJECT);
   await indexElement(ABSTRACT_STIX_META_OBJECT);
   await indexElement(ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -109,12 +108,12 @@ const index = async () => {
   // migrate - Not needed, migration related.
   // authorize - Not needed, authentication
   await indexElement(RELATION_MEMBER_OF, true);
-  await indexElement('stix_relation', true, 'entity', 'entity');
-  await indexElement('stix_relation', true, 'entity', 'relation');
-  await indexElement('stix_relation', true, 'relation', 'relation');
-  await indexElement('stix_observable_relation', true);
-  await indexElement('relation_embedded', true);
-  await indexElement('stix_relation_embedded', true);
+  await indexElement(ABSTRACT_STIX_RELATIONSHIP, true, 'entity', 'entity');
+  await indexElement(ABSTRACT_STIX_RELATIONSHIP, true, 'entity', 'relation');
+  await indexElement(ABSTRACT_STIX_RELATIONSHIP, true, 'relation', 'relation');
+  await indexElement(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, true);
+  await indexElement(ABSTRACT_STIX_META_RELATIONSHIP, true);
+  await indexElement(ABSTRACT_INTERNAL_RELATIONSHIP, true);
   await indexElement(STIX_SIGHTING_RELATIONSHIP, true);
 };
 
