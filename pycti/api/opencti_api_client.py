@@ -78,8 +78,7 @@ class OpenCTIApiClient:
     """
 
     def __init__(self, url, token, log_level="info", ssl_verify=False, proxies={}):
-        """Constructor method
-        """
+        """Constructor method"""
 
         # Check configuration
         self.ssl_verify = ssl_verify
@@ -225,7 +224,11 @@ class OpenCTIApiClient:
                         if isinstance(file.data, str):
                             file_multi = (
                                 str(file_index),
-                                (file.name, io.BytesIO(file.data.encode()), file.mime,),
+                                (
+                                    file.name,
+                                    io.BytesIO(file.data.encode()),
+                                    file.mime,
+                                ),
                             )
                         else:
                             file_multi = (
@@ -536,6 +539,7 @@ class OpenCTIApiClient:
             return self.query(query, {"file": (File(file_name, data, mime_type))})
         else:
             self.log(
-                "error", "[upload] Missing parameters: file_name or data",
+                "error",
+                "[upload] Missing parameters: file_name or data",
             )
             return None

@@ -312,7 +312,8 @@ class Note:
             return result["data"]["noteContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
-                "error", "[opencti_note] Missing parameters: id or entity_id",
+                "error",
+                "[opencti_note] Missing parameters: id or entity_id",
             )
 
     """
@@ -374,7 +375,8 @@ class Note:
             return self.opencti.process_multiple_fields(result["data"]["noteAdd"])
         else:
             self.opencti.log(
-                "error", "[opencti_note] Missing parameters: content",
+                "error",
+                "[opencti_note] Missing parameters: content",
             )
 
     """

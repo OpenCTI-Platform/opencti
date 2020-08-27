@@ -7,8 +7,7 @@ from pycti.connector.opencti_connector import OpenCTIConnector
 
 
 class OpenCTIApiConnector:
-    """OpenCTIApiConnector
-    """
+    """OpenCTIApiConnector"""
 
     def __init__(self, api):
         self.api = api

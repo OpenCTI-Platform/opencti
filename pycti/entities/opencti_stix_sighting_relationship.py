@@ -433,7 +433,8 @@ class StixSightingRelationship:
         update = kwargs.get("update", False)
 
         self.opencti.log(
-            "info", "Creating stix_sighting {" + from_id + ", " + str(to_id) + "}.",
+            "info",
+            "Creating stix_sighting {" + from_id + ", " + str(to_id) + "}.",
         )
         query = """
                 mutation StixSightingRelationshipAdd($input: StixSightingRelationshipAddInput!) {

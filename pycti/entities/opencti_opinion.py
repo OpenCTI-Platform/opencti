@@ -314,7 +314,8 @@ class Opinion:
             return result["data"]["opinionContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
-                "error", "[opencti_opinion] Missing parameters: id or entity_id",
+                "error",
+                "[opencti_opinion] Missing parameters: id or entity_id",
             )
 
     """
@@ -376,7 +377,8 @@ class Opinion:
             return self.opencti.process_multiple_fields(result["data"]["opinionAdd"])
         else:
             self.opencti.log(
-                "error", "[opencti_opinion] Missing parameters: content",
+                "error",
+                "[opencti_opinion] Missing parameters: content",
             )
 
     """

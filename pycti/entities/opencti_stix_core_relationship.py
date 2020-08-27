@@ -445,7 +445,8 @@ class StixCoreRelationship:
         update = kwargs.get("update", False)
 
         self.opencti.log(
-            "info", "Creating stix_core_relationship {" + from_id + ", " + to_id + "}.",
+            "info",
+            "Creating stix_core_relationship {" + from_id + ", " + to_id + "}.",
         )
         query = """
                 mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {

@@ -314,7 +314,8 @@ class ObservedData:
             return result["data"]["observedDataContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
-                "error", "[opencti_observedData] Missing parameters: id or entity_id",
+                "error",
+                "[opencti_observedData] Missing parameters: id or entity_id",
             )
 
     """

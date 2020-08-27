@@ -4,8 +4,7 @@ from typing import List
 
 
 class OpenCTIApiJob:
-    """OpenCTIApiJob
-    """
+    """OpenCTIApiJob"""
 
     def __init__(self, api):
         self.api = api
