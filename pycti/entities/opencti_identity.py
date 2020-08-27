@@ -308,7 +308,12 @@ class Identity:
                 """
                 input_variables["type"] = type
                 result_data_field = "identityAdd"
-            result = self.opencti.query(query, {"input": input_variables,},)
+            result = self.opencti.query(
+                query,
+                {
+                    "input": input_variables,
+                },
+            )
             return self.opencti.process_multiple_fields(
                 result["data"][result_data_field]
             )

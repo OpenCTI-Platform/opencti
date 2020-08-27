@@ -344,7 +344,8 @@ class Report:
             return result["data"]["reportContainsStixObjectOrStixRelationship"]
         else:
             self.opencti.log(
-                "error", "[opencti_report] Missing parameters: id or entity_id",
+                "error",
+                "[opencti_report] Missing parameters: id or entity_id",
             )
 
     """

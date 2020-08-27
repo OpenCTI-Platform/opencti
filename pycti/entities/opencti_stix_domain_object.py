@@ -751,7 +751,10 @@ class StixDomainObject:
                 """
                 variables = {
                     "id": id,
-                    "input": {"toId": identity_id, "relationship_type": "created-by",},
+                    "input": {
+                        "toId": identity_id,
+                        "relationship_type": "created-by",
+                    },
                 }
                 self.opencti.query(query, variables)
 
@@ -1038,7 +1041,8 @@ class StixDomainObject:
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.log(
-                "info", "Getting reports of the Stix-Domain-Object {" + id + "}.",
+                "info",
+                "Getting reports of the Stix-Domain-Object {" + id + "}.",
             )
             query = """
                 query StixDomainObject($id: String!) {
@@ -1197,7 +1201,8 @@ class StixDomainObject:
         id = kwargs.get("id", None)
         if id is not None:
             self.opencti.log(
-                "info", "Getting notes of the Stix-Domain-Object {" + id + "}.",
+                "info",
+                "Getting notes of the Stix-Domain-Object {" + id + "}.",
             )
             query = """
                 query StixDomainObject($id: String!) {

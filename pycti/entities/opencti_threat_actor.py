@@ -12,8 +12,7 @@ class ThreatActor:
     """
 
     def __init__(self, opencti):
-        """Create an instance of ThreatActor
-        """
+        """Create an instance of ThreatActor"""
 
         self.opencti = opencti
         self.properties = """

@@ -135,10 +135,18 @@ class Label:
             """
             )
             result = self.opencti.query(
-                query, {"input": {"stix_id": stix_id, "value": value, "color": color,}},
+                query,
+                {
+                    "input": {
+                        "stix_id": stix_id,
+                        "value": value,
+                        "color": color,
+                    }
+                },
             )
             return self.opencti.process_multiple_fields(result["data"]["labelAdd"])
         else:
             self.opencti.log(
-                "error", "[opencti_label] Missing parameters: value",
+                "error",
+                "[opencti_label] Missing parameters: value",
             )

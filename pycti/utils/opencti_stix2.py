@@ -236,7 +236,9 @@ class OpenCTIStix2:
             return self.mapping_cache[name]
         else:
             author = self.opencti.identity.create(
-                type="Organization", name=name, description="",
+                type="Organization",
+                name=name,
+                description="",
             )
             self.mapping_cache[name] = author
             return author
@@ -350,8 +352,10 @@ class OpenCTIStix2:
                             "type": object_ref_result["entity_type"],
                         }
                 elif "observed-data" not in object_ref:
-                    object_ref_result = self.opencti.opencti_stix_object_or_stix_relationship.read(
-                        id=object_ref
+                    object_ref_result = (
+                        self.opencti.opencti_stix_object_or_stix_relationship.read(
+                            id=object_ref
+                        )
                     )
                     if object_ref_result is not None:
                         self.mapping_cache[object_ref] = {
@@ -390,14 +394,18 @@ class OpenCTIStix2:
                 self.mapping_cache[url] = {"id": external_reference_id}
                 external_references_ids.append(external_reference_id)
 
-                if stix_object["type"] in [
-                    "threat-actor",
-                    "intrusion-set",
-                    "campaign",
-                    "x-opencti-incident",
-                    "malware",
-                    "relationship",
-                ] and (types is None or "report" in types):
+                if (
+                    stix_object["type"]
+                    in [
+                        "threat-actor",
+                        "intrusion-set",
+                        "campaign",
+                        "x-opencti-incident",
+                        "malware",
+                        "relationship",
+                    ]
+                    and (types is None or "report" in types)
+                ):
                     # Add a corresponding report
                     # Extract date
                     try:
@@ -443,11 +451,13 @@ class OpenCTIStix2:
                             "marking_tlpwhite"
                         ]
                     else:
-                        object_marking_ref_result = self.opencti.marking_definition.read(
-                            filters=[
-                                {"key": "definition_type", "values": ["TLP"]},
-                                {"key": "definition", "values": ["TLP:WHITE"]},
-                            ]
+                        object_marking_ref_result = (
+                            self.opencti.marking_definition.read(
+                                filters=[
+                                    {"key": "definition_type", "values": ["TLP"]},
+                                    {"key": "definition", "values": ["TLP:WHITE"]},
+                                ]
+                            )
                         )
                         self.mapping_cache["marking_tlpwhite"] = {
                             "id": object_marking_ref_result["id"]
@@ -551,7 +561,8 @@ class OpenCTIStix2:
             stix_object["type"] = "location"
 
         do_import = importer.get(
-            stix_object["type"], lambda **kwargs: self.unknown_type(stix_object),
+            stix_object["type"],
+            lambda **kwargs: self.unknown_type(stix_object),
         )
         stix_object_results = do_import(
             stixObject=stix_object, extras=extras, update=update
@@ -802,14 +813,15 @@ class OpenCTIStix2:
         if from_id in self.mapping_cache:
             final_from_id = self.mapping_cache[from_id]["id"]
         else:
-            stix_object_result = self.opencti.opencti_stix_object_or_stix_relationship.read(
-                id=from_id
+            stix_object_result = (
+                self.opencti.opencti_stix_object_or_stix_relationship.read(id=from_id)
             )
             if stix_object_result is not None:
                 final_from_id = stix_object_result["id"]
             else:
                 self.opencti.log(
-                    "error", "From ref of the sithing not found, doing nothing...",
+                    "error",
+                    "From ref of the sithing not found, doing nothing...",
                 )
                 return None
 
@@ -819,14 +831,15 @@ class OpenCTIStix2:
             if to_id in self.mapping_cache:
                 final_to_id = self.mapping_cache[to_id]["id"]
             else:
-                stix_object_result = self.opencti.opencti_stix_object_or_stix_relationship.read(
-                    id=to_id
+                stix_object_result = (
+                    self.opencti.opencti_stix_object_or_stix_relationship.read(id=to_id)
                 )
                 if stix_object_result is not None:
                     final_to_id = stix_object_result["id"]
                 else:
                     self.opencti.log(
-                        "error", "To ref of the sithing not found, doing nothing...",
+                        "error",
+                        "To ref of the sithing not found, doing nothing...",
                     )
                     return None
         date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
