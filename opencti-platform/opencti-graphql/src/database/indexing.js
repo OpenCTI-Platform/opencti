@@ -5,15 +5,6 @@ import { find, getSingleValueNumber } from './grakn';
 import { elCreateIndexes, elDeleteIndexes, elIndexElements } from './elasticSearch';
 import { logger } from '../config/conf';
 import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_CONNECTOR,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_WORKSPACE,
-} from '../schema/internalObject';
-import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
-import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_INTERNAL_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
