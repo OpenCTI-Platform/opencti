@@ -272,16 +272,18 @@ class OpenCTIApiClient:
         if r.status_code == 200:
             result = r.json()
             if "errors" in result:
-                if (
-                    "data" in result["errors"][0]
-                    and "reason" in result["errors"][0]["data"]
-                ):
-                    logging.error(result["errors"][0]["data"]["reason"])
-                    raise ValueError(result["errors"][0]["data"]["reason"])
+                main_error = result["errors"][0]
+                error_name = main_error["name"]
+                if "data" in main_error and "reason" in main_error["data"]:
+                    logging.error(main_error["data"]["reason"])
+                    raise ValueError(
+                        {"name": error_name, "message": main_error["data"]["reason"]}
+                    )
                 else:
-                    logging.error(result["errors"][0]["message"])
-
-                    raise ValueError(result["errors"][0]["message"])
+                    logging.error(main_error["message"])
+                    raise ValueError(
+                        {"name": error_name, "message": main_error["message"]}
+                    )
             else:
                 return result
         else:
