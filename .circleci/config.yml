@@ -9,7 +9,7 @@ jobs:
       - checkout
       - run:
           name: install dependencies
-          command: sudo pip3 install black
+          command: pip3 install -r requirements.txt --user
       - run:
           name: confirm black version
           command: black --version
