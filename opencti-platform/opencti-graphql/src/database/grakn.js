@@ -1300,9 +1300,10 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   logger.debug(`[GRAKN - infer: false] updateAttribute - delete reference`, { query: deleteQuery });
   await wTx.query(deleteQuery);
   // --- Delete the entire attribute if its now an orphan
-  const orphanQuery = `match $x isa ${escapedKey}; not { $y has ${escapedKey} $x; }; delete $x isa ${escapedKey};`;
-  logger.debug(`[GRAKN - infer: false] updateAttribute - delete orphan`, { query: deleteQuery });
-  await wTx.query(orphanQuery);
+  // Disable waiting for grakn 2.0 - https://github.com/graknlabs/grakn/issues/5296
+  // const orphanQuery = `match $x isa ${escapedKey}; not { $y has ${escapedKey} $x; }; delete $x isa ${escapedKey};`;
+  // logger.debug(`[GRAKN - infer: false] updateAttribute - delete orphan`, { query: deleteQuery });
+  // await wTx.query(orphanQuery);
   if (typedValues.length > 0) {
     let graknValues;
     if (typedValues.length === 1) {
