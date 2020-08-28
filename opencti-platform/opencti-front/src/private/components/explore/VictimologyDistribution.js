@@ -4,7 +4,7 @@ import { compose, propOr, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../components/i18n';
 import EntityStixCoreRelationshipsPie from '../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
-import EntityStixCoreRelationshipsRadar from '../common/stix_core_relationships/EntityStixCoreRelationshipsRadar';
+import EntityStixCoreRelationshipsRadar from '../common/stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import EntityStixCoreRelationshipsDonut from '../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityStixCoreRelationshipsTable from '../common/stix_core_relationships/EntityStixCoreRelationshipsTable';
 

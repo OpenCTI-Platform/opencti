@@ -234,7 +234,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, containerStixCoreObjects,
+      t, classes, data, containerStixCoreObjects, fd,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = map((n) => n.node, data.stixCoreObjects.edges);
@@ -297,7 +297,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                             )}
                           </ListItemIcon>
                           <ListItemText
-                            primary={stixCoreObject.name}
+                            primary={
+                              stixCoreObject.name
+                              || stixCoreObject.attribute_abstract
+                              || stixCoreObject.opinion
+                              || `${fd(stixCoreObject.first_observed)} - ${fd(
+                                stixCoreObject.last_observed,
+                              )}`
+                            }
                             secondary={
                               <Markdown
                                 className="markdown"
@@ -347,13 +354,13 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...ContainerAddStixCoreObjectsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -362,13 +369,13 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
   {
     data: graphql`
       fragment ContainerAddStixCoreObjectsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCoreObjects(
           search: $search
           first: $count
@@ -387,6 +394,19 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               ... on Campaign {
                 name
                 description
+              }
+              ... on Note {
+                attribute_abstract
+              }
+              ... on ObservedData {
+                first_observed
+                last_observed
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Report {
+                name
               }
               ... on CourseOfAction {
                 name

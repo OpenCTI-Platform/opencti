@@ -4,8 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined } from '@material-ui/icons';
-import { Application } from 'mdi-material-ui';
+import {
+  ArrowForwardIosOutlined,
+  WifiTetheringOutlined,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -37,13 +39,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuTool extends Component {
+class TopMenuObservedData extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { toolId },
+        params: { observedDataId },
       },
       classes,
     } = this.props;
@@ -51,14 +53,14 @@ class TopMenuTool extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/techniques/tools"
+          to="/dashboard/events/observed_data"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Application className={classes.icon} fontSize="small" />
-          {t('Tools')}
+          <WifiTetheringOutlined className={classes.icon} fontSize="small" />
+          {t('Observed datas')}
         </Button>
         <ArrowForwardIosOutlined
           color="inherit"
@@ -66,15 +68,17 @@ class TopMenuTool extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}`}
+          to={`/dashboard/events/observed_data/${observedDataId}`}
           variant={
-            location.pathname === `/dashboard/techniques/tools/${toolId}`
+            location.pathname
+            === `/dashboard/events/observed_data/${observedDataId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/techniques/tools/${toolId}`
+            location.pathname
+            === `/dashboard/events/observed_data/${observedDataId}`
               ? 'primary'
               : 'inherit'
           }
@@ -84,82 +88,58 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/knowledge`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/knowledge`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/knowledge`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Knowledge')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/reports`}
+          to={`/dashboard/events/observed_data/${observedDataId}/entities`}
           variant={
             location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
+            === `/dashboard/events/observed_data/${observedDataId}/entities`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
+            === `/dashboard/events/observed_data/${observedDataId}/entities`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Entities')}
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/indicators`}
+          to={`/dashboard/events/observed_data/${observedDataId}/observables`}
           variant={
-            location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/indicators`,
-            )
+            location.pathname
+            === `/dashboard/events/observed_data/${observedDataId}/observables`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/indicators`,
-            )
+            location.pathname
+            === `/dashboard/events/observed_data/${observedDataId}/observables`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Indicators')}
+          {t('Observables')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/techniques/tools/${toolId}/files`}
+            to={`/dashboard/events/observed_data/${observedDataId}/files`}
             variant={
               location.pathname
-              === `/dashboard/techniques/tools/${toolId}/files`
+              === `/dashboard/events/observed_data/${observedDataId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/techniques/tools/${toolId}/files`
+              === `/dashboard/events/observed_data/${observedDataId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -170,17 +150,17 @@ class TopMenuTool extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/history`}
+          to={`/dashboard/events/observed_data/${observedDataId}/history`}
           variant={
             location.pathname
-            === `/dashboard/techniques/tools/${toolId}/history`
+            === `/dashboard/events/observed_data/${observedDataId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/tools/${toolId}/history`
+            === `/dashboard/events/observed_data/${observedDataId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -193,7 +173,7 @@ class TopMenuTool extends Component {
   }
 }
 
-TopMenuTool.propTypes = {
+TopMenuObservedData.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -201,4 +181,8 @@ TopMenuTool.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(TopMenuTool);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(TopMenuObservedData);

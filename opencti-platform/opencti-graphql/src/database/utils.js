@@ -124,6 +124,10 @@ const extractEntityMainValue = (entityData) => {
     mainValue = `${entityData.source_name}${entityData.external_id ? ` (${entityData.external_id})` : ''}`;
   } else if (entityData.phase_name) {
     mainValue = entityData.phase_name;
+  } else if (entityData.first_observed && entityData.last_observed) {
+    mainValue = `${moment(entityData.first_observed).utc().toISOString()} - ${moment(entityData.last_observed)
+      .utc()
+      .toISOString()}`;
   } else if (entityData.name) {
     mainValue = entityData.name;
   } else {

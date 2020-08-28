@@ -58,7 +58,7 @@ ObservedDatasLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const ObservedDatasLinesQuery = graphql`
+export const observedDatasLinesQuery = graphql`
   query ObservedDatasLinesPaginationQuery(
     $search: String
     $count: Int!
@@ -152,6 +152,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: ObservedDatasLinesQuery,
+    query: observedDatasLinesQuery,
   },
 );

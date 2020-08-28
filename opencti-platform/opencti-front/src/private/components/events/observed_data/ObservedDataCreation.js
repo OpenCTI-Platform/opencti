@@ -26,6 +26,8 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import SelectField from '../../../../components/SelectField';
+import { dayStartDate, parse } from '../../../../utils/Time';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -80,15 +82,20 @@ const observedDataCreationMutation = graphql`
 `;
 
 const observedDataValidation = (t) => Yup.object().shape({
-  observedData: Yup.string().required(t('This field is required')),
-  explanation: Yup.string().required(t('This field is required')),
+  first_observed: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
+  last_observed: Yup.date()
+    .typeError(t('The value must be a date (YYYY-MM-DD)'))
+    .required(t('This field is required')),
+  number_observed: Yup.number().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_ObservedData',
+    'Pagination_observedDatas',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -111,6 +118,9 @@ class ObservedDataCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
+        first_observed: parse(values.first_observed).format(),
+        last_observed: parse(values.last_observed).format(),
+        number_observed: parseInt(values.number_observed, 10),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
@@ -181,8 +191,9 @@ class ObservedDataCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                observedData: '',
-                explanation: '',
+                first_observed: dayStartDate(),
+                last_observed: dayStartDate(),
+                number_observed: 1,
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
@@ -200,29 +211,30 @@ class ObservedDataCreation extends Component {
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
-                    component={SelectField}
-                    name="observedData"
-                    label={t('ObservedData')}
+                    component={DatePickerField}
+                    name="first_observed"
+                    label={t('First observed')}
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
                     fullWidth={true}
-                    containerstyle={{ width: '100%' }}
-                  >
-                    <MenuItem value="strongly-disagree">
-                      {t('strongly-disagree')}
-                    </MenuItem>
-                    <MenuItem value="disagree">{t('disagree')}</MenuItem>
-                    <MenuItem value="neutral">{t('neutral')}</MenuItem>
-                    <MenuItem value="agree">{t('agree')}</MenuItem>
-                    <MenuItem value="strongly-agree">
-                      {t('strongly-agree')}
-                    </MenuItem>
-                  </Field>
+                  />
+                  <Field
+                    component={DatePickerField}
+                    name="last_observed"
+                    label={t('Last observed')}
+                    invalidDateMessage={t(
+                      'The value must be a date (YYYY-MM-DD)',
+                    )}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
                   <Field
                     component={TextField}
-                    name="explanation"
-                    label={t('Explanation')}
+                    name="number_observed"
+                    type="number"
+                    label={t('Number observed')}
                     fullWidth={true}
-                    multiline={true}
-                    rows="4"
                     style={{ marginTop: 20 }}
                   />
                   <CreatedByField

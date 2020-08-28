@@ -36,7 +36,7 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
-    zIndex: 2000,
+    zIndex: 3000,
   },
   buttons: {
     marginTop: 20,
@@ -128,10 +128,14 @@ class ExternalReferenceCreation extends Component {
         );
       },
       setSubmitting,
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
+        if (this.props.onCreate) {
+          console.log(response);
+          this.props.onCreate(response.externalReferenceAdd);
+        }
       },
     });
   }
@@ -343,6 +347,7 @@ ExternalReferenceCreation.propTypes = {
   contextual: PropTypes.bool,
   display: PropTypes.bool,
   inputValue: PropTypes.string,
+  onCreate: PropTypes.func,
 };
 
 export default compose(

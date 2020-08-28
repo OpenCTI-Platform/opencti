@@ -10,11 +10,11 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ObservedDataDetails from './ObservedDataDetails';
 import ObservedDataEdition from './ObservedDataEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import ObservedDataPopover from './ObservedDataPopover';
-import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
 const styles = () => ({
   container: {
@@ -30,7 +30,10 @@ class ObservedDataComponent extends Component {
     const { classes, observedData } = this.props;
     return (
       <div className={classes.container}>
-        <ContainerHeader container={observedData} PopoverComponent={<ObservedDataPopover />} />
+        <ContainerHeader
+          container={observedData}
+          PopoverComponent={<ObservedDataPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -40,16 +43,6 @@ class ObservedDataComponent extends Component {
             <StixDomainObjectOverview stixDomainObject={observedData} />
           </Grid>
           <Grid item={true} xs={6}>
-            <ContainerStixObjectsOrStixRelationships container={observedData} />
-          </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={12}>
             <ObservedDataDetails observedData={observedData} />
           </Grid>
         </Grid>
@@ -60,12 +53,17 @@ class ObservedDataComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={observedData.id} />
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={observedData.id}
+            />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory entityStandardId={observedData.standard_id} />
+            <StixCoreObjectLatestHistory
+              entityStandardId={observedData.standard_id}
+            />
           </Grid>
         </Grid>
+        <StixCoreObjectNotes stixCoreObjectId={observedData.id} />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ObservedDataEdition observedDataId={observedData.id} />
         </Security>
@@ -114,7 +112,6 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
       }
       ...ObservedDataDetails_observedData
       ...ContainerHeader_container
-      ...ContainerStixObjectsOrStixRelationships_container
     }
   `,
 });

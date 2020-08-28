@@ -19,13 +19,12 @@ import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import EntityReportsPie from '../../analysis/reports/StixCoreObjectReportsPie';
-import EntityStixCoreRelationshipsRadar from '../stix_core_relationships/EntityStixCoreRelationshipsRadar';
+import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
+import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import StixDomainObjectGlobalKillChain, {
   stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery,
 } from './StixDomainObjectGlobalKillChain';
 import Loader from '../../../../components/Loader';
-import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = (theme) => ({
   card: {
@@ -61,7 +60,7 @@ const styles = (theme) => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '10px 274px 10px 84px',
+    padding: '10px 200px 10px 205px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
   },
@@ -302,28 +301,21 @@ class StixDomainObjectThreatKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
-            <EntityReportsPie
-              entityId={stixDomainObjectId}
+          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
+            <StixCoreObjectReportsBars
+              stixCoreObjectId={stixDomainObjectId}
               field="created-by.name"
+              title={t('Distribution of sources')}
             />
           </Grid>
-          <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
-            <EntityStixCoreRelationshipsRadar
-              entityId={stixDomainObjectId}
-              entityType="Stix-Domain-Object"
+          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
+            <StixCoreObjectStixCoreRelationshipsCloud
+              stixCoreObjectId={stixDomainObjectId}
+              stixCoreObjectType="Stix-Domain-Object"
               relationshipType="stix-core-relationship"
               title={t('Distribution of relations')}
               field="entity_type"
               inferred={inferred}
-            />
-          </Grid>
-          <Grid item={true} xs={4} style={{ marginBottom: 50 }}>
-            <SimpleEntityStixCoreRelationships
-              stixObjectOrStixRelationshipId={stixDomainObjectId}
-              relationshipType="related-to"
-              targetStixDomainObjectTypes={['Stix-Domain-Object']}
-              entityLink={link}
             />
           </Grid>
         </Grid>

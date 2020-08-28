@@ -17,7 +17,6 @@ import { QueryRenderer } from '../../../../relay/environment';
 import AddExternalReferencesLines, {
   addExternalReferencesLinesQuery,
 } from './AddExternalReferencesLines';
-import ExternalReferenceCreation from './ExternalReferenceCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -143,6 +142,9 @@ class AddExternalReferences extends Component {
                         stixCoreObjectExternalReferences
                       }
                       data={props}
+                      paginationOptions={paginationOptions}
+                      open={this.state.open}
+                      search={this.state.search}
                     />
                   );
                 }
@@ -177,12 +179,6 @@ class AddExternalReferences extends Component {
             />
           </div>
         </Drawer>
-        <ExternalReferenceCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-        />
       </div>
     );
   }

@@ -14,7 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
-import EntityStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 
 const styles = () => ({
   container: {
@@ -154,9 +154,10 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           exact
           path="/dashboard/events/incidents/:incidentId/knowledge/observables"
           render={(routeProps) => (
-            <EntityStixCyberObservables
+            <StixCoreObjectStixCyberObservables
               stixCoreObjectId={xOpenCTIIncident.id}
               stixCoreObjectLink={link}
+              noRightBar={true}
               {...routeProps}
             />
           )}

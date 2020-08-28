@@ -83,14 +83,13 @@ class StixDomainObjectsContainer extends Component {
     if (numberOfEntities === 1) {
       return true;
     }
-    if (numberOfTypes === 1) {
-      return true;
-    }
-    return false;
+    return numberOfTypes === 1;
   }
 
   render() {
-    const { t, classes, data } = this.props;
+    const {
+      t, classes, data, fd,
+    } = this.props;
     const stixDomainObjectsNodes = map(
       (n) => n.node,
       data.stixDomainObjects.edges,
@@ -145,7 +144,14 @@ class StixDomainObjectsContainer extends Component {
                             <ItemIcon type={type} />
                           </ListItemIcon>
                           <ListItemText
-                            primary={stixDomainObject.name}
+                            primary={
+                              stixDomainObject.name
+                              || stixDomainObject.attribute_abstract
+                              || stixDomainObject.opinion
+                              || `${fd(stixDomainObject.first_observed)} - ${fd(
+                                stixDomainObject.last_observed,
+                              )}`
+                            }
                             secondary={truncate(
                               stixDomainObject.description,
                               200,
@@ -208,6 +214,7 @@ StixDomainObjectsContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  fd: PropTypes.func,
 };
 
 export const stixDomainObjectsLinesSubTypesQuery = graphql`
@@ -235,13 +242,13 @@ export const stixDomainObjectsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixDomainObjectsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -255,6 +262,19 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
           ... on AttackPattern {
             name
             description
+          }
+          ... on Note {
+            attribute_abstract
+          }
+          ... on ObservedData {
+            first_observed
+            last_observed
+          }
+          ... on Opinion {
+            opinion
+          }
+          ... on Report {
+            name
           }
           ... on Campaign {
             name
@@ -349,13 +369,13 @@ const StixDomainObjectsLines = createPaginationContainer(
   {
     data: graphql`
       fragment StixDomainObjectsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixDomainObjects(
           search: $search
           first: $count
@@ -376,6 +396,19 @@ const StixDomainObjectsLines = createPaginationContainer(
               ... on Campaign {
                 name
                 description
+              }
+              ... on Note {
+                attribute_abstract
+              }
+              ... on ObservedData {
+                first_observed
+                last_observed
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Report {
+                name
               }
               ... on CourseOfAction {
                 name

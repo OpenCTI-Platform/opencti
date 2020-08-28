@@ -1,45 +1,48 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
+import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import RadarChart from 'recharts/lib/chart/RadarChart';
-import PolarGrid from 'recharts/lib/polar/PolarGrid';
-import PolarAngleAxis from 'recharts/lib/polar/PolarAngleAxis';
-import PolarRadiusAxis from 'recharts/lib/polar/PolarRadiusAxis';
-import Radar from 'recharts/lib/polar/Radar';
 import { withStyles } from '@material-ui/core/styles';
-import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { SettingsInputComponent } from '@material-ui/icons';
+import Grid from '@material-ui/core/Grid';
 import { QueryRenderer } from '../../../../relay/environment';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
+import Loader from '../../../../components/Loader';
+import { itemColor } from '../../../../utils/Colors';
 
 const styles = () => ({
   paper: {
-    minHeight: 280,
-    height: '100%',
+    minHeight: 300,
+    maxHeight: 300,
+    height: 300,
     margin: '10px 0 0 0',
-    borderRadius: 6,
-  },
-  paperExplore: {
-    height: '100%',
-    margin: 0,
     padding: 0,
     borderRadius: 6,
   },
-  updateButton: {
-    float: 'right',
-    margin: '7px 10px 0 0',
+  labelsCloud: {
+    width: '100%',
+    height: 300,
+  },
+  label: {
+    width: '100%',
+    height: 100,
+    padding: 15,
+  },
+  labelNumber: {
+    fontSize: 30,
+    fontWeight: 500,
+  },
+  labelValue: {
+    fontSize: 15,
   },
 });
 
-const entityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery = graphql`
-  query EntityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery(
+const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
+  query StixCoreObjectStixCoreRelationshipsCloudDistributionQuery(
     $fromId: String!
     $toTypes: [String]
     $relationship_type: String
@@ -48,6 +51,7 @@ const entityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery = gr
     $endDate: DateTime
     $field: String!
     $operation: StatsOperation!
+    $limit: Int
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -58,6 +62,7 @@ const entityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery = gr
       endDate: $endDate
       field: $field
       operation: $operation
+      limit: $limit
     ) {
       label
       value
@@ -65,34 +70,41 @@ const entityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery = gr
   }
 `;
 
-class EntityStixCoreRelationshipsRadar extends Component {
+class StixCoreObjectStixCoreRelationshipsCloud extends Component {
+  hexToRGB(hex, transp = 0.1) {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgb(${r}, ${g}, ${b}, ${transp})`;
+  }
+
   renderContent() {
     const {
       t,
-      entityId,
-      entityType,
+      n,
+      stixCoreObjectId,
+      stixCoreObjectType,
       relationshipType,
       field,
-      variant,
       inferred,
       startDate,
       endDate,
+      classes,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: entityId,
-      toTypes: entityType ? [entityType] : null,
+      fromId: stixCoreObjectId,
+      toTypes: stixCoreObjectType ? [stixCoreObjectType] : null,
       inferred: inferred || false,
       startDate: startDate || null,
       endDate: endDate || null,
       relationship_type: relationshipType,
       field,
       operation: 'count',
+      limit: 9,
     };
     return (
       <QueryRenderer
-        query={
-          entityStixCoreRelationshipsRadarStixCoreRelationshipDistributionQuery
-        }
+        query={stixCoreObjectStixCoreRelationshipsCloudDistributionQuery}
         variables={stixCoreRelationshipsDistributionVariables}
         render={({ props }) => {
           if (
@@ -101,33 +113,48 @@ class EntityStixCoreRelationshipsRadar extends Component {
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             return (
-              <ResponsiveContainer
-                height={variant === 'explore' ? '90%' : 280}
-                width="100%"
-              >
-                <RadarChart
-                  outerRadius={110}
-                  data={filter(
-                    (n) => n.label !== 'indicator',
-                    props.stixCoreRelationshipsDistribution,
-                  )}
-                >
-                  <PolarGrid />
-                  <PolarAngleAxis dataKey="label" stroke="#ffffff" />
-                  <PolarRadiusAxis />
-                  <Radar
-                    dataKey="value"
-                    stroke="#8884d8"
-                    fill={Theme.palette.primary.main}
-                    fillOpacity={0.6}
-                  />
-                </RadarChart>
-              </ResponsiveContainer>
+              <div className={classes.labelsCloud}>
+                <Grid container={true} spacing={0}>
+                  {props.stixCoreRelationshipsDistribution.map((line) => {
+                    const color = itemColor(line.label);
+                    return (
+                      <Grid
+                        key={line.label}
+                        item={true}
+                        xs={4}
+                        style={{ padding: 0 }}
+                      >
+                        <div
+                          className={classes.label}
+                          style={{
+                            color,
+                            borderColor: color,
+                            backgroundColor: this.hexToRGB(color),
+                          }}
+                        >
+                          <div className={classes.labelNumber}>
+                            {n(line.value)}
+                          </div>
+                          <div className={classes.labelValue}>
+                            {t(`entity_${line.label}`)}
+                          </div>
+                        </div>
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              </div>
             );
           }
           if (props) {
             return (
-              <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <div
+                style={{
+                  display: 'table',
+                  height: '100%',
+                  width: '100%',
+                }}
+              >
                 <span
                   style={{
                     display: 'table-cell',
@@ -140,19 +167,7 @@ class EntityStixCoreRelationshipsRadar extends Component {
               </div>
             );
           }
-          return (
-            <div style={{ display: 'table', height: '100%', width: '100%' }}>
-              <span
-                style={{
-                  display: 'table-cell',
-                  verticalAlign: 'middle',
-                  textAlign: 'center',
-                }}
-              >
-                <CircularProgress size={40} thickness={2} />
-              </span>
-            </div>
-          );
+          return <Loader variant="inElement" />;
         }}
       />
     );
@@ -207,12 +222,12 @@ class EntityStixCoreRelationshipsRadar extends Component {
   }
 }
 
-EntityStixCoreRelationshipsRadar.propTypes = {
+StixCoreObjectStixCoreRelationshipsCloud.propTypes = {
   variant: PropTypes.string,
   title: PropTypes.string,
-  entityId: PropTypes.string,
+  stixCoreObjectId: PropTypes.string,
   relationshipType: PropTypes.string,
-  entityType: PropTypes.string,
+  stixCoreObjectType: PropTypes.string,
   inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
@@ -227,4 +242,4 @@ EntityStixCoreRelationshipsRadar.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipsRadar);
+)(StixCoreObjectStixCoreRelationshipsCloud);

@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import windowDimensions from 'react-window-dimensions';
 import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
@@ -24,9 +23,7 @@ const styles = (theme) => ({
 
 class TopMenuThreats extends Component {
   render() {
-    const {
-      t, location, classes, width,
-    } = this.props;
+    const { t, location, classes } = this.props;
     return (
       <div>
         <Button
@@ -45,11 +42,8 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <PublicOutlined
-            className={width > 950 ? classes.icon : ''}
-            fontSize="small"
-          />
-          {width > 950 ? t('Threat actors') : ''}
+          <PublicOutlined className={classes.icon} fontSize="small" />
+          {t('Threat actors')}
         </Button>
         <Button
           component={Link}
@@ -67,11 +61,8 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <DiamondOutline
-            className={width > 950 ? classes.icon : ''}
-            fontSize="small"
-          />
-          {width > 950 ? t('Intrusion sets') : ''}
+          <DiamondOutline className={classes.icon} fontSize="small" />
+          {t('Intrusion sets')}
         </Button>
         <Button
           component={Link}
@@ -89,11 +80,8 @@ class TopMenuThreats extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <ChessKnight
-            className={width > 950 ? classes.icon : ''}
-            fontSize="small"
-          />
-          {width > 950 ? t('Campaigns') : ''}
+          <ChessKnight className={classes.icon} fontSize="small" />
+          {t('Campaigns')}
         </Button>
       </div>
     );
@@ -105,12 +93,10 @@ TopMenuThreats.propTypes = {
   location: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
-  width: PropTypes.number,
 };
 
 export default compose(
   inject18n,
   withRouter,
-  windowDimensions(),
   withStyles(styles),
 )(TopMenuThreats);

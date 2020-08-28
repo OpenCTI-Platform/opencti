@@ -16,6 +16,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import ExternalReferenceCreation from './ExternalReferenceCreation';
 
 const styles = (theme) => ({
   avatar: {
@@ -134,55 +135,71 @@ class AddExternalReferencesLinesContainer extends Component {
   }
 
   render() {
-    const { classes, data, stixCoreObjectExternalReferences } = this.props;
+    const {
+      classes,
+      data,
+      stixCoreObjectExternalReferences,
+      open,
+      search,
+      paginationOptions,
+    } = this.props;
     const stixCoreObjectExternalReferencesIds = map(
       (n) => n.node.id,
       stixCoreObjectExternalReferences,
     );
     return (
-      <List>
-        {data.externalReferences.edges.map((externalReferenceNode) => {
-          const externalReference = externalReferenceNode.node;
-          const alreadyAdded = stixCoreObjectExternalReferencesIds.includes(
-            externalReference.id,
-          );
-          const externalReferenceId = externalReference.external_id
-            ? `(${externalReference.external_id})`
-            : '';
-          return (
-            <ListItem
-              key={externalReference.id}
-              classes={{ root: classes.menuItem }}
-              divider={true}
-              button={true}
-              onClick={this.toggleExternalReference.bind(
-                this,
-                externalReference,
-              )}
-            >
-              <ListItemIcon>
-                {alreadyAdded ? (
-                  <CheckCircle classes={{ root: classes.icon }} />
-                ) : (
-                  <Avatar classes={{ root: classes.avatar }}>
-                    {externalReference.source_name.substring(0, 1)}
-                  </Avatar>
+      <div>
+        <List>
+          {data.externalReferences.edges.map((externalReferenceNode) => {
+            const externalReference = externalReferenceNode.node;
+            const alreadyAdded = stixCoreObjectExternalReferencesIds.includes(
+              externalReference.id,
+            );
+            const externalReferenceId = externalReference.external_id
+              ? `(${externalReference.external_id})`
+              : '';
+            return (
+              <ListItem
+                key={externalReference.id}
+                classes={{ root: classes.menuItem }}
+                divider={true}
+                button={true}
+                onClick={this.toggleExternalReference.bind(
+                  this,
+                  externalReference,
                 )}
-              </ListItemIcon>
-              <ListItemText
-                primary={`${externalReference.source_name} ${externalReferenceId}`}
-                secondary={truncate(
-                  externalReference.description !== null
-                    && externalReference.description.length > 0
-                    ? externalReference.description
-                    : externalReference.url,
-                  120,
-                )}
-              />
-            </ListItem>
-          );
-        })}
-      </List>
+              >
+                <ListItemIcon>
+                  {alreadyAdded ? (
+                    <CheckCircle classes={{ root: classes.icon }} />
+                  ) : (
+                    <Avatar classes={{ root: classes.avatar }}>
+                      {externalReference.source_name.substring(0, 1)}
+                    </Avatar>
+                  )}
+                </ListItemIcon>
+                <ListItemText
+                  primary={`${externalReference.source_name} ${externalReferenceId}`}
+                  secondary={truncate(
+                    externalReference.description !== null
+                      && externalReference.description.length > 0
+                      ? externalReference.description
+                      : externalReference.url,
+                    120,
+                  )}
+                />
+              </ListItem>
+            );
+          })}
+        </List>
+        <ExternalReferenceCreation
+          display={open}
+          contextual={true}
+          inputValue={search}
+          paginationOptions={paginationOptions}
+          onCreate={this.toggleExternalReference.bind(this)}
+        />
+      </div>
     );
   }
 }
@@ -195,6 +212,9 @@ AddExternalReferencesLinesContainer.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  paginationOptions: PropTypes.object,
+  open: PropTypes.bool,
+  search: PropTypes.string,
 };
 
 export const addExternalReferencesLinesQuery = graphql`
@@ -204,7 +224,7 @@ export const addExternalReferencesLinesQuery = graphql`
     $cursor: ID
   ) {
     ...AddExternalReferencesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -213,13 +233,13 @@ const AddExternalReferencesLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddExternalReferencesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         externalReferences(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_externalReferences") {
+        @connection(key: "Pagination_externalReferences") {
           edges {
             node {
               id

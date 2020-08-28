@@ -632,6 +632,7 @@ class Dashboard extends Component {
                                 type="number"
                                 dataKey="value"
                                 stroke="#ffffff"
+                                allowDecimals={false}
                               />
                               <YAxis
                                 stroke="#ffffff"

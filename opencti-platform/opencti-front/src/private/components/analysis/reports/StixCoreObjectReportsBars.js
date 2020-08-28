@@ -2,11 +2,14 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import PieChart from 'recharts/lib/chart/PieChart';
-import Pie from 'recharts/lib/polar/Pie';
+import BarChart from 'recharts/lib/chart/BarChart';
+import XAxis from 'recharts/lib/cartesian/XAxis';
+import YAxis from 'recharts/lib/cartesian/YAxis';
 import Cell from 'recharts/lib/component/Cell';
-import Legend from 'recharts/lib/component/Legend';
+import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
+import Bar from 'recharts/lib/cartesian/Bar';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
+import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
@@ -14,44 +17,21 @@ import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
+import Theme from '../../../../components/ThemeDark';
 
 const styles = () => ({
   paper: {
-    minHeight: 280,
-    height: '100%',
+    height: 300,
+    minHeight: 300,
+    maxHeight: 300,
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
 });
-const RADIAN = Math.PI / 180;
-const renderCustomizedLabel = ({
-  cx,
-  cy,
-  midAngle,
-  innerRadius,
-  outerRadius,
-  percent,
-}) => {
-  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
-  return (
-    <text
-      x={x}
-      y={y}
-      fill="white"
-      textAnchor={x > cx ? 'start' : 'end'}
-      dominantBaseline="central"
-    >
-      {`${(percent * 100).toFixed(0)}%`}
-    </text>
-  );
-};
-
-const stixCoreObjectReportsPieReportsDistributionQuery = graphql`
-  query StixCoreObjectReportsPieReportsDistributionQuery(
+const stixCoreObjectReportsBarsDistributionQuery = graphql`
+  query StixCoreObjectReportsBarsDistributionQuery(
     $objectId: String
     $field: String!
     $operation: StatsOperation!
@@ -67,10 +47,10 @@ const stixCoreObjectReportsPieReportsDistributionQuery = graphql`
   }
 `;
 
-class StixCoreObjectReportsPie extends Component {
+class StixCoreObjectReportsBars extends Component {
   render() {
     const {
-      t, classes, stixCoreObjectId, field,
+      t, classes, stixCoreObjectId, field, title,
     } = this.props;
     const reportsDistributionVariables = {
       objectId: stixCoreObjectId,
@@ -80,11 +60,11 @@ class StixCoreObjectReportsPie extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Reports distribution')}
+          {title || t('Reports distribution')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={stixCoreObjectReportsPieReportsDistributionQuery}
+            query={stixCoreObjectReportsBarsDistributionQuery}
             variables={reportsDistributionVariables}
             render={({ props }) => {
               if (
@@ -94,34 +74,55 @@ class StixCoreObjectReportsPie extends Component {
               ) {
                 return (
                   <ResponsiveContainer height={280} width="100%">
-                    <PieChart
+                    <BarChart
+                      layout="vertical"
+                      data={props.reportsDistribution}
                       margin={{
-                        top: 50,
-                        right: 12,
-                        bottom: 25,
-                        left: 0,
+                        top: 20,
+                        right: 20,
+                        bottom: 0,
+                        left: 20,
                       }}
                     >
-                      <Pie
-                        data={props.reportsDistribution}
+                      <XAxis
+                        type="number"
                         dataKey="value"
-                        nameKey="label"
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={100}
-                        fill="#82ca9d"
-                        label={renderCustomizedLabel}
-                        labelLine={false}
+                        stroke="#ffffff"
+                        allowDecimals={false}
+                      />
+                      <YAxis
+                        stroke="#ffffff"
+                        dataKey="label"
+                        type="category"
+                        angle={-30}
+                        textAnchor="end"
+                      />
+                      <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
+                      <Tooltip
+                        cursor={{
+                          fill: 'rgba(0, 0, 0, 0.2)',
+                          stroke: 'rgba(0, 0, 0, 0.2)',
+                          strokeWidth: 2,
+                        }}
+                        contentStyle={{
+                          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                          fontSize: 12,
+                          borderRadius: 10,
+                        }}
+                      />
+                      <Bar
+                        fill={Theme.palette.primary.main}
+                        dataKey="value"
+                        barSize={20}
                       >
                         {props.reportsDistribution.map((entry, index) => (
-                          <Cell key={index} fill={itemColor(entry.label)} />
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={itemColor(entry.label)}
+                          />
                         ))}
-                      </Pie>
-                      <Legend
-                        verticalAlign="bottom"
-                        wrapperStyle={{ paddingTop: 20 }}
-                      />
-                    </PieChart>
+                      </Bar>
+                    </BarChart>
                   </ResponsiveContainer>
                 );
               }
@@ -165,11 +166,15 @@ class StixCoreObjectReportsPie extends Component {
   }
 }
 
-StixCoreObjectReportsPie.propTypes = {
+StixCoreObjectReportsBars.propTypes = {
   stixCoreObjectId: PropTypes.string,
+  title: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectReportsPie);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectReportsBars);

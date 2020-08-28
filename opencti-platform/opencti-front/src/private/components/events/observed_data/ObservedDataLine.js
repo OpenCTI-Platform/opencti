@@ -9,7 +9,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import {
   KeyboardArrowRightOutlined,
-  FeedbackOutlined,
+  WifiTetheringOutlined,
 } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
@@ -57,19 +57,25 @@ class ObservedDataLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/analysis/ObservedData/${node.id}`}
+        to={`/dashboard/events/observed_data/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <FeedbackOutlined />
+          <WifiTetheringOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.observedData.width }}
+                style={{ width: dataColumns.first_observed.width }}
               >
-                {node.observedData}
+                {fd(node.first_observed)}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.last_observed.width }}
+              >
+                {fd(node.last_observed)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -127,39 +133,42 @@ ObservedDataLineComponent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-const ObservedDataLineFragment = createFragmentContainer(ObservedDataLineComponent, {
-  node: graphql`
-    fragment ObservedDataLine_node on ObservedData {
-      id
-      created
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        edges {
-          node {
+const ObservedDataLineFragment = createFragmentContainer(
+  ObservedDataLineComponent,
+  {
+    node: graphql`
+      fragment ObservedDataLine_node on ObservedData {
+        id
+        created
+        createdBy {
+          ... on Identity {
             id
-            definition
-            x_opencti_color
+            name
+            entity_type
+          }
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+              x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
           }
         }
       }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export const ObservedDataLine = compose(
   inject18n,
@@ -172,14 +181,20 @@ class ObservedDataLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <FeedbackOutlined />
+          <WifiTetheringOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.observedData.width }}
+                style={{ width: dataColumns.first_observed.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.last_observed.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

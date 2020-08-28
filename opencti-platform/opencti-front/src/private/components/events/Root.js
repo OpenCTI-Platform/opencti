@@ -4,6 +4,8 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import XOpenCTIIncidents from './XOpenCTIIncidents';
 import RootXOpenCTIIncident from './x_opencti_incidents/Root';
+import ObservedDatas from './ObservedDatas';
+import RootObservedData from './observed_data/Root';
 
 class Root extends Component {
   render() {
@@ -25,6 +27,15 @@ class Root extends Component {
           render={(routeProps) => (
             <RootXOpenCTIIncident {...routeProps} me={me} />
           )}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/events/observed_data"
+          component={ObservedDatas}
+        />
+        <BoundaryRoute
+          path="/dashboard/events/observed_data/:observedDataId"
+          render={(routeProps) => <RootObservedData {...routeProps} me={me} />}
         />
       </Switch>
     );

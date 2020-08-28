@@ -48,7 +48,7 @@ class Loader extends Component {
         }
         style={
           variant === 'inElement'
-            ? { paddingRight: withRightPadding ? 220 : 0 }
+            ? { paddingRight: withRightPadding ? 200 : 0 }
             : {}
         }
       >

@@ -103,7 +103,7 @@ class StixCoreObjectStixCyberObservables extends Component {
   }
 
   render() {
-    const { stixCoreObjectId, relationshipType } = this.props;
+    const { stixCoreObjectId, relationshipType, noRightBar } = this.props;
     const {
       view, targetStixDomainObjectTypes, sortBy, orderAsc,
     } = this.state;
@@ -126,10 +126,14 @@ class StixCoreObjectStixCyberObservables extends Component {
           paddingRight={true}
           paginationOptions={paginationOptions}
         />
-        <StixCyberObservablesRightBar
-          types={targetStixDomainObjectTypes}
-          handleToggle={this.handleToggle.bind(this)}
-        />
+        {!noRightBar ? (
+          <StixCyberObservablesRightBar
+            types={targetStixDomainObjectTypes}
+            handleToggle={this.handleToggle.bind(this)}
+          />
+        ) : (
+          ''
+        )}
       </div>
     );
   }
@@ -137,6 +141,7 @@ class StixCoreObjectStixCyberObservables extends Component {
 
 StixCoreObjectStixCyberObservables.propTypes = {
   stixCoreObjectId: PropTypes.string,
+  noRightBar: PropTypes.bool,
   relationshipType: PropTypes.string,
   stixCoreObjectLink: PropTypes.string,
   classes: PropTypes.object,

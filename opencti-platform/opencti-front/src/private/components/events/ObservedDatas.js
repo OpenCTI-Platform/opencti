@@ -13,9 +13,9 @@ import {
 import ListLines from '../../../components/list_lines/ListLines';
 import ObservedDatasLines, {
   observedDatasLinesQuery,
-} from './observedDatas/ObservedDatasLines';
+} from './observed_data/ObservedDatasLines';
 import inject18n from '../../../components/i18n';
-import ObservedDataCreation from './observedDatas/ObservedDataCreation';
+import ObservedDataCreation from './observed_data/ObservedDataCreation';
 
 class ObservedDatas extends Component {
   constructor(props) {
@@ -99,9 +99,14 @@ class ObservedDatas extends Component {
     }
 
     const dataColumns = {
-      attribute_abstract: {
-        label: 'Anstract',
-        width: '40%',
+      first_observed: {
+        label: 'First obs.',
+        width: '20%',
+        isSortable: true,
+      },
+      last_observed: {
+        label: 'Last obs.',
+        width: '20%',
         isSortable: true,
       },
       createdBy: {

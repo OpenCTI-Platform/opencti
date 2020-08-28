@@ -35,7 +35,7 @@ const styles = () => ({
 class ContainerHeaderComponent extends Component {
   render() {
     const {
-      classes, container, variant, PopoverComponent,
+      classes, container, variant, PopoverComponent, fd,
     } = this.props;
     return (
       <div>
@@ -45,7 +45,12 @@ class ContainerHeaderComponent extends Component {
           classes={{ root: classes.title }}
         >
           {truncate(
-            container.name || container.attribute_abstract || container.opinion,
+            container.name
+              || container.attribute_abstract
+              || container.opinion
+              || `${fd(container.first_observed)} - ${fd(
+                container.last_observed,
+              )}`,
             80,
           )}
         </Typography>
@@ -95,6 +100,10 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
       }
       ... on Opinion {
         opinion
+      }
+      ... on ObservedData {
+        first_observed
+        last_observed
       }
       objectMarking {
         edges {

@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import html2canvas from 'html2canvas';
-import fileDownload from 'js-file-download';
 import Markdown from 'react-markdown';
 import {
   compose,
@@ -31,10 +29,9 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
-import { Launch, LockPattern, FileImageOutline } from 'mdi-material-ui';
+import { Launch, LockPattern } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
 import { createRefetchContainer } from 'react-relay';
-import Tooltip from '@material-ui/core/Tooltip';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -75,54 +72,6 @@ class StixDomainObjectKillChainLinesComponent extends Component {
           : false,
         this.state.expandedLines,
       ),
-    });
-  }
-
-  setInlineStyles(targetElem) {
-    const transformProperties = [
-      'fill',
-      'color',
-      'font-size',
-      'stroke',
-      'font',
-    ];
-    const svgElems = Array.from(targetElem.getElementsByLabelName('svg'));
-    function recurseElementChildren(node) {
-      if (!node.style) return;
-      const inlineStyles = getComputedStyle(node);
-      for (const transformProperty of transformProperties) {
-        node.style[transformProperty] = inlineStyles[transformProperty];
-      }
-      for (const child of Array.from(node.childNodes)) {
-        recurseElementChildren(child);
-      }
-    }
-    for (const svgElement of svgElems) {
-      if (svgElement.getAttribute('role') === 'img') {
-        recurseElementChildren(svgElement);
-        svgElement.setAttribute(
-          'width',
-          svgElement.getBoundingClientRect().width,
-        );
-        svgElement.setAttribute(
-          'height',
-          svgElement.getBoundingClientRect().height,
-        );
-      }
-    }
-  }
-
-  exportImage() {
-    const container = document.getElementById('container');
-    this.setInlineStyles(container);
-    html2canvas(container, {
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#303030',
-    }).then((canvas) => {
-      canvas.toBlob((blob) => {
-        fileDownload(blob, 'KillChain.png', 'image/png');
-      });
     });
   }
 
@@ -175,20 +124,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
     )(data.stixCoreRelationships.edges);
     return (
       <div>
-        <div style={{ float: 'left' }}>
-          <SearchInput
-            variant="small"
-            onSubmit={this.handleSearch.bind(this)}
-          />
-        </div>
-        <div style={{ float: 'right', paddingRight: 18 }}>
-          <Tooltip title={t('Export as image')}>
-            <IconButton color="primary" onClick={this.exportImage.bind(this)}>
-              <FileImageOutline />
-            </IconButton>
-          </Tooltip>
-        </div>
-        <div className="clearfix" />
+        <SearchInput variant="small" onSubmit={this.handleSearch.bind(this)} />
         <div className={classes.container} id="container">
           <List id="test">
             {stixCoreRelationships.map((stixCoreRelationship) => (

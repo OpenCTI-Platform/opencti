@@ -7,7 +7,7 @@ import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../relay/environment';
 import inject18n from '../../components/i18n';
 import TopBar from './nav/TopBar';
-import LoaderWithParticles from '../../components/LoaderWithParticles';
+import Loader from '../../components/Loader';
 import StixDomainObjectsLines, {
   stixDomainObjectsLinesQuery,
 } from './common/stix_domain_objects/StixDomainObjectsLines';
@@ -59,7 +59,7 @@ class Search extends Component {
             if (props) {
               return <StixDomainObjectsLines data={props} />;
             }
-            return <LoaderWithParticles variant="inside" />;
+            return <Loader variant="inside" />;
           }}
         />
         <QueryRenderer

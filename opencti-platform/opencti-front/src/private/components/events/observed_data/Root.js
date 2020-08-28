@@ -8,11 +8,13 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import ObservedData from './ObservedData';
+import ObservedDataPopover from './ObservedDataPopover';
 import FileManager from '../../common/files/FileManager';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
-import ObservedDataPopover from './ObservedDataPopover';
+import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
+import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -35,7 +37,7 @@ const observedDataQuery = graphql`
       ...ObservedDataDetails_observedData
       ...ContainerHeader_container
       ...ContainerStixDomainObjects_container
-      ...ContainerStixObjectsOrStixRelationships_container
+      ...ContainerStixCyberObservables_container
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -85,7 +87,7 @@ class RootObservedData extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/analysis/observed_data/:observedDataId"
+                    path="/dashboard/events/observed_data/:observedDataId"
                     render={(routeProps) => (
                       <ObservedData
                         {...routeProps}
@@ -95,7 +97,39 @@ class RootObservedData extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/analysis/observed_data/:observedDataId/files"
+                    path="/dashboard/events/observed_data/:observedDataId/entities"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <ContainerHeader
+                          container={props.observedData}
+                          PopoverComponent={<ObservedDataPopover />}
+                        />
+                        <ContainerStixDomainObjects
+                          {...routeProps}
+                          container={props.observedData}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/events/observed_data/:observedDataId/observables"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <ContainerHeader
+                          container={props.observedData}
+                          PopoverComponent={<ObservedDataPopover />}
+                        />
+                        <ContainerStixCyberObservables
+                          {...routeProps}
+                          container={props.observedData}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/events/observed_data/:observedDataId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <ContainerHeader
@@ -114,7 +148,7 @@ class RootObservedData extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/analysis/observed_data/:observedDataId/history"
+                    path="/dashboard/events/observed_data/:observedDataId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <ContainerHeader
