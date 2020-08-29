@@ -7598,9 +7598,9 @@ type Query {
   containers(
     first: Int
     after: ID
-    orderBy: NotesOrdering
+    orderBy: ContainersOrdering
     orderMode: OrderingMode
-    filters: [NotesFiltering]
+    filters: [ContainersFiltering]
     filterMode: FilterMode
     search: String
     toStix: Boolean

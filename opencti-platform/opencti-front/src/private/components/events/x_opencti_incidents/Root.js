@@ -8,13 +8,13 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import XOpenCTIIncident from './XOpenCTIIncident';
-import XOpenCTIIncidentReports from './XOpenCTIIncidentReports';
 import XOpenCTIIncidentKnowledge from './XOpenCTIIncidentKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootXOpenCTIIncidentSubscription($id: ID!) {
@@ -37,7 +37,6 @@ const XOpenCTIIncidentQuery = graphql`
       name
       aliases
       ...XOpenCTIIncident_xOpenCTIIncident
-      ...XOpenCTIIncidentReports_xOpenCTIIncident
       ...XOpenCTIIncidentKnowledge_xOpenCTIIncident
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -95,16 +94,6 @@ class RootXOpenCTIIncident extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/events/incidents/:incidentId/reports"
-                    render={(routeProps) => (
-                      <XOpenCTIIncidentReports
-                        {...routeProps}
-                        xOpenCTIIncident={props.xOpenCTIIncident}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/events/incidents/:incidentId/knowledge"
                     render={() => (
                       <Redirect
@@ -119,6 +108,24 @@ class RootXOpenCTIIncident extends Component {
                         {...routeProps}
                         xOpenCTIIncident={props.xOpenCTIIncident}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/events/incidents/:incidentId/analysis"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.xOpenCTIIncident}
+                          PopoverComponent={<XOpenCTIIncidentPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={
+                            props.xOpenCTIIncident.id
+                          }
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route
@@ -150,7 +157,9 @@ class RootXOpenCTIIncident extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={props.xOpenCTIIncident.standard_id}
+                          stixCoreObjectStandardId={
+                            props.xOpenCTIIncident.standard_id
+                          }
                         />
                       </React.Fragment>
                     )}

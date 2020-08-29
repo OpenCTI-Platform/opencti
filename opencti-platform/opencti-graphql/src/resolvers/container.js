@@ -7,6 +7,13 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+} from '../schema/stixMetaRelationship';
 
 const containerResolvers = {
   Query: {
@@ -22,6 +29,17 @@ const containerResolvers = {
       return 'Unknown';
     },
     objects: (container, args) => objects(container.id, args),
+  },
+  ContainersOrdering: {
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.name`,
+  },
+  ContainersFilter: {
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
   Mutation: {
     containerEdit: (_, { id }, { user }) => ({

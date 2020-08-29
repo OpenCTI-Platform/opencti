@@ -7,18 +7,18 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import IntrusionSetPopover from './IntrusionSetPopover';
-import IntrusionSetKnowledgeBar from './IntrusionSetKnowledgeBar';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
+    padding: '0 200px 0 0',
   },
 });
 
@@ -32,7 +32,21 @@ class IntrusionSetKnowledgeComponent extends Component {
           stixDomainObject={intrusionSet}
           PopoverComponent={<IntrusionSetPopover />}
         />
-        <IntrusionSetKnowledgeBar intrusionSetId={intrusionSet.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'victimology',
+            'attribution',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'attack_patterns',
+            'tools',
+            'vulnerabilities',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/relations/:relationId"
@@ -96,14 +110,11 @@ class IntrusionSetKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attack_patterns"
           render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={intrusionSet.id}
-              relationshipType="attributed-to"
-              targetStixDomainObjectTypes={['XOpenCTIIncident']}
+            <StixDomainObjectKillChain
+              stixDomainObjectId={intrusionSet.id}
               entityLink={link}
-              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -118,17 +129,6 @@ class IntrusionSetKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/ttp"
-          render={(routeProps) => (
-            <StixDomainObjectKillChain
-              stixDomainObjectId={intrusionSet.id}
-              entityLink={link}
               {...routeProps}
             />
           )}
@@ -157,6 +157,20 @@ class IntrusionSetKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
               isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={intrusionSet.id}
+              relationshipType="attributed-to"
+              targetStixDomainObjectTypes={['XOpenCTIIncident']}
+              entityLink={link}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

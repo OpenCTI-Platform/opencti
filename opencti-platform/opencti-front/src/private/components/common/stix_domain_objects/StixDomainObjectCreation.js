@@ -273,10 +273,8 @@ class StixDomainObjectCreation extends Component {
             ''
           )}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.includes('XOpenCTIXOpenCTIIncident') ? (
-          <MenuItem value="XOpenCTIXOpenCTIIncident">
-            {t('XOpenCTIXOpenCTIIncident')}
-          </MenuItem>
+        || targetStixDomainObjectTypes.includes('X-OpenCTI-Incident') ? (
+          <MenuItem value="X-OpenCTI-Incident">{t('Incident')}</MenuItem>
           ) : (
             ''
           )}

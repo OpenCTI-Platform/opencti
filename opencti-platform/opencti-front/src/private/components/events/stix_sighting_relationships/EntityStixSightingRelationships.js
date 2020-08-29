@@ -247,7 +247,7 @@ class EntityStixSightingRelationships extends Component {
           <StixSightingRelationshipCreationFromEntity
             entityId={entityId}
             isRelationReversed={false}
-            paddingRight={false}
+            paddingRight={true}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             paginationOptions={paginationOptions}
           />

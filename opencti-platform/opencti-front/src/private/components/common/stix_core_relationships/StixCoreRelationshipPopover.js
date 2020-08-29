@@ -88,6 +88,7 @@ class StixCoreRelationshipPopover extends Component {
   }
 
   submitDelete() {
+    console.log(this.props.connectionKey);
     this.setState({ deleting: true });
     commitMutation({
       mutation: stixCoreRelationshipPopoverDeletionMutation,
@@ -101,7 +102,7 @@ class StixCoreRelationshipPopover extends Component {
           const userProxy = store.get(container.getDataID());
           const conn = ConnectionHandler.getConnection(
             userProxy,
-            'Pagination_stixCoreRelationships',
+            this.props.connectionKey || 'Pagination_stixCoreRelationships',
             this.props.paginationOptions,
           );
           ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
@@ -190,6 +191,7 @@ StixCoreRelationshipPopover.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   onDelete: PropTypes.func,
+  connectionKey: PropTypes.string,
 };
 
 export default compose(

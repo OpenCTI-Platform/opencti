@@ -56,6 +56,12 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
         isSortable: false,
       },
     };
+    const paginationOptions = {
+      elementId: stixObjectOrStixRelationshipId,
+      relationship_type: relationshipType || 'stix-core-relationship',
+      orderBy: 'created_at',
+      orderMode: 'desc',
+    };
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -73,13 +79,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
               query={
                 simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery
               }
-              variables={{
-                elementId: stixObjectOrStixRelationshipId,
-                relationship_type: relationshipType || 'stix-core-relationship',
-                count: 8,
-                orderBy: 'created_at',
-                orderMode: 'desc',
-              }}
+              variables={{ count: 9, ...paginationOptions }}
               render={({ props }) => (
                 <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
                   stixObjectOrStixRelationshipId={
@@ -92,6 +92,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
                   container={props ? props.container : null}
                   dataColumns={dataColumns}
                   initialLoading={props === null}
+                  paginationOptions={paginationOptions}
                 />
               )}
             />

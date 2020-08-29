@@ -107,23 +107,23 @@ class TopMenuThreatActor extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/threat_actors/${threatActorId}/reports`}
+          to={`/dashboard/threats/threat_actors/${threatActorId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/reports`
+            === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/reports`
+            === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}

@@ -57,7 +57,7 @@ class XOpenCTIIncidentComponent extends Component {
           <Grid item={true} xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={xOpenCTIIncident.id}
-              stixObjectOrStixRelationshipLink="/dashboard/events/incidents/knowledge"
+              stixObjectOrStixRelationshipLink={`/dashboard/events/incidents/${xOpenCTIIncident.id}/knowledge`}
             />
           </Grid>
           <Grid item={true} xs={6}>

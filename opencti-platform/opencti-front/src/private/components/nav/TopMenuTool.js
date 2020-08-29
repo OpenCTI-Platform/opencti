@@ -106,23 +106,23 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/reports`}
+          to={`/dashboard/techniques/tools/${toolId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
+            === `/dashboard/techniques/tools/${toolId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
+            === `/dashboard/techniques/tools/${toolId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}

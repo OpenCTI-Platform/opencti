@@ -406,8 +406,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           </div>
           <div className="clearfix" />
         </div>
-        <div className={classes.containerList}>
-          {targetStixDomainObjectTypes.length > 0 ? (
+        <div>
+          {targetStixDomainObjectTypes && targetStixDomainObjectTypes.length > 0 ? (
             <div>
               <QueryRenderer
                 query={
@@ -437,7 +437,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           ) : (
             ''
           )}
-          {targetStixCyberObservableTypes.length > 0 ? (
+          {targetStixCyberObservableTypes && targetStixCyberObservableTypes.length > 0 ? (
             <QueryRenderer
               query={
                 stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
@@ -779,11 +779,11 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             query={stixSightingRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
-              if (props && props.stixEntity) {
+              if (props && props.stixDomainObject) {
                 return (
                   <div style={{ height: '100%' }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1 ? this.renderForm(props.stixEntity) : ''}
+                    {step === 1 ? this.renderForm(props.stixDomainObject) : ''}
                   </div>
                 );
               }

@@ -106,21 +106,21 @@ class TopMenuLocation extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/reports`}
+          to={`/dashboard/entities/cities/${cityId}/analysis`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname === `/dashboard/entities/cities/${cityId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname === `/dashboard/entities/cities/${cityId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}

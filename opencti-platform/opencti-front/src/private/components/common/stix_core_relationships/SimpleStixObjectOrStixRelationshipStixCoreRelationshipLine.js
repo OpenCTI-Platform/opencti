@@ -51,6 +51,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
       paginationOptions,
       entityId,
       entityLink,
+      connectionKey,
     } = this.props;
     const link = `${entityLink}/relations/${node.id}`;
     const isReversed = node.from.id === entityId;
@@ -112,6 +113,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
             disabled={node.inferred}
+            connectionKey={connectionKey}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -128,6 +130,7 @@ SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent.propTypes = 
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
+  connectionKey: PropTypes.string,
 };
 
 const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = createFragmentContainer(

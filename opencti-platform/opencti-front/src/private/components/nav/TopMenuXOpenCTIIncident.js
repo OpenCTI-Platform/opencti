@@ -106,23 +106,23 @@ class TopMenuXOpenCTIIncident extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/events/incidents/${incidentId}/reports`}
+          to={`/dashboard/events/incidents/${incidentId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/events/incidents/${incidentId}/reports`
+            === `/dashboard/events/incidents/${incidentId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/events/incidents/${incidentId}/reports`
+            === `/dashboard/events/incidents/${incidentId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button

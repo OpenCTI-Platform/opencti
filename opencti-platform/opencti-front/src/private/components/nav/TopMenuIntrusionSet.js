@@ -105,10 +105,10 @@ class TopMenuIntrusionSet extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
               ? 'contained'
               : 'text'
           }
@@ -121,7 +121,7 @@ class TopMenuIntrusionSet extends Component {
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}

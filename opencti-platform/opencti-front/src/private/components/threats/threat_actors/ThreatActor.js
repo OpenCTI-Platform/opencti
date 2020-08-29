@@ -57,7 +57,7 @@ class ThreatActorComponent extends Component {
           <Grid item={true} xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={threatActor.id}
-              stixObjectOrStixRelationshipLink="/dashboard/events/incidents/knowledge"
+              stixObjectOrStixRelationshipLink={`/dashboard/threats/threat_actors/${threatActor.id}/knowledge`}
             />
           </Grid>
           <Grid item={true} xs={6}>
@@ -100,7 +100,7 @@ ThreatActorComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const XOpenCTIThreatActor = createFragmentContainer(ThreatActorComponent, {
+const ThreatActor = createFragmentContainer(ThreatActorComponent, {
   threatActor: graphql`
     fragment ThreatActor_threatActor on ThreatActor {
       id
@@ -148,4 +148,4 @@ const XOpenCTIThreatActor = createFragmentContainer(ThreatActorComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(XOpenCTIThreatActor);
+export default compose(inject18n, withStyles(styles))(ThreatActor);

@@ -97,6 +97,7 @@ class ListLinesContent extends Component {
       onLabelClick,
       selectedElements,
       onToggleEntity,
+      connectionKey,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -121,6 +122,7 @@ class ListLinesContent extends Component {
           onLabelClick,
           selectedElements,
           onToggleEntity,
+          connectionKey,
         })}
       </div>
     );
@@ -202,6 +204,7 @@ ListLinesContent.propTypes = {
   onLabelClick: PropTypes.func,
   selectedElements: PropTypes.object,
   onToggleEntity: PropTypes.func,
+  connectionKey: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLinesContent);

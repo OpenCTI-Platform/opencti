@@ -73,6 +73,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer exte
         paginationOptions={paginationOptions}
         entityId={stixObjectOrStixRelationshipId}
         entityLink={stixObjectOrStixRelationshipLink}
+        connectionKey='Pagination_stixCoreRelationshipsOfElement'
       />
     );
   }

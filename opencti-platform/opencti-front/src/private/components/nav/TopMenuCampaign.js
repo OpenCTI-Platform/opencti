@@ -106,23 +106,23 @@ class TopMenuCampaign extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/campaigns/${campaignId}/reports`}
+          to={`/dashboard/threats/campaigns/${campaignId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/reports`
+            === `/dashboard/threats/campaigns/${campaignId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/reports`
+            === `/dashboard/threats/campaigns/${campaignId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}
