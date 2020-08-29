@@ -12,13 +12,13 @@ import IndividualOverview from './IndividualOverview';
 import IndividualDetails from './IndividualDetails';
 import IndividualEdition from './IndividualEdition';
 import IndividualPopover from './IndividualPopover';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
 import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
 import EntityXOpenCTIIncidentsChart from '../../events/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,

@@ -10,13 +10,13 @@ import IntrusionSetOverview from './IntrusionSetOverview';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetPopover from './IntrusionSetPopover';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
 import EntityCampaignsChart from '../campaigns/EntityCampaignsChart';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const styles = () => ({
   container: {

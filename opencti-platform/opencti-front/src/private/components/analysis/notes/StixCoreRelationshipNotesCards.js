@@ -19,17 +19,17 @@ const styles = () => ({
   },
 });
 
-class StixCoreObjectNotesCardsContainer extends Component {
+class StixCoreRelationshipNotesCardsContainer extends Component {
   render() {
-    const { t, stixCoreObjectId, data } = this.props;
-    const notes = pathOr([], ['stixCoreObject', 'notes', 'edges'], data);
+    const { t, stixCoreRelationshipId, data } = this.props;
+    const notes = pathOr([], ['stixCoreRelationship', 'notes', 'edges'], data);
     return (
       <div style={{ height: '100%', marginTop: 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Notes about this entity')}
+          {t('Notes about this relationship')}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddNotes entityId={stixCoreObjectId} entityNotes={notes} />
+          <AddNotes entityId={stixCoreRelationshipId} entityNotes={notes} />
         </Security>
         <div className="clearfix" />
         <Grid container={true} spacing={3}>
@@ -39,7 +39,9 @@ class StixCoreObjectNotesCardsContainer extends Component {
               <Grid key={note.id} item={true} xs={4}>
                 <StixCoreObjectOrStixCoreRelationshipNoteCard
                   node={note}
-                  stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
+                  stixCoreObjectOrStixCoreRelationshipId={
+                    stixCoreRelationshipId
+                  }
                 />
               </Grid>
             );
@@ -50,29 +52,29 @@ class StixCoreObjectNotesCardsContainer extends Component {
   }
 }
 
-StixCoreObjectNotesCardsContainer.propTypes = {
-  stixCoreObjectId: PropTypes.string,
+StixCoreRelationshipNotesCardsContainer.propTypes = {
+  stixCoreRelationshipId: PropTypes.string,
   data: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-export const stixCoreObjectNotesCardsQuery = graphql`
-  query StixCoreObjectNotesCardsQuery($count: Int!, $id: String!) {
-    ...StixCoreObjectNotesCards_data @arguments(count: $count, id: $id)
+export const stixCoreRelationshipNotesCardsQuery = graphql`
+  query StixCoreRelationshipNotesCardsQuery($count: Int!, $id: String!) {
+    ...StixCoreRelationshipNotesCards_data @arguments(count: $count, id: $id)
   }
 `;
 
-const StixCoreObjectNotesCards = createPaginationContainer(
-  StixCoreObjectNotesCardsContainer,
+const StixCoreRelationshipNotesCards = createPaginationContainer(
+  StixCoreRelationshipNotesCardsContainer,
   {
     data: graphql`
-      fragment StixCoreObjectNotesCards_data on Query
+      fragment StixCoreRelationshipNotesCards_data on Query
       @argumentDefinitions(
         count: { type: "Int", defaultValue: 25 }
         id: { type: "String!" }
       ) {
-        stixCoreObject(id: $id) {
+        stixCoreRelationship(id: $id) {
           id
           notes(first: $count) @connection(key: "Pagination_notes") {
             edges {
@@ -89,7 +91,7 @@ const StixCoreObjectNotesCards = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixCoreObjectObject.notes;
+      return props.data && props.data.stixCoreRelationshipObject.notes;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -103,8 +105,11 @@ const StixCoreObjectNotesCards = createPaginationContainer(
         id: fragmentVariables.id,
       };
     },
-    query: stixCoreObjectNotesCardsQuery,
+    query: stixCoreRelationshipNotesCardsQuery,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectNotesCards);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreRelationshipNotesCards);

@@ -11,9 +11,8 @@ import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
 const styles = () => ({
   paper: {
     height: '100%',
-    minHeight: 300,
     margin: '10px 0 0 0',
-    padding: '15px',
+    padding: '15px 15px 0 15px',
     borderRadius: 6,
   },
 });
@@ -58,7 +57,7 @@ class StixCoreObjectHistoryLinesComponent extends Component {
 }
 
 StixCoreObjectHistoryLinesComponent.propTypes = {
-  entityStandardId: PropTypes.string,
+  stixCoreObjectStandardId: PropTypes.string,
   isRelationLog: PropTypes.bool,
   data: PropTypes.object,
   classes: PropTypes.object,

@@ -1240,7 +1240,6 @@ define
     has last_seen_day,
     has last_seen_month,
     has last_seen_year,
-    has roles,
     has goals,
     has sophistication,
     has resource_level,

@@ -120,7 +120,7 @@ class RootNote extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityStandardId={props.note.standard_id}
+                          stixCoreObjectStandardId={props.note.standard_id}
                         />
                       </React.Fragment>
                     )}

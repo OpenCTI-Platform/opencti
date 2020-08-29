@@ -5,6 +5,7 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
+import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
@@ -19,6 +20,15 @@ const styles = () => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+  },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    color: '#ffffff',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    margin: '0 5px 5px 0',
   },
 });
 
@@ -36,10 +46,24 @@ class ReportDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
-              <ExpandableMarkdown source={report.description} limit={300} />
+              <ExpandableMarkdown source={report.description} limit={400} />
             </Grid>
             <Grid item={true} xs={4}>
               <Typography variant="h3" gutterBottom={true}>
+                {t('Report types')}
+              </Typography>
+              {report.report_types.map((reportType) => (
+                <Chip
+                  key={reportType}
+                  classes={{ root: classes.chip }}
+                  label={reportType}
+                />
+              ))}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Processing status')}
               </Typography>
               <ItemStatus
@@ -79,6 +103,7 @@ const ReportDetails = createFragmentContainer(ReportDetailsComponent, {
   report: graphql`
     fragment ReportDetails_report on Report {
       id
+      report_types
       description
       x_opencti_report_status
     }

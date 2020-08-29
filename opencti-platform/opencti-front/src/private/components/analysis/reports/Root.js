@@ -164,7 +164,7 @@ class RootReport extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityStandardId={props.report.standard_id}
+                          stixCoreObjectStandardId={props.report.standard_id}
                         />
                       </React.Fragment>
                     )}

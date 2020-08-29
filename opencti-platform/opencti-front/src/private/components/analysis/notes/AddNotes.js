@@ -14,9 +14,7 @@ import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddNotesLines, {
-  addNotesLinesQuery,
-} from './AddNotesLines';
+import AddNotesLines, { addNotesLinesQuery } from './AddNotesLines';
 import NoteCreation from './NoteCreation';
 
 const styles = (theme) => ({
@@ -84,7 +82,10 @@ class AddNotes extends Component {
 
   render() {
     const {
-      t, classes, entityId, entityNotes,
+      t,
+      classes,
+      stixCoreObjectOrStixCoreRelationshipId,
+      stixCoreObjectOrStixCoreRelationshipNotes,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -135,8 +136,12 @@ class AddNotes extends Component {
                 if (props) {
                   return (
                     <AddNotesLines
-                      entityId={entityId}
-                      entityNotes={entityNotes}
+                      stixCoreObjectOrStixCoreRelationshipId={
+                        stixCoreObjectOrStixCoreRelationshipId
+                      }
+                      stixCoreObjectOrStixCoreRelationshipNotes={
+                        stixCoreObjectOrStixCoreRelationshipNotes
+                      }
                       data={props}
                     />
                   );
@@ -184,8 +189,8 @@ class AddNotes extends Component {
 }
 
 AddNotes.propTypes = {
-  entityId: PropTypes.string,
-  entityNotes: PropTypes.array,
+  stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
+  stixCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

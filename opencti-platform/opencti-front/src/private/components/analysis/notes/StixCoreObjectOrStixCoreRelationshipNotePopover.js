@@ -42,8 +42,10 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const stixCoreObjectNotePopoverCleanContext = graphql`
-  mutation StixCoreObjectNotePopoverCleanContextMutation($id: ID!) {
+const stixCoreObjectOrStixCoreRelationshipNotePopoverCleanContext = graphql`
+  mutation StixCoreObjectOrStixCoreRelationshipNotePopoverCleanContextMutation(
+    $id: ID!
+  ) {
     noteEdit(id: $id) {
       contextClean {
         ...NoteEditionOverview_note
@@ -52,23 +54,27 @@ const stixCoreObjectNotePopoverCleanContext = graphql`
   }
 `;
 
-const stixCoreObjectNotePopoverDeletionMutation = graphql`
-  mutation StixCoreObjectNotePopoverDeletionMutation($id: ID!) {
+const stixCoreObjectOrStixCoreRelationshipNotePopoverDeletionMutation = graphql`
+  mutation StixCoreObjectOrStixCoreRelationshipNotePopoverDeletionMutation(
+    $id: ID!
+  ) {
     noteEdit(id: $id) {
       delete
     }
   }
 `;
 
-const stixCoreObjectNotePopoverEditionQuery = graphql`
-  query StixCoreObjectNotePopoverEditionQuery($id: String!) {
+const stixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery = graphql`
+  query StixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery(
+    $id: String!
+  ) {
     note(id: $id) {
       ...NoteEditionOverview_note
     }
   }
 `;
 
-class StixCoreObjectNotePopover extends Component {
+class StixCoreObjectOrStixCoreRelationshipNotePopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -94,7 +100,7 @@ class StixCoreObjectNotePopover extends Component {
 
   handleCloseUpdate() {
     commitMutation({
-      mutation: stixCoreObjectNotePopoverCleanContext,
+      mutation: stixCoreObjectOrStixCoreRelationshipNotePopoverCleanContext,
       variables: { id: this.props.roleId },
     });
     this.setState({ displayUpdate: false });
@@ -112,7 +118,7 @@ class StixCoreObjectNotePopover extends Component {
   submitDelete() {
     this.setState({ deleting: true });
     commitMutation({
-      mutation: stixCoreObjectNotePopoverDeletionMutation,
+      mutation: stixCoreObjectOrStixCoreRelationshipNotePopoverDeletionMutation,
       variables: {
         id: this.props.noteId,
       },
@@ -155,7 +161,7 @@ class StixCoreObjectNotePopover extends Component {
           onClose={this.handleCloseUpdate.bind(this)}
         >
           <QueryRenderer
-            query={stixCoreObjectNotePopoverEditionQuery}
+            query={stixCoreObjectOrStixCoreRelationshipNotePopoverEditionQuery}
             variables={{ id: noteId }}
             render={({ props }) => {
               if (props) {
@@ -203,7 +209,7 @@ class StixCoreObjectNotePopover extends Component {
   }
 }
 
-StixCoreObjectNotePopover.propTypes = {
+StixCoreObjectOrStixCoreRelationshipNotePopover.propTypes = {
   noteId: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
@@ -214,4 +220,4 @@ StixCoreObjectNotePopover.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectNotePopover);
+)(StixCoreObjectOrStixCoreRelationshipNotePopover);

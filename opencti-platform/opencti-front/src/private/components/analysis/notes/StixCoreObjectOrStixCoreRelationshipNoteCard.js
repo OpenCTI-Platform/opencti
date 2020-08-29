@@ -66,7 +66,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class StixCoreObjectNoteCardComponent extends Component {
+class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -240,19 +240,19 @@ class StixCoreObjectNoteCardComponent extends Component {
   }
 }
 
-StixCoreObjectNoteCardComponent.propTypes = {
-  stixCoreObjectId: PropTypes.string,
+StixCoreObjectOrStixCoreRelationshipNoteCardComponent.propTypes = {
+  stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
 };
 
-const StixCoreObjectNoteCard = createFragmentContainer(
-  StixCoreObjectNoteCardComponent,
+const StixCoreObjectOrStixCoreRelationshipNoteCard = createFragmentContainer(
+  StixCoreObjectOrStixCoreRelationshipNoteCardComponent,
   {
     node: graphql`
-      fragment StixCoreObjectNoteCard_node on Note {
+      fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
         id
         attribute_abstract
         content
@@ -288,4 +288,7 @@ const StixCoreObjectNoteCard = createFragmentContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectNoteCard);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectOrStixCoreRelationshipNoteCard);

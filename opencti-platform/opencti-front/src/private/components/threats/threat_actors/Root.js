@@ -34,6 +34,7 @@ const threatActorQuery = graphql`
   query RootThreatActorQuery($id: String!) {
     threatActor(id: $id) {
       id
+      standard_id
       name
       aliases
       ...ThreatActor_threatActor
@@ -160,7 +161,9 @@ class RootThreatActor extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={threatActorId}
+                          stixCoreObjectStandardId={
+                            props.threatActor.standard_id
+                          }
                         />
                       </React.Fragment>
                     )}

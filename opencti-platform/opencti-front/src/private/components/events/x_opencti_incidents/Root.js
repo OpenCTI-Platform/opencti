@@ -150,7 +150,7 @@ class RootXOpenCTIIncident extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityStandardId={props.xOpenCTIIncident.standard_id}
+                          stixCoreObjectStandardId={props.xOpenCTIIncident.standard_id}
                         />
                       </React.Fragment>
                     )}

@@ -12,7 +12,7 @@ import ReportEdition from './ReportEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../notes/StixCoreObjectNotes';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import ReportPopover from './ReportPopover';
 
@@ -30,7 +30,10 @@ class ReportComponent extends Component {
     const { classes, report } = this.props;
     return (
       <div className={classes.container}>
-        <ContainerHeader container={report} PopoverComponent={<ReportPopover />} />
+        <ContainerHeader
+          container={report}
+          PopoverComponent={<ReportPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -53,10 +56,14 @@ class ReportComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={report.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory entityStandardId={report.standard_id} />
+            <StixCoreObjectLatestHistory
+              stixCoreObjectStandardId={report.standard_id}
+            />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes stixCoreObjectId={report.id} />
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={report.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ReportEdition reportId={report.id} />
         </Security>

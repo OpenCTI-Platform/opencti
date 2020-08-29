@@ -67,6 +67,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
             secondaryAction={true}
             noHeaders={true}
             noPadding={true}
+            noBottomPadding={true}
           >
             <QueryRenderer
               query={
@@ -75,7 +76,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
               variables={{
                 elementId: stixObjectOrStixRelationshipId,
                 relationship_type: relationshipType || 'stix-core-relationship',
-                count: 10,
+                count: 8,
                 orderBy: 'created_at',
                 orderMode: 'desc',
               }}

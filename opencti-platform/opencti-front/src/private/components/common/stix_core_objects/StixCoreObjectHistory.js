@@ -35,7 +35,7 @@ class StixCoreObjectHistory extends Component {
   }
 
   render() {
-    const { classes, t, entityStandardId } = this.props;
+    const { classes, t, stixCoreObjectStandardId } = this.props;
     const { entitySearchTerm, relationsSearchTerm } = this.state;
     return (
       <Grid
@@ -63,7 +63,7 @@ class StixCoreObjectHistory extends Component {
             query={stixCoreObjectHistoryLinesQuery}
             variables={{
               filters: [
-                { key: 'entity_id', values: [entityStandardId] },
+                { key: 'entity_id', values: [stixCoreObjectStandardId] },
                 {
                   key: 'event_type',
                   values: ['create', 'update', 'update_add', 'update_remove'],
@@ -78,7 +78,7 @@ class StixCoreObjectHistory extends Component {
               if (props) {
                 return (
                   <StixCoreObjectHistoryLines
-                    entityStandardId={entityStandardId}
+                    entityStandardId={stixCoreObjectStandardId}
                     data={props}
                     isRelationLog={false}
                   />
@@ -110,7 +110,7 @@ class StixCoreObjectHistory extends Component {
               filters: [
                 {
                   key: 'connection_id',
-                  values: [entityStandardId],
+                  values: [stixCoreObjectStandardId],
                   operator: 'wildcard',
                 },
                 {
@@ -127,7 +127,7 @@ class StixCoreObjectHistory extends Component {
               if (props) {
                 return (
                   <StixCoreObjectHistoryLines
-                    entityStandardId={entityStandardId}
+                    stixCoreObjectStandardId={stixCoreObjectStandardId}
                     data={props}
                     isRelationLog={true}
                   />
@@ -144,7 +144,7 @@ class StixCoreObjectHistory extends Component {
 
 StixCoreObjectHistory.propTypes = {
   t: PropTypes.func,
-  entityStandardId: PropTypes.string,
+  stixCoreObjectStandardId: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(StixCoreObjectHistory);

@@ -133,6 +133,7 @@ class ListLinesContent extends Component {
       initialLoading,
       isLoading,
       nbOfRowsToLoad,
+      classes,
     } = this.props;
     const countWithLoading = isLoading()
       ? dataList.length + this.state.loadingRowCount
@@ -143,7 +144,7 @@ class ListLinesContent extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper}>
+          <div className={classes.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isRowLoaded}
               loadMoreRows={this._loadMoreRows}

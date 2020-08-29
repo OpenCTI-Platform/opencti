@@ -169,7 +169,7 @@ const styles = (theme) => ({
 });
 
 const stixCyberObservableRelationshipCreationFromEntityQuery = graphql`
-  query StixCyberObservableRelationshipCreationFromEntityQuery($id: ID!) {
+  query StixCyberObservableRelationshipCreationFromEntityQuery($id: String!) {
     stixObjectOrStixRelationship(id: $id) {
       ... on BasicObject {
         id

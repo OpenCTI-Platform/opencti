@@ -12,7 +12,7 @@ import ObservedDataEdition from './ObservedDataEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import ObservedDataPopover from './ObservedDataPopover';
 
@@ -59,11 +59,13 @@ class ObservedDataComponent extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory
-              entityStandardId={observedData.standard_id}
+              stixCoreObjectStandardId={observedData.standard_id}
             />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes stixCoreObjectId={observedData.id} />
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={observedData.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ObservedDataEdition observedDataId={observedData.id} />
         </Security>

@@ -10,12 +10,12 @@ import ToolOverview from './ToolOverview';
 import ToolDetails from './ToolDetails';
 import ToolEdition from './ToolEdition';
 import ToolPopover from './ToolPopover';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const styles = () => ({
   container: {

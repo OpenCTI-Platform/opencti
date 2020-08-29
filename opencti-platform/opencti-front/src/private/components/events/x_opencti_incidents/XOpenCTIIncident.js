@@ -9,10 +9,10 @@ import inject18n from '../../../../components/i18n';
 import XOpenCTIIncidentDetails from './XOpenCTIIncidentDetails';
 import XOpenCTIIncidentEdition from './XOpenCTIIncidentEdition';
 import XOpenCTIIncidentPopover from './XOpenCTIIncidentPopover';
-import StixCoreObjectLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -61,7 +61,9 @@ class XOpenCTIIncidentComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLastReports stixCoreObjectId={xOpenCTIIncident.id} />
+            <StixCoreObjectOrStixCoreRelationshipLastReports
+              stixCoreObjectOrStixCoreRelationshipId={xOpenCTIIncident.id}
+            />
           </Grid>
         </Grid>
         <Grid
@@ -77,11 +79,13 @@ class XOpenCTIIncidentComponent extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory
-              entityStandardId={xOpenCTIIncident.standard_id}
+              stixCoreObjectStandardId={xOpenCTIIncident.standard_id}
             />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes stixCoreObjectId={xOpenCTIIncident.id} />
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={xOpenCTIIncident.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <XOpenCTIIncidentEdition xOpenCTIIncidentId={xOpenCTIIncident.id} />
         </Security>

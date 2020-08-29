@@ -5,6 +5,7 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_META_RELATIONSHIP } from
 const stixObjectOrStixRelationshipResolvers = {
   Query: {
     stixObjectOrStixRelationship: (_, { id }) => findById(id),
+    stixCoreObjectOrStixCoreRelationship: (_, { id }) => findById(id),
   },
   StixObjectOrStixRelationship: {
     // eslint-disable-next-line

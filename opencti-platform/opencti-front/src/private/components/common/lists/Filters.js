@@ -91,13 +91,13 @@ class Filters extends Component {
             map((n) => ({
               label: n.node.definition,
               value: n.node.id,
-              type: 'marking-definition',
+              type: 'Marking-Definition',
               color: n.node.color,
             })),
           )(data);
           this.setState({
             entities: {
-              markingDefinitions: union(this.state.entities, entities),
+              markedBy: union(this.state.entities, entities),
             },
           });
         });
@@ -112,12 +112,12 @@ class Filters extends Component {
             map((n) => ({
               label: n.node.value,
               value: n.node.id,
-              type: 'label',
+              type: 'Label',
               color: n.node.color,
             })),
           )(data);
           this.setState({
-            entities: { labels: union(this.state.entities, entities) },
+            entities: { labelledBy: union(this.state.entities, entities) },
           });
         });
         break;
@@ -264,7 +264,7 @@ class Filters extends Component {
                   <Autocomplete
                     className={classes.autocomplete}
                     selectOnFocus={true}
-                    autoSelect={true}
+                    autoSelect={false}
                     autoHighlight={true}
                     getOptionLabel={(option) => (option.label ? option.label : '')
                     }

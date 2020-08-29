@@ -10,10 +10,10 @@ import IndicatorHeader from './IndicatorHeader';
 import IndicatorOverview from './IndicatorOverview';
 import IndicatorDetails from './IndicatorDetails';
 import IndicatorEdition from './IndicatorEdition';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import IndicatorEntities from './IndicatorEntities';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 
 const styles = () => ({

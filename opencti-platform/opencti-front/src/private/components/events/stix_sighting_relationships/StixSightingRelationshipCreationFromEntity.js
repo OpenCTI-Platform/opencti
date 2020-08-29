@@ -178,7 +178,7 @@ const styles = (theme) => ({
 });
 
 const stixSightingRelationshipCreationFromEntityQuery = graphql`
-  query StixSightingRelationshipCreationFromEntityQuery($id: String) {
+  query StixSightingRelationshipCreationFromEntityQuery($id: String!) {
     stixDomainObject(id: $id) {
       id
       entity_type

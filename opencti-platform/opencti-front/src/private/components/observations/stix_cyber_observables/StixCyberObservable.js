@@ -10,11 +10,11 @@ import StixCyberObservableHeader from './StixCyberObservableHeader';
 import StixCyberObservableOverview from './StixCyberObservableOverview';
 import StixCyberObservableDetails from './StixCyberObservableDetails';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const styles = () => ({
   container: {

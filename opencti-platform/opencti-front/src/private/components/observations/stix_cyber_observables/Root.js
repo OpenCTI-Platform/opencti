@@ -14,7 +14,7 @@ import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixCyberObservableHeader from './StixCyberObservableHeader';
-import EntityStixSightingRelationships from '../stix_sighting_relationships/EntityStixSightingRelationships';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const subscription = graphql`
   subscription RootStixCyberObservableSubscription($id: ID!) {

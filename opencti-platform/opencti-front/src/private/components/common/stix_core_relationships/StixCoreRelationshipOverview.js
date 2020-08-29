@@ -32,9 +32,9 @@ import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionO
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreRelationshipInferences from './StixCoreRelationshipInferences';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectLastReports';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const styles = () => ({
   container: {
@@ -447,12 +447,16 @@ class StixCoreRelationshipContainer extends Component {
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <EntityLastReports entityId={stixCoreRelationship.id} />
+                  <StixCoreObjectOrStixCoreRelationshipLastReports
+                    stixCoreObjectOrStixCoreRelationshipId={
+                      stixCoreRelationship.id
+                    }
+                  />
                 </Grid>
               </Grid>
-              <StixCoreObjectNotes
+              <StixCoreObjectOrStixCoreRelationshipNotes
                 marginTop={55}
-                entityId={stixCoreRelationship.id}
+                stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                 inputType="relationRefs"
               />
             </div>

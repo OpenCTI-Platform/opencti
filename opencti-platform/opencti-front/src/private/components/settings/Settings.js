@@ -316,7 +316,7 @@ class Settings extends Component {
                                   <Avatar>{i}</Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
-                                  primary={t(provider.strategy)}
+                                  primary={provider.strategy}
                                   secondary={this.getProviderConfig(provider)}
                                 />
                               </ListItem>

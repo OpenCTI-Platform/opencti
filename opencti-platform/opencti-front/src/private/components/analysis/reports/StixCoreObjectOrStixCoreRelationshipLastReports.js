@@ -69,8 +69,8 @@ const inlineStyles = {
   },
 };
 
-const stixCoreObjectLastReportsQuery = graphql`
-  query StixCoreObjectLastReportsQuery(
+const stixCoreObjectOrStixCoreRelationshipLastReportsQuery = graphql`
+  query StixCoreObjectOrStixCoreRelationshipLastReportsQuery(
     $first: Int
     $orderBy: ReportsOrdering
     $orderMode: OrderingMode
@@ -108,24 +108,24 @@ const stixCoreObjectLastReportsQuery = graphql`
   }
 `;
 
-class StixCoreObjectLastReports extends Component {
+class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
   render() {
     const {
-      t, nsd, classes, stixCoreObjectId, authorId,
+      t, nsd, classes, stixCoreObjectOrStixCoreRelationshipId, authorId,
     } = this.props;
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
-    if (stixCoreObjectId) filters.push({ key: 'objectContains', values: [stixCoreObjectId] });
+    if (stixCoreObjectOrStixCoreRelationshipId) filters.push({ key: 'objectContains', values: [stixCoreObjectOrStixCoreRelationshipId] });
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {authorId
             ? t('Last reports wrote by the entity')
-            : t('Last reports about the entity')}
+            : t('Last reports about the element')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={stixCoreObjectLastReportsQuery}
+            query={stixCoreObjectOrStixCoreRelationshipLastReportsQuery}
             variables={{
               first: 8,
               orderBy: 'published',
@@ -218,8 +218,8 @@ class StixCoreObjectLastReports extends Component {
   }
 }
 
-StixCoreObjectLastReports.propTypes = {
-  stixCoreObjectId: PropTypes.string,
+StixCoreObjectOrStixCoreRelationshipLastReports.propTypes = {
+  stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   authorId: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -229,4 +229,4 @@ StixCoreObjectLastReports.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectLastReports);
+)(StixCoreObjectOrStixCoreRelationshipLastReports);

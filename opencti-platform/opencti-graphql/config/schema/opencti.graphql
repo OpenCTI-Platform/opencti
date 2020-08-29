@@ -7002,7 +7002,58 @@ union StixObjectOrStixRelationship =
   | StixMetaRelationship
   | StixSightingRelationship
   | StixCyberObservableRelationship
-
+union StixCoreObjectOrStixCoreRelationship =
+    #### Stix Core Objects
+  ## Stix Domain Objects
+  AttackPattern
+  | Campaign # Containers
+  | Note
+  | ObservedData
+  | Opinion
+  | Report
+  | CourseOfAction # Identity
+  | Individual
+  | Organization
+  | Sector
+  | Indicator
+  | Infrastructure
+  | IntrusionSet # Location
+  | City
+  | Country
+  | Region
+  | Position
+  | Malware
+  | ThreatActor
+  | Tool
+  | Vulnerability
+  | XOpenCTIIncident ## Six Cyber Observables
+  | AutonomousSystem
+  | Directory
+  | DomainName
+  | EmailAddr
+  | EmailMessage
+  | EmailMimePartType
+  | Artifact
+  | StixFile
+  | X509Certificate
+  | IPv4Addr
+  | IPv6Addr
+  | MacAddr
+  | Mutex
+  | NetworkTraffic
+  | Process
+  | Software
+  | Url
+  | UserAccount
+  | WindowsRegistryKey
+  | WindowsRegistryValueType
+  | X509V3ExtensionsType
+  | XOpenCTICryptographicKey
+  | XOpenCTICryptocurrencyWallet
+  | XOpenCTIHostname
+  | XOpenCTIText
+  | XOpenCTIUserAgent ### Stix Relationships
+  | StixCoreRelationship
 interface StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
@@ -7430,7 +7481,7 @@ type Query {
 
   ######## STIX META OBJECT ENTITIES
 
-  markingDefinition(id: String): MarkingDefinition @auth(for: [KNOWLEDGE])
+  markingDefinition(id: String!): MarkingDefinition @auth(for: [KNOWLEDGE])
   markingDefinitions(
     first: Int
     after: ID
@@ -7474,7 +7525,7 @@ type Query {
 
   ######## STIX CORE OBJECT ENTITIES
 
-  stixCoreObject(id: String): StixCoreObject @auth(for: [KNOWLEDGE])
+  stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int
     after: ID
@@ -7488,7 +7539,7 @@ type Query {
 
   ######## STIX DOMAIN OBJECT ENTITIES
 
-  stixDomainObject(id: String): StixDomainObject @auth(for: [KNOWLEDGE])
+  stixDomainObject(id: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   stixDomainObjects(
     first: Int
     after: ID
@@ -8098,7 +8149,8 @@ type Query {
   stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime, inferred: Boolean): Number
 
   ####### ALL
-  stixObjectOrStixRelationship(id: ID!): StixObjectOrStixRelationship
+  stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
+  stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
 }
 
 ### SUBSCRIPTIONS

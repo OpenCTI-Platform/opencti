@@ -188,7 +188,7 @@ const styles = (theme) => ({
 });
 
 const stixCoreRelationshipCreationFromRelationQuery = graphql`
-  query StixCoreRelationshipCreationFromRelationQuery($id: String) {
+  query StixCoreRelationshipCreationFromRelationQuery($id: String!) {
     stixCoreRelationship(id: $id) {
       id
       entity_type

@@ -36,7 +36,7 @@ const noteLinesMutationRelationAdd = graphql`
       relationAdd(input: $input) {
         id
         from {
-          ...StixCoreObjectNoteCard_node
+          ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
         }
       }
     }

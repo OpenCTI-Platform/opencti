@@ -22,6 +22,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -49,7 +50,10 @@ const styles = (theme) => ({
 });
 
 export const observedDataMutationFieldPatch = graphql`
-  mutation ObservedDataEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation ObservedDataEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
     observedDataEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ObservedDataEditionOverview_observedData
@@ -59,7 +63,10 @@ export const observedDataMutationFieldPatch = graphql`
 `;
 
 export const observedDataEditionOverviewFocus = graphql`
-  mutation ObservedDataEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+  mutation ObservedDataEditionOverviewFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
     observedDataEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -122,7 +129,10 @@ class ObservedDataEditionOverviewComponent extends Component {
       .then(() => {
         commitMutation({
           mutation: observedDataMutationFieldPatch,
-          variables: { id: this.props.observedData.id, input: { key: name, value } },
+          variables: {
+            id: this.props.observedData.id,
+            input: { key: name, value },
+          },
         });
       })
       .catch(() => false);
@@ -227,8 +237,9 @@ class ObservedDataEditionOverviewComponent extends Component {
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
       pick([
-        'attribute_abstract',
-        'content',
+        'first_observed',
+        'last_observed',
+        'number_observed',
         'confidence',
         'createdBy',
         'objectMarking',
@@ -244,31 +255,40 @@ class ObservedDataEditionOverviewComponent extends Component {
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
-                component={TextField}
-                name="observedData"
-                label={t('ObservedData')}
+                component={DatePickerField}
+                name="first_observed"
+                label={t('First observed')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="observedData"
-                  />
+                  <SubscriptionFocus context={context} fieldName="first_observed" />
                 }
               />
               <Field
-                component={TextField}
-                name="explanation"
-                label={t('Explanation')}
+                component={DatePickerField}
+                name="last_observed"
+                label={t('Last observed')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
                 fullWidth={true}
-                multiline={true}
-                rows="4"
                 style={{ marginTop: 20 }}
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus context={context} fieldName="content" />
+                  <SubscriptionFocus context={context} fieldName="last_observed" />
+                }
+              />
+              <Field
+                component={TextField}
+                name="number_observed"
+                label={t('Number observed')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus context={context} fieldName="number_observed" />
                 }
               />
               <ConfidenceField
@@ -324,6 +344,9 @@ const ObservedDataEditionOverview = createFragmentContainer(
       fragment ObservedDataEditionOverview_observedData on ObservedData {
         id
         confidence
+        first_observed
+        last_observed
+        number_observed
         createdBy {
           ... on Identity {
             id

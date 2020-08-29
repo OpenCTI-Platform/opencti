@@ -6,6 +6,7 @@ import XOpenCTIIncidents from './XOpenCTIIncidents';
 import RootXOpenCTIIncident from './x_opencti_incidents/Root';
 import ObservedDatas from './ObservedDatas';
 import RootObservedData from './observed_data/Root';
+import StixSightingRelationships from './StixSightingRelationships';
 
 class Root extends Component {
   render() {
@@ -36,6 +37,11 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/events/observed_data/:observedDataId"
           render={(routeProps) => <RootObservedData {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/events/sightings"
+          component={StixSightingRelationships}
         />
       </Switch>
     );

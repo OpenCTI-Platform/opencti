@@ -16,7 +16,7 @@ import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChar
 import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectNotes';
+import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 
 const styles = () => ({
   container: {

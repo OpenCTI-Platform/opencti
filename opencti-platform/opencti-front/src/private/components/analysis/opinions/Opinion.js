@@ -30,7 +30,10 @@ class OpinionComponent extends Component {
     const { classes, opinion } = this.props;
     return (
       <div className={classes.container}>
-        <ContainerHeader container={opinion} PopoverComponent={<OpinionPopover />} />
+        <ContainerHeader
+          container={opinion}
+          PopoverComponent={<OpinionPopover />}
+        />
         <Grid
           container={true}
           spacing={3}
@@ -63,7 +66,9 @@ class OpinionComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory entityStandardId={opinion.standard_id} />
+            <StixCoreObjectLatestHistory
+              stixCoreObjectStandardId={opinion.standard_id}
+            />
           </Grid>
         </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
