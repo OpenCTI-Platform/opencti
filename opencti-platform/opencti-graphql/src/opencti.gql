@@ -1220,6 +1220,7 @@ define
     plays targets_from,
     plays uses_from,
     plays variant-of_from,
+    plays variant-of_to,
     plays delivers_to,
     plays indicates_to,
     plays mitigates_to,

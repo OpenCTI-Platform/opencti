@@ -4,6 +4,7 @@ import {
   executeWrite,
   queryAttributeValueByGraknId,
   queryAttributeValues,
+  queryAttributes,
   reindexAttributeValue,
 } from '../database/grakn';
 import { logger } from '../config/conf';
@@ -16,7 +17,12 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 export const findById = (attributeId) => queryAttributeValueByGraknId(attributeId);
 
-export const findAll = (args) => queryAttributeValues(args.type);
+export const findAll = (args) => {
+  if (args.elementType) {
+    return queryAttributes(args.elementType);
+  }
+  return queryAttributeValues(args.type);
+};
 
 export const addAttribute = async (attribute) => {
   return executeWrite(async (wTx) => {

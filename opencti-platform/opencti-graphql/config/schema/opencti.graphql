@@ -7425,6 +7425,7 @@ type Query {
     orderBy: AttributesOrdering
     orderMode: OrderingMode
     type: String
+    elementType: String
     search: String
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   subTypes(

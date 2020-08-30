@@ -219,10 +219,10 @@ describe('Elasticsearch computation', () => {
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2019-08')).toEqual(undefined);
     expect(aggregationMap.get('2019-09')).toEqual(2);
-    expect(aggregationMap.get('2019-10')).toEqual(3);
+    expect(aggregationMap.get('2019-10')).toEqual(4);
     expect(aggregationMap.get('2019-11')).toEqual(0);
     expect(aggregationMap.get('2019-12')).toEqual(0);
-    expect(aggregationMap.get('2020-01')).toEqual(1);
+    expect(aggregationMap.get('2020-01')).toEqual(2);
     expect(aggregationMap.get('2020-02')).toEqual(12);
     expect(aggregationMap.get('2020-03')).toEqual(1);
   });
@@ -237,8 +237,8 @@ describe('Elasticsearch computation', () => {
     );
     expect(data.length).toEqual(2);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
-    expect(aggregationMap.get('2019')).toEqual(5);
-    expect(aggregationMap.get('2020')).toEqual(14);
+    expect(aggregationMap.get('2019')).toEqual(6);
+    expect(aggregationMap.get('2020')).toEqual(15);
   });
   it('should year histogram with relation filter accurate', async () => {
     const attackPattern = await elLoadByIds('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc');
@@ -448,13 +448,13 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with dates filter', async () => {
     let filters = [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }];
     let data = await elPaginate(ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(1); // The 4 Default TLP + MITRE Corporation
+    expect(data.edges.length).toEqual(3); // The 4 Default TLP + MITRE Corporation
     filters = [
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
       { key: 'color', operator: undefined, values: [null] },
     ];
     data = await elPaginate(ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(27);
+    expect(data.edges.length).toEqual(22);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },

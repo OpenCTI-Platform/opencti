@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import {
-  assoc, compose, pipe, pluck, split,
+  assoc, compose, pipe, pluck, split, dissoc, includes,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -26,6 +26,21 @@ import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ObjectLabelField from '../form/ObjectLabelField';
+
+const typesWithOpenCTIAliases = [
+  'Course-Of-Action',
+  'Identity',
+  'Individual',
+  'Organization',
+  'Sector',
+  'Position',
+  'Location',
+  'City',
+  'Country',
+  'Region',
+];
+
+const typesWithoutAliases = ['Vulnerability'];
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -184,12 +199,27 @@ class StixDomainObjectCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('aliases', split(',', values.aliases)),
+    let finalValues = pipe(
       assoc('createdBy', values.createdBy.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
+    if (includes(finalValues.type, typesWithoutAliases)) {
+      finalValues = pipe(
+        dissoc('aliases'),
+        dissoc('x_opencti_aliases'),
+      )(finalValues);
+    } else if (includes(finalValues.type, typesWithOpenCTIAliases)) {
+      finalValues = pipe(
+        dissoc('aliases'),
+        assoc('x_opencti_aliases', split(',', finalValues.x_opencti_aliases)),
+      )(finalValues);
+    } else {
+      finalValues = pipe(
+        dissoc('x_opencti_aliases'),
+        assoc('aliases', split(',', finalValues.aliases)),
+      )(finalValues);
+    }
     commitMutation({
       mutation: stixDomainObjectCreationMutation,
       variables: {
@@ -368,6 +398,7 @@ class StixDomainObjectCreation extends Component {
                 name: '',
                 description: '',
                 aliases: '',
+                x_opencti_aliases: '',
                 createdBy: '',
                 objectLabel: [],
                 objectMarking: [],
@@ -393,13 +424,21 @@ class StixDomainObjectCreation extends Component {
                     style={{ marginTop: 20 }}
                     detectDuplicate={targetStixDomainObjectTypes || []}
                   />
-                  <Field
-                    component={TextField}
-                    name="aliases"
-                    label={t('Aliases separated by commas')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
+                  {!includes(values.type, typesWithoutAliases) ? (
+                    <Field
+                      component={TextField}
+                      name={
+                        includes(values.type, typesWithOpenCTIAliases)
+                          ? 'x_opencti_aliases'
+                          : 'aliases'
+                      }
+                      label={t('Aliases separated by commas')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                    />
+                  ) : (
+                    ''
+                  )}
                   <Field
                     component={TextField}
                     name="description"
@@ -525,13 +564,21 @@ class StixDomainObjectCreation extends Component {
                     style={{ marginTop: 20 }}
                     detectDuplicate={targetStixDomainObjectTypes || []}
                   />
-                  <Field
-                    component={TextField}
-                    name="aliases"
-                    label={t('Aliases separated by commas')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
+                  {!includes(values.type, typesWithoutAliases) ? (
+                    <Field
+                      component={TextField}
+                      name={
+                        includes(values.type, typesWithOpenCTIAliases)
+                          ? 'x_opencti_aliases'
+                          : 'aliases'
+                      }
+                      label={t('Aliases separated by commas')}
+                      fullWidth={true}
+                      style={{ marginTop: 20 }}
+                    />
+                  ) : (
+                    ''
+                  )}
                   <Field
                     component={TextField}
                     name="description"

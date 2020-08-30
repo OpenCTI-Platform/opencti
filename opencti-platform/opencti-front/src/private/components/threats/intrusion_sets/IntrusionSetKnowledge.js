@@ -179,7 +179,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/observables"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/observables"
           render={(routeProps) => (
             <StixCoreObjectStixCyberObservables
               stixCoreObjectId={intrusionSet.id}
@@ -191,7 +191,7 @@ class IntrusionSetKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/sightings"
+          path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/sightings"
           render={(routeProps) => (
             <EntityStixSightingRelationships
               entityId={intrusionSet.id}

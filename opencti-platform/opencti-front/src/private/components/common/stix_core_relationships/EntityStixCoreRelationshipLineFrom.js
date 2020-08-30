@@ -68,6 +68,12 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
           primary={
             <div>
               <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.relationship_type.width }}
+              >
+                {t(`relationship_${node.relationship_type}`)}
+              </div>
+              <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
@@ -338,6 +344,12 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
+              <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.relationship_type.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}

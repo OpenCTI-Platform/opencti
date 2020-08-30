@@ -8,7 +8,7 @@ export const resolveLink = (type) => {
     case 'Note':
       return '/dashboard/analysis/notes';
     case 'Observed-Data':
-      return '/dashboard/events/observed_datas';
+      return '/dashboard/events/observed_data';
     case 'Opinion':
       return '/dashboard/analysis/opinions';
     case 'Report':

@@ -190,7 +190,7 @@ describe('Grakn loaders', () => {
   it('should load subTypes values', async () => {
     const stixObservableSubTypes = await querySubTypes('Stix-Cyber-Observable');
     expect(stixObservableSubTypes).not.toBeNull();
-    expect(stixObservableSubTypes.edges.length).toEqual(27);
+    expect(stixObservableSubTypes.edges.length).toEqual(26);
     const subTypeLabels = map((e) => e.node.label, stixObservableSubTypes.edges);
     expect(includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
     expect(includes('IPv6-Addr', subTypeLabels)).toBeTruthy();

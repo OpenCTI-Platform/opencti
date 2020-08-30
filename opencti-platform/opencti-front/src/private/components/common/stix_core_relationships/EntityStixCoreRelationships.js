@@ -97,9 +97,14 @@ class EntityStixCoreRelationships extends Component {
     const { entityLink, isRelationReversed } = this.props;
     // sort only when inferences are disabled or inferences are resolved
     const dataColumns = {
+      relationship_type: {
+        label: 'Relationship type',
+        width: '15%',
+        isSortable: false,
+      },
       name: {
         label: 'Name',
-        width: '30%',
+        width: '25%',
         isSortable: false,
       },
       entity_type: {
@@ -119,7 +124,6 @@ class EntityStixCoreRelationships extends Component {
       },
       confidence: {
         label: 'Confidence level',
-        width: '15%',
         isSortable: true,
       },
     };
@@ -192,7 +196,7 @@ class EntityStixCoreRelationships extends Component {
     // sort only when inferences are disabled or inferences are resolved
     let paginationOptions = {
       inferred: !!(inferred || inference),
-      relationship_type: relationshipType,
+      relationship_type: relationshipType || 'stix-core-relationship',
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -419,7 +423,9 @@ class EntityStixCoreRelationships extends Component {
             isRelationReversed={isRelationReversed}
             paddingRight={220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
-            allowedRelationshipTypes={[relationshipType]}
+            allowedRelationshipTypes={
+              relationshipType ? [relationshipType] : null
+            }
             paginationOptions={paginationOptions}
           />
         </Security>

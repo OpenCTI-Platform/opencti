@@ -9,7 +9,16 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pluck, evolve, path,
+  compose,
+  pluck,
+  evolve,
+  path,
+  sortBy,
+  toLower,
+  prop,
+  pipe,
+  map,
+  assoc,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -18,14 +27,20 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import Avatar from '@material-ui/core/Avatar';
+import ListItemText from '@material-ui/core/ListItemText';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import TypesField from '../TypesField';
+import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -139,7 +154,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
 class StixCyberObservableCreation extends Component {
   constructor(props) {
     super(props);
-    this.state = { open: false };
+    this.state = { open: false, type: null };
   }
 
   handleOpen() {
@@ -148,6 +163,10 @@ class StixCyberObservableCreation extends Component {
 
   handleClose() {
     this.setState({ open: false });
+  }
+
+  selectType(type) {
+    this.setState({ type });
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -188,7 +207,141 @@ class StixCyberObservableCreation extends Component {
     this.handleClose();
   }
 
+  renderForm() {
+    const { classes, t } = this.props;
+    return (
+      <Formik
+        initialValues={{
+          type: '',
+          observable_value: '',
+          description: '',
+          createdBy: '',
+          objectMarking: [],
+          objectLabel: [],
+          createIndicator: false,
+        }}
+        validationSchema={stixCyberObservableValidation(t)}
+        onSubmit={this.onSubmit.bind(this)}
+        onReset={this.onReset.bind(this)}
+      >
+        {({
+          submitForm, handleReset, isSubmitting, setFieldValue, values,
+        }) => (
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <TypesField
+              name="type"
+              label={t('Observable type')}
+              containerstyle={{ width: '100%' }}
+            />
+            <Field
+              component={TextField}
+              name="observable_value"
+              label={t('Observable value')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+            />
+            <Field
+              component={TextField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+            />
+            <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+            />
+            <ObjectLabelField
+              name="objectLabel"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={{ marginTop: 20, width: '100%' }}
+            />
+            <Field
+              component={SwitchField}
+              type="checkbox"
+              name="createIndicator"
+              label={t('Create an indicator from this observable')}
+              containerstyle={{ marginTop: 20 }}
+            />
+            <div className={classes.buttons}>
+              <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Cancel')}
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Create')}
+              </Button>
+            </div>
+          </Form>
+        )}
+      </Formik>
+    );
+  }
+
+  renderClassicList() {
+    const { classes, t } = this.props;
+    return (
+      <QueryRenderer
+        query={stixCyberObservablesLinesSubTypesQuery}
+        variables={{ type: 'Stix-Cyber-Observable' }}
+        render={({ props }) => {
+          if (props && props.subTypes) {
+            const subTypesEdges = props.subTypes.edges;
+            const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
+            const translatedOrderedList = pipe(
+              map((n) => n.node),
+              map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+              sortByLabel,
+            )(subTypesEdges);
+            return (
+              <List>
+                {translatedOrderedList.map((subType) => (
+                  <ListItem
+                    key={subType.label}
+                    classes={{ root: classes.menuItem }}
+                    divider={true}
+                    button={true}
+                    onClick={this.selectType.bind(this, subType.label)}
+                  >
+                    <ListItemIcon>
+                      <Avatar classes={{ root: classes.avatar }}>
+                        {subType.label.substring(0, 1)}
+                      </Avatar>
+                    </ListItemIcon>
+                    <ListItemText primary={subType.tlabel} />
+                  </ListItem>
+                ))}
+              </List>
+            );
+          }
+          return <div />;
+        }}
+      />
+    );
+  }
+
   renderClassic() {
+    const { type } = this.state;
     const { t, classes, openExports } = this.props;
     return (
       <div>
@@ -219,95 +372,7 @@ class StixCyberObservableCreation extends Component {
             <Typography variant="h6">{t('Create an observable')}</Typography>
           </div>
           <div className={classes.container}>
-            <Formik
-              initialValues={{
-                type: '',
-                observable_value: '',
-                description: '',
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-                createIndicator: false,
-              }}
-              validationSchema={stixCyberObservableValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TypesField
-                    name="type"
-                    label={t('Observable type')}
-                    containerstyle={{ width: '100%' }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="observable_value"
-                    label={t('Observable value')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <Field
-                    component={SwitchField}
-                    type="checkbox"
-                    name="createIndicator"
-                    label={t('Create an indicator from this observable')}
-                    containerstyle={{ marginTop: 20 }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+            {!type ? this.renderClassicList() : this.renderForm()}
           </div>
         </Drawer>
       </div>

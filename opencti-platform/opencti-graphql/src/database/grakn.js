@@ -334,6 +334,27 @@ export const querySubTypes = async (type, includeParents = false) => {
     return buildPagination(5000, 0, finalResult, 5000);
   });
 };
+export const queryAttributes = async (type) => {
+  return executeRead(async (rTx) => {
+    const query = `match $x type ${escape(type)}; get;`;
+    logger.debug(`[GRAKN - infer: false] querySubTypes`, { query });
+    const iterator = await rTx.query(query);
+    const answer = await iterator.next();
+    const attributeIterator = await answer.map().get('x').attributes();
+    const attributeAnswers = await attributeIterator.collect();
+    const result = await Promise.all(
+      attributeAnswers.map(async (attributeAnswer) => {
+        return attributeAnswer.label();
+      })
+    );
+    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('label')));
+    const finalResult = R.pipe(
+      sortByLabel,
+      R.map((n) => ({ node: n }))
+    )(result);
+    return buildPagination(5000, 0, finalResult, 5000);
+  });
+};
 export const queryAttributeValues = async (type) => {
   return executeRead(async (rTx) => {
     const query = `match $x isa ${escape(type)}; get;`;

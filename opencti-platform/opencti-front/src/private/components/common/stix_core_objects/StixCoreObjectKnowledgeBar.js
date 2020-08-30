@@ -27,6 +27,7 @@ import {
   ChessKnight,
   HexagonMultipleOutline,
   ShieldSearch,
+  SourceFork,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -186,6 +187,7 @@ class StixCoreObjectKnowledgeBar extends Component {
             ''
           )}
         {isInAvailableSection([
+          'variants',
           'attack_patterns',
           'malwares',
           'tools',
@@ -200,6 +202,24 @@ class StixCoreObjectKnowledgeBar extends Component {
               </ListSubheader>
             }
           >
+            {includes('variants', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/variants`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/variants`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <SourceFork />
+                </ListItemIcon>
+                <ListItemText primary={t('Variants')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
             {includes('attack_patterns', availableSections) ? (
               <MenuItem
                 component={Link}

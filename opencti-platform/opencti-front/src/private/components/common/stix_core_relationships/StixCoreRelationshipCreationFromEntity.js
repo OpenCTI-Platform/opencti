@@ -504,6 +504,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     const relationshipTypes = filter(
       (n) => isNil(allowedRelationshipTypes)
         || allowedRelationshipTypes.length === 0
+        || allowedRelationshipTypes.includes('stix-core-relationship')
         || allowedRelationshipTypes.includes(n),
       resolveRelationsTypes(fromEntity.entity_type, toEntity.entity_type),
     );
