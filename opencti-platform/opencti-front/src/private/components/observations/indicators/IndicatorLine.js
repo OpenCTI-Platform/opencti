@@ -56,7 +56,7 @@ class IndicatorLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/signatures/indicators/${node.id}`}
+        to={`/dashboard/observations/indicators/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ShieldSearch />

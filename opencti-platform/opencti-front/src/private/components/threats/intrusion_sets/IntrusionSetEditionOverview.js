@@ -55,6 +55,7 @@ const intrusionSetMutationFieldPatch = graphql`
     intrusionSetEdit(id: $id) {
       fieldPatch(input: $input) {
         ...IntrusionSetEditionOverview_intrusionSet
+        ...IntrusionSet_intrusionSet
       }
     }
   }

@@ -8,14 +8,15 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import IntrusionSet from './IntrusionSet';
-import IntrusionSetReports from './IntrusionSetReports';
 import IntrusionSetKnowledge from './IntrusionSetKnowledge';
-import IntrusionSetIndicators from './IntrusionSetIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import IntrusionSetPopover from './IntrusionSetPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 
 const subscription = graphql`
   subscription RootIntrusionSetSubscription($id: ID!) {
@@ -34,12 +35,11 @@ const intrusionSetQuery = graphql`
   query RootIntrusionSetQuery($id: String!) {
     intrusionSet(id: $id) {
       id
+      standard_id
       name
       aliases
       ...IntrusionSet_intrusionSet
-      ...IntrusionSetReports_intrusionSet
       ...IntrusionSetKnowledge_intrusionSet
-      ...IntrusionSetIndicators_intrusionSet
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -96,16 +96,6 @@ class RootIntrusionSet extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/reports"
-                    render={(routeProps) => (
-                      <IntrusionSetReports
-                        {...routeProps}
-                        intrusionSet={props.intrusionSet}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge"
                     render={() => (
                       <Redirect
@@ -123,11 +113,47 @@ class RootIntrusionSet extends Component {
                     )}
                   />
                   <Route
+                    exact
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/analysis"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.intrusionSet}
+                          PopoverComponent={<IntrusionSetPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={
+                            intrusionSetId
+                          }
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
                     path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators"
                     render={(routeProps) => (
-                      <IntrusionSetIndicators
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.intrusionSet}
+                          PopoverComponent={<IntrusionSetPopover />}
+                        />
+                        <StixDomainObjectIndicators
+                          {...routeProps}
+                          stixDomainObjectId={intrusionSetId}
+                          stixDomainObjectLink={`/dashboard/threats/intrusion_sets/${intrusionSetId}/indicators`}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/threats/intrusion_sets/:intrusionSetId/indicators/relations/:relationId"
+                    render={(routeProps) => (
+                      <StixCoreRelationship
+                        entityId={intrusionSetId}
                         {...routeProps}
-                        intrusionSet={props.intrusionSet}
                       />
                     )}
                   />
@@ -160,7 +186,9 @@ class RootIntrusionSet extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={intrusionSetId}
+                          stixCoreObjectStandardId={
+                            props.intrusionSet.standard_id
+                          }
                         />
                       </React.Fragment>
                     )}

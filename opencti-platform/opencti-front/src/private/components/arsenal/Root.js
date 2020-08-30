@@ -18,45 +18,45 @@ class Root extends Component {
       <Switch>
         <BoundaryRoute
           exact
-          path="/dashboard/techniques"
-          render={() => <Redirect to="/dashboard/techniques/attack_patterns" />}
+          path="/dashboard/arsenal"
+          render={() => <Redirect to="/dashboard/arsenal/attack_patterns" />}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/techniques/attack_patterns"
+          path="/dashboard/arsenal/attack_patterns"
           component={AttackPatterns}
         />
         <BoundaryRoute
-          path="/dashboard/techniques/attack_patterns/:attackPatternId"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId"
           render={(routeProps) => <RootAttackPattern {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/techniques/courses_of_action"
+          path="/dashboard/arsenal/courses_of_action"
           component={CoursesOfAction}
         />
         <BoundaryRoute
-          path="/dashboard/techniques/courses_of_action/:courseOfActionId"
+          path="/dashboard/arsenal/courses_of_action/:courseOfActionId"
           render={(routeProps) => (
             <RootCourseOfAction {...routeProps} me={me} />
           )}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/techniques/tools"
+          path="/dashboard/arsenal/tools"
           component={Tools}
         />
         <BoundaryRoute
-          path="/dashboard/techniques/tools/:toolId"
+          path="/dashboard/arsenal/tools/:toolId"
           render={(routeProps) => <RootTool {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/techniques/vulnerabilities"
+          path="/dashboard/arsenal/vulnerabilities"
           component={Vulnerabilities}
         />
         <BoundaryRoute
-          path="/dashboard/techniques/vulnerabilities/:vulnerabilityId"
+          path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId"
           render={(routeProps) => (
             <RootVulnerabilities {...routeProps} me={me} />
           )}

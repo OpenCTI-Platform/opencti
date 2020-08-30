@@ -14,27 +14,38 @@ class Root extends Component {
       <Switch>
         <BoundaryRoute
           exact
-          path="/dashboard/signatures"
-          render={() => <Redirect to="/dashboard/signatures/observables" />}
+          path="/dashboard/observations"
+          render={() => (
+            <Redirect to="/dashboard/observations/infrastructures" />
+          )}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/signatures/observables"
+          path="/dashboard/observations/infrastructures"
+          component={Indicators}
+        />
+        <BoundaryRoute
+          path="/dashboard/observations/infrastructures/:infrastructureId"
+          render={(routeProps) => <RootIndicator {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations/observables"
           component={StixCyberObservables}
         />
         <BoundaryRoute
-          path="/dashboard/signatures/observables/:observableId"
+          path="/dashboard/observations/observables/:observableId"
           render={(routeProps) => (
             <RootStixCyberObservable {...routeProps} me={me} />
           )}
         />
         <BoundaryRoute
           exact
-          path="/dashboard/signatures/indicators"
+          path="/dashboard/observations/indicators"
           component={Indicators}
         />
         <BoundaryRoute
-          path="/dashboard/signatures/indicators/:indicatorId"
+          path="/dashboard/observations/indicators/:indicatorId"
           render={(routeProps) => <RootIndicator {...routeProps} me={me} />}
         />
       </Switch>

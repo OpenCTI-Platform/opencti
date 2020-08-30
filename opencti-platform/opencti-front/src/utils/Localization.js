@@ -63,7 +63,7 @@ const i18n = {
       'Do you want to delete this relation?':
         'Souhaitez-vous supprimer cette relation ?',
       'Do you want to delete this sighting?':
-        'Souhaitez-vous supprimer cette observation ?',
+        'Souhaitez-vous supprimer cette détection ?',
       'Do you want to delete this workspace?':
         'Souhaitez-vous supprimer cet espace de travail ?',
       'Do you want to delete this attack pattern?':
@@ -107,6 +107,7 @@ const i18n = {
       'Last notes': 'Dernières notes',
       'Last reports wrote by the entity':
         'Derniers rapports écrits par cette entité',
+      'Last reports about the element': "Derniers rapports à propos de l'élément",
       'Last reports about the entity': "Derniers rapports à propos de l'entité",
       'Last observables': 'Derniers observables',
       'observable(s)': 'observable(s)',
@@ -240,8 +241,8 @@ const i18n = {
       'Create a relationship': 'Créer une relation',
       'Update a relationship': 'Modifier une relation',
       'Select a relationship': 'Sélectionner une relation',
-      'Create a sighting': 'Créer une observation',
-      'Update a sighting': 'Modifier une observation',
+      'Create a sighting': 'Créer une détection',
+      'Update a sighting': 'Modifier une détection',
       'Create an attribute': 'Créer un attribut',
       'Update an attribute': 'Modifier un attribut',
       'Create a role': 'Créer un rôle',

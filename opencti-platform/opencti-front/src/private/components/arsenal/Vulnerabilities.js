@@ -129,8 +129,8 @@ class Vulnerabilities extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labels',
-          'markingDefinitions',
+          'labelledBy',
+          'markedBy',
           'created_start_date',
           'created_end_date',
           'x_opencti_base_score_gt',

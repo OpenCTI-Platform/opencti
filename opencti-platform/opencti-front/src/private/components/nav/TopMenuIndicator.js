@@ -47,7 +47,7 @@ class TopMenuIndicator extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures/indicators"
+          to="/dashboard/observations/indicators"
           variant="contained"
           size="small"
           color="inherit"
@@ -62,17 +62,17 @@ class TopMenuIndicator extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}`}
+          to={`/dashboard/observations/indicators/${indicatorId}`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}`
+            === `/dashboard/observations/indicators/${indicatorId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}`
+            === `/dashboard/observations/indicators/${indicatorId}`
               ? 'primary'
               : 'inherit'
           }
@@ -82,17 +82,17 @@ class TopMenuIndicator extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}/observables`}
+          to={`/dashboard/observations/indicators/${indicatorId}/observables`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/observables`
+            === `/dashboard/observations/indicators/${indicatorId}/observables`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/observables`
+            === `/dashboard/observations/indicators/${indicatorId}/observables`
               ? 'primary'
               : 'inherit'
           }
@@ -102,17 +102,17 @@ class TopMenuIndicator extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}/sightings`}
+          to={`/dashboard/observations/indicators/${indicatorId}/sightings`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/sightings`
+            === `/dashboard/observations/indicators/${indicatorId}/sightings`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/sightings`
+            === `/dashboard/observations/indicators/${indicatorId}/sightings`
               ? 'primary'
               : 'inherit'
           }
@@ -122,17 +122,17 @@ class TopMenuIndicator extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}/history`}
+          to={`/dashboard/observations/indicators/${indicatorId}/history`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/history`
+            === `/dashboard/observations/indicators/${indicatorId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/history`
+            === `/dashboard/observations/indicators/${indicatorId}/history`
               ? 'primary'
               : 'inherit'
           }

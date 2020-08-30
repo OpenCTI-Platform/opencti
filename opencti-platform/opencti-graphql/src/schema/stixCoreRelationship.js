@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import {ABSTRACT_STIX_CORE_RELATIONSHIP} from "./general";
+import { ABSTRACT_STIX_CORE_RELATIONSHIP } from './general';
 
 export const RELATION_DELIVERS = 'delivers';
 export const RELATION_TARGETS = 'targets';
@@ -36,6 +36,7 @@ export const RELATION_DERIVED_FROM = 'derived-from';
 export const RELATION_DUPLICATE_OF = 'duplicate-of';
 export const RELATION_PART_OF = 'part-of'; // Extension
 export const RELATION_SUBTECHNIQUE_OF = 'subtechnique-of'; // Extension
+export const RELATION_REVOKED_BY = 'revoked-by'; // Extension
 const STIX_CORE_RELATIONSHIPS = [
   RELATION_DELIVERS,
   RELATION_TARGETS,
@@ -71,6 +72,7 @@ const STIX_CORE_RELATIONSHIPS = [
   RELATION_DROPS,
   RELATION_PART_OF,
   RELATION_SUBTECHNIQUE_OF,
+  RELATION_REVOKED_BY,
 ];
 export const isStixCoreRelationship = (type) =>
   R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;

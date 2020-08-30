@@ -41,7 +41,7 @@ class IndicatorHeaderComponent extends Component {
         </div>
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
-            {pathOr([], ['markingDefinitions', 'edges'], indicator).map(
+            {pathOr([], ['objectMarking', 'edges'], indicator).map(
               (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}

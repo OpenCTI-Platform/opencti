@@ -65,7 +65,7 @@ import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import { dictAttributes, dictReconstruction } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { isStixDomainObject } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObject } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
@@ -1343,6 +1343,12 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
     const modifiedAtInput = { key: 'modified', value: [today] };
     updatedInputs.push(modifiedAtInput);
     updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput, wTx));
+  }
+  // Update created
+  if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
+    const createdInput = { key: 'created', value: input.value };
+    updatedInputs.push(createdInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, createdInput, wTx));
   }
   await Promise.all(updateOperations);
   return updatedInputs;

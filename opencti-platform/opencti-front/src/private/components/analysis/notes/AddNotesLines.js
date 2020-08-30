@@ -65,22 +65,31 @@ const sharedUpdater = (store, entityId, newEdge) => {
 
 class AddNotesLinesContainer extends Component {
   toggleNote(note) {
-    const { entityId, entityNotes } = this.props;
-    const entityNotesIds = map((n) => n.node.id, entityNotes);
+    const {
+      stixCoreObjectOrStixCoreRelationshipId,
+      stixCoreObjectOrStixCoreRelationshipNotes,
+    } = this.props;
+    const entityNotesIds = map(
+      (n) => n.node.id,
+      stixCoreObjectOrStixCoreRelationshipNotes,
+    );
     const alreadyAdded = entityNotesIds.includes(note.id);
     if (alreadyAdded) {
       const existingNote = head(
-        filter((n) => n.node.id === note.id, entityNotes),
+        filter(
+          (n) => n.node.id === note.id,
+          stixCoreObjectOrStixCoreRelationshipNotes,
+        ),
       );
       commitMutation({
         mutation: noteMutationRelationDelete,
         variables: {
           id: existingNote.node.id,
-          toId: entityId,
+          toId: stixCoreObjectOrStixCoreRelationshipId,
           relationship_type: 'object',
         },
         updater: (store) => {
-          const entity = store.get(entityId);
+          const entity = store.get(stixCoreObjectOrStixCoreRelationshipId);
           const conn = ConnectionHandler.getConnection(
             entity,
             'Pagination_notes',
@@ -90,7 +99,7 @@ class AddNotesLinesContainer extends Component {
       });
     } else {
       const input = {
-        toId: entityId,
+        toId: stixCoreObjectOrStixCoreRelationshipId,
         relationship_type: 'object',
       };
       commitMutation({
@@ -108,15 +117,22 @@ class AddNotesLinesContainer extends Component {
           const relation = store.get(relationId);
           payload.setLinkedRecord(node, 'node');
           payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, entityId, payload);
+          sharedUpdater(store, stixCoreObjectOrStixCoreRelationshipId, payload);
         },
       });
     }
   }
 
   render() {
-    const { classes, data, entityNotes } = this.props;
-    const entityNotesIds = map((n) => n.node.id, entityNotes);
+    const {
+      classes,
+      data,
+      stixCoreObjectOrStixCoreRelationshipNotes,
+    } = this.props;
+    const entityNotesIds = map(
+      (n) => n.node.id,
+      stixCoreObjectOrStixCoreRelationshipNotes,
+    );
     return (
       <List>
         {data.notes.edges.map((noteNode) => {
@@ -170,8 +186,8 @@ class AddNotesLinesContainer extends Component {
 }
 
 AddNotesLinesContainer.propTypes = {
-  entityId: PropTypes.string,
-  entityNotes: PropTypes.array,
+  stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
+  stixCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
@@ -182,7 +198,7 @@ AddNotesLinesContainer.propTypes = {
 export const addNotesLinesQuery = graphql`
   query AddNotesLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddNotesLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -191,13 +207,13 @@ const AddNotesLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddNotesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         notes(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_notes") {
+        @connection(key: "Pagination_notes") {
           edges {
             node {
               id

@@ -32,7 +32,7 @@ class TypesField extends Component {
             const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
             const translatedOrderedList = pipe(
               map((n) => n.node),
-              map((n) => assoc('tlabel', t(`observable_${n.label.toLowerCase()}`), n)),
+              map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
               sortByLabel,
             )(subTypesEdges);
             return (

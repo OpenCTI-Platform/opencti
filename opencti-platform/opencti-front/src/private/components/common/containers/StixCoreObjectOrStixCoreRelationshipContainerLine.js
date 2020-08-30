@@ -11,7 +11,6 @@ import { KeyboardArrowRightOutlined, HelpOutlined } from '@material-ui/icons';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import ItemStatus from '../../../../components/ReportStatus';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
@@ -49,7 +48,7 @@ const styles = (theme) => ({
 class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, node, dataColumns, onLabelClick,
+       fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -89,25 +88,9 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Compone
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.published.width }}
+                style={{ width: dataColumns.created.width }}
               >
-                {fd(node.published)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_report_status.width }}
-              >
-                <ItemStatus
-                  status={node.x_opencti_report_status}
-                  label={t(
-                    `report_status_${
-                      node.x_opencti_report_status
-                        ? node.x_opencti_report_status
-                        : 0
-                    }`,
-                  )}
-                  variant="inList"
-                />
+                {fd(node.created)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -234,15 +217,9 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineDummyComponent extends Co
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.published.width }}
+                style={{ width: dataColumns.created.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.x_opencti_report_status.width }}
-              >
-                <div className="fakeItem" style={{ width: '60%' }} />
               </div>
               <div
                 className={classes.bodyItem}

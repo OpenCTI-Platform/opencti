@@ -22,10 +22,14 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-reports${props.objectId ? `-${props.objectId}` : ''}`,
+      `view-reports${
+        props.stixCoreObjectOrStixCoreRelationshipId
+          ? `-${props.stixCoreObjectOrStixCoreRelationshipId}`
+          : ''
+      }`,
     );
     this.state = {
-      sortBy: propOr('published', 'sortBy', params),
+      sortBy: propOr('created', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
@@ -39,7 +43,11 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-reports${this.props.objectId ? `-${this.props.objectId}` : ''}`,
+      `view-reports${
+        this.props.stixCoreObjectOrStixCoreRelationshipId
+          ? `-${this.props.stixCoreObjectOrStixCoreRelationshipId}`
+          : ''
+      }`,
       dissoc('filters', this.state),
     );
   }
@@ -87,10 +95,10 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       openExports,
       numberOfElements,
     } = this.state;
-    const { objectId, authorId } = this.props;
+    const { stixCoreObjectOrStixCoreRelationshipId, authorId } = this.props;
     let exportContext = null;
-    if (objectId) {
-      exportContext = `of-entity-${objectId}`;
+    if (stixCoreObjectOrStixCoreRelationshipId) {
+      exportContext = `of-entity-${stixCoreObjectOrStixCoreRelationshipId}`;
     } else if (authorId) {
       exportContext = `of-entity-${authorId}`;
     }
@@ -99,7 +107,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       name: {
         label: 'Title',
         width: '30%',
-        isSortable: true,
+        isSortable: false,
       },
       createdBy: {
         label: 'Author',
@@ -111,14 +119,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
         width: '20%',
         isSortable: false,
       },
-      published: {
+      created: {
         label: 'Date',
-        width: '10%',
-        isSortable: true,
-      },
-      x_opencti_report_status: {
-        label: 'Status',
-        width: '10%',
+        width: '15%',
         isSortable: true,
       },
       objectMarking: {
@@ -146,12 +149,11 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'x_opencti_report_status',
           'labelledBy',
           'createdBy',
           'markedBy',
-          'published_start_date',
-          'published_end_date',
+          'created_start_date',
+          'created_end_date',
         ]}
       >
         <QueryRenderer
@@ -207,7 +209,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ marginTop: 20 }}>{view === 'lines' ? this.renderLines(paginationOptions) : ''}</div>
+      <div style={{ marginTop: 20 }}>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+      </div>
     );
   }
 }

@@ -1,27 +1,28 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import IndicatorHeader from './IndicatorHeader';
-import IndicatorOverview from './IndicatorOverview';
 import IndicatorDetails from './IndicatorDetails';
 import IndicatorEdition from './IndicatorEdition';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import IndicatorEntities from './IndicatorEntities';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import IndicatorHeader from './IndicatorHeader';
 
 const styles = () => ({
   container: {
     margin: 0,
   },
   gridContainer: {
-    marginBottom: 40,
+    marginBottom: 20,
   },
 });
 
@@ -36,32 +37,49 @@ class IndicatorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={2}>
-            <IndicatorOverview indicator={indicator} />
+          <Grid item={true} xs={6}>
+            <StixDomainObjectOverview stixDomainObject={indicator} />
           </Grid>
-          <Grid item={true} xs={5}>
+          <Grid item={true} xs={6}>
             <IndicatorDetails indicator={indicator} />
-          </Grid>
-          <Grid item={true} xs={5}>
-            <EntityLastReports entityId={indicator.id} />
           </Grid>
         </Grid>
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={7}>
-            <IndicatorEntities
-              entityId={indicator.id}
-              relationshipType="indicates"
+          <Grid item={true} xs={6}>
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={indicator.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/threats/intrusion_sets/${indicator.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={5}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={indicator.id} />
+          <Grid item={true} xs={6}>
+            <StixCoreObjectOrStixCoreRelationshipLastReports
+              stixCoreObjectOrStixCoreRelationshipId={indicator.id}
+            />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes stixCoreObjectId={indicator.id} marginTop={25} />
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
+        >
+          <Grid item={true} xs={6}>
+            <StixCoreObjectExternalReferences stixCoreObjectId={indicator.id} />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <StixCoreObjectLatestHistory
+              stixCoreObjectStandardId={indicator.standard_id}
+            />
+          </Grid>
+        </Grid>
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={indicator.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorEdition indicatorId={indicator.id} />
         </Security>
@@ -80,8 +98,44 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
   indicator: graphql`
     fragment Indicator_indicator on Indicator {
       id
-      ...IndicatorHeader_indicator
-      ...IndicatorOverview_indicator
+      standard_id
+      stix_ids
+      spec_version
+      revoked
+      confidence
+      created
+      modified
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      creator {
+        name
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
+      name
       ...IndicatorDetails_indicator
     }
   `,

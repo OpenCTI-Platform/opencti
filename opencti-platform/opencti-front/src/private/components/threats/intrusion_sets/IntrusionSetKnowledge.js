@@ -14,6 +14,8 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const styles = () => ({
   container: {
@@ -168,9 +170,42 @@ class IntrusionSetKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={intrusionSet.id}
               relationshipType="attributed-to"
-              targetStixDomainObjectTypes={['XOpenCTIIncident']}
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/observables"
+          render={(routeProps) => (
+            <StixCoreObjectStixCyberObservables
+              stixCoreObjectId={intrusionSet.id}
+              stixCoreObjectLink={link}
+              noRightBar={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/sightings"
+          render={(routeProps) => (
+            <EntityStixSightingRelationships
+              entityId={intrusionSet.id}
+              entityLink={link}
+              noRightBar={true}
+              targetStixDomainObjectTypes={[
+                'Region',
+                'Country',
+                'City',
+                'Position',
+                'Sector',
+                'Organization',
+                'Individual',
+              ]}
               {...routeProps}
             />
           )}

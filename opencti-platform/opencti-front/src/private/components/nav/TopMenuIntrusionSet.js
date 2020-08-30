@@ -115,7 +115,7 @@ class TopMenuIntrusionSet extends Component {
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
               ? 'primary'
               : 'inherit'
           }

@@ -5,14 +5,14 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  EntityIndicatorLine,
-  EntityIndicatorLineDummy,
-} from './EntityIndicatorLine';
+  StixDomainObjectIndicatorLine,
+  StixDomainObjectIndicatorLineDummy,
+} from './StixDomainObjectIndicatorLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
-class EntityIndicatorsLines extends Component {
+class StixDomainObjectIndicatorsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -46,8 +46,8 @@ class EntityIndicatorsLines extends Component {
           ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<EntityIndicatorLine />}
-        DummyLineComponent={<EntityIndicatorLineDummy />}
+        LineComponent={<StixDomainObjectIndicatorLine />}
+        DummyLineComponent={<StixDomainObjectIndicatorLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
@@ -57,7 +57,7 @@ class EntityIndicatorsLines extends Component {
   }
 }
 
-EntityIndicatorsLines.propTypes = {
+StixDomainObjectIndicatorsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -69,8 +69,8 @@ EntityIndicatorsLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const entityIndicatorsLinesQuery = graphql`
-  query EntityIndicatorsLinesPaginationQuery(
+export const stixDomainObjectIndicatorsLinesQuery = graphql`
+  query StixDomainObjectIndicatorsLinesQuery(
     $search: String
     $inferred: Boolean
     $fromId: String
@@ -87,52 +87,52 @@ export const entityIndicatorsLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [StixCoreRelationshipsFiltering]
   ) {
-    ...EntityIndicatorsLines_data
-      @arguments(
-        search: $search
-        inferred: $inferred
-        fromId: $fromId
-        toTypes: $toTypes
-        relationship_type: $relationship_type
-        startTimeStart: $startTimeStart
-        startTimeStop: $startTimeStop
-        stopTimeStart: $stopTimeStart
-        stopTimeStop: $stopTimeStop
-        confidences: $confidences
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    ...StixDomainObjectIndicatorsLines_data
+    @arguments(
+      search: $search
+      inferred: $inferred
+      fromId: $fromId
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      startTimeStart: $startTimeStart
+      startTimeStop: $startTimeStop
+      stopTimeStart: $stopTimeStart
+      stopTimeStop: $stopTimeStop
+      confidences: $confidences
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
 export default createPaginationContainer(
-  EntityIndicatorsLines,
+  StixDomainObjectIndicatorsLines,
   {
     data: graphql`
-      fragment EntityIndicatorsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          inferred: { type: "Boolean" }
-          fromId: { type: "String" }
-          toTypes: { type: "[String]" }
-          relationship_type: { type: "String" }
-          startTimeStart: { type: "DateTime" }
-          startTimeStop: { type: "DateTime" }
-          stopTimeStart: { type: "DateTime" }
-          stopTimeStop: { type: "DateTime" }
-          confidences: { type: "[Int]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCoreRelationshipsOrdering"
-            defaultValue: start_time
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixCoreRelationshipsFiltering]" }
-        ) {
+      fragment StixDomainObjectIndicatorsLines_data on Query
+      @argumentDefinitions(
+        search: { type: "String" }
+        inferred: { type: "Boolean" }
+        fromId: { type: "String" }
+        toTypes: { type: "[String]" }
+        relationship_type: { type: "String" }
+        startTimeStart: { type: "DateTime" }
+        startTimeStop: { type: "DateTime" }
+        stopTimeStart: { type: "DateTime" }
+        stopTimeStop: { type: "DateTime" }
+        confidences: { type: "[Int]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCoreRelationshipsOrdering"
+          defaultValue: start_time
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixCoreRelationshipsFiltering]" }
+      ) {
         stixCoreRelationships(
           search: $search
           inferred: $inferred
@@ -152,7 +152,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
-              ...EntityIndicatorLine_node
+              ...StixDomainObjectIndicatorLine_node
             }
           }
           pageInfo {
@@ -194,6 +194,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: entityIndicatorsLinesQuery,
+    query: stixDomainObjectIndicatorsLinesQuery,
   },
 );

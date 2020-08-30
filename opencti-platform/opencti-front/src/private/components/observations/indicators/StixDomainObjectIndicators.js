@@ -12,9 +12,9 @@ import {
   propOr,
   toPairs,
 } from 'ramda';
-import EntityIndicatorsLines, {
-  entityIndicatorsLinesQuery,
-} from './EntityIndicatorsLines';
+import StixDomainObjectIndicatorsLines, {
+  stixDomainObjectIndicatorsLinesQuery,
+} from './StixDomainObjectIndicatorsLines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
@@ -25,16 +25,16 @@ import {
 import IndicatorsRightBar from './IndicatorsRightBar';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
-class EntityIndicators extends Component {
+class StixDomainObjectIndicators extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-indicators-${props.entityId}`,
+      `view-indicators-${props.stixDomainObjectId}`,
     );
     this.state = {
-      sortBy: propOr('first_seen', 'sortBy', params),
+      sortBy: propOr('start_time', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
@@ -51,7 +51,7 @@ class EntityIndicators extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-indicators-${this.props.entityId}`,
+      `view-indicators-${this.props.stixDomainObjectId}`,
       this.state,
     );
   }
@@ -120,14 +120,14 @@ class EntityIndicators extends Component {
       openExports,
       numberOfElements,
     } = this.state;
-    const { entityId, entityLink } = this.props;
+    const { stixDomainObjectId, stixDomainObjectLink } = this.props;
     const dataColumns = {
-      toPatternType: {
+      fromPatternType: {
         label: 'Type',
         width: '10%',
         isSortable: true,
       },
-      toName: {
+      fromName: {
         label: 'Name',
         width: '30%',
         isSortable: true,
@@ -137,12 +137,12 @@ class EntityIndicators extends Component {
         width: '15%',
         isSortable: false,
       },
-      toValidFrom: {
+      fromValidFrom: {
         label: 'Valid from',
         width: '15%',
         isSortable: true,
       },
-      toValidUntil: {
+      fromValidUntil: {
         label: 'Valid until',
         width: '15%',
         isSortable: true,
@@ -159,8 +159,8 @@ class EntityIndicators extends Component {
       toValidUntil: 'valid_until',
     };
     const exportPaginationOptions = {
-      filters: [{ key: 'indicates', values: [entityId] }],
-      orderBy: orderByMapping[sortBy === 'first_seen' ? 'toValidFrom' : sortBy],
+      filters: [{ key: 'indicates', values: [stixDomainObjectId] }],
+      orderBy: orderByMapping[sortBy === 'start_time' ? 'toValidFrom' : sortBy],
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,
     };
@@ -176,19 +176,19 @@ class EntityIndicators extends Component {
         noPadding={typeof this.props.onChangeOpenExports === 'function'}
         paginationOptions={exportPaginationOptions}
         exportEntityType="Indicator"
-        exportContext={`of-entity-${entityId}`}
+        exportContext={`of-entity-${stixDomainObjectId}`}
         keyword={searchTerm}
         secondaryAction={true}
         numberOfElements={numberOfElements}
       >
         <QueryRenderer
-          query={entityIndicatorsLinesQuery}
+          query={stixDomainObjectIndicatorsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
-            <EntityIndicatorsLines
+            <StixDomainObjectIndicatorsLines
               data={props}
               paginationOptions={paginationOptions}
-              entityLink={entityLink}
+              entityLink={stixDomainObjectLink}
               dataColumns={dataColumns}
               initialLoading={props === null}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
@@ -200,7 +200,7 @@ class EntityIndicators extends Component {
   }
 
   render() {
-    const { entityId, relationship_type } = this.props;
+    const { stixDomainObjectId, relationshipType } = this.props;
     const {
       view,
       targetStixDomainObjectTypes,
@@ -244,8 +244,8 @@ class EntityIndicators extends Component {
       inferred,
       search: searchTerm,
       toTypes: targetStixDomainObjectTypes,
-      fromId: entityId,
-      relationship_type,
+      fromId: stixDomainObjectId,
+      relationship_type: relationshipType || 'indicates',
       lastSeenStart: null,
       lastSeenStop: null,
       orderBy: sortBy,
@@ -253,16 +253,16 @@ class EntityIndicators extends Component {
       filters: finalFilters,
     };
     return (
-      <div>
+      <div style={{ marginTop: 20, paddingRight: 250 }}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
-            entityId={entityId}
+            entityId={stixDomainObjectId}
             isRelationReversed={true}
             targetStixDomainObjectTypes={['Indicator']}
             paginationOptions={paginationOptions}
             openExports={openExports}
-            paddingRight={true}
+            paddingRight={270}
           />
         </Security>
         <IndicatorsRightBar
@@ -279,11 +279,12 @@ class EntityIndicators extends Component {
   }
 }
 
-EntityIndicators.propTypes = {
-  entityId: PropTypes.string,
-  entityLink: PropTypes.string,
+StixDomainObjectIndicators.propTypes = {
+  stixDomainObjectId: PropTypes.string,
+  stixDomainObjectLink: PropTypes.string,
+  relationshipType: PropTypes.string,
   history: PropTypes.object,
   onChangeOpenExports: PropTypes.func,
 };
 
-export default EntityIndicators;
+export default StixDomainObjectIndicators;

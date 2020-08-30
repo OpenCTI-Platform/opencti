@@ -28,7 +28,7 @@ class TopMenuArsenal extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/techniques/attack_patterns"
+          to="/dashboard/arsenal/attack_patterns"
           variant={
             location.pathname === '/dashboard/arsenal/attack_patterns'
               ? 'contained'
@@ -47,7 +47,7 @@ class TopMenuArsenal extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/techniques/courses_of_action"
+          to="/dashboard/arsenal/courses_of_action"
           variant={
             location.pathname === '/dashboard/arsenal/courses_of_action'
               ? 'contained'
@@ -66,7 +66,7 @@ class TopMenuArsenal extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/techniques/tools"
+          to="/dashboard/arsenal/tools"
           variant={
             location.pathname === '/dashboard/arsenal/tools'
               ? 'contained'
@@ -85,7 +85,7 @@ class TopMenuArsenal extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/techniques/vulnerabilities"
+          to="/dashboard/arsenal/vulnerabilities"
           variant={
             location.pathname === '/dashboard/arsenal/vulnerabilities'
               ? 'contained'

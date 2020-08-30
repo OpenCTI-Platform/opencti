@@ -523,7 +523,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
           <StixCoreRelationshipCreationFromEntity
             entityId={stixDomainObjectId}
             isRelationReversed={false}
-            paddingRight={true}
+            paddingRight={220}
             onCreate={this.props.relay.refetch.bind(this)}
             targetStixDomainObjectTypes={['Sector', 'Organization']}
             paginationOptions={paginationOptions}

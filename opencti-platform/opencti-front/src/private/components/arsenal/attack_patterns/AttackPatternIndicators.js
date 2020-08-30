@@ -9,7 +9,7 @@ import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import AttackPatternPopover from './AttackPatternPopover';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
-import EntityIndicators from '../../observations/indicators/EntityIndicators';
+import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 
 const styles = (theme) => ({
@@ -86,7 +86,7 @@ class AttackPatternIndicatorsComponent extends Component {
           path="/dashboard/techniques/attack_patterns/:attackPatternId/indicators"
           render={(routeProps) => (
             <Paper classes={{ root: classes.paper }} elevation={2}>
-              <EntityIndicators
+              <StixDomainObjectIndicators
                 entityId={attackPattern.id}
                 relationshipType="indicates"
                 entityLink={link}

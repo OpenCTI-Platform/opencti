@@ -29,7 +29,10 @@ class StixCoreObjectNotesCardsContainer extends Component {
           {t('Notes about this entity')}
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AddNotes entityId={stixCoreObjectId} entityNotes={notes} />
+          <AddNotes
+            stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectId}
+            stixCoreObjectOrStixCoreRelationshipNotes={notes}
+          />
         </Security>
         <div className="clearfix" />
         <Grid container={true} spacing={3}>

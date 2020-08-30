@@ -417,7 +417,7 @@ class EntityStixCoreRelationships extends Component {
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
             isRelationReversed={isRelationReversed}
-            paddingRight={true}
+            paddingRight={220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             allowedRelationshipTypes={[relationshipType]}
             paginationOptions={paginationOptions}

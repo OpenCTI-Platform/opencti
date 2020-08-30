@@ -27,7 +27,30 @@ class TopMenuObservations extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures/observables"
+          to="/dashboard/observations/infrastructures"
+          variant={
+            location.pathname.includes(
+              '/dashboard/observations/infrastructures',
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              '/dashboard/observations/infrastructures',
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <ShieldSearch className={classes.icon} fontSize="small" />
+          {t('Infrastructures')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/observations/observables"
           variant={
             location.pathname.includes('/dashboard/observations/observables')
               ? 'contained'
@@ -46,7 +69,7 @@ class TopMenuObservations extends Component {
         </Button>
         <Button
           component={Link}
-          to="/dashboard/signatures/indicators"
+          to="/dashboard/observations/indicators"
           variant={
             location.pathname.includes('/dashboard/observations/indicators')
               ? 'contained'

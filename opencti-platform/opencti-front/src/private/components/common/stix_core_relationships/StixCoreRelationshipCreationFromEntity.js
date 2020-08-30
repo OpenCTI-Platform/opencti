@@ -70,12 +70,6 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 1001,
   },
-  createButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 240,
-    zIndex: 1001,
-  },
   title: {
     float: 'left',
   },
@@ -769,11 +763,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
             onClick={this.handleOpen.bind(this)}
             color="secondary"
             aria-label="Add"
-            className={
-              paddingRight
-                ? classes.createButtonWithPadding
-                : classes.createButton
-            }
+            className={classes.createButton}
+            style={{ right: paddingRight || 30 }}
           >
             <Add />
           </Fab>

@@ -6,17 +6,17 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import CampaignOverview from './CampaignOverview';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import CampaignPopover from './CampaignPopover';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
-import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
-import EntityXOpenCTIIncidentsChart from '../../events/x_opencti_incidents/EntityXOpenCTIIncidentsChart';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
   container: {
@@ -41,41 +41,49 @@ class CampaignComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={3}>
-            <CampaignOverview campaign={campaign} />
-          </Grid>
-          <Grid item={true} xs={3}>
-            <CampaignDetails campaign={campaign} />
+          <Grid item={true} xs={6}>
+            <StixDomainObjectOverview stixDomainObject={campaign} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={campaign.id} />
+            <CampaignDetails campaign={campaign} />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes stixCoreObjectId={campaign.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 15 }}
+          style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={4}>
-            <EntityXOpenCTIIncidentsChart
-              entityId={campaign.id}
-              relationshipType="attributed-to"
+          <Grid item={true} xs={6}>
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={campaign.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/threats/campaigns/${campaign.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixCoreRelationshipsDonut
-              entityId={campaign.id}
-              entityType="Indicator"
-              relationshipType="indicates"
-              field="x_opencti_main_observable_type"
+          <Grid item={true} xs={6}>
+            <StixCoreObjectOrStixCoreRelationshipLastReports
+              stixCoreObjectOrStixCoreRelationshipId={campaign.id}
             />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={campaign.id} />
           </Grid>
         </Grid>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
+        >
+          <Grid item={true} xs={6}>
+            <StixCoreObjectExternalReferences stixCoreObjectId={campaign.id} />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <StixCoreObjectLatestHistory
+              stixCoreObjectStandardId={campaign.standard_id}
+            />
+          </Grid>
+        </Grid>
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={campaign.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CampaignEdition campaignId={campaign.id} />
         </Security>
@@ -94,9 +102,45 @@ const Campaign = createFragmentContainer(CampaignComponent, {
   campaign: graphql`
     fragment Campaign_campaign on Campaign {
       id
+      standard_id
+      stix_ids
+      spec_version
+      revoked
+      confidence
+      created
+      modified
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      creator {
+        name
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
       name
       aliases
-      ...CampaignOverview_campaign
       ...CampaignDetails_campaign
     }
   `,

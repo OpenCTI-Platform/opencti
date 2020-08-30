@@ -55,6 +55,7 @@ const threatActorMutationFieldPatch = graphql`
     threatActorEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ThreatActorEditionOverview_threatActor
+        ...ThreatActor_threatActor
       }
     }
   }

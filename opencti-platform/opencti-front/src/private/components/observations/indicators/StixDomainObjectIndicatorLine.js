@@ -43,7 +43,7 @@ const styles = (theme) => ({
   },
 });
 
-class EntityIndicatorLineComponent extends Component {
+class StixDomainObjectIndicatorLineComponent extends Component {
   render() {
     const {
       nsd,
@@ -70,18 +70,18 @@ class EntityIndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toPatternType.width }}
+                style={{ width: dataColumns.fromPatternType.width }}
               >
                 <ItemPatternType
                   variant="inList"
-                  label={node.to.pattern_type}
+                  label={node.from.pattern_type}
                 />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toName.width }}
+                style={{ width: dataColumns.fromName.width }}
               >
-                {node.to.name}
+                {node.from.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -89,20 +89,20 @@ class EntityIndicatorLineComponent extends Component {
               >
                 <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.to.objectLabel}
+                  labels={node.from.objectLabel}
                 />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toValidFrom.width }}
+                style={{ width: dataColumns.fromValidFrom.width }}
               >
-                {nsd(node.to.valid_from)}
+                {nsd(node.from.valid_from)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toValidUntil.width }}
+                style={{ width: dataColumns.fromValidUntil.width }}
               >
-                {nsd(node.to.valid_until)}
+                {nsd(node.from.valid_until)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -110,7 +110,7 @@ class EntityIndicatorLineComponent extends Component {
               >
                 {take(
                   1,
-                  pathOr([], ['markingDefinitions', 'edges'], node.to),
+                  pathOr([], ['objectMarking', 'edges'], node.to),
                 ).map((markingDefinition) => (
                   <ItemMarking
                     key={markingDefinition.node.id}
@@ -134,7 +134,7 @@ class EntityIndicatorLineComponent extends Component {
   }
 }
 
-EntityIndicatorLineComponent.propTypes = {
+StixDomainObjectIndicatorLineComponent.propTypes = {
   dataColumns: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -144,18 +144,18 @@ EntityIndicatorLineComponent.propTypes = {
   nsd: PropTypes.func,
 };
 
-const EntityIndicatorLineFragment = createFragmentContainer(
-  EntityIndicatorLineComponent,
+const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
+  StixDomainObjectIndicatorLineComponent,
   {
     node: graphql`
-      fragment EntityIndicatorLine_node on StixCoreRelationship {
+      fragment StixDomainObjectIndicatorLine_node on StixCoreRelationship {
         id
         start_time
         stop_time
         description
         confidence
         inferred
-        to {
+        from {
           ... on Indicator {
             id
             name
@@ -190,12 +190,12 @@ const EntityIndicatorLineFragment = createFragmentContainer(
   },
 );
 
-export const EntityIndicatorLine = compose(
+export const StixDomainObjectIndicatorLine = compose(
   inject18n,
   withStyles(styles),
-)(EntityIndicatorLineFragment);
+)(StixDomainObjectIndicatorLineFragment);
 
-class EntityIndicatorLineDummyComponent extends Component {
+class StixDomainObjectIndicatorLineDummyComponent extends Component {
   render() {
     const { classes, dataColumns } = this.props;
     return (
@@ -208,13 +208,13 @@ class EntityIndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toPatternType.width }}
+                style={{ width: dataColumns.fromPatternType.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toName.width }}
+                style={{ width: dataColumns.fromName.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -226,13 +226,13 @@ class EntityIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toValidFrom.width }}
+                style={{ width: dataColumns.fromValidFrom.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toValidUntil.width }}
+                style={{ width: dataColumns.fromValidUntil.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -253,12 +253,12 @@ class EntityIndicatorLineDummyComponent extends Component {
   }
 }
 
-EntityIndicatorLineDummyComponent.propTypes = {
+StixDomainObjectIndicatorLineDummyComponent.propTypes = {
   classes: PropTypes.object,
   dataColumns: PropTypes.object,
 };
 
-export const EntityIndicatorLineDummy = compose(
+export const StixDomainObjectIndicatorLineDummy = compose(
   inject18n,
   withStyles(styles),
-)(EntityIndicatorLineDummyComponent);
+)(StixDomainObjectIndicatorLineDummyComponent);

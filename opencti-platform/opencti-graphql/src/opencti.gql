@@ -594,6 +594,10 @@ define
     relates subtechnique-of_from,
     relates subtechnique-of_to;
 
+  revoked-by sub stix-core-relationship,
+    relates revoked-by_from,
+    relates revoked-by_to;
+
   # STIX Sighting Relationships
   stix-sighting-relationship sub stix-relationship,
     has description,
