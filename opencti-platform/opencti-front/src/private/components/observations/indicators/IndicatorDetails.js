@@ -6,10 +6,10 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
 import ItemScore from '../../../../components/ItemScore';
-import ItemCreator from '../../../../components/ItemCreator';
+import IndicatorObservables from './IndicatorObservables';
 
 const styles = () => ({
   paper: {
@@ -36,44 +36,27 @@ class IndicatorDetailsComponent extends Component {
             {t('Indicator pattern')}
           </Typography>
           <pre>{indicator.pattern}</pre>
-          <div style={{ marginTop: 20 }}>
-            <StixDomainObjectLabels
-              labels={indicator.objectLabel}
-              id={indicator.id}
-            />
-          </div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          <ItemCreator creator={indicator.creator} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Valid from')}
-          </Typography>
-          {fld(indicator.valid_from)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Valid until')}
-          </Typography>
-          {fld(indicator.valid_until)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Score')}
-          </Typography>
-          <ItemScore score={indicator.score} />
+          <Grid container={true} spacing={3} style={{ marginTop: 10 }}>
+            <Grid item={true} xs={4}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Valid from')}
+              </Typography>
+              {fld(indicator.valid_from)}
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Valid until')}
+              </Typography>
+              {fld(indicator.valid_until)}
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Score')}
+              </Typography>
+              <ItemScore score={indicator.x_opencti_score} />
+            </Grid>
+          </Grid>
+          <IndicatorObservables indicator={indicator} />
         </Paper>
       </div>
     );
@@ -109,6 +92,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
           }
         }
       }
+      ...IndicatorObservables_indicator
     }
   `,
 });

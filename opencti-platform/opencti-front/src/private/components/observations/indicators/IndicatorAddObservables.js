@@ -10,12 +10,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import Avatar from '@material-ui/core/Avatar';
-import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
-import IndicatorAddObservableRefsLines, {
+import IndicatorAddObservablesLines, {
   indicatorAddObservablesLinesQuery,
 } from './IndicatorAddObservablesLines';
 import StixCyberObservableCreation from '../stix_cyber_observables/StixCyberObservableCreation';
@@ -33,10 +32,8 @@ const styles = (theme) => ({
     padding: 0,
   },
   createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1100,
+    float: 'left',
+    marginTop: -15,
   },
   title: {
     float: 'left',
@@ -87,7 +84,7 @@ class IndicatorAddObservables extends Component {
 
   render() {
     const {
-      t, classes, indicatorId, indicatorObservableRefs,
+      t, classes, indicatorId, indicatorObservables,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -96,14 +93,14 @@ class IndicatorAddObservables extends Component {
     };
     return (
       <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
+        <IconButton
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
+          onClick={this.handleOpen.bind(this)}
+          classes={{ root: classes.createButton }}
         >
-          <Add />
-        </Fab>
+          <Add fontSize="small" />
+        </IconButton>
         <Drawer
           open={this.state.open}
           keepMounted={true}
@@ -142,9 +139,9 @@ class IndicatorAddObservables extends Component {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <IndicatorAddObservableRefsLines
+                    <IndicatorAddObservablesLines
                       indicatorId={indicatorId}
-                      indicatorObservableRefs={indicatorObservableRefs}
+                      indicatorObservables={indicatorObservables}
                       data={props}
                     />
                   );
@@ -193,7 +190,7 @@ class IndicatorAddObservables extends Component {
 
 IndicatorAddObservables.propTypes = {
   indicatorId: PropTypes.string,
-  indicatorObservableRefs: PropTypes.array,
+  indicatorObservables: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,

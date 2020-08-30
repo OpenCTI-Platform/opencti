@@ -47,32 +47,26 @@ class IndicatorEntities extends Component {
     const dataColumns = {
       entity_type: {
         label: 'Entity type',
-        width: '15%',
+        width: '20%',
         isSortable: false,
       },
       name: {
         label: 'Name',
-        width: '22%',
+        width: '32%',
         isSortable: false,
       },
-      role_played: {
-        label: 'Played role',
-        width: '15%',
-        isSortable: true,
-      },
-      first_seen: {
+      start_time: {
         label: 'First obs.',
         width: '15%',
         isSortable: true,
       },
-      last_seen: {
+      stop_time: {
         label: 'Last obs.',
         width: '15%',
         isSortable: true,
       },
-      weight: {
+      confidence: {
         label: 'Confidence',
-        width: '12%',
         isSortable: true,
       },
     };
@@ -109,11 +103,11 @@ class IndicatorEntities extends Component {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
     const {
-      classes, t, entityId, relationship_type,
+      classes, t, entityId, relationshipType,
     } = this.props;
     const paginationOptions = {
       fromId: entityId,
-      relationship_type,
+      relationship_type: relationshipType || 'indicates',
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -132,7 +126,6 @@ class IndicatorEntities extends Component {
             'Threat-Actor',
             'Intrusion-Set',
             'Campaign',
-            'XOpenCTIIncident',
             'Malware',
             'Tool',
             'Vulnerability',
@@ -150,7 +143,7 @@ class IndicatorEntities extends Component {
 
 IndicatorEntities.propTypes = {
   entityId: PropTypes.string,
-  relationship_type: PropTypes.string,
+  relationshipType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,

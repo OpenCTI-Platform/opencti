@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, map, pipe, prop, sortBy, toLower,
+  assoc,
+  compose,
+  map,
+  pipe,
+  prop,
+  sortBy,
+  toLower,
+  filter,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -163,6 +170,7 @@ class IndicatorsRightBar extends Component {
               const translatedOrderedList = pipe(
                 map((n) => n.node),
                 map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+                filter((n) => n.label !== 'Hashed-Observable'),
                 sortByLabel,
               )(subTypesEdges);
               return (

@@ -48,7 +48,7 @@ const styles = () => ({
   editButtonWithPadding: {
     position: 'fixed',
     bottom: 30,
-    right: 300,
+    right: 220,
   },
   item: {
     position: 'absolute',

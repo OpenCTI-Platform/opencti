@@ -92,7 +92,7 @@ class Filters extends Component {
               label: n.node.definition,
               value: n.node.id,
               type: 'Marking-Definition',
-              color: n.node.color,
+              color: n.node.x_opencti_color,
             })),
           )(data);
           this.setState({

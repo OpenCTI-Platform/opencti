@@ -59,12 +59,6 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 1001,
   },
-  createButtonWithPadding: {
-    position: 'fixed',
-    bottom: 30,
-    right: 240,
-    zIndex: 1001,
-  },
   title: {
     float: 'left',
   },
@@ -407,7 +401,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div>
-          {targetStixDomainObjectTypes && targetStixDomainObjectTypes.length > 0 ? (
+          {targetStixDomainObjectTypes
+          && targetStixDomainObjectTypes.length > 0 ? (
             <div>
               <QueryRenderer
                 query={
@@ -434,10 +429,11 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                 targetStixDomainObjectTypes={targetStixDomainObjectTypes}
               />
             </div>
-          ) : (
-            ''
-          )}
-          {targetStixCyberObservableTypes && targetStixCyberObservableTypes.length > 0 ? (
+            ) : (
+              ''
+            )}
+          {targetStixCyberObservableTypes
+          && targetStixCyberObservableTypes.length > 0 ? (
             <QueryRenderer
               query={
                 stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
@@ -465,9 +461,9 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                 );
               }}
             />
-          ) : (
-            ''
-          )}
+            ) : (
+              ''
+            )}
         </div>
       </div>
     );
@@ -760,11 +756,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             onClick={this.handleOpen.bind(this)}
             color="secondary"
             aria-label="Add"
-            className={
-              paddingRight
-                ? classes.createButtonWithPadding
-                : classes.createButton
-            }
+            className={classes.createButton}
+            style={{ right: paddingRight || 30 }}
           >
             <Add />
           </Fab>

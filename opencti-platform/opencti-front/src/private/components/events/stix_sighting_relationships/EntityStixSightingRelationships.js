@@ -24,7 +24,7 @@ const styles = (theme) => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '10px 274px 10px 84px',
+    padding: '10px 200px 10px 205px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
   },
@@ -148,7 +148,11 @@ class EntityStixSightingRelationships extends Component {
 
   render() {
     const {
-      t, classes, targetStixDomainObjectTypes, entityId,
+      t,
+      classes,
+      targetStixDomainObjectTypes,
+      entityId,
+      noPadding,
     } = this.props;
     const {
       view,
@@ -159,11 +163,9 @@ class EntityStixSightingRelationships extends Component {
       orderAsc,
       inferred,
     } = this.state;
-
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
       || targetStixDomainObjectTypes.includes('Identity');
-
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
       fromId: entityId,
@@ -173,7 +175,6 @@ class EntityStixSightingRelationships extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-
     return (
       <div className={classes.container}>
         <Drawer
@@ -247,7 +248,7 @@ class EntityStixSightingRelationships extends Component {
           <StixSightingRelationshipCreationFromEntity
             entityId={entityId}
             isRelationReversed={false}
-            paddingRight={true}
+            paddingRight={noPadding ? null : 220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             paginationOptions={paginationOptions}
           />
@@ -265,6 +266,7 @@ EntityStixSightingRelationships.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,
+  noPadding: PropTypes.bool,
 };
 
 export default compose(

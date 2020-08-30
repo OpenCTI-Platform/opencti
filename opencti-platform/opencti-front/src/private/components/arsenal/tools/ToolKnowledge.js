@@ -7,33 +7,48 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
-import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ToolPopover from './ToolPopover';
-import ToolKnowledgeBar from './ToolKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
+    padding: '0 200px 0 0',
   },
 });
 
 class ToolKnowledgeComponent extends Component {
   render() {
     const { classes, tool } = this.props;
-    const link = `/dashboard/techniques/tools/${tool.id}/knowledge`;
+    const link = `/dashboard/arsenal/tools/${tool.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={tool}
           PopoverComponent={<ToolPopover />}
         />
-        <ToolKnowledgeBar toolId={tool.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'attack_patterns',
+            'vulnerabilities',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
-          path="/dashboard/techniques/tools/:toolId/knowledge/relations/:relationId"
+          path="/dashboard/arsenal/tools/:toolId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
               entityId={tool.id}
@@ -44,9 +59,9 @@ class ToolKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/tools/:toolId/knowledge/overview"
+          path="/dashboard/arsenal/tools/:toolId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainObjectKnowledge
+            <StixDomainObjectThreatKnowledge
               stixDomainObjectId={tool.id}
               stixDomainObjectType="Tool"
               {...routeProps}
@@ -55,7 +70,21 @@ class ToolKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/tools/:toolId/knowledge/intrusion_sets"
+          path="/dashboard/arsenal/tools/:toolId/knowledge/threat_actors"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={tool.id}
+              relationshipType="uses"
+              targetStixDomainObjectTypes={['Threat-Actor']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/arsenal/tools/:toolId/knowledge/intrusion_sets"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
@@ -69,7 +98,7 @@ class ToolKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/tools/:toolId/knowledge/campaigns"
+          path="/dashboard/arsenal/tools/:toolId/knowledge/campaigns"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
@@ -83,12 +112,26 @@ class ToolKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/tools/:toolId/knowledge/incidents"
+          path="/dashboard/arsenal/tools/:toolId/knowledge/attack_patterns"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationshipType="uses"
-              targetStixDomainObjectTypes={['XOpenCTIIncident']}
+              targetStixDomainObjectTypes={['Attack-Pattern']}
+              entityLink={link}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/arsenal/tools/:toolId/knowledge/malwares"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={tool.id}
+              relationshipType="uses"
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -97,14 +140,61 @@ class ToolKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/tools/:toolId/knowledge/malwares"
+          path="/dashboard/arsenal/tools/:toolId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
               relationshipType="uses"
-              targetStixDomainObjectTypes={['Malware']}
+              targetStixDomainObjectTypes={['Vulnerability']}
+              entityLink={link}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/arsenal/tools/:toolId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={tool.id}
+              relationshipType="uses"
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/arsenal/tools/:toolId/knowledge/observables"
+          render={(routeProps) => (
+            <StixCoreObjectStixCyberObservables
+              stixCoreObjectId={tool.id}
+              stixCoreObjectLink={link}
+              noRightBar={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/arsenal/tools/:toolId/knowledge/sightings"
+          render={(routeProps) => (
+            <EntityStixSightingRelationships
+              entityId={tool.id}
+              entityLink={link}
+              noRightBar={true}
+              targetStixDomainObjectTypes={[
+                'Region',
+                'Country',
+                'City',
+                'Position',
+                'Sector',
+                'Organization',
+                'Individual',
+              ]}
               {...routeProps}
             />
           )}

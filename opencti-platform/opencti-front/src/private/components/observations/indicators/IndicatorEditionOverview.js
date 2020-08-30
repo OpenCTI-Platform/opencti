@@ -113,9 +113,9 @@ const indicatorValidation = (t) => Yup.object().shape({
   valid_until: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  score: Yup.number(),
+  x_opencti_score: Yup.number(),
   description: Yup.string(),
-  detection: Yup.boolean(),
+  x_opencti_detection: Yup.boolean(),
 });
 
 class IndicatorEditionOverviewComponent extends Component {
@@ -249,8 +249,8 @@ class IndicatorEditionOverviewComponent extends Component {
         'description',
         'valid_from',
         'valid_until',
-        'score',
-        'detection',
+        'x_opencti_score',
+        'x_opencti_detection',
         'createdBy',
         'killChainPhases',
         'objectMarking',
@@ -318,14 +318,18 @@ class IndicatorEditionOverviewComponent extends Component {
             />
             <Field
               component={TextField}
-              name="score"
+              name="x_opencti_score"
               label={t('Score')}
+              type="number"
               fullWidth={true}
               style={{ marginTop: 20 }}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
-                <SubscriptionFocus context={context} fieldName="score" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_score"
+                />
               }
             />
             <Field

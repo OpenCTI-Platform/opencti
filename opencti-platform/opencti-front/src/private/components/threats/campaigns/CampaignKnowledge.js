@@ -10,15 +10,15 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CampaignPopover from './CampaignPopover';
-import CampaignKnowledgeBar from './CampaignKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
+    padding: '0 200px 0 0',
   },
 });
 
@@ -32,7 +32,19 @@ class CampaignKnowledgeComponent extends Component {
           stixDomainObject={campaign}
           PopoverComponent={<CampaignPopover />}
         />
-        <CampaignKnowledgeBar campaignId={campaign.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'attribution',
+            'incidents',
+            'malwares',
+            'tools',
+            'attack_patterns',
+            'vulnerabilities',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/threats/campaigns/:campaignId/knowledge/relations/:relationId"
@@ -71,14 +83,22 @@ class CampaignKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/threats/campaigns/:campaignId/knowledge/incidents"
+          path="/dashboard/threats/campaigns/:campaignId/knowledge/victimology"
           render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={campaign.id}
-              relationshipType="attributed-to"
-              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+            <StixDomainObjectVictimology
+              stixDomainObjectId={campaign.id}
               entityLink={link}
-              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/campaigns/:campaignId/knowledge/attack_patterns"
+          render={(routeProps) => (
+            <StixDomainObjectKillChain
+              stixDomainObjectId={campaign.id}
+              entityLink={link}
               {...routeProps}
             />
           )}
@@ -93,28 +113,6 @@ class CampaignKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={false}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/campaigns/:campaignId/knowledge/victimology"
-          render={(routeProps) => (
-            <StixDomainObjectVictimology
-              stixDomainObjectId={campaign.id}
-              entityLink={link}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/campaigns/:campaignId/knowledge/ttp"
-          render={(routeProps) => (
-            <StixDomainObjectKillChain
-              stixDomainObjectId={campaign.id}
-              entityLink={link}
               {...routeProps}
             />
           )}
@@ -143,6 +141,20 @@ class CampaignKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
               isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/campaigns/:campaignId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={campaign.id}
+              relationshipType="attributed-to"
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              entityLink={link}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}

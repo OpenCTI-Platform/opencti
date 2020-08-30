@@ -9,7 +9,6 @@ import {
 import TopBar from '../../nav/TopBar';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import Indicator from './Indicator';
-import IndicatorObservables from './IndicatorObservables';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndicatorHeader from './IndicatorHeader';
@@ -21,7 +20,6 @@ const subscription = graphql`
       ... on Indicator {
         ...Indicator_indicator
         ...IndicatorEditionContainer_indicator
-        ...IndicatorObservables_indicator
       }
     }
   }
@@ -37,7 +35,6 @@ const indicatorQuery = graphql`
       ...IndicatorHeader_indicator
       ...IndicatorOverview_indicator
       ...IndicatorDetails_indicator
-      ...IndicatorObservables_indicator
     }
   }
 `;
@@ -82,16 +79,6 @@ class RootIndicator extends Component {
                     path="/dashboard/observations/indicators/:indicatorId"
                     render={(routeProps) => (
                       <Indicator {...routeProps} indicator={props.indicator} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/indicators/:indicatorId/observables"
-                    render={(routeProps) => (
-                      <IndicatorObservables
-                        {...routeProps}
-                        indicator={props.indicator}
-                      />
                     )}
                   />
                   <Route

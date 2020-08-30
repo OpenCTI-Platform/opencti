@@ -13,6 +13,7 @@ import {
   VisibilityOutlined,
   WifiTetheringOutlined,
   BugReportOutlined,
+  PublicOutlined,
 } from '@material-ui/icons';
 import {
   Gauge,
@@ -126,6 +127,24 @@ class StixCoreObjectKnowledgeBar extends Component {
             ) : (
               ''
             )}
+            {includes('threat_actors', availableSections) ? (
+              <MenuItem
+                component={Link}
+                to={`${stixCoreObjectLink}/threat_actors`}
+                selected={
+                  location.pathname === `${stixCoreObjectLink}/threat_actors`
+                }
+                dense={false}
+                classes={{ root: classes.item }}
+              >
+                <ListItemIcon style={{ minWidth: 35 }}>
+                  <PublicOutlined />
+                </ListItemIcon>
+                <ListItemText primary={t('Threat actors')} />
+              </MenuItem>
+            ) : (
+              ''
+            )}
             {includes('intrusion_sets', availableSections) ? (
               <MenuItem
                 component={Link}
@@ -139,7 +158,7 @@ class StixCoreObjectKnowledgeBar extends Component {
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <DiamondOutline />
                 </ListItemIcon>
-                <ListItemText primary={t('Intrusion Sets')} />
+                <ListItemText primary={t('Intrusion sets')} />
               </MenuItem>
             ) : (
               ''

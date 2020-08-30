@@ -136,6 +136,7 @@ class StixDomainObjectThreatKnowledge extends Component {
     const toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
     const killChainPaginationOptions = {
       fromId: stixDomainObjectId,
+      fromRole: 'uses_from',
       toTypes: filter((n) => n.toLowerCase() !== stixDomainObjectType, toTypes),
       relationship_type: 'stix-core-relationship',
       inferred,

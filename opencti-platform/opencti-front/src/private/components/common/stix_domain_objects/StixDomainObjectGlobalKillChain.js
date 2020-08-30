@@ -260,6 +260,7 @@ StixDomainObjectGlobalKillChainComponent.propTypes = {
 export const stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery = graphql`
   query StixDomainObjectGlobalKillChainStixCoreRelationshipsQuery(
     $fromId: String
+    $fromRole: String
     $toTypes: [String]
     $relationship_type: String
     $inferred: Boolean
@@ -276,6 +277,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
       fragment StixDomainObjectGlobalKillChain_data on Query {
         stixCoreRelationships(
           fromId: $fromId
+          fromRole: $fromRole
           toTypes: $toTypes
           relationship_type: $relationship_type
           inferred: $inferred

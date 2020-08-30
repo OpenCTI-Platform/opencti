@@ -8,14 +8,14 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Tool from './Tool';
-import ToolReports from './ToolReports';
 import ToolKnowledge from './ToolKnowledge';
-import ToolIndicators from './ToolIndicators';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import ToolPopover from './ToolPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootToolSubscription($id: ID!) {
@@ -34,12 +34,11 @@ const toolQuery = graphql`
   query RootToolQuery($id: String!) {
     tool(id: $id) {
       id
+      standard_id
       name
       aliases
       ...Tool_tool
-      ...ToolReports_tool
       ...ToolKnowledge_tool
-      ...ToolIndicators_tool
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -86,42 +85,62 @@ class RootTool extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/techniques/tools/:toolId"
+                    path="/dashboard/arsenal/tools/:toolId"
                     render={(routeProps) => (
                       <Tool {...routeProps} tool={props.tool} />
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/tools/:toolId/reports"
-                    render={(routeProps) => (
-                      <ToolReports {...routeProps} tool={props.tool} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/techniques/tools/:toolId/knowledge"
+                    path="/dashboard/arsenal/tools/:toolId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/techniques/tools/${toolId}/knowledge/overview`}
+                        to={`/dashboard/arsenal/tools/${toolId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/tools/:toolId/knowledge"
+                    path="/dashboard/arsenal/tools/:toolId/knowledge"
                     render={(routeProps) => (
                       <ToolKnowledge {...routeProps} tool={props.tool} />
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/tools/:toolId/indicators"
+                    exact
+                    path="/dashboard/arsenal/tools/:toolId/analysis"
                     render={(routeProps) => (
-                      <ToolIndicators {...routeProps} tool={props.tool} />
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.tool}
+                          PopoverComponent={<ToolPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={toolId}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/tools/:toolId/files"
+                    path="/dashboard/arsenal/tools/:toolId/indicators"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.tool}
+                          PopoverComponent={<ToolPopover />}
+                        />
+                        <StixDomainObjectIndicators
+                          {...routeProps}
+                          stixDomainObjectId={toolId}
+                          stixDomainObjectLink={`/dashboard/arsenal/tools/${toolId}/indicators`}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/arsenal/tools/:toolId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -139,7 +158,7 @@ class RootTool extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/tools/:toolId/history"
+                    path="/dashboard/arsenal/tools/:toolId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -148,7 +167,7 @@ class RootTool extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={toolId}
+                          stixCoreObjectStandardId={props.tool.standard_id}
                         />
                       </React.Fragment>
                     )}

@@ -54,7 +54,7 @@ class ToolLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/techniques/tools/${node.id}`}
+        to={`/dashboard/arsenal/tools/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Application />

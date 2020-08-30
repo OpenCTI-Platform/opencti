@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import {
-  compose, pipe, sortBy, prop, toLower, map, assoc,
+  compose,
+  pipe,
+  sortBy,
+  prop,
+  toLower,
+  map,
+  assoc,
+  filter,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -73,6 +80,7 @@ class StixCyberObservablesRightBar extends Component {
               const translatedOrderedList = pipe(
                 map((n) => n.node),
                 map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+                filter((n) => n.label !== 'Hashed-Observable'),
                 sortByLabel,
               )(subTypesEdges);
               return (

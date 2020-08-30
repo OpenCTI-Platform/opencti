@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Public } from '@material-ui/icons';
+import { KeyboardArrowRight, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
@@ -56,7 +56,7 @@ class ThreatActorLineComponent extends Component {
         to={`/dashboard/threats/threat_actors/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Public />
+          <PublicOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -151,7 +151,7 @@ class ThreatActorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Public />
+          <PublicOutlined />
         </ListItemIcon>
         <ListItemText
           primary={

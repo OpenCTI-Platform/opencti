@@ -107,21 +107,6 @@ class IndicatorEntityLineComponent extends Component {
                   }`
                   : node.to.name}
               </div>
-              {!displayRelation ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.role_played.width }}
-                >
-                  {/* eslint-disable-next-line no-nested-ternary */}
-                  {node.inferred
-                    ? '-'
-                    : node.role_played
-                      ? t(node.role_played)
-                      : t('Unknown')}
-                </div>
-              ) : (
-                ''
-              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
@@ -136,10 +121,10 @@ class IndicatorEntityLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
-                  confidence={node.inferred ? 1000 : node.weight}
+                  confidence={node.inferred ? 1000 : node.confidence}
                   variant="inList"
                 />
               </div>
@@ -185,10 +170,12 @@ const IndicatorEntityLineFragment = createFragmentContainer(
           ... on BasicObject {
             id
             entity_type
+            parent_types
           }
           ... on BasicRelationship {
             id
             entity_type
+            parent_types
           }
           ... on StixCoreObject {
             created_at
@@ -428,16 +415,6 @@ class IndicatorEntityLineDummyComponent extends Component {
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              {!displayRelation ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.role_played.width }}
-                >
-                  <div className="fakeItem" style={{ width: '80%' }} />
-                </div>
-              ) : (
-                ''
-              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
@@ -452,7 +429,7 @@ class IndicatorEntityLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.weight.width }}
+                style={{ width: dataColumns.confidence.width }}
               >
                 <div className="fakeItem" style={{ width: 100 }} />
               </div>

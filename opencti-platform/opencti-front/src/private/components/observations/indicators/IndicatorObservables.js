@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, map, sortWith, ascend, descend, prop, assoc,
-} from 'ramda';
+import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -12,12 +10,12 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { ArrowDropDown, ArrowDropUp } from '@material-ui/icons';
+import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import IndicatorHeader from './IndicatorHeader';
-import IndicatorAddObservableRefs from './IndicatorAddObservables';
+import IndicatorAddObservables from './IndicatorAddObservables';
 import IndicatorObservablePopover from './IndicatorObservablePopover';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
   linesContainer: {
@@ -52,32 +50,6 @@ const styles = (theme) => ({
   },
 });
 
-const inlineStylesHeaders = {
-  iconSort: {
-    position: 'absolute',
-    margin: '0 0 0 5px',
-    padding: 0,
-    top: '0px',
-  },
-  entity_type: {
-    float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  observable_value: {
-    float: 'left',
-    width: '50%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  created_at: {
-    float: 'left',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-};
-
 const inlineStyles = {
   entity_type: {
     float: 'left',
@@ -105,96 +77,34 @@ const inlineStyles = {
 };
 
 class IndicatorObservablesComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { sortBy: 'name', orderAsc: false };
-  }
-
-  reverseBy(field) {
-    this.setState({ sortBy: field, orderAsc: !this.state.orderAsc });
-  }
-
-  SortHeader(field, label, isSortable) {
-    const { t } = this.props;
-    const sortComponent = this.state.orderAsc ? (
-      <ArrowDropDown style={inlineStylesHeaders.iconSort} />
-    ) : (
-      <ArrowDropUp style={inlineStylesHeaders.iconSort} />
-    );
-    if (isSortable) {
-      return (
-        <div
-          style={inlineStylesHeaders[field]}
-          onClick={this.reverseBy.bind(this, field)}
-        >
-          <span>{t(label)}</span>
-          {this.state.sortBy === field ? sortComponent : ''}
-        </div>
-      );
-    }
-    return (
-      <div style={inlineStylesHeaders[field]}>
-        <span>{t(label)}</span>
-      </div>
-    );
-  }
-
   render() {
     const {
       t, fd, classes, indicator,
     } = this.props;
-    const observableRefs = map(
-      (n) => assoc('relation', n.relation, n.node),
-      indicator.observableRefs.edges,
-    );
-    const sort = sortWith(
-      this.state.orderAsc
-        ? [ascend(prop(this.state.sortBy))]
-        : [descend(prop(this.state.sortBy))],
-    );
-    const sortedObservableRefs = sort(observableRefs);
     return (
-      <div>
-        <IndicatorHeader indicator={indicator} />
+      <div style={{ marginTop: 20 }}>
+        <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Based on')}
+        </Typography>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IndicatorAddObservables
+            indicatorId={indicator.id}
+            indicatorObservables={indicator.observables.edges}
+          />
+        </Security>
+        <div className="clearfix" />
         <List classes={{ root: classes.linesContainer }}>
-          <ListItem
-            classes={{ root: classes.itemHead }}
-            divider={false}
-            style={{ paddingTop: 0 }}
-          >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                #
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {this.SortHeader('entity_type', 'Type', true)}
-                  {this.SortHeader('observable_value', 'Value', true)}
-                  {this.SortHeader('created_at', 'Creation date', true)}
-                </div>
-              }
-            />
-            <ListItemSecondaryAction>&nbsp;</ListItemSecondaryAction>
-          </ListItem>
-          {sortedObservableRefs.map((observableRef) => (
+          {indicator.observables.edges.map((observableEdge) => (
             <ListItem
-              key={observableRef.id}
+              key={observableEdge.node.id}
               classes={{ root: classes.item }}
               divider={true}
               button={true}
               component={Link}
-              to={`/dashboard/signatures/observables/${observableRef.id}`}
+              to={`/dashboard/observations/observables/${observableEdge.node.id}`}
             >
               <ListItemIcon classes={{ root: classes.itemIcon }}>
-                <ItemIcon type={observableRef.entity_type} />
+                <ItemIcon type={observableEdge.node.entity_type} />
               </ListItemIcon>
               <ListItemText
                 primary={
@@ -203,19 +113,19 @@ class IndicatorObservablesComponent extends Component {
                       className={classes.bodyItem}
                       style={inlineStyles.entity_type}
                     >
-                      {t(`observable_${observableRef.entity_type}`)}
+                      {t(`observable_${observableEdge.node.entity_type}`)}
                     </div>
                     <div
                       className={classes.bodyItem}
                       style={inlineStyles.observable_value}
                     >
-                      {observableRef.observable_value}
+                      {observableEdge.node.observable_value}
                     </div>
                     <div
                       className={classes.bodyItem}
                       style={inlineStyles.created_at}
                     >
-                      {fd(observableRef.created_at)}
+                      {fd(observableEdge.node.created_at)}
                     </div>
                   </div>
                 }
@@ -223,16 +133,12 @@ class IndicatorObservablesComponent extends Component {
               <ListItemSecondaryAction>
                 <IndicatorObservablePopover
                   indicatorId={indicator.id}
-                  entityId={observableRef.id}
+                  entityId={observableEdge.node.id}
                 />
               </ListItemSecondaryAction>
             </ListItem>
           ))}
         </List>
-        <IndicatorAddObservableRefs
-          indicatorId={indicator.id}
-          indicatorObservableRefs={indicator.observableRefs.edges}
-        />
       </div>
     );
   }
@@ -263,7 +169,6 @@ const IndicatorObservables = createFragmentContainer(
             }
           }
         }
-        ...IndicatorHeader_indicator
       }
     `,
   },

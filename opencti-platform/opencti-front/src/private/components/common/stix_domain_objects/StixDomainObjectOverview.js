@@ -37,7 +37,7 @@ const styles = () => ({
 class StixDomainObjectOverview extends Component {
   render() {
     const {
-      t, fldt, classes, stixDomainObject,
+      t, fldt, classes, stixDomainObject, withoutMarking,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -97,7 +97,7 @@ class StixDomainObjectOverview extends Component {
               >
                 {stixDomainObject.spec_version}
               </Button>
-              {stixDomainObject.objectMarking ? (
+              {!withoutMarking && stixDomainObject.objectMarking ? (
                 <div>
                   <Typography
                     variant="h3"
@@ -226,6 +226,7 @@ StixDomainObjectOverview.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  withoutMarking: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(StixDomainObjectOverview);

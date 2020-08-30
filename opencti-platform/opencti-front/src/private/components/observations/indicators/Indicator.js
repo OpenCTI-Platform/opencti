@@ -14,8 +14,8 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import IndicatorHeader from './IndicatorHeader';
+import IndicatorEntities from './IndicatorEntities';
 
 const styles = () => ({
   container: {
@@ -38,7 +38,10 @@ class IndicatorComponent extends Component {
           classes={{ container: classes.gridContainer }}
         >
           <Grid item={true} xs={6}>
-            <StixDomainObjectOverview stixDomainObject={indicator} />
+            <StixDomainObjectOverview
+              stixDomainObject={indicator}
+              withoutMarking={true}
+            />
           </Grid>
           <Grid item={true} xs={6}>
             <IndicatorDetails indicator={indicator} />
@@ -51,10 +54,7 @@ class IndicatorComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={indicator.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/threats/intrusion_sets/${indicator.id}/knowledge`}
-            />
+            <IndicatorEntities entityId={indicator.id} />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectOrStixCoreRelationshipLastReports
