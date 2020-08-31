@@ -4,7 +4,15 @@ import {
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
+  REL_INDEX_PREFIX,
 } from './general';
+import {
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+} from './stixMetaRelationship';
 
 export const ENTITY_TYPE_ATTACK_PATTERN = 'Attack-Pattern';
 export const ENTITY_TYPE_CAMPAIGN = 'Campaign';
@@ -79,3 +87,18 @@ const STIX_DOMAIN_OBJECTS = [
 ];
 export const isStixDomainObject = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECTS) || type === ABSTRACT_STIX_DOMAIN_OBJECT;
+
+export const stixDomainObjectOptions = {
+  StixDomainObjectsOrdering: {
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+  },
+  StixDomainObjectsFilter: {
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+    hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
+  },
+};

@@ -37,7 +37,7 @@ import {
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
 import { PART_OF_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
-import { elLoadByIds, REL_INDEX_PREFIX } from '../../../src/database/elasticSearch';
+import { elLoadByIds } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -45,7 +45,7 @@ import {
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
 } from '../../../src/schema/stixDomainObject';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../../../src/schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../../../src/schema/general';
 import { RELATION_MITIGATES } from '../../../src/schema/stixCoreRelationship';
 
 describe('Grakn basic and utils', () => {

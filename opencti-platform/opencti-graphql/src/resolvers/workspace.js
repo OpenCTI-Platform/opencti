@@ -1,4 +1,4 @@
-import { withFilter } from 'graphql-subscriptions/dist/index';
+import { withFilter } from 'graphql-subscriptions';
 import {
   addWorkspace,
   workspaceDelete,

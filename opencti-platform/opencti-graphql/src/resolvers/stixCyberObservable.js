@@ -1,4 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
+import { assoc } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCyberObservable,
@@ -24,20 +25,13 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { workForEntity } from '../domain/work';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
-import {
-  RELATION_CREATED_BY,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
-import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
+import { stixCyberObservableOptions } from "../schema/stixCyberObservableObject";
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -54,17 +48,8 @@ const stixCyberObservableResolvers = {
     stixCyberObservablesExportFiles: (_, { first, context }) =>
       filesListing(first, 'export', 'stix-observable', null, context),
   },
-  StixCyberObservablesOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-  },
-  StixCyberObservablesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    relatedTo: `${REL_INDEX_PREFIX}${RELATION_RELATED_TO}.internal_id`,
-    objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-  },
+  StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
+  StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
   HashedObservable: {
     hashes: (stixCyberObservable) => complexAttributeToApiFormat('hashes', stixCyberObservable),
   },
@@ -95,6 +80,7 @@ const stixCyberObservableResolvers = {
       relationsAdd: ({ input }) => stixCyberObservableAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixCyberObservableDeleteRelation(user, id, toId, relationshipType),
+      exportAsk: (args) => stixCyberObservableExportAsk(assoc('stixCyberObservableId', id, args)),
       askEnrichment: ({ connectorId }) => stixCyberObservableAskEnrichment(id, connectorId),
     }),
     stixCyberObservableAdd: (_, args, { user }) => addStixCyberObservable(user, args),

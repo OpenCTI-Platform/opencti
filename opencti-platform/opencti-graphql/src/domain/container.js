@@ -1,10 +1,9 @@
 import { assoc, append, propOr, filter, concat } from 'ramda';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { findAll as findAllStixCoreObjects } from './stixCoreObject';
 import { findAll as findAllStixCoreRelationships } from './stixCoreRelationship';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { listEntities, loadById } from '../database/grakn';
-import { ENTITY_TYPE_CONTAINER } from '../schema/general';
+import { ENTITY_TYPE_CONTAINER, REL_INDEX_PREFIX } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
@@ -47,6 +46,7 @@ export const objects = async (containerId, args) => {
   if (args.types && args.types.length > 0) {
     let haveStixCoreObjectInTypes = false;
     let haveStixCoreRelationshipInTypes = false;
+    // eslint-disable-next-line no-restricted-syntax
     for (const type of args.types) {
       if (isStixCoreObject(type)) {
         haveStixCoreObjectInTypes = true;

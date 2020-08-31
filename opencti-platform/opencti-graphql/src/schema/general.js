@@ -1,7 +1,13 @@
 import * as R from 'ramda';
 
+// Specific prefix
+export const REL_INDEX_PREFIX = 'rel_';
+
+// General types
 export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
+
+// General UUID
 export const OASIS_NAMESPACE = '00abedb4-aa42-466c-9c01-fed23315a9b7';
 export const OPENCTI_NAMESPACE = 'b639ff3b-00eb-42ed-aa36-a8dd6f8fb4cf';
 export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
@@ -14,6 +20,7 @@ export const ABSTRACT_STIX_RELATIONSHIP = 'stix-relationship';
 export const ABSTRACT_STIX_CORE_RELATIONSHIP = 'stix-core-relationship';
 export const ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP = 'stix-cyber-observable-relationship';
 export const ABSTRACT_STIX_META_RELATIONSHIP = 'stix-meta-relationship';
+
 // Entities
 export const ABSTRACT_BASIC_OBJECT = 'Basic-Object';
 export const ABSTRACT_STIX_OBJECT = 'Stix-Object';
@@ -23,11 +30,13 @@ export const ABSTRACT_STIX_DOMAIN_OBJECT = 'Stix-Domain-Object';
 export const ABSTRACT_STIX_CYBER_OBSERVABLE = 'Stix-Cyber-Observable';
 export const ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE = 'Hashed-Observable';
 export const ABSTRACT_INTERNAL_OBJECT = 'Internal-Object';
+
 // Internal
 export const ENTITY_TYPE_CONTAINER = 'Container';
 export const ENTITY_TYPE_IDENTITY = 'Identity';
 export const ENTITY_TYPE_LOCATION = 'Location';
 
+// Abstract
 export const ABSTRACT_TYPES = [
   ABSTRACT_BASIC_OBJECT,
   ABSTRACT_INTERNAL_OBJECT,
