@@ -299,6 +299,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                           <ListItemText
                             primary={
                               stixCoreObject.name
+                              || stixCoreObject.observable_value
                               || stixCoreObject.attribute_abstract
                               || stixCoreObject.opinion
                               || `${fd(stixCoreObject.first_observed)} - ${fd(
@@ -309,7 +310,8 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                               <Markdown
                                 className="markdown"
                                 source={truncate(
-                                  stixCoreObject.description,
+                                  stixCoreObject.description
+                                    || fd(stixCoreObject.created_at),
                                   200,
                                 )}
                               />

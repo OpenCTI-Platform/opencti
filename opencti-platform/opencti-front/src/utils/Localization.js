@@ -22,6 +22,8 @@ const i18n = {
       RabbitMQ: 'RabbitMQ',
       Redis: 'Redis',
       MinIO: 'MinIO',
+      'Standard STIX ID': 'STIX ID standard',
+      'Other STIX IDs': 'Autres IDs STIX',
       // Interface
       Login: "Nom d'utilisateur",
       Search: 'Rechercher',
@@ -845,7 +847,7 @@ const i18n = {
       entity_Process: 'Processus',
       entity_Software: 'Logiciel',
       entity_Url: 'URL',
-      'entity_User-Account': 'Compute utilisateur',
+      'entity_User-Account': 'Compte utilisateur',
       'entity_Windows-Registry-Key': 'Clé de reg. Windows',
       'entity_Windows-Registry-Value-Type': 'Clé de reg. Windows - Valeur',
       'entity_X509-V3-Extensions-Type': 'Certificat X509 - V3 Ext.',

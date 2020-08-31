@@ -32,7 +32,6 @@ const stixCyberObservableQuery = graphql`
     stixCyberObservable(id: $id) {
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableHeader_stixCyberObservable
-      ...StixCyberObservableOverview_stixCyberObservable
       ...StixCyberObservableDetails_stixCyberObservable
       ...StixCyberObservableIndicators_stixCyberObservable
       ...StixCyberObservableKnowledge_stixCyberObservable
@@ -78,7 +77,7 @@ class RootStixCyberObservable extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/signatures/observables/:observableId"
+                    path="/dashboard/observations/observables/:observableId"
                     render={(routeProps) => (
                       <StixCyberObservable
                         {...routeProps}
@@ -88,7 +87,7 @@ class RootStixCyberObservable extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/signatures/observables/:observableId/links"
+                    path="/dashboard/observations/observables/:observableId/links"
                     render={(routeProps) => (
                       <StixCyberObservableLinks
                         {...routeProps}
@@ -98,7 +97,7 @@ class RootStixCyberObservable extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/signatures/observables/:observableId/knowledge"
+                    path="/dashboard/observations/observables/:observableId/knowledge"
                     render={(routeProps) => (
                       <StixCyberObservableKnowledge
                         {...routeProps}
@@ -108,7 +107,7 @@ class RootStixCyberObservable extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/signatures/observables/:observableId/sightings"
+                    path="/dashboard/observations/observables/:observableId/sightings"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixCyberObservableHeader
@@ -130,7 +129,7 @@ class RootStixCyberObservable extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/signatures/observables/:observableId/history"
+                    path="/dashboard/observations/observables/:observableId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixCyberObservableHeader
@@ -145,7 +144,7 @@ class RootStixCyberObservable extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/signatures/observables/:observableId/knowledge/relations/:relationId"
+                    path="/dashboard/observations/observables/:observableId/knowledge/relations/:relationId"
                     render={(routeProps) => (
                       <StixCoreRelationship
                         entityId={observableId}

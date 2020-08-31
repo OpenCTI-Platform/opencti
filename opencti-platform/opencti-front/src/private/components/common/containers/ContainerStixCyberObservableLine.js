@@ -62,7 +62,7 @@ class ContainerStixCyberObservableLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/signatures/observables/${node.id}`}
+        to={`/dashboard/observations/observables/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <HexagonOutline />
@@ -74,7 +74,7 @@ class ContainerStixCyberObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`observable_${node.entity_type}`)}
+                {t(`entity_${node.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}

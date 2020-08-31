@@ -1,20 +1,21 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableHeader from './StixCyberObservableHeader';
-import StixCyberObservableOverview from './StixCyberObservableOverview';
 import StixCyberObservableDetails from './StixCyberObservableDetails';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
-import EntityLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
-import StixCyberObservableIndicators from './StixCyberObservableIndicators';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import StixCyberObservableOverview from './StixCyberObservableOverview';
+import StixCyberObservableHeader from './StixCyberObservableHeader';
 
 const styles = () => ({
   container: {
@@ -36,38 +37,54 @@ class StixCyberObservableComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={2}>
+          <Grid item={true} xs={6}>
             <StixCyberObservableOverview
               stixCyberObservable={stixCyberObservable}
             />
           </Grid>
-          <Grid item={true} xs={5}>
+          <Grid item={true} xs={6}>
             <StixCyberObservableDetails
               stixCyberObservable={stixCyberObservable}
             />
-          </Grid>
-          <Grid item={true} xs={5}>
-            <EntityLastReports stixCyberObservableId={stixCyberObservable.id} />
           </Grid>
         </Grid>
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={7}>
-            <StixCyberObservableIndicators
-              stixCyberObservable={stixCyberObservable}
+          <Grid item={true} xs={6}>
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={stixCyberObservable.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/observations/observables/${stixCyberObservable.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={5}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={stixCyberObservable.id} />
+          <Grid item={true} xs={6}>
+            <StixCoreObjectOrStixCoreRelationshipLastReports
+              stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
+            />
           </Grid>
         </Grid>
-        <StixCoreObjectNotes
-          entityId={stixCyberObservable.id}
-          inputType="observableRefs"
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
+        >
+          <Grid item={true} xs={6}>
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={stixCyberObservable.id}
+            />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <StixCoreObjectLatestHistory
+              stixCoreObjectStandardId={stixCyberObservable.standard_id}
+            />
+          </Grid>
+        </Grid>
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCyberObservableEdition
@@ -91,10 +108,41 @@ const StixCyberObservable = createFragmentContainer(
     stixCyberObservable: graphql`
       fragment StixCyberObservable_stixCyberObservable on StixCyberObservable {
         id
-        ...StixCyberObservableHeader_stixCyberObservable
-        ...StixCyberObservableOverview_stixCyberObservable
+        standard_id
+        stix_ids
+        spec_version
+        created_at
+        updated_at
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
+        creator {
+          name
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
+              x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
+          }
+        }
+          observable_value
         ...StixCyberObservableDetails_stixCyberObservable
-        ...StixCyberObservableIndicators_stixCyberObservable
       }
     `,
   },

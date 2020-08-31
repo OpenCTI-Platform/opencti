@@ -8,6 +8,7 @@ import {
   labels,
   externalReferences,
   stixCoreObjectAddRelation,
+  stixCoreObjectAddRelations,
   stixCoreObjectDeleteRelation,
   stixCoreRelationships,
 } from '../domain/stixCoreObject';
@@ -43,6 +44,7 @@ const stixCoreObjectResolvers = {
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({
       relationAdd: ({ input }) => stixCoreObjectAddRelation(user, id, input),
+      relationsAdd: ({ input }) => stixCoreObjectAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
     }),

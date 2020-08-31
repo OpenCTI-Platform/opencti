@@ -80,6 +80,18 @@ export const stixCyberObservablesLinesSubTypesQuery = graphql`
   }
 `;
 
+export const stixCyberObservablesLinesAttributesQuery = graphql`
+  query StixCyberObservablesLinesAttributesQuery($elementType: String) {
+    attributes(elementType: $elementType) {
+      edges {
+        node {
+          value
+        }
+      }
+    }
+  }
+`;
+
 export const stixCyberObservablesLinesQuery = graphql`
   query StixCyberObservablesLinesPaginationQuery(
     $types: [String]
@@ -91,15 +103,15 @@ export const stixCyberObservablesLinesQuery = graphql`
     $filters: [StixCyberObservablesFiltering]
   ) {
     ...StixCyberObservablesLines_data
-      @arguments(
-        types: $types
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -124,18 +136,18 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment StixCyberObservablesLines_data on Query
-        @argumentDefinitions(
-          types: { type: "[String]" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixCyberObservablesFiltering]" }
-        ) {
+      @argumentDefinitions(
+        types: { type: "[String]" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCyberObservablesOrdering"
+          defaultValue: created_at
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixCyberObservablesFiltering]" }
+      ) {
         stixCyberObservables(
           types: $types
           search: $search

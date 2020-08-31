@@ -11,14 +11,19 @@ import { Add, Close } from '@material-ui/icons';
 import {
   compose,
   pluck,
-  evolve,
-  path,
   sortBy,
   toLower,
   prop,
   pipe,
   map,
   assoc,
+  filter,
+  includes,
+  dissoc,
+  evolve,
+  path,
+  toPairs,
+  fromPairs,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -29,8 +34,6 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import ListItemIcon from '@material-ui/core/ListItemIcon';
-import Avatar from '@material-ui/core/Avatar';
 import ListItemText from '@material-ui/core/ListItemText';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -40,7 +43,61 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import TypesField from '../TypesField';
-import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesAttributesQuery,
+  stixCyberObservablesLinesSubTypesQuery,
+} from './StixCyberObservablesLines';
+import DatePickerField from '../../../../components/DatePickerField';
+import { parse } from '../../../../utils/Time';
+
+const ignoredAttributes = [
+  'internal_id',
+  'standard_id',
+  'stix_ids',
+  'entity_type',
+  'spec_version',
+  'extensions',
+  'created',
+  'modified',
+  'created_at',
+  'created_at_day',
+  'created_at_month',
+  'created_at_year',
+  'x_opencti_score',
+  'updated_at',
+];
+
+const dateAttributes = [
+  'ctime',
+  'mtime',
+  'atime',
+  'attribute_date',
+  'validity_not_before',
+  'validity_not_after',
+  'start',
+  'end',
+  'created_time',
+  'modified_time',
+  'account_created',
+  'account_expires',
+  'credential_last_changed',
+  'account_first_login',
+  'account_last_login',
+];
+
+const numberAttributes = [
+  'number',
+  'src_port',
+  'dst_port',
+  'src_byte_count',
+  'dst_byte_count',
+  'src_packets',
+  'dst_packets',
+  'pid',
+  'number_of_subkeys',
+];
+
+const booleanAttributes = ['is_self_signed'];
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -112,10 +169,27 @@ const stixCyberObservableMutation = graphql`
     $DomainName: DomainNameAddInput
     $EmailAddr: EmailAddrAddInput
     $EmailMessage: EmailMessageAddInput
+    $EmailMimePartType: EmailMimePartTypeAddInput
+    $Artifact: ArtifactAddInput
+    $StixFile: StixFileAddInput
+    $X509Certificate: X509CertificateAddInput
+    $IPv4Addr: IPv4AddrAddInput
+    $IPv6Addr: IPv6AddrAddInput
+    $MacAddr: MacAddrAddInput
+    $Mutex: MutexAddInput
+    $NetworkTraffic: NetworkTrafficAddInput
+    $Process: ProcessAddInput
+    $Software: SoftwareAddInput
+    $Url: UrlAddInput
+    $UserAccount: UserAccountAddInput
+    $WindowsRegistryKey: WindowsRegistryKeyAddInput
+    $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
+    $X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
     $XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
     $XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
     $XOpenCTIText: XOpenCTITextAddInput
     $XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
+    $createIndicator: Boolean
   ) {
     stixCyberObservableAdd(
       type: $type
@@ -124,10 +198,27 @@ const stixCyberObservableMutation = graphql`
       DomainName: $DomainName
       EmailAddr: $EmailAddr
       EmailMessage: $EmailMessage
+      EmailMimePartType: $EmailMimePartType
+      Artifact: $Artifact
+      StixFile: $StixFile
+      X509Certificate: $X509Certificate
+      IPv4Addr: $IPv4Addr
+      IPv6Addr: $IPv6Addr
+      MacAddr: $MacAddr
+      Mutex: $Mutex
+      NetworkTraffic: $NetworkTraffic
+      Process: $Process
+      Software: $Software
+      Url: $Url
+      UserAccount: $UserAccount
+      WindowsRegistryKey: $WindowsRegistryKey
+      WindowsRegistryValueType: $WindowsRegistryValueType
+      X509V3ExtensionsType: $X509V3ExtensionsType
       XOpenCTICryptographicKey: $XOpenCTICryptographicKey
       XOpenCTICryptocurrencyWallet: $XOpenCTICryptocurrencyWallet
       XOpenCTIText: $XOpenCTIText
       XOpenCTIUserAgent: $XOpenCTIUserAgent
+      createIndicator: $createIndicator
     ) {
       ...StixCyberObservableLine_node
     }
@@ -135,9 +226,7 @@ const stixCyberObservableMutation = graphql`
 `;
 
 const stixCyberObservableValidation = (t) => Yup.object().shape({
-  type: Yup.string().required(t('This field is required')),
-  observable_value: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  x_opencti_score: Yup.number().required(t('This field is required')),
   createIndicator: Yup.boolean(),
 });
 
@@ -162,7 +251,7 @@ class StixCyberObservableCreation extends Component {
   }
 
   handleClose() {
-    this.setState({ open: false });
+    this.setState({ open: false, type: null });
   }
 
   selectType(type) {
@@ -170,7 +259,7 @@ class StixCyberObservableCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const adaptedValues = evolve(
+    let adaptedValues = evolve(
       {
         createdBy: path(['value']),
         objectMarking: pluck('value'),
@@ -178,11 +267,25 @@ class StixCyberObservableCreation extends Component {
       },
       values,
     );
+    adaptedValues = pipe(
+      dissoc('createIndicator'),
+      toPairs,
+      map((n) => (includes(n[0], dateAttributes)
+        ? [n[0], n[1] ? parse(n[1]).format() : null]
+        : n)),
+      map((n) => (includes(n[0], numberAttributes)
+        ? [n[0], n[1] ? parseInt(n[0], 10) : null]
+        : n)),
+      fromPairs,
+    )(adaptedValues);
+    const finalValues = {
+      type: this.state.type,
+      createIndicator: values.createIndicator,
+      [this.state.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: adaptedValues,
+    };
     commitMutation({
       mutation: stixCyberObservableMutation,
-      variables: {
-        input: adaptedValues,
-      },
+      variables: finalValues,
       updater: (store) => {
         const payload = store.getRootField('stixCyberObservableAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
@@ -207,99 +310,8 @@ class StixCyberObservableCreation extends Component {
     this.handleClose();
   }
 
-  renderForm() {
-    const { classes, t } = this.props;
-    return (
-      <Formik
-        initialValues={{
-          type: '',
-          observable_value: '',
-          description: '',
-          createdBy: '',
-          objectMarking: [],
-          objectLabel: [],
-          createIndicator: false,
-        }}
-        validationSchema={stixCyberObservableValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-        onReset={this.onReset.bind(this)}
-      >
-        {({
-          submitForm, handleReset, isSubmitting, setFieldValue, values,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <TypesField
-              name="type"
-              label={t('Observable type')}
-              containerstyle={{ width: '100%' }}
-            />
-            <Field
-              component={TextField}
-              name="observable_value"
-              label={t('Observable value')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-            />
-            <Field
-              component={TextField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-            />
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-            />
-            <ObjectLabelField
-              name="objectLabel"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
-            />
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="createIndicator"
-              label={t('Create an indicator from this observable')}
-              containerstyle={{ marginTop: 20 }}
-            />
-            <div className={classes.buttons}>
-              <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-              >
-                {t('Cancel')}
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-              >
-                {t('Create')}
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Formik>
-    );
-  }
-
   renderClassicList() {
-    const { classes, t } = this.props;
+    const { t } = this.props;
     return (
       <QueryRenderer
         query={stixCyberObservablesLinesSubTypesQuery}
@@ -318,20 +330,170 @@ class StixCyberObservableCreation extends Component {
                 {translatedOrderedList.map((subType) => (
                   <ListItem
                     key={subType.label}
-                    classes={{ root: classes.menuItem }}
                     divider={true}
                     button={true}
+                    dense={true}
                     onClick={this.selectType.bind(this, subType.label)}
                   >
-                    <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatar }}>
-                        {subType.label.substring(0, 1)}
-                      </Avatar>
-                    </ListItemIcon>
                     <ListItemText primary={subType.tlabel} />
                   </ListItem>
                 ))}
               </List>
+            );
+          }
+          return <div />;
+        }}
+      />
+    );
+  }
+
+  renderClassicForm() {
+    const { type } = this.state;
+    const { classes, t } = this.props;
+    return (
+      <QueryRenderer
+        query={stixCyberObservablesLinesAttributesQuery}
+        variables={{ elementType: type }}
+        render={({ props }) => {
+          if (props && props.attributes) {
+            const initialValues = {
+              x_opencti_score: 50,
+              createdBy: '',
+              objectMarking: [],
+              objectLabel: [],
+              createIndicator: false,
+            };
+            const attributes = pipe(
+              map((n) => n.node),
+              filter((n) => !includes(n.value, ignoredAttributes)),
+            )(props.attributes.edges);
+            for (const attribute of attributes) {
+              if (includes(attribute.value, dateAttributes)) {
+                initialValues[attribute.value] = null;
+              } else {
+                initialValues[attribute.value] = '';
+              }
+            }
+            return (
+              <Formik
+                initialValues={initialValues}
+                validationSchema={stixCyberObservableValidation(t)}
+                onSubmit={this.onSubmit.bind(this)}
+                onReset={this.onReset.bind(this)}
+              >
+                {({
+                  submitForm,
+                  handleReset,
+                  isSubmitting,
+                  setFieldValue,
+                  values,
+                }) => (
+                  <Form style={{ margin: '20px 0 20px 0' }}>
+                    <div>
+                      <Field
+                        component={TextField}
+                        name="x_opencti_score"
+                        label={t('Score')}
+                        fullWidth={true}
+                        type="number"
+                      />
+                      {attributes.map((attribute) => {
+                        if (includes(attribute.value, dateAttributes)) {
+                          return (
+                            <Field
+                              component={DatePickerField}
+                              key={attribute.value}
+                              name={attribute.value}
+                              label={attribute.value}
+                              invalidDateMessage={t(
+                                'The value must be a date (YYYY-MM-DD)',
+                              )}
+                              fullWidth={true}
+                              style={{ marginTop: 20 }}
+                            />
+                          );
+                        }
+                        if (includes(attribute.value, numberAttributes)) {
+                          return (
+                            <Field
+                              component={TextField}
+                              key={attribute.value}
+                              name={attribute.value}
+                              label={attribute.value}
+                              fullWidth={true}
+                              type="number"
+                              style={{ marginTop: 20 }}
+                            />
+                          );
+                        }
+                        if (includes(attribute.value, booleanAttributes)) {
+                          return (
+                            <Field
+                              component={SwitchField}
+                              type="checkbox"
+                              key={attribute.value}
+                              name={attribute.value}
+                              label={attribute.value}
+                              containerstyle={{ marginTop: 20 }}
+                            />
+                          );
+                        }
+                        return (
+                          <Field
+                            component={TextField}
+                            key={attribute.value}
+                            name={attribute.value}
+                            label={attribute.value}
+                            fullWidth={true}
+                            style={{ marginTop: 20 }}
+                          />
+                        );
+                      })}
+                    </div>
+                    <CreatedByField
+                      name="createdBy"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                    />
+                    <ObjectLabelField
+                      name="objectLabel"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      values={values.objectLabel}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                    />
+                    <Field
+                      component={SwitchField}
+                      type="checkbox"
+                      name="createIndicator"
+                      label={t('Create an indicator from this observable')}
+                      containerstyle={{ marginTop: 20 }}
+                    />
+                    <div className={classes.buttons}>
+                      <Button
+                        variant="contained"
+                        onClick={handleReset}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={submitForm}
+                        disabled={isSubmitting}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Create')}
+                      </Button>
+                    </div>
+                  </Form>
+                )}
+              </Formik>
             );
           }
           return <div />;
@@ -372,7 +534,7 @@ class StixCyberObservableCreation extends Component {
             <Typography variant="h6">{t('Create an observable')}</Typography>
           </div>
           <div className={classes.container}>
-            {!type ? this.renderClassicList() : this.renderForm()}
+            {!type ? this.renderClassicList() : this.renderClassicForm()}
           </div>
         </Drawer>
       </div>

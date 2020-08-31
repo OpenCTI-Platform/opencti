@@ -64,12 +64,12 @@ const styles = () => ({
   },
 });
 
-const stixDomainObjectMutationRelationsAdd = graphql`
-  mutation StixDomainObjectLabelsRelationsAddMutation(
+const stixCoreObjectMutationRelationsAdd = graphql`
+  mutation StixCoreObjectLabelsViewRelationsAddMutation(
     $id: ID!
     $input: StixMetaRelationshipsAddInput!
   ) {
-    stixDomainObjectEdit(id: $id) {
+    stixCoreObjectEdit(id: $id) {
       relationsAdd(input: $input) {
         objectLabel {
           edges {
@@ -85,15 +85,15 @@ const stixDomainObjectMutationRelationsAdd = graphql`
   }
 `;
 
-const stixDomainObjectMutationRelationDelete = graphql`
-  mutation StixDomainObjectLabelsRelationDeleteMutation(
+const stixCoreObjectMutationRelationDelete = graphql`
+  mutation StixCoreObjectLabelsViewRelationDeleteMutation(
     $id: ID!
     $toId: String!
     $relationship_type: String!
   ) {
-    stixDomainObjectEdit(id: $id) {
+    stixCoreObjectEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ... on StixDomainObject {
+        ... on StixCoreObject {
           objectLabel {
             edges {
               node {
@@ -109,7 +109,7 @@ const stixDomainObjectMutationRelationDelete = graphql`
   }
 `;
 
-class StixDomainObjectLabels extends Component {
+class StixCoreObjectLabelsView extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -167,7 +167,7 @@ class StixDomainObjectLabels extends Component {
       filter((value) => !currentLabelsIds.includes(value)),
     )(values.new_labels);
     commitMutation({
-      mutation: stixDomainObjectMutationRelationsAdd,
+      mutation: stixCoreObjectMutationRelationsAdd,
       variables: {
         id: this.props.id,
         input: {
@@ -186,7 +186,7 @@ class StixDomainObjectLabels extends Component {
 
   handleRemoveLabel(labelId) {
     commitMutation({
-      mutation: stixDomainObjectMutationRelationDelete,
+      mutation: stixCoreObjectMutationRelationDelete,
       variables: {
         id: this.props.id,
         toId: labelId,
@@ -345,11 +345,14 @@ class StixDomainObjectLabels extends Component {
   }
 }
 
-StixDomainObjectLabels.propTypes = {
+StixCoreObjectLabelsView.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   id: PropTypes.string,
   labels: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(StixDomainObjectLabels);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectLabelsView);

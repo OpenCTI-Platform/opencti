@@ -13,7 +13,7 @@ import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemRevoked from '../../../../components/ItemRevoked';
-import StixDomainObjectLabels from './StixDomainObjectLabels';
+import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = () => ({
@@ -168,7 +168,7 @@ class StixDomainObjectOverview extends Component {
               )}
             </Grid>
             <Grid item={true} xs={6}>
-              <StixDomainObjectLabels
+              <StixCoreObjectLabelsView
                 labels={stixDomainObject.objectLabel}
                 id={stixDomainObject.id}
               />

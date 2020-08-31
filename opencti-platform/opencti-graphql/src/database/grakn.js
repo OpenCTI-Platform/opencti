@@ -340,16 +340,19 @@ export const queryAttributes = async (type) => {
     logger.debug(`[GRAKN - infer: false] querySubTypes`, { query });
     const iterator = await rTx.query(query);
     const answer = await iterator.next();
-    const attributeIterator = await answer.map().get('x').attributes();
-    const attributeAnswers = await attributeIterator.collect();
+    const typeResult = await answer.map().get('x');
+    const attributesIterator = await typeResult.asRemote(rTx).attributes();
+    const attributes = await attributesIterator.collect();
     const result = await Promise.all(
-      attributeAnswers.map(async (attributeAnswer) => {
-        return attributeAnswer.label();
+      attributes.map(async (attribute) => {
+        const attributeLabel = await attribute.label();
+        return { id: attribute.id, value: attributeLabel, type: 'attribute' };
       })
     );
-    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('label')));
+    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('value')));
     const finalResult = R.pipe(
       sortByLabel,
+      R.uniqBy((n) => n.value),
       R.map((n) => ({ node: n }))
     )(result);
     return buildPagination(5000, 0, finalResult, 5000);

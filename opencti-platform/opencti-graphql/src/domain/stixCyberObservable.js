@@ -10,6 +10,7 @@ import {
   distributionEntities,
   escape,
   listEntities,
+  listToEntitiesThroughRelation,
   loadById,
   timeSeriesEntities,
   updateAttribute,
@@ -47,6 +48,8 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 
 export const findById = (stixCyberObservableId) => {
   return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -95,9 +98,7 @@ export const stixCyberObservableAskEnrichment = async (id, connectorId) => {
 };
 
 export const indicators = (stixCyberObservableId) => {
-  // TODO @Sam
-  logger.info(`Loading indicators`, { stixCyberObservableId });
-  return null;
+  return listToEntitiesThroughRelation(stixCyberObservableId, null, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
 export const observableValue = (stixCyberObservable) => {
@@ -377,9 +378,7 @@ const askJobExports = async (
  */
 export const stixCyberObservableExportAsk = async (args) => {
   const { format, stixCyberObservableId = null, exportType = null, maxMarkingDefinition = null, context = null } = args;
-  const entity = stixCyberObservableId
-    ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
-    : null;
+  const entity = stixCyberObservableId ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE) : null;
   const workList = await askJobExports(format, entity, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
   return map((w) => workToExportFile(w.work), workList);

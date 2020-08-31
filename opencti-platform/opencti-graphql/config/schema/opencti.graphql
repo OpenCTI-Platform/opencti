@@ -4524,7 +4524,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # DomainName
-  value: String!
+  value: String
   # Technical
   creator: User
   toStix: String
@@ -4613,7 +4613,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # EmailAddr
-  value: String!
+  value: String
   display_name: String
   # Technical
   creator: User
@@ -4625,7 +4625,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
 input EmailAddrAddInput {
   stix_id: String
   x_opencti_score: Int
-  value: String!
+  value: String
   display_name: String
   createdBy: String
   objectMarking: [String]
@@ -5410,13 +5410,12 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input IPv6AddrAddInput {
   stix_id: String
+  x_opencti_score: Int
   value: String
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
   clientMutationId: String
   update: Boolean
 }
@@ -8259,7 +8258,8 @@ type KillChainPhaseEditMutations {
 
 type StixCoreObjectEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationDelete(toId: String!, relationship_type: String!): StixObject
+  relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
+  relationDelete(toId: String!, relationship_type: String!): StixCoreObject
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES

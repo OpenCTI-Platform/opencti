@@ -1,13 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
-import graphql from 'babel-plugin-relay/macro';
+import { compose, map, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import { InformationOutline } from 'mdi-material-ui';
+import Tooltip from '@material-ui/core/Tooltip';
+import Button from '@material-ui/core/Button';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
+import ItemCreator from '../../../../components/ItemCreator';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
+import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = () => ({
   paper: {
@@ -17,82 +22,172 @@ const styles = () => ({
     padding: '15px',
     borderRadius: 6,
   },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    color: '#ffffff',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+  },
 });
 
-class StixCyberObservableOverviewComponent extends Component {
+class StixCyberObservableOverview extends Component {
   render() {
     const {
-      t, fldt, classes, stixCyberObservable,
+      t,
+      fldt,
+      classes,
+      stixCyberObservable,
+      withoutMarking,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
-          {t('Information')}
+          {t('Basic information')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Observable type')}
-          </Typography>
-          {t(`observable_${stixCyberObservable.entity_type}`)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creation date')}
-          </Typography>
-          {fldt(stixCyberObservable.created_at)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Modification date')}
-          </Typography>
-          {fldt(stixCyberObservable.updated_at)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Author')}
-          </Typography>
-          <ItemAuthor
-            createdBy={propOr(null, 'createdBy', stixCyberObservable)}
-          />
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Standard STIX ID')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
+                <Tooltip
+                  title={t(
+                    'In OpenCTI, a predictable STIX ID is generated based on one or multiple attributes of the entity.',
+                  )}
+                >
+                  <InformationOutline fontSize="small" color="primary" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <pre style={{ margin: 0 }}>{stixCyberObservable.standard_id}</pre>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ float: 'left' }}
+              >
+                {t('Other STIX IDs')}
+              </Typography>
+              <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
+                <Tooltip title={t('Other known STIX IDs for this entity.')}>
+                  <InformationOutline fontSize="small" color="primary" />
+                </Tooltip>
+              </div>
+              <div className="clearfix" />
+              <pre style={{ margin: 0 }}>
+                {stixCyberObservable.stix_ids.length > 0
+                  ? stixCyberObservable.stix_ids.map((stixId) => `${stixId}\n`)
+                  : '-'}
+              </pre>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Observable type')}
+              </Typography>
+              {t(`entity_${stixCyberObservable.entity_type}`)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('STIX version')}
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                style={{ cursor: 'default' }}
+              >
+                {stixCyberObservable.spec_version}
+              </Button>
+              {!withoutMarking && stixCyberObservable.objectMarking ? (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Marking')}
+                  </Typography>
+                  {stixCyberObservable.objectMarking.edges.length > 0 ? (
+                    map(
+                      (markingDefinition) => (
+                        <ItemMarking
+                          key={markingDefinition.node.id}
+                          label={markingDefinition.node.definition}
+                        />
+                      ),
+                      stixCyberObservable.objectMarking.edges,
+                    )
+                  ) : (
+                    <ItemMarking label="TLP:WHITE" />
+                  )}
+                </div>
+              ) : (
+                ''
+              )}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Author')}
+              </Typography>
+              <ItemAuthor
+                createdBy={propOr(null, 'createdBy', stixCyberObservable)}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <StixCoreObjectLabelsView
+                labels={stixCyberObservable.objectLabel}
+                id={stixCyberObservable.id}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Creator')}
+              </Typography>
+              <ItemCreator creator={stixCyberObservable.creator} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Creation date')}
+              </Typography>
+              {fldt(stixCyberObservable.created_at)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Modification date')}
+              </Typography>
+              {fldt(stixCyberObservable.updated_at)}
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
   }
 }
 
-StixCyberObservableOverviewComponent.propTypes = {
+StixCyberObservableOverview.propTypes = {
   stixCyberObservable: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
+  withoutMarking: PropTypes.bool,
 };
-
-const StixCyberObservableOverview = createFragmentContainer(
-  StixCyberObservableOverviewComponent,
-  {
-    stixCyberObservable: graphql`
-      fragment StixCyberObservableOverview_stixCyberObservable on StixCyberObservable {
-        id
-        entity_type
-        created_at
-        updated_at
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-      }
-    `,
-  },
-);
 
 export default compose(
   inject18n,

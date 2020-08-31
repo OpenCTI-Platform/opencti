@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Chip from '@material-ui/core/Chip';
 import Markdown from 'react-markdown';
-import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
 import ItemCreator from '../../../../components/ItemCreator';
@@ -45,7 +45,7 @@ class OrganizationDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels
+          <StixCoreObjectLabelsView
             labels={organization.objectLabel}
             id={organization.id}
           />

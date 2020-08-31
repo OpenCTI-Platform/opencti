@@ -963,10 +963,12 @@ define
     has lang,
     has created,
     has modified,
+    plays revoked-by_from,
     plays duplicate-of_from,
     plays derived-from_from,
     plays related-to_from,
     plays stix-sighting-relationship_from,
+    plays revoked-by_to,
     plays duplicate-of_to,
     plays derived-from_to,
     plays related-to_to;

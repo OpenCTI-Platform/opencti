@@ -10,7 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 
 const styles = (theme) => ({
   item: {
@@ -95,7 +95,7 @@ class CurationStixDomainObjectLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixDomainObjectLabels
+                <StixCoreObjectLabelsView
                   variant="inList"
                   labels={node.objectLabel}
                   onClick={onLabelClick.bind(this)}

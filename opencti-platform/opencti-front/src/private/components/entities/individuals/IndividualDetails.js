@@ -7,7 +7,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
-import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import inject18n from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
 
@@ -37,7 +37,7 @@ class IndividualDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels
+          <StixCoreObjectLabelsView
             labels={individual.objectLabel}
             id={individual.id}
           />

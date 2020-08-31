@@ -13,7 +13,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch, SettingsApplications, PermIdentity } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixCoreObjectLabelsViewView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -44,7 +44,7 @@ class AttackPatternDetailsComponent extends Component {
             color="primary"
             style={{ marginBottom: 20 }}
           />
-          <StixDomainObjectLabels
+          <StixCoreObjectLabelsViewView
             labels={attackPattern.objectLabel}
             id={attackPattern.id}
           />

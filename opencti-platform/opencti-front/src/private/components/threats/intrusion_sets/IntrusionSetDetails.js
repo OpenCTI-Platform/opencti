@@ -8,7 +8,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
 import inject18n from '../../../../components/i18n';
-import StixDomainObjectLabels from '../../common/stix_domain_objects/StixDomainObjectLabels';
+import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
@@ -38,7 +38,7 @@ class IntrusionSetDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainObjectLabels
+          <StixCoreObjectLabelsView
             labels={intrusionSet.objectLabel}
             id={intrusionSet.id}
           />

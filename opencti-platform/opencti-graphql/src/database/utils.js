@@ -12,6 +12,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixRelationship } from '../schema/stixRelationship';
+import { observableValue } from '../domain/stixCyberObservable';
 
 // Entities
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
@@ -130,8 +131,10 @@ const extractEntityMainValue = (entityData) => {
       .toISOString()}`;
   } else if (entityData.name) {
     mainValue = entityData.name;
-  } else {
+  } else if (entityData.description) {
     mainValue = entityData.description;
+  } else {
+    mainValue = observableValue(entityData);
   }
   return mainValue;
 };
