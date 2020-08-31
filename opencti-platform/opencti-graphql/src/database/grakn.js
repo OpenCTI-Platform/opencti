@@ -27,6 +27,7 @@ import {
   elRemoveRelationConnection,
   elUpdate,
   ENTITIES_INDICES,
+  prepareElementForIndexing,
   REL_INDEX_PREFIX,
   RELATIONSHIPS_INDICES,
   useCache,
@@ -63,7 +64,13 @@ import {
 import { isDatedInternalObject, isInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
-import { dictAttributes, dictReconstruction } from '../schema/fieldDataAdapter';
+import {
+  dictAttributes,
+  multipleAttributes,
+  statsDateAttributes,
+  isDictionaryAttribute,
+  isMultipleAttribute,
+} from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObject } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
@@ -77,7 +84,6 @@ const GraknString = 'String';
 const GraknDate = 'Datetime';
 
 export const REL_CONNECTED_SUFFIX = 'CONNECTED';
-export const TYPE_STIX_DOMAIN = 'Stix-Domain';
 const INFERRED_RELATION_KEY = 'rel';
 
 export const now = () => utcDate().toISOString();
@@ -99,44 +105,6 @@ export const escape = (chars) => {
   return chars;
 };
 export const escapeString = (s) => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '');
-
-// Attributes key that can contains multiple values.
-export const multipleAttributes = [
-  'stix_ids',
-  'aliases',
-  'grant',
-  'indicator_types',
-  'infrastructure_types',
-  'secondary_motivations',
-  'malware_types',
-  'architecture_execution_envs',
-  'implementation_languages',
-  'capabilities',
-  'authors',
-  'report_types',
-  'threat_actor_types',
-  'personal_motivations',
-  'goals',
-  'roles',
-  'tool_types',
-  'received_lines',
-  'environment_variables',
-  'languages',
-  'x_mitre_platforms',
-  'x_mitre_permissions_required',
-  'x_opencti_aliases',
-];
-export const statsDateAttributes = [
-  'created_at',
-  'first_seen',
-  'last_seen',
-  'start_time',
-  'stop_time',
-  'published',
-  'valid_from',
-  'valid_until',
-];
-// endregion
 
 // region client
 const client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
@@ -464,10 +432,12 @@ const loadConcept = async (tx, concept, args = {}) => {
           const { dataType, label } = attribute;
           if (dataType === GraknDate) {
             transformedVal = moment(attribute.value).utc().toISOString();
-          } else if (dictAttributes[attribute.label]) {
-            transformedVal = dictReconstruction(attribute.label, attribute.value);
           } else if (dataType === GraknString) {
             transformedVal = attribute.value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+          }
+          // Dict is encoded as string, so must be string transform first when parse to JSON
+          if (isDictionaryAttribute(attribute.label)) {
+            transformedVal = JSON.parse(transformedVal);
           }
           return { [label]: transformedVal };
         }), // Extract values
@@ -1192,12 +1162,13 @@ export const distributionEntitiesThroughRelations = async (options) => {
 // endregion
 
 // region mutation common
-const prepareAttribute = (value) => {
+const prepareAttribute = (key, value) => {
+  if (isDictionaryAttribute(key)) return `"${escapeString(JSON.stringify(value))}"`;
   // Attribute is coming from GraphQL
   if (value instanceof Date) return prepareDate(value);
   // Attribute is coming from internal
   if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
-  // TODO Delete that
+  // TODO @Sam Delete that
   if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/.test(value))
     return prepareDate(value);
   if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\dZ$/.test(value)) return prepareDate(value);
@@ -1282,11 +1253,34 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   // Format the data in regards of the operation for multiple attributes
   const isMultiple = R.includes(key, multipleAttributes);
   let finalVal;
-  if (isMultiple) {
-    let currentValues = instance[key];
-    if (!currentValues) {
-      currentValues = [];
+  let finalKey = key;
+  if (dictAttributes[key]) {
+    throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
+  }
+  if (key.includes('.')) {
+    // In case of dict attributes, patching the content is possible through first level path
+    const splitKey = key.split('.');
+    if (splitKey.length > 2) {
+      throw UnsupportedError('Multiple path follow is not supported', { rawInput });
     }
+    const [baseKey, targetKey] = splitKey;
+    if (!dictAttributes[baseKey]) {
+      throw UnsupportedError('Path update only available for dictionary attributes', { rawInput });
+    }
+    finalKey = baseKey;
+    const currentJson = instance[baseKey];
+    const valueToTake = R.head(value);
+    if (currentJson[targetKey] === valueToTake) {
+      return []; // No need to update the attribute
+    }
+    // If data is empty, remove the key
+    if (R.isEmpty(valueToTake) || R.isNil(valueToTake)) {
+      finalVal = [R.dissoc(targetKey, currentJson)];
+    } else {
+      finalVal = [R.assoc(targetKey, valueToTake, currentJson)];
+    }
+  } else if (isMultiple) {
+    const currentValues = instance[key] || [];
     if (operation === EVENT_TYPE_UPDATE_ADD) {
       finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
     } else if (operation === EVENT_TYPE_UPDATE_REMOVE) {
@@ -1295,18 +1289,18 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
       finalVal = value;
     }
     if (!forceUpdate && R.equals(finalVal.sort(), currentValues.sort())) {
-      return [];
+      return []; // No need to update the attribute
     }
   } else {
     finalVal = value;
     if (!forceUpdate && R.equals(instance[key], R.head(value))) {
-      return [];
+      return []; // No need to update the attribute
     }
   }
-  const input = R.assoc('value', finalVal, rawInput);
+  const input = { key: finalKey, value: finalVal };
   const updatedInputs = [input];
   // --- 01 Get the current attribute types
-  const escapedKey = escape(key);
+  const escapedKey = escape(input.key);
   const labelTypeQuery = `match $x type ${escapedKey}; get;`;
   const labelIterator = await wTx.query(labelTypeQuery);
   const labelAnswer = await labelIterator.next();
@@ -1314,6 +1308,7 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   const ansConcept = labelAnswer.map().get('x');
   const attrType = await ansConcept.asRemote(wTx).valueType();
   const typedValues = R.map((v) => {
+    if (isDictionaryAttribute(input.key)) return `"${escapeString(JSON.stringify(v))}"`;
     if (attrType === GraknString) return `"${escapeString(v)}"`;
     if (attrType === GraknDate) return prepareDate(v);
     return escape(v);
@@ -1378,6 +1373,15 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   return updatedInputs;
 };
 
+const mergeInstanceWithInputs = (instance, inputs) => {
+  const inputPairs = R.map((input) => {
+    const { key, value } = input;
+    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+    return { [key]: val };
+  }, inputs);
+  const updatedData = R.mergeAll(inputPairs);
+  return R.mergeRight(instance, updatedData);
+};
 export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const { noLog = false, operation = EVENT_TYPE_UPDATE } = options;
@@ -1406,10 +1410,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       // If update is part of the key, update the standard_id
       const instanceType = instance.entity_type;
       const isRelation = instance.base_type === BASE_TYPE_RELATION;
-      const keys = R.map((t) => t.key, elements);
+      const keys = R.map((t) => t.key, updatedInputs);
       if (!isRelation && isFieldContributingToStandardId(instanceType, keys)) {
-        // eslint-disable-next-line no-await-in-loop
-        const standardId = generateStandardId(instanceType, instance);
+        const updatedInstance = mergeInstanceWithInputs(instance, updatedInputs);
+        const standardId = generateStandardId(instanceType, updatedInstance);
         const standardInput = { key: 'standard_id', value: [standardId] };
         // eslint-disable-next-line no-await-in-loop
         const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
@@ -1420,15 +1424,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     // Update elasticsearch and send logs
     const postOperations = [];
     const index = inferIndexFromConceptType(instance.entity_type);
-    const esData = R.mergeAll(
-      R.map((updatedInput) => {
-        const { key, value } = updatedInput;
-        const val = R.includes(key, multipleAttributes) ? value : R.head(value);
-        // eslint-disable-next-line no-nested-ternary
-        const typedVal = val === 'true' ? true : val === 'false' ? false : val;
-        return { [key]: typedVal };
-      }, updatedInputs)
+    const updateAsObject = R.mergeAll(
+      R.map(({ key, value }) => ({ [key]: isMultipleAttribute(key) ? value : R.head(value) }), updatedInputs)
     );
+    const esData = prepareElementForIndexing(updateAsObject);
     postOperations.push(elUpdate(index, instance.internal_id, { doc: esData }));
     const dataToLogSend = R.filter((input) => input.key !== 'x_opencti_graph_data', elements);
     if (!noLog && !R.isEmpty(dataToLogSend)) {
@@ -1458,13 +1457,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (lock) await lock.unlock();
   }
   // Return fully updated instance
-  const inputPairs = R.map((input) => {
-    const { key, value } = input;
-    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
-    return { [key]: val };
-  }, updatedInputs);
-  const updatedData = R.mergeAll(inputPairs);
-  return R.mergeRight(instance, updatedData);
+  return mergeInstanceWithInputs(instance, updatedInputs);
 };
 
 export const patchAttribute = async (user, id, type, patch, options = {}) => {
@@ -1626,7 +1619,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     const nbElements = queryElements.length;
     for (let index = 0; index < nbElements; index += 1) {
       const { key, value } = queryElements[index];
-      const insert = prepareAttribute(value);
+      const insert = prepareAttribute(key, value);
       const separator = index + 1 === nbElements ? ';' : ',';
       query += `has ${key} ${insert}${separator} `;
     }
@@ -1791,7 +1784,7 @@ const createRawEntity = async (user, standardId, input, type, opts = {}) => {
     )(data);
   }
   // STIX-Core-Object
-  // STIX-Domain-Object
+  // -- STIX-Domain-Object
   if (isStixDomainObject(type)) {
     data = R.pipe(
       R.assoc('revoked', R.isNil(data.revoked) ? false : data.revoked),
@@ -1822,7 +1815,7 @@ const createRawEntity = async (user, standardId, input, type, opts = {}) => {
   let query = `insert $entity isa ${type}, `;
   for (let index = 0; index < nbElements; index += 1) {
     const { key, value } = queryElements[index];
-    const insert = prepareAttribute(value);
+    const insert = prepareAttribute(key, value);
     const separator = index + 1 === nbElements ? ';' : ',';
     if (!R.isNil(insert) && insert.length !== 0) {
       query += `has ${key} ${insert}${separator} `;

@@ -1,7 +1,7 @@
 // Admin user initialization
 import { v4 as uuid } from 'uuid';
 import { logger } from './config/conf';
-import { elCreateIndexes, elDeleteIndexes, elIsAlive } from './database/elasticSearch';
+import { elCreateIndexes, elDeleteIndexes, elIsAlive, PLATFORM_INDICES } from './database/elasticSearch';
 import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
@@ -109,8 +109,9 @@ const initializeSchema = async () => {
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
   await internalDirectWrite(schema);
   logger.info(`[INIT] > Grakn schema loaded`);
+  // New platform so delete all indices to prevent conflict
+  await elDeleteIndexes(PLATFORM_INDICES);
   // Create default indexes
-  await elDeleteIndexes();
   await elCreateIndexes();
   logger.info(`[INIT] > Elasticsearch indexes loaded`);
   return true;

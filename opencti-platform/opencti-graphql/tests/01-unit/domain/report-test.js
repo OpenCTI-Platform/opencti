@@ -19,7 +19,7 @@ test('should report ids stable', () => {
 });
 
 test('should observable ids stable', () => {
-  const data = { name: 'test', payload_bin: 'test', hashes: '{"MD5":"yyyyyyyyyyyyy"}' };
+  const data = { name: 'test', payload_bin: 'test', hashes: { MD5: 'yyyyyyyyyyyyy' } };
   const reportStandardId = generateStandardId(ENTITY_HASHED_OBSERVABLE_ARTIFACT, data);
   expect(reportStandardId).toEqual('artifact--5e63958a-9ee6-535d-8c84-3a1e42b8213d');
 });

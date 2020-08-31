@@ -37,6 +37,7 @@ import {
 } from '../schema/stixMetaRelationship';
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
+import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -63,6 +64,9 @@ const stixCyberObservableResolvers = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     relatedTo: `${REL_INDEX_PREFIX}${RELATION_RELATED_TO}.internal_id`,
     objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+  },
+  HashedObservable: {
+    hashes: (stixCyberObservable) => complexAttributeToApiFormat('hashes', stixCyberObservable),
   },
   StixCyberObservable: {
     // eslint-disable-next-line no-underscore-dangle
