@@ -81,7 +81,7 @@ export const CAPABILITIES = [
 ];
 
 // Check every dependencies
-const checkSystemDependencies = async () => {
+export const checkSystemDependencies = async () => {
   // Check if Grakn is available
   await graknIsAlive();
   logger.info(`[PRE-CHECK] > Grakn is alive`);

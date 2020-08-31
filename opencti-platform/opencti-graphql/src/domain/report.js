@@ -49,7 +49,6 @@ export const reportsTimeSeries = (args) => {
   return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-// TODO Migrate to ElasticSearch
 export const reportsNumber = (args) => ({
   count: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
    ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''} 
@@ -72,7 +71,6 @@ export const reportsTimeSeriesByAuthor = async (args) => {
   return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-// TODO Migrate to ElasticSearch
 export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};

@@ -557,16 +557,8 @@ export const specialElasticCharsEscape = (query) => {
   return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
 export const elPaginate = async (indexName, options = {}) => {
-  const {
-    first = 200,
-    after,
-    types = null,
-    filters = [],
-    search = null,
-    orderBy = null,
-    orderMode = 'asc',
-    connectionFormat = true, // TODO @Julien Refactor that
-  } = options;
+  const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  const { types = null, filters = [], search = null, connectionFormat = true } = options;
   const offset = after ? cursorToOffset(after) : 0;
   let must = [];
   let mustnot = [];
