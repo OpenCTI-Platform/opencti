@@ -43,7 +43,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { BASE_TYPE_RELATION, isAbstract } from '../schema/general';
-import { dictReconstruction } from '../schema/fieldDataAdapter';
+import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 
 const dateFields = [
@@ -778,20 +778,12 @@ export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const hits = [];
   for (let index = 0; index < data.body.hits.hits.length; index += 1) {
     const hit = data.body.hits.hits[index];
-    const loadedElement = assoc('_index', hit._index, hit._source);
-    // Dictionary are stored in STIX json format, we need to recreate what is expected by graphql
-    let transformedData = {};
-    const dataKeys = Object.keys(loadedElement);
-    for (let indexKey = 0; indexKey < dataKeys.length; indexKey += 1) {
-      const dataKey = dataKeys[indexKey];
-      const attributeValue = loadedElement[dataKey];
-      transformedData[dataKey] = dictReconstruction(dataKey, attributeValue);
+    let loadedElement = assoc('_index', hit._index, hit._source);
+    // And a specific processing for a relation
+    if (loadedElement.base_type === BASE_TYPE_RELATION) {
+      loadedElement = elReconstructRelation(loadedElement);
     }
-    // Return the data and reconstruct the relation if needed
-    if (transformedData.base_type === BASE_TYPE_RELATION) {
-      transformedData = elReconstructRelation(transformedData);
-    }
-    hits.push(transformedData);
+    hits.push(loadedElement);
   }
   return hits;
 };
@@ -914,20 +906,27 @@ export const elRemoveRelationConnection = async (relationId) => {
   });
 };
 
+export const prepareElementForIndexing = (element) => {
+  const thing = {};
+  Object.keys(element).forEach((key) => {
+    const value = element[key];
+    if (Array.isArray(value)) {
+      const filteredArray = value.filter((i) => i);
+      thing[key] = filteredArray.length > 0 ? filteredArray : [];
+    } else if (isBooleanAttribute(key)) {
+      // patch field is string generic so need to be cast to boolean
+      thing[key] = typeof value === 'boolean' ? value : value?.toLowerCase() === 'true';
+    } else {
+      thing[key] = value;
+    }
+  });
+  return thing;
+};
 const prepareIndexing = async (elements) => {
   return Promise.all(
     map(async (element) => {
       // Ensure empty list are not indexed
-      const thing = {};
-      Object.keys(element).forEach((key) => {
-        const value = element[key];
-        if (Array.isArray(value)) {
-          const filteredArray = value.filter((i) => i);
-          thing[key] = filteredArray.length > 0 ? filteredArray : [];
-        } else {
-          thing[key] = value;
-        }
-      });
+      const thing = prepareElementForIndexing(element);
       // For relation, index a list of connections.
       if (thing.base_type === BASE_TYPE_RELATION) {
         if (thing.fromRole === undefined || thing.toRole === undefined) {

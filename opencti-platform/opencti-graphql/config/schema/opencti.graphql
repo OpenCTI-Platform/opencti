@@ -7965,7 +7965,6 @@ type Query {
     relationship_type: String
     toTypes: [String]
     inferred: Boolean
-    toTypes: [String]
     startDate: DateTime
     endDate: DateTime
     limit: Int

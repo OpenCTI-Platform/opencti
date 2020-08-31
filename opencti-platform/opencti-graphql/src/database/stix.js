@@ -10,25 +10,31 @@ import {
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { multipleAttributes } from './grakn';
+import { multipleAttributes } from '../schema/fieldDataAdapter';
 
 export const STIX_SPEC_VERSION = '2.1';
 
-export const buildStixData = (entityData, extra = {}, onlyBase = false) => {
-  let type = entityData.entity_type;
+const convertTypeToStixType = (type) => {
   if (isStixDomainObjectIdentity(type)) {
-    type = 'Identity';
-  } else if (isStixDomainObjectLocation(type)) {
-    type = 'Location';
-  } else if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
-    type = 'File';
+    return 'identity';
   }
+  if (isStixDomainObjectLocation(type)) {
+    return 'location';
+  }
+  if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+    return 'file';
+  }
+  return type.toLowerCase();
+};
+
+export const buildStixData = (entityData, extra = {}, onlyBase = false) => {
+  const type = entityData.entity_type;
   let finalData = pipe(
     dissoc('standard_id'),
     dissoc('internal_id'),
     assoc('id', entityData.standard_id),
     dissoc('entity_type'),
-    assoc('type', type.toLowerCase())
+    assoc('type', convertTypeToStixType(type))
   )(entityData);
   // Relationships
   if (isStixCoreRelationship(type)) {

@@ -47,6 +47,7 @@ import {
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
+import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
 
 export const findById = (stixCyberObservableId) => {
   return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -190,20 +191,15 @@ export const addStixCyberObservable = async (user, input) => {
   if (!observableInput) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
+  // Convert hashes to dictionary if needed.
+  if (isStixCyberObservableHashedObservable(input.type)) {
+    const hashInputToJson = apiAttributeToComplexFormat('hashes', observableInput.hashes);
+    observableInput = R.assoc('hashes', hashInputToJson, observableInput);
+  }
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(input.type, observableInput);
   if (observableSyntaxResult !== true) {
     throw FunctionalError(`Observable of type ${input.type} is not correctly formatted.`, { observableSyntaxResult });
-  }
-  // Adapt the input if needed
-  if (isStixCyberObservableHashedObservable(input.type)) {
-    const hashBlob = JSON.stringify(
-      R.pipe(
-        R.map((d) => [d.algorithm, d.hash]),
-        R.fromPairs
-      )(observableInput.hashes)
-    );
-    observableInput = R.assoc('hashes', hashBlob, observableInput);
   }
   // If everything ok, create adapt/create the observable and notify for enrichment
   const created = await createEntity(user, observableInput, input.type);
@@ -377,9 +373,7 @@ const askJobExports = async (
  */
 export const stixCyberObservableExportAsk = async (args) => {
   const { format, stixCyberObservableId = null, exportType = null, maxMarkingDefinition = null, context = null } = args;
-  const entity = stixCyberObservableId
-    ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
-    : null;
+  const entity = stixCyberObservableId ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE) : null;
   const workList = await askJobExports(format, entity, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do
   return map((w) => workToExportFile(w.work), workList);

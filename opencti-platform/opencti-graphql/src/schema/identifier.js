@@ -132,11 +132,10 @@ const entityContribution = {
       return data instanceof Date ? data.toISOString() : data;
     },
     hashes(data) {
-      const hashDict = JSON.parse(data);
-      if (hashDict.MD5) return { MD5: hashDict.MD5 };
-      if (hashDict['SHA-1']) return { 'SHA-1': hashDict['SHA-1'] };
-      if (hashDict['SHA-256']) return { 'SHA-256': hashDict['SHA-256'] };
-      if (hashDict['SHA-512']) return { 'SHA-512': hashDict['SHA-512'] };
+      if (data.MD5) return { MD5: data.MD5 };
+      if (data['SHA-1']) return { 'SHA-1': data['SHA-1'] };
+      if (data['SHA-256']) return { 'SHA-256': data['SHA-256'] };
+      if (data['SHA-512']) return { 'SHA-512': data['SHA-512'] };
       return undefined;
     },
   },
