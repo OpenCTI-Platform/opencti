@@ -7360,6 +7360,8 @@ input StixCyberObservableRelationshipAddInput {
   relationship_type: String!
   confidence: Int
   createdBy: String
+  start_time: DateTime
+  stop_time: DateTime
   objectMarking: [String]
   objectLabel: [String]
   created: DateTime
@@ -8116,10 +8118,22 @@ type Query {
     startTimeStop: DateTime
     stopTimeStart: DateTime
     stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
+    search: String
+    filters: [StixCyberObservableRelationshipsFiltering]
+    filterMode: FilterMode
+    toStix: Boolean
+  ): StixCyberObservableRelationshipConnection @auth(for: [KNOWLEDGE])
+  stixCyberObservableRelationshipsOfElement(
+    first: Int
+    after: ID
+    orderBy: StixCyberObservableRelationshipsOrdering
+    orderMode: OrderingMode
+    elementId: String
+    inferred: Boolean
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
     search: String
     filters: [StixCyberObservableRelationshipsFiltering]
     filterMode: FilterMode

@@ -55,8 +55,10 @@ class StixCyberObservableObservableLineComponent extends Component {
       node,
       paginationOptions,
       displayRelation,
+      entityId,
     } = this.props;
-    const link = `${resolveLink(node.to.entity_type)}/${node.to.id}`;
+    const element = node.from.id === entityId ? node.to : node.from;
+    const link = `${resolveLink(element.entity_type)}/${element.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -66,7 +68,7 @@ class StixCyberObservableObservableLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.to.entity_type} />
+          <ItemIcon type={element.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -76,7 +78,7 @@ class StixCyberObservableObservableLineComponent extends Component {
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
-                  {t(`relationship_${node.relationship_type}`)}
+                  {node.relationship_type}
                 </div>
               ) : (
                 ''
@@ -85,31 +87,25 @@ class StixCyberObservableObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`observable_${node.to.entity_type}`)}
+                {t(`entity_${element.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
               >
-                {node.to.observable_value}
+                {element.observable_value}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role_played.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
-                {node.role_played ? t(node.role_played) : t('Unknown')}
+                {node.inferred ? '-' : nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.first_seen)}
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
-              >
-                {node.inferred ? '-' : nsd(node.last_seen)}
+                {node.inferred ? '-' : nsd(node.stop_time)}
               </div>
             </div>
           }
@@ -127,6 +123,7 @@ class StixCyberObservableObservableLineComponent extends Component {
 }
 
 StixCyberObservableObservableLineComponent.propTypes = {
+  entityId: PropTypes.string,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object,
   node: PropTypes.object,
@@ -145,10 +142,20 @@ const StixCyberObservableObservableLineFragment = createFragmentContainer(
         relationship_type
         start_time
         stop_time
+        from {
+          ... on StixCyberObservable {
+            id
+            entity_type
+            observable_value
+            created_at
+            updated_at
+          }
+        }
         to {
           ... on StixCyberObservable {
             id
             entity_type
+            observable_value
             created_at
             updated_at
           }
@@ -198,19 +205,13 @@ class StixCyberObservableObservableLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.role_played.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
-              >
-                <div className="fakeItem" style={{ width: '80%' }} />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  compose, dissoc, pipe, map, toPairs, filter,
+} from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -8,6 +10,7 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
+import StixCyberObservableLinks from './StixCyberObservableLinks';
 
 const styles = () => ({
   paper: {
@@ -22,22 +25,51 @@ const styles = () => ({
 class StixCyberObservableDetailsComponent extends Component {
   render() {
     const { t, classes, stixCyberObservable } = this.props;
+    const observableAttributes = pipe(
+      dissoc('id'),
+      dissoc('entity_type'),
+      toPairs,
+      map((n) => ({ key: n[0], value: n[1] })),
+      filter((n) => n.value),
+    )(stixCyberObservable);
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Grid container={true} spacing={3}>
-            {Object.entries(stixCyberObservable).map(([key, value]) => (
-                <Grid key={key} item={true} xs={6}>
+          <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
+            {observableAttributes.map((observableAttribute) => {
+              if (observableAttribute.key === 'hashes') {
+                return observableAttribute.value.map((hash) => (
+                  <Grid key={hash.algorithm} item={true} xs={6}>
+                    <Typography variant="h3" gutterBottom={true}>
+                      {hash.algorithm}
+                    </Typography>
+                    <pre>{hash.hash}</pre>
+                  </Grid>
+                ));
+              }
+              let finalValue = observableAttribute.value;
+              if (finalValue === true) {
+                finalValue = 'TRUE';
+              } else if (finalValue === false) {
+                finalValue = 'FALSE';
+              }
+              return (
+                <Grid key={observableAttribute.key} item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {key}
+                    {observableAttribute.key.replace('attribute_', '')}
                   </Typography>
-                  {value}
+                  <pre>{finalValue || '-'}</pre>
                 </Grid>
-            ))}
+              );
+            })}
           </Grid>
+          <StixCyberObservableLinks
+            stixCyberObservableId={stixCyberObservable.id}
+            stixCyberObservableType={stixCyberObservable.entity_type}
+          />
         </Paper>
       </div>
     );
@@ -55,6 +87,8 @@ const StixCyberObservableDetails = createFragmentContainer(
   {
     stixCyberObservable: graphql`
       fragment StixCyberObservableDetails_stixCyberObservable on StixCyberObservable {
+        id
+        entity_type
         ... on AutonomousSystem {
           number
           name
@@ -83,18 +117,16 @@ const StixCyberObservableDetails = createFragmentContainer(
           received_lines
           body
         }
-        ... on HashedObservable {
-          hashes {
-            algorithm
-            hash
-          }
-        }
         ... on Artifact {
           mime_type
           payload_bin
           url
           encryption_algorithm
           decryption_key
+          hashes {
+            algorithm
+            hash
+          }
         }
         ... on StixFile {
           extensions
@@ -106,6 +138,10 @@ const StixCyberObservableDetails = createFragmentContainer(
           ctime
           mtime
           atime
+          hashes {
+            algorithm
+            hash
+          }
         }
         ... on X509Certificate {
           is_self_signed
@@ -115,6 +151,10 @@ const StixCyberObservableDetails = createFragmentContainer(
           issuer
           validity_not_before
           validity_not_after
+          hashes {
+            algorithm
+            hash
+          }
         }
         ... on IPv4Addr {
           value

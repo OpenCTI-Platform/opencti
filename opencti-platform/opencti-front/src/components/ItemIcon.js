@@ -126,7 +126,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Email-Message':
     case 'Email-Mime-Part-Type':
     case 'Artifact':
-    case 'File':
+    case 'StixFile':
     case 'X509-Certificate':
     case 'IPv4-Addr':
     case 'IPv6-Addr':

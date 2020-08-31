@@ -79,26 +79,6 @@ class TopMenuStixCyberObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/observations/observables/${observableId}/links`}
-          variant={
-            location.pathname
-            === `/dashboard/observations/observables/${observableId}/links`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname
-            === `/dashboard/observations/observables/${observableId}/links`
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Linked observables')}
-        </Button>
-        <Button
-          component={Link}
           to={`/dashboard/observations/observables/${observableId}/knowledge`}
           variant={
             location.pathname

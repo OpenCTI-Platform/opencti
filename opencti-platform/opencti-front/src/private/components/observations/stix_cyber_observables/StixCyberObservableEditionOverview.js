@@ -7,20 +7,32 @@ import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
   compose,
+  fromPairs,
   map,
   pathOr,
   pipe,
   pick,
   difference,
   head,
+  filter,
+  includes,
 } from 'ramda';
-import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import { stixCyberObservablesLinesAttributesQuery } from './StixCyberObservablesLines';
+import {
+  booleanAttributes,
+  dateAttributes,
+  ignoredAttributes,
+  numberAttributes,
+} from './StixCyberObservableCreation';
+import { dateFormat } from '../../../../utils/Time';
+import DatePickerField from '../../../../components/DatePickerField';
+import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -102,13 +114,6 @@ const stixCyberObservableMutationRelationDelete = graphql`
   }
 `;
 
-const stixCyberObservableValidation = (t) => Yup.object().shape({
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-});
-
 class StixCyberObservableEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
     commitMutation({
@@ -123,18 +128,17 @@ class StixCyberObservableEditionOverviewComponent extends Component {
   }
 
   handleSubmitField(name, value) {
-    stixCyberObservableValidation(this.props.t)
-      .validateAt(name, { [name]: value })
-      .then(() => {
-        commitMutation({
-          mutation: stixCyberObservableMutationFieldPatch,
-          variables: {
-            id: this.props.stixCyberObservable.id,
-            input: { key: name, value },
-          },
-        });
-      })
-      .catch(() => false);
+    let finalName = name;
+    if (name.includes('hashes')) {
+      finalName = name.replace('hashes_', 'hashes.');
+    }
+    commitMutation({
+      mutation: stixCyberObservableMutationFieldPatch,
+      variables: {
+        id: this.props.stixCyberObservable.id,
+        input: { key: finalName, value },
+      },
+    });
   }
 
   handleChangeCreatedBy(name, value) {
@@ -160,7 +164,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         mutation: stixCyberObservableMutationRelationDelete,
         variables: {
           id: this.props.stixCyberObservable.id,
-          relationId: currentCreatedBy.relation,
+          toId: currentCreatedBy.value,
         },
       });
       if (value.value) {
@@ -218,78 +222,264 @@ class StixCyberObservableEditionOverviewComponent extends Component {
 
   render() {
     const { t, stixCyberObservable, context } = this.props;
-    const createdBy = pathOr(null, ['createdBy', 'name'], stixCyberObservable) === null
-      ? ''
-      : {
-        label: pathOr(null, ['createdBy', 'name'], stixCyberObservable),
-        value: pathOr(null, ['createdBy', 'id'], stixCyberObservable),
-      };
-    const objectMarking = pipe(
-      pathOr([], ['objectMarking', 'edges']),
-      map((n) => ({
-        label: n.node.definition,
-        value: n.node.id,
-      })),
-    )(stixCyberObservable);
-    const initialValues = pipe(
-      assoc('createdBy', createdBy),
-      assoc('objectMarking', objectMarking),
-      pick([
-        'observable_value',
-        'createdBy',
-        'killChainPhases',
-        'objectMarking',
-      ]),
-    )(stixCyberObservable);
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={stixCyberObservableValidation(t)}
-        onSubmit={() => true}
-      >
-        {({ setFieldValue }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              name="observable_value"
-              label={t('Observable value')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={this.handleChangeFocus.bind(this)}
-              onSubmit={this.handleSubmitField.bind(this)}
-              helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="observable_value"
-                />
+      <QueryRenderer
+        query={stixCyberObservablesLinesAttributesQuery}
+        variables={{ elementType: stixCyberObservable.entity_type }}
+        render={({ props }) => {
+          if (props && props.attributes) {
+            const createdBy = pathOr(null, ['createdBy', 'name'], stixCyberObservable) === null
+              ? ''
+              : {
+                label: pathOr(
+                  null,
+                  ['createdBy', 'name'],
+                  stixCyberObservable,
+                ),
+                value: pathOr(
+                  null,
+                  ['createdBy', 'id'],
+                  stixCyberObservable,
+                ),
+              };
+            const objectMarking = pipe(
+              pathOr([], ['objectMarking', 'edges']),
+              map((n) => ({
+                label: n.node.definition,
+                value: n.node.id,
+              })),
+            )(stixCyberObservable);
+            const initialValues = pipe(
+              assoc('createdBy', createdBy),
+              assoc('objectMarking', objectMarking),
+              pick([
+                'x_opencti_score',
+                'createdBy',
+                'killChainPhases',
+                'objectMarking',
+              ]),
+            )(stixCyberObservable);
+
+            const attributes = pipe(
+              map((n) => n.node),
+              filter((n) => !includes(n.value, ignoredAttributes)),
+            )(props.attributes.edges);
+            for (const attribute of attributes) {
+              if (includes(attribute.value, dateAttributes)) {
+                initialValues[attribute.value] = stixCyberObservable[
+                  attribute.value
+                ]
+                  ? dateFormat(stixCyberObservable[attribute.value])
+                  : null;
+              } else if (attribute.value === 'hashes') {
+                const hashes = pipe(
+                  map((n) => [n.algorithm, n.hash]),
+                  fromPairs,
+                )(stixCyberObservable.hashes);
+                initialValues.hashes_MD5 = hashes.MD5;
+                initialValues['hashes_SHA-1'] = hashes['SHA-1'];
+                initialValues['hashes_SHA-256'] = hashes['SHA-256'];
+                initialValues['hashes_SHA-512'] = hashes['SGA-512'];
+              } else {
+                initialValues[attribute.value] = stixCyberObservable[attribute.value];
               }
-            />
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
-              onChange={this.handleChangeCreatedBy.bind(this)}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              }
-              onChange={this.handleChangeObjectMarking.bind(this)}
-            />
-          </Form>
-        )}
-      </Formik>
+            }
+            return (
+              <Formik
+                enableReinitialize={true}
+                initialValues={initialValues}
+                onSubmit={() => true}
+              >
+                {({ setFieldValue }) => (
+                  <Form style={{ margin: '20px 0 20px 0' }}>
+                    <Field
+                      component={TextField}
+                      name="x_opencti_score"
+                      label={t('Score')}
+                      fullWidth={true}
+                      type="number"
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onSubmit={this.handleSubmitField.bind(this)}
+                      helperText={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_score"
+                        />
+                      }
+                    />
+                    {attributes.map((attribute) => {
+                      if (attribute.value === 'hashes') {
+                        return (
+                          <div key={attribute.value}>
+                            <Field
+                              component={TextField}
+                              name="hashes_MD5"
+                              label={t('hash_md5')}
+                              fullWidth={true}
+                              style={{ marginTop: 20 }}
+                              onFocus={this.handleChangeFocus.bind(this)}
+                              onSubmit={this.handleSubmitField.bind(this)}
+                              helperText={
+                                <SubscriptionFocus
+                                  context={context}
+                                  fieldName="hashes_MD5"
+                                />
+                              }
+                            />
+                            <Field
+                              component={TextField}
+                              name="hashes_SHA-1"
+                              label={t('hash_sha-1')}
+                              fullWidth={true}
+                              style={{ marginTop: 20 }}
+                              onFocus={this.handleChangeFocus.bind(this)}
+                              onSubmit={this.handleSubmitField.bind(this)}
+                              helperText={
+                                <SubscriptionFocus
+                                  context={context}
+                                  fieldName="hashes_SHA-1"
+                                />
+                              }
+                            />
+                            <Field
+                              component={TextField}
+                              name="hashes_SHA-256"
+                              label={t('hash_sha-256')}
+                              fullWidth={true}
+                              style={{ marginTop: 20 }}
+                              onFocus={this.handleChangeFocus.bind(this)}
+                              onSubmit={this.handleSubmitField.bind(this)}
+                              helperText={
+                                <SubscriptionFocus
+                                  context={context}
+                                  fieldName="hashes_SHA-256"
+                                />
+                              }
+                            />
+                            <Field
+                              component={TextField}
+                              name="hashes.SHA-512"
+                              label={t('hash_sha-512')}
+                              fullWidth={true}
+                              style={{ marginTop: 20 }}
+                              onFocus={this.handleChangeFocus.bind(this)}
+                              onSubmit={this.handleSubmitField.bind(this)}
+                              helperText={
+                                <SubscriptionFocus
+                                  context={context}
+                                  fieldName="hashes_SHA-512"
+                                />
+                              }
+                            />
+                          </div>
+                        );
+                      }
+                      if (includes(attribute.value, dateAttributes)) {
+                        return (
+                          <Field
+                            component={DatePickerField}
+                            key={attribute.value}
+                            name={attribute.value}
+                            label={attribute.value}
+                            invalidDateMessage={t(
+                              'The value must be a date (YYYY-MM-DD)',
+                            )}
+                            fullWidth={true}
+                            style={{ marginTop: 20 }}
+                            onFocus={this.handleChangeFocus.bind(this)}
+                            onSubmit={this.handleSubmitField.bind(this)}
+                            helperText={
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName={attribute.value}
+                              />
+                            }
+                          />
+                        );
+                      }
+                      if (includes(attribute.value, numberAttributes)) {
+                        return (
+                          <Field
+                            component={TextField}
+                            key={attribute.value}
+                            name={attribute.value}
+                            label={attribute.value}
+                            fullWidth={true}
+                            number={true}
+                            style={{ marginTop: 20 }}
+                            onFocus={this.handleChangeFocus.bind(this)}
+                            onSubmit={this.handleSubmitField.bind(this)}
+                            helperText={
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName={attribute.value}
+                              />
+                            }
+                          />
+                        );
+                      }
+                      if (includes(attribute.value, booleanAttributes)) {
+                        return (
+                          <Field
+                            component={SwitchField}
+                            type="checkbox"
+                            key={attribute.value}
+                            name={attribute.value}
+                            label={attribute.value}
+                            containerstyle={{ marginTop: 20 }}
+                          />
+                        );
+                      }
+                      return (
+                        <Field
+                          component={TextField}
+                          key={attribute.value}
+                          name={attribute.value}
+                          label={attribute.value}
+                          fullWidth={true}
+                          style={{ marginTop: 20 }}
+                          onFocus={this.handleChangeFocus.bind(this)}
+                          onSubmit={this.handleSubmitField.bind(this)}
+                          helperText={
+                            <SubscriptionFocus
+                              context={context}
+                              fieldName={attribute.value}
+                            />
+                          }
+                        />
+                      );
+                    })}
+                    <CreatedByField
+                      name="createdBy"
+                      style={{ marginTop: 20, width: '100%' }}
+                      setFieldValue={setFieldValue}
+                      helpertext={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldName="createdBy"
+                        />
+                      }
+                      onChange={this.handleChangeCreatedBy.bind(this)}
+                    />
+                    <ObjectMarkingField
+                      name="objectMarking"
+                      style={{ marginTop: 20, width: '100%' }}
+                      helpertext={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldname="objectMarking"
+                        />
+                      }
+                      onChange={this.handleChangeObjectMarking.bind(this)}
+                    />
+                  </Form>
+                )}
+              </Formik>
+            );
+          }
+          return <div />;
+        }}
+      />
     );
   }
 }
@@ -308,7 +498,177 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
     stixCyberObservable: graphql`
       fragment StixCyberObservableEditionOverview_stixCyberObservable on StixCyberObservable {
         id
-        observable_value
+        entity_type
+        ... on AutonomousSystem {
+          number
+          name
+          rir
+        }
+        ... on Directory {
+          path
+          path_enc
+          ctime
+          mtime
+          atime
+        }
+        ... on DomainName {
+          value
+        }
+        ... on EmailAddr {
+          value
+          display_name
+        }
+        ... on EmailMessage {
+          is_multipart
+          attribute_date
+          content_type
+          message_id
+          subject
+          received_lines
+          body
+        }
+        ... on Artifact {
+          mime_type
+          payload_bin
+          url
+          encryption_algorithm
+          decryption_key
+          hashes {
+            algorithm
+            hash
+          }
+        }
+        ... on StixFile {
+          extensions
+          size
+          name
+          name_enc
+          magic_number_hex
+          mime_type
+          ctime
+          mtime
+          atime
+          hashes {
+            algorithm
+            hash
+          }
+        }
+        ... on X509Certificate {
+          is_self_signed
+          version
+          serial_number
+          signature_algorithm
+          issuer
+          validity_not_before
+          validity_not_after
+          hashes {
+            algorithm
+            hash
+          }
+        }
+        ... on IPv4Addr {
+          value
+        }
+        ... on IPv6Addr {
+          value
+        }
+        ... on MacAddr {
+          value
+        }
+        ... on Mutex {
+          name
+        }
+        ... on NetworkTraffic {
+          extensions
+          start
+          end
+          is_active
+          src_port
+          dst_port
+          protocols
+          src_byte_count
+          dst_byte_count
+          src_packets
+          dst_packets
+        }
+        ... on Process {
+          extensions
+          is_hidden
+          pid
+          created_time
+          cwd
+          command_line
+          environment_variables
+        }
+        ... on Software {
+          name
+          cpe
+          swid
+          languages
+          vendor
+          version
+        }
+        ... on Url {
+          value
+        }
+        ... on UserAccount {
+          extensions
+          user_id
+          credential
+          account_login
+          account_type
+          display_name
+          is_service_account
+          is_privileged
+          can_escalate_privs
+          is_disabled
+          account_created
+          account_expires
+          credential_last_changed
+          account_first_login
+          account_last_login
+        }
+        ... on WindowsRegistryKey {
+          attribute_key
+          modified_time
+          number_of_subkeys
+        }
+        ... on WindowsRegistryValueType {
+          name
+          data
+          data_type
+        }
+        ... on X509V3ExtensionsType {
+          basic_constraints
+          name_constraints
+          policy_constraints
+          key_usage
+          extended_key_usage
+          subject_key_identifier
+          authority_key_identifier
+          subject_alternative_name
+          issuer_alternative_name
+          subject_directory_attributes
+          crl_distribution_points
+          inhibit_any_policy
+          private_key_usage_period_not_before
+          private_key_usage_period_not_after
+          certificate_policies
+          policy_mappings
+        }
+        ... on XOpenCTICryptographicKey {
+          value
+        }
+        ... on XOpenCTICryptocurrencyWallet {
+          value
+        }
+        ... on XOpenCTIText {
+          value
+        }
+        ... on XOpenCTIUserAgent {
+          value
+        }
+        x_opencti_score
         createdBy {
           ... on Identity {
             id

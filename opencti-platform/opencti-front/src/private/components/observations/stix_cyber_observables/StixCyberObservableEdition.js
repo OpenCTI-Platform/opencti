@@ -36,6 +36,7 @@ export const stixCyberObservableEditionQuery = graphql`
   query StixCyberObservableEditionContainerQuery($id: String!) {
     stixCyberObservable(id: $id) {
       ...StixCyberObservableEditionContainer_stixCyberObservable
+      ...StixCyberObservable_stixCyberObservable
     }
   }
 `;

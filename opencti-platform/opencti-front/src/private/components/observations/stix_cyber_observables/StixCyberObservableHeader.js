@@ -43,16 +43,14 @@ class StixCyberObservableHeaderComponent extends Component {
         </div>
         {variant !== 'noMarking' ? (
           <div className={classes.marking}>
-            {pathOr(
-              [],
-              ['markingDefinitions', 'edges'],
-              stixCyberObservable,
-            ).map((markingDefinition) => (
-              <ItemMarking
-                key={markingDefinition.node.id}
-                label={markingDefinition.node.definition}
-              />
-            ))}
+            {pathOr([], ['objectMarking', 'edges'], stixCyberObservable).map(
+              (markingDefinition) => (
+                <ItemMarking
+                  key={markingDefinition.node.id}
+                  label={markingDefinition.node.definition}
+                />
+              ),
+            )}
           </div>
         ) : (
           ''

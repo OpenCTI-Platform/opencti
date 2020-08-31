@@ -124,15 +124,15 @@ class StixCyberObservableEntityLineComponent extends Component {
               )}
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.first_seen)}
+                {node.inferred ? '-' : nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.last_seen)}
+                {node.inferred ? '-' : nsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -481,25 +481,15 @@ class StixCyberObservableEntityLineDummyComponent extends Component {
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
-              {!displayRelation ? (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.role_played.width }}
-                >
-                  <div className="fakeItem" style={{ width: '80%' }} />
-                </div>
-              ) : (
-                ''
-              )}
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.first_seen.width }}
+                style={{ width: dataColumns.start_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.last_seen.width }}
+                style={{ width: dataColumns.stop_time.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { assoc, dissoc, invertObj, map, pipe, propOr, filter } from 'ramda';
+import { assoc, dissoc, invertObj, map, pipe, propOr, filter, values } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -111,24 +111,19 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_EMAIL_MESSAGE:
       return stixCyberObservable.body || stixCyberObservable.subject;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      return (
-        stixCyberObservable.md5 ||
-        stixCyberObservable.sha1 ||
-        stixCyberObservable.sha256 ||
-        stixCyberObservable.sha512 ||
-        stixCyberObservable.payload_bin ||
-        'Unknown'
-      );
+      if (values(stixCyberObservable.hashes).length > 0) {
+        return values(stixCyberObservable.hashes)[0];
+      }
+      return stixCyberObservable.payload_bin || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
-      return (
-        stixCyberObservable.md5 ||
-        stixCyberObservable.sha1 ||
-        stixCyberObservable.sha256 ||
-        stixCyberObservable.sha512 ||
-        stixCyberObservable.name ||
-        'Unknown'
-      );
+      if (values(stixCyberObservable.hashes).length > 0) {
+        return values(stixCyberObservable.hashes)[0];
+      }
+      return stixCyberObservable.name || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
+      if (values(stixCyberObservable.hashes).length > 0) {
+        return values(stixCyberObservable.hashes)[0];
+      }
       return stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
     case ENTITY_MUTEX:
       return stixCyberObservable.name || 'Unknown';

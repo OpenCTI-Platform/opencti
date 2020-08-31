@@ -96,11 +96,11 @@ class StixCyberObservableRelationshipPopover extends Component {
       },
       updater: (store) => {
         const container = store.getRoot();
-        const payload = store.getRootField('stixCyberObservableRelationEdit');
+        const payload = store.getRootField('stixCyberObservableRelationshipEdit');
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_stixCyberObservableRelations',
+          'Pagination_stixCyberObservableRelationshipsOfElement',
           this.props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, payload.getValue('delete'));

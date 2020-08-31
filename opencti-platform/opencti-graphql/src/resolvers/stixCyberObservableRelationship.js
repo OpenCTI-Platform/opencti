@@ -17,12 +17,8 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 const stixCyberObservableRelationshipResolvers = {
   Query: {
     stixCyberObservableRelationship: (_, { id }) => findById(id),
-    stixCyberObservableRelationships: (_, args) => {
-      if (args.stix_id && args.stix_id.length > 0) {
-        return findById(args.stix_id);
-      }
-      return findAll(args);
-    },
+    stixCyberObservableRelationships: (_, args) => findAll(args),
+    stixCyberObservableRelationshipsOfElement: (_, args) => findAll(args),
   },
   StixCyberObservableRelationship: {
     from: (rel) => loadById(rel.fromId, rel.fromType),

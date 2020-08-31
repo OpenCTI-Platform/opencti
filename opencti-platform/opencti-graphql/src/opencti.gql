@@ -1327,7 +1327,8 @@ define
   Autonomous-System sub Stix-Cyber-Observable,
     has number,
     has name,
-    has rir;
+    has rir,
+    plays belongs-to_to;
 
   Directory sub Stix-Cyber-Observable,
     has path,
@@ -1339,7 +1340,7 @@ define
 
   Domain-Name sub Stix-Cyber-Observable,
     has value,
-    plays resolves-to_from,
+    plays resolves-to_to,
     plays src_to,
     plays dst_to;
 

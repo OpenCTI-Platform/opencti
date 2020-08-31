@@ -33,7 +33,6 @@ const indicatorQuery = graphql`
       name
       ...Indicator_indicator
       ...IndicatorHeader_indicator
-      ...IndicatorOverview_indicator
       ...IndicatorDetails_indicator
     }
   }

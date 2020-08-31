@@ -1,40 +1,37 @@
-import { pipe, assoc } from 'ramda';
-import {
-  findAll as stixCoreRelationshipFindAll,
-  stixCoreRelationshipCleanContext,
-  stixCoreRelationshipEditContext,
-} from './stixCoreRelationship';
+import { propOr } from 'ramda';
+import { stixCoreRelationshipCleanContext, stixCoreRelationshipEditContext } from './stixCoreRelationship';
 import {
   createRelation,
   deleteRelationById,
   getRelationInferredById,
+  listRelations,
   loadById,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
+import { isAnId } from '../schema/schemaUtils';
+import { FunctionalError } from '../config/errors';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 
-export const findAll = (args) =>
-  stixCoreRelationshipFindAll(
-    args.relationship_type ? args : assoc('parent_type', ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, args)
-  );
+export const findAll = async (args) =>
+  listRelations(propOr(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, 'relationship_type', args), args);
 
 export const findById = (stixCyberObservableRelationshipId) => {
-  if (stixCyberObservableRelationshipId.length !== 36) {
+  if (!isAnId(stixCyberObservableRelationshipId)) {
     return getRelationInferredById(stixCyberObservableRelationshipId);
   }
   return loadById(stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
 };
 
 // region mutations
-export const addStixCyberObservableRelationship = async (user, input) => {
-  const finalInput = pipe(
-    assoc('fromType', ABSTRACT_STIX_CYBER_OBSERVABLE),
-    assoc('toType', ABSTRACT_STIX_CYBER_OBSERVABLE)
-  )(input);
-  const created = await createRelation(user, finalInput, { isStixCyberObservableRelationship: true, noLog: true });
-  return notify(BUS_TOPICS.StixCyberObservableRelationship.ADDED_TOPIC, created, user);
+export const addStixCyberObservableRelationship = async (user, stixCyberObservableRelationship) => {
+  if (!isStixCyberObservableRelationship(stixCyberObservableRelationship.relationship_type)) {
+    throw FunctionalError('Only stix-cyber-observable-relationship can be created trough this method.');
+  }
+  const created = await createRelation(user, stixCyberObservableRelationship);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 
 export const stixCyberObservableRelationshipDelete = async (user, stixCyberObservableRelationshipId) => {
@@ -50,9 +47,15 @@ export const stixCyberObservableRelationshipEditContext = (user, stixCyberObserv
   stixCoreRelationshipEditContext(user, stixCyberObservableRelationshipId, input);
 
 export const stixCyberObservableRelationshipEditField = async (user, relationshipId, input) => {
-  const stixRelationship = await updateAttribute(user, relationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, input, {
-    noLog: true,
-  });
+  const stixRelationship = await updateAttribute(
+    user,
+    relationshipId,
+    ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
+    input,
+    {
+      noLog: true,
+    }
+  );
   return notify(BUS_TOPICS.StixCyberObservableRelationship.EDIT_TOPIC, stixRelationship, user);
 };
 // endregion

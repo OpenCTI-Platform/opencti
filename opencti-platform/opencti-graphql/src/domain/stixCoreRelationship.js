@@ -45,9 +45,8 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 
-export const findAll = async (args) => {
-  return listRelations(propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
-};
+export const findAll = async (args) =>
+  listRelations(propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
 
 export const findById = (stixCoreRelationshipId) => {
   if (!isAnId(stixCoreRelationshipId)) {
@@ -133,6 +132,9 @@ export const stixRelations = (stixCoreObjectId, args) => {
 
 // region mutations
 export const addStixCoreRelationship = async (user, stixCoreRelationship) => {
+  if (!isStixCoreRelationship(stixCoreRelationship.relationship_type)) {
+    throw FunctionalError('Only stix-core-relationship can be created trough this method.');
+  }
   const created = await createRelation(user, stixCoreRelationship);
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].ADDED_TOPIC, created, user);
 };

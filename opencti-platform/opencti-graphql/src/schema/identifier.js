@@ -17,6 +17,7 @@ import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
+import { isStixCyberObservableRelationship } from "./stixCyberObservableRelationship";
 
 const idGen = (data, namespace) => {
   // If element have nothing participating to the key, we can only create an uuidv4
@@ -224,6 +225,7 @@ export const generateStandardId = (type, data) => {
   if (isInternalRelationship(type)) return `internal-relationship--${generateInternalId()}`;
   if (isStixCoreRelationship(type)) return `relationship--${generateInternalId()}`;
   if (isStixMetaRelationship(type)) return `relationship-meta--${generateInternalId()}`;
+  if (isStixCyberObservableRelationship(type)) return `relationship-meta--${generateInternalId()}`;
   if (isStixSightingRelationship(type)) return `sighting--${generateInternalId()}`;
   // Unknown
   throw UnsupportedError(`${type} is not supported by the platform`);

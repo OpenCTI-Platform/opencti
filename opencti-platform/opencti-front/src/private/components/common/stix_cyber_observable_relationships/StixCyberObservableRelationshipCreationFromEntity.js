@@ -35,8 +35,6 @@ import StixCyberObservableRelationCreationFromEntityLines, {
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
-import { attributesQuery } from '../../settings/attributes/AttributesLines';
-import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -282,7 +280,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixCyberObservableRelations',
+    'Pagination_stixCyberObservableRelationshipsOfElement',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -322,7 +320,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('stixCyberObservableRelationAdd');
+        const payload = store.getRootField('stixCyberObservableRelationshipAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
@@ -354,7 +352,9 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   renderSelectEntity() {
-    const { classes, t, targetStixDomainObjectTypes } = this.props;
+    const {
+      classes, t, targetStixDomainObjectTypes, entityType,
+    } = this.props;
     const paginationOptions = {
       search: this.state.search,
       types: targetStixDomainObjectTypes,
@@ -391,6 +391,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
               if (props) {
                 return (
                   <StixCyberObservableRelationCreationFromEntityLines
+                    entityType={entityType}
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
                   />
@@ -430,14 +431,10 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   renderForm(sourceEntity) {
-    const { t, classes, isFrom } = this.props;
+    const { t, classes } = this.props;
     const { targetEntity } = this.state;
-    let fromEntity = sourceEntity;
-    let toEntity = targetEntity;
-    if (!isFrom) {
-      fromEntity = targetEntity;
-      toEntity = sourceEntity;
-    }
+    const fromEntity = sourceEntity;
+    const toEntity = targetEntity;
     const relationshipTypes = resolveRelationsTypes(
       fromEntity.entity_type,
       toEntity.entity_type,
@@ -448,210 +445,165 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
       : 'linked';
     const initialValues = {
       relationship_type: defaultRelationshipType,
-      role_played: 'Unknown',
       start_time: dayStartDate(),
       stop_time: dayStartDate(),
     };
     return (
-      <QueryRenderer
-        query={attributesQuery}
-        variables={{ type: 'role_played' }}
-        render={({ props }) => {
-          if (props && props.attributes) {
-            const rolesPlayedEdges = props.attributes.edges;
-            return (
-              <Formik
-                enableReinitialize={true}
-                initialValues={initialValues}
-                validationSchema={stixCyberObservableRelationshipValidation(t)}
-                onSubmit={this.onSubmit.bind(this)}
-                onReset={this.handleClose.bind(this)}
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={stixCyberObservableRelationshipValidation(t)}
+        onSubmit={this.onSubmit.bind(this)}
+        onReset={this.handleClose.bind(this)}
+      >
+        {({ submitForm, handleReset, isSubmitting }) => (
+          <Form>
+            <div className={classes.header}>
+              <IconButton
+                aria-label="Close"
+                className={classes.closeButton}
+                onClick={this.handleClose.bind(this)}
               >
-                {({ submitForm, handleReset, isSubmitting }) => (
-                  <Form>
-                    <div className={classes.header}>
-                      <IconButton
-                        aria-label="Close"
-                        className={classes.closeButton}
-                        onClick={this.handleClose.bind(this)}
-                      >
-                        <Close fontSize="small" />
-                      </IconButton>
-                      <Typography variant="h6">
-                        {t('Create a relationship')}
-                      </Typography>
-                    </div>
-                    <div className={classes.containerRelation}>
-                      <div className={classes.relationCreate}>
-                        <div
-                          className={classes.item}
-                          style={{
-                            border: `2px solid ${itemColor(
-                              fromEntity.entity_type,
-                            )}`,
-                            top: 10,
-                            left: 0,
-                          }}
-                        >
-                          <div
-                            className={classes.itemHeader}
-                            style={{
-                              borderBottom: `1px solid ${itemColor(
-                                fromEntity.entity_type,
-                              )}`,
-                            }}
-                          >
-                            <div className={classes.icon}>
-                              <ItemIcon
-                                type={fromEntity.entity_type}
-                                color={itemColor(fromEntity.entity_type)}
-                                size="small"
-                              />
-                            </div>
-                            <div className={classes.type}>
-                              {t(`observable_${fromEntity.entity_type}`)}
-                            </div>
-                          </div>
-                          <div className={classes.content}>
-                            <span className={classes.name}>
-                              {truncate(fromEntity.observable_value, 20)}
-                            </span>
-                          </div>
-                        </div>
-                        <div
-                          className={classes.middle}
-                          style={{ paddingTop: 25 }}
-                        >
-                          <ArrowRightAlt fontSize="large" />
-                        </div>
-                        <div
-                          className={classes.item}
-                          style={{
-                            border: `2px solid ${itemColor(
-                              toEntity.entity_type,
-                            )}`,
-                            top: 10,
-                            right: 0,
-                          }}
-                        >
-                          <div
-                            className={classes.itemHeader}
-                            style={{
-                              borderBottom: `1px solid ${itemColor(
-                                toEntity.entity_type,
-                              )}`,
-                            }}
-                          >
-                            <div className={classes.icon}>
-                              <ItemIcon
-                                type={toEntity.entity_type}
-                                color={itemColor(toEntity.entity_type)}
-                                size="small"
-                              />
-                            </div>
-                            <div className={classes.type}>
-                              {t(`observable_${toEntity.entity_type}`)}
-                            </div>
-                          </div>
-                          <div className={classes.content}>
-                            <span className={classes.name}>
-                              {truncate(toEntity.observable_value, 20)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <Field
-                        component={SelectField}
-                        name="relationship_type"
-                        label={t('Relationship type')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        {map(
-                          (type) => (
-                            <MenuItem key={type} value={type}>
-                              {t(`relationship_${type}`)}
-                            </MenuItem>
-                          ),
-                          relationshipTypes,
-                        )}
-                        <MenuItem value="linked">
-                          {t('relationship_linked')}
-                        </MenuItem>
-                      </Field>
-                      <Field
-                        component={SelectField}
-                        name="role_played"
-                        label={t('Played role')}
-                        fullWidth={true}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
-                      >
-                        {rolesPlayedEdges.map((rolePlayedEdge) => (
-                          <MenuItem
-                            key={rolePlayedEdge.node.value}
-                            value={rolePlayedEdge.node.value}
-                          >
-                            {t(rolePlayedEdge.node.value)}
-                          </MenuItem>
-                        ))}
-                      </Field>
-                      <Field
-                        component={DatePickerField}
-                        name="start_time"
-                        label={t('Start time')}
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
+                <Close fontSize="small" />
+              </IconButton>
+              <Typography variant="h6">{t('Create a relationship')}</Typography>
+            </div>
+            <div className={classes.containerRelation}>
+              <div className={classes.relationCreate}>
+                <div
+                  className={classes.item}
+                  style={{
+                    border: `2px solid ${itemColor(fromEntity.entity_type)}`,
+                    top: 10,
+                    left: 0,
+                  }}
+                >
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(
+                        fromEntity.entity_type,
+                      )}`,
+                    }}
+                  >
+                    <div className={classes.icon}>
+                      <ItemIcon
+                        type={fromEntity.entity_type}
+                        color={itemColor(fromEntity.entity_type)}
+                        size="small"
                       />
-                      <Field
-                        component={DatePickerField}
-                        name="stop_time"
-                        label={t('Stop time')}
-                        invalidDateMessage={t(
-                          'The value must be a date (YYYY-MM-DD)',
-                        )}
-                        fullWidth={true}
-                        style={{ marginTop: 20 }}
-                      />
-                      <div className={classes.buttonBack}>
-                        <Button
-                          variant="contained"
-                          onClick={this.handleResetSelection.bind(this)}
-                          disabled={isSubmitting}
-                        >
-                          {t('Back')}
-                        </Button>
-                      </div>
-                      <div className={classes.buttons}>
-                        <Button
-                          variant="contained"
-                          onClick={handleReset}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Cancel')}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          onClick={submitForm}
-                          disabled={isSubmitting}
-                          classes={{ root: classes.button }}
-                        >
-                          {t('Create')}
-                        </Button>
-                      </div>
                     </div>
-                  </Form>
+                    <div className={classes.type}>
+                      {t(`entity_${fromEntity.entity_type}`)}
+                    </div>
+                  </div>
+                  <div className={classes.content}>
+                    <span className={classes.name}>
+                      {truncate(fromEntity.observable_value, 20)}
+                    </span>
+                  </div>
+                </div>
+                <div className={classes.middle} style={{ paddingTop: 25 }}>
+                  <ArrowRightAlt fontSize="large" />
+                </div>
+                <div
+                  className={classes.item}
+                  style={{
+                    border: `2px solid ${itemColor(toEntity.entity_type)}`,
+                    top: 10,
+                    right: 0,
+                  }}
+                >
+                  <div
+                    className={classes.itemHeader}
+                    style={{
+                      borderBottom: `1px solid ${itemColor(
+                        toEntity.entity_type,
+                      )}`,
+                    }}
+                  >
+                    <div className={classes.icon}>
+                      <ItemIcon
+                        type={toEntity.entity_type}
+                        color={itemColor(toEntity.entity_type)}
+                        size="small"
+                      />
+                    </div>
+                    <div className={classes.type}>
+                      {t(`entity_${toEntity.entity_type}`)}
+                    </div>
+                  </div>
+                  <div className={classes.content}>
+                    <span className={classes.name}>
+                      {truncate(toEntity.observable_value, 20)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <Field
+                component={SelectField}
+                name="relationship_type"
+                label={t('Relationship type')}
+                fullWidth={true}
+                containerstyle={{ marginTop: 20, width: '100%' }}
+              >
+                {map(
+                  (type) => (
+                    <MenuItem key={type} value={type}>
+                      {type}
+                    </MenuItem>
+                  ),
+                  relationshipTypes,
                 )}
-              </Formik>
-            );
-          }
-          return <Loader variant="inElement" />;
-        }}
-      />
+              </Field>
+              <Field
+                component={DatePickerField}
+                name="start_time"
+                label={t('Start time')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+              />
+              <Field
+                component={DatePickerField}
+                name="stop_time"
+                label={t('Stop time')}
+                invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+              />
+              <div className={classes.buttonBack}>
+                <Button
+                  variant="contained"
+                  onClick={this.handleResetSelection.bind(this)}
+                  disabled={isSubmitting}
+                >
+                  {t('Back')}
+                </Button>
+              </div>
+              <div className={classes.buttons}>
+                <Button
+                  variant="contained"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={submitForm}
+                  disabled={isSubmitting}
+                  classes={{ root: classes.button }}
+                >
+                  {t('Create')}
+                </Button>
+              </div>
+            </div>
+          </Form>
+        )}
+      </Formik>
     );
   }
 
@@ -706,11 +658,13 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             query={stixCyberObservableRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
-              if (props && props.stixEntity) {
+              if (props && props.stixObjectOrStixRelationship) {
                 return (
                   <div>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1 ? this.renderForm(props.stixEntity) : ''}
+                    {step === 1
+                      ? this.renderForm(props.stixObjectOrStixRelationship)
+                      : ''}
                   </div>
                 );
               }
@@ -725,7 +679,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
 
 StixCyberObservableRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
-  isFrom: PropTypes.bool,
+  entityType: PropTypes.string,
   targetStixDomainObjectTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

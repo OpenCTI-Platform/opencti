@@ -18,9 +18,6 @@ import IndicatorObservablePopover from './IndicatorObservablePopover';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 const styles = (theme) => ({
-  linesContainer: {
-    marginTop: 10,
-  },
   itemHead: {
     paddingLeft: 10,
     textTransform: 'uppercase',
@@ -93,7 +90,7 @@ class IndicatorObservablesComponent extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <List classes={{ root: classes.linesContainer }}>
+        <List style={{ marginTop: -15 }}>
           {indicator.observables.edges.map((observableEdge) => (
             <ListItem
               key={observableEdge.node.id}
@@ -113,7 +110,7 @@ class IndicatorObservablesComponent extends Component {
                       className={classes.bodyItem}
                       style={inlineStyles.entity_type}
                     >
-                      {t(`observable_${observableEdge.node.entity_type}`)}
+                      {t(`entity_${observableEdge.node.entity_type}`)}
                     </div>
                     <div
                       className={classes.bodyItem}

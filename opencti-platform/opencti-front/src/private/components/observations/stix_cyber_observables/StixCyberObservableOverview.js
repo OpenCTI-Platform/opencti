@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, propOr } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -12,7 +12,7 @@ import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemCreator from '../../../../components/ItemCreator';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
-import ItemMarking from '../../../../components/ItemMarking';
+import ItemScore from '../../../../components/ItemScore';
 
 const styles = () => ({
   paper: {
@@ -35,11 +35,7 @@ const styles = () => ({
 class StixCyberObservableOverview extends Component {
   render() {
     const {
-      t,
-      fldt,
-      classes,
-      stixCyberObservable,
-      withoutMarking,
+      t, fldt, classes, stixCyberObservable,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -98,6 +94,14 @@ class StixCyberObservableOverview extends Component {
                 gutterBottom={true}
                 style={{ marginTop: 20 }}
               >
+                {t('Score')}
+              </Typography>
+              <ItemScore score={stixCyberObservable.x_opencti_score} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('STIX version')}
               </Typography>
               <Button
@@ -107,32 +111,6 @@ class StixCyberObservableOverview extends Component {
               >
                 {stixCyberObservable.spec_version}
               </Button>
-              {!withoutMarking && stixCyberObservable.objectMarking ? (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Marking')}
-                  </Typography>
-                  {stixCyberObservable.objectMarking.edges.length > 0 ? (
-                    map(
-                      (markingDefinition) => (
-                        <ItemMarking
-                          key={markingDefinition.node.id}
-                          label={markingDefinition.node.definition}
-                        />
-                      ),
-                      stixCyberObservable.objectMarking.edges,
-                    )
-                  ) : (
-                    <ItemMarking label="TLP:WHITE" />
-                  )}
-                </div>
-              ) : (
-                ''
-              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -186,7 +164,6 @@ StixCyberObservableOverview.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fldt: PropTypes.func,
-  withoutMarking: PropTypes.bool,
 };
 
 export default compose(

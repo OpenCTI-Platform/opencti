@@ -77,17 +77,17 @@ class StixCyberObservableKnowledgeEntities extends Component {
         width: '22%',
         isSortable: false,
       },
-      first_seen: {
+      start_time: {
         label: 'First obs.',
         width: '15%',
         isSortable: true,
       },
-      last_seen: {
+      stop_time: {
         label: 'Last obs.',
         width: '15%',
         isSortable: true,
       },
-      weight: {
+      confidence: {
         label: 'Confidence',
         width: '12%',
         isSortable: true,
@@ -125,12 +125,15 @@ class StixCyberObservableKnowledgeEntities extends Component {
       view, sortBy, orderAsc, searchTerm, inferred,
     } = this.state;
     const {
-      classes, t, entityId, relationship_type,
+      classes,
+      t,
+      entityId,
+      relationship_type: relationshipType,
     } = this.props;
     const paginationOptions = {
       inferred,
       fromId: entityId,
-      relationship_type,
+      relationship_type: relationshipType,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
@@ -171,8 +174,9 @@ class StixCyberObservableKnowledgeEntities extends Component {
             'Region',
             'Country',
             'City',
+            'Position',
             'Organization',
-            'User',
+            'Individual',
           ]}
         />
         <div className="clearfix" />

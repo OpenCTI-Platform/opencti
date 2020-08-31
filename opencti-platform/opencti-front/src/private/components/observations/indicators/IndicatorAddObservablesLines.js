@@ -51,30 +51,21 @@ const styles = (theme) => ({
 
 export const indicatorMutationRelationAdd = graphql`
   mutation IndicatorAddObservablesLinesRelationAddMutation(
-    $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixCoreRelationshipAddInput!
   ) {
-    indicatorEdit(id: $id) {
-      relationAdd(input: $input) {
-        id
-        from {
-          ...IndicatorObservables_indicator
-        }
+    stixCoreRelationshipAdd(input: $input) {
+      id
+      from {
+        ...IndicatorObservables_indicator
       }
     }
   }
 `;
 
 export const indicatorMutationRelationDelete = graphql`
-  mutation IndicatorAddObservablesLinesRelationDeleteMutation(
-    $id: ID!
-    $toId: String!
-    $relationship_type: String!
-  ) {
-    indicatorEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...IndicatorObservables_indicator
-      }
+  mutation IndicatorAddObservablesLinesRelationDeleteMutation($id: ID!) {
+    stixCoreRelationshipEdit(id: $id) {
+      delete
     }
   }
 `;
@@ -108,17 +99,13 @@ class IndicatorAddObservablesLinesContainer extends Component {
       });
     } else {
       const input = {
-        fromRole: 'observables_aggregation',
+        fromId: indicatorId,
         toId: stixCyberObservable.id,
-        toRole: 'soo',
-        through: 'observable_refs',
+        relationship_type: 'based-on',
       };
       commitMutation({
         mutation: indicatorMutationRelationAdd,
-        variables: {
-          id: indicatorId,
-          input,
-        },
+        variables: { input },
       });
     }
   }
@@ -170,7 +157,7 @@ class IndicatorAddObservablesLinesContainer extends Component {
             >
               <ExpansionPanelSummary expandIcon={<ExpandMore />}>
                 <Typography className={classes.heading}>
-                  {t(`observable_${type}`)}
+                  {t(`entity_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
                   {stixCyberObservables[type].length} {t('entitie(s)')}
@@ -241,13 +228,13 @@ export const indicatorAddObservablesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...IndicatorAddObservablesLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -256,17 +243,17 @@ const IndicatorAddObservablesLines = createPaginationContainer(
   {
     data: graphql`
       fragment IndicatorAddObservablesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
+      @argumentDefinitions(
+        search: { type: "String" }
 
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCyberObservablesOrdering"
+          defaultValue: created_at
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCyberObservables(
           search: $search
           first: $count

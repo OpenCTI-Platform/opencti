@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map, keys, groupBy, assoc, compose,
+  map, keys, groupBy, assoc, compose, pipe, filter,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import ExpansionPanel from '@material-ui/core/ExpansionPanel';
@@ -18,6 +18,7 @@ import { ExpandMore } from '@material-ui/icons';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import { resolveRelationsTypes } from '../../../../utils/Relation';
 
 const styles = (theme) => ({
   container: {
@@ -73,18 +74,19 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
 
   render() {
     const {
-      t, classes, data, handleSelect,
+      t, classes, data, handleSelect, entityType,
     } = this.props;
-    const stixCyberObservablesNodes = map(
-      (n) => n.node,
-      data.stixCyberObservables.edges,
-    );
+    const stixCyberObservablesNodes = pipe(
+      map((n) => n.node),
+      filter(
+        (n) => resolveRelationsTypes(entityType, n.entity_type, false).length > 0,
+      ),
+    )(data.stixCyberObservables.edges);
     const byType = groupBy(
       (stixCyberObservable) => stixCyberObservable.entity_type,
     );
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
-
     return (
       <div className={classes.container}>
         {stixCyberObservablesTypes.length > 0 ? (
@@ -101,7 +103,7 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
             >
               <ExpansionPanelSummary expandIcon={<ExpandMore />}>
                 <Typography className={classes.heading}>
-                  {t(`observable_${type}`)}
+                  {t(`entity_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
                   {stixCyberObservables[type].length} {t('entitie(s)')}
@@ -145,6 +147,7 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
 }
 
 StixCyberObservableRelationshipCreationFromEntityLinesContainer.propTypes = {
+  entityType: PropTypes.string,
   handleSelect: PropTypes.func,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -163,14 +166,14 @@ export const stixCyberObservableRelationshipCreationFromEntityLinesQuery = graph
     $orderMode: OrderingMode
   ) {
     ...StixCyberObservableRelationshipCreationFromEntityLines_data
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -179,17 +182,17 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
   {
     data: graphql`
       fragment StixCyberObservableRelationshipCreationFromEntityLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCyberObservablesOrdering"
+          defaultValue: created_at
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCyberObservables(
           search: $search
           types: $types

@@ -50,7 +50,7 @@ import {
 import DatePickerField from '../../../../components/DatePickerField';
 import { parse } from '../../../../utils/Time';
 
-const ignoredAttributes = [
+export const ignoredAttributes = [
   'internal_id',
   'standard_id',
   'stix_ids',
@@ -67,7 +67,7 @@ const ignoredAttributes = [
   'updated_at',
 ];
 
-const dateAttributes = [
+export const dateAttributes = [
   'ctime',
   'mtime',
   'atime',
@@ -85,7 +85,7 @@ const dateAttributes = [
   'account_last_login',
 ];
 
-const numberAttributes = [
+export const numberAttributes = [
   'number',
   'src_port',
   'dst_port',
@@ -98,7 +98,7 @@ const numberAttributes = [
   'number_of_subkeys',
 ];
 
-const booleanAttributes = ['is_self_signed'];
+export const booleanAttributes = ['is_self_signed', 'is_multipart'];
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -275,12 +275,31 @@ class StixCyberObservableCreation extends Component {
       || adaptedValues['hashes_SHA-256']
       || adaptedValues['hashes_SHA-512']
     ) {
-      adaptedValues.hashes = [
-        { algorithm: 'MD5', hash: adaptedValues.hashes_MD5 },
-        { algorithm: 'SHA-1', hash: adaptedValues['hashes_SHA-1'] },
-        { algorithm: 'SHA-256', hash: adaptedValues['hashes_SHA-256'] },
-        { algorithm: 'SHA-512', hash: adaptedValues['hashes_SHA-512'] },
-      ];
+      adaptedValues.hashes = [];
+      if (adaptedValues.hashes_MD5.length > 0) {
+        adaptedValues.hashes.push({
+          algorithm: 'MD5',
+          hash: adaptedValues.hashes_MD5,
+        });
+      }
+      if (adaptedValues['hashes_SHA-1'].length > 0) {
+        adaptedValues.hashes.push({
+          algorithm: 'SHA-1',
+          hash: adaptedValues['hashes_SHA-1'],
+        });
+      }
+      if (adaptedValues['hashes_SHA-256'].length > 0) {
+        adaptedValues.hashes.push({
+          algorithm: 'SHA-256',
+          hash: adaptedValues['hashes_SHA-256'],
+        });
+      }
+      if (adaptedValues['hashes_SHA-512'].length > 0) {
+        adaptedValues.hashes.push({
+          algorithm: 'SHA-512',
+          hash: adaptedValues['hashes_SHA-512'],
+        });
+      }
     }
     adaptedValues = pipe(
       dissoc('createIndicator'),

@@ -3,7 +3,7 @@ import * as R from 'ramda';
 export const RELATION_OPERATING_SYSTEM = 'operating-system';
 export const RELATION_SAMPLE = 'sample';
 export const RELATION_CONTAINS = 'contains';
-export const RELATION_RESOLVES_TO = ' resolves-to';
+export const RELATION_RESOLVES_TO = 'resolves-to';
 export const RELATION_BELONGS_TO = 'belongs-to';
 export const RELATION_FROM = 'from';
 export const RELATION_SENDER = 'sender';

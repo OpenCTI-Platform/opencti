@@ -9,7 +9,6 @@ import {
 import TopBar from '../../nav/TopBar';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixCyberObservable from './StixCyberObservable';
-import StixCyberObservableLinks from './StixCyberObservableLinks';
 import StixCyberObservableKnowledge from './StixCyberObservableKnowledge';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
@@ -22,7 +21,6 @@ const subscription = graphql`
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableEditionContainer_stixCyberObservable
       ...StixCyberObservableKnowledge_stixCyberObservable
-      ...StixCyberObservableLinks_stixCyberObservable
     }
   }
 `;
@@ -37,7 +35,6 @@ const stixCyberObservableQuery = graphql`
       ...StixCyberObservableDetails_stixCyberObservable
       ...StixCyberObservableIndicators_stixCyberObservable
       ...StixCyberObservableKnowledge_stixCyberObservable
-      ...StixCyberObservableLinks_stixCyberObservable
     }
   }
 `;
@@ -67,6 +64,7 @@ class RootStixCyberObservable extends Component {
         params: { observableId },
       },
     } = this.props;
+    const link = `/dashboard/observations/observables/${observableId}/knowledge`;
     return (
       <div>
         <TopBar me={me || null} />
@@ -82,16 +80,6 @@ class RootStixCyberObservable extends Component {
                     path="/dashboard/observations/observables/:observableId"
                     render={(routeProps) => (
                       <StixCyberObservable
-                        {...routeProps}
-                        stixCyberObservable={props.stixCyberObservable}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/observables/:observableId/links"
-                    render={(routeProps) => (
-                      <StixCyberObservableLinks
                         {...routeProps}
                         stixCyberObservable={props.stixCyberObservable}
                       />
@@ -118,12 +106,17 @@ class RootStixCyberObservable extends Component {
                         <EntityStixSightingRelationships
                           {...routeProps}
                           entityId={observableId}
+                          entityLink={link}
+                          noRightBar={true}
+                          noPadding={true}
                           targetStixDomainObjectTypes={[
                             'Region',
                             'Country',
                             'City',
+                            'Position',
+                            'Sector',
                             'Organization',
-                            'User',
+                            'Individual',
                           ]}
                         />
                       </React.Fragment>

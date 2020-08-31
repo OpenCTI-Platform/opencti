@@ -11,6 +11,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { multipleAttributes } from '../schema/fieldDataAdapter';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 
 export const STIX_SPEC_VERSION = '2.1';
 
@@ -74,6 +75,13 @@ export const convertStixMetaRelationshipToStix = (data, extra) => {
   return finalData;
 };
 
+export const convertStixCyberObservableRelationshipToStix = (data, extra) => {
+  const entityType = data.entity_type;
+  let finalData = buildStixData(extra.from, {}, true);
+  finalData = assoc(`${entityType.replace('-', '_')}_ref`, extra.to.standard_id, finalData);
+  return finalData;
+};
+
 export const convertDataToStix = async (data, eventType = null, eventExtraData = {}) => {
   if (!data) {
     /* istanbul ignore next */
@@ -93,6 +101,9 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
   }
   if (isStixMetaRelationship(entityType)) {
     finalData = convertStixMetaRelationshipToStix(data, eventExtraData);
+  }
+  if (isStixCyberObservableRelationship(entityType)) {
+    finalData = convertStixCyberObservableRelationshipToStix(data, eventExtraData);
   }
   if (!finalData) {
     throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
