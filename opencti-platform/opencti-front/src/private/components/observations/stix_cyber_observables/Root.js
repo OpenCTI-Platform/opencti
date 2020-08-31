@@ -30,6 +30,8 @@ const subscription = graphql`
 const stixCyberObservableQuery = graphql`
   query RootStixCyberObservableQuery($id: String!) {
     stixCyberObservable(id: $id) {
+      id
+      standard_id
       ...StixCyberObservable_stixCyberObservable
       ...StixCyberObservableHeader_stixCyberObservable
       ...StixCyberObservableDetails_stixCyberObservable
@@ -137,7 +139,9 @@ class RootStixCyberObservable extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={observableId}
+                          stixCoreObjectStandardId={
+                            props.stixCyberObservable.standard_id
+                          }
                         />
                       </React.Fragment>
                     )}

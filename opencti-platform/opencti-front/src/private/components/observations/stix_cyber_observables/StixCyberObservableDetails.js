@@ -29,7 +29,7 @@ class StixCyberObservableDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
-            {stixCyberObservable.entries().map((key, value) => (
+            {Object.entries(stixCyberObservable).map(([key, value]) => (
                 <Grid key={key} item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {key}
@@ -55,8 +55,6 @@ const StixCyberObservableDetails = createFragmentContainer(
   {
     stixCyberObservable: graphql`
       fragment StixCyberObservableDetails_stixCyberObservable on StixCyberObservable {
-        id
-        observable_value
         ... on AutonomousSystem {
           number
           name

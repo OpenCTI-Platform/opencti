@@ -5780,7 +5780,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # Process
-  extensions: [String]
+  extensions: String
   is_hidden: Boolean
   pid: Int
   created_time: DateTime
@@ -5797,7 +5797,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input ProcessAddInput {
   stix_id: String
   x_opencti_score: Int
-  extensions: [String]
+  extensions: String
   is_hidden: Boolean
   pid: Int
   created_time: DateTime
@@ -6072,7 +6072,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     filterMode: FilterMode
   ): StixCyberObservableRelationshipConnection
   # UserAccount
-  extensions: [String]
+  extensions: String
   user_id: String
   credential: String
   account_login: String
@@ -6097,7 +6097,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
 input UserAccountAddInput {
   stix_id: String
   x_opencti_score: Int
-  extensions: [String]
+  extensions: String
   user_id: String
   credential: String
   account_login: String

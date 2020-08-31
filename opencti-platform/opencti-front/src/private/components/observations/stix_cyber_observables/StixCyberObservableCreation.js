@@ -94,6 +94,7 @@ const numberAttributes = [
   'src_packets',
   'dst_packets',
   'pid',
+  'size',
   'number_of_subkeys',
 ];
 
@@ -267,8 +268,26 @@ class StixCyberObservableCreation extends Component {
       },
       values,
     );
+    // Potential dicts
+    if (
+      adaptedValues.hashes_MD5
+      || adaptedValues['hashes_SHA-1']
+      || adaptedValues['hashes_SHA-256']
+      || adaptedValues['hashes_SHA-512']
+    ) {
+      adaptedValues.hashes = [
+        { algorithm: 'MD5', hash: adaptedValues.hashes_MD5 },
+        { algorithm: 'SHA-1', hash: adaptedValues['hashes_SHA-1'] },
+        { algorithm: 'SHA-256', hash: adaptedValues['hashes_SHA-256'] },
+        { algorithm: 'SHA-512', hash: adaptedValues['hashes_SHA-512'] },
+      ];
+    }
     adaptedValues = pipe(
       dissoc('createIndicator'),
+      dissoc('hashes_MD5'),
+      dissoc('hashes_SHA-1'),
+      dissoc('hashes_SHA-256'),
+      dissoc('hashes_SHA-512'),
       toPairs,
       map((n) => (includes(n[0], dateAttributes)
         ? [n[0], n[1] ? parse(n[1]).format() : null]
@@ -370,6 +389,11 @@ class StixCyberObservableCreation extends Component {
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = null;
+              } else if (attribute.value === 'hashes') {
+                initialValues.hashes_MD5 = '';
+                initialValues['hashes_SHA-1'] = '';
+                initialValues['hashes_SHA-256'] = '';
+                initialValues['hashes_SHA-512'] = '';
               } else {
                 initialValues[attribute.value] = '';
               }
@@ -398,6 +422,36 @@ class StixCyberObservableCreation extends Component {
                         type="number"
                       />
                       {attributes.map((attribute) => {
+                        if (attribute.value === 'hashes') {
+                          return (
+                            <div key={attribute.value}>
+                              <Field
+                                component={TextField}
+                                key={attribute.value}
+                                name="hashes_MD5"
+                                label="hash_md5"
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
+                              <Field
+                                component={TextField}
+                                key={attribute.value}
+                                name="hashes_SHA-1"
+                                label="hash_sha-1"
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
+                              <Field
+                                component={TextField}
+                                key={attribute.value}
+                                name="hashes_SHA-256"
+                                label="hash_sha-256"
+                                fullWidth={true}
+                                style={{ marginTop: 20 }}
+                              />
+                            </div>
+                          );
+                        }
                         if (includes(attribute.value, dateAttributes)) {
                           return (
                             <Field

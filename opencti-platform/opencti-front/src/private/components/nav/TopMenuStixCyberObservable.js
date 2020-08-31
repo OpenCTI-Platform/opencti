@@ -47,7 +47,7 @@ class TopMenuStixCyberObservable extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures/observables"
+          to="/dashboard/observations/observables"
           variant="contained"
           size="small"
           color="inherit"
@@ -59,17 +59,17 @@ class TopMenuStixCyberObservable extends Component {
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}`}
+          to={`/dashboard/observations/observables/${observableId}`}
           variant={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}`
+            === `/dashboard/observations/observables/${observableId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}`
+            === `/dashboard/observations/observables/${observableId}`
               ? 'primary'
               : 'inherit'
           }
@@ -79,17 +79,17 @@ class TopMenuStixCyberObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/links`}
+          to={`/dashboard/observations/observables/${observableId}/links`}
           variant={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/links`
+            === `/dashboard/observations/observables/${observableId}/links`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/links`
+            === `/dashboard/observations/observables/${observableId}/links`
               ? 'primary'
               : 'inherit'
           }
@@ -99,17 +99,17 @@ class TopMenuStixCyberObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/knowledge`}
+          to={`/dashboard/observations/observables/${observableId}/knowledge`}
           variant={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/knowledge`
+            === `/dashboard/observations/observables/${observableId}/knowledge`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/knowledge`
+            === `/dashboard/observations/observables/${observableId}/knowledge`
               ? 'primary'
               : 'inherit'
           }
@@ -119,17 +119,17 @@ class TopMenuStixCyberObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/sightings`}
+          to={`/dashboard/observations/observables/${observableId}/sightings`}
           variant={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/sightings`
+            === `/dashboard/observations/observables/${observableId}/sightings`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/sightings`
+            === `/dashboard/observations/observables/${observableId}/sightings`
               ? 'primary'
               : 'inherit'
           }
@@ -139,17 +139,17 @@ class TopMenuStixCyberObservable extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/observables/${observableId}/history`}
+          to={`/dashboard/observations/observables/${observableId}/history`}
           variant={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/history`
+            === `/dashboard/observations/observables/${observableId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/observables/${observableId}/history`
+            === `/dashboard/observations/observables/${observableId}/history`
               ? 'primary'
               : 'inherit'
           }
