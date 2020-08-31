@@ -19,14 +19,13 @@ import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
 import { noteContainsStixObjectOrStixRelationship } from './note';
 import { reportContainsStixObjectOrStixRelationship } from './report';
 import { addStixCoreRelationship, findAll as findAllStixRelations } from './stixCoreRelationship';
 import { FunctionalError } from '../config/errors';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixCoreObject';
-import { isStixDomainObject } from '../schema/stixDomainObject';
+import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
@@ -76,38 +75,26 @@ const askJobExports = async (
   entity = null,
   type = null,
   exportType = null,
-  maxMarkingDefinition = null,
+  maxMarkingDef = null,
   context = null,
   listArgs = null
 ) => {
   const connectors = await connectorsForExport(format, true);
   // Create job for every connectors
-  const haveMarking = maxMarkingDefinition && maxMarkingDefinition.length > 0;
-  const maxMarkingDefinitionEntity = haveMarking ? await findMarkingDefinitionById(maxMarkingDefinition) : null;
+  const haveMarking = maxMarkingDef && maxMarkingDef.length > 0;
+  const maxMarking = haveMarking ? await findMarkingDefinitionById(maxMarkingDef) : null;
   const finalEntityType = entity ? entity.entity_type : type;
   const workList = await Promise.all(
     map((connector) => {
-      const fileName = generateFileExportName(
-        format,
-        connector,
-        entity,
-        finalEntityType,
-        exportType,
-        maxMarkingDefinitionEntity
-      );
-      return createWork(connector, finalEntityType, entity ? entity.id : null, context, fileName).then(
-        ({ work, job }) => ({
-          connector,
-          job,
-          work,
-        })
-      );
+      const fileName = generateFileExportName(format, connector, entity, finalEntityType, exportType, maxMarking);
+      const workJob = createWork(connector, finalEntityType, entity ? entity.id : null, context, fileName);
+      return workJob.then(({ work, job }) => ({ connector, job, work }));
     }, connectors)
   );
   let finalListArgs = listArgs;
   if (listArgs !== null) {
-    const stixDomainObjectsFiltersInversed = invertObj(stixDomainObjectResolvers.stixDomainObjectsFilter);
-    const stixDomainObjectsOrderingInversed = invertObj(stixDomainObjectResolvers.stixDomainObjectsOrdering);
+    const stixDomainObjectsFiltersInversed = invertObj(stixDomainObjectOptions.StixDomainObjectsFilter);
+    const stixDomainObjectsOrderingInversed = invertObj(stixDomainObjectOptions.StixDomainObjectsOrdering);
     finalListArgs = pipe(
       assoc(
         'filters',
@@ -134,7 +121,7 @@ const askJobExports = async (
       const message = {
         work_id: work.internal_id, // work(id)
         job_id: job.internal_id, // job(id)
-        max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
+        max_marking_definition: maxMarkingDef && maxMarkingDef.length > 0 ? maxMarkingDef : null, // markingDefinition(id)
         export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
         entity_type: entity ? entity.entity_type : type, // report, threat, ...
         entity_id: entity ? entity.id : null, // report(id), thread(id), ...

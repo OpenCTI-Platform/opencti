@@ -28,7 +28,6 @@ import {
   elUpdate,
   ENTITIES_INDICES,
   prepareElementForIndexing,
-  REL_INDEX_PREFIX,
   RELATIONSHIPS_INDICES,
   useCache,
 } from './elasticSearch';
@@ -49,6 +48,7 @@ import {
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   isAbstract,
+  REL_INDEX_PREFIX,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
@@ -707,7 +707,6 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
           // Apply filter on target.
           const val = filterValues[valueIndex];
           const preparedValue = R.type(val) === 'Boolean' ? val : `"${escapeString(val)}"`;
-          // TODO @Julien Support more than only boolean and string filters
           attributesFields.push(`$${curatedRelation} has ${field} ${preparedValue};`);
         }
       } else {

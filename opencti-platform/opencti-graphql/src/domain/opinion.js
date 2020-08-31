@@ -11,11 +11,10 @@ import {
   timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
 
 export const findById = (opinionId) => {
   return loadById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);

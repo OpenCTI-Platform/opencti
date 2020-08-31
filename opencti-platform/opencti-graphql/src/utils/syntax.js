@@ -15,7 +15,7 @@ export const checkObservableSyntax = (observableType, observableData) => {
       const domainChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$/;
       if (!domainChecker.test(observableData.value)) return 'Valid domain name';
       break;
-    case 'Hostname': // TODO @Sam?
+    case C.ENTITY_X_OPENCTI_HOSTNAME:
       const hostnameChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$/;
       if (!hostnameChecker.test(observableData.value)) return 'Valid hostname';
       break;
@@ -36,7 +36,6 @@ export const checkObservableSyntax = (observableType, observableData) => {
       if (!macAddrChecker.test(observableData.value)) return 'Valid MAC address';
       break;
     default:
-      // TODO: return false
       return true;
   }
   return true;

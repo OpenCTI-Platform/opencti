@@ -28,7 +28,6 @@ import { checkObservableSyntax } from '../utils/syntax';
 import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { generateFileExportName, upload } from '../database/minio';
-import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -44,6 +43,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
+  stixCyberObservableOptions,
 } from '../schema/stixCyberObservableObject';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
@@ -296,40 +296,29 @@ const askJobExports = async (
   const connectors = await connectorsForExport(format, true);
   // Create job for every connectors
   const haveMarking = maxMarkingDefinition && maxMarkingDefinition.length > 0;
-  const maxMarkingDefinitionEntity = haveMarking ? await findMarkingDefinitionById(maxMarkingDefinition) : null;
+  const maxMarking = haveMarking ? await findMarkingDefinitionById(maxMarkingDefinition) : null;
+  const entityId = entity ? entity.id : null;
   const workList = await Promise.all(
     map((connector) => {
-      const fileName = generateFileExportName(
-        format,
-        connector,
-        entity,
-        'stix-observable',
-        exportType,
-        maxMarkingDefinitionEntity
-      );
-      return createWork(connector, 'stix-observable', entity ? entity.id : null, context, fileName).then(
-        ({ work, job }) => ({
-          connector,
-          job,
-          work,
-        })
-      );
+      const fileName = generateFileExportName(format, connector, entity, 'stix-observable', exportType, maxMarking);
+      const workJob = createWork(connector, 'stix-observable', entityId, context, fileName);
+      return workJob.then(({ work, job }) => ({ connector, job, work }));
     }, connectors)
   );
   let finalListArgs = listArgs;
   if (listArgs !== null) {
-    const stixCyberObservablesFiltersInversed = invertObj(stixCyberObservableResolvers.StixCyberObservablesFilter);
-    const stixCyberObservablesOrderingInversed = invertObj(stixCyberObservableResolvers.StixCyberObservablesOrdering);
+    const stixCyberObservablesFiltersInversed = invertObj(stixCyberObservableOptions.StixCyberObservablesFilter);
+    const stixCyberObservablesOrderingInversed = invertObj(stixCyberObservableOptions.StixCyberObservablesOrdering);
     finalListArgs = pipe(
       assoc(
         'filters',
-        map(
-          (n) => ({
-            key: n.key in stixCyberObservablesFiltersInversed ? stixCyberObservablesFiltersInversed[n.key] : n.key,
+        map((n) => {
+          const haveKey = n.key in stixCyberObservablesFiltersInversed;
+          return {
+            key: haveKey ? stixCyberObservablesFiltersInversed[n.key] : n.key,
             values: n.values,
-          }),
-          propOr([], 'filters', listArgs)
-        )
+          };
+        }, propOr([], 'filters', listArgs))
       ),
       assoc(
         'orderBy',
@@ -349,7 +338,7 @@ const askJobExports = async (
         max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
         export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
         entity_type: 'stix-observable',
-        entity_id: entity ? entity.id : null, // report(id), thread(id), ...
+        entity_id: entityId, // report(id), thread(id), ...
         list_args: finalListArgs,
         file_context: work.work_context,
         file_name: work.work_file, // Base path for the upload
@@ -368,7 +357,7 @@ const askJobExports = async (
  * @returns {*}
  */
 export const stixCyberObservableExportAsk = async (args) => {
-  const { format, stixCyberObservableId = null, exportType = null, maxMarkingDefinition = null, context = null } = args;
+  const { format, exportType, stixCyberObservableId = null, maxMarkingDefinition = null, context = null } = args;
   const entity = stixCyberObservableId ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE) : null;
   const workList = await askJobExports(format, entity, exportType, maxMarkingDefinition, context, args);
   // Return the work list to do

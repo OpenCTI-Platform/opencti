@@ -18,13 +18,13 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
   RELATION_CREATED_BY,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
+import { REL_INDEX_PREFIX } from '../schema/general';
 
 const noteResolvers = {
   Query: {

@@ -1,5 +1,12 @@
 import * as R from 'ramda';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE } from './general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, REL_INDEX_PREFIX } from './general';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+} from './stixMetaRelationship';
+import { RELATION_RELATED_TO } from './stixCoreRelationship';
 
 export const ENTITY_AUTONOMOUS_SYSTEM = 'Autonomous-System';
 export const ENTITY_DIRECTORY = 'Directory';
@@ -65,3 +72,17 @@ export const isStixCyberObservableHashedObservable = (type) =>
   R.includes(type, STIX_CYBER_OBSERVABLES_HASHED_OBSERVABLES);
 export const isStixCyberObservable = (type) =>
   R.includes(type, STIX_CYBER_OBSERVABLES) || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
+
+export const stixCyberObservableOptions = {
+  StixCyberObservablesOrdering: {
+    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
+    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+  },
+  StixCyberObservablesFilter: {
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    relatedTo: `${REL_INDEX_PREFIX}${RELATION_RELATED_TO}.internal_id`,
+    objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+  },
+};

@@ -4832,8 +4832,8 @@ input EmailMimePartTypeAddInput {
 }
 ############## HashedObservable
 input HashInput {
-  algorithm: String! # MD5 ...
-  hash: String!
+  algorithm: String! @constraint(minLength: 3)
+  hash: String! @constraint(minLength: 5)
 }
 type Hash {
   algorithm: String!

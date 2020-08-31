@@ -222,7 +222,6 @@ export const sendLog = async (eventType, eventUser, eventData, eventExtraData = 
     event_data: finalEventData,
     event_message: generateLogMessage(eventType, eventUser, eventData, eventExtraData),
   };
-  // TODO @Sam
   // Here we need to parse the data and send to all declared communities that match the data
   const communityId = uuid();
   const communities = [communityId];

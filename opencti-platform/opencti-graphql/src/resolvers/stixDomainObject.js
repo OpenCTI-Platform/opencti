@@ -23,15 +23,8 @@ import {
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { stixDomainObjectOptions } from "../schema/stixDomainObject";
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -41,18 +34,8 @@ const stixDomainObjectResolvers = {
     stixDomainObjectsNumber: (_, args) => stixDomainObjectsNumber(args),
     stixDomainObjectsExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context),
   },
-  StixDomainObjectsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-  },
-  StixDomainObjectsFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
-    hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
-    indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
-  },
+  StixDomainObjectsOrdering: stixDomainObjectOptions.StixDomainObjectsOrdering,
+  StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
   StixDomainObject: {
     // eslint-disable-next-line no-underscore-dangle
     __resolveType(obj) {

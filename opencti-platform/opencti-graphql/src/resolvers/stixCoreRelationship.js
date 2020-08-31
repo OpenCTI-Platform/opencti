@@ -22,7 +22,6 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { convertDataToStix } from '../database/stix';
 import { creator } from '../domain/log';
 import {
@@ -31,7 +30,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
 
 const stixCoreRelationshipResolvers = {
   Query: {

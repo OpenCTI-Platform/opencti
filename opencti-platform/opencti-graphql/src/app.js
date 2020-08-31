@@ -13,6 +13,8 @@ import { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
+import { checkSystemDependencies } from './initialization';
+import { getSettings } from './domain/settings';
 
 const createApp = (apolloServer) => {
   // Init the http server
@@ -105,13 +107,7 @@ const createApp = (apolloServer) => {
     })(req, res, next);
   });
 
-  const serverHealthCheck = () => {
-    return new Promise((resolve) => {
-      // TODO @Julien Implements a real health function
-      // Check grakn and ES connection?
-      resolve();
-    });
-  };
+  const serverHealthCheck = () => checkSystemDependencies().then(() => getSettings());
   apolloServer.applyMiddleware({ app, onHealthCheck: serverHealthCheck });
 
   // Other routes

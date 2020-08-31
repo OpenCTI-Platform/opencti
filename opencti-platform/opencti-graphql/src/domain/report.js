@@ -11,12 +11,11 @@ import {
   timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import { notify } from '../database/redis';
 import { findById as findIdentityById } from './identity';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
 
 export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;
@@ -50,7 +49,6 @@ export const reportsTimeSeries = (args) => {
   return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-// TODO Migrate to ElasticSearch
 export const reportsNumber = (args) => ({
   count: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
    ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''} 
@@ -73,7 +71,6 @@ export const reportsTimeSeriesByAuthor = async (args) => {
   return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-// TODO Migrate to ElasticSearch
 export const reportsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};

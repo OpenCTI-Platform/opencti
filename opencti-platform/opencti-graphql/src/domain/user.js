@@ -35,7 +35,6 @@ import {
   patchAttribute,
   updateAttribute,
 } from '../database/grakn';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -50,7 +49,7 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
 } from '../schema/internalRelationship';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID, REL_INDEX_PREFIX } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 
 // region utils

@@ -1,25 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
-import {
-  append,
-  assoc,
-  concat,
-  dissoc,
-  filter,
-  find as Rfind,
-  flatten,
-  groupBy,
-  head,
-  includes,
-  join,
-  last,
-  map,
-  mergeAll,
-  pipe,
-  toPairs,
-  uniq,
-} from 'ramda';
+import * as R from 'ramda';
 import {
   buildPagination,
   INDEX_INTERNAL_OBJECTS,
@@ -42,7 +24,7 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { BASE_TYPE_RELATION, isAbstract } from '../schema/general';
+import { BASE_TYPE_RELATION, isAbstract, REL_INDEX_PREFIX } from '../schema/general';
 import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 
@@ -91,7 +73,6 @@ const numericOrBooleanFields = [
   'x_opencti_order',
 ];
 
-export const REL_INDEX_PREFIX = 'rel_';
 export const INDEX_JOBS = 'opencti_jobs';
 export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES_ROLE = [
@@ -245,7 +226,7 @@ export const elCount = (indexName, options = {}) => {
   const { endDate = null, types = null, relationshipType = null, fromId = null, toTypes = null } = options;
   let must = [];
   if (endDate !== null) {
-    must = append(
+    must = R.append(
       {
         range: {
           created_at: {
@@ -269,7 +250,7 @@ export const elCount = (indexName, options = {}) => {
         },
       };
     });
-    must = append(
+    must = R.append(
       {
         bool: {
           should,
@@ -280,7 +261,7 @@ export const elCount = (indexName, options = {}) => {
     );
   }
   if (relationshipType !== null) {
-    must = append(
+    must = R.append(
       {
         bool: {
           should: {
@@ -292,7 +273,7 @@ export const elCount = (indexName, options = {}) => {
     );
   }
   if (fromId !== null) {
-    must = append(
+    must = R.append(
       {
         bool: {
           should: {
@@ -311,7 +292,7 @@ export const elCount = (indexName, options = {}) => {
         match_phrase: { 'connections.types': toTypes[index] },
       });
     }
-    must = append(
+    must = R.append(
       {
         bool: {
           should: filters,
@@ -349,7 +330,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       },
     });
   }
-  const histoFilters = map((f) => {
+  const histoFilters = R.map((f) => {
     const key = f.isRelation ? `${REL_INDEX_PREFIX}*.internal_id.keyword` : `${f.type}.keyword`;
     return {
       multi_match: {
@@ -365,7 +346,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       size: 10000,
       query: {
         bool: {
-          must: concat(dateFilter, histoFilters),
+          must: R.concat(dateFilter, histoFilters),
           should: [
             { match_phrase: { 'entity_type.keyword': type } },
             { match_phrase: { 'parent_types.keyword': type } },
@@ -386,7 +367,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
   logger.debug(`[ELASTICSEARCH] aggregationCount`, { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.genres;
-    return map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
+    return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
   });
 };
 export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = null) => {
@@ -418,7 +399,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
       size: 10000,
       query: {
         bool: {
-          must: concat(
+          must: R.concat(
             [
               {
                 bool: {
@@ -447,25 +428,25 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el.search(query).then((data) => {
     // First need to find all types relations to the fromId
-    const types = pipe(
-      map((h) => h._source.connections),
-      flatten(),
-      filter((c) => c.internal_id !== fromId),
-      filter((c) => toTypes.length === 0 || includes(head(toTypes), c.types)),
-      map((e) => e.types),
-      flatten(),
-      uniq(),
-      filter((f) => !isAbstract(f)),
-      map((u) => u.toLowerCase())
+    const types = R.pipe(
+      R.map((h) => h._source.connections),
+      R.flatten(),
+      R.filter((c) => c.internal_id !== fromId),
+      R.filter((c) => toTypes.length === 0 || R.includes(R.head(toTypes), c.types)),
+      R.map((e) => e.types),
+      R.flatten(),
+      R.uniq(),
+      R.filter((f) => !isAbstract(f)),
+      R.map((u) => u.toLowerCase())
     )(data.body.hits.hits);
     const { buckets } = data.body.aggregations.genres;
-    const filteredBuckets = filter((b) => includes(b.key, types), buckets);
-    return map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
+    const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
+    return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });
 };
 export const elHistogramCount = async (type, field, interval, start, end, filters) => {
   // const tzStart = moment.parseZone(start).format('Z');
-  const histoFilters = map((f) => {
+  const histoFilters = R.map((f) => {
     // eslint-disable-next-line no-nested-ternary
     const key = f.isRelation
       ? f.type
@@ -500,7 +481,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
     body: {
       query: {
         bool: {
-          must: concat(
+          must: R.concat(
             [
               {
                 bool: {
@@ -540,8 +521,8 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
   logger.debug(`[ELASTICSEARCH] histogramCount`, { query });
   return el.search(query).then((data) => {
     const { buckets } = data.body.aggregations.count_over_time;
-    const dataToPairs = toPairs(buckets);
-    return map((b) => ({ date: head(b), value: last(b).doc_count }), dataToPairs);
+    const dataToPairs = R.toPairs(buckets);
+    return R.map((b) => ({ date: R.head(b), value: R.last(b).doc_count }), dataToPairs);
   });
 };
 
@@ -551,7 +532,7 @@ const elBuildRelation = (type, connection) => {
     [type]: null,
     [`${type}Id`]: connection.internal_id,
     [`${type}Role`]: connection.role,
-    [`${type}Type`]: head(connection.types),
+    [`${type}Type`]: R.head(connection.types),
   };
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
@@ -560,13 +541,13 @@ const elMergeRelation = (concept, fromConnection, toConnection) => {
   }
   const from = elBuildRelation('from', fromConnection);
   const to = elBuildRelation('to', toConnection);
-  return mergeAll([concept, from, to]);
+  return R.mergeAll([concept, from, to]);
 };
 export const elReconstructRelation = (concept) => {
   const { connections } = concept;
   const entityType = concept.entity_type;
-  const fromConnection = Rfind((connection) => connection.role === `${entityType}_from`, connections);
-  const toConnection = Rfind((connection) => connection.role === `${entityType}_to`, connections);
+  const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
+  const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
   return elMergeRelation(concept, fromConnection, toConnection);
 };
 // endregion
@@ -576,16 +557,8 @@ export const specialElasticCharsEscape = (query) => {
   return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
 export const elPaginate = async (indexName, options = {}) => {
-  const {
-    first = 200,
-    after,
-    types = null,
-    filters = [],
-    search = null,
-    orderBy = null,
-    orderMode = 'asc',
-    connectionFormat = true, // TODO @Julien Refactor that
-  } = options;
+  const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  const { types = null, filters = [], search = null, connectionFormat = true } = options;
   const offset = after ? cursorToOffset(after) : 0;
   let must = [];
   let mustnot = [];
@@ -608,12 +581,12 @@ export const elPaginate = async (indexName, options = {}) => {
       finalSearch = `${cleanSearch}`;
     } else {
       const splitSearch = cleanSearch.split(/[\s/]+/);
-      finalSearch = pipe(
-        map((n) => `*${n}*`),
-        join(' ')
+      finalSearch = R.pipe(
+        R.map((n) => `*${n}*`),
+        R.join(' ')
       )(splitSearch);
     }
-    must = append(
+    must = R.append(
       {
         query_string: {
           query: finalSearch,
@@ -624,24 +597,24 @@ export const elPaginate = async (indexName, options = {}) => {
       must
     );
   } else {
-    must = append({ match_all: {} }, must);
+    must = R.append({ match_all: {} }, must);
   }
   if (types !== null && types.length > 0) {
-    const should = flatten(
+    const should = R.flatten(
       types.map((typeValue) => {
         return [{ match_phrase: { entity_type: typeValue } }, { match_phrase: { parent_types: typeValue } }];
       })
     );
-    must = append({ bool: { should, minimum_should_match: 1 } }, must);
+    must = R.append({ bool: { should, minimum_should_match: 1 } }, must);
   }
-  const validFilters = filter((f) => f && f.values.length > 0, filters || []);
+  const validFilters = R.filter((f) => f && f.values.length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
       const { key, values, operator = 'eq' } = validFilters[index];
       for (let i = 0; i < values.length; i += 1) {
         if (values[i] === null) {
-          mustnot = append({ exists: { field: key } }, mustnot);
+          mustnot = R.append({ exists: { field: key } }, mustnot);
         } else if (values[i] === 'EXISTS') {
           valuesFiltering.push({ exists: { field: key } });
         } else if (operator === 'eq') {
@@ -664,7 +637,7 @@ export const elPaginate = async (indexName, options = {}) => {
           valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
         }
       }
-      must = append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
+      must = R.append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
     }
   }
   if (orderBy !== null && orderBy.length > 0) {
@@ -672,8 +645,8 @@ export const elPaginate = async (indexName, options = {}) => {
     const orderKeyword =
       dateFields.includes(orderBy) || numericOrBooleanFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`;
     order[orderKeyword] = orderMode;
-    ordering = append(order, ordering);
-    must = append({ exists: { field: orderKeyword } }, must);
+    ordering = R.append(order, ordering);
+    must = R.append({ exists: { field: orderKeyword } }, must);
   }
   const query = {
     index: indexName,
@@ -695,18 +668,18 @@ export const elPaginate = async (indexName, options = {}) => {
   return el
     .search(query)
     .then((data) => {
-      const dataWithIds = map((n) => {
-        const loadedElement = pipe(assoc('id', n._source.internal_id), assoc('_index', n._index))(n._source);
+      const dataWithIds = R.map((n) => {
+        const loadedElement = R.pipe(R.assoc('id', n._source.internal_id), R.assoc('_index', n._index))(n._source);
         if (loadedElement.base_type === BASE_TYPE_RELATION) {
           return elReconstructRelation(loadedElement);
         }
         if (loadedElement.event_data) {
-          return assoc('event_data', JSON.stringify(loadedElement.event_data), loadedElement);
+          return R.assoc('event_data', JSON.stringify(loadedElement.event_data), loadedElement);
         }
         return loadedElement;
       }, data.body.hits.hits);
       if (connectionFormat) {
-        const nodeHits = map((n) => ({ node: n }), dataWithIds);
+        const nodeHits = R.map((n) => ({ node: n }), dataWithIds);
         return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
       }
       return dataWithIds;
@@ -716,9 +689,9 @@ export const elPaginate = async (indexName, options = {}) => {
         // Because we create the mapping at element creation
         // We log the error only if its not a mapping not found error
         const numberOfCauses = err.meta.body.error.root_cause.length;
-        const invalidMappingCauses = pipe(
-          map((r) => r.reason),
-          filter((r) => includes('No mapping found for', r))
+        const invalidMappingCauses = R.pipe(
+          R.map((r) => r.reason),
+          R.filter((r) => R.includes('No mapping found for', r))
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
@@ -778,7 +751,7 @@ export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const hits = [];
   for (let index = 0; index < data.body.hits.hits.length; index += 1) {
     const hit = data.body.hits.hits[index];
-    let loadedElement = assoc('_index', hit._index, hit._source);
+    let loadedElement = R.assoc('_index', hit._index, hit._source);
     // And a specific processing for a relation
     if (loadedElement.base_type === BASE_TYPE_RELATION) {
       loadedElement = elReconstructRelation(loadedElement);
@@ -795,7 +768,7 @@ export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
     const errorMeta = { ids, type, hits: hits.length };
     throw DatabaseError('Expect only one response', errorMeta);
   }
-  return head(hits);
+  return R.head(hits);
 };
 // endregion
 
@@ -832,7 +805,7 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
       id: documentBody.internal_id,
       refresh,
       timeout: '60m',
-      body: dissoc('_index', documentBody),
+      body: R.dissoc('_index', documentBody),
     })
     .catch((err) => {
       throw DatabaseError('Error indexing elastic', { error: err, body: documentBody });
@@ -848,7 +821,7 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 5) => {
       retry_on_conflict: retry,
       timeout: '60m',
       refresh: true,
-      body: dissoc('_index', documentBody),
+      body: R.dissoc('_index', documentBody),
     })
     .catch((err) => {
       throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
@@ -868,7 +841,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
 };
 export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
-  const terms = map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
+  const terms = R.map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
   return el.deleteByQuery({
     index: indexesToHandle,
     refresh: true,
@@ -924,7 +897,7 @@ export const prepareElementForIndexing = (element) => {
 };
 const prepareIndexing = async (elements) => {
   return Promise.all(
-    map(async (element) => {
+    R.map(async (element) => {
       // Ensure empty list are not indexed
       const thing = prepareElementForIndexing(element);
       // For relation, index a list of connections.
@@ -947,16 +920,16 @@ const prepareIndexing = async (elements) => {
           types: [thing.toType, ...getParentTypes(thing.toType)],
           role: thing.toRole,
         });
-        return pipe(
-          assoc('connections', connections),
+        return R.pipe(
+          R.assoc('connections', connections),
           // Dissoc from
-          dissoc('from'),
-          dissoc('fromId'),
-          dissoc('fromRole'),
+          R.dissoc('from'),
+          R.dissoc('fromId'),
+          R.dissoc('fromRole'),
           // Dissoc to
-          dissoc('to'),
-          dissoc('toId'),
-          dissoc('toRole')
+          R.dissoc('to'),
+          R.dissoc('toId'),
+          R.dissoc('toRole')
         )(thing);
       }
       return thing;
@@ -969,40 +942,41 @@ export const elIndexElements = async (elements, retry = 5) => {
   // 01. Bulk the indexing of row elements
   const body = transformedElements.flatMap((doc) => [
     { index: { _index: inferIndexFromConceptType(doc.entity_type), _id: doc.internal_id } },
-    pipe(dissoc('_index'), dissoc('grakn_id'))(doc),
+    R.pipe(R.dissoc('_index'), R.dissoc('grakn_id'))(doc),
   ]);
   if (body.length > 0) {
     await elBulk({ refresh: true, body });
   }
   // 02. If relation, generate impacts for from and to sides
-  const impactedEntities = pipe(
-    filter((e) => e.base_type === BASE_TYPE_RELATION),
-    map((e) => {
+  const impactedEntities = R.pipe(
+    R.filter((e) => e.base_type === BASE_TYPE_RELATION),
+    R.map((e) => {
       const { fromRole, toRole } = e;
       const relationshipType = e.entity_type;
       const impacts = [];
       // We impact target entities of the relation only if not global entities like
       // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
-      if (!includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.fromId, relationshipType, to: e.toId });
-      if (!includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
+      if (!R.includes(fromRole, UNIMPACTED_ENTITIES_ROLE))
+        impacts.push({ from: e.fromId, relationshipType, to: e.toId });
+      if (!R.includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
       return impacts;
     }),
-    flatten,
-    groupBy((i) => i.from)
+    R.flatten,
+    R.groupBy((i) => i.from)
   )(elements);
   const elementsToUpdate = await Promise.all(
     // For each from, generate the
-    map(async (entityId) => {
+    R.map(async (entityId) => {
       const entity = await elLoadByIds(entityId);
       const targets = impactedEntities[entityId];
       // Build document fields to update ( per relation type )
       // rel_membership: [{ internal_id: ID, types: [] }]
-      const targetsByRelation = groupBy((i) => i.relationshipType, targets);
+      const targetsByRelation = R.groupBy((i) => i.relationshipType, targets);
       const targetsElements = await Promise.all(
-        map(async (relType) => {
+        R.map(async (relType) => {
           const data = targetsByRelation[relType];
           const resolvedData = await Promise.all(
-            map(async (d) => {
+            R.map(async (d) => {
               const resolvedTarget = await elLoadByIds(d.to);
               return resolvedTarget.internal_id;
             }, data)
@@ -1012,13 +986,13 @@ export const elIndexElements = async (elements, retry = 5) => {
       );
       // Create params and scripted update
       const params = {};
-      const sources = map((t) => {
+      const sources = R.map((t) => {
         const field = `${REL_INDEX_PREFIX + t.relation}.internal_id`;
         const createIfNotExist = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         const addAllElements = `ctx._source['${field}'].addAll(params['${field}'])`;
         return `${createIfNotExist} ${addAllElements}`;
       }, targetsElements);
-      const source = sources.length > 1 ? join(';', sources) : `${head(sources)};`;
+      const source = sources.length > 1 ? R.join(';', sources) : `${R.head(sources)};`;
       for (let index = 0; index < targetsElements.length; index += 1) {
         const targetElement = targetsElements[index];
         params[`${REL_INDEX_PREFIX + targetElement.relation}.internal_id`] = targetElement.elements;
@@ -1030,7 +1004,7 @@ export const elIndexElements = async (elements, retry = 5) => {
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
     // eslint-disable-next-line no-underscore-dangle
     { update: { _index: doc._index, _id: doc.id, retry_on_conflict: retry } },
-    dissoc('_index', doc.data),
+    R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
     await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });

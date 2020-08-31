@@ -4,7 +4,7 @@ import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 
-export const stixMetaRelationshipsNumber = (args) => {
+const stixMetaRelationshipsNumber = (args) => {
   const types = [];
   if (args.type) {
     if (isStixMetaRelationship(args.type)) {
@@ -20,3 +20,5 @@ export const stixMetaRelationshipsNumber = (args) => {
     total: elCount(INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
+
+export default stixMetaRelationshipsNumber;
