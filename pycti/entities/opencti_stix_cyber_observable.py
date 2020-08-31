@@ -116,18 +116,16 @@ class StixCyberObservable:
                 received_lines
                 body
             }
-            ... on HashedObservable {
-                hashes {
-                  algorithm
-                  hash
-                }               
-            }
             ... on Artifact {
                 mime_type
                 payload_bin
                 url
                 encryption_algorithm
                 decryption_key
+                hashes {
+                  algorithm
+                  hash
+                }           
             }        
             ... on StixFile {
                 extensions
@@ -139,6 +137,10 @@ class StixCyberObservable:
                 ctime
                 mtime
                 atime
+                 hashes {
+                  algorithm
+                  hash
+                }           
             }
             ... on X509Certificate {
                 is_self_signed
@@ -148,6 +150,10 @@ class StixCyberObservable:
                 issuer
                 validity_not_before
                 validity_not_after
+                hashes {
+                  algorithm
+                  hash
+                }        
             }
             ... on IPv4Addr {
                 value
@@ -211,17 +217,17 @@ class StixCyberObservable:
                 account_first_login
                 account_last_login
             }
-            WindowsRegistryKey {
+            ... on WindowsRegistryKey {
                 attribute_key
                 modified_time
                 number_of_subkeys
             }
-            WindowsRegistryValueType {
+            ... on WindowsRegistryValueType {
                 name
                 data
                 data_type
             }
-            X509V3ExtensionsType {
+            ... on X509V3ExtensionsType {
                 basic_constraints
                 name_constraints
                 policy_constraints
@@ -239,16 +245,16 @@ class StixCyberObservable:
                 certificate_policies
                 policy_mappings
             }
-            XOpenCTICryptographicKey {
+            ... on XOpenCTICryptographicKey {
                 value
             }
-            XOpenCTICryptocurrencyWallet {
+            ... on XOpenCTICryptocurrencyWallet {
                 value
             }
-            XOpenCTIText {
+            ... on XOpenCTIText {
                 value
             }
-            XOpenCTIUserAgent {
+            ... on XOpenCTIUserAgent {
                 value
             }
         """
