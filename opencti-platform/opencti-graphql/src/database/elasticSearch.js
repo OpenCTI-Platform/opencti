@@ -228,7 +228,7 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
     })
   );
 };
-export const elDeleteIndexes = async (indexesToDelete = DATA_INDICES) => {
+export const elDeleteIndexes = async (indexesToDelete) => {
   return Promise.all(
     indexesToDelete.map((index) => {
       return el.indices.delete({ index }).catch((err) => {

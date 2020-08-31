@@ -2,7 +2,7 @@ import { flatten, map, pipe, uniqBy } from 'ramda';
 import { Promise } from 'bluebird';
 import moment from 'moment';
 import { find, getSingleValueNumber } from './grakn';
-import { elCreateIndexes, elDeleteIndexes, elIndexElements } from './elasticSearch';
+import { DATA_INDICES, elCreateIndexes, elDeleteIndexes, elIndexElements } from './elasticSearch';
 import { logger } from '../config/conf';
 import {
   ABSTRACT_INTERNAL_OBJECT,
@@ -81,7 +81,7 @@ const indexElement = async (type, isRelation = false, fromType = null, toType = 
 
 const index = async () => {
   // 01. Delete current indexes
-  await elDeleteIndexes();
+  await elDeleteIndexes(DATA_INDICES);
   logger.info(`Indexing > Old indices deleted`);
   // 02. Create new ones
   await elCreateIndexes();
