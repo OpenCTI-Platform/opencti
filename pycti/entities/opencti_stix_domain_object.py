@@ -847,53 +847,30 @@ class StixDomainObject:
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         if id is not None and label_id is not None:
-            custom_attributes = """
-                id
-                objectLabel {
-                    edges {
-                        node {
+            self.opencti.log(
+                "info",
+                "Adding label {" + label_id + "} to Stix-Domain-Object {" + id + "}",
+            )
+            query = """
+               mutation StixDomainObjectAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   stixDomainObjectEdit(id: $id) {
+                        relationAdd(input: $input) {
                             id
-                            value
-                            color
                         }
-                    }
-                }
-            """
-            stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
-            if stix_domain_object is None:
-                self.opencti.log("error", "Cannot add label, entity not found")
-                return False
-            if label_id in stix_domain_object["labelsIds"]:
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Adding label {"
-                    + label_id
-                    + "} to Stix-Domain-Object {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation StixDomainObjectAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixDomainObjectEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "toId": label_id,
-                            "relationship_type": "object-label",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "toId": label_id,
+                        "relationship_type": "object-label",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log("error", "Missing parameters: id and label_id")
             return False
@@ -910,62 +887,34 @@ class StixDomainObject:
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
-            custom_attributes = """
-                id
-                externalReferences {
-                    edges {
-                        node {
+            self.opencti.log(
+                "info",
+                "Adding External-Reference {"
+                + external_reference_id
+                + "} to Stix-Domain-Object {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixDomainObjectEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   stixDomainObjectEdit(id: $id) {
+                        relationAdd(input: $input) {
                             id
-                            standard_id
-                            entity_type
-                            source_name
-                            description
-                            url
-                            hash
-                            external_id
-                            created
-                            modified
                         }
-                    }
-                }
-            """
-            stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
-            if stix_domain_object is None:
-                self.opencti.log(
-                    "error", "Cannot add External-Reference, entity not found"
-                )
-                return False
-            if external_reference_id in stix_domain_object["externalReferencesIds"]:
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Adding External-Reference {"
-                    + external_reference_id
-                    + "} to Stix-Domain-Object {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation StixDomainObjectEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixDomainObjectEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "toId": external_reference_id,
-                            "relationship_type": "external-reference",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "toId": external_reference_id,
+                        "relationship_type": "external-reference",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log(
                 "error", "Missing parameters: id and external_reference_id"
@@ -985,47 +934,34 @@ class StixDomainObject:
         opencti_stix_object_or_stix_relationship = kwargs.get("entity", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
-            if opencti_stix_object_or_stix_relationship is None:
-                opencti_stix_object_or_stix_relationship = self.read(id=id)
-            if opencti_stix_object_or_stix_relationship is None:
-                self.opencti.log(
-                    "error", "Cannot add Kill-Chain-Phase, entity not found"
-                )
-                return False
-            if (
-                kill_chain_phase_id
-                in opencti_stix_object_or_stix_relationship["killChainPhasesIds"]
-            ):
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Adding Kill-Chain-Phase {"
-                    + kill_chain_phase_id
-                    + "} to Stix-Domain-Object {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation StixDomainObjectAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixDomainObjectEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
+            self.opencti.log(
+                "info",
+                "Adding Kill-Chain-Phase {"
+                + kill_chain_phase_id
+                + "} to Stix-Domain-Object {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixDomainObjectAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   stixDomainObjectEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "toId": kill_chain_phase_id,
-                            "relationship_type": "kill-chain-phase",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "toId": kill_chain_phase_id,
+                        "relationship_type": "kill-chain-phase",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log("error", "Missing parameters: id and kill_chain_phase_id")
             return False
