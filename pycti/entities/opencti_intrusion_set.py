@@ -324,7 +324,7 @@ class IntrusionSet:
                 )
                 if "description" in stix_object
                 else "",
-                alias=self.opencti.stix2.pick_aliases(stix_object),
+                aliases=self.opencti.stix2.pick_aliases(stix_object),
                 first_seen=stix_object["first_seen"]
                 if "first_seen" in stix_object
                 else None,
