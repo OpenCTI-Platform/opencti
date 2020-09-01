@@ -283,7 +283,6 @@ class ThreatActor:
         threat_actor_types = kwargs.get("threat_actor_types", None)
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
-        roles = kwargs.get("roles", None)
         goals = kwargs.get("goals", None)
         sophistication = kwargs.get("sophistication", None)
         resource_level = kwargs.get("resource_level", None)
@@ -324,7 +323,6 @@ class ThreatActor:
                         "threat_actor_types": threat_actor_types,
                         "first_seen": first_seen,
                         "last_seen": last_seen,
-                        "roles": roles,
                         "goals": goals,
                         "sophistication": sophistication,
                         "resource_level": resource_level,
@@ -383,7 +381,7 @@ class ThreatActor:
                 )
                 if "description" in stix_object
                 else "",
-                alias=self.opencti.stix2.pick_aliases(stix_object),
+                aliases=self.opencti.stix2.pick_aliases(stix_object),
                 threat_actor_types=stix_object["threat_actor_types"]
                 if "threat_actor_types" in stix_object
                 else None,
@@ -393,7 +391,6 @@ class ThreatActor:
                 last_seen=stix_object["last_seen"]
                 if "last_seen" in stix_object
                 else None,
-                roles=stix_object["roles"] if "roles" in stix_object else None,
                 goals=stix_object["goals"] if "goals" in stix_object else None,
                 sophistication=stix_object["sophistication"]
                 if "sophistication" in stix_object
