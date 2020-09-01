@@ -120,7 +120,7 @@ export const inferIndexFromConceptType = (conceptType) => {
   throw DatabaseError(`Cant find index for type ${conceptType}`);
 };
 
-const observableValue = (stixCyberObservable) => {
+export const observableValue = (stixCyberObservable) => {
   switch (stixCyberObservable.entity_type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
       return stixCyberObservable.number || 'Unknown';
@@ -129,24 +129,19 @@ const observableValue = (stixCyberObservable) => {
     case ENTITY_EMAIL_MESSAGE:
       return stixCyberObservable.body || stixCyberObservable.subject;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      return (
-        stixCyberObservable.md5 ||
-        stixCyberObservable.sha1 ||
-        stixCyberObservable.sha256 ||
-        stixCyberObservable.sha512 ||
-        stixCyberObservable.payload_bin ||
-        'Unknown'
-      );
+      if (values(stixCyberObservable.hashes).length > 0) {
+        return values(stixCyberObservable.hashes)[0];
+      }
+      return stixCyberObservable.payload_bin || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
-      return (
-        stixCyberObservable.md5 ||
-        stixCyberObservable.sha1 ||
-        stixCyberObservable.sha256 ||
-        stixCyberObservable.sha512 ||
-        stixCyberObservable.name ||
-        'Unknown'
-      );
+      if (values(stixCyberObservable.hashes).length > 0) {
+        return values(stixCyberObservable.hashes)[0];
+      }
+      return stixCyberObservable.name || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
+      if (values(stixCyberObservable.hashes).length > 0) {
+        return values(stixCyberObservable.hashes)[0];
+      }
       return stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
     case ENTITY_MUTEX:
       return stixCyberObservable.name || 'Unknown';
