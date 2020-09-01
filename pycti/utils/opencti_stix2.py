@@ -676,21 +676,41 @@ class OpenCTIStix2:
             "external_references_ids": external_references_ids,
             "reports": reports,
         }
-
-        stix_observable_result = self.opencti.stix_observable.create(
-            observableData=stix_object,
-            createdBy=extras["created_by_id"] if "created_by_id" in extras else None,
-            objectMarking=extras["object_marking_ids"]
-            if "object_marking_ids" in extras
-            else [],
-            objectLabel=extras["object_label_ids"]
-            if "object_label_ids" in extras
-            else [],
-            externalReferences=extras["external_references_ids"]
-            if "external_references_ids" in extras
-            else [],
-            update=update,
-        )
+        if stix_object["type"] == "x-opencti-simple-observable":
+            stix_observable_result = self.opencti.stix_cyber_observable.create(
+                simple_observable_key=stix_object["key"],
+                simple_observable_value=stix_object["value"],
+                createdBy=extras["created_by_id"]
+                if "created_by_id" in extras
+                else None,
+                objectMarking=extras["object_marking_ids"]
+                if "object_marking_ids" in extras
+                else [],
+                objectLabel=extras["object_label_ids"]
+                if "object_label_ids" in extras
+                else [],
+                externalReferences=extras["external_references_ids"]
+                if "external_references_ids" in extras
+                else [],
+                update=update,
+            )
+        else:
+            stix_observable_result = self.opencti.stix_cyber_observable.create(
+                observableData=stix_object,
+                createdBy=extras["created_by_id"]
+                if "created_by_id" in extras
+                else None,
+                objectMarking=extras["object_marking_ids"]
+                if "object_marking_ids" in extras
+                else [],
+                objectLabel=extras["object_label_ids"]
+                if "object_label_ids" in extras
+                else [],
+                externalReferences=extras["external_references_ids"]
+                if "external_references_ids" in extras
+                else [],
+                update=update,
+            )
         if stix_observable_result is not None:
             if "id" in stix_object:
                 self.mapping_cache[stix_object["id"]] = {
