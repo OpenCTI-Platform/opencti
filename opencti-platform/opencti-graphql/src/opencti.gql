@@ -170,6 +170,7 @@ define
   x_opencti_location_type sub attribute, value string;
 
   # STIX Cyber Observables
+  x_opencti_description sub attribute, value string;
   mime_type sub attribute, value string;
   payload_bin sub attribute, value string;
   encryption_algorithm sub attribute, value string;
@@ -1319,6 +1320,7 @@ define
    # STIX Cyber Observables Entities
   Stix-Cyber-Observable sub Stix-Core-Object,
     abstract,
+    has x_opencti_description,
     has x_opencti_score,
     plays stix-sighting-relationship_from,
     plays consists-of_to,
@@ -1423,6 +1425,7 @@ define
 
   IPv4-Addr sub Stix-Cyber-Observable,
     has value,
+    plays located-at_from,
     plays resolves-to_from,
     plays belongs-to_from,
     plays resolves-to_to,
@@ -1431,6 +1434,7 @@ define
 
   IPv6-Addr sub Stix-Cyber-Observable,
     has value,
+    plays located-at_from,
     plays resolves-to_from,
     plays belongs-to_from,
     plays resolves-to_to,

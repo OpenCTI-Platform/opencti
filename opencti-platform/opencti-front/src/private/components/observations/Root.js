@@ -15,18 +15,7 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/dashboard/observations"
-          render={() => (
-            <Redirect to="/dashboard/observations/infrastructures" />
-          )}
-        />
-        <BoundaryRoute
-          exact
-          path="/dashboard/observations/infrastructures"
-          component={Indicators}
-        />
-        <BoundaryRoute
-          path="/dashboard/observations/infrastructures/:infrastructureId"
-          render={(routeProps) => <RootIndicator {...routeProps} me={me} />}
+          render={() => <Redirect to="/dashboard/observations/observables" />}
         />
         <BoundaryRoute
           exact
@@ -46,6 +35,15 @@ class Root extends Component {
         />
         <BoundaryRoute
           path="/dashboard/observations/indicators/:indicatorId"
+          render={(routeProps) => <RootIndicator {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/observations/infrastructures"
+          component={Indicators}
+        />
+        <BoundaryRoute
+          path="/dashboard/observations/infrastructures/:infrastructureId"
           render={(routeProps) => <RootIndicator {...routeProps} me={me} />}
         />
       </Switch>

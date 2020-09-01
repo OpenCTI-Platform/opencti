@@ -130,22 +130,59 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
         </Security>
         <div className="clearfix" />
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <List>
-            {data.stixCoreObject.externalReferences.edges.map(
-              (externalReferenceEdge) => {
-                const externalReference = externalReferenceEdge.node;
-                const externalReferenceId = externalReference.external_id
-                  ? `(${externalReference.external_id})`
-                  : '';
-                if (externalReference.url) {
+          {data.stixCoreObject.externalReferences.edges.length > 0 ? (
+            <List>
+              {data.stixCoreObject.externalReferences.edges.map(
+                (externalReferenceEdge) => {
+                  const externalReference = externalReferenceEdge.node;
+                  const externalReferenceId = externalReference.external_id
+                    ? `(${externalReference.external_id})`
+                    : '';
+                  if (externalReference.url) {
+                    return (
+                      <ListItem
+                        key={externalReference.id}
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component="a"
+                        href={externalReference.url}
+                      >
+                        <ListItemIcon>
+                          <Avatar classes={{ root: classes.avatar }}>
+                            {externalReference.source_name.substring(0, 1)}
+                          </Avatar>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={`${externalReference.source_name} ${externalReferenceId}`}
+                          secondary={truncate(
+                            externalReference.description !== null
+                              && externalReference.description.length > 0
+                              ? externalReference.description
+                              : externalReference.url,
+                            90,
+                          )}
+                        />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            aria-label="Remove"
+                            onClick={this.handleOpenDialog.bind(
+                              this,
+                              externalReferenceEdge,
+                            )}
+                          >
+                            <LinkOff />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    );
+                  }
                   return (
                     <ListItem
                       key={externalReference.id}
                       dense={true}
                       divider={true}
-                      button={true}
-                      component="a"
-                      href={externalReference.url}
+                      button={false}
                     >
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatar }}>
@@ -154,13 +191,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                       </ListItemIcon>
                       <ListItemText
                         primary={`${externalReference.source_name} ${externalReferenceId}`}
-                        secondary={truncate(
-                          externalReference.description !== null
-                            && externalReference.description.length > 0
-                            ? externalReference.description
-                            : externalReference.url,
-                          90,
-                        )}
+                        secondary={truncate(externalReference.description, 120)}
                       />
                       <ListItemSecondaryAction>
                         <IconButton
@@ -175,39 +206,22 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                       </ListItemSecondaryAction>
                     </ListItem>
                   );
-                }
-                return (
-                  <ListItem
-                    key={externalReference.id}
-                    dense={true}
-                    divider={true}
-                    button={false}
-                  >
-                    <ListItemIcon>
-                      <Avatar classes={{ root: classes.avatar }}>
-                        {externalReference.source_name.substring(0, 1)}
-                      </Avatar>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={`${externalReference.source_name} ${externalReferenceId}`}
-                      secondary={truncate(externalReference.description, 120)}
-                    />
-                    <ListItemSecondaryAction>
-                      <IconButton
-                        aria-label="Remove"
-                        onClick={this.handleOpenDialog.bind(
-                          this,
-                          externalReferenceEdge,
-                        )}
-                      >
-                        <LinkOff />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                );
-              },
-            )}
-          </List>
+                },
+              )}
+            </List>
+          ) : (
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
+              <span
+                style={{
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
+                }}
+              >
+                {t('No entities of this type has been found.')}
+              </span>
+            </div>
+          )}
         </Paper>
         <Dialog
           open={this.state.displayDialog}
@@ -254,7 +268,7 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
   query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
     ...StixCoreObjectExternalReferencesLines_data
-      @arguments(count: $count, id: $id)
+    @arguments(count: $count, id: $id)
   }
 `;
 
@@ -263,14 +277,14 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
   {
     data: graphql`
       fragment StixCoreObjectExternalReferencesLines_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          id: { type: "String!" }
-        ) {
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 25 }
+        id: { type: "String!" }
+      ) {
         stixCoreObject(id: $id) {
           id
           externalReferences(first: $count)
-            @connection(key: "Pagination_externalReferences") {
+          @connection(key: "Pagination_externalReferences") {
             edges {
               node {
                 id

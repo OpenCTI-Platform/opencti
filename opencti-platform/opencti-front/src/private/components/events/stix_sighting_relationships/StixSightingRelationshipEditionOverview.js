@@ -302,7 +302,7 @@ const StixSightingRelationshipEditionContainer = ({
     assoc('createdBy', createdBy),
     assoc('objectMarking', objectMarking),
     pick([
-      'number',
+      'attribute_count',
       'confidence',
       'first_seen',
       'last_seen',
@@ -438,7 +438,7 @@ const StixSightingRelationshipEditionContainer = ({
                 component={SwitchField}
                 type="checkbox"
                 name="x_opencti_negative"
-                label={t('Sighed a false positive (negative feedback)?')}
+                label={t('False positive')}
                 containerstyle={{ marginTop: 20 }}
                 onChange={handleSubmitField}
                 helperText={

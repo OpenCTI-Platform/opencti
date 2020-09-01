@@ -541,6 +541,7 @@ const i18n = {
       'Start date': 'Date de début',
       'End date': 'Date de fin',
       'Knowledge entity': 'Entité de connaissance',
+      'Based on': 'Basé sur',
       // Properties
       Entity: 'Entité',
       Widget: 'Widget',

@@ -12,7 +12,7 @@ const styles = () => ({
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
-    padding: '15px 15px 0 15px',
+    padding: 15,
     borderRadius: 6,
   },
 });

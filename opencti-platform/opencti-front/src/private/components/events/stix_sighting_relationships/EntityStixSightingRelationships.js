@@ -152,6 +152,7 @@ class EntityStixSightingRelationships extends Component {
       classes,
       targetStixDomainObjectTypes,
       entityId,
+      isTo,
       noPadding,
     } = this.props;
     const {
@@ -247,7 +248,7 @@ class EntityStixSightingRelationships extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixSightingRelationshipCreationFromEntity
             entityId={entityId}
-            isRelationReversed={false}
+            isTo={isTo}
             paddingRight={noPadding ? null : 220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             paginationOptions={paginationOptions}
@@ -267,6 +268,7 @@ EntityStixSightingRelationships.propTypes = {
   history: PropTypes.object,
   exploreLink: PropTypes.string,
   noPadding: PropTypes.bool,
+  isTo: PropTypes.bool,
 };
 
 export default compose(

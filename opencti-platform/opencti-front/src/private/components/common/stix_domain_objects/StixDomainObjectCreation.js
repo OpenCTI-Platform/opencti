@@ -501,6 +501,30 @@ class StixDomainObjectCreation extends Component {
       defaultMarkingDefinition,
       targetStixDomainObjectTypes,
     } = this.props;
+    const initialValues = {
+      type: '',
+      name: inputValue,
+      description: '',
+      aliases: '',
+      x_opencti_aliases: '',
+      createdBy: defaultCreatedBy
+        ? {
+          label: defaultCreatedBy.name,
+          value: defaultCreatedBy.id,
+          type: defaultCreatedBy.entity_type,
+        }
+        : '',
+      objectLabel: [],
+      objectMarking: defaultMarkingDefinition
+        ? [
+          {
+            label: defaultMarkingDefinition.definition,
+            value: defaultMarkingDefinition.id,
+            color: defaultMarkingDefinition.x_opencti_color,
+          },
+        ]
+        : [],
+    };
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab
@@ -513,29 +537,7 @@ class StixDomainObjectCreation extends Component {
         </Fab>
         <Formik
           enableReinitialize={true}
-          initialValues={{
-            type: '',
-            name: inputValue,
-            description: '',
-            aliases: '',
-            createdBy: defaultCreatedBy
-              ? {
-                label: defaultCreatedBy.name,
-                value: defaultCreatedBy.id,
-                type: defaultCreatedBy.entity_type,
-              }
-              : '',
-            objectLabel: [],
-            objectMarking: defaultMarkingDefinition
-              ? [
-                {
-                  label: defaultMarkingDefinition.definition,
-                  value: defaultMarkingDefinition.id,
-                  color: defaultMarkingDefinition.x_opencti_color,
-                },
-              ]
-              : [],
-          }}
+          initialValues={initialValues}
           validationSchema={stixDomainObjectValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}

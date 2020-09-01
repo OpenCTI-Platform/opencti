@@ -136,7 +136,8 @@ class Consumer(threading.Thread):
             connection.add_callback_threadsafe(cb)
             return False
         except Exception as e:
-            if e.args[0]["name"] != "UnsupportedError" and self.processing_count <= 5:
+            error = str(e)
+            if "UnsupportedError" not in error and self.processing_count <= 5:
                 time.sleep(2)
                 logging.info(
                     "Message (delivery_tag="
@@ -151,6 +152,8 @@ class Consumer(threading.Thread):
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
+                if job_id is not None:
+                    self.api.job.update_job(job_id, "error", [str(e)])
                 return False
 
     def run(self):

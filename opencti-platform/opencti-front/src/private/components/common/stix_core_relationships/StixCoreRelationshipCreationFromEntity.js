@@ -184,7 +184,7 @@ const styles = (theme) => ({
 
 const stixCoreRelationshipCreationFromEntityQuery = graphql`
   query StixCoreRelationshipCreationFromEntityQuery($id: String!) {
-    stixDomainObject(id: $id) {
+    stixCoreObject(id: $id) {
       id
       entity_type
       parent_types
@@ -241,6 +241,9 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
       }
       ... on XOpenCTIIncident {
         name
+      }
+      ... on StixCyberObservable {
+        observable_value
       }
     }
   }
@@ -780,11 +783,11 @@ class StixCoreRelationshipCreationFromEntity extends Component {
             query={stixCoreRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
-              if (props && props.stixDomainObject) {
+              if (props && props.stixCoreObject) {
                 return (
                   <div style={{ height: '100%' }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1 ? this.renderForm(props.stixDomainObject) : ''}
+                    {step === 1 ? this.renderForm(props.stixCoreObject) : ''}
                   </div>
                 );
               }

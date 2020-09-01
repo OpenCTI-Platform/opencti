@@ -111,11 +111,20 @@ const stixCoreObjectOrStixCoreRelationshipLastReportsQuery = graphql`
 class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
   render() {
     const {
-      t, nsd, classes, stixCoreObjectOrStixCoreRelationshipId, authorId,
+      t,
+      nsd,
+      classes,
+      stixCoreObjectOrStixCoreRelationshipId,
+      authorId,
     } = this.props;
     const filters = [];
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
-    if (stixCoreObjectOrStixCoreRelationshipId) filters.push({ key: 'objectContains', values: [stixCoreObjectOrStixCoreRelationshipId] });
+    if (stixCoreObjectOrStixCoreRelationshipId) {
+      filters.push({
+        key: 'objectContains',
+        values: [stixCoreObjectOrStixCoreRelationshipId],
+      });
+    }
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -134,54 +143,71 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
             }}
             render={({ props }) => {
               if (props && props.reports) {
+                if (props.reports.edges.length > 0) {
+                  return (
+                    <List>
+                      {props.reports.edges.map((reportEdge) => {
+                        const report = reportEdge.node;
+                        const markingDefinition = head(
+                          pathOr([], ['objectMarking', 'edges'], report),
+                        );
+                        return (
+                          <ListItem
+                            key={report.id}
+                            dense={true}
+                            button={true}
+                            classes={{ root: classes.item }}
+                            divider={true}
+                            component={Link}
+                            to={`/dashboard/analysis/reports/${report.id}`}
+                          >
+                            <ListItemIcon>
+                              <DescriptionOutlined color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={
+                                <div className={classes.itemText}>
+                                  {report.name}
+                                </div>
+                              }
+                            />
+                            <div style={inlineStyles.itemAuthor}>
+                              {pathOr('', ['createdBy', 'name'], report)}
+                            </div>
+                            <div style={inlineStyles.itemDate}>
+                              {nsd(report.published)}
+                            </div>
+                            <div style={{ width: 110, paddingRight: 20 }}>
+                              {markingDefinition ? (
+                                <ItemMarking
+                                  key={markingDefinition.node.id}
+                                  label={markingDefinition.node.definition}
+                                  variant="inList"
+                                />
+                              ) : (
+                                ''
+                              )}
+                            </div>
+                          </ListItem>
+                        );
+                      })}
+                    </List>
+                  );
+                }
                 return (
-                  <List>
-                    {props.reports.edges.map((reportEdge) => {
-                      const report = reportEdge.node;
-                      const markingDefinition = head(
-                        pathOr([], ['objectMarking', 'edges'], report),
-                      );
-                      return (
-                        <ListItem
-                          key={report.id}
-                          dense={true}
-                          button={true}
-                          classes={{ root: classes.item }}
-                          divider={true}
-                          component={Link}
-                          to={`/dashboard/analysis/reports/${report.id}`}
-                        >
-                          <ListItemIcon>
-                            <DescriptionOutlined color="primary" />
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              <div className={classes.itemText}>
-                                {report.name}
-                              </div>
-                            }
-                          />
-                          <div style={inlineStyles.itemAuthor}>
-                            {pathOr('', ['createdBy', 'name'], report)}
-                          </div>
-                          <div style={inlineStyles.itemDate}>
-                            {nsd(report.published)}
-                          </div>
-                          <div style={{ width: 110, paddingRight: 20 }}>
-                            {markingDefinition ? (
-                              <ItemMarking
-                                key={markingDefinition.node.id}
-                                label={markingDefinition.node.definition}
-                                variant="inList"
-                              />
-                            ) : (
-                              ''
-                            )}
-                          </div>
-                        </ListItem>
-                      );
-                    })}
-                  </List>
+                  <div
+                    style={{ display: 'table', height: '100%', width: '100%' }}
+                  >
+                    <span
+                      style={{
+                        display: 'table-cell',
+                        verticalAlign: 'middle',
+                        textAlign: 'center',
+                      }}
+                    >
+                      {t('No entities of this type has been found.')}
+                    </span>
+                  </div>
                 );
               }
               return (

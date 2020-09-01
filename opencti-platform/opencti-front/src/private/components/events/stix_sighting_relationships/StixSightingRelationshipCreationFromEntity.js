@@ -173,7 +173,7 @@ const styles = (theme) => ({
 
 const stixSightingRelationshipCreationFromEntityQuery = graphql`
   query StixSightingRelationshipCreationFromEntityQuery($id: String!) {
-    stixDomainObject(id: $id) {
+    stixCoreObject(id: $id) {
       id
       entity_type
       parent_types
@@ -231,6 +231,9 @@ const stixSightingRelationshipCreationFromEntityQuery = graphql`
       ... on XOpenCTIIncident {
         name
       }
+      ... on StixCyberObservable {
+        observable_value
+      }
     }
   }
 `;
@@ -246,7 +249,7 @@ const stixSightingRelationshipCreationFromEntityMutation = graphql`
 `;
 
 const stixSightingRelationshipValidation = (t) => Yup.object().shape({
-  number: Yup.number()
+  attribute_count: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
@@ -261,7 +264,7 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
   description: Yup.string(),
-  negative: Yup.boolean(),
+  x_opencti_negative: Yup.boolean(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -294,12 +297,12 @@ class StixSightingRelationshipCreationFromEntity extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { isFrom, entityId } = this.props;
+    const { isTo, entityId } = this.props;
     const { targetEntity } = this.state;
-    const fromEntityId = isFrom ? entityId : targetEntity.id;
-    const toEntityId = isFrom ? targetEntity.id : entityId;
+    const fromEntityId = isTo ? targetEntity.id : entityId;
+    const toEntityId = isTo ? entityId : targetEntity.id;
     const finalValues = pipe(
-      assoc('number', parseInt(values.number, 10)),
+      assoc('attribute_count', parseInt(values.attribute_count, 10)),
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
       assoc('first_seen', parse(values.first_seen).format()),
@@ -470,23 +473,23 @@ class StixSightingRelationshipCreationFromEntity extends Component {
   }
 
   renderForm(sourceEntity) {
-    const { t, classes, isFrom } = this.props;
+    const { t, classes, isTo } = this.props;
     const { targetEntity } = this.state;
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
-    if (!isFrom) {
-      fromEntity = targetEntity;
-      toEntity = sourceEntity;
+    if (isTo) {
+      fromEntity = sourceEntity;
+      toEntity = targetEntity;
     }
     const initialValues = {
       confidence: 15,
-      number: 1,
+      attribute_count: 1,
       first_seen: dayStartDate(),
       last_seen: dayStartDate(),
       description: '',
       objectMarking: [],
       createdBy: '',
-      negative: false,
+      x_opencti_negative: false,
     };
     return (
       <Formik
@@ -540,7 +543,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                         'Stix-Cyber-Observable',
                         fromEntity.parent_types,
                       )
-                        ? t(`observable_${fromEntity.entity_type}`)
+                        ? t(`entity_${fromEntity.entity_type}`)
                         : t(
                           `entity_${
                             fromEntity.entity_type === 'stix_relation'
@@ -599,7 +602,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
                     </div>
                     <div className={classes.type}>
                       {includes('Stix-Cyber-Observable', toEntity.parent_types)
-                        ? t(`observable_${toEntity.entity_type}`)
+                        ? t(`entity_${toEntity.entity_type}`)
                         : t(
                           `entity_${
                             toEntity.entity_type === 'stix_relation'
@@ -630,7 +633,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
               </div>
               <Field
                 component={TextField}
-                name="number"
+                name="attribute_count"
                 label={t('Count')}
                 fullWidth={true}
                 type="number"
@@ -679,7 +682,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
               <Field
                 component={SwitchField}
                 type="checkbox"
-                name="negative"
+                name="x_opencti_negative"
                 label={t('False positive')}
                 containerstyle={{ marginTop: 20 }}
               />
@@ -772,11 +775,11 @@ class StixSightingRelationshipCreationFromEntity extends Component {
             query={stixSightingRelationshipCreationFromEntityQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
-              if (props && props.stixDomainObject) {
+              if (props && props.stixCoreObject) {
                 return (
                   <div style={{ height: '100%' }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1 ? this.renderForm(props.stixDomainObject) : ''}
+                    {step === 1 ? this.renderForm(props.stixCoreObject) : ''}
                   </div>
                 );
               }
@@ -791,7 +794,6 @@ class StixSightingRelationshipCreationFromEntity extends Component {
 
 StixSightingRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
-  isRelationReversed: PropTypes.bool,
   targetStixDomainObjectTypes: PropTypes.array,
   targetStixCyberObservableObjectTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
@@ -801,6 +803,7 @@ StixSightingRelationshipCreationFromEntity.propTypes = {
   variant: PropTypes.string,
   onCreate: PropTypes.func,
   paddingRight: PropTypes.bool,
+  isTo: PropTypes.bool,
 };
 
 export default compose(
