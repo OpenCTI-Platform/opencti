@@ -494,14 +494,14 @@ describe('Elasticsearch pagination', () => {
   it('should relation paginate everything', async () => {
     let data = await elPaginate(RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(151);
+    expect(data.edges.length).toEqual(156);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
     data = await elPaginate(RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
-    expect(data.length).toEqual(151);
+    expect(data.length).toEqual(156);
     filterBaseTypes = uniq(map((e) => e.base_type, data));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');

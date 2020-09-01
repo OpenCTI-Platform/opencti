@@ -531,7 +531,7 @@ describe('Grakn relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(21);
     const stixMetaRelationships = await listRelations('stix-meta-relationship', { noCache });
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(123);
+    expect(stixMetaRelationships.edges.length).toEqual(128);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('uses', { noCache, fromRole: 'uses_from', toRole: 'uses_to' });
