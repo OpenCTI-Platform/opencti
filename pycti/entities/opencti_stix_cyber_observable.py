@@ -88,6 +88,8 @@ class StixCyberObservable:
                 }
             }
             observable_value
+            x_opencti_description
+            x_opencti_score
             indicators {
                 edges {
                     node {
@@ -419,6 +421,9 @@ class StixCyberObservable:
         observable_data = kwargs.get("observableData", {})
         simple_observable_key = kwargs.get("simple_observable_key", None)
         simple_observable_value = kwargs.get("simple_observable_value", None)
+        simple_observable_description = kwargs.get(
+            "simple_observable_description", None
+        )
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
@@ -446,6 +451,14 @@ class StixCyberObservable:
         elif type.lower() == "ipv6-addr":
             type = "IPv6-Addr"
 
+        x_opencti_description = (
+            observable_data["x_opencti_description"]
+            if "x_opencti_description" in observable_data
+            else None
+        )
+        if simple_observable_description is not None:
+            x_opencti_description = simple_observable_description
+
         if type is not None:
             self.opencti.log(
                 "info",
@@ -458,6 +471,10 @@ class StixCyberObservable:
             input_variables = {
                 "type": type,
                 "stix_id": observable_data["id"] if "id" in observable_data else None,
+                "x_opencti_score": observable_data["x_opencti_score"]
+                if "x_opencti_score" in observable_data
+                else None,
+                "x_opencti_description": x_opencti_description,
                 "createdBy": created_by,
                 "objectMarking": object_marking,
                 "objectLabel": object_label,
