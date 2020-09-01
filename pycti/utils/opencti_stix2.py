@@ -468,7 +468,7 @@ class OpenCTIStix2:
                         name=title,
                         createdBy=author["id"] if author is not None else None,
                         objectMarking=[object_marking_ref_result["id"]],
-                        external_references=[external_reference_id],
+                        externalReferences=[external_reference_id],
                         description=external_reference["description"]
                         if "description" in external_reference
                         else "",
