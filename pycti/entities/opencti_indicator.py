@@ -358,7 +358,7 @@ class Indicator:
         else:
             self.opencti.log(
                 "error",
-                "[opencti_indicator] Missing parameters: name and indicator_pattern and main_observable_type",
+                "[opencti_indicator] Missing parameters: name and pattern and main_observable_type",
             )
 
     """
