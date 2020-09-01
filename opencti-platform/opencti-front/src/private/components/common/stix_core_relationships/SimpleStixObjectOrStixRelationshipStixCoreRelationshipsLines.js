@@ -45,36 +45,65 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer exte
       stixObjectOrStixRelationshipId,
       stixObjectOrStixRelationshipLink,
       paginationOptions,
+      t,
     } = this.props;
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr(
+      <div style={{ height: '100%' }}>
+        {pathOr(
           [],
           ['stixCoreRelationshipsOfElement', 'edges'],
           this.props.data,
-        )}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['stixCoreRelationshipsOfElement', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine />
-        }
-        DummyLineComponent={
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy />
-        }
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        entityId={stixObjectOrStixRelationshipId}
-        entityLink={stixObjectOrStixRelationshipLink}
-        connectionKey='Pagination_stixCoreRelationshipsOfElement'
-      />
+        ).length > 0 ? (
+          <ListLinesContent
+            initialLoading={initialLoading}
+            loadMore={relay.loadMore.bind(this)}
+            hasMore={relay.hasMore.bind(this)}
+            isLoading={relay.isLoading.bind(this)}
+            dataList={pathOr(
+              [],
+              ['stixCoreRelationshipsOfElement', 'edges'],
+              this.props.data,
+            )}
+            globalCount={pathOr(
+              nbOfRowsToLoad,
+              ['stixCoreRelationshipsOfElement', 'pageInfo', 'globalCount'],
+              this.props.data,
+            )}
+            LineComponent={
+              <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine />
+            }
+            DummyLineComponent={
+              <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy />
+            }
+            dataColumns={dataColumns}
+            nbOfRowsToLoad={nbOfRowsToLoad}
+            paginationOptions={paginationOptions}
+            entityId={stixObjectOrStixRelationshipId}
+            entityLink={stixObjectOrStixRelationshipLink}
+            connectionKey="Pagination_stixCoreRelationshipsOfElement"
+          />
+          ) : (
+          <div
+            style={{
+              display: 'table',
+              height: '100%',
+              width: '100%',
+              paddingTop: 15,
+              paddingBottom: 15,
+            }}
+          >
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('No entities of this type has been found.')}
+            </span>
+          </div>
+          )}
+      </div>
     );
   }
 }
@@ -106,20 +135,20 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
     $cursor: ID
   ) {
     ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data
-      @arguments(
-        elementId: $elementId
-        inferred: $inferred
-        relationship_type: $relationship_type
-        startTimeStart: $startTimeStart
-        startTimeStop: $startTimeStop
-        stopTimeStart: $stopTimeStart
-        stopTimeStop: $stopTimeStop
-        confidences: $confidences
-        orderBy: $orderBy
-        orderMode: $orderMode
-        count: $count
-        cursor: $cursor
-      )
+    @arguments(
+      elementId: $elementId
+      inferred: $inferred
+      relationship_type: $relationship_type
+      startTimeStart: $startTimeStart
+      startTimeStop: $startTimeStop
+      stopTimeStart: $stopTimeStart
+      stopTimeStop: $stopTimeStop
+      confidences: $confidences
+      orderBy: $orderBy
+      orderMode: $orderMode
+      count: $count
+      cursor: $cursor
+    )
   }
 `;
 
@@ -128,20 +157,23 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
   {
     data: graphql`
       fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data on Query
-        @argumentDefinitions(
-          elementId: { type: "String!" }
-          inferred: { type: "Boolean" }
-          relationship_type: { type: "String" }
-          startTimeStart: { type: "DateTime" }
-          startTimeStop: { type: "DateTime" }
-          stopTimeStart: { type: "DateTime" }
-          stopTimeStop: { type: "DateTime" }
-          confidences: { type: "[Int]" }
-          orderBy: { type: "StixCoreRelationshipsOrdering", defaultValue: created_at }
-          orderMode: { type: "OrderingMode", defaultValue: desc }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        elementId: { type: "String!" }
+        inferred: { type: "Boolean" }
+        relationship_type: { type: "String" }
+        startTimeStart: { type: "DateTime" }
+        startTimeStop: { type: "DateTime" }
+        stopTimeStart: { type: "DateTime" }
+        stopTimeStop: { type: "DateTime" }
+        confidences: { type: "[Int]" }
+        orderBy: {
+          type: "StixCoreRelationshipsOrdering"
+          defaultValue: created_at
+        }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         stixCoreRelationshipsOfElement(
           elementId: $elementId
           inferred: $inferred

@@ -31,6 +31,7 @@ import {
   HexagonOutline,
   VectorRadius,
   ShieldSearch,
+  ServerNetwork,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -95,7 +96,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'Indicator':
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
     case 'Infrastructure':
-      return '/dashboard/ttps/infrastructures';
+      return <ServerNetwork style={style} fontSize={fontSize} role="img" />;
     case 'Intrusion-Set':
       return <DiamondOutline style={style} fontSize={fontSize} role="img" />;
     case 'City':

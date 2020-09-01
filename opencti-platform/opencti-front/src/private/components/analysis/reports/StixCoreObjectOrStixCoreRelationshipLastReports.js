@@ -196,7 +196,13 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
                 }
                 return (
                   <div
-                    style={{ display: 'table', height: '100%', width: '100%' }}
+                    style={{
+                      display: 'table',
+                      height: '100%',
+                      width: '100%',
+                      paddingTop: 15,
+                      paddingBottom: 15,
+                    }}
                   >
                     <span
                       style={{

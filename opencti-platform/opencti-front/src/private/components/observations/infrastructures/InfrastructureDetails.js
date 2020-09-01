@@ -8,9 +8,8 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ItemScore from '../../../../components/ItemScore';
-import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
   paper: {
@@ -22,87 +21,94 @@ const styles = () => ({
   },
 });
 
-class IndicatorDetailsComponent extends Component {
+class InfrastructureDetailsComponent extends Component {
   render() {
     const {
-      t, fld, classes, indicator,
+      t, fld, classes, infrastructure,
     } = this.props;
     return (
-      <div style={{ height: '100%' }} className="break">
+      <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('Indicator pattern')}
-          </Typography>
-          <pre>{indicator.pattern}</pre>
-          <Grid container={true} spacing={3} style={{ marginTop: 10 }}>
+          <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Valid from')}
+                {t('First seen')}
               </Typography>
-              {fld(indicator.valid_from)}
+              {fld(infrastructure.first_seen)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Valid until')}
+                {t('Last seen')}
               </Typography>
-              {fld(indicator.valid_until)}
+              {fld(infrastructure.last_seen)}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Description')}
               </Typography>
-              <ExpandableMarkdown source={indicator.description} limit={400} />
+              <ExpandableMarkdown
+                source={infrastructure.description}
+                limit={400}
+              />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Score')}
+                {t('Kill chain phases')}
               </Typography>
-              <ItemScore score={indicator.x_opencti_score} />
+              fdf
             </Grid>
           </Grid>
-          <IndicatorObservables indicator={indicator} />
+          <br />
+          <EntityStixCoreRelationshipsDonut
+            variant="inLine"
+            entityId={infrastructure.id}
+            entityType="Stix-Cyber-Observable"
+            relationshipType="consists-of"
+            field="entity_type"
+            height={260}
+          />
         </Paper>
       </div>
     );
   }
 }
 
-IndicatorDetailsComponent.propTypes = {
-  indicator: PropTypes.object,
+InfrastructureDetailsComponent.propTypes = {
+  infrastructure: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
 };
 
-const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
-  indicator: graphql`
-    fragment IndicatorDetails_indicator on Indicator {
-      id
-      description
-      pattern
-      valid_from
-      valid_until
-      x_opencti_score
-      x_opencti_detection
-      creator {
+const InfrastructureDetails = createFragmentContainer(
+  InfrastructureDetailsComponent,
+  {
+    infrastructure: graphql`
+      fragment InfrastructureDetails_infrastructure on Infrastructure {
         id
         name
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
+        description
+        first_seen
+        last_seen
+        creator {
+          id
+          name
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
+            }
           }
         }
       }
-      ...IndicatorObservables_indicator
-    }
-  `,
-});
+    `,
+  },
+);
 
-export default compose(inject18n, withStyles(styles))(IndicatorDetails);
+export default compose(inject18n, withStyles(styles))(InfrastructureDetails);

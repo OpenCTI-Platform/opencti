@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { HexagonOutline, ShieldSearch } from 'mdi-material-ui';
+import { HexagonOutline, ShieldSearch, ServerNetwork } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -83,7 +83,7 @@ class TopMenuObservations extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <ShieldSearch className={classes.icon} fontSize="small" />
+          <ServerNetwork className={classes.icon} fontSize="small" />
           {t('Infrastructures')}
         </Button>
       </div>

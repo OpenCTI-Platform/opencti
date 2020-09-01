@@ -2724,7 +2724,7 @@ type InfrastructureConnection {
 }
 type InfrastructureEdge {
   cursor: String!
-  node: Indicator!
+  node: Infrastructure!
 }
 type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
   id: ID! # internal_id
@@ -7849,7 +7849,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): IndicatorConnection @auth(for: [KNOWLEDGE])
-  infrastructure(id: String!): Indicator @auth(for: [KNOWLEDGE])
+  infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
   infrastructures(
     first: Int
     after: ID

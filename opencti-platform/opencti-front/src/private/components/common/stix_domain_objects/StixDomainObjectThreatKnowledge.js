@@ -302,14 +302,14 @@ class StixDomainObjectThreatKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
+          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
             <StixCoreObjectReportsBars
               stixCoreObjectId={stixDomainObjectId}
               field="created-by.name"
               title={t('Distribution of sources')}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
+          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
             <StixCoreObjectStixCoreRelationshipsCloud
               stixCoreObjectId={stixDomainObjectId}
               stixCoreObjectType="Stix-Domain-Object"

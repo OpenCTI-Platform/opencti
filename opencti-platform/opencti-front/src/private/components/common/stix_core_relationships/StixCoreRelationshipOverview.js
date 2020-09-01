@@ -205,7 +205,7 @@ class StixCoreRelationshipContainer extends Component {
               </div>
               <div className={classes.type}>
                 {includes('Stix-Cyber-Observable', from.parent_types)
-                  ? t(`observable_${from.entity_type}`)
+                  ? t(`entity_${from.entity_type}`)
                   : t(
                     `entity_${
                       from.entity_type === 'stix_relation'
@@ -286,7 +286,7 @@ class StixCoreRelationshipContainer extends Component {
               </div>
               <div className={classes.type}>
                 {includes('Stix-Cyber-Observable', to.parent_types)
-                  ? t(`observable_${to.entity_type}`)
+                  ? t(`entity_${to.entity_type}`)
                   : t(
                     `entity_${
                       to.entity_type === 'stix_relation'

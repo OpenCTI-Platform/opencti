@@ -11,6 +11,8 @@ import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableLinks from './StixCyberObservableLinks';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import ItemScore from '../../../../components/ItemScore';
 
 const styles = () => ({
   paper: {
@@ -39,6 +41,21 @@ class StixCyberObservableDetailsComponent extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown
+                source={stixCyberObservable.x_opencti_description}
+                limit={400}
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Score')}
+              </Typography>
+              <ItemScore score={stixCyberObservable.x_opencti_score} />
+            </Grid>
             {observableAttributes.map((observableAttribute) => {
               if (observableAttribute.key === 'hashes') {
                 return observableAttribute.value.map((hash) => (
@@ -89,6 +106,9 @@ const StixCyberObservableDetails = createFragmentContainer(
       fragment StixCyberObservableDetails_stixCyberObservable on StixCyberObservable {
         id
         entity_type
+        x_opencti_score
+        x_opencti_description
+        observable_value
         ... on AutonomousSystem {
           number
           name

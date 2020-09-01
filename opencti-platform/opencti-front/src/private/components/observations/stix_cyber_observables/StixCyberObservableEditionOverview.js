@@ -669,6 +669,7 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           value
         }
         x_opencti_score
+        x_opencti_description
         createdBy {
           ... on Identity {
             id

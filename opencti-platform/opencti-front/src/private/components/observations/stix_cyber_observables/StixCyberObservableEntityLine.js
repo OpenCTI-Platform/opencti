@@ -55,10 +55,10 @@ class StixCyberObservableEntityLineComponent extends Component {
       entityId,
     } = this.props;
     const link = node.to.parent_types.includes('stix-core-relationship')
-      ? `/dashboard/observables/all/${entityId}/knowledge/relations/${node.id}`
+      ? `/dashboard/observations/observables/${entityId}/knowledge/relations/${node.id}`
       : `${resolveLink(node.to.entity_type)}/${
         node.to.id
-      }/observables/relations/${node.id}`;
+      }/knowledge/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}

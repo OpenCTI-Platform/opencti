@@ -4,9 +4,13 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIosOutlined } from '@material-ui/icons';
-import { ShieldSearch } from 'mdi-material-ui';
+import { ArrowForwardIos } from '@material-ui/icons';
+import { ServerNetwork } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -33,13 +37,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuIndicator extends Component {
+class TopMenuInfrastructure extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { indicatorId },
+        params: { infrastructureId },
       },
       classes,
     } = this.props;
@@ -47,32 +51,29 @@ class TopMenuIndicator extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures/indicators"
+          to="/dashboard/observations/infrastructures"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <ShieldSearch className={classes.icon} fontSize="small" />
-          {t('Indicators')}
+          <ServerNetwork className={classes.icon} fontSize="small" />
+          {t('Infrastructures')}
         </Button>
-        <ArrowForwardIosOutlined
-          color="inherit"
-          classes={{ root: classes.arrow }}
-        />
+        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}`}
+          to={`/dashboard/observations/infrastructures/${infrastructureId}`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}`
+            === `/dashboard/observations/infrastructures/${infrastructureId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}`
+            === `/dashboard/observations/infrastructures/${infrastructureId}`
               ? 'primary'
               : 'inherit'
           }
@@ -82,57 +83,103 @@ class TopMenuIndicator extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}/observables`}
+          to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge`}
           variant={
-            location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/observables`
+            location.pathname.includes(
+              `/dashboard/observations/infrastructures/${infrastructureId}/knowledge`,
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/observables`
+            location.pathname.includes(
+              `/dashboard/observations/infrastructures/${infrastructureId}/knowledge`,
+            )
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Observables')}
+          {t('Knowledge')}
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}/sightings`}
+          to={`/dashboard/observations/infrastructures/${infrastructureId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/sightings`
+            === `/dashboard/observations/infrastructures/${infrastructureId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/sightings`
+            === `/dashboard/observations/infrastructures/${infrastructureId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Sightings')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}/history`}
+          to={`/dashboard/observations/infrastructures/${infrastructureId}/indicators`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/observations/infrastructures/${infrastructureId}/indicators`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/observations/infrastructures/${infrastructureId}/indicators`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Indicators')}
+        </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/observations/infrastructures/${infrastructureId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/observations/infrastructures/${infrastructureId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/observations/infrastructures/${infrastructureId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/observations/infrastructures/${infrastructureId}/history`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/history`
+            === `/dashboard/observations/infrastructures/${infrastructureId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/history`
+            === `/dashboard/observations/infrastructures/${infrastructureId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -145,7 +192,7 @@ class TopMenuIndicator extends Component {
   }
 }
 
-TopMenuIndicator.propTypes = {
+TopMenuInfrastructure.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -157,4 +204,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuIndicator);
+)(TopMenuInfrastructure);

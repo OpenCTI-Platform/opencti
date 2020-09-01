@@ -6,6 +6,8 @@ import StixCyberObservables from './StixCyberObservables';
 import RootStixCyberObservable from './stix_cyber_observables/Root';
 import Indicators from './Indicators';
 import RootIndicator from './indicators/Root';
+import Infrastructures from './Infrastructures';
+import RootInfrastructure from './infrastructures/Root';
 
 class Root extends Component {
   render() {
@@ -40,11 +42,13 @@ class Root extends Component {
         <BoundaryRoute
           exact
           path="/dashboard/observations/infrastructures"
-          component={Indicators}
+          component={Infrastructures}
         />
         <BoundaryRoute
           path="/dashboard/observations/infrastructures/:infrastructureId"
-          render={(routeProps) => <RootIndicator {...routeProps} me={me} />}
+          render={(routeProps) => (
+            <RootInfrastructure {...routeProps} me={me} />
+          )}
         />
       </Switch>
     );

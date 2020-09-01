@@ -478,8 +478,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
     let fromEntity = sourceEntity;
     let toEntity = targetEntity;
     if (isTo) {
-      fromEntity = sourceEntity;
-      toEntity = targetEntity;
+      fromEntity = targetEntity;
+      toEntity = sourceEntity;
     }
     const initialValues = {
       confidence: 15,
