@@ -138,8 +138,8 @@ export const addIndicator = async (user, indicator) => {
   )(indicator);
   // create the linked observables
   let observablesToLink = [];
-  if (indicatorToCreate.basedOn) {
-    observablesToLink = concat(indicatorToCreate.basedOn, observablesToLink);
+  if (indicator.basedOn) {
+    observablesToLink = indicator.basedOn;
   }
   const created = await createEntity(user, indicatorToCreate, ENTITY_TYPE_INDICATOR);
   await Promise.all(

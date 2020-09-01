@@ -142,33 +142,36 @@ export const observableValue = (stixCyberObservable) => {
   }
 };
 
-const createIndicatorFromObservable = async (user, observable) => {
+const createIndicatorFromObservable = async (user, input, observable) => {
   try {
     const entityType = observable.entity_type;
     let key = entityType;
-    if (isStixCyberObservableHashedObservable(observable.entity_type)) {
-      if (observable.sha256) {
+    if (isStixCyberObservableHashedObservable(entityType)) {
+      if (observable.hashes['SHA-256']) {
         key = `${entityType}_sha256`;
-      } else if (observable.sha1) {
+      } else if (observable.hashes['SHA-1']) {
         key = `${entityType}_sha1`;
-      } else if (observable.md5) {
+      } else if (observable.hashes.MD5) {
         key = `${entityType}_md5`;
       }
     }
     const indicatorName = observableValue(observable);
     const pattern = await createStixPattern(key, indicatorName);
     if (pattern) {
-      const indicatorToCreate = pipe(
-        dissoc('internal_id'),
-        dissoc('stix_id'),
-        dissoc('observable_value'),
-        assoc('name', indicatorName),
-        assoc('description', `Simple indicator of observable {${indicatorName}}`),
-        assoc('pattern_type', 'stix'),
-        assoc('pattern', pattern),
-        assoc('x_opencti_main_observable_type', observable.entity_type),
-        assoc('basedOn', [observable.id])
-      )(observable);
+      const indicatorToCreate = {
+        pattern_type: 'stix',
+        pattern,
+        x_opencti_main_observable_type: entityType,
+        name: indicatorName,
+        description: observable.x_opencti_description
+          ? observable.x_opencti_description
+          : `Simple indicator of observable {${indicatorName}}`,
+        basedOn: [observable.id],
+        createdBy: input.createdBy,
+        objectMarking: input.objectMarking,
+        objectLabel: input.objectLabel,
+        externalReferences: input.externalReferences,
+      };
       await addIndicator(user, indicatorToCreate);
     }
   } catch (err) {
@@ -202,7 +205,7 @@ export const addStixCyberObservable = async (user, input) => {
   await askEnrich(created.id, input.type);
   // create the linked indicator if needed
   if (input.createIndicator) {
-    await createIndicatorFromObservable(user, created);
+    await createIndicatorFromObservable(user, input, created);
   }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].ADDED_TOPIC, created, user);
 };
