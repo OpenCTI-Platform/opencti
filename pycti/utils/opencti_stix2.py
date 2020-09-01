@@ -419,6 +419,7 @@ class OpenCTIStix2:
                         matches = None
                     published = None
                     today = datetime.datetime.today()
+                    default_date = datetime.datetime.fromtimestamp(1)
                     if matches is not None:
                         try:
                             for match in matches:
@@ -428,7 +429,7 @@ class OpenCTIStix2:
                         except:
                             published = None
                     if published is None:
-                        published = today.strftime("%Y-%m-%dT%H:%M:%SZ")
+                        published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
                     if "mitre" in source_name and "name" in stix_object:
                         title = "[MITRE ATT&CK] " + stix_object["name"]
