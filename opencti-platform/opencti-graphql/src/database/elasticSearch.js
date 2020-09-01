@@ -828,6 +828,15 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 5) => {
     });
 };
 
+export const elReplace = (indexName, documentId, documentBody) => {
+  const keys = R.keys(documentBody.doc);
+  const rawSource = R.map((key) => `ctx._source['${key}'] = params['${key}']`, keys);
+  const source = R.join(';', rawSource);
+  return elUpdate(indexName, documentId, {
+    script: { source, params: documentBody.doc },
+  });
+};
+
 export const elDeleteByField = async (indexName, fieldName, value) => {
   const query = {
     match: { [fieldName]: value },

@@ -25,7 +25,7 @@ import {
   elLoadByIds,
   elPaginate,
   elRemoveRelationConnection,
-  elUpdate,
+  elReplace,
   ENTITIES_INDICES,
   prepareElementForIndexing,
   RELATIONSHIPS_INDICES,
@@ -1269,7 +1269,8 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
     finalKey = baseKey;
     const currentJson = instance[baseKey];
     const valueToTake = R.head(value);
-    if (currentJson[targetKey] === valueToTake) {
+    const compareValue = R.isEmpty(valueToTake) || R.isNil(valueToTake) ? undefined : valueToTake;
+    if (currentJson[targetKey] === compareValue) {
       return []; // No need to update the attribute
     }
     // If data is empty, remove the key
@@ -1427,8 +1428,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       R.map(({ key, value }) => ({ [key]: isMultipleAttribute(key) ? value : R.head(value) }), updatedInputs)
     );
     const esData = prepareElementForIndexing(updateAsObject);
-    postOperations.push(elUpdate(index, instance.internal_id, { doc: esData }));
-    const dataToLogSend = R.filter((input) => input.key !== 'x_opencti_graph_data', elements);
+    if (!R.isEmpty(esData)) {
+      postOperations.push(elReplace(index, instance.internal_id, { doc: esData }));
+    }
+    const dataToLogSend = R.filter((input) => input.key !== 'x_opencti_graph_data', updatedInputs);
     if (!noLog && !R.isEmpty(dataToLogSend)) {
       const baseData = {
         standard_id: instance.standard_id,
