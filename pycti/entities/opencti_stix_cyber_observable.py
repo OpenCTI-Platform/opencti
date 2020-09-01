@@ -1178,7 +1178,6 @@ class StixCyberObservable:
                 self.opencti.log("error", "Cannot update created_by, entity not found")
                 return False
             current_identity_id = None
-            current_relation_id = None
             if opencti_stix_object_or_stix_relationship["createdBy"] is not None:
                 current_identity_id = opencti_stix_object_or_stix_relationship[
                     "createdBy"

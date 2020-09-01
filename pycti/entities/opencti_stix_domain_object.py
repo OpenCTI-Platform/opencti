@@ -931,7 +931,6 @@ class StixDomainObject:
 
     def add_kill_chain_phase(self, **kwargs):
         id = kwargs.get("id", None)
-        opencti_stix_object_or_stix_relationship = kwargs.get("entity", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
             self.opencti.log(
