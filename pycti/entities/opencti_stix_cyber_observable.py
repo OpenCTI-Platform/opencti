@@ -88,6 +88,15 @@ class StixCyberObservable:
                 }
             }
             observable_value
+            indicators {
+                edges {
+                    node {
+                        id
+                        pattern
+                        pattern_type
+                    }
+                }
+            }
             ... on AutonomousSystem {
                 number
                 name
@@ -1084,7 +1093,7 @@ class StixCyberObservable:
             )
             query = """
                 mutation StixCyberObservableEdit($id: ID!, $input: EditInput!) {
-                    StixCyberObservableEdit(id: $id) {
+                    stixCyberObservableEdit(id: $id) {
                         fieldPatch(input: $input) {
                             id
                         }
@@ -1095,7 +1104,7 @@ class StixCyberObservable:
                 query, {"id": id, "input": {"key": key, "value": value}}
             )
             return self.opencti.process_multiple_fields(
-                result["data"]["StixCyberObservableEdit"]["fieldPatch"]
+                result["data"]["stixCyberObservableEdit"]["fieldPatch"]
             )
         else:
             self.opencti.log(
@@ -1117,7 +1126,7 @@ class StixCyberObservable:
             self.opencti.log("info", "Deleting Stix-Observable {" + id + "}.")
             query = """
                  mutation StixCyberObservableEdit($id: ID!) {
-                     StixCyberObservableEdit(id: $id) {
+                     stixCyberObservableEdit(id: $id) {
                          delete
                      }
                  }
@@ -1160,9 +1169,6 @@ class StixCyberObservable:
                                 x_opencti_organization_type
                             }
                         }
-                        relation {
-                            id
-                        }
                     }    
                 """
                 opencti_stix_object_or_stix_relationship = self.read(
@@ -1177,39 +1183,34 @@ class StixCyberObservable:
                 current_identity_id = opencti_stix_object_or_stix_relationship[
                     "createdBy"
                 ]["id"]
-                current_relation_id = opencti_stix_object_or_stix_relationship[
-                    "createdBy"
-                ]["remote_relation_id"]
             # Current identity is the same
             if current_identity_id == identity_id:
                 return True
             else:
                 self.opencti.log(
                     "info",
-                    "Updating author of Stix-Entity {"
+                    "Updating author of Stix-Cyber-Observable {"
                     + id
                     + "} with Identity {"
                     + identity_id
                     + "}",
                 )
                 # Current identity is different, delete the old relation
-                if current_relation_id is not None:
+                if current_identity_id is not None:
                     query = """
                         mutation StixCyberObservableEdit($id: ID!, $relationId: ID!) {
-                            StixCyberObservableEdit(id: $id) {
-                                relationDelete(relationId: $relationId) {
+                            stixCyberObservableEdit(id: $id) {
+                                relationDelete(toId: $toId) {
                                     id
                                 }
                             }
                         }
                     """
-                    self.opencti.query(
-                        query, {"id": id, "relationId": current_relation_id}
-                    )
+                    self.opencti.query(query, {"id": id, "toId": current_identity_id})
                 # Add the new relation
                 query = """
                    mutation StixCyberObservableEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       StixCyberObservableEdit(id: $id) {
+                       stixCyberObservableEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
                             }
@@ -1219,10 +1220,8 @@ class StixCyberObservable:
                 variables = {
                     "id": id,
                     "input": {
-                        "fromRole": "so",
                         "toId": identity_id,
-                        "toRole": "creator",
-                        "through": "created_by",
+                        "through": "created-by",
                     },
                 }
                 self.opencti.query(query, variables)
@@ -1243,53 +1242,30 @@ class StixCyberObservable:
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         if id is not None and label_id is not None:
-            custom_attributes = """
-                id
-                objectLabel {
-                    edges {
-                        node {
+            self.opencti.log(
+                "info",
+                "Adding label {" + label_id + "} to Stix-Cyber-Observable {" + id + "}",
+            )
+            query = """
+               mutation StixCyberObservableAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   stixCyberObservableEdit(id: $id) {
+                        relationAdd(input: $input) {
                             id
-                            value
-                            color
                         }
-                    }
-                }
-            """
-            stix_cyber_observable = self.read(id=id, customAttributes=custom_attributes)
-            if stix_cyber_observable is None:
-                self.opencti.log("error", "Cannot add label, entity not found")
-                return False
-            if label_id in stix_cyber_observable["labelsIds"]:
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Adding label {"
-                    + label_id
-                    + "} to Stix-Cyber-Observable {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation StixCyberObservableAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixCyberObservableEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "toId": label_id,
-                            "relationship_type": "object-label",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "toId": label_id,
+                        "relationship_type": "object-label",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log("error", "Missing parameters: id and label_id")
             return False

@@ -639,55 +639,34 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
         if id is not None and label_id is not None:
-            custom_attributes = """
-                id
-                objectLabel {
-                    edges {
-                        node {
-                            id
-                            value
-                            color
-                        }
-                    }
-                }
-            """
-            stix_core_relationship = self.read(
-                id=id, customAttributes=custom_attributes
+            self.opencti.log(
+                "info",
+                "Adding label {"
+                + label_id
+                + "} to stix-core-relationship {"
+                + id
+                + "}",
             )
-            if stix_core_relationship is None:
-                self.opencti.log("error", "Cannot add label, entity not found")
-                return False
-            if label_id in stix_core_relationship["labelsIds"]:
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Adding label {"
-                    + label_id
-                    + "} to stix-core-relationship {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixCoreRelationshipEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
+            query = """
+               mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   stixCoreRelationshipEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "toId": label_id,
-                            "relationship_type": "object-label",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "toId": label_id,
+                        "relationship_type": "object-label",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log("error", "Missing parameters: id and label_id")
             return False
@@ -704,64 +683,34 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         external_reference_id = kwargs.get("external_reference_id", None)
         if id is not None and external_reference_id is not None:
-            custom_attributes = """
-                id
-                externalReferences {
-                    edges {
-                        node {
-                            id
-                            standard_id
-                            entity_type
-                            source_name
-                            description
-                            url
-                            hash
-                            external_id
-                            created
-                            modified
-                        }
-                    }
-                }
-            """
-            stix_core_relationship = self.read(
-                id=id, customAttributes=custom_attributes
+            self.opencti.log(
+                "info",
+                "Adding External-Reference {"
+                + external_reference_id
+                + "} to stix-core-relationship {"
+                + id
+                + "}",
             )
-            if stix_core_relationship is None:
-                self.opencti.log(
-                    "error", "Cannot add External-Reference, entity not found"
-                )
-                return False
-            if external_reference_id in stix_core_relationship["externalReferencesIds"]:
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Adding External-Reference {"
-                    + external_reference_id
-                    + "} to Stix-core-relationship {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation StixCoreRelationshipEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixCoreRelationshipEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
+            query = """
+               mutation StixCoreRelationshipEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   stixCoreRelationshipEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "toId": external_reference_id,
-                            "relationship_type": "external-reference",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "toId": external_reference_id,
+                        "relationship_type": "external-reference",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log(
                 "error", "Missing parameters: id and external_reference_id"
@@ -780,43 +729,34 @@ class StixCoreRelationship:
         id = kwargs.get("id", None)
         kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
         if id is not None and kill_chain_phase_id is not None:
-            opencti_stix_object_or_stix_core_relationshipship = self.read(id=id)
-            kill_chain_phases_ids = []
-            for marking in opencti_stix_object_or_stix_core_relationshipship[
-                "killChainPhases"
-            ]:
-                kill_chain_phases_ids.append(marking["id"])
-            if kill_chain_phase_id in kill_chain_phases_ids:
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Adding Kill-Chain-Phase {"
-                    + kill_chain_phase_id
-                    + "} to Stix-Entity {"
-                    + id
-                    + "}",
-                )
-                query = """
-                   mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixCoreRelationshipEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
+            self.opencti.log(
+                "info",
+                "Adding Kill-Chain-Phase {"
+                + kill_chain_phase_id
+                + "} to stix-core-relationship {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   stixCoreRelationshipEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                    }
-                """
-                self.opencti.query(
-                    query,
-                    {
-                        "id": id,
-                        "input": {
-                            "toId": kill_chain_phase_id,
-                            "relationship_type": "kill-chain-phase",
-                        },
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "input": {
+                        "toId": kill_chain_phase_id,
+                        "relationship_type": "kill-chain-phase",
                     },
-                )
-                return True
+                },
+            )
+            return True
         else:
             self.opencti.log(
                 "error",
