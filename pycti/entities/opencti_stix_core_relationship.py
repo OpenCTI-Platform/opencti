@@ -436,7 +436,7 @@ class StixCoreRelationship:
         confidence = kwargs.get("confidence", None)
         lang = kwargs.get("lang", None)
         created = kwargs.get("created", None)
-        modified = kwargs.get("modified", "")
+        modified = kwargs.get("modified", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
