@@ -292,7 +292,7 @@ class StixCyberObservable:
         query = (
             """
             query StixCyberObservables($types: [String], $filters: [StixCyberObservablesFiltering], $search: String, $first: Int, $after: ID, $orderBy: StixCyberObservablesOrdering, $orderMode: OrderingMode) {
-                StixCyberObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                stixCyberObservables(types: $types, filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -326,10 +326,10 @@ class StixCyberObservable:
 
         if get_all:
             final_data = []
-            data = self.opencti.process_multiple(result["data"]["StixCyberObservables"])
+            data = self.opencti.process_multiple(result["data"]["stixCyberObservables"])
             final_data = final_data + data
-            while result["data"]["StixCyberObservables"]["pageInfo"]["hasNextPage"]:
-                after = result["data"]["StixCyberObservables"]["pageInfo"]["endCursor"]
+            while result["data"]["stixCyberObservables"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["stixCyberObservables"]["pageInfo"]["endCursor"]
                 self.opencti.log("info", "Listing StixCyberObservables after " + after)
                 result = self.opencti.query(
                     query,
@@ -344,13 +344,13 @@ class StixCyberObservable:
                     },
                 )
                 data = self.opencti.process_multiple(
-                    result["data"]["StixCyberObservables"]
+                    result["data"]["stixCyberObservables"]
                 )
                 final_data = final_data + data
             return final_data
         else:
             return self.opencti.process_multiple(
-                result["data"]["StixCyberObservables"], with_pagination
+                result["data"]["stixCyberObservables"], with_pagination
             )
 
     """
@@ -370,7 +370,7 @@ class StixCyberObservable:
             query = (
                 """
                 query StixCyberObservable($id: String!) {
-                    StixCyberObservable(id: $id) {
+                    stixCyberObservable(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -384,7 +384,7 @@ class StixCyberObservable:
             )
             result = self.opencti.query(query, {"id": id})
             return self.opencti.process_multiple_fields(
-                result["data"]["StixCyberObservable"]
+                result["data"]["stixCyberObservable"]
             )
         elif filters is not None:
             result = self.list(filters=filters, customAttributes=custom_attributes)
