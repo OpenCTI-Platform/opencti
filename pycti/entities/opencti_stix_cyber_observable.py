@@ -416,7 +416,6 @@ class StixCyberObservable:
         external_references = kwargs.get("externalReferences", None)
         update = kwargs.get("update", False)
 
-        no_global_attributes = ["File.MD5", "File.SHA-1", "File-SHA256", "File.SHA-512"]
         create_indicator = (
             observable_data["x_opencti_create_indicator"]
             if "x_opencti_create_indicator" in observable_data
