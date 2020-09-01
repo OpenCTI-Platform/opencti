@@ -47,7 +47,7 @@ import ItemMarking from '../../../../components/ItemMarking';
 const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
-    padding: '0 250px 0 74px',
+    padding: '10px 240px 10px 180px',
     backgroundColor: theme.palette.navBottom.background,
   },
   title: {
@@ -232,10 +232,10 @@ class CurationToolBar extends Component {
       ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
-    const aliaseses = flatten(pluck('aliases', selectedElementsList));
+    const aliases = flatten(pluck('aliases', selectedElementsList));
     const newAliases = filter(
       (n) => n.length > 0,
-      uniq(concat(names, aliaseses)),
+      uniq(concat(names, aliases)),
     );
     return (
       <Drawer

@@ -320,7 +320,9 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('stixCyberObservableRelationshipAdd');
+        const payload = store.getRootField(
+          'stixCyberObservableRelationshipAdd',
+        );
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
@@ -352,12 +354,12 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   renderSelectEntity() {
-    const {
-      classes, t, targetStixDomainObjectTypes, entityType,
-    } = this.props;
+    const { classes, t, entityType } = this.props;
+    const types = resolveRelationsTypes(entityType);
+    console.log(types);
     const paginationOptions = {
       search: this.state.search,
-      types: targetStixDomainObjectTypes,
+      types,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -423,7 +425,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             contextual={true}
             inputValue={this.state.search}
             paginationOptions={paginationOptions}
-            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+            targetStixDomainObjectTypes={types}
           />
         </div>
       </div>
@@ -680,7 +682,6 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
 StixCyberObservableRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   entityType: PropTypes.string,
-  targetStixDomainObjectTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

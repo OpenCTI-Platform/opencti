@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, dissoc, pipe, map, toPairs, filter,
+  compose, dissoc, pipe, map, toPairs, filter, includes,
 } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -13,6 +13,7 @@ import inject18n from '../../../../components/i18n';
 import StixCyberObservableLinks from './StixCyberObservableLinks';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemScore from '../../../../components/ItemScore';
+import { ignoredAttributes } from './StixCyberObservableCreation';
 
 const styles = () => ({
   paper: {
@@ -32,7 +33,7 @@ class StixCyberObservableDetailsComponent extends Component {
       dissoc('entity_type'),
       toPairs,
       map((n) => ({ key: n[0], value: n[1] })),
-      filter((n) => n.value),
+      filter((n) => n.value && !includes(n.key, ignoredAttributes)),
     )(stixCyberObservable);
     return (
       <div style={{ height: '100%' }} className="break">

@@ -26,11 +26,7 @@ import { FunctionalError } from '../config/errors';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixCoreObject';
 import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-} from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 export const findAll = async (args) => {
@@ -39,7 +35,7 @@ export const findAll = async (args) => {
     types = filter((type) => isStixDomainObject(type), args.types);
   }
   if (types.length === 0) {
-    types.push(ABSTRACT_STIX_CORE_OBJECT);
+    types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
   return listEntities(types, ['standard_id'], args);
 };

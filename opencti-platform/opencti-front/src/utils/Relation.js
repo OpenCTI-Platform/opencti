@@ -1,4 +1,6 @@
-import { append } from 'ramda';
+import {
+  append, keys, pipe, filter, map, split,
+} from 'ramda';
 
 const relationsTypesMapping = {
   'Attack-Pattern_Malware': ['delivers', 'uses'],
@@ -179,3 +181,9 @@ export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
     ? relationsTypesMapping[`${fromType}_${toType}`]
     : [];
 };
+
+export const resolveTargetTypes = (fromType) => pipe(
+  keys(relationsTypesMapping),
+  filter((n) => n.includes(fromType)),
+  map((n) => split('_', n)[1]),
+)(relationsTypesMapping);

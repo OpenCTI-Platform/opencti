@@ -254,6 +254,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
               assoc('objectMarking', objectMarking),
               pick([
                 'x_opencti_score',
+                'x_opencti_description',
                 'createdBy',
                 'killChainPhases',
                 'objectMarking',
@@ -304,6 +305,23 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                         <SubscriptionFocus
                           context={context}
                           fieldName="x_opencti_score"
+                        />
+                      }
+                    />
+                    <Field
+                      component={TextField}
+                      name="x_opencti_description"
+                      label={t('Description')}
+                      fullWidth={true}
+                      multiline={true}
+                      rows="4"
+                      style={{ marginTop: 20 }}
+                      onFocus={this.handleChangeFocus.bind(this)}
+                      onSubmit={this.handleSubmitField.bind(this)}
+                      helperText={
+                        <SubscriptionFocus
+                          context={context}
+                          fieldName="x_opencti_description"
                         />
                       }
                     />
