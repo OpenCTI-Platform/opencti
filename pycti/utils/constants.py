@@ -30,6 +30,7 @@ class StixCyberObservableTypes(Enum):
     X_OPENCTI_CRYPTOCURRENCY_WALLET = "X-OpenCTI-Cryptocurrency-Wallet"
     X_OPENCTI_TEXT = "X-OpenCTI-Text"
     X_OPENCTI_USER_AGENT = "X-OpenCTI-User-Agent"
+    X_OPENCTI_SIMPLE_OBSERVABLE = "X-OpenCTI-Simple-Observable"
 
     @classmethod
     def has_value(cls, value):
