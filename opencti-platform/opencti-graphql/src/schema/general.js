@@ -3,7 +3,11 @@ import * as R from 'ramda';
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
 
-// General types
+// General
+export const ID_INTERNAL = 'internal_id';
+export const ID_STANDARD = 'standard_id';
+export const IDS_ALIASES = 'i_aliases_ids';
+export const IDS_STIX = 'stix_ids';
 export const BASE_TYPE_RELATION = 'RELATION';
 export const BASE_TYPE_ENTITY = 'ENTITY';
 

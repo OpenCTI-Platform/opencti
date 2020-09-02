@@ -24,9 +24,18 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { BASE_TYPE_RELATION, isAbstract, REL_INDEX_PREFIX } from '../schema/general';
+import {
+  BASE_TYPE_RELATION,
+  ID_INTERNAL,
+  ID_STANDARD,
+  IDS_ALIASES,
+  IDS_STIX,
+  isAbstract,
+  REL_INDEX_PREFIX,
+} from '../schema/general';
 import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
+import { isStixDomainObjectNamed } from '../schema/stixDomainObject';
 
 const dateFields = [
   'created',
@@ -708,7 +717,10 @@ export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
   const workingIds = Array.isArray(ids) ? ids : [ids];
   const idsTermsPerType = [];
-  const elementTypes = ['internal_id', 'standard_id', 'stix_ids'];
+  const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
+  if (isStixDomainObjectNamed(type)) {
+    elementTypes.push(IDS_ALIASES);
+  }
   for (let index = 0; index < workingIds.length; index += 1) {
     const id = workingIds[index];
     for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {

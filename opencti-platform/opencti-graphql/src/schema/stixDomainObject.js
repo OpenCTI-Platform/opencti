@@ -14,6 +14,8 @@ import {
   RELATION_OBJECT_MARKING,
 } from './stixMetaRelationship';
 
+export const ATTRIBUTE_ALIASES = 'aliases';
+export const ATTRIBUTE_ALIASES_OPENCTI = 'x_opencti_aliases';
 export const ENTITY_TYPE_ATTACK_PATTERN = 'Attack-Pattern';
 export const ENTITY_TYPE_CAMPAIGN = 'Campaign';
 export const ENTITY_TYPE_CONTAINER_NOTE = 'Note';
@@ -45,6 +47,7 @@ const STIX_DOMAIN_OBJECT_CONTAINERS = [
 ];
 export const isStixDomainObjectContainer = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
+
 const STIX_DOMAIN_OBJECT_IDENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -52,6 +55,7 @@ const STIX_DOMAIN_OBJECT_IDENTITIES = [
 ];
 export const isStixDomainObjectIdentity = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
+
 const STIX_DOMAIN_OBJECT_LOCATIONS = [
   ENTITY_TYPE_LOCATION_CITY,
   ENTITY_TYPE_LOCATION_COUNTRY,
@@ -87,6 +91,27 @@ const STIX_DOMAIN_OBJECTS = [
 ];
 export const isStixDomainObject = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECTS) || type === ABSTRACT_STIX_DOMAIN_OBJECT;
+
+const STIX_DOMAIN_OBJECT_NAMED = [
+  // ENTITY_TYPE_ATTACK_PATTERN, Because of x-mitre-id
+  ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_INFRASTRUCTURE,
+  ENTITY_TYPE_INTRUSION_SET,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR,
+  ENTITY_TYPE_TOOL,
+  ENTITY_TYPE_VULNERABILITY,
+  ENTITY_TYPE_X_OPENCTI_INCIDENT,
+];
+export const isStixDomainObjectNamed = (type) =>
+  R.includes(type, STIX_DOMAIN_OBJECT_NAMED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
+export const resolveAliasesField = (type) => {
+  if (type === ENTITY_TYPE_COURSE_OF_ACTION || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
+    return ATTRIBUTE_ALIASES_OPENCTI;
+  }
+  return ATTRIBUTE_ALIASES;
+};
 
 export const stixDomainObjectOptions = {
   StixDomainObjectsOrdering: {
