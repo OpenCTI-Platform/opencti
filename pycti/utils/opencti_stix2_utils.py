@@ -1,4 +1,10 @@
-from stix2 import ObjectPath, EqualityComparisonExpression, ObservationExpression
+from stix2 import (
+    ObjectPath,
+    EqualityComparisonExpression,
+    ObservationExpression,
+    CustomObservable,
+    properties,
+)
 
 PATTERN_MAPPING = {
     "Autonomous-System": ["number"],
@@ -42,3 +48,15 @@ class OpenCTIStix2Utils:
             return str(ece)
         else:
             return None
+
+
+@CustomObservable(
+    "x-opencti-simple-observable",
+    [
+        ("key", properties.StringProperty(required=True)),
+        ("value", properties.StringProperty(required=True)),
+        ("description", properties.StringProperty()),
+    ],
+)
+class SimpleObservable:
+    pass

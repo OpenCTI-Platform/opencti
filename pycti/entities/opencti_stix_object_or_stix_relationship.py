@@ -154,24 +154,24 @@ class StixObjectOrStixRelationship:
             ... on Individual {
                 name
                 description
-                aliases
                 contact_information
+                x_opencti_aliases
                 x_opencti_firstname
                 x_opencti_lastname
             }
             ... on Organization {
                 name
                 description
-                aliases
                 contact_information
+                x_opencti_aliases
                 x_opencti_organization_type
                 x_opencti_reliability
             }
             ... on Sector {
                 name
                 description
-                aliases
                 contact_information
+                x_opencti_aliases
             }
             ... on Indicator {
                 pattern_type
@@ -318,7 +318,7 @@ class StixObjectOrStixRelationship:
                 last_seen
                 objective
             }
-            .. on StixCoreRelationship {
+            ... on StixCoreRelationship {
                 createdBy {
                     ... on Identity {
                         id
@@ -326,7 +326,7 @@ class StixObjectOrStixRelationship:
                         entity_type
                         parent_types
                         name
-                        aliases
+                        x_opencti_aliases
                         description
                         created
                         modified
@@ -388,7 +388,7 @@ class StixObjectOrStixRelationship:
                 start_time
                 stop_time
             }
-            .. on StixSightingRelationship {
+            ... on StixSightingRelationship {
                 createdBy {
                     ... on Identity {
                         id
@@ -396,7 +396,7 @@ class StixObjectOrStixRelationship:
                         entity_type
                         parent_types
                         name
-                        aliases
+                        x_opencti_aliases
                         description
                         created
                         modified
@@ -450,7 +450,6 @@ class StixObjectOrStixRelationship:
                         }
                     }
                 }
-                revoked
                 confidence
                 created
                 modified
@@ -478,7 +477,7 @@ class StixObjectOrStixRelationship:
             )
             query = (
                 """
-                query StixObjectOrStixRelationship($id: ID!) {
+                query StixObjectOrStixRelationship($id: String!) {
                     stixObjectOrStixRelationship(id: $id) {
                         """
                 + (

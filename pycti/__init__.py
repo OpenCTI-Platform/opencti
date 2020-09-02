@@ -42,7 +42,7 @@ from .entities.opencti_indicator import Indicator
 
 from .utils.opencti_stix2 import OpenCTIStix2
 from .utils.opencti_stix2_splitter import OpenCTIStix2Splitter
-from .utils.opencti_stix2_utils import OpenCTIStix2Utils
+from .utils.opencti_stix2_utils import OpenCTIStix2Utils, SimpleObservable
 from .utils.constants import StixCyberObservableTypes
 
 __all__ = [
@@ -84,4 +84,5 @@ __all__ = [
     "OpenCTIStix2Splitter",
     "OpenCTIStix2Utils",
     "StixCyberObservableTypes",
+    "SimpleObservable",
 ]
