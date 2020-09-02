@@ -440,6 +440,7 @@ class StixCyberObservable:
             key_split = simple_observable_key.split(".")
             type = key_split[0]
             attribute = key_split[1]
+            observable_data[attribute] = simple_observable_value
         else:
             type = (
                 observable_data["type"].title() if "type" in observable_data else None
@@ -566,10 +567,6 @@ class StixCyberObservable:
                     else None,
                     "rir": observable_data["rir"] if "rir" in observable_data else None,
                 }
-                if simple_observable_value is not None:
-                    input_variables["AutonomousSystem"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "Directory":
                 input_variables["Directory"] = {
                     "path": observable_data["path"],
@@ -586,8 +583,6 @@ class StixCyberObservable:
                     if "atime" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["Directory"][attribute] = simple_observable_value
             elif type == "Domain-Name":
                 input_variables["DomainName"] = {"value": observable_data["value"]}
                 if attribute is not None:
@@ -599,8 +594,6 @@ class StixCyberObservable:
                     if "display_name" in observable_data
                     else None,
                 }
-                if simple_observable_value is not None:
-                    input_variables["EmailAddr"][attribute] = simple_observable_value
             elif type == "Email-Message":
                 input_variables["EmailMessage"] = {
                     "is_multipart": observable_data["is_multipart"]
@@ -625,8 +618,6 @@ class StixCyberObservable:
                     if "body" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["EmailMessage"][attribute] = simple_observable_value
             elif type == "Email-Mime-Part-Type":
                 input_variables["EmailMimePartType"] = {
                     "body": observable_data["body"]
@@ -639,10 +630,6 @@ class StixCyberObservable:
                     if "content_disposition" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["EmailMimePartType"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "Artifact":
                 hashes = []
                 for key, value in observable_data["hashes"].items():
@@ -663,8 +650,6 @@ class StixCyberObservable:
                     if "decryption_key" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["Artifact"][attribute] = simple_observable_value
             elif type == "StixFile":
                 hashes = []
                 if simple_observable_key == "File.MD5":
@@ -756,42 +741,30 @@ class StixCyberObservable:
                     if "subject_public_key_exponent" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["X509Certificate"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "IPv4-Addr":
                 input_variables["IPv4Addr"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["IPv4Addr"][attribute] = simple_observable_value
             elif type == "IPv6-Addr":
                 input_variables["IPv6Addr"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["IPv6Addr"][attribute] = simple_observable_value
             elif type == "Mac-Addr":
                 input_variables["MacAddr"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["MacAddr"][attribute] = simple_observable_value
             elif type == "Mutex":
                 input_variables["Mutex"] = {
                     "name": observable_data["name"]
                     if "name" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["Mutex"][attribute] = simple_observable_value
             elif type == "Network-Traffic":
                 input_variables["NetworkTraffic"] = {
                     "extensions": observable_data["extensions"]
@@ -826,10 +799,6 @@ class StixCyberObservable:
                     if "dst_packets" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["NetworkTraffic"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "Process":
                 input_variables["Process"] = {
                     "extensions": observable_data["extensions"]
@@ -850,8 +819,6 @@ class StixCyberObservable:
                     if "environment_variables" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["Process"][attribute] = simple_observable_value
             elif type == "Software":
                 input_variables["Software"] = {
                     "name": observable_data["name"]
@@ -871,16 +838,12 @@ class StixCyberObservable:
                     if "version" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["Software"][attribute] = simple_observable_value
             elif type == "Url":
                 input_variables["Url"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["Url"][attribute] = simple_observable_value
             elif type == "User-Account":
                 input_variables["UserAccount"] = {
                     "extensions": observable_data["extensions"]
@@ -931,8 +894,6 @@ class StixCyberObservable:
                     if "account_last_login" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["UserAccount"][attribute] = simple_observable_value
             elif type == "Windows-Registry-Key":
                 input_variables["WindowsRegistryKey "] = {
                     "attribute_key": observable_data["attribute_key"]
@@ -945,10 +906,6 @@ class StixCyberObservable:
                     if "number_of_subkeys" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["WindowsRegistryKey"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "Windows-Registry-Value-Type":
                 input_variables["WindowsRegistryKeyValueType "] = {
                     "name": observable_data["name"]
@@ -961,10 +918,6 @@ class StixCyberObservable:
                     if "data_type" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["WindowsRegistryKeyValueType"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "X509-V3-Extensions-Type":
                 input_variables["X509V3ExtensionsType "] = {
                     "basic_constraints": observable_data["basic_constraints"]
@@ -1030,60 +983,36 @@ class StixCyberObservable:
                     if "policy_mappings" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["X509V3ExtensionsType"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "X-OpenCTI-Cryptographic-Key":
                 input_variables["XOpenCTICryptographicKey"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["XOpenCTICryptographicKey"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "X-OpenCTI-Cryptocurrency-Wallet":
                 input_variables["XOpenCTICryptocurrencyWallet"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["XOpenCTICryptocurrencyWallet"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "X-OpenCTI-Hostname":
                 input_variables["XOpenCTIHostname"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["XOpenCTIHostname"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "X-OpenCTI-Text":
                 input_variables["XOpenCTIText"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["XOpenCTIUserAgent"][
-                        attribute
-                    ] = simple_observable_value
             elif type == "X-OpenCTI-User-Agent":
                 input_variables["XOpenCTIUserAgent"] = {
                     "value": observable_data["value"]
                     if "value" in observable_data
                     else None,
                 }
-                if attribute is not None:
-                    input_variables["XOpenCTIUserAgent"][
-                        attribute
-                    ] = simple_observable_value
             result = self.opencti.query(query, input_variables)
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableAdd"]
