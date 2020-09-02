@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, filter, append } from 'ramda';
+import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -10,13 +11,23 @@ import StixCoreObjectStixCyberObservablesLines, {
 import StixCyberObservablesRightBar from './StixCyberObservablesRightBar';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
+const styles = () => ({
+  container: {
+    marginTop: 15,
+    paddingBottom: 70,
+  },
+});
+
 class StixCoreObjectStixCyberObservables extends Component {
   constructor(props) {
     super(props);
     this.state = {
       sortBy: null,
       orderAsc: false,
-      targetStixDomainObjectTypes: ['Stix-Cyber-Observable'],
+      searchTerm: '',
+      openToType: false,
+      toType: 'All',
+      targetStixCyberObservableTypes: ['Stix-Cyber-Observable'],
       view: 'lines',
     };
   }
@@ -25,22 +36,37 @@ class StixCoreObjectStixCyberObservables extends Component {
     this.setState({ sortBy: field, orderAsc });
   }
 
+  handleSearch(value) {
+    this.setState({ searchTerm: value });
+  }
+
+  handleOpenToType() {
+    this.setState({ openToType: true });
+  }
+
+  handleCloseToType() {
+    this.setState({ openToType: false });
+  }
+
   handleToggle(type) {
-    if (this.state.targetStixDomainObjectTypes.includes(type)) {
+    if (this.state.targetStixCyberObservableTypes.includes(type)) {
       this.setState({
-        targetStixDomainObjectTypes:
-          filter((t) => t !== type, this.state.targetStixDomainObjectTypes)
+        targetStixCyberObservableTypes:
+          filter((t) => t !== type, this.state.targetStixCyberObservableTypes)
             .length === 0
             ? ['Stix-Cyber-Observable']
-            : filter((t) => t !== type, this.state.targetStixDomainObjectTypes),
+            : filter(
+              (t) => t !== type,
+              this.state.targetStixCyberObservableTypes,
+            ),
       });
     } else {
       this.setState({
-        targetStixDomainObjectTypes: append(
+        targetStixCyberObservableTypes: append(
           type,
           filter(
             (t) => t !== 'Stix-Cyber-Observable',
-            this.state.targetStixDomainObjectTypes,
+            this.state.targetStixCyberObservableTypes,
           ),
         ),
       });
@@ -53,12 +79,12 @@ class StixCoreObjectStixCyberObservables extends Component {
     const dataColumns = {
       entity_type: {
         label: 'Type',
-        width: '10%',
+        width: '15%',
         isSortable: false,
       },
       observable_value: {
         label: 'Value',
-        width: '30%',
+        width: '35%',
         isSortable: false,
       },
       start_time: {
@@ -82,7 +108,8 @@ class StixCoreObjectStixCyberObservables extends Component {
         orderAsc={orderAsc}
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
-        displayImport={false}
+        handleSearch={this.handleSearch.bind(this)}
+        displayImport={true}
         secondaryAction={true}
       >
         <QueryRenderer
@@ -103,32 +130,42 @@ class StixCoreObjectStixCyberObservables extends Component {
   }
 
   render() {
-    const { stixCoreObjectId, relationshipType, noRightBar } = this.props;
     const {
-      view, targetStixDomainObjectTypes, sortBy, orderAsc,
+      classes,
+      stixCoreObjectId,
+      relationshipType,
+      noRightBar,
+    } = this.props;
+    const {
+      view,
+      targetStixCyberObservableTypes,
+      sortBy,
+      orderAsc,
     } = this.state;
     const paginationOptions = {
       inferred: false,
-      toTypes: targetStixDomainObjectTypes,
+      toTypes: targetStixCyberObservableTypes,
       fromId: stixCoreObjectId,
-      relationship_type: relationshipType,
+      relationship_type: relationshipType || 'stix-core-relationship',
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div>
+      <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixCoreRelationshipCreationFromEntity
-          stixCoreObjectId={stixCoreObjectId}
-          targetStixDomainObjectTypes={['Stix-Cyber-Observable']}
-          allowedRelationshipTypes={[relationshipType]}
+          entityId={stixCoreObjectId}
+          targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
           isRelationReversed={true}
-          paddingRight={true}
+          allowedRelationshipTypes={
+            relationshipType ? [relationshipType] : null
+          }
+          paddingRight={220}
           paginationOptions={paginationOptions}
         />
         {!noRightBar ? (
           <StixCyberObservablesRightBar
-            types={targetStixDomainObjectTypes}
+            types={targetStixCyberObservableTypes}
             handleToggle={this.handleToggle.bind(this)}
           />
         ) : (
@@ -149,4 +186,7 @@ StixCoreObjectStixCyberObservables.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n)(StixCoreObjectStixCyberObservables);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectStixCyberObservables);

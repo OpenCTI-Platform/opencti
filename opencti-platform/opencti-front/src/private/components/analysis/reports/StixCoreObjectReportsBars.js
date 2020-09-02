@@ -35,11 +35,13 @@ const stixCoreObjectReportsBarsDistributionQuery = graphql`
     $objectId: String
     $field: String!
     $operation: StatsOperation!
+    $limit: Int
   ) {
     reportsDistribution(
       objectId: $objectId
       field: $field
       operation: $operation
+      limit: $limit
     ) {
       label
       value
@@ -56,6 +58,7 @@ class StixCoreObjectReportsBars extends Component {
       objectId: stixCoreObjectId,
       field: field || 'report_types',
       operation: 'count',
+      limit: 8,
     };
     return (
       <div style={{ height: '100%' }}>
@@ -113,7 +116,7 @@ class StixCoreObjectReportsBars extends Component {
                       <Bar
                         fill={Theme.palette.primary.main}
                         dataKey="value"
-                        barSize={20}
+                        barSize={15}
                       >
                         {props.reportsDistribution.map((entry, index) => (
                           <Cell

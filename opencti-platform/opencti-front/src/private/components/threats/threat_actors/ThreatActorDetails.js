@@ -194,6 +194,8 @@ const ThreatActorDetails = createFragmentContainer(
     threatActor: graphql`
       fragment ThreatActorDetails_threatActor on ThreatActor {
         id
+        first_seen
+        last_seen
         description
         threat_actor_types
         sophistication

@@ -114,12 +114,12 @@ class EntityStixCoreRelationships extends Component {
       },
       start_time: {
         label: 'Start time',
-        width: '15%',
+        width: '13%',
         isSortable: true,
       },
       stop_time: {
         label: 'Stop time',
-        width: '15%',
+        width: '13%',
         isSortable: true,
       },
       confidence: {
@@ -419,7 +419,7 @@ class EntityStixCoreRelationships extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
-            entityId={entityId}
+            stixCoreObjectId={entityId}
             isRelationReversed={isRelationReversed}
             paddingRight={220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}

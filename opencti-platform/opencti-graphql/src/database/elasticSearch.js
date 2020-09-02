@@ -921,7 +921,7 @@ const prepareIndexing = async (elements) => {
         const [from, to] = await Promise.all([elLoadByIds(thing.fromId), elLoadByIds(thing.toId)]);
         connections.push({
           internal_id: from.internal_id,
-          types: [thing.fromType, ...getParentTypes(thing.toType)],
+          types: [thing.fromType, ...getParentTypes(thing.fromType)],
           role: thing.fromRole,
         });
         connections.push({

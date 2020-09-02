@@ -32,7 +32,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import { parse } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
@@ -361,11 +361,13 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   start_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+    .nullable()
+    .default(null)
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
   stop_time: Yup.date()
-    .typeError(t('The value must be a date (YYYY-MM-DD)'))
-    .required(t('This field is required')),
+    .nullable()
+    .default(null)
+    .typeError(t('The value must be a date (YYYY-MM-DD)')),
   description: Yup.string(),
 });
 
@@ -406,8 +408,18 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
-      assoc('start_time', parse(values.start_time).format()),
-      assoc('stop_time', parse(values.stop_time).format()),
+      assoc(
+        'start_time',
+        values.start_time && values.start_time.length > 0
+          ? parse(values.start_time).format()
+          : null,
+      ),
+      assoc(
+        'stop_time',
+        values.stop_time && values.stop_time.length > 0
+          ? parse(values.stop_time).format()
+          : null,
+      ),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
       assoc('objectMarking', pluck('value', values.objectMarking)),
@@ -603,8 +615,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     const initialValues = {
       relationship_type: defaultRelationshipType,
       confidence: 15,
-      start_time: dayStartDate(),
-      stop_time: dayStartDate(),
+      start_time: null,
+      stop_time: null,
       description: '',
       killChainPhases: [],
       objectMarking: [],

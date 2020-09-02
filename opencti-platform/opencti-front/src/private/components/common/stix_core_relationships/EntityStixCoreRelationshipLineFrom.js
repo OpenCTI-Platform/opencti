@@ -68,8 +68,8 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
           primary={
             <div>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.relationship_type.width }}
               >
                 {t(`relationship_${node.relationship_type}`)}
               </div>
@@ -89,7 +89,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.stop_time)}
+                {node.inferred ? '-' : nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -345,8 +345,8 @@ class EntityStixCoreRelationshipLineFromDummyComponent extends Component {
           primary={
             <div>
               <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.relationship_type.width }}
+                className={classes.bodyItem}
+                style={{ width: dataColumns.relationship_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

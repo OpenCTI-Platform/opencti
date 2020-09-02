@@ -100,7 +100,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
           >
             <AccordionSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
-                {t(`observable_${type}`)}
+                {t(`entity_${type}`)}
               </Typography>
               <Typography className={classes.secondaryHeading}>
                 {stixCyberObservables[type].length} {t('observable(s)')}
@@ -123,7 +123,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
                     </ListItemIcon>
                     <ListItemText
                       primary={stixCyberObservable.observable_value}
-                      secondary={truncate(stixCyberObservable.description, 100)}
+                      secondary={truncate(stixCyberObservable.x_opencti_description, 100)}
                     />
                   </ListItem>
                 ))}
@@ -196,6 +196,7 @@ const StixCoreRelationshipCreationFromEntityStixCyberObservablesLines = createPa
               entity_type
               parent_types
               observable_value
+              x_opencti_description
             }
           }
         }

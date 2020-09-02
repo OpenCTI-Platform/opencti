@@ -1323,6 +1323,7 @@ define
     has x_opencti_description,
     has x_opencti_score,
     plays stix-sighting-relationship_from,
+    plays related-to_from,
     plays consists-of_to,
     plays based-on_to;
 
