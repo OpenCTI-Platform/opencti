@@ -468,13 +468,13 @@ class Indicator:
                 else "",
                 indicator_types=stix_object["indicator_types"]
                 if "indicator_types" in stix_object
-                else "",
+                else None,
                 valid_from=stix_object["valid_from"]
                 if "valid_from" in stix_object
-                else "",
+                else None,
                 valid_until=stix_object["valid_until"]
                 if "valid_until" in stix_object
-                else "",
+                else None,
                 x_opencti_score=stix_object["x_opencti_score"]
                 if "x_opencti_score" in stix_object
                 else 50,
