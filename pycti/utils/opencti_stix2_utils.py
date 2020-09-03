@@ -4,6 +4,7 @@ from stix2 import (
     EqualityComparisonExpression,
     ObservationExpression,
     CustomObservable,
+    ExternalReference,
     properties,
 )
 
@@ -67,6 +68,20 @@ class OpenCTIStix2Utils:
         ("key", properties.StringProperty(required=True)),
         ("value", properties.StringProperty(required=True)),
         ("description", properties.StringProperty()),
+        (
+            "created_by_ref",
+            properties.ReferenceProperty(valid_types="identity", spec_version="2.1"),
+        ),
+        ("labels", properties.ListProperty(properties.StringProperty)),
+        ("external_references", properties.ListProperty(ExternalReference)),
+        (
+            "object_marking_refs",
+            properties.ListProperty(
+                properties.ReferenceProperty(
+                    valid_types="marking-definition", spec_version="2.1"
+                )
+            ),
+        ),
     ],
 )
 class SimpleObservable:
