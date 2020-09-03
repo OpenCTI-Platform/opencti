@@ -1,3 +1,4 @@
+import uuid
 from stix2 import (
     ObjectPath,
     EqualityComparisonExpression,
@@ -48,6 +49,11 @@ class OpenCTIStix2Utils:
             return str(ece)
         else:
             return None
+
+    @staticmethod
+    def generate_special_uuid(type):
+        new_uuid = str(uuid.uuid4())
+        return type + "--" + new_uuid.replace(new_uuid[:8], "00000000")
 
 
 @CustomObservable(
