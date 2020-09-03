@@ -39,7 +39,12 @@ import {
   EVENT_TYPE_UPDATE_REMOVE,
   sendLog,
 } from './rabbitmq';
-import { generateInternalId, generateStandardId, isFieldContributingToStandardId } from '../schema/identifier';
+import {
+  generateAliasesId,
+  generateInternalId,
+  generateStandardId,
+  isFieldContributingToStandardId,
+} from '../schema/identifier';
 import { lockResource } from './redis';
 import { STIX_SPEC_VERSION } from './stix';
 import {
@@ -47,6 +52,10 @@ import {
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
+  IDS_ALIASES,
+  ID_INTERNAL,
+  ID_STANDARD,
+  IDS_STIX,
   isAbstract,
   REL_INDEX_PREFIX,
 } from '../schema/general';
@@ -72,7 +81,14 @@ import {
   isMultipleAttribute,
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_CONTAINER_REPORT, isStixDomainObject } from '../schema/stixDomainObject';
+import {
+  ATTRIBUTE_ALIASES,
+  ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_CONTAINER_REPORT,
+  isStixDomainObject,
+  isStixDomainObjectNamed,
+  resolveAliasesField,
+} from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
@@ -96,7 +112,6 @@ export const prepareDate = (date) => utcDate(date).format(dateFormat);
 export const yearFormat = (date) => utcDate(date).format('YYYY');
 export const monthFormat = (date) => utcDate(date).format('YYYY-MM');
 export const dayFormat = (date) => utcDate(date).format('YYYY-MM-DD');
-
 export const escape = (chars) => {
   const toEscape = chars && typeof chars === 'string';
   if (toEscape) {
@@ -104,7 +119,8 @@ export const escape = (chars) => {
   }
   return chars;
 };
-export const escapeString = (s) => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '');
+export const escapeString = (s) => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '').trim();
+// endregion
 
 // region client
 const client = new Grakn(`${conf.get('grakn:hostname')}:${conf.get('grakn:port')}`);
@@ -396,7 +412,7 @@ const loadConcept = async (tx, concept, args = {}) => {
   // const types = await conceptTypes(tx, concept);
   const remoteConceptType = await concept.type();
   const conceptType = await remoteConceptType.label();
-  const internalIdAttribute = await tx.getSchemaConcept('internal_id');
+  const internalIdAttribute = await tx.getSchemaConcept(ID_INTERNAL);
   const index = inferIndexFromConceptType(conceptType);
   // 01. Return the data in elastic if not explicitly asked in grakn
   // eslint-disable-next-line no-underscore-dangle
@@ -509,7 +525,7 @@ const loadConcept = async (tx, concept, args = {}) => {
         const inferenceId = Buffer.from(pattern).toString('base64');
         return R.pipe(
           R.assoc('id', inferenceId),
-          R.assoc('internal_id', inferenceId),
+          R.assoc(ID_INTERNAL, inferenceId),
           R.assoc('entity_type', conceptType),
           R.assoc('relationship_type', conceptType),
           R.assoc('parent_types', getParentTypes(conceptType)),
@@ -664,12 +680,12 @@ export const listEntities = async (entityTypes, searchFields, args = {}) => {
       if (isRelationFilter) {
         // ES only support internal_id reference
         const [, field] = k.key.split('.');
-        if (field !== 'internal_id') return true;
+        if (field !== ID_INTERNAL) return true;
       }
       return false;
     }, validFilters).length > 0;
   // 01-3 Check the ordering
-  const unsupportedOrdering = isRelationOrderBy && R.last(orderBy.split('.')) !== 'internal_id';
+  const unsupportedOrdering = isRelationOrderBy && R.last(orderBy.split('.')) !== ID_INTERNAL;
   const supportedByCache = !unsupportedOrdering && !unSupportedRelations;
   if (useCache(args) && supportedByCache) {
     return elPaginate(ENTITIES_INDICES, R.assoc('types', entityTypes, args));
@@ -783,7 +799,7 @@ export const listRelations = async (relationshipType, args) => {
   // Handle relation type(s)
   const relationToGet = relationshipType || 'stix-core-relationship';
   // 0 - Check if we can support the query by Elastic
-  const unsupportedOrdering = isRelationOrderBy && R.last(orderBy.split('.')) !== 'internal_id';
+  const unsupportedOrdering = isRelationOrderBy && R.last(orderBy.split('.')) !== ID_INTERNAL;
   // Search is not supported because its only search on the relation to.
   const supportedByCache = !search && !unsupportedOrdering && !haveTargetFilters && !inferred && !definedRoles;
   if (useCache(args) && supportedByCache) {
@@ -950,10 +966,12 @@ export const listRelations = async (relationshipType, args) => {
 // region Loader element
 const findElementById = async (ids, type, args = {}) => {
   const qType = type || 'thing';
+  const keys = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
+  if (isStixDomainObjectNamed(type)) keys.push(IDS_ALIASES);
   const workingIds = Array.isArray(ids) ? ids : [ids];
   const searchIds = R.map((id) => {
     const eid = escapeString(id);
-    return `{ $x has internal_id "${eid}";} or { $x has standard_id "${eid}";} or { $x has stix_ids "${eid}";}`;
+    return R.map((key) => `{ $x has ${key} "${eid}";}`, keys).join(' or ');
   }, workingIds);
   const attrIds = searchIds.join(' or ');
   const query = `match $x isa ${qType}; ${attrIds}; get;`;
@@ -1140,7 +1158,7 @@ export const distributionRelations = async (options) => {
   }
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field === 'internal_id') {
+  if (field === ID_INTERNAL) {
     const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
     return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
   }
@@ -1406,6 +1424,16 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         // eslint-disable-next-line no-await-in-loop
         const ins = await innerUpdateAttribute(user, instance, input, wTx, options);
         updatedInputs.push(...ins);
+        // If input impact aliases (aliases or x_opencti_aliases)
+        const isAliasesImpacted =
+          [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI].includes(input.key) && !R.isEmpty(ins.length);
+        if (isAliasesImpacted) {
+          const aliasesId = generateAliasesId(input.value);
+          const aliasInput = { key: IDS_ALIASES, value: aliasesId };
+          // eslint-disable-next-line no-await-in-loop
+          const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, wTx, options);
+          updatedInputs.push(...aliasIns);
+        }
       }
       // If update is part of the key, update the standard_id
       const instanceType = instance.entity_type;
@@ -1414,10 +1442,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       if (!isRelation && isFieldContributingToStandardId(instanceType, keys)) {
         const updatedInstance = mergeInstanceWithInputs(instance, updatedInputs);
         const standardId = generateStandardId(instanceType, updatedInstance);
-        const standardInput = { key: 'standard_id', value: [standardId] };
+        const standardInput = { key: ID_STANDARD, value: [standardId] };
         // eslint-disable-next-line no-await-in-loop
         const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
-        // currentInstanceData = R.assoc('standard_id', standardId, currentInstanceData);
+        // currentInstanceData = R.assoc(ID_STANDARD, standardId, currentInstanceData);
         updatedInputs.push(...ins);
       }
     });
@@ -1727,21 +1755,30 @@ export const createRelations = async (user, inputs, opts = {}) => {
 
 // region mutation entity
 const upsertEntity = async (user, entity, type, data) => {
+  let updatedEntity = entity;
+  const id = entity.internal_id;
+  // Upsert the stix ids
   if (!R.isNil(data.stix_id) && entity.stix_ids.length < 5) {
-    const id = entity.internal_id;
     const patch = { stix_ids: [data.stix_id] };
-    return patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
+    updatedEntity = patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
-  return entity;
+  // Upsert the aliases
+  if (isStixDomainObjectNamed(type)) {
+    const { name } = data;
+    const key = resolveAliasesField(type);
+    const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+    if (entity.name !== name) aliases.push(name);
+    const patch = { [key]: aliases };
+    updatedEntity = patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
+  }
+  return updatedEntity;
 };
-const createRawEntity = async (user, standardId, input, type, opts = {}) => {
+const createRawEntity = async (user, standardId, participantIds, input, type, opts = {}) => {
   const { noLog = false } = opts;
-  // Generate the internal id
+  // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
-  const participantIds =
-    R.isNil(input.stix_id) || input.stix_id.startsWith('00000000') ? [standardId] : [input.stix_id, standardId];
-  const existingEntity = await internalLoadById(participantIds);
+  const existingEntity = await loadById(participantIds, type);
   if (existingEntity) {
     return upsertEntity(user, existingEntity, type, input);
   }
@@ -1749,7 +1786,7 @@ const createRawEntity = async (user, standardId, input, type, opts = {}) => {
   const today = now();
   // Dissoc additional data
   let data = R.pipe(
-    R.assoc('internal_id', internalId),
+    R.assoc(ID_INTERNAL, internalId),
     R.assoc('entity_type', type),
     R.dissoc('update'),
     R.dissoc('createdBy'),
@@ -1762,7 +1799,7 @@ const createRawEntity = async (user, standardId, input, type, opts = {}) => {
   // Default attributes
   // Internal-Object
   if (isInternalObject(type)) {
-    data = R.assoc('standard_id', standardId, data);
+    data = R.assoc(ID_STANDARD, standardId, data);
   }
   // Some internal objects have dates
   if (isDatedInternalObject(type)) {
@@ -1771,8 +1808,8 @@ const createRawEntity = async (user, standardId, input, type, opts = {}) => {
   // Stix-Object
   if (isStixObject(type)) {
     data = R.pipe(
-      R.assoc('standard_id', standardId),
-      R.assoc('stix_ids', R.isNil(input.stix_id) ? [] : [input.stix_id]),
+      R.assoc(ID_STANDARD, standardId),
+      R.assoc(IDS_STIX, R.isNil(input.stix_id) ? [] : [input.stix_id]),
       R.dissoc('stix_id'),
       R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),
@@ -1796,6 +1833,11 @@ const createRawEntity = async (user, standardId, input, type, opts = {}) => {
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
+  }
+  // -- Named
+  if (isStixDomainObjectNamed(type)) {
+    const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+    data = R.assoc(IDS_ALIASES, generateAliasesId(aliases), data);
   }
   // Add the additional fields for dates (day, month, year)
   const dataKeys = Object.keys(data);
@@ -1863,17 +1905,22 @@ export const createEntity = async (user, input, type, opts = {}) => {
   let lock;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
-  // Generate the internal id
+  // Generate all the possibles ids
   const standardId = generateStandardId(type, resolvedInput);
-  const participantIds =
-    R.isNil(resolvedInput.stix_id) || resolvedInput.stix_id.startsWith('00000000')
-      ? standardId
-      : [resolvedInput.stix_id, standardId];
+  const participantIds = [standardId];
+  if (isStixDomainObjectNamed(type)) {
+    const aliases = [resolvedInput.name, ...(resolvedInput.aliases || []), ...(resolvedInput.x_opencti_aliases || [])];
+    participantIds.push(...generateAliasesId(aliases));
+  }
+  if (!R.isNil(resolvedInput.stix_id) && !resolvedInput.stix_id.startsWith('00000000')) {
+    participantIds.push(resolvedInput.stix_id);
+  }
+  // Create the element
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // noinspection UnnecessaryLocalVariableJS
-    const creation = await createRawEntity(user, standardId, resolvedInput, type, opts);
+    const creation = await createRawEntity(user, standardId, participantIds, resolvedInput, type, opts);
     // Return created element after waiting for it.
     return creation;
   } catch (err) {
@@ -1892,6 +1939,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
 };
 // endregion
 
+// region mutation deletion
 const getElementsRelated = async (targetId, elements = [], options = {}) => {
   const eid = escapeString(targetId);
   const read = `match $from has internal_id "${eid}"; $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}; get;`;
@@ -1904,7 +1952,6 @@ const getElementsRelated = async (targetId, elements = [], options = {}) => {
   await Promise.all(connectedRelationsIds.map(({ id }) => getElementsRelated(id, elements, options)));
   return elements;
 };
-
 const deleteElementById = async (elementId, elementType, isRelation, options = {}) => {
   // 00. Load everything we need to remove
   const dependencies = [{ id: elementId, type: elementType, relDependency: isRelation }];
@@ -1928,8 +1975,6 @@ const deleteElementById = async (elementId, elementType, isRelation, options = {
     });
   }
 };
-
-// region mutation deletion
 export const deleteEntityById = async (user, entityId, type, options = {}) => {
   const { noLog = false } = options;
   if (R.isNil(type)) {

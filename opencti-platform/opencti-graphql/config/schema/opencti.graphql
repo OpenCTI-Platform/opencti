@@ -3396,7 +3396,6 @@ input CountryAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String
-  aliases: [String]
   confidence: Int
   revoked: Boolean
   lang: String

@@ -99,6 +99,8 @@ define
 
   # STIX Domain Object
   aliases sub attribute, value string;
+  i_aliases_ids sub attribute, value string;
+  x_opencti_aliases sub attribute, value string;
   x_mitre_detection sub attribute, value string;
   x_mitre_platforms sub attribute, value string;
   x_mitre_permissions_required sub attribute, value string;
@@ -111,7 +113,6 @@ define
   latitude sub attribute, value double;
   longitude sub attribute, value double;
   precision sub attribute, value double;
-  x_opencti_aliases sub attribute, value string;
   objective sub attribute, value string;
   hashes sub attribute, value string;
   pattern_type sub attribute, value string;
@@ -978,6 +979,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has x_mitre_platforms,
     has x_mitre_permissions_required,
     has x_mitre_detection,
@@ -996,6 +998,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -1050,6 +1053,7 @@ define
     has name,
     has description,
     has x_opencti_aliases,
+    has i_aliases_ids,
     has x_mitre_id,
     plays mitigates_from,
     plays investigates_from,
@@ -1064,6 +1068,7 @@ define
     has identity_class,
     has roles,
     has x_opencti_aliases,
+    has i_aliases_ids,
     plays located-at_from,
     plays part-of_from,
     plays stix-sighting-relationship_to,
@@ -1113,6 +1118,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has infrastructure_types,
     has first_seen,
     has first_seen_day,
@@ -1143,6 +1149,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has first_seen,
     has first_seen_day,
     has first_seen_month,
@@ -1174,6 +1181,7 @@ define
     has longitude,
     has precision,
     has x_opencti_aliases,
+    has i_aliases_ids,
     has x_opencti_location_type,
     plays located-at_from,
     plays stix-sighting-relationship_to,
@@ -1195,6 +1203,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has malware_types,
     has is_family,
     has first_seen,
@@ -1239,6 +1248,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has threat_actor_types,
     has first_seen,
     has first_seen_day,
@@ -1270,6 +1280,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has tool_types,
     has tool_version,
     plays kill-chain-phase_from,
@@ -1302,6 +1313,7 @@ define
     has name,
     has description,
     has aliases,
+    has i_aliases_ids,
     has first_seen,
     has first_seen_day,
     has first_seen_month,

@@ -1,9 +1,11 @@
 import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
+import { IDS_ALIASES, IDS_STIX } from './general';
 
 export const multipleAttributes = [
-  'stix_ids',
+  IDS_STIX,
   'aliases',
+  IDS_ALIASES,
   'grant',
   'indicator_types',
   'infrastructure_types',

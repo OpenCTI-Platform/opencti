@@ -12,6 +12,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { multipleAttributes } from '../schema/fieldDataAdapter';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import { IDS_ALIASES } from '../schema/general';
 
 export const STIX_SPEC_VERSION = '2.1';
 
@@ -31,11 +32,12 @@ const convertTypeToStixType = (type) => {
 export const buildStixData = (entityData, extra = {}, onlyBase = false) => {
   const type = entityData.entity_type;
   let finalData = pipe(
+    assoc('id', entityData.standard_id),
+    assoc('type', convertTypeToStixType(type)),
     dissoc('standard_id'),
     dissoc('internal_id'),
-    assoc('id', entityData.standard_id),
-    dissoc('entity_type'),
-    assoc('type', convertTypeToStixType(type))
+    dissoc(IDS_ALIASES),
+    dissoc('entity_type')
   )(entityData);
   // Relationships
   if (isStixCoreRelationship(type)) {
