@@ -19,17 +19,14 @@ import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
 
+export const normalizeName = (name) => {
+  return (name || '').toLowerCase().trim();
+};
 const idGen = (data, namespace) => {
   // If element have nothing participating to the key, we can only create an uuidv4
   if (R.isEmpty(data)) return uuidv4();
   const dataCanonicalize = jsonCanonicalize(data);
   return uuidv5(dataCanonicalize, namespace);
-};
-
-// Remove all whitespace and invalid characters.
-export const normalizeName = (name) => {
-  const workName = name || '';
-  return workName.toLowerCase().trim();
 };
 
 const stixCyberObservableContribution = {
@@ -150,10 +147,9 @@ const stixEntityContribution = {
     },
   },
 };
-
-const resolveContribution = (type) =>
-  isStixCyberObservable(type) ? stixCyberObservableContribution : stixEntityContribution;
-
+const resolveContribution = (type) => {
+  return isStixCyberObservable(type) ? stixCyberObservableContribution : stixEntityContribution;
+};
 export const isFieldContributingToStandardId = (type, keys) => {
   const contrib = resolveContribution(type);
   const properties = contrib.definition[type];

@@ -44,9 +44,10 @@ import {
   generateInternalId,
   generateStandardId,
   isFieldContributingToStandardId,
+  normalizeName,
 } from '../schema/identifier';
 import { lockResource } from './redis';
-import { STIX_SPEC_VERSION } from './stix';
+import { isValidStixObjectId, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
@@ -1758,7 +1759,7 @@ const upsertEntity = async (user, entity, type, data) => {
   let updatedEntity = entity;
   const id = entity.internal_id;
   // Upsert the stix ids
-  if (!R.isNil(data.stix_id) && !data.stix_id.startsWith('00000000') && entity.stix_ids.length < 5) {
+  if (isValidStixObjectId(data.stix_id)) {
     const patch = { stix_ids: [data.stix_id] };
     updatedEntity = patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
@@ -1767,7 +1768,7 @@ const upsertEntity = async (user, entity, type, data) => {
     const { name } = data;
     const key = resolveAliasesField(type);
     const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (entity.name !== name) aliases.push(name);
+    if (normalizeName(entity.name) !== normalizeName(name)) aliases.push(name);
     const patch = { [key]: aliases };
     updatedEntity = patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
@@ -1809,7 +1810,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   if (isStixObject(type)) {
     data = R.pipe(
       R.assoc(ID_STANDARD, standardId),
-      R.assoc(IDS_STIX, R.isNil(input.stix_id) ? [] : [input.stix_id]),
+      R.assoc(IDS_STIX, isValidStixObjectId(input.stix_id) ? [input.stix_id] : []),
       R.dissoc('stix_id'),
       R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),
@@ -1912,7 +1913,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
     const aliases = [resolvedInput.name, ...(resolvedInput.aliases || []), ...(resolvedInput.x_opencti_aliases || [])];
     participantIds.push(...generateAliasesId(aliases));
   }
-  if (!R.isNil(resolvedInput.stix_id) && !resolvedInput.stix_id.startsWith('00000000')) {
+  if (isValidStixObjectId(resolvedInput.stix_id)) {
     participantIds.push(resolvedInput.stix_id);
   }
   // Create the element

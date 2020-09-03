@@ -1,4 +1,6 @@
 import { assoc, dissoc, pick, pipe, head, includes } from 'ramda';
+import * as R from 'ramda';
+import { validate } from 'uuid';
 import { FunctionalError } from '../config/errors';
 import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';
@@ -15,6 +17,7 @@ import { isStixCyberObservableRelationship } from '../schema/stixCyberObservable
 import { IDS_ALIASES } from '../schema/general';
 
 export const STIX_SPEC_VERSION = '2.1';
+const UUID_IGNORED_PREFIX = '00000000';
 
 const convertTypeToStixType = (type) => {
   if (isStixDomainObjectIdentity(type)) {
@@ -118,4 +121,15 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
     );
   }
   return finalData;
+};
+
+export const isValidStixObjectId = (id) => {
+  if (R.isEmpty(id) || R.isNil(id)) return false;
+  const segments = id.split('--');
+  if (segments.length !== 2) return false;
+  const [, uuid] = segments;
+  if (!validate(uuid)) return false;
+  // noinspection RedundantIfStatementJS
+  if (uuid.startsWith(UUID_IGNORED_PREFIX)) return false;
+  return true;
 };

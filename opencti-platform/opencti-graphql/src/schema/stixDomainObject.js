@@ -16,6 +16,7 @@ import {
 
 export const ATTRIBUTE_ALIASES = 'aliases';
 export const ATTRIBUTE_ALIASES_OPENCTI = 'x_opencti_aliases';
+
 export const ENTITY_TYPE_ATTACK_PATTERN = 'Attack-Pattern';
 export const ENTITY_TYPE_CAMPAIGN = 'Campaign';
 export const ENTITY_TYPE_CONTAINER_NOTE = 'Note';
@@ -90,7 +91,11 @@ const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_X_OPENCTI_INCIDENT,
 ];
 export const isStixDomainObject = (type) =>
-  R.includes(type, STIX_DOMAIN_OBJECTS) || type === ABSTRACT_STIX_DOMAIN_OBJECT;
+  R.includes(type, STIX_DOMAIN_OBJECTS) ||
+  isStixDomainObjectIdentity(type) ||
+  isStixDomainObjectLocation(type) ||
+  isStixDomainObjectContainer(type) ||
+  type === ABSTRACT_STIX_DOMAIN_OBJECT;
 
 const STIX_DOMAIN_OBJECT_NAMED = [
   // ENTITY_TYPE_ATTACK_PATTERN, Because of x-mitre-id
