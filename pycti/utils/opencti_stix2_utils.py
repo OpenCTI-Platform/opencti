@@ -50,10 +50,15 @@ class OpenCTIStix2Utils:
         else:
             return None
 
+    """Generate random stix id
+    This id will be ignored by opencti
+    :param stix_type: the stix type
+    """
+
     @staticmethod
-    def generate_special_uuid(type):
+    def generate_random_stix_id(stix_type):
         new_uuid = str(uuid.uuid4())
-        return type + "--" + new_uuid.replace(new_uuid[:8], "00000000")
+        return stix_type + "--" + new_uuid.replace(new_uuid[:8], "00000000")
 
 
 @CustomObservable(
