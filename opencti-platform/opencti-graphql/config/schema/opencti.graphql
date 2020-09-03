@@ -614,8 +614,8 @@ interface StixMetaObject {
   created_at: DateTime!
   updated_at: DateTime!
   # StixMetaObject
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
 }
 
 ############## MarkingDefinitions
@@ -658,8 +658,8 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   created_at: DateTime!
   updated_at: DateTime!
   # StixMetaObject
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # MarkingDefinition
   definition_type: String
   definition: String
@@ -718,8 +718,8 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   created_at: DateTime!
   updated_at: DateTime!
   # StixMetaObject
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # MarkingDefinition
   value: String
   color: String
@@ -775,8 +775,8 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   created_at: DateTime!
   updated_at: DateTime!
   # StixMetaObject
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # ExternalReference
   source_name: String!
   description: String
@@ -837,8 +837,8 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   created_at: DateTime!
   updated_at: DateTime!
   # StixMetaObject
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # KillChainPhase
   kill_chain_name: String!
   phase_name: String!
@@ -1040,8 +1040,8 @@ interface StixDomainObject {
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Technical
   creator: User
   toStix: String
@@ -1153,8 +1153,8 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # AttackPattern
   name: String!
   description: String
@@ -1278,8 +1278,8 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Campaign
   name: String!
   description: String
@@ -1397,8 +1397,8 @@ interface Container {
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Container
   objects(
     first: Int
@@ -1494,8 +1494,8 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Container
   objects(
     first: Int
@@ -1622,8 +1622,8 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Container
   objects(
     first: Int
@@ -1747,8 +1747,8 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Container
   objects(
     first: Int
@@ -1876,8 +1876,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Container
   objects(
     first: Int
@@ -2005,8 +2005,8 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # CourseOfAction
   name: String!
   description: String
@@ -2126,8 +2126,8 @@ interface Identity {
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Identity
   identity_class: String!
   name: String!
@@ -2244,8 +2244,8 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Identity
   identity_class: String!
   name: String!
@@ -2375,8 +2375,8 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Identity
   identity_class: String!
   name: String!
@@ -2500,8 +2500,8 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Identity
   identity_class: String!
   name: String!
@@ -2636,8 +2636,8 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Indicator
   pattern_type: String
   pattern_version: String
@@ -2772,8 +2772,8 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Infrastructure
   name: String!
   aliases: [String]
@@ -2889,8 +2889,8 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # IntrusionSet
   name: String!
   description: String
@@ -3022,8 +3022,8 @@ interface Location {
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Location
   name: String!
   description: String
@@ -3133,8 +3133,8 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Location
   name: String!
   description: String
@@ -3257,8 +3257,8 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Location
   name: String!
   description: String
@@ -3374,8 +3374,8 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Location
   name: String!
   description: String
@@ -3489,8 +3489,8 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Location
   name: String!
   description: String
@@ -3615,8 +3615,8 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Malware
   name: String!
   description: String
@@ -3742,8 +3742,8 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # ThreatActor
   name: String!
   description: String
@@ -3872,8 +3872,8 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Tool
   name: String!
   description: String
@@ -3993,8 +3993,8 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # Vulnerability
   name: String!
   description: String
@@ -4113,8 +4113,8 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
   revoked: Boolean!
   confidence: Int
   lang: String
-  created: DateTime!
-  modified: DateTime!
+  created: DateTime
+  modified: DateTime
   # XOpenCTIIncident
   name: String!
   description: String

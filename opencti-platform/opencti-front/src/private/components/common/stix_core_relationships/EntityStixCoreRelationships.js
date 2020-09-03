@@ -188,7 +188,6 @@ class EntityStixCoreRelationships extends Component {
       orderAsc,
       inferred,
     } = this.state;
-
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
       || targetStixDomainObjectTypes.includes('Identity');
@@ -419,7 +418,7 @@ class EntityStixCoreRelationships extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
-            stixCoreObjectId={entityId}
+            entityId={entityId}
             isRelationReversed={isRelationReversed}
             paddingRight={220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}

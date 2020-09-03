@@ -12,10 +12,23 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_LABEL], ['value'], args);
 };
 
+export const stringToColour = (str) => {
+  let hash = 0;
+  for (let i = 0; i < str.length; i += 1) {
+    hash = str.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let colour = '#';
+  for (let i = 0; i < 3; i += 1) {
+    const value = (hash >> (i * 8)) & 0xff;
+    colour += `00${value.toString(16)}`.substr(-2);
+  }
+  return colour;
+};
+
 export const addLabel = async (user, label) => {
   const created = await createEntity(
     user,
-    assoc('color', label.color ? label.color : '#f58787', label),
+    assoc('color', label.color ? label.color : stringToColour(label.value), label),
     ENTITY_TYPE_LABEL,
     { noLog: true }
   );

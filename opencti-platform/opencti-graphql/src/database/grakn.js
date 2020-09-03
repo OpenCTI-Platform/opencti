@@ -1739,7 +1739,8 @@ const createRawEntity = async (user, standardId, input, type, opts = {}) => {
   // Generate the internal id
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
-  const participantIds = R.isNil(input.stix_id) ? [standardId] : [input.stix_id, standardId];
+  const participantIds =
+    R.isNil(input.stix_id) || input.stix_id.startsWith('00000000') ? [standardId] : [input.stix_id, standardId];
   const existingEntity = await internalLoadById(participantIds);
   if (existingEntity) {
     return upsertEntity(user, existingEntity, type, input);
@@ -1864,7 +1865,10 @@ export const createEntity = async (user, input, type, opts = {}) => {
   const resolvedInput = await inputResolveRefs(input);
   // Generate the internal id
   const standardId = generateStandardId(type, resolvedInput);
-  const participantIds = R.isNil(resolvedInput.stix_id) ? standardId : [resolvedInput.stix_id, standardId];
+  const participantIds =
+    R.isNil(resolvedInput.stix_id) || resolvedInput.stix_id.startsWith('00000000')
+      ? standardId
+      : [resolvedInput.stix_id, standardId];
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
