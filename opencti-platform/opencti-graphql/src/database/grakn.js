@@ -1758,7 +1758,7 @@ const upsertEntity = async (user, entity, type, data) => {
   let updatedEntity = entity;
   const id = entity.internal_id;
   // Upsert the stix ids
-  if (!R.isNil(data.stix_id) && entity.stix_ids.length < 5) {
+  if (!R.isNil(data.stix_id) && !data.stix_id.startsWith('00000000') && entity.stix_ids.length < 5) {
     const patch = { stix_ids: [data.stix_id] };
     updatedEntity = patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
