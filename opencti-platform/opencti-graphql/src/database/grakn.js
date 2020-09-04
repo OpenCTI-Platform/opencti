@@ -13,7 +13,7 @@ import {
   UnsupportedError,
 } from '../config/errors';
 import conf, { logger } from '../config/conf';
-import { buildPagination, fillTimeSeries, inferIndexFromConceptType, utcDate } from './utils';
+import { buildPagination, fillTimeSeries, inferIndexFromConceptType, isNotEmptyField, utcDate } from './utils';
 import {
   elAggregationCount,
   elAggregationRelationsCount,
@@ -47,7 +47,7 @@ import {
   normalizeName,
 } from '../schema/identifier';
 import { lockResource } from './redis';
-import { isValidStixObjectId, STIX_SPEC_VERSION } from './stix';
+import { mergeStixIds, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
@@ -1248,7 +1248,7 @@ const inputResolveRefs = async (input) => {
       // Handle specific case of object label that can be directly the value instead of the key.
       if (src === 'objectLabel') {
         id = R.map(
-          (label) => (isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: label.toLowerCase() })),
+          (label) => (isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) })),
           id
         );
       }
@@ -1311,7 +1311,15 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   } else if (isMultiple) {
     const currentValues = instance[key] || [];
     if (operation === EVENT_TYPE_UPDATE_ADD) {
-      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
+      // Specific case of stix_ids
+      if (key === IDS_STIX) {
+        // In this case we only want to keep the last 5 fake ids
+        // Fake ids come from connectors enable to generate stable ids.
+        // This values are only useful to resolve creation
+        finalVal = mergeStixIds(value, currentValues);
+      } else {
+        finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
+      }
     } else if (operation === EVENT_TYPE_UPDATE_REMOVE) {
       finalVal = R.filter((n) => !R.includes(n, value), currentValues);
     } else {
@@ -1515,7 +1523,7 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 
 // region mutation relation
 const upsertRelation = async (user, relationship, type, data) => {
-  if (!R.isNil(data.stix_id) && relationship.stix_ids.length < 3) {
+  if (isNotEmptyField(data.stix_id)) {
     const id = relationship.internal_id;
     const patch = { stix_ids: [data.stix_id] };
     return patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
@@ -1583,7 +1591,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   relationAttributes.updated_at = today;
   // stix-relationship
   if (isStixRelationShipExceptMeta(relationshipType)) {
-    relationAttributes.stix_ids = R.isNil(input.stix_id) ? [] : [input.stix_id];
+    relationAttributes.stix_ids = isNotEmptyField(input.stix_id) ? [input.stix_id] : [];
     relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.revoked = R.isNil(input.revoked) ? false : input.revoked;
     relationAttributes.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
@@ -1728,7 +1736,9 @@ export const createRelation = async (user, input, opts = {}) => {
   const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
   const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
   const lockIds = [lockFrom, lockTo];
-  if (!R.isNil(resolvedInput.stix_id)) lockIds.push(resolvedInput.stix_id);
+  if (isNotEmptyField(resolvedInput.stix_id)) {
+    lockIds.push(resolvedInput.stix_id);
+  }
   try {
     // Try to get the lock in redis
     lock = await lockResource(lockIds);
@@ -1769,7 +1779,7 @@ const upsertEntity = async (user, entity, type, data) => {
   let updatedEntity = entity;
   const id = entity.internal_id;
   // Upsert the stix ids
-  if (isValidStixObjectId(data.stix_id)) {
+  if (isNotEmptyField(data.stix_id)) {
     const patch = { stix_ids: [data.stix_id] };
     updatedEntity = patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
@@ -1820,7 +1830,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   if (isStixObject(type)) {
     data = R.pipe(
       R.assoc(ID_STANDARD, standardId),
-      R.assoc(IDS_STIX, isValidStixObjectId(input.stix_id) ? [input.stix_id] : []),
+      R.assoc(IDS_STIX, isNotEmptyField(input.stix_id) ? [input.stix_id] : []),
       R.dissoc('stix_id'),
       R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),
@@ -1923,7 +1933,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
     const aliases = [resolvedInput.name, ...(resolvedInput.aliases || []), ...(resolvedInput.x_opencti_aliases || [])];
     participantIds.push(...generateAliasesId(aliases));
   }
-  if (isValidStixObjectId(resolvedInput.stix_id)) {
+  if (isNotEmptyField(resolvedInput.stix_id)) {
     participantIds.push(resolvedInput.stix_id);
   }
   // Create the element

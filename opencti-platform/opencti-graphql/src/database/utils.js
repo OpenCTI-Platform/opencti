@@ -1,4 +1,4 @@
-import { head, last, mapObjIndexed, pipe, values, join } from 'ramda';
+import * as R from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
 import { DatabaseError } from '../config/errors';
@@ -18,8 +18,8 @@ import {
   ENTITY_SOFTWARE,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
-  isStixCyberObservable
-} from "../schema/stixCyberObservableObject";
+  isStixCyberObservable,
+} from '../schema/stixCyberObservableObject';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -38,6 +38,8 @@ export const INDEX_STIX_CORE_RELATIONSHIPS = 'opencti_stix_core_relationships';
 export const INDEX_STIX_SIGHTING_RELATIONSHIPS = 'opencti_stix_sighting_relationships';
 export const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_observable_relationships';
 export const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
+
+export const isNotEmptyField = (field) => !R.isEmpty(field) && !R.isNil(field);
 
 export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -83,18 +85,18 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
 };
 
 export const buildPagination = (first, offset, instances, globalCount) => {
-  const edges = pipe(
-    mapObjIndexed((record, key) => {
+  const edges = R.pipe(
+    R.mapObjIndexed((record, key) => {
       const { node } = record;
       const nodeOffset = offset + parseInt(key, 10) + 1;
       return { node, cursor: offsetToCursor(nodeOffset) };
     }),
-    values
+    R.values
   )(instances);
   const hasNextPage = first + offset < globalCount;
   const hasPreviousPage = offset > 0;
-  const startCursor = edges.length > 0 ? head(edges).cursor : '';
-  const endCursor = edges.length > 0 ? last(edges).cursor : '';
+  const startCursor = edges.length > 0 ? R.head(edges).cursor : '';
+  const endCursor = edges.length > 0 ? R.last(edges).cursor : '';
   const pageInfo = {
     startCursor,
     endCursor,
@@ -129,18 +131,18 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_EMAIL_MESSAGE:
       return stixCyberObservable.body || stixCyberObservable.subject;
     case ENTITY_HASHED_OBSERVABLE_ARTIFACT:
-      if (values(stixCyberObservable.hashes).length > 0) {
-        return values(stixCyberObservable.hashes)[0];
+      if (R.values(stixCyberObservable.hashes).length > 0) {
+        return R.values(stixCyberObservable.hashes)[0];
       }
       return stixCyberObservable.payload_bin || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_STIX_FILE:
-      if (values(stixCyberObservable.hashes).length > 0) {
-        return values(stixCyberObservable.hashes)[0];
+      if (R.values(stixCyberObservable.hashes).length > 0) {
+        return R.values(stixCyberObservable.hashes)[0];
       }
       return stixCyberObservable.name || 'Unknown';
     case ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE:
-      if (values(stixCyberObservable.hashes).length > 0) {
-        return values(stixCyberObservable.hashes)[0];
+      if (R.values(stixCyberObservable.hashes).length > 0) {
+        return R.values(stixCyberObservable.hashes)[0];
       }
       return stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
     case ENTITY_MUTEX:
@@ -231,7 +233,7 @@ export const generateLogMessage = (eventType, eventUser, eventData, eventExtraDa
       message += `\`${toType}\` with value \`${toValue}\`.`;
     }
   } else if (eventExtraData.key && eventType === 'update') {
-    message += `\`${eventExtraData.key}\` with \`${join(', ', eventExtraData.value)}\`.`;
+    message += `\`${eventExtraData.key}\` with \`${R.join(', ', eventExtraData.value)}\`.`;
   } else {
     message += `${eventData.entity_type} \`${name}\`.`;
   }

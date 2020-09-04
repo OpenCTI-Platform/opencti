@@ -3,6 +3,7 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteEntityById, listEntities, loadById, updateAttribute } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
+import { normalizeName } from "../schema/identifier";
 
 export const findById = (labelId) => {
   return loadById(labelId, ENTITY_TYPE_LABEL);
@@ -27,8 +28,8 @@ export const stringToColour = (str) => {
 
 export const addLabel = async (user, label) => {
   const finalLabel = pipe(
-    assoc('value', label.value.toLowerCase()),
-    assoc('color', label.color ? label.color : stringToColour(label.value.toLowerCase()))
+    assoc('value', normalizeName(label.value).toLowerCase()),
+    assoc('color', label.color ? label.color : stringToColour(normalizeName(label.value))
   )(label);
   const created = await createEntity(user, finalLabel, ENTITY_TYPE_LABEL, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, created, user);

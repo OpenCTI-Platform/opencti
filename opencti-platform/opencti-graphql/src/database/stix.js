@@ -1,6 +1,7 @@
 import { assoc, dissoc, pick, pipe, head, includes } from 'ramda';
 import * as R from 'ramda';
-import { validate } from 'uuid';
+import { version as uuidVersion } from 'uuid';
+import uuidTime from 'uuid-time';
 import { FunctionalError } from '../config/errors';
 import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';
@@ -17,7 +18,6 @@ import { isStixCyberObservableRelationship } from '../schema/stixCyberObservable
 import { IDS_ALIASES } from '../schema/general';
 
 export const STIX_SPEC_VERSION = '2.1';
-const UUID_IGNORED_PREFIX = '00000000';
 
 const convertTypeToStixType = (type) => {
   if (isStixDomainObjectIdentity(type)) {
@@ -123,13 +123,33 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
   return finalData;
 };
 
-export const isValidStixObjectId = (id) => {
-  if (R.isEmpty(id) || R.isNil(id)) return false;
-  const segments = id.split('--');
-  if (segments.length !== 2) return false;
-  const [, uuid] = segments;
-  if (!validate(uuid)) return false;
-  // noinspection RedundantIfStatementJS
-  if (uuid.startsWith(UUID_IGNORED_PREFIX)) return false;
-  return true;
+export const mergeStixIds = (ids, existingIds) => {
+  const wIds = Array.isArray(ids) ? ids : [ids];
+  // If new id is version 1, just keep the last 5
+  const data = R.map((stixId) => {
+    const segments = stixId.split('--');
+    const [, uuid] = segments;
+    const isTransient = uuidVersion(uuid) === 1;
+    const timestamp = isTransient ? uuidTime.v1(uuid) : null;
+    return { id: stixId, uuid, timestamp, date: new Date(timestamp) };
+  }, existingIds);
+  const standardIds = R.filter((d) => !d.timestamp, data);
+  const transientIds = R.filter((d) => d.timestamp, data);
+  const orderedTransient = R.sort((a, b) => b.timestamp - a.timestamp, transientIds);
+  for (let index = 0; index < wIds.length; index += 1) {
+    const id = wIds[index];
+    if (!existingIds.includes(id)) {
+      // If classic uuid, just add it.
+      const [, newUuid] = id.split('--');
+      if (uuidVersion(newUuid) !== 1) {
+        standardIds.push({ id });
+      } else {
+        orderedTransient.unshift({ id, date: new Date(uuidTime.v1(newUuid)) }); // Add the new element in first
+      }
+    }
+  }
+  // Ensure max length
+  const keptTimedUUID = orderedTransient.length > 5 ? orderedTransient.slice(0, 5) : orderedTransient;
+  // Return the new list
+  return R.map((s) => s.id, [...standardIds, ...keptTimedUUID]);
 };
