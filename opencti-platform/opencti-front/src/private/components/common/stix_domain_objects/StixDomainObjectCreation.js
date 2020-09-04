@@ -3,7 +3,14 @@ import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { ConnectionHandler } from 'relay-runtime';
 import {
-  assoc, compose, pipe, pluck, split, dissoc, includes,
+  assoc,
+  compose,
+  pipe,
+  pluck,
+  split,
+  dissoc,
+  includes,
+  map,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -498,7 +505,7 @@ class StixDomainObjectCreation extends Component {
       inputValue,
       display,
       defaultCreatedBy,
-      defaultMarkingDefinition,
+      defaultMarkingDefinitions,
       targetStixDomainObjectTypes,
     } = this.props;
     const initialValues = {
@@ -515,14 +522,15 @@ class StixDomainObjectCreation extends Component {
         }
         : '',
       objectLabel: [],
-      objectMarking: defaultMarkingDefinition
-        ? [
-          {
-            label: defaultMarkingDefinition.definition,
-            value: defaultMarkingDefinition.id,
-            color: defaultMarkingDefinition.x_opencti_color,
-          },
-        ]
+      objectMarking: defaultMarkingDefinitions
+        ? map(
+          (n) => ({
+            label: n.definition,
+            value: n.id,
+            color: n.x_opencti_color,
+          }),
+          defaultMarkingDefinitions,
+        )
         : [],
     };
     return (
@@ -605,7 +613,7 @@ class StixDomainObjectCreation extends Component {
                   <ObjectMarkingField
                     name="objectMarking"
                     style={{ marginTop: 20, width: '100%' }}
-                    defaultMarkingDefinition={defaultMarkingDefinition}
+                    defaultMarkingDefinitions={defaultMarkingDefinitions}
                   />
                 </DialogContent>
                 <DialogActions>
@@ -647,7 +655,7 @@ StixDomainObjectCreation.propTypes = {
   display: PropTypes.bool,
   inputValue: PropTypes.string,
   defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinition: PropTypes.object,
+  defaultMarkingDefinitions: PropTypes.array,
 };
 
 export default compose(

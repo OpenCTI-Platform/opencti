@@ -98,7 +98,7 @@ class ContainerAddStixCoreObjects extends Component {
       knowledgeGraph,
       withPadding,
       defaultCreatedBy,
-      defaultMarkingDefinition,
+      defaultMarkingDefinitions,
       containerStixCoreObjects,
       simple,
     } = this.props;
@@ -216,7 +216,7 @@ class ContainerAddStixCoreObjects extends Component {
           inputValue={this.state.search}
           paginationOptions={paginationOptions}
           defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinition={defaultMarkingDefinition}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
         />
       </div>
     );
@@ -232,7 +232,7 @@ ContainerAddStixCoreObjects.propTypes = {
   knowledgeGraph: PropTypes.bool,
   withPadding: PropTypes.bool,
   defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinition: PropTypes.object,
+  defaultMarkingDefinitions: PropTypes.array,
   containerStixCoreObjects: PropTypes.array,
   simple: PropTypes.bool,
 };

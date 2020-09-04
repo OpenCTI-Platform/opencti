@@ -8,14 +8,14 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import AttackPattern from './AttackPattern';
-import AttackPatternReports from './AttackPatternReports';
 import AttackPatternKnowledge from './AttackPatternKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import AttackPatternPopover from './AttackPatternPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import AttackPatternIndicators from './AttackPatternIndicators';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 
 const subscription = graphql`
   subscription RootAttackPatternSubscription($id: ID!) {
@@ -38,7 +38,6 @@ const attackPatternQuery = graphql`
       name
       aliases
       ...AttackPattern_attackPattern
-      ...AttackPatternReports_attackPattern
       ...AttackPatternKnowledge_attackPattern
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -96,12 +95,20 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/reports"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/analysis"
                     render={(routeProps) => (
-                      <AttackPatternReports
-                        {...routeProps}
-                        attackPattern={props.attackPattern}
-                      />
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.attackPattern}
+                          PopoverComponent={<AttackPatternPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={
+                            attackPatternId
+                          }
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route
@@ -123,12 +130,20 @@ class RootAttackPattern extends Component {
                     )}
                   />
                   <Route
+                    exact
                     path="/dashboard/arsenal/attack_patterns/:attackPatternId/indicators"
                     render={(routeProps) => (
-                      <AttackPatternIndicators
-                        {...routeProps}
-                        attackPattern={props.attackPattern}
-                      />
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.attackPattern}
+                          PopoverComponent={<AttackPatternPopover />}
+                        />
+                        <StixDomainObjectIndicators
+                          {...routeProps}
+                          stixDomainObjectId={attackPatternId}
+                          stixDomainObjectLink={`/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route

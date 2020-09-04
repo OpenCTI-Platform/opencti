@@ -907,11 +907,10 @@ class ReportKnowledgeGraphComponent extends Component {
           containerStixCoreObjects={report.objects.edges}
           knowledgeGraph={true}
           defaultCreatedBy={propOr(null, 'createdBy', report)}
-          defaultMarkingDefinition={
-            pathOr([], ['objectMarking', 'edges'], report).length > 0
-              ? pathOr([], ['objectMarking', 'edges'], report)[0].node
-              : null
-          }
+          defaultMarkingDefinitions={map(
+            (n) => n.node,
+            pathOr([], ['objectMarking', 'edges'], report),
+          )}
         />
         <StixCoreRelationshipCreation
           open={openCreateRelation}
@@ -923,11 +922,10 @@ class ReportKnowledgeGraphComponent extends Component {
           handleClose={this.handleCloseRelationCreation.bind(this)}
           handleResult={this.handleResultRelationCreation.bind(this)}
           defaultCreatedBy={propOr(null, 'createdBy', report)}
-          defaultMarkingDefinition={
-            pathOr([], ['objectMarking', 'edges'], report).length > 0
-              ? pathOr([], ['objectMarking', 'edges'], report)[0].node
-              : null
-          }
+          defaultMarkingDefinitions={map(
+            (n) => n.node,
+            pathOr([], ['objectMarking', 'edges'], report),
+          )}
         />
         <StixCoreRelationshipEdition
           open={openEditRelation}

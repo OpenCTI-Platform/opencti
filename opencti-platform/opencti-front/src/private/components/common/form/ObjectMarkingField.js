@@ -25,16 +25,17 @@ const styles = () => ({
 class ObjectMarkingField extends Component {
   constructor(props) {
     super(props);
-    const { defaultMarkingDefinition } = props;
+    const { defaultMarkingDefinitions } = props;
     this.state = {
-      markingDefinitions: defaultMarkingDefinition
-        ? [
-          {
-            label: defaultMarkingDefinition.definition,
-            value: defaultMarkingDefinition.id,
-            color: defaultMarkingDefinition.x_opencti_color,
-          },
-        ]
+      markingDefinitions: defaultMarkingDefinitions
+        ? map(
+          (n) => ({
+            label: n.definition,
+            value: n.id,
+            color: n.x_opencti_color,
+          }),
+          defaultMarkingDefinitions,
+        )
         : [],
     };
   }

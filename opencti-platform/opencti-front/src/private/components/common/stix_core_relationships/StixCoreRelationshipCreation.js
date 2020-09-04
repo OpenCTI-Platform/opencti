@@ -274,7 +274,7 @@ class StixCoreRelationshipCreation extends Component {
       startTime,
       stopTime,
       defaultCreatedBy,
-      defaultMarkingDefinition,
+      defaultMarkingDefinitions,
     } = this.props;
     const relationshipTypes = resolveRelationsTypes(from.type, to.type);
     // eslint-disable-next-line no-nested-ternary
@@ -300,14 +300,15 @@ class StixCoreRelationshipCreation extends Component {
           type: defaultCreatedBy.entity_type,
         }
         : '',
-      objectMarking: defaultMarkingDefinition
-        ? [
-          {
-            label: defaultMarkingDefinition.definition,
-            value: defaultMarkingDefinition.id,
-            color: defaultMarkingDefinition.color,
-          },
-        ]
+      objectMarking: defaultMarkingDefinitions
+        ? map(
+          (n) => ({
+            label: n.definition,
+            value: n.id,
+            color: n.x_opencti_color,
+          }),
+          defaultMarkingDefinitions,
+        )
         : [],
     };
     return (
@@ -712,7 +713,7 @@ StixCoreRelationshipCreation.propTypes = {
   stopTime: PropTypes.string,
   confidence: PropTypes.number,
   defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinition: PropTypes.object,
+  defaultMarkingDefinitions: PropTypes.object,
 };
 
 export default compose(

@@ -8,14 +8,14 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Vulnerability from './Vulnerability';
-import VulnerabilityReports from './VulnerabilityReports';
 import VulnerabilityKnowledge from './VulnerabilityKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import VulnerabilityPopover from './VulnerabilityPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import VulnerabilityIndicators from './VulnerabilityIndicators';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 
 const subscription = graphql`
   subscription RootVulnerabilitySubscription($id: ID!) {
@@ -34,6 +34,7 @@ const vulnerabilityQuery = graphql`
   query RootVulnerabilityQuery($id: String!) {
     vulnerability(id: $id) {
       id
+        standard_id
       name
       ...Vulnerability_vulnerability
       ...VulnerabilityReports_vulnerability
@@ -94,16 +95,6 @@ class RootVulnerability extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/reports"
-                    render={(routeProps) => (
-                      <VulnerabilityReports
-                        {...routeProps}
-                        vulnerability={props.vulnerability}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/knowledge"
                     render={() => (
                       <Redirect
@@ -121,12 +112,38 @@ class RootVulnerability extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/indicators"
+                    exact
+                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/analysis"
                     render={(routeProps) => (
-                      <VulnerabilityIndicators
-                        {...routeProps}
-                        vulnerability={props.vulnerability}
-                      />
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.vulnerability}
+                          PopoverComponent={<VulnerabilityPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={
+                            vulnerabilityId
+                          }
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/indicators"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.vulnerability}
+                          PopoverComponent={<VulnerabilityPopover />}
+                        />
+                        <StixDomainObjectIndicators
+                          {...routeProps}
+                          stixDomainObjectId={vulnerabilityId}
+                          stixDomainObjectLink={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/indicators`}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route
@@ -158,7 +175,7 @@ class RootVulnerability extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={vulnerabilityId}
+                          stixCoreObjectStandardId={props.vulnerability.standard_id}
                         />
                       </React.Fragment>
                     )}
