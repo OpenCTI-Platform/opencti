@@ -38,10 +38,16 @@ const addSubSectorsLinesMutationRelationAdd = graphql`
 `;
 
 export const addSubSectorsMutationRelationDelete = graphql`
-  mutation AddSubSectorsLinesRelationDeleteMutation($id: ID!) {
-    stixCoreRelationshipEdit(id: $id) {
-      delete
-    }
+  mutation AddSubSectorsLinesRelationDeleteMutation(
+    $fromId: String!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
   }
 `;
 
@@ -57,7 +63,11 @@ class AddSubSectorsLinesContainer extends Component {
       );
       commitMutation({
         mutation: addSubSectorsMutationRelationDelete,
-        variables: { id: existingSubSector.relation.id },
+        variables: {
+          fromId: existingSubSector.node.id,
+          toId: sectorId,
+          relationship_type: 'part-of',
+        },
         updater: (store) => {
           const node = store.get(this.props.sectorId);
           const subSectors = node.getLinkedRecord('subSectors');
@@ -128,7 +138,7 @@ AddSubSectorsLinesContainer.propTypes = {
 export const addSubSectorsLinesQuery = graphql`
   query AddSubSectorsLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddSubSectorsLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -137,13 +147,13 @@ const AddSubSectorsLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddSubSectorsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         sectors(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_sectors") {
+        @connection(key: "Pagination_sectors") {
           edges {
             node {
               id

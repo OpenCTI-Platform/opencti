@@ -147,6 +147,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                         button={true}
                         component="a"
                         href={externalReference.url}
+                        target="_blank"
                       >
                         <ListItemIcon>
                           <Avatar classes={{ root: classes.avatar }}>

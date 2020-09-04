@@ -8,13 +8,13 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Sector from './Sector';
-import SectorReports from './SectorReports';
 import SectorKnowledge from './SectorKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import SectorPopover from './SectorPopover';
 import FileManager from '../../common/files/FileManager';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootSectorSubscription($id: ID!) {
@@ -33,11 +33,11 @@ const sectorQuery = graphql`
   query RootSectorQuery($id: String!) {
     sector(id: $id) {
       ...Sector_sector
-      ...SectorReports_sector
       ...SectorKnowledge_sector
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       id
+      standard_id
       name
       x_opencti_aliases
     }
@@ -91,13 +91,6 @@ class RootSector extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/entities/sectors/:sectorId/reports"
-                    render={(routeProps) => (
-                      <SectorReports {...routeProps} sector={props.sector} />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/entities/sectors/:sectorId/knowledge"
                     render={() => (
                       <Redirect
@@ -109,6 +102,22 @@ class RootSector extends Component {
                     path="/dashboard/entities/sectors/:sectorId/knowledge"
                     render={(routeProps) => (
                       <SectorKnowledge {...routeProps} sector={props.sector} />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/sectors/:sectorId/analysis"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.sector}
+                          PopoverComponent={<SectorPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={sectorId}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route
@@ -140,7 +149,7 @@ class RootSector extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={sectorId}
+                          stixCoreObjectStandardId={props.sector.standard_id}
                         />
                       </React.Fragment>
                     )}

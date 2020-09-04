@@ -95,24 +95,6 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.attackPattern}
-                          PopoverComponent={<AttackPatternPopover />}
-                        />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
-                          {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={
-                            attackPatternId
-                          }
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge"
                     render={() => (
                       <Redirect
@@ -129,6 +111,24 @@ class RootAttackPattern extends Component {
                       />
                     )}
                   />
+                    <Route
+                        exact
+                        path="/dashboard/arsenal/attack_patterns/:attackPatternId/analysis"
+                        render={(routeProps) => (
+                            <React.Fragment>
+                                <StixDomainObjectHeader
+                                    stixDomainObject={props.attackPattern}
+                                    PopoverComponent={<AttackPatternPopover />}
+                                />
+                                <StixCoreObjectOrStixCoreRelationshipContainers
+                                    {...routeProps}
+                                    stixCoreObjectOrStixCoreRelationshipId={
+                                        attackPatternId
+                                    }
+                                />
+                            </React.Fragment>
+                        )}
+                    />
                   <Route
                     exact
                     path="/dashboard/arsenal/attack_patterns/:attackPatternId/indicators"
