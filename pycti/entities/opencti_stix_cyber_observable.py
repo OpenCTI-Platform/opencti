@@ -419,6 +419,7 @@ class StixCyberObservable:
 
     def create(self, **kwargs):
         observable_data = kwargs.get("observableData", {})
+        simple_observable_id = kwargs.get("simple_observable_id", None)
         simple_observable_key = kwargs.get("simple_observable_key", None)
         simple_observable_value = kwargs.get("simple_observable_value", None)
         simple_observable_description = kwargs.get(
@@ -460,6 +461,9 @@ class StixCyberObservable:
         if simple_observable_description is not None:
             x_opencti_description = simple_observable_description
 
+        stix_id = (observable_data["id"] if "id" in observable_data else None,)
+        if simple_observable_id is not None:
+            stix_id = simple_observable_id
         if type is not None:
             self.opencti.log(
                 "info",
@@ -471,31 +475,29 @@ class StixCyberObservable:
             )
             input_variables = {
                 "type": type,
-                "stix_id": observable_data["id"] if "id" in observable_data else None,
+                "stix_id": stix_id,
                 "x_opencti_score": observable_data["x_opencti_score"]
                 if "x_opencti_score" in observable_data
                 else None,
                 "x_opencti_description": x_opencti_description,
+                "createIndicator": create_indicator,
                 "createdBy": created_by,
                 "objectMarking": object_marking,
                 "objectLabel": object_label,
                 "externalReferences": external_references,
-                "created": (
-                    observable_data["created"]
-                    if "created" in observable_data
-                    else None,
-                ),
-                "modified": (
-                    observable_data["modified"]
-                    if "modified" in observable_data
-                    else None,
-                ),
-                "createIndicator": create_indicator,
                 "update": update,
             }
             query = """
                 mutation StixCyberObservableAdd(
                     $type: String!,
+                    $stix_id: String,
+                    $x_opencti_score: Int,
+                    $x_opencti_description: String,
+                    $createIndicator: Boolean,
+                    $createdBy: String,
+                    $objectMarking: [String],
+                    $objectLabel: [String],
+                    $externalReferences: [String],                    
                     $AutonomousSystem: AutonomousSystemAddInput,
                     $Directory: DirectoryAddInput,
                     $DomainName: DomainNameAddInput,
@@ -521,10 +523,17 @@ class StixCyberObservable:
                     $XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput,
                     $XOpenCTIText: XOpenCTITextAddInput,
                     $XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
-                    $createIndicator: Boolean
                 ) {
                     stixCyberObservableAdd(
                         type: $type,
+                        stix_id: $stix_id,
+                        x_opencti_score: $x_opencti_score,
+                        x_opencti_description: $x_opencti_description,
+                        createIndicator: $createIndicator,
+                        createdBy: $createdBy,
+                        objectMarking: $objectMarking,
+                        objectLabel: $objectLabel,
+                        externalReferences: $externalReferences,             
                         AutonomousSystem: $AutonomousSystem,
                         Directory: $Directory,
                         DomainName: $DomainName,
@@ -550,7 +559,6 @@ class StixCyberObservable:
                         XOpenCTICryptocurrencyWallet: $XOpenCTICryptocurrencyWallet,
                         XOpenCTIText: $XOpenCTIText,
                         XOpenCTIUserAgent: $XOpenCTIUserAgent
-                        createIndicator: $createIndicator
                     ) {
                         id
                         standard_id
