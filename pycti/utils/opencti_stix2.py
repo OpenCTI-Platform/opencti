@@ -679,6 +679,7 @@ class OpenCTIStix2:
         }
         if stix_object["type"] == "x-opencti-simple-observable":
             stix_observable_result = self.opencti.stix_cyber_observable.create(
+                simple_observable_id=stix_object["id"],
                 simple_observable_key=stix_object["key"],
                 simple_observable_value=stix_object["value"],
                 simple_observable_description=stix_object["description"]
