@@ -795,7 +795,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
 StixSightingRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   targetStixDomainObjectTypes: PropTypes.array,
-  targetStixCyberObservableObjectTypes: PropTypes.array,
+  targetStixCyberObservableTypes: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

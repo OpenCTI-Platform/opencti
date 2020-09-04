@@ -100,7 +100,7 @@ class StixSightingRelationshipCreationFromEntityStixCyberObservablesLinesContain
           >
             <ExpansionPanelSummary expandIcon={<ExpandMore />}>
               <Typography className={classes.heading}>
-                {t(`observable_${type}`)}
+                {t(`entity_${type}`)}
               </Typography>
               <Typography className={classes.secondaryHeading}>
                 {stixCyberObservables[type].length} {t('observable(s)')}

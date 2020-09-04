@@ -165,26 +165,31 @@ class EntityStixSightingRelationships extends Component {
       inferred,
     } = this.state;
     // Display types selection when target types are multiple
-    const displayTypes = targetStixDomainObjectTypes.length > 1
-      || targetStixDomainObjectTypes.includes('Identity');
+    const displayTypes = !isTo
+      && (targetStixDomainObjectTypes.length > 1
+        || targetStixDomainObjectTypes.includes('Identity'));
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
-      fromId: entityId,
-      toTypes: toType === 'All' ? targetStixDomainObjectTypes : [toType],
       inferred: inferred && sortBy === null ? inferred : false,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
+    if (isTo) {
+      paginationOptions.toId = entityId;
+    } else {
+      paginationOptions.fromId = entityId;
+      paginationOptions.toTypes = toType === 'All' ? targetStixDomainObjectTypes : [toType];
+    }
     return (
       <div className={classes.container}>
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            {displayTypes ? (
+        {displayTypes ? (
+          <Drawer
+            anchor="bottom"
+            variant="permanent"
+            classes={{ paper: classes.bottomNav }}
+          >
+            <Grid container={true} spacing={1}>
               <Grid item={true} xs="auto">
                 <Select
                   style={{ height: 50, marginRight: 15 }}
@@ -239,18 +244,25 @@ class EntityStixSightingRelationships extends Component {
                     )}
                 </Select>
               </Grid>
-            ) : (
-              ''
-            )}
-          </Grid>
-        </Drawer>
+            </Grid>
+          </Drawer>
+        ) : (
+          ''
+        )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixSightingRelationshipCreationFromEntity
             entityId={entityId}
             isTo={isTo}
+            targetStixDomainObjectTypes={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+              'Tool',
+            ]}
+            targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
             paddingRight={noPadding ? null : 220}
-            targetStixDomainObjectTypes={targetStixDomainObjectTypes}
             paginationOptions={paginationOptions}
           />
         </Security>

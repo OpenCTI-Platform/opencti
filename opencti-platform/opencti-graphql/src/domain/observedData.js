@@ -93,7 +93,7 @@ export const observedDatasDistributionByEntity = async (args) => {
   if (field.includes('.')) {
     const options = pipe(
       assoc('relationshipType', RELATION_OBJECT),
-      assoc('toType', ENTITY_TYPE_CONTAINER_OBSERVED_DATA),
+      assoc('toTypes', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
       assoc('field', field.split('.')[1]),
       assoc('remoteRelationshipType', field.split('.')[0]),
       assoc('fromId', objectId)

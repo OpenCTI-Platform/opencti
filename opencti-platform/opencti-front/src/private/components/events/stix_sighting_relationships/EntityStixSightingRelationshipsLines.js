@@ -61,6 +61,7 @@ EntityStixSightingRelationshipsLines.propTypes = {
 export const entityStixSightingRelationshipsLinesQuery = graphql`
   query EntityStixSightingRelationshipsLinesPaginationQuery(
     $fromId: String
+    $toId: String
     $toTypes: [String]
     $inferred: Boolean
     $search: String
@@ -72,6 +73,7 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
     ...EntityStixSightingRelationshipsLines_data
       @arguments(
         fromId: $fromId
+        toId: $toId
         toTypes: $toTypes
         inferred: $inferred
         search: $search
@@ -90,6 +92,7 @@ export default createPaginationContainer(
       fragment EntityStixSightingRelationshipsLines_data on Query
         @argumentDefinitions(
           fromId: { type: "String" }
+          toId: { type: "String" }
           toTypes: { type: "[String]" }
           inferred: { type: "Boolean" }
           search: { type: "String" }
@@ -103,6 +106,7 @@ export default createPaginationContainer(
         ) {
         stixSightingRelationships(
           fromId: $fromId
+          toId: $toId
           toTypes: $toTypes
           inferred: $inferred
           search: $search
@@ -139,6 +143,7 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         fromId: fragmentVariables.fromId,
+        toId: fragmentVariables.toId,
         toTypes: fragmentVariables.toTypes,
         inferred: fragmentVariables.inferred,
         search: fragmentVariables.search,

@@ -71,13 +71,13 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`observable_${node.to.entity_type}`)}
+                {t(`entity_${node.from.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.observable_value.width }}
               >
-                {node.to.observable_value}
+                {node.from.observable_value}
               </div>
               <div
                 className={classes.bodyItem}
@@ -136,7 +136,7 @@ const StixCoreObjectStixCyberObservableLineFragment = createFragmentContainer(
         stop_time
         description
         inferred
-        to {
+        from {
           ... on StixCyberObservable {
             id
             entity_type

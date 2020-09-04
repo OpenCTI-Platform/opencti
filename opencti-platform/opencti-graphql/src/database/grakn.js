@@ -1167,8 +1167,15 @@ export const distributionRelations = async (options) => {
 };
 export const distributionEntitiesThroughRelations = async (options) => {
   const { limit = 10, order, inferred = false } = options;
-  const { relationshipType, remoteRelationshipType, toType, fromId, field, operation } = options;
-  let query = `match $rel($from, $to) isa ${relationshipType}; $to isa ${toType};`;
+  const { relationshipType, remoteRelationshipType, toTypes, fromId, field, operation } = options;
+  const queryToTypes = toTypes
+    ? R.pipe(
+        R.map((e) => `{ $to isa ${e}; }`),
+        R.join(' or '),
+        R.concat(__, ';')
+      )(toTypes)
+    : '';
+  let query = `match $rel($from, $to) isa ${relationshipType}; ${queryToTypes}`;
   query += `$from has internal_id "${escapeString(fromId)}";`;
   query += `$rel2($to, $to2) isa ${remoteRelationshipType};`;
   query += `$to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
@@ -1240,7 +1247,10 @@ const inputResolveRefs = async (input) => {
       expectedSize += isListing ? id.length : 1;
       // Handle specific case of object label that can be directly the value instead of the key.
       if (src === 'objectLabel') {
-        id = R.map((label) => (isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: label.toLowerCase() })), id);
+        id = R.map(
+          (label) => (isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: label.toLowerCase() })),
+          id
+        );
       }
       const keyPromise = isListing ? internalFindByIds(id) : internalLoadById(id);
       const dataPromise = keyPromise.then((data) => ({ [destKey]: data }));

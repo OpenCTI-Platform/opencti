@@ -156,7 +156,7 @@ class StixCoreObjectStixCyberObservables extends Component {
         <StixCoreRelationshipCreationFromEntity
           entityId={stixCoreObjectId}
           targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-          isRelationReversed={false}
+          isRelationReversed={true}
           allowedRelationshipTypes={
             relationshipType ? [relationshipType] : null
           }

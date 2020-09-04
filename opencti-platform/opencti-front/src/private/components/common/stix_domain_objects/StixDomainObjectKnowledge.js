@@ -8,6 +8,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
+import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -17,6 +18,8 @@ import EntityReportsPie from '../../analysis/reports/StixCoreObjectReportsBars';
 import EntityStixCoreRelationshipsDonut from '../stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import EntityStixCoreRelationshipsChart from '../stix_core_relationships/EntityStixCoreRelationshipsChart';
 import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
+import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 
 const styles = (theme) => ({
   card: {
@@ -50,9 +53,18 @@ const styles = (theme) => ({
     top: 35,
     right: 20,
   },
-  graphContainer: {
-    width: '100%',
-    margin: '20px 0 0 -30px',
+  bottomNav: {
+    zIndex: 1000,
+    padding: '10px 200px 10px 205px',
+    backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
+  },
+  paper: {
+    height: '100%',
+    minHeight: '100%',
+    margin: '10px 0 70px 0',
+    padding: '15px 15px 15px 15px',
+    borderRadius: 6,
   },
 });
 
@@ -72,12 +84,14 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   query StixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery(
     $type: String
     $fromId: String
+    $toTypes: [String]
     $endDate: DateTime
     $inferred: Boolean
   ) {
     stixCoreRelationshipsNumber(
       type: $type
       fromId: $fromId
+      toTypes: $toTypes
       endDate: $endDate
       inferred: $inferred
     ) {
@@ -102,7 +116,7 @@ class StixDomainObjectKnowledge extends Component {
     return (
       <div>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
             <Card
               raised={true}
               classes={{ root: classes.card }}
@@ -143,7 +157,52 @@ class StixDomainObjectKnowledge extends Component {
               />
             </Card>
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={4}>
+            <Card
+              raised={true}
+              classes={{ root: classes.card }}
+              style={{ height: 120 }}
+            >
+              <QueryRenderer
+                query={
+                  stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
+                }
+                variables={{
+                  fromId: stixDomainObjectId,
+                  toTypes: ['Stix-Cyber-Observable'],
+                  endDate: monthsAgo(1),
+                  inferred: true,
+                }}
+                render={({ props }) => {
+                  if (props && props.stixCoreRelationshipsNumber) {
+                    const { total } = props.stixCoreRelationshipsNumber;
+                    const difference = total - props.stixCoreRelationshipsNumber.count;
+                    return (
+                      <CardContent>
+                        <div className={classes.title}>
+                          {t('Total observables')}
+                        </div>
+                        <div className={classes.number}>{n(total)}</div>
+                        <ItemNumberDifference difference={difference} />
+                        <div className={classes.icon}>
+                          <HexagonMultipleOutline
+                            color="inherit"
+                            fontSize="large"
+                          />
+                        </div>
+                      </CardContent>
+                    );
+                  }
+                  return (
+                    <div style={{ textAlign: 'center', paddingTop: 35 }}>
+                      <CircularProgress size={40} thickness={2} />
+                    </div>
+                  );
+                }}
+              />
+            </Card>
+          </Grid>
+          <Grid item={true} xs={4}>
             <Card
               raised={true}
               classes={{ root: classes.card }}
@@ -164,15 +223,11 @@ class StixDomainObjectKnowledge extends Component {
                     const difference = total - props.stixCoreRelationshipsNumber.count;
                     return (
                       <CardContent>
-                        <div className={classes.number}>{total}</div>
-                        <ItemNumberDifference
-                          difference={difference}
-                          description="last month"
-                        />
-                        <div className="clearfix" />
                         <div className={classes.title}>
-                          {t('Total direct relations')}
+                          {t('Total relations')}
                         </div>
+                        <div className={classes.number}>{n(total)}</div>
+                        <ItemNumberDifference difference={difference} />
                         <div className={classes.icon}>
                           <DeviceHubOutlined color="inherit" fontSize="large" />
                         </div>
@@ -190,15 +245,19 @@ class StixDomainObjectKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <EntityReportsPie entityId={stixDomainObjectId} />
+          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+            <StixCoreObjectReportsBars
+              stixCoreObjectId={stixDomainObjectId}
+              field="created-by.name"
+              title={t('Distribution of sources')}
+            />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <EntityStixCoreRelationshipsDonut
-              entityId={stixDomainObjectId}
-              entityType="Stix-Domain-Object"
+          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+            <StixCoreObjectStixCoreRelationshipsCloud
+              stixCoreObjectId={stixDomainObjectId}
+              stixCoreObjectType="Stix-Domain-Object"
               relationshipType="stix-core-relationship"
-              title={t('Distribution of relations (including inferred)')}
+              title={t('Distribution of relations')}
               field="entity_type"
               inferred={true}
             />

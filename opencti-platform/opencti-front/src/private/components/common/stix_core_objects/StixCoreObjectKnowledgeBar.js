@@ -14,6 +14,7 @@ import {
   WifiTetheringOutlined,
   BugReportOutlined,
   PublicOutlined,
+  AccountBalanceOutlined,
 } from '@material-ui/icons';
 import {
   Gauge,
@@ -76,6 +77,24 @@ class StixCoreObjectKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText primary={t('Overview')} />
           </MenuItem>
+          {includes('organizations', availableSections) ? (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/organizations`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/organizations`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <AccountBalanceOutlined />
+              </ListItemIcon>
+              <ListItemText primary={t('Organizations')} />
+            </MenuItem>
+          ) : (
+            ''
+          )}
         </MenuList>
         {isInAvailableSection([
           'attribution',

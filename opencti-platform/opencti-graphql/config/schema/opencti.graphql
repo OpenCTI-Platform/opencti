@@ -7619,6 +7619,14 @@ type Query {
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  stixDomainObjectsDistribution(
+    objectId: String
+    toTypes: [String]
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+  ): [Distribution] @auth(for: [KNOWLEDGE])
   attackPattern(id: String): AttackPattern @auth(for: [KNOWLEDGE])
   attackPatterns(
     first: Int

@@ -1109,7 +1109,7 @@ describe('Grakn entities distribution through relation', () => {
       field: 'name',
       operation: 'count',
       relationshipType: 'object',
-      toType: 'Report',
+      toTypes: ['Report'],
       remoteRelationshipType: 'created-by',
     };
     const distribution = await distributionEntitiesThroughRelations(options);
