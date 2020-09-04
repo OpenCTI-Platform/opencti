@@ -81,6 +81,7 @@
     "redlock": "^4.1.0",
     "rxjs": "^6.6.2",
     "uuid": "^8.3.0",
+    "uuid-time": "^1.0.0",
     "validator": "^13.1.1",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.0"
