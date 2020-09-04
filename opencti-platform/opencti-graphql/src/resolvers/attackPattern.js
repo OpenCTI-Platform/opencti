@@ -1,4 +1,12 @@
-import { addAttackPattern, findAll, findById, coursesOfAction } from '../domain/attackPattern';
+import {
+  addAttackPattern,
+  findAll,
+  findById,
+  coursesOfAction,
+  parentAttackPatterns,
+  subAttackPatterns,
+  isSubAttackPattern,
+} from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -24,6 +32,9 @@ const attackPatternResolvers = {
   AttackPattern: {
     killChainPhases: (attackPattern) => killChainPhases(attackPattern.id),
     coursesOfAction: (attackPattern) => coursesOfAction(attackPattern.id),
+    parentAttackPatterns: (attackPattern) => parentAttackPatterns(attackPattern.id),
+    subAttackPatterns: (attackPattern) => subAttackPatterns(attackPattern.id),
+    isSubAttackPattern: (sector) => isSubAttackPattern(sector.id),
   },
   AttackPatternsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,

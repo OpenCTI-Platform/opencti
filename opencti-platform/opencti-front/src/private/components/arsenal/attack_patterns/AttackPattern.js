@@ -6,16 +6,17 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import AttackPatternOverview from './AttackPatternOverview';
 import AttackPatternDetails from './AttackPatternDetails';
 import AttackPatternEdition from './AttackPatternEdition';
 import AttackPatternPopover from './AttackPatternPopover';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
-import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
-import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
   container: {
@@ -40,35 +41,51 @@ class AttackPatternComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={4}>
-            <AttackPatternOverview attackPattern={attackPattern} />
+          <Grid item={true} xs={6}>
+            <StixDomainObjectOverview stixDomainObject={attackPattern} />
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={6}>
             <AttackPatternDetails attackPattern={attackPattern} />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={attackPattern.id} />
           </Grid>
         </Grid>
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={4}>
-            <AttackPatternCoursesOfAction attackPattern={attackPattern} />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixCoreRelationshipsChart
-              entityId={attackPattern.id}
-              relationshipType="uses"
+          <Grid item={true} xs={6}>
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={attackPattern.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/arsenal/attack_patterns/${attackPattern.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={attackPattern.id} />
+          <Grid item={true} xs={6}>
+            <StixCoreObjectOrStixCoreRelationshipLastReports
+              stixCoreObjectOrStixCoreRelationshipId={attackPattern.id}
+            />
           </Grid>
         </Grid>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
+        >
+          <Grid item={true} xs={6}>
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={attackPattern.id}
+            />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <StixCoreObjectLatestHistory
+              stixCoreObjectStandardId={attackPattern.standard_id}
+            />
+          </Grid>
+        </Grid>
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={attackPattern.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AttackPatternEdition attackPatternId={attackPattern.id} />
         </Security>
@@ -87,11 +104,46 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
   attackPattern: graphql`
     fragment AttackPattern_attackPattern on AttackPattern {
       id
+      standard_id
+      stix_ids
+      spec_version
+      revoked
+      confidence
+      created
+      modified
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      creator {
+        name
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
       name
       aliases
-      ...AttackPatternOverview_attackPattern
       ...AttackPatternDetails_attackPattern
-      ...AttackPatternCoursesOfAction_attackPattern
     }
   `,
 });

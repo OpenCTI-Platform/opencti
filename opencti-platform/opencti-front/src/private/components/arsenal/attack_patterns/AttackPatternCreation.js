@@ -68,7 +68,21 @@ const styles = (theme) => ({
 const attackPatternMutation = graphql`
   mutation AttackPatternCreationMutation($input: AttackPatternAddInput!) {
     attackPatternAdd(input: $input) {
-      ...AttackPatternLine_node
+      id
+      name
+      description
+      isSubAttackPattern
+      x_mitre_id
+      subAttackPatterns {
+        edges {
+          node {
+            id
+            name
+            description
+            x_mitre_id
+          }
+        }
+      }
     }
   }
 `;

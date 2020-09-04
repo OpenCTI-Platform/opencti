@@ -143,6 +143,14 @@ export const stixCoreRelationshipDelete = async (user, stixCoreRelationshipId) =
   return deleteRelationById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
+export const stixCoreRelationshipDeleteByFromAndTo = async (user, fromId, toId, relationshipType) => {
+  if (!isStixCoreRelationship(relationshipType)) {
+    throw FunctionalError('Only stix-core-relationship can be deleted trough this method.');
+  }
+  await deleteRelationsByFromAndTo(user, fromId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  return true;
+};
+
 export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input) => {
   const stixCoreRelationship = await loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {

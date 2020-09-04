@@ -66,6 +66,7 @@ export const ignoredAttributes = [
   'created_at_year',
   'x_opencti_score',
   'updated_at',
+  'observable_value',
 ];
 
 export const dateAttributes = [

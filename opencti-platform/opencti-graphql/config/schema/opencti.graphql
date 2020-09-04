@@ -1071,8 +1071,8 @@ input StixDomainObjectAddInput {
 
 ############## AttackPatterns
 enum AttackPatternsOrdering {
-  name
   x_mitre_id
+  name
   created
   modified
   created_at
@@ -1162,9 +1162,12 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_platforms: [String]
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
-  x_mitre_id: String
+  x_mitre_id: String!
   killChainPhases: KillChainPhaseConnection
   coursesOfAction: CourseOfActionConnection
+  parentAttackPatterns: AttackPatternConnection
+  subAttackPatterns: AttackPatternConnection
+  isSubAttackPattern: Boolean
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -8772,6 +8775,7 @@ type Mutation {
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
   @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreRelationshipDelete(fromId: String!, toId: String!, relationship_type: String!): Boolean! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
   stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship

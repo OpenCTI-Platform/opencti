@@ -109,7 +109,8 @@ const i18n = {
       'Last notes': 'Dernières notes',
       'Last reports wrote by the entity':
         'Derniers rapports écrits par cette entité',
-      'Last reports about the element': "Derniers rapports à propos de l'élément",
+      'Last reports about the element':
+        "Derniers rapports à propos de l'élément",
       'Last reports about the entity': "Derniers rapports à propos de l'entité",
       'Last observables': 'Derniers observables',
       'observable(s)': 'observable(s)',
@@ -130,6 +131,8 @@ const i18n = {
       Automatic: 'Automatique',
       Roles: 'Rôles',
       Subsectors: 'Sous-secteurs',
+      'Sub attack patterns': "Sous motifs d'attaque",
+      'Parent attack patterns': "Motifs d'attaque parents",
       'Parent sectors': 'Secteurs parents',
       Subregions: 'Sous-régions',
       'Parent regions': 'Régions parentes',
@@ -257,6 +260,7 @@ const i18n = {
       'Add notes': 'Ajouter des notes',
       'Add courses of action': 'Ajouter des conduites à suivre',
       'Add subsectors': 'Ajouter des sous-secteurs',
+      'Add sub attack patterns': "Ajouter des sous motifs d'attaque",
       'Add attack patterns': "Ajouter des motifs d'attaque",
       'Add entities': 'Ajouter des entités',
       'Add observables': 'Ajouter des observables',
@@ -552,6 +556,9 @@ const i18n = {
       'Filter by': 'Filtrer par',
       Name: 'Nom',
       Description: 'Description',
+      'Is family': 'Est une famille',
+      'Architecture execution env.': "Env. d'éxécution",
+      'Implementation languages': "Langages d'implémentation",
       'This sector does not have any description.':
         "Ce secteur n'a aucune description.",
       'Relationship type': 'Type de relation',

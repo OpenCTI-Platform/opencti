@@ -7,6 +7,7 @@ import {
   stixCoreRelationshipAddRelation,
   stixCoreRelationshipCleanContext,
   stixCoreRelationshipDelete,
+  stixCoreRelationshipDeleteByFromAndTo,
   stixCoreRelationshipDeleteRelation,
   stixCoreRelationshipEditContext,
   stixCoreRelationshipEditField,
@@ -83,6 +84,8 @@ const stixCoreRelationshipResolvers = {
         stixCoreRelationshipDeleteRelation(user, id, toId, relationshipType),
     }),
     stixCoreRelationshipAdd: (_, { input }, { user }) => addStixCoreRelationship(user, input),
+    stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, { user }) =>
+      stixCoreRelationshipDeleteByFromAndTo(user, fromId, toId, relationshipType),
   },
   Subscription: {
     stixCoreRelationship: {

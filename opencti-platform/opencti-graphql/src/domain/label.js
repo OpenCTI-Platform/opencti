@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { createEntity, deleteEntityById, listEntities, loadById, updateAttribute } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -26,12 +26,11 @@ export const stringToColour = (str) => {
 };
 
 export const addLabel = async (user, label) => {
-  const created = await createEntity(
-    user,
-    assoc('color', label.color ? label.color : stringToColour(label.value), label),
-    ENTITY_TYPE_LABEL,
-    { noLog: true }
-  );
+  const finalLabel = pipe(
+    assoc('label', label.value.toLowerCase()),
+    assoc('color', label.color ? label.color : stringToColour(label.value.toLowerCase()), label)
+  )(label);
+  const created = await createEntity(user, finalLabel, ENTITY_TYPE_LABEL, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, created, user);
 };
 

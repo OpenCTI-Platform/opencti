@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose, filter, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -79,7 +79,10 @@ class StixCyberObservableOverview extends Component {
               </div>
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
-                {stixCyberObservable.stix_ids.length > 0
+                {filter(
+                  (n) => !n.startsWith('00000000'),
+                  stixCyberObservable.stix_ids,
+                ).length > 0
                   ? stixCyberObservable.stix_ids.map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>

@@ -1,22 +1,41 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  assoc, compose, dissoc, propOr,
-} from 'ramda';
+import { compose, propOr } from 'ramda';
+import graphql from 'babel-plugin-relay/macro';
 import { withRouter } from 'react-router-dom';
+import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
-  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-import ListLines from '../../../components/list_lines/ListLines';
 import AttackPatternsLines, {
   attackPatternsLinesQuery,
 } from './attack_patterns/AttackPatternsLines';
 import AttackPatternCreation from './attack_patterns/AttackPatternCreation';
+import SearchInput from '../../../components/SearchInput';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
+
+export const attackPatternsSearchQuery = graphql`
+  query AttackPatternsSearchQuery($search: String) {
+    attackPatterns(search: $search) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+  }
+`;
+
+const styles = () => ({
+  parameters: {
+    float: 'left',
+    marginTop: -10,
+  },
+});
 
 class AttackPatterns extends Component {
   constructor(props) {
@@ -24,16 +43,11 @@ class AttackPatterns extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'AttackPatterns-view',
+      'view-attackPatterns',
     );
     this.state = {
-      sortBy: propOr('name', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
-      filters: {},
       openExports: false,
-      numberOfElements: { number: 0, symbol: '' },
     };
   }
 
@@ -41,8 +55,8 @@ class AttackPatterns extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'AttackPatterns-view',
-      dissoc('filters', this.state),
+      'view-attackPatterns',
+      this.state,
     );
   }
 
@@ -50,126 +64,34 @@ class AttackPatterns extends Component {
     this.setState({ searchTerm: value }, () => this.saveView());
   }
 
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
-  }
-
   handleToggleExports() {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleAddFilter(key, id, value, event = null) {
-    if (event) {
-      event.stopPropagation();
-      event.preventDefault();
-    }
-    this.setState({
-      filters: assoc(key, [{ id, value }], this.state.filters),
-    });
-  }
-
-  handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) });
-  }
-
-  setNumberOfElements(numberOfElements) {
-    this.setState({ numberOfElements });
-  }
-
-  renderLines(paginationOptions) {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
-      openExports,
-      numberOfElements,
-    } = this.state;
-    const dataColumns = {
-      x_mitre_id: {
-        label: 'External ID',
-        width: '10%',
-        isSortable: true,
-      },
-      name: {
-        label: 'Name',
-        width: '30%',
-        isSortable: true,
-      },
-      objectLabel: {
-        label: 'Labels',
-        width: '20%',
-        isSortable: true,
-      },
-      created: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
-      },
-    };
-    return (
-      <ListLines
-        sortBy={sortBy}
-        orderAsc={orderAsc}
-        dataColumns={dataColumns}
-        handleSort={this.handleSort.bind(this)}
-        handleSearch={this.handleSearch.bind(this)}
-        handleAddFilter={this.handleAddFilter.bind(this)}
-        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-        handleToggleExports={this.handleToggleExports.bind(this)}
-        openExports={openExports}
-        exportEntityType="Attack-Pattern"
-        keyword={searchTerm}
-        filters={filters}
-        paginationOptions={paginationOptions}
-        numberOfElements={numberOfElements}
-        availableFilterKeys={[
-          'labelledBy',
-          'markedBy',
-          'created_start_date',
-          'created_end_date',
-          'createdBy',
-        ]}
-      >
-        <QueryRenderer
-          query={attackPatternsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
-          render={({ props }) => (
-            <AttackPatternsLines
-              data={props}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-              initialLoading={props === null}
-              onLabelClick={this.handleAddFilter.bind(this)}
-              setNumberOfElements={this.setNumberOfElements.bind(this)}
-            />
-          )}
-        />
-      </ListLines>
-    );
-  }
-
   render() {
-    const {
-      view, sortBy, orderAsc, searchTerm, filters,
-    } = this.state;
-    const finalFilters = convertFilters(filters);
-    const paginationOptions = {
-      search: searchTerm,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-      filters: finalFilters,
-    };
+    const { searchTerm } = this.state;
+    const { classes } = this.props;
     return (
       <div>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <div className={classes.parameters}>
+          <div style={{ float: 'left', marginRight: 20 }}>
+            <SearchInput
+              variant="small"
+              onSubmit={this.handleSearch.bind(this)}
+              keyword={searchTerm}
+            />
+          </div>
+        </div>
+        <div className="clearfix" />
+        <QueryRenderer
+          query={attackPatternsLinesQuery}
+          variables={{ count: 500 }}
+          render={({ props }) => (
+            <AttackPatternsLines data={props} keyword={searchTerm} />
+          )}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <AttackPatternCreation paginationOptions={paginationOptions} />
+          <AttackPatternCreation />
         </Security>
       </div>
     );
@@ -180,6 +102,11 @@ AttackPatterns.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   location: PropTypes.object,
+  classes: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(AttackPatterns);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(AttackPatterns);

@@ -12,9 +12,11 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch, SettingsApplications, PermIdentity } from '@material-ui/icons';
+import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabelsViewView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
-import ItemCreator from '../../../../components/ItemCreator';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import AttackPatternParentAttackPatterns from './AttackPatternParentAttackPatterns';
+import AttackPatternSubAttackPatterns from './AttackPatternSubAttackPatterns';
 
 const styles = () => ({
   paper: {
@@ -35,87 +37,109 @@ class AttackPatternDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <Typography variant="h3" gutterBottom={true}>
-            {t('External ID')}
-          </Typography>
-          <Chip
-            size="small"
-            label={attackPattern.x_mitre_id}
-            color="primary"
-            style={{ marginBottom: 20 }}
-          />
-          <StixCoreObjectLabelsViewView
-            labels={attackPattern.objectLabel}
-            id={attackPattern.id}
-          />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          <ItemCreator creator={attackPattern.creator} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Kill chain phases')}
-          </Typography>
-          <List>
-            {attackPattern.killChainPhases.edges.map((killChainPhaseEdge) => {
-              const killChainPhase = killChainPhaseEdge.node;
-              return (
-                <ListItem
-                  key={killChainPhase.phase_name}
-                  dense={true}
-                  divider={true}
-                >
-                  <ListItemIcon>
-                    <Launch />
-                  </ListItemIcon>
-                  <ListItemText primary={killChainPhase.phase_name} />
-                </ListItem>
-              );
-            })}
-          </List>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Platforms')}
-          </Typography>
-          <List>
-            {propOr([], 'x_mitre_platforms', attackPattern).map((platform) => (
-              <ListItem key={platform} dense={true} divider={true}>
-                <ListItemIcon>
-                  <SettingsApplications />
-                </ListItemIcon>
-                <ListItemText primary={platform} />
-              </ListItem>
-            ))}
-          </List>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Required permissions')}
-          </Typography>
-          <List>
-            {propOr([], 'x_mitre_permissions_required', attackPattern).map(
-              (permission) => (
-                <ListItem key={permission} dense={true} divider={true}>
-                  <ListItemIcon>
-                    <PermIdentity />
-                  </ListItemIcon>
-                  <ListItemText primary={permission} />
-                </ListItem>
-              ),
-            )}
-          </List>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('External ID')}
+              </Typography>
+              <Chip
+                size="small"
+                label={attackPattern.x_mitre_id}
+                color="primary"
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown
+                source={attackPattern.description}
+                limit={400}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Platforms')}
+              </Typography>
+              <List>
+                {propOr([], 'x_mitre_platforms', attackPattern).map(
+                  (platform) => (
+                    <ListItem key={platform} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <SettingsApplications />
+                      </ListItemIcon>
+                      <ListItemText primary={platform} />
+                    </ListItem>
+                  ),
+                )}
+              </List>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Kill chain phases')}
+              </Typography>
+              <List>
+                {attackPattern.killChainPhases.edges.map(
+                  (killChainPhaseEdge) => {
+                    const killChainPhase = killChainPhaseEdge.node;
+                    return (
+                      <ListItem
+                        key={killChainPhase.phase_name}
+                        dense={true}
+                        divider={true}
+                      >
+                        <ListItemIcon>
+                          <Launch />
+                        </ListItemIcon>
+                        <ListItemText primary={killChainPhase.phase_name} />
+                      </ListItem>
+                    );
+                  },
+                )}
+              </List>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Detection')}
+              </Typography>
+              <ExpandableMarkdown
+                source={attackPattern.x_mitre_detection}
+                limit={400}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Required permissions')}
+              </Typography>
+              <List>
+                {propOr([], 'x_mitre_permissions_required', attackPattern).map(
+                  (permission) => (
+                    <ListItem key={permission} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <PermIdentity />
+                      </ListItemIcon>
+                      <ListItemText primary={permission} />
+                    </ListItem>
+                  ),
+                )}
+              </List>
+              {attackPattern.isSubAttackPattern ? (
+                <AttackPatternParentAttackPatterns
+                  attackPattern={attackPattern}
+                />
+              ) : (
+                <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
+              )}
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
@@ -135,9 +159,12 @@ const AttackPatternDetails = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternDetails_attackPattern on AttackPattern {
         id
+        description
         x_mitre_platforms
         x_mitre_permissions_required
         x_mitre_id
+        x_mitre_detection
+        isSubAttackPattern
         creator {
           id
           name
@@ -161,6 +188,8 @@ const AttackPatternDetails = createFragmentContainer(
             }
           }
         }
+        ...AttackPatternSubAttackPatterns_attackPattern
+        ...AttackPatternParentAttackPatterns_attackPattern
       }
     `,
   },

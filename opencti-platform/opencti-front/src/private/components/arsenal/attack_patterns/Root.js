@@ -34,6 +34,7 @@ const attackPatternQuery = graphql`
   query RootAttackPatternQuery($id: String!) {
     attackPattern(id: $id) {
       id
+      standard_id
       name
       aliases
       ...AttackPattern_attackPattern
@@ -85,7 +86,7 @@ class RootAttackPattern extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId"
                     render={(routeProps) => (
                       <AttackPattern
                         {...routeProps}
@@ -95,7 +96,7 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/reports"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/reports"
                     render={(routeProps) => (
                       <AttackPatternReports
                         {...routeProps}
@@ -105,15 +106,15 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge/overview`}
+                        to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge"
                     render={(routeProps) => (
                       <AttackPatternKnowledge
                         {...routeProps}
@@ -122,7 +123,7 @@ class RootAttackPattern extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/indicators"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/indicators"
                     render={(routeProps) => (
                       <AttackPatternIndicators
                         {...routeProps}
@@ -132,7 +133,7 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/files"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -150,7 +151,7 @@ class RootAttackPattern extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/attack_patterns/:attackPatternId/history"
+                    path="/dashboard/arsenal/attack_patterns/:attackPatternId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -159,7 +160,9 @@ class RootAttackPattern extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={attackPatternId}
+                          stixCoreObjectStandardId={
+                            props.attackPattern.standard_id
+                          }
                         />
                       </React.Fragment>
                     )}

@@ -1337,7 +1337,8 @@ define
     plays stix-sighting-relationship_from,
     plays related-to_from,
     plays consists-of_to,
-    plays based-on_to;
+    plays based-on_to,
+    plays related-to_to;
 
   Autonomous-System sub Stix-Cyber-Observable,
     has number,

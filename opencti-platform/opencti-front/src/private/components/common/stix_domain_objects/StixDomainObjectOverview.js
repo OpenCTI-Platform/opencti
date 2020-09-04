@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, propOr } from 'ramda';
+import {
+  compose, map, propOr, filter,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -82,7 +84,10 @@ class StixDomainObjectOverview extends Component {
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
                 {stixDomainObject.stix_ids.length > 0
-                  ? stixDomainObject.stix_ids.map((stixId) => `${stixId}\n`)
+                  ? filter(
+                    (n) => !n.startsWith('00000000'),
+                    stixDomainObject.stix_ids,
+                  ).map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>
             </Grid>
