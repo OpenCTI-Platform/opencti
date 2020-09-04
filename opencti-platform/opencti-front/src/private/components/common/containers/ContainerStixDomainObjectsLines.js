@@ -62,6 +62,7 @@ class ContainerStixDomainObjectsLines extends Component {
             containerObjects={pathOr([], ['objects', 'edges'], container)}
             paginationOptions={paginationOptions}
             withPadding={true}
+            targetStiXCoreObjectTypes={['Stix-Domain-Object']}
           />
         </Security>
       </div>
@@ -94,15 +95,15 @@ export const containerStixDomainObjectsLinesQuery = graphql`
     container(id: $id) {
       id
       ...ContainerStixDomainObjectsLines_container
-        @arguments(
-          search: $search
-          types: $types
-          count: $count
-          cursor: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-          filters: $filters
-        )
+      @arguments(
+        search: $search
+        types: $types
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
     }
   }
 `;
@@ -112,18 +113,18 @@ export default createPaginationContainer(
   {
     container: graphql`
       fragment ContainerStixDomainObjectsLines_container on Container
-        @argumentDefinitions(
-          types: { type: "[String]" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixObjectOrStixRelationshipsOrdering"
-            defaultValue: name
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        types: { type: "[String]" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixObjectOrStixRelationshipsOrdering"
+          defaultValue: name
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+      ) {
         id
         objects(
           types: $types

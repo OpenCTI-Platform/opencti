@@ -1240,7 +1240,7 @@ const inputResolveRefs = async (input) => {
       expectedSize += isListing ? id.length : 1;
       // Handle specific case of object label that can be directly the value instead of the key.
       if (src === 'objectLabel') {
-        id = R.map((label) => (isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: label })), id);
+        id = R.map((label) => (isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: label.toLowerCase() })), id);
       }
       const keyPromise = isListing ? internalFindByIds(id) : internalLoadById(id);
       const dataPromise = keyPromise.then((data) => ({ [destKey]: data }));

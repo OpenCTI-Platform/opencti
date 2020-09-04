@@ -62,6 +62,7 @@ class ContainerStixCyberObservablesLines extends Component {
             containerObjects={pathOr([], ['objects', 'edges'], container)}
             paginationOptions={paginationOptions}
             withPadding={true}
+            targetStiXCoreObjectTypes={['Stix-Cyber-Observable']}
           />
         </Security>
       </div>
@@ -93,15 +94,15 @@ export const containerStixCyberObservablesLinesQuery = graphql`
   ) {
     container(id: $id) {
       ...ContainerStixCyberObservablesLines_container
-        @arguments(
-          types: $types
-          search: $search
-          count: $count
-          cursor: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-          filters: $filters
-        )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
     }
   }
 `;
@@ -111,18 +112,18 @@ export default createPaginationContainer(
   {
     container: graphql`
       fragment ContainerStixCyberObservablesLines_container on Container
-        @argumentDefinitions(
-          types: { type: "[String]" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixObjectOrStixRelationshipsOrdering"
-            defaultValue: name
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        types: { type: "[String]" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixObjectOrStixRelationshipsOrdering"
+          defaultValue: name
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixObjectOrStixRelationshipsFiltering]" }
+      ) {
         id
         objects(
           types: $types

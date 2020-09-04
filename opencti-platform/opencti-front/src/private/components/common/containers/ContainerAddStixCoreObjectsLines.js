@@ -349,6 +349,7 @@ ContainerAddStixCoreObjectsLinesContainer.propTypes = {
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
   query ContainerAddStixCoreObjectsLinesQuery(
+    $types: [String]
     $search: String
     $count: Int!
     $cursor: ID
@@ -357,6 +358,7 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
   ) {
     ...ContainerAddStixCoreObjectsLines_data
     @arguments(
+      types: $types
       search: $search
       count: $count
       cursor: $cursor
@@ -372,6 +374,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
     data: graphql`
       fragment ContainerAddStixCoreObjectsLines_data on Query
       @argumentDefinitions(
+        types: { type: "[String]" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
@@ -379,6 +382,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         stixCoreObjects(
+          types: $types
           search: $search
           first: $count
           after: $cursor
@@ -496,6 +500,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        types: fragmentVariables.types,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

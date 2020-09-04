@@ -249,17 +249,6 @@ class StixCoreRelationshipContainer extends Component {
             <strong>
               {t(`relationship_${stixCoreRelationship.relationship_type}`)}
             </strong>
-            {stixCoreRelationship.relationship_type === 'indicates'
-            && !stixCoreRelationship.inferred ? (
-              <span>
-                <br />{' '}
-                {stixCoreRelationship.role_played
-                  ? t(stixCoreRelationship.role_played)
-                  : t('Unknown')}
-              </span>
-              ) : (
-                ''
-              )}
           </div>
         </div>
         <Link to={`${linkTo}/${to.id}`}>

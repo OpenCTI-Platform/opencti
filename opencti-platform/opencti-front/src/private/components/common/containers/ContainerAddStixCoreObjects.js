@@ -100,6 +100,7 @@ class ContainerAddStixCoreObjects extends Component {
       defaultCreatedBy,
       defaultMarkingDefinitions,
       containerStixCoreObjects,
+      targetStiXCoreObjectTypes,
       simple,
     } = this.props;
     const paginationOptions = {
@@ -162,6 +163,7 @@ class ContainerAddStixCoreObjects extends Component {
             <QueryRenderer
               query={containerAddStixCoreObjectsLinesQuery}
               variables={{
+                types: targetStiXCoreObjectTypes,
                 search: this.state.search,
                 orderBy: 'created_at',
                 orderMode: 'desc',
@@ -235,6 +237,7 @@ ContainerAddStixCoreObjects.propTypes = {
   defaultMarkingDefinitions: PropTypes.array,
   containerStixCoreObjects: PropTypes.array,
   simple: PropTypes.bool,
+  targetStiXCoreObjectTypes: PropTypes.array,
 };
 
 export default compose(
