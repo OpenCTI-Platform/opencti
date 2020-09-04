@@ -461,7 +461,7 @@ class StixCyberObservable:
         if simple_observable_description is not None:
             x_opencti_description = simple_observable_description
 
-        stix_id = (observable_data["id"] if "id" in observable_data else None,)
+        stix_id = observable_data["id"] if "id" in observable_data else None
         if simple_observable_id is not None:
             stix_id = simple_observable_id
         if type is not None:
