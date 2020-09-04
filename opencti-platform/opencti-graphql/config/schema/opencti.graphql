@@ -4347,18 +4347,9 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
 }
 input AutonomousSystemAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   number: Int!
   name: String
   rir: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4445,20 +4436,11 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   jobs(first: Int): [Work]
 }
 input DirectoryAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   path: String!
   path_enc: String
   ctime: DateTime
   mtime: DateTime
   atime: DateTime
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4541,15 +4523,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   jobs(first: Int): [Work]
 }
 input DomainNameAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String!
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4633,17 +4607,8 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   jobs(first: Int): [Work]
 }
 input EmailAddrAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
   display_name: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4732,9 +4697,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   jobs(first: Int): [Work]
 }
 input EmailMessageAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   is_multipart: Boolean
   attribute_date: DateTime
   content_type: String
@@ -4742,12 +4704,6 @@ input EmailMessageAddInput {
   subject: String
   received_lines: [String]
   body: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -4832,18 +4788,9 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   jobs(first: Int): [Work]
 }
 input EmailMimePartTypeAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   body: String
   content_type: String
   content_disposition: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 ############## HashedObservable
 input HashInput {
@@ -5021,21 +4968,12 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 input ArtifactAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   hashes: [HashInput]
   mime_type: String
   payload_bin: String
   url: String
   encryption_algorithm: String
   decryption_key: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
@@ -5128,9 +5066,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 input StixFileAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   hashes: [HashInput]
   extensions: String
   size: String
@@ -5141,12 +5076,6 @@ input StixFileAddInput {
   ctime: DateTime
   mtime: DateTime
   atime: DateTime
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
@@ -5237,9 +5166,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   jobs(first: Int): [Work]
 }
 input X509CertificateAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   md5: String
   sha1: String
   sha256: String
@@ -5251,14 +5177,6 @@ input X509CertificateAddInput {
   issuer: String
   validity_not_before: DateTime
   validity_not_after: DateTime
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
 }
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5341,17 +5259,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 input IPv4AddrAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  created: DateTime
-  modified: DateTime
-  clientMutationId: String
-  update: Boolean
 }
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5434,16 +5342,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 input IPv6AddrAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5526,16 +5425,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   jobs(first: Int): [Work]
 }
 input MacAddrAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5618,16 +5508,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   jobs(first: Int): [Work]
 }
 input MutexAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   name: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5720,9 +5601,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   jobs(first: Int): [Work]
 }
 input NetworkTrafficAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   extensions: String
   start: DateTime
   end: DateTime
@@ -5734,12 +5612,6 @@ input NetworkTrafficAddInput {
   dst_byte_count: Int
   src_packets: Int
   dst_packets: Int
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5828,9 +5700,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   jobs(first: Int): [Work]
 }
 input ProcessAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   extensions: String
   is_hidden: Boolean
   pid: Int
@@ -5838,12 +5707,6 @@ input ProcessAddInput {
   cwd: String
   command_line: String
   environment_variables: [String]
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -5931,21 +5794,12 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 input SoftwareAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   name: String
   cpe: String
   swid: String
   languages: [String]
   vendor: String
   version: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6028,16 +5882,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   jobs(first: Int): [Work]
 }
 input UrlAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6134,9 +5979,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   jobs(first: Int): [Work]
 }
 input UserAccountAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   extensions: String
   user_id: String
   credential: String
@@ -6152,12 +5994,6 @@ input UserAccountAddInput {
   credential_last_changed: DateTime
   account_first_login: DateTime
   account_last_login: DateTime
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6242,18 +6078,9 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   jobs(first: Int): [Work]
 }
 input WindowsRegistryKeyAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   attribute_key: String
   modified_time: DateTime
   number_of_subkeys: Int
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6338,18 +6165,9 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   jobs(first: Int): [Work]
 }
 input WindowsRegistryValueTypeAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   name: String
   data: String
   data_type: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6447,9 +6265,6 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
   jobs(first: Int): [Work]
 }
 input X509V3ExtensionsTypeAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   basic_constraints: String
   name_constraints: String
   policy_constraints: String
@@ -6466,12 +6281,6 @@ input X509V3ExtensionsTypeAddInput {
   private_key_usage_period_not_after: DateTime
   certificate_policies: String
   policy_mappings: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6554,16 +6363,7 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   jobs(first: Int): [Work]
 }
 input XOpenCTICryptographicKeyAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6646,16 +6446,7 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   jobs(first: Int): [Work]
 }
 input XOpenCTICryptocurrencyWalletAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6738,16 +6529,7 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   jobs(first: Int): [Work]
 }
 input XOpenCTIHostnameAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6830,16 +6612,7 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   jobs(first: Int): [Work]
 }
 input XOpenCTITextAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -6922,16 +6695,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   jobs(first: Int): [Work]
 }
 input XOpenCTIUserAgentAddInput {
-  stix_id: String
-  x_opencti_score: Int
-  x_opencti_description: String
   value: String
-  createdBy: String
-  objectMarking: [String]
-  objectLabel: [String]
-  externalReferences: [String]
-  clientMutationId: String
-  update: Boolean
 }
 
 ###### RELATIONSHIPS
@@ -8734,6 +8498,16 @@ type Mutation {
   ######## STIX CYBER OBSERVABLE ENTITIES
   stixCyberObservableAdd(
     type: String!
+    stix_id: String
+    x_opencti_score: Int
+    x_opencti_description: String
+    createIndicator: Boolean
+    createdBy: String
+    objectMarking: [String]
+    objectLabel: [String]
+    externalReferences: [String]
+    clientMutationId: String
+    update: Boolean
     AutonomousSystem: AutonomousSystemAddInput
     Directory: DirectoryAddInput
     DomainName: DomainNameAddInput
@@ -8760,7 +8534,6 @@ type Mutation {
     XOpenCTIHostname: XOpenCTIHostnameAddInput
     XOpenCTIText: XOpenCTITextAddInput
     XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
-    createIndicator: Boolean
   ): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
   stixCyberObservablesExportAsk(
@@ -8783,7 +8556,8 @@ type Mutation {
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
   @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
-  stixCoreRelationshipDelete(fromId: String!, toId: String!, relationship_type: String!): Boolean! @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixCoreRelationshipDelete(fromId: String!, toId: String!, relationship_type: String!): Boolean!
+  @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
   stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship

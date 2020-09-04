@@ -20,10 +20,9 @@ import {
   filter,
   includes,
   dissoc,
-  evolve,
-  path,
   toPairs,
   fromPairs,
+  propOr,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -167,6 +166,13 @@ const styles = (theme) => ({
 const stixCyberObservableMutation = graphql`
   mutation StixCyberObservableCreationMutation(
     $type: String!
+    $x_opencti_score: Int
+    $x_opencti_description: String
+    $createIndicator: Boolean
+    $createdBy: String
+    $objectMarking: [String]
+    $objectLabel: [String]
+    $externalReferences: [String]
     $AutonomousSystem: AutonomousSystemAddInput
     $Directory: DirectoryAddInput
     $DomainName: DomainNameAddInput
@@ -192,10 +198,16 @@ const stixCyberObservableMutation = graphql`
     $XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
     $XOpenCTIText: XOpenCTITextAddInput
     $XOpenCTIUserAgent: XOpenCTIUserAgentAddInput
-    $createIndicator: Boolean
   ) {
     stixCyberObservableAdd(
       type: $type
+      x_opencti_score: $x_opencti_score
+      x_opencti_description: $x_opencti_description
+      createIndicator: $createIndicator
+      createdBy: $createdBy
+      objectMarking: $objectMarking
+      objectLabel: $objectLabel
+      externalReferences: $externalReferences
       AutonomousSystem: $AutonomousSystem
       Directory: $Directory
       DomainName: $DomainName
@@ -221,7 +233,6 @@ const stixCyberObservableMutation = graphql`
       XOpenCTICryptocurrencyWallet: $XOpenCTICryptocurrencyWallet
       XOpenCTIText: $XOpenCTIText
       XOpenCTIUserAgent: $XOpenCTIUserAgent
-      createIndicator: $createIndicator
     ) {
       ...StixCyberObservableLine_node
     }
@@ -230,6 +241,7 @@ const stixCyberObservableMutation = graphql`
 
 const stixCyberObservableValidation = (t) => Yup.object().shape({
   x_opencti_score: Yup.number().required(t('This field is required')),
+  x_opencti_description: Yup.string(),
   createIndicator: Yup.boolean(),
 });
 
@@ -262,14 +274,7 @@ class StixCyberObservableCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    let adaptedValues = evolve(
-      {
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
-      },
-      values,
-    );
+    let adaptedValues = values;
     // Potential dicts
     if (
       adaptedValues.hashes_MD5
@@ -304,6 +309,11 @@ class StixCyberObservableCreation extends Component {
       }
     }
     adaptedValues = pipe(
+      dissoc('x_opencti_description'),
+      dissoc('x_opencti_score'),
+      dissoc('createdBy'),
+      dissoc('objectMarking'),
+      dissoc('objectLabel'),
       dissoc('createIndicator'),
       dissoc('hashes_MD5'),
       dissoc('hashes_SHA-1'),
@@ -314,13 +324,21 @@ class StixCyberObservableCreation extends Component {
         ? [n[0], n[1] ? parse(n[1]).format() : null]
         : n)),
       map((n) => (includes(n[0], numberAttributes)
-        ? [n[0], n[1] ? parseInt(n[0], 10) : null]
+        ? [n[0], n[1] ? parseInt(n[1], 10) : null]
         : n)),
       fromPairs,
     )(adaptedValues);
     const finalValues = {
       type: this.state.type,
-      createIndicator: values.createIndicator,
+      x_opencti_description:
+        values.x_opencti_score.length > 0 ? values.x_opencti_description : null,
+      x_opencti_score:
+        values.x_opencti_score.length > 0
+          ? parseInt(values.x_opencti_score, 10)
+          : null,
+      createdBy: propOr(null, 'value', values.createdBy),
+      objectMarking: pluck('value', values.objectMarking),
+      objectLabel: pluck('value', values.objectLabel),
       [this.state.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: adaptedValues,
     };
     commitMutation({
@@ -397,6 +415,7 @@ class StixCyberObservableCreation extends Component {
         render={({ props }) => {
           if (props && props.attributes) {
             const initialValues = {
+              x_opencti_description: '',
               x_opencti_score: 50,
               createdBy: '',
               objectMarking: [],

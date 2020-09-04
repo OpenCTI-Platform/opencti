@@ -1312,7 +1312,7 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
     const currentValues = instance[key] || [];
     if (operation === EVENT_TYPE_UPDATE_ADD) {
       // Specific case of stix_ids
-      if (key === IDS_STIX) {
+      if (key === IDS_STIX && !R.isNil(value)) {
         // In this case we only want to keep the last 5 fake ids
         // Fake ids come from connectors enable to generate stable ids.
         // This values are only useful to resolve creation

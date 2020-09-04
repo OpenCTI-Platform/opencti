@@ -186,7 +186,10 @@ export const addStixCyberObservable = async (user, input) => {
   }
   // If type is ok, get the correct data that represent the observable
   const graphQLType = input.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase());
-  let observableInput = input[graphQLType];
+  let observableInput = pipe(
+    dissoc('type'),
+    dissoc('createIndicator')
+  )({ ...dissoc(graphQLType, input), ...input[graphQLType] });
   if (!observableInput) {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }

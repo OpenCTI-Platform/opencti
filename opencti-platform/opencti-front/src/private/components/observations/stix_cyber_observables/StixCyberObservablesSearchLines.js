@@ -109,7 +109,7 @@ class StixCyberObservablesContainer extends Component {
               className={classes.summary}
             >
               <Typography className={classes.heading}>
-                {t(`observable_${type}`)}
+                {t(`entity_${type}`)}
               </Typography>
               <Typography classes={{ root: classes.secondaryHeading }}>
                 {stixCyberObservables[type].length} {t('observable(s)')}
@@ -126,7 +126,7 @@ class StixCyberObservablesContainer extends Component {
                     divider={true}
                     button={true}
                     component={Link}
-                    to={`/dashboard/signatures/observables/${stixCyberObservable.id}`}
+                    to={`/dashboard/observations/observables/${stixCyberObservable.id}`}
                   >
                     <ListItemIcon classes={{ root: classes.itemIcon }}>
                       <ItemIcon type={type} />

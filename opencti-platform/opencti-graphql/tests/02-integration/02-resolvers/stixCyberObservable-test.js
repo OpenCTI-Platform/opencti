@@ -58,8 +58,8 @@ describe('StixCyberObservable resolver standard behavior', () => {
     // Create the stixCyberObservable
     const STIX_OBSERVABLE_TO_CREATE = {
       type: 'IPv4-Addr',
+      stix_id: stixCyberObservableStixId,
       IPv4Addr: {
-        stix_id: stixCyberObservableStixId,
         value: '8.8.8.8',
       },
     };

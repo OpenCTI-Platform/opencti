@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, map, propOr, filter,
+  compose, map, propOr, filter, split,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import { version as uuidVersion } from 'uuid';
@@ -86,7 +86,7 @@ class StixDomainObjectOverview extends Component {
               <pre style={{ margin: 0 }}>
                 {stixDomainObject.stix_ids.length > 0
                   ? filter(
-                    (n) => uuidVersion(n) !== 1,
+                    (n) => uuidVersion(split('--', n)[1]) !== 1,
                     stixDomainObject.stix_ids,
                   ).map((stixId) => `${stixId}\n`)
                   : '-'}
