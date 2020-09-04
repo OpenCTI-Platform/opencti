@@ -12,7 +12,6 @@ import IconButton from '@material-ui/core/IconButton';
 import { Domain, LinkOff } from '@material-ui/icons';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { truncate } from '../../../../utils/String';
 import AddSubSector from './AddSubSector';
 import { addSubSectorsMutationRelationDelete } from './AddSubSectorsLines';
 import { commitMutation } from '../../../../relay/environment';
