@@ -10,8 +10,8 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import AttackPatternPopover from './AttackPatternPopover';
-import AttackPatternKnowledgeBar from './AttackPatternKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const styles = () => ({
   container: {
@@ -23,24 +23,36 @@ const styles = () => ({
 class AttackPatternKnowledgeComponent extends Component {
   render() {
     const { classes, attackPattern } = this.props;
-    const link = `/dashboard/techniques/attack_patterns/${attackPattern.id}/knowledge`;
+    const link = `/dashboard/arsenal/attack_patterns/${attackPattern.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
         />
-        <AttackPatternKnowledgeBar attackPatternId={attackPattern.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'tools',
+            'vulnerabilities',
+            'malwares',
+            'sightings',
+          ]}
+        />
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/relations/:relationId"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship entityId={attackPattern.id} {...routeProps} />
           )}
         />
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/overview"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/overview"
           render={(routeProps) => (
             <StixDomainObjectKnowledge
               stixDomainObjectId={attackPattern.id}
@@ -51,7 +63,21 @@ class AttackPatternKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/intrusion_sets"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/threat_actors"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={attackPattern.id}
+              relationshipType="uses"
+              targetStixDomainObjectTypes={['Threat-Actor']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/intrusion_sets"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
@@ -65,7 +91,7 @@ class AttackPatternKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/campaigns"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/campaigns"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
@@ -80,7 +106,7 @@ class AttackPatternKnowledgeComponent extends Component {
 
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/incidents"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
@@ -94,7 +120,7 @@ class AttackPatternKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/malwares"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
@@ -108,7 +134,7 @@ class AttackPatternKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/tools"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
@@ -122,7 +148,7 @@ class AttackPatternKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/techniques/attack_patterns/:attackPatternId/knowledge/vulnerabilities"
+          path="/dashboard/arsenal/attack_patterns/:attackPatternId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}

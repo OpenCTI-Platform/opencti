@@ -27,7 +27,7 @@ export const stringToColour = (str) => {
 
 export const addLabel = async (user, label) => {
   const finalLabel = pipe(
-    assoc('label', label.value.toLowerCase()),
+    assoc('value', label.value.toLowerCase()),
     assoc('color', label.color ? label.color : stringToColour(label.value.toLowerCase()), label)
   )(label);
   const created = await createEntity(user, finalLabel, ENTITY_TYPE_LABEL, { noLog: true });
