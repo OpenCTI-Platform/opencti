@@ -4,6 +4,7 @@ import {
   compose, map, propOr, filter,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
+import { version as uuidVersion } from 'uuid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
@@ -85,7 +86,7 @@ class StixDomainObjectOverview extends Component {
               <pre style={{ margin: 0 }}>
                 {stixDomainObject.stix_ids.length > 0
                   ? filter(
-                    (n) => !n.startsWith('00000000'),
+                    (n) => uuidVersion(n) !== 1,
                     stixDomainObject.stix_ids,
                   ).map((stixId) => `${stixId}\n`)
                   : '-'}

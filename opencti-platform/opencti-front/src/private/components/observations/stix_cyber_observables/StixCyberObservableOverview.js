@@ -8,6 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
+import { version as uuidVersion } from 'uuid';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemCreator from '../../../../components/ItemCreator';
@@ -80,7 +81,7 @@ class StixCyberObservableOverview extends Component {
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
                 {filter(
-                  (n) => !n.startsWith('00000000'),
+                  (n) => uuidVersion(n) !== 1,
                   stixCyberObservable.stix_ids,
                 ).length > 0
                   ? stixCyberObservable.stix_ids.map((stixId) => `${stixId}\n`)

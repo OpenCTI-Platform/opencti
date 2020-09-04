@@ -50,6 +50,7 @@
     "subscriptions-transport-ws": "^0.9.18",
     "typeface-roboto": "^0.0.75",
     "uuid": "^8.3.0",
+    "uuid-time": "^1.0.0",
     "yup": "^0.29.3"
   },
   "devDependencies": {

@@ -125,13 +125,12 @@ export const convertDataToStix = async (data, eventType = null, eventExtraData =
 
 export const mergeStixIds = (ids, existingIds) => {
   const wIds = Array.isArray(ids) ? ids : [ids];
-  // If new id is version 1, just keep the last 5
   const data = R.map((stixId) => {
     const segments = stixId.split('--');
     const [, uuid] = segments;
     const isTransient = uuidVersion(uuid) === 1;
     const timestamp = isTransient ? uuidTime.v1(uuid) : null;
-    return { id: stixId, uuid, timestamp, date: new Date(timestamp) };
+    return { id: stixId, uuid, timestamp };
   }, existingIds);
   const standardIds = R.filter((d) => !d.timestamp, data);
   const transientIds = R.filter((d) => d.timestamp, data);
@@ -144,7 +143,7 @@ export const mergeStixIds = (ids, existingIds) => {
       if (uuidVersion(newUuid) !== 1) {
         standardIds.push({ id });
       } else {
-        orderedTransient.unshift({ id, date: new Date(uuidTime.v1(newUuid)) }); // Add the new element in first
+        orderedTransient.unshift({ id }); // Add the new element in first
       }
     }
   }
