@@ -287,7 +287,7 @@ class OpenCTIStix2:
                         id=object_marking_ref
                     )
                     if object_marking_ref_result is not None:
-                        self.mapping_cache[object_marking_ref] = {
+                        self.mapping_cache[object_marking_wref] = {
                             "id": object_marking_ref_result["id"],
                             "type": object_marking_ref_result["entity_type"],
                         }
@@ -345,7 +345,9 @@ class OpenCTIStix2:
                 if object_ref in self.mapping_cache:
                     object_ref_result = self.mapping_cache[object_ref]
                 elif "relationship" in object_ref:
-                    object_ref_result = self.opencti.stix_relation.read(id=object_ref)
+                    object_ref_result = self.opencti.stix_core_relationship.read(
+                        id=object_ref
+                    )
                     if object_ref_result is not None:
                         self.mapping_cache[object_ref] = {
                             "id": object_ref_result["id"],
@@ -1178,8 +1180,8 @@ class OpenCTIStix2:
                 uuids = uuids + [x["id"] for x in entity_object_bundle]
                 result = result + entity_object_bundle
             for relation_object in relations_to_get:
-                relation_object_data = self.opencti.stix_relation.to_stix2(
-                    id=relation_object["id"]
+                relation_object_data = self.prepare_export(
+                    self.opencti.stix_core_relationship.read(id=relation_object["id"])
                 )
                 relation_object_bundle = self.filter_objects(
                     uuids, relation_object_data
