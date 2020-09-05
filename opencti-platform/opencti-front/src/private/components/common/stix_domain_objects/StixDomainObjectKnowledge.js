@@ -242,15 +242,15 @@ class StixDomainObjectKnowledge extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
+        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+          <Grid item={true} xs={6}>
             <StixCoreObjectReportsBars
               stixCoreObjectId={stixDomainObjectId}
               field="created-by.name"
               title={t('Distribution of sources')}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginBottom: 20 }}>
+          <Grid item={true} xs={6}>
             <StixCoreObjectStixCoreRelationshipsCloud
               stixCoreObjectId={stixDomainObjectId}
               stixCoreObjectType="Stix-Domain-Object"
@@ -262,7 +262,7 @@ class StixDomainObjectKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+          <Grid item={true} xs={6}>
             <StixCoreObjectStixDomainObjectsBars
               stixCoreObjectId={stixDomainObjectId}
               relationshipType="targets"
@@ -274,7 +274,7 @@ class StixDomainObjectKnowledge extends Component {
             />
           </Grid>
           {stixDomainObjectType === 'Sector' ? (
-            <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+            <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
               <SectorTargetedOrganizations
                 sectorId={stixDomainObjectId}
                 link={link}
