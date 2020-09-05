@@ -63,7 +63,21 @@ export const buildStixData = (entityData, extra = {}, onlyBase = false) => {
     finalData = pipe(dissoc('attribute_key'), assoc('key', entityData.attribute_key))(finalData);
   }
   if (onlyBase) {
-    return pick(['id', 'type', 'spec_version', 'source_ref', 'target_ref', 'start_time', 'stop_time'], finalData);
+    return pick(
+      [
+        'id',
+        'x_opencti_id',
+        'type',
+        'spec_version',
+        'source_ref',
+        'x_opencti_source_ref',
+        'target_ref',
+        'x_opencti_target_ref',
+        'start_time',
+        'stop_time',
+      ],
+      finalData
+    );
   }
   return finalData;
 };

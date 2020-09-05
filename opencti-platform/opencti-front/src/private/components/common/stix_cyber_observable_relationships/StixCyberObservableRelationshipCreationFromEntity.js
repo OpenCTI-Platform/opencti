@@ -424,6 +424,7 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
+            paginationKey="Pagination_stixCyberObservables"
             paginationOptions={paginationOptions}
             targetStixDomainObjectTypes={types}
           />

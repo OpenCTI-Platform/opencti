@@ -206,6 +206,7 @@ class StixCyberObservables extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCyberObservableCreation
+            paginationKey="Pagination_stixCyberObservables"
             paginationOptions={paginationOptions}
             openExports={openExports}
           />

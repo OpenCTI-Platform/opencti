@@ -27,21 +27,23 @@ const styles = () => ({
 
 class ContainerStixObjectsOrStixRelationshipsComponent extends Component {
   render() {
-    const { container, classes, t, paginationOptions } = this.props;
+    const {
+      container, classes, t, paginationOptions,
+    } = this.props;
     const dataColumns = {
       entity_type: {
         label: 'Type',
-        width: '15%',
+        width: '20%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '40%',
+        width: '45%',
         isSortable: true,
       },
       created_at: {
         label: 'Creation date',
-        width: '20%',
+        width: '15%',
         isSortable: true,
       },
       objectMarking: {

@@ -93,9 +93,7 @@ class XOpenCTIXOpenCTIIncidentPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push(
-          '/dashboard/threats/x_opencti_XOpenCTIIncidents',
-        );
+        this.props.history.push('/dashboard/events/incidents');
       },
     });
   }
@@ -143,7 +141,7 @@ class XOpenCTIXOpenCTIIncidentPopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this XOpenCTIIncident?')}
+              {t('Do you want to delete this incident?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>

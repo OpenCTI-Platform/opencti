@@ -62,7 +62,7 @@ class ContainerStixDomainObjectsLines extends Component {
             containerObjects={pathOr([], ['objects', 'edges'], container)}
             paginationOptions={paginationOptions}
             withPadding={true}
-            targetStiXCoreObjectTypes={['Stix-Domain-Object']}
+            targetStixCoreObjectTypes={['Stix-Domain-Object']}
           />
         </Security>
       </div>

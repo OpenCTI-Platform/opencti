@@ -21,7 +21,7 @@ import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   container: {
-    padding: '0 0 20px 0',
+    padding: '20px 0 0 0',
   },
   expansionPanel: {
     backgroundColor: '#193E45',
@@ -84,7 +84,6 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
     );
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
-
     return (
       <div className={classes.container}>
         {stixCyberObservablesTypes.map((type) => (
@@ -123,7 +122,10 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
                     </ListItemIcon>
                     <ListItemText
                       primary={stixCyberObservable.observable_value}
-                      secondary={truncate(stixCyberObservable.x_opencti_description, 100)}
+                      secondary={truncate(
+                        stixCyberObservable.x_opencti_description,
+                        100,
+                      )}
                     />
                   </ListItem>
                 ))}
@@ -155,14 +157,14 @@ export const stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuer
     $orderMode: OrderingMode
   ) {
     ...StixCoreRelationshipCreationFromEntityStixCyberObservablesLines_data
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -171,17 +173,17 @@ const StixCoreRelationshipCreationFromEntityStixCyberObservablesLines = createPa
   {
     data: graphql`
       fragment StixCoreRelationshipCreationFromEntityStixCyberObservablesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCyberObservablesOrdering"
+          defaultValue: created_at
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCyberObservables(
           search: $search
           types: $types

@@ -77,7 +77,10 @@ class ContainerStixObjectOrStixRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name}
+                {node.name
+                  || node.observable_value
+                  || node.attribute_abstract
+                  || node.opinion}
               </div>
               <div
                 className={classes.bodyItem}

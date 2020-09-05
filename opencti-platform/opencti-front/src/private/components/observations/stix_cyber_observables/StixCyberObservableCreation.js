@@ -30,7 +30,6 @@ import { ConnectionHandler } from 'relay-runtime';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import Dialog from '@material-ui/core/Dialog';
-import DialogActions from '@material-ui/core/DialogActions';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -41,7 +40,6 @@ import SwitchField from '../../../../components/SwitchField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import TypesField from '../TypesField';
 import {
   stixCyberObservablesLinesAttributesQuery,
   stixCyberObservablesLinesSubTypesQuery,
@@ -234,7 +232,35 @@ const stixCyberObservableMutation = graphql`
       XOpenCTIText: $XOpenCTIText
       XOpenCTIUserAgent: $XOpenCTIUserAgent
     ) {
-      ...StixCyberObservableLine_node
+      id
+      entity_type
+      observable_value
+      x_opencti_description
+      created_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
     }
   }
 `;
@@ -245,11 +271,19 @@ const stixCyberObservableValidation = (t) => Yup.object().shape({
   createIndicator: Yup.boolean(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+const sharedUpdater = (
+  store,
+  userId,
+  paginationKey,
+  paginationOptions,
+  newEdge,
+) => {
   const userProxy = store.get(userId);
+  console.log(paginationOptions);
+  console.log(paginationKey);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixCyberObservables',
+    paginationKey,
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -351,6 +385,7 @@ class StixCyberObservableCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
+          this.props.paginationKey,
           this.props.paginationOptions,
           newEdge,
         );
@@ -368,7 +403,7 @@ class StixCyberObservableCreation extends Component {
     this.handleClose();
   }
 
-  renderClassicList() {
+  renderList() {
     const { t } = this.props;
     return (
       <QueryRenderer
@@ -405,7 +440,7 @@ class StixCyberObservableCreation extends Component {
     );
   }
 
-  renderClassicForm() {
+  renderForm() {
     const { type } = this.state;
     const { classes, t } = this.props;
     return (
@@ -429,6 +464,8 @@ class StixCyberObservableCreation extends Component {
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {
                 initialValues[attribute.value] = null;
+              } else if (includes(attribute.value, booleanAttributes)) {
+                initialValues[attribute.value] = false;
               } else if (attribute.value === 'hashes') {
                 initialValues.hashes_MD5 = '';
                 initialValues['hashes_SHA-1'] = '';
@@ -628,7 +665,7 @@ class StixCyberObservableCreation extends Component {
             <Typography variant="h6">{t('Create an observable')}</Typography>
           </div>
           <div className={classes.container}>
-            {!type ? this.renderClassicList() : this.renderClassicForm()}
+            {!type ? this.renderList() : this.renderForm()}
           </div>
         </Drawer>
       </div>
@@ -636,9 +673,8 @@ class StixCyberObservableCreation extends Component {
   }
 
   renderContextual() {
-    const {
-      t, classes, inputValue, display,
-    } = this.props;
+    const { type } = this.state;
+    const { t, classes, display } = this.props;
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab
@@ -649,88 +685,16 @@ class StixCyberObservableCreation extends Component {
         >
           <Add />
         </Fab>
-        <Formik
-          initialValues={{
-            type: '',
-            observable_value: inputValue,
-            description: '',
-            createdBy: '',
-            objectMarking: [],
-          }}
-          validationSchema={stixCyberObservableValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.onReset.bind(this)}
+        <Dialog
+          open={this.state.open}
+          onClose={this.handleClose.bind(this)}
+          fullWidth={true}
         >
-          {({
-            submitForm,
-            handleReset,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
-            <Form>
-              <Dialog
-                open={this.state.open}
-                onClose={this.handleClose.bind(this)}
-                fullWidth={true}
-              >
-                <DialogTitle>{t('Create an entity')}</DialogTitle>
-                <DialogContent>
-                  <TypesField
-                    name="type"
-                    label={t('Observable type')}
-                    containerstyle={{ width: '100%' }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="observable_value"
-                    label={t('Observable value')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="primary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
+          <DialogTitle>{t('Create an observable')}</DialogTitle>
+          <DialogContent style={{ paddingTop: 0 }}>
+            {!type ? this.renderList() : this.renderForm()}
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -745,6 +709,7 @@ class StixCyberObservableCreation extends Component {
 }
 
 StixCyberObservableCreation.propTypes = {
+  paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,

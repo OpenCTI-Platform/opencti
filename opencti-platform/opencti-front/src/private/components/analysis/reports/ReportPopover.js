@@ -89,12 +89,12 @@ class ReportPopover extends Component {
     commitMutation({
       mutation: ReportPopoverDeletionMutation,
       variables: {
-        id: this.props.reportId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/reports/all');
+        this.props.history.push('/dashboard/analysis/reports');
       },
     });
   }

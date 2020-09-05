@@ -62,7 +62,7 @@ class ContainerStixCyberObservablesLines extends Component {
             containerObjects={pathOr([], ['objects', 'edges'], container)}
             paginationOptions={paginationOptions}
             withPadding={true}
-            targetStiXCoreObjectTypes={['Stix-Cyber-Observable']}
+            targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
           />
         </Security>
       </div>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, includes } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import IconButton from '@material-ui/core/IconButton';
@@ -19,6 +19,7 @@ import ContainerAddStixCoreObjectsLines, {
   containerAddStixCoreObjectsLinesQuery,
 } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -100,10 +101,11 @@ class ContainerAddStixCoreObjects extends Component {
       defaultCreatedBy,
       defaultMarkingDefinitions,
       containerStixCoreObjects,
-      targetStiXCoreObjectTypes,
+      targetStixCoreObjectTypes,
       simple,
     } = this.props;
     const paginationOptions = {
+      types: targetStixCoreObjectTypes,
       search: this.state.search,
       orderBy: 'created_at',
       orderMode: 'desc',
@@ -162,13 +164,7 @@ class ContainerAddStixCoreObjects extends Component {
           <div className={classes.container}>
             <QueryRenderer
               query={containerAddStixCoreObjectsLinesQuery}
-              variables={{
-                types: targetStiXCoreObjectTypes,
-                search: this.state.search,
-                orderBy: 'created_at',
-                orderMode: 'desc',
-                count: 100,
-              }}
+              variables={{ count: 100, ...paginationOptions }}
               render={({ props }) => {
                 if (props) {
                   return (
@@ -212,14 +208,35 @@ class ContainerAddStixCoreObjects extends Component {
             />
           </div>
         </Drawer>
-        <StixDomainObjectCreation
-          display={this.state.open}
-          contextual={true}
-          inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-          defaultCreatedBy={defaultCreatedBy}
-          defaultMarkingDefinitions={defaultMarkingDefinitions}
-        />
+        {targetStixCoreObjectTypes
+        && includes('Stix-Domain-Object', targetStixCoreObjectTypes)
+        && !includes('Stix-Cyber-Observable', targetStixCoreObjectTypes) ? (
+          <StixDomainObjectCreation
+            display={this.state.open}
+            contextual={true}
+            inputValue={this.state.search}
+            paginationOptions={paginationOptions}
+            defaultCreatedBy={defaultCreatedBy}
+            defaultMarkingDefinitions={defaultMarkingDefinitions}
+          />
+          ) : (
+            ''
+          )}
+        {targetStixCoreObjectTypes
+        && includes('Stix-Cyber-Observable', targetStixCoreObjectTypes)
+        && !includes('Stix-Domain-Object', targetStixCoreObjectTypes) ? (
+          <StixCyberObservableCreation
+            display={this.state.open}
+            contextual={true}
+            inputValue={this.state.search}
+            paginationKey="Pagination_stixCoreObjects"
+            paginationOptions={paginationOptions}
+            defaultCreatedBy={defaultCreatedBy}
+            defaultMarkingDefinitions={defaultMarkingDefinitions}
+          />
+          ) : (
+            ''
+          )}
       </div>
     );
   }
@@ -237,7 +254,7 @@ ContainerAddStixCoreObjects.propTypes = {
   defaultMarkingDefinitions: PropTypes.array,
   containerStixCoreObjects: PropTypes.array,
   simple: PropTypes.bool,
-  targetStiXCoreObjectTypes: PropTypes.array,
+  targetStixCoreObjectTypes: PropTypes.array,
 };
 
 export default compose(
