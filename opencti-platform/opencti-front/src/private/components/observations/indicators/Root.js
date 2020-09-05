@@ -108,7 +108,7 @@ class RootIndicator extends Component {
                         <IndicatorHeader indicator={props.indicator} />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={props.indicator.standard_id}
+                          stixCoreObjectId={indicatorId}
                         />
                       </React.Fragment>
                     )}

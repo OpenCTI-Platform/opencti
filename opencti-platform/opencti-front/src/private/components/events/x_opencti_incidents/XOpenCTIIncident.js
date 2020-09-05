@@ -79,7 +79,7 @@ class XOpenCTIIncidentComponent extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={xOpenCTIIncident.standard_id}
+              stixCoreObjectId={xOpenCTIIncident.id}
             />
           </Grid>
         </Grid>

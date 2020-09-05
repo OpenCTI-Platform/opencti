@@ -186,9 +186,7 @@ class RootIntrusionSet extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={
-                            props.intrusionSet.standard_id
-                          }
+                          stixCoreObjectId={intrusionSetId}
                         />
                       </React.Fragment>
                     )}

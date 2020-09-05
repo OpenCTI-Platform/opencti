@@ -76,9 +76,7 @@ class ToolComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={tool.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={tool.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={tool.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

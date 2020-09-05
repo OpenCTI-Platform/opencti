@@ -157,7 +157,7 @@ class RootObservedData extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityStandardId={props.observedData.standard_id}
+                          entityStandardId={observedDataId}
                         />
                       </React.Fragment>
                     )}

@@ -186,9 +186,7 @@ class RootInfrastructure extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={
-                            props.infrastructure.standard_id
-                          }
+                          stixCoreObjectId={infrastructureId}
                         />
                       </React.Fragment>
                     )}

@@ -34,7 +34,7 @@ const vulnerabilityQuery = graphql`
   query RootVulnerabilityQuery($id: String!) {
     vulnerability(id: $id) {
       id
-        standard_id
+      standard_id
       name
       ...Vulnerability_vulnerability
       ...VulnerabilityReports_vulnerability
@@ -175,7 +175,7 @@ class RootVulnerability extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={props.vulnerability.standard_id}
+                          stixCoreObjectId={vulnerabilityId}
                         />
                       </React.Fragment>
                     )}

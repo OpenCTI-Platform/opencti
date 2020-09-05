@@ -56,9 +56,7 @@ class ReportComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={report.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={report.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={report.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

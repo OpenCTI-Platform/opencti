@@ -120,7 +120,7 @@ class RootOpinion extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={props.opinion.standard_id}
+                          stixCoreObjectId={opinionId}
                         />
                       </React.Fragment>
                     )}

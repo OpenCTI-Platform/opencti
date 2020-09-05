@@ -36,6 +36,7 @@ export const buildStixData = (entityData, extra = {}, onlyBase = false) => {
   const type = entityData.entity_type;
   let finalData = pipe(
     assoc('id', entityData.standard_id),
+    assoc('x_opencti_id', entityData.internal_id),
     assoc('type', convertTypeToStixType(type)),
     dissoc('standard_id'),
     dissoc('internal_id'),

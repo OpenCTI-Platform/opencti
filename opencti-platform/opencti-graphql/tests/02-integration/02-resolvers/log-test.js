@@ -41,7 +41,7 @@ describe('Note resolver standard behavior', () => {
       query: LIST_QUERY,
       variables: {
         first: 100,
-        filters: [{ key: 'entity_id', values: [identity.standard_id] }],
+        filters: [{ key: 'entity_id', values: [identity.id] }],
       },
     });
     expect(queryResult.data.logs.edges.length).toBeGreaterThanOrEqual(1);
@@ -52,7 +52,7 @@ describe('Note resolver standard behavior', () => {
       query: LIST_QUERY,
       variables: {
         first: 100,
-        filters: [{ key: 'connection_id', values: [identity.standard_id], operator: 'wildcard' }],
+        filters: [{ key: 'connection_id', values: [identity.id], operator: 'wildcard' }],
       },
     });
     expect(queryResult.data.logs.edges.length).toBeGreaterThanOrEqual(1);

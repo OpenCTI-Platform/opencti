@@ -58,9 +58,7 @@ class ObservedDataComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={observedData.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={observedData.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

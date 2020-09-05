@@ -149,7 +149,7 @@ class RootSector extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={props.sector.standard_id}
+                          stixCoreObjectId={sectorId}
                         />
                       </React.Fragment>
                     )}

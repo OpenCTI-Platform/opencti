@@ -76,9 +76,7 @@ class SectorComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={sector.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={sector.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={sector.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

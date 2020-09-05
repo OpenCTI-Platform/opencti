@@ -63,9 +63,7 @@ class NoteComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={note.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={note.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={note.id} />
           </Grid>
         </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

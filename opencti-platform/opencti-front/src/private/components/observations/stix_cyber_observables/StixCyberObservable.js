@@ -79,7 +79,7 @@ class StixCyberObservableComponent extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={stixCyberObservable.standard_id}
+              stixCoreObjectId={stixCyberObservable.id}
             />
           </Grid>
         </Grid>

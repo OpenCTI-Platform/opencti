@@ -78,9 +78,7 @@ class ThreatActorComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={threatActor.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={threatActor.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

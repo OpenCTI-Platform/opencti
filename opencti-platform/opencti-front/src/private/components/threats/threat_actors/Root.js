@@ -184,9 +184,7 @@ class RootThreatActor extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={
-                            props.threatActor.standard_id
-                          }
+                          stixCoreObjectId={threatActorId}
                         />
                       </React.Fragment>
                     )}

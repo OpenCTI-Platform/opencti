@@ -66,9 +66,7 @@ class OpinionComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={opinion.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={opinion.id} />
           </Grid>
         </Grid>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>

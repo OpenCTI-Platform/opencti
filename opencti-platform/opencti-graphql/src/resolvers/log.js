@@ -10,7 +10,7 @@ const logResolvers = {
     event_user: (log) => findById(log.event_user),
   },
   LogsFilter: {
-    entity_id: 'event_data.id',
+    entity_id: 'event_data.x_opencti_id',
     connection_id: 'event_data.*_ref',
   },
 };

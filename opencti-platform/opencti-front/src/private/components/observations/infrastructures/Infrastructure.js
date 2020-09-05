@@ -78,9 +78,7 @@ class InfrastructureComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={infrastructure.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={infrastructure.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

@@ -78,9 +78,7 @@ class IntrusionSetComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={intrusionSet.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={intrusionSet.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
@@ -121,6 +119,7 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

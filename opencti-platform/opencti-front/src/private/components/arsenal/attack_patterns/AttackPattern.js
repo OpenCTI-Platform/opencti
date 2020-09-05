@@ -78,9 +78,7 @@ class AttackPatternComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={attackPattern.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={attackPattern.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

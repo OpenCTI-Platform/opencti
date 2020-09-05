@@ -167,7 +167,7 @@ class RootTool extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={props.tool.standard_id}
+                          stixCoreObjectId={toolId}
                         />
                       </React.Fragment>
                     )}

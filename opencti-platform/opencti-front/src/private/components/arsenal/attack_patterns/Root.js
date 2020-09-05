@@ -186,9 +186,7 @@ class RootAttackPattern extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={
-                            props.attackPattern.standard_id
-                          }
+                          stixCoreObjectId={attackPatternId}
                         />
                       </React.Fragment>
                     )}

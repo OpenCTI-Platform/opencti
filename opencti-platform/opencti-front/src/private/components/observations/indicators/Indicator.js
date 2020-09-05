@@ -72,9 +72,7 @@ class IndicatorComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={indicator.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={indicator.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={indicator.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes

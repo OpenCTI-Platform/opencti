@@ -57,7 +57,7 @@ class StixCoreObjectHistoryLinesComponent extends Component {
 }
 
 StixCoreObjectHistoryLinesComponent.propTypes = {
-  stixCoreObjectStandardId: PropTypes.string,
+  stixCoreObjectId: PropTypes.string,
   isRelationLog: PropTypes.bool,
   data: PropTypes.object,
   classes: PropTypes.object,

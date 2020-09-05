@@ -9,7 +9,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 
 class StixCoreObjectLatestHistory extends Component {
   render() {
-    const { t, stixCoreObjectStandardId } = this.props;
+    const { t, stixCoreObjectId } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -19,7 +19,7 @@ class StixCoreObjectLatestHistory extends Component {
           query={stixCoreObjectHistoryLinesQuery}
           variables={{
             filters: [
-              { key: 'entity_id', values: [stixCoreObjectStandardId] },
+              { key: 'entity_id', values: [stixCoreObjectId] },
               {
                 key: 'event_type',
                 values: ['create', 'update', 'update_add', 'update_remove'],
@@ -33,7 +33,7 @@ class StixCoreObjectLatestHistory extends Component {
             if (props) {
               return (
                 <StixCoreObjectHistoryLines
-                  stixCoreObjectStandardId={stixCoreObjectStandardId}
+                  stixCoreObjectId={stixCoreObjectId}
                   data={props}
                   isRelationLog={false}
                 />
@@ -49,7 +49,7 @@ class StixCoreObjectLatestHistory extends Component {
 
 StixCoreObjectLatestHistory.propTypes = {
   t: PropTypes.func,
-  stixCoreObjectStandardId: PropTypes.string,
+  stixCoreObjectId: PropTypes.string,
 };
 
 export default inject18n(StixCoreObjectLatestHistory);

@@ -132,9 +132,7 @@ class RootStixCyberObservable extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectStandardId={
-                            props.stixCyberObservable.standard_id
-                          }
+                          stixCoreObjectId={observableId}
                         />
                       </React.Fragment>
                     )}

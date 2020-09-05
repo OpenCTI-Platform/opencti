@@ -76,9 +76,7 @@ class CampaignComponent extends Component {
             <StixCoreObjectExternalReferences stixCoreObjectId={campaign.id} />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectStandardId={campaign.standard_id}
-            />
+            <StixCoreObjectLatestHistory stixCoreObjectId={campaign.id} />
           </Grid>
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
