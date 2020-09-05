@@ -287,7 +287,7 @@ class OpenCTIStix2:
                         id=object_marking_ref
                     )
                     if object_marking_ref_result is not None:
-                        self.mapping_cache[object_marking_wref] = {
+                        self.mapping_cache[object_marking_ref] = {
                             "id": object_marking_ref_result["id"],
                             "type": object_marking_ref_result["entity_type"],
                         }
