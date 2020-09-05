@@ -446,7 +446,7 @@ class StixCoreRelationshipContainer extends Component {
               <StixCoreObjectOrStixCoreRelationshipNotes
                 marginTop={55}
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
-                inputType="relationRefs"
+                isRelationship={true}
               />
             </div>
           )}

@@ -485,7 +485,12 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   renderSelectEntity() {
-    const { classes, t, targetStixDomainObjectTypes } = this.props;
+    const {
+      classes,
+      t,
+      targetStixDomainObjectTypes,
+      onlyObservables,
+    } = this.props;
     const stixDomainObjectsPaginationOptions = {
       search: this.state.search,
       types: targetStixDomainObjectTypes
@@ -670,19 +675,9 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes(
-                        'Stix-Cyber-Observable',
-                        fromEntity.parent_types,
-                      )
-                        ? t(`observable_${fromEntity.entity_type}`)
-                        : t(
-                          `entity_${
-                            fromEntity.entity_type === 'stix_relation'
-                              || fromEntity.entity_type === 'stix-relation'
-                              ? fromEntity.parent_types[0]
-                              : fromEntity.entity_type
-                          }`,
-                        )}
+                      {fromEntity.relationship_type
+                        ? t(`relationship_${fromEntity.entity_type}`)
+                        : t(`entity_${fromEntity.entity_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -732,16 +727,9 @@ class StixCoreRelationshipCreationFromRelation extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {includes('Stix-Cyber-Observable', toEntity.parent_types)
-                        ? t(`observable_${toEntity.entity_type}`)
-                        : t(
-                          `entity_${
-                            toEntity.entity_type === 'stix_relation'
-                              || toEntity.entity_type === 'stix-relation'
-                              ? toEntity.parent_types[0]
-                              : toEntity.entity_type
-                          }`,
-                        )}
+                      {toEntity.relationship_type
+                        ? t(`relationship_${toEntity.entity_type}`)
+                        : t(`entity_${toEntity.entity_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -914,11 +902,13 @@ class StixCoreRelationshipCreationFromRelation extends Component {
             query={stixCoreRelationshipCreationFromRelationQuery}
             variables={{ id: entityId }}
             render={({ props }) => {
-              if (props && props.stixEntity) {
+              if (props && props.stixCoreRelationship) {
                 return (
                   <div style={{ height: '100%' }}>
                     {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1 ? this.renderForm(props.stixEntity) : ''}
+                    {step === 1
+                      ? this.renderForm(props.stixCoreRelationship)
+                      : ''}
                   </div>
                 );
               }
@@ -933,6 +923,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
 
 StixCoreRelationshipCreationFromRelation.propTypes = {
   entityId: PropTypes.string,
+  onlyObservables: PropTypes.bool,
   isRelationReversed: PropTypes.bool,
   targetStixDomainObjectTypes: PropTypes.array,
   allowedRelationshipTypes: PropTypes.array,

@@ -97,16 +97,16 @@ class ThreatActorDetailsComponent extends Component {
                 {t('Goals')}
               </Typography>
               <List>
-                {threatActor.goals
-                  ? threatActor.goals
-                  : [t('Unknown')].map((goal) => (
-                      <ListItem key={goal} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <BullseyeArrow />
-                        </ListItemIcon>
-                        <ListItemText primary={goal} />
-                      </ListItem>
-                  ))}
+                {(threatActor.goals ? threatActor.goals : [t('Unknown')]).map(
+                  (goal) => (
+                    <ListItem key={goal} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <BullseyeArrow />
+                      </ListItemIcon>
+                      <ListItemText primary={goal} />
+                    </ListItem>
+                  ),
+                )}
               </List>
             </Grid>
             <Grid item={true} xs={6}>

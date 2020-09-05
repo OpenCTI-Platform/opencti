@@ -145,7 +145,11 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
-                          primary={stixDomainObject.name}
+                          primary={
+                            stixDomainObject.name
+                            || stixDomainObject.attribute_abstract
+                            || stixDomainObject.opinion
+                          }
                           secondary={truncate(
                             stixDomainObject.description,
                             100,
@@ -187,14 +191,14 @@ export const stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery
     $orderMode: OrderingMode
   ) {
     ...StixCoreRelationshipCreationFromRelationStixDomainObjectsLines_data
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -203,14 +207,14 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
   {
     data: graphql`
       fragment StixCoreRelationshipCreationFromRelationStixDomainObjectsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixDomainObjects(
           search: $search
           types: $types
@@ -227,6 +231,15 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
               ... on AttackPattern {
                 name
                 description
+              }
+              ... on Note {
+                attribute_abstract
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Report {
+                name
               }
               ... on Campaign {
                 name
