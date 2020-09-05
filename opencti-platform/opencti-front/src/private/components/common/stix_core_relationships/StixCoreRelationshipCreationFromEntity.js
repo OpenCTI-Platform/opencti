@@ -321,20 +321,17 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     const { targetEntity } = this.state;
     const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
     const toEntityId = isRelationReversed ? entityId : targetEntity.id;
+    console.log(values);
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
       assoc(
         'start_time',
-        values.start_time && values.start_time.length > 0
-          ? parse(values.start_time).format()
-          : null,
+        values.start_time ? parse(values.start_time).format() : null,
       ),
       assoc(
         'stop_time',
-        values.stop_time && values.stop_time.length > 0
-          ? parse(values.stop_time).format()
-          : null,
+        values.stop_time ? parse(values.stop_time).format() : null,
       ),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),

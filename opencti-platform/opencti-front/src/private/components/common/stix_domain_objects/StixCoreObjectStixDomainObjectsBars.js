@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, map, assoc } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import BarChart from 'recharts/lib/chart/BarChart';
 import XAxis from 'recharts/lib/cartesian/XAxis';
@@ -31,65 +31,164 @@ const styles = () => ({
   },
 });
 
-const stixCoreObjectReportsBarsDistributionQuery = graphql`
-  query StixCoreObjectReportsBarsDistributionQuery(
-    $objectId: String
+const stixCoreObjectStixDomainObjectsBarsDistributionQuery = graphql`
+  query StixCoreObjectStixDomainObjectsBarsDistributionQuery(
+    $fromId: String!
+    $relationship_type: String!
+    $toTypes: [String]
     $field: String!
     $operation: StatsOperation!
     $limit: Int
   ) {
-    reportsDistribution(
-      objectId: $objectId
+    stixCoreRelationshipsDistribution(
+      fromId: $fromId
+      relationship_type: $relationship_type
+      toTypes: $toTypes
       field: $field
       operation: $operation
       limit: $limit
     ) {
       label
       value
+      entity {
+        ... on BasicObject {
+          entity_type
+        }
+        ... on AttackPattern {
+          name
+          description
+        }
+        ... on Campaign {
+          name
+          description
+        }
+        ... on CourseOfAction {
+          name
+          description
+        }
+        ... on Individual {
+          name
+          description
+        }
+        ... on Organization {
+          name
+          description
+        }
+        ... on Sector {
+          name
+          description
+        }
+        ... on Indicator {
+          name
+          description
+        }
+        ... on Infrastructure {
+          name
+          description
+        }
+        ... on IntrusionSet {
+          name
+          description
+        }
+        ... on Position {
+          name
+          description
+        }
+        ... on City {
+          name
+          description
+        }
+        ... on Country {
+          name
+          description
+        }
+        ... on Region {
+          name
+          description
+        }
+        ... on Malware {
+          name
+          description
+        }
+        ... on ThreatActor {
+          name
+          description
+        }
+        ... on Tool {
+          name
+          description
+        }
+        ... on Vulnerability {
+          name
+          description
+        }
+        ... on XOpenCTIIncident {
+          name
+          description
+        }
+      }
     }
   }
 `;
 
-class StixCoreObjectReportsBars extends Component {
+class StixCoreObjectStixDomainObjectsBars extends Component {
   tickFormatter(title) {
-    return truncate(title, 10);
+    return truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
   }
 
   render() {
     const {
-      t, classes, stixCoreObjectId, field, title,
+      t,
+      classes,
+      stixCoreObjectId,
+      relationshipType,
+      toTypes,
+      field,
+      title,
     } = this.props;
-    const reportsDistributionVariables = {
-      objectId: stixCoreObjectId,
-      field: field || 'report_types',
+    const stixDomainObjectsDistributionVariables = {
+      fromId: stixCoreObjectId,
+      relationship_type: relationshipType,
+      toTypes,
+      field: field || 'entity_type',
       operation: 'count',
       limit: 8,
     };
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Reports distribution')}
+          {title || t('StixDomainObjects distribution')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={stixCoreObjectReportsBarsDistributionQuery}
-            variables={reportsDistributionVariables}
+            query={stixCoreObjectStixDomainObjectsBarsDistributionQuery}
+            variables={stixDomainObjectsDistributionVariables}
             render={({ props }) => {
               if (
                 props
-                && props.reportsDistribution
-                && props.reportsDistribution.length > 0
+                && props.stixCoreRelationshipsDistribution
+                && props.stixCoreRelationshipsDistribution.length > 0
               ) {
+                const data = map(
+                  (n) => assoc(
+                    'label',
+                    `[${t(`entity_${n.entity.entity_type}`)}] ${
+                      n.entity.name
+                    }`,
+                    n,
+                  ),
+                  props.stixCoreRelationshipsDistribution,
+                );
                 return (
                   <ResponsiveContainer height={280} width="100%">
                     <BarChart
                       layout="vertical"
-                      data={props.reportsDistribution}
+                      data={data}
                       margin={{
                         top: 20,
                         right: 20,
                         bottom: 0,
-                        left: 20,
+                        left: 0,
                       }}
                     >
                       <XAxis
@@ -124,12 +223,14 @@ class StixCoreObjectReportsBars extends Component {
                         dataKey="value"
                         barSize={15}
                       >
-                        {props.reportsDistribution.map((entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={itemColor(entry.label)}
-                          />
-                        ))}
+                        {props.stixCoreRelationshipsDistribution.map(
+                          (entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={itemColor(entry.entity.entity_type)}
+                            />
+                          ),
+                        )}
                       </Bar>
                     </BarChart>
                   </ResponsiveContainer>
@@ -175,10 +276,14 @@ class StixCoreObjectReportsBars extends Component {
   }
 }
 
-StixCoreObjectReportsBars.propTypes = {
+StixCoreObjectStixDomainObjectsBars.propTypes = {
   stixCoreObjectId: PropTypes.string,
+  relationshipType: PropTypes.string,
+  relationshipType2: PropTypes.string,
+  toTypes: PropTypes.array,
   title: PropTypes.string,
   field: PropTypes.string,
+  field2: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
@@ -186,4 +291,4 @@ StixCoreObjectReportsBars.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectReportsBars);
+)(StixCoreObjectStixDomainObjectsBars);

@@ -2516,6 +2516,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parentSectors: SectorConnection
   subSectors: SectorConnection
   isSubSector: Boolean
+  targetedOrganizations: StixCoreRelationshipConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -7385,6 +7386,7 @@ type Query {
   stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixDomainObjectsDistribution(
     objectId: String
+    relationship_type: String!
     toTypes: [String]
     field: String!
     operation: StatsOperation!

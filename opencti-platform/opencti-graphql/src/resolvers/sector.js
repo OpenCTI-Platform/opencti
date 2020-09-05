@@ -1,4 +1,12 @@
-import { addSector, findAll, findById, isSubSector, subSectors, parentSectors } from '../domain/sector';
+import {
+  addSector,
+  findAll,
+  findById,
+  isSubSector,
+  subSectors,
+  parentSectors,
+  targetedOrganizations,
+} from '../domain/sector';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -20,6 +28,7 @@ const sectorResolvers = {
     parentSectors: (sector) => parentSectors(sector.id),
     subSectors: (sector) => subSectors(sector.id),
     isSubSector: (sector) => isSubSector(sector.id),
+    targetedOrganizations: (sector) => targetedOrganizations(sector.id),
   },
   SectorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

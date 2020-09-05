@@ -340,7 +340,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     });
   }
   const histoFilters = R.map((f) => {
-    const key = f.isRelation ? `${REL_INDEX_PREFIX}*.internal_id.keyword` : `${f.type}.keyword`;
+    const key = f.isRelation ? `${REL_INDEX_PREFIX}${f.type ? f.type : '*'}.internal_id.keyword` : `${f.type}.keyword`;
     return {
       multi_match: {
         fields: [key],

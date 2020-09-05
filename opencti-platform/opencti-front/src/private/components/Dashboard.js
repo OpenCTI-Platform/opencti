@@ -14,7 +14,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import { DescriptionOutlined } from '@material-ui/icons';
-import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
+import {
+  Database,
+  GraphOutline,
+  HexagonMultipleOutline,
+} from 'mdi-material-ui';
+import Cell from 'recharts/lib/component/Cell';
 import AreaChart from 'recharts/lib/chart/AreaChart';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
@@ -36,6 +41,8 @@ import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
+import { itemColor } from '../../utils/Colors';
+import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
   root: {
@@ -297,6 +304,10 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
 `;
 
 class Dashboard extends Component {
+  tickFormatter(title) {
+    return truncate(this.props.t(`entity_${title}`), 10);
+  }
+
   hexToRGB(hex, transp = 0.1) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -421,7 +432,10 @@ class Dashboard extends Component {
                           <div className={classes.number}>{n(total)}</div>
                           <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <HexagonMultipleOutline color="inherit" fontSize="large" />
+                            <HexagonMultipleOutline
+                              color="inherit"
+                              fontSize="large"
+                            />
                           </div>
                         </CardContent>
                       );
@@ -625,7 +639,7 @@ class Dashboard extends Component {
                                 top: 0,
                                 right: 0,
                                 bottom: 20,
-                                left: 20,
+                                left: 0,
                               }}
                             >
                               <XAxis
@@ -640,6 +654,7 @@ class Dashboard extends Component {
                                 type="category"
                                 angle={-30}
                                 textAnchor="end"
+                                tickFormatter={this.tickFormatter.bind(this)}
                               />
                               <CartesianGrid
                                 strokeDasharray="2 2"
@@ -660,8 +675,17 @@ class Dashboard extends Component {
                               <Bar
                                 fill={Theme.palette.primary.main}
                                 dataKey="value"
-                                barSize={20}
-                              />
+                                barSize={15}
+                              >
+                                {props.stixCyberObservablesDistribution.map(
+                                  (entry, index) => (
+                                    <Cell
+                                      key={`cell-${index}`}
+                                      fill={itemColor(entry.label)}
+                                    />
+                                  ),
+                                )}
+                              </Bar>
                             </BarChart>
                           </ResponsiveContainer>
                         </div>

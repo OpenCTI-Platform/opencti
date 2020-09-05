@@ -57,7 +57,7 @@ class SectorComponent extends Component {
           <Grid item={true} xs={6}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={sector.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/threats/threat_actors/${sector.id}/knowledge`}
+              stixObjectOrStixRelationshipLink={`/dashboard/entities/sectors/${sector.id}/knowledge`}
             />
           </Grid>
           <Grid item={true} xs={6}>

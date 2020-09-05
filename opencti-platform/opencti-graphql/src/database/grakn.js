@@ -650,7 +650,7 @@ export const listFromEntitiesThroughRelation = (toId, toType, relationType, from
     { paginationKey: 'from' }
   );
 };
-const listElements = async (baseQuery, elementKey, first, offset, args) => {
+export const listElements = async (baseQuery, elementKey, first, offset, args) => {
   const { orderBy = null, orderMode = 'asc', inferred = false, noCache = false } = args;
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
@@ -1125,6 +1125,10 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   }
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
+  if (field === ID_INTERNAL) {
+    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
+    return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
+  }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (options) => {
@@ -1182,6 +1186,10 @@ export const distributionEntitiesThroughRelations = async (options) => {
   const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
+  if (field === ID_INTERNAL) {
+    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
+    return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
+  }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 // endregion
@@ -1478,7 +1486,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (!R.isEmpty(esData)) {
       postOperations.push(elReplace(index, instance.internal_id, { doc: esData }));
     }
-    const noLogKeys = ['x_opencti_graph_data', 'updated_at', 'modified']
+    const noLogKeys = ['x_opencti_graph_data', 'updated_at', 'modified'];
     const dataToLogSend = R.filter((input) => !R.includes(input.key, noLogKeys), updatedInputs);
     if (!noLog && !R.isEmpty(dataToLogSend)) {
       const baseData = {
