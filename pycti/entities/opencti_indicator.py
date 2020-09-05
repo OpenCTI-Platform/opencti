@@ -302,6 +302,8 @@ class Indicator:
             and pattern is not None
             and x_opencti_main_observable_type is not None
         ):
+            if x_opencti_main_observable_type == "File":
+                x_opencti_main_observable_type = "StixFile"
             self.opencti.log("info", "Creating Indicator {" + name + "}.")
             query = """
                 mutation IndicatorAdd($input: IndicatorAddInput) {
