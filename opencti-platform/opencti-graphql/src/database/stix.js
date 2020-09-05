@@ -47,7 +47,9 @@ export const buildStixData = (entityData, extra = {}, onlyBase = false) => {
   if (isStixCoreRelationship(type)) {
     finalData = pipe(
       assoc('source_ref', extra.from ? extra.from.standard_id : null),
-      assoc('target_ref', extra.to ? extra.to.standard_id : null)
+      assoc('x_opencti_source_ref', extra.from ? extra.from.internal_id : null),
+      assoc('target_ref', extra.to ? extra.to.standard_id : null),
+      assoc('x_opencti_target_ref', extra.to ? extra.to.internal_id : null)
     )(finalData);
   }
   // Reserved keywords in Grakn
