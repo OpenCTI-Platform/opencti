@@ -6,8 +6,8 @@ import {
   map, keys, groupBy, assoc, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
 import AccordionSummary from '@material-ui/core/AccordionSummary';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -20,9 +20,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
-  container: {
-    padding: '20px 0 0 0',
-  },
   expansionPanel: {
     backgroundColor: '#193E45',
   },
@@ -73,7 +70,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
 
   render() {
     const {
-      t, classes, data, handleSelect,
+      t, classes, data, handleSelect, noPadding,
     } = this.props;
     const stixCyberObservablesNodes = map(
       (n) => n.node,
@@ -85,9 +82,9 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
     const stixCyberObservables = byType(stixCyberObservablesNodes);
     const stixCyberObservablesTypes = keys(stixCyberObservables);
     return (
-      <div className={classes.container}>
+      <div style={{ paddingTop: noPadding ? 0 : 20 }}>
         {stixCyberObservablesTypes.map((type) => (
-          <ExpansionPanel
+          <Accordion
             key={type}
             expanded={this.isExpanded(
               type,
@@ -105,9 +102,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
                 {stixCyberObservables[type].length} {t('observable(s)')}
               </Typography>
             </AccordionSummary>
-            <ExpansionPanelDetails
-              classes={{ root: classes.expansionPanelContent }}
-            >
+            <AccordionDetails classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
                 {stixCyberObservables[type].map((stixCyberObservable) => (
                   <ListItem
@@ -130,8 +125,8 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
                   </ListItem>
                 ))}
               </List>
-            </ExpansionPanelDetails>
-          </ExpansionPanel>
+            </AccordionDetails>
+          </Accordion>
         ))}
       </div>
     );
@@ -140,6 +135,7 @@ class StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer e
 
 StixCoreRelationshipCreationFromEntityStixCyberObservablesLinesContainer.propTypes = {
   handleSelect: PropTypes.func,
+  noPadding: PropTypes.bool,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
