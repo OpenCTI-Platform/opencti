@@ -398,6 +398,7 @@ StixDomainObjectHeader.propTypes = {
   viewAs: PropTypes.string,
   onViewAs: PropTypes.func,
   disablePopover: PropTypes.bool,
+  isOpenctiAlias: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(StixDomainObjectHeader);

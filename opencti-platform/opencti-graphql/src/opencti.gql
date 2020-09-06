@@ -988,7 +988,6 @@ define
     plays subtechnique-of_from,
     plays delivers_from,
     plays targets_from,
-    plays uses_from,
     plays subtechnique-of_to,
     plays indicates_to,
     plays mitigates_to,

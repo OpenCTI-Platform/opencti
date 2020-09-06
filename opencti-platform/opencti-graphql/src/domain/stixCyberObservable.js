@@ -194,7 +194,7 @@ export const addStixCyberObservable = async (user, input) => {
     throw FunctionalError(`Expecting variable ${graphQLType} in the input, got nothing.`);
   }
   // Convert hashes to dictionary if needed.
-  if (isStixCyberObservableHashedObservable(input.type)) {
+  if (isStixCyberObservableHashedObservable(input.type) && observableInput.hashes ) {
     const hashInputToJson = apiAttributeToComplexFormat('hashes', observableInput.hashes);
     observableInput = R.assoc('hashes', hashInputToJson, observableInput);
   }

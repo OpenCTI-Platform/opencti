@@ -28,7 +28,7 @@ class XOpenCTIXOpenCTIIncidents extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-x_opencti_XOpenCTIIncidents',
+      'view-x_opencti_incident',
     );
     this.state = {
       sortBy: propOr('created', 'sortBy', params),
@@ -45,7 +45,7 @@ class XOpenCTIXOpenCTIIncidents extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-x_opencti_XOpenCTIIncidents',
+      'view-x_opencti_incident',
       dissoc('filters', this.state),
     );
   }
@@ -125,8 +125,8 @@ class XOpenCTIXOpenCTIIncidents extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labels',
-          'markingDefinitions',
+          'labelledBy',
+          'markedBy',
           'created_start_date',
           'created_end_date',
           'createdBy',

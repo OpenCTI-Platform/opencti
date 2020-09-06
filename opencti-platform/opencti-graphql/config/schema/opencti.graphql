@@ -1814,6 +1814,7 @@ enum ReportsFilter {
   created_at
   report_types
   x_opencti_report_status
+  confidence
   objectLabel
   createdBy
   markedBy

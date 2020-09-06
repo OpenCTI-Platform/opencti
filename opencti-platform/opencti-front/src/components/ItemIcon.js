@@ -53,7 +53,7 @@ const iconSelector = (type, variant, fontSize, color) => {
   }
 
   switch (type) {
-    case 'Attribute':
+    case 'attribute':
       return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Marking-Definition':
       return (

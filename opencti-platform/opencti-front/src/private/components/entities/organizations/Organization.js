@@ -34,6 +34,7 @@ class OrganizationComponent extends Component {
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={organization}
+          isOpenctiAlias={true}
           PopoverComponent={<OrganizationPopover />}
         />
         <Grid

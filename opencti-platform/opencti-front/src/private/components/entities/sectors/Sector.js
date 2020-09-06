@@ -34,6 +34,7 @@ class SectorComponent extends Component {
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={sector}
+          isOpenctiAlias={true}
           PopoverComponent={<SectorPopover />}
         />
         <Grid

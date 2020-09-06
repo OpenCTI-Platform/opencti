@@ -42,6 +42,12 @@ class StixDomainObjectOverview extends Component {
     const {
       t, fldt, classes, stixDomainObject, withoutMarking,
     } = this.props;
+    const stixIds = stixDomainObject.stix_ids.length > 0
+      ? filter(
+        (n) => uuidVersion(split('--', n)[1]) !== 1,
+        stixDomainObject.stix_ids,
+      )
+      : [];
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -84,11 +90,8 @@ class StixDomainObjectOverview extends Component {
               </div>
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
-                {stixDomainObject.stix_ids.length > 0
-                  ? filter(
-                    (n) => uuidVersion(split('--', n)[1]) !== 1,
-                    stixDomainObject.stix_ids,
-                  ).map((stixId) => `${stixId}\n`)
+                {stixIds.length > 0
+                  ? stixIds.map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>
             </Grid>

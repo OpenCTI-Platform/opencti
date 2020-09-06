@@ -28,7 +28,7 @@ class ThreatActors extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view_threat-actors',
+      'view-threat_actors',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -45,7 +45,7 @@ class ThreatActors extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view_threat-actors',
+      'view-threat_actors',
       dissoc('filters', this.state),
     );
   }
@@ -125,8 +125,8 @@ class ThreatActors extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labels',
-          'markingDefinitions',
+          'labelledBy',
+          'markedBy',
           'created_start_date',
           'created_end_date',
           'createdBy',

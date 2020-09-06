@@ -37,10 +37,10 @@ const inferences = {
     rule:
       'AttributionTargetsRule sub rule,\n' +
       '    when {\n' +
-      '      $rel1_attribution_origin(origin: $origin, attribution: $entity) isa attributed-to;\n' +
-      '      $rel2_source_target(source: $entity, target: $target) isa targets;\n' +
+      '      $rel1_attributed-to_from_attributed-to_to(attributed-to_from: $subEntity, attributed-to_to: $entity) isa attributed-to;\n' +
+      '      $rel2_targets_from_targets_to(targets_from: $subEntity, targets_to: $target) isa targets;\n' +
       '    }, then {\n' +
-      '      (source: $origin, target: $target) isa targets;\n' +
+      '      (targets_from: $entity, targets_to: $target) isa targets;\n' +
       '    };\n',
     description:
       'This rule can be used to infer the following fact: if an entity A targets an entity B and the entity A is attributed to an entity C, the entity C also targets the entity B.',
@@ -54,7 +54,7 @@ const inferences = {
       '      $rel1_located-at_from_located-at_to(located-at_from: $subLocation, located-at_to: $location) isa located-at;\n' +
       '      $rel2_located-at_from_located-at_to(located-at_from: $location, located-at_to: $parentLocation) isa located-at;\n' +
       '    }, then {\n' +
-      '      (located-at_from: $subLocation, located-at_to: $parentLocation) isa localization;\n' +
+      '      (located-at_from: $subLocation, located-at_to: $parentLocation) isa located-at;\n' +
       '    };',
     description:
       'This rule can be used to infer the following fact: if an entity A is located in an entity B and the entity B is located in an entity C, then the entity A is also located in the entity C.',

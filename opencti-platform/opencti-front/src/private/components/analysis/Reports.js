@@ -145,6 +145,8 @@ class Reports extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
+          'report_types',
+          'confidence_gt',
           'x_opencti_report_status',
           'labelledBy',
           'createdBy',

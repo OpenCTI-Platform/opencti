@@ -99,25 +99,29 @@ class AttackPatternDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Kill chain phases')}
               </Typography>
-              <List>
-                {attackPattern.killChainPhases.edges.map(
-                  (killChainPhaseEdge) => {
-                    const killChainPhase = killChainPhaseEdge.node;
-                    return (
-                      <ListItem
-                        key={killChainPhase.phase_name}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <Launch />
-                        </ListItemIcon>
-                        <ListItemText primary={killChainPhase.phase_name} />
-                      </ListItem>
-                    );
-                  },
-                )}
-              </List>
+              {attackPattern.killChainPhases.edges.length > 0 ? (
+                <List>
+                  {attackPattern.killChainPhases.edges.map(
+                    (killChainPhaseEdge) => {
+                      const killChainPhase = killChainPhaseEdge.node;
+                      return (
+                        <ListItem
+                          key={killChainPhase.phase_name}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <Launch />
+                          </ListItemIcon>
+                          <ListItemText primary={killChainPhase.phase_name} />
+                        </ListItem>
+                      );
+                    },
+                  )}
+                </List>
+              ) : (
+                ''
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -138,18 +142,22 @@ class AttackPatternDetailsComponent extends Component {
                   >
                     {t('Platforms')}
                   </Typography>
-                  <List>
-                    {propOr([], 'x_mitre_platforms', attackPattern).map(
-                      (platform) => (
-                        <ListItem key={platform} dense={true} divider={true}>
-                          <ListItemIcon>
-                            <SettingsApplications />
-                          </ListItemIcon>
-                          <ListItemText primary={platform} />
-                        </ListItem>
-                      ),
-                    )}
-                  </List>
+                  {propOr([], 'x_mitre_platforms', attackPattern) > 0 ? (
+                    <List>
+                      {propOr([], 'x_mitre_platforms', attackPattern).map(
+                        (platform) => (
+                          <ListItem key={platform} dense={true} divider={true}>
+                            <ListItemIcon>
+                              <SettingsApplications />
+                            </ListItemIcon>
+                            <ListItemText primary={platform} />
+                          </ListItem>
+                        ),
+                      )}
+                    </List>
+                  ) : (
+                    ''
+                  )}
                 </div>
               ) : (
                 ''

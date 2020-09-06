@@ -10,8 +10,8 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import RegionPopover from './RegionPopover';
-import RegionKnowledgeBar from './RegionKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const styles = () => ({
   container: {
@@ -29,8 +29,21 @@ class RegionKnowledgeComponent extends Component {
         <StixDomainObjectHeader
           stixDomainObject={region}
           PopoverComponent={<RegionPopover />}
+          variant="noaliases"
         />
-        <RegionKnowledgeBar regionId={region.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'countries',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/entities/regions/:regionId/knowledge/relations/:relationId"
@@ -59,7 +72,7 @@ class RegionKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={region.id}
-              relationshipType="localization"
+              relationshipType="located-at"
               targetStixDomainObjectTypes={['Country']}
               entityLink={link}
               isRelationReversed={true}
@@ -69,19 +82,68 @@ class RegionKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/regions/:regionId/knowledge/threats"
+          path="/dashboard/entities/regions/:regionId/knowledge/threat_actors"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={region.id}
               relationshipType="targets"
-              targetStixDomainObjectTypes={[
-                'Country',
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'XOpenCTIIncident',
-                'Malware',
-              ]}
+              targetStixDomainObjectTypes={['Threat-Actor']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/regions/:regionId/knowledge/intrusion_sets"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={region.id}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Intrusion-Set']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/regions/:regionId/knowledge/campaigns"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={region.id}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Campaign']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/regions/:regionId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={region.id}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/regions/:regionId/knowledge/malwares"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={region.id}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
