@@ -687,6 +687,9 @@ class OpenCTIStix2:
                 simple_observable_description=stix_object["description"]
                 if "description" in stix_object
                 else None,
+                x_opencti_score=stix_object["x_opencti_score"]
+                if "x_opencti_score" in stix_object
+                else None,
                 simp=stix_object["value"],
                 createdBy=extras["created_by_id"]
                 if "created_by_id" in extras
