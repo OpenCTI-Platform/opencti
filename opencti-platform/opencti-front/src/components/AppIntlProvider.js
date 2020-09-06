@@ -14,7 +14,7 @@ import { UserContext } from '../utils/Security';
 
 const AppIntlProvider = (props) => {
   const { children } = props;
-  const me = useContext(UserContext);
+  const { me } = useContext(UserContext);
   const intlError = (error) => {
     const matchingLocale = /for locale: "([a-z]+)"/gm;
     const regMatch = matchingLocale.exec(error);
