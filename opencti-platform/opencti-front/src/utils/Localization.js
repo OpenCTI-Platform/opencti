@@ -609,7 +609,8 @@ const i18n = {
       Author: 'Auteur',
       Owner: 'Propriétaire',
       'Publication date': 'Date de publication',
-      'Top 10 threats targeting this entity': 'Top 10 des menaces ciblant cette entité',
+      'Top 10 threats targeting this entity':
+        'Top 10 des menaces ciblant cette entité',
       Publication: 'Publication',
       'Entity type': "Type d'entité",
       'Report type': 'Type de rapport',
@@ -751,6 +752,8 @@ const i18n = {
       'Distribution of relations': 'Répartition des relations',
       'Distribution of sources': 'Répartition des sources',
       'Latest created relationships': 'Dernières relations créées',
+      'Last targeted organizations in this sector':
+        'Dernières organisations ciblées dans ce secteur',
       'Ingested entities': 'Entités stockées',
       'last 24h': 'dernières 24h',
       'last month': 'dernier mois',

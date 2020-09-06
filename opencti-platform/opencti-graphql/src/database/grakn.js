@@ -640,14 +640,14 @@ export const listToEntitiesThroughRelation = (fromId, fromType, relationType, to
     { paginationKey: 'to' }
   );
 };
-export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType) => {
+export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType, infer = false) => {
   return find(
     `match $from isa ${fromEntityType}; 
     $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};
     ${toType ? `$to isa ${toType};` : ''}
     $to has internal_id "${escapeString(toId)}"; get;`,
     ['from'],
-    { paginationKey: 'from' }
+    { paginationKey: 'from', infer: infer }
   );
 };
 export const listElements = async (baseQuery, elementKey, first, offset, args) => {
@@ -1109,7 +1109,7 @@ export const timeSeriesRelations = async (options) => {
 };
 export const distributionEntities = async (entityType, filters = [], options) => {
   // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
-  const { noCache = false, inferred = false, limit = 10, order = 'asc' } = options;
+  const { noCache = false, inferred = false, limit = 10, order = 'desc' } = options;
   const { startDate, endDate, field, operation } = options;
   let distributionData;
   // Unsupported in cache: const { isRelation, value, from, to, start, end, type };

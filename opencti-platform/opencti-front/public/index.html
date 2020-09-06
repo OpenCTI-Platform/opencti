@@ -3,14 +3,12 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/static/favicon.png">
+    <link rel="shortcut icon" href="%BASE_PATH%/static/favicon.png">
     <script>
-        window.BASE_PATH = "%PUBLIC_URL%"; // If hosted behind a proxy with a base path.
+        window.BASE_PATH = "%BASE_PATH%";
+        window.MAP_TILE_SERVER = "%MAP_TILE_SERVER%";
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-          integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-          crossorigin=""/>
     <title>OpenCTI - Cyber Threat Intelligence Platform</title>
 </head>
 <body>

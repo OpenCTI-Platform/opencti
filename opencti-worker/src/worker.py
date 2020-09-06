@@ -136,7 +136,6 @@ class Consumer(threading.Thread):
             connection.add_callback_threadsafe(cb)
             return False
         except Exception as e:
-            print("laaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa**")
             error = str(e)
             if "UnsupportedError" not in error and self.processing_count <= 5:
                 time.sleep(2)

@@ -118,6 +118,7 @@ const Sector = createFragmentContainer(SectorComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

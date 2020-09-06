@@ -39,9 +39,15 @@ const createApp = (apolloServer) => {
           "'unsafe-inline'",
           'http://cdn.jsdelivr.net/npm/@apollographql/',
           'https://fonts.googleapis.com/',
+          'https://unpkg.com/',
         ],
         fontSrc: ["'self'", 'https://fonts.gstatic.com/'],
-        imgSrc: ["'self'", 'http://cdn.jsdelivr.net/npm/@apollographql/'],
+        imgSrc: [
+          "'self'",
+          'http://cdn.jsdelivr.net/npm/@apollographql/',
+          'https://c.tile.openstreetmap.org/',
+          'https://tiles.stadiamaps.com',
+        ],
         connectSrc: ["'self'"],
         objectSrc: ["'none'"],
       },
@@ -51,15 +57,16 @@ const createApp = (apolloServer) => {
 
   const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
   const AppBasePath = nconf.get('app:base_path');
+  const mapTileServer = nconf.get('app:map_tile_server');
   const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
 
   // -- Generated CSS with correct base path
   app.get('/static/css/*', (req, res) => {
     const data = readFileSync(path.join(__dirname, `../public${req.url}`), 'utf8');
-    const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
+    const finalData = data.replace(/%BASE_PATH%/g, basePath).replace(/%MAP_TILE_SERVER%/g, mapTileServer);
     res.header('Content-Type', 'text/css');
-    res.send(withBasePath);
+    res.send(finalData);
   });
   app.use('/static', express.static(path.join(__dirname, '../public/static')));
 

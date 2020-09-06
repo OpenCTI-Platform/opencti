@@ -1,10 +1,22 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  compose,
+  map,
+  propOr,
+  pluck,
+  includes,
+  filter,
+  head,
+  last,
+  pipe,
+} from 'ramda';
 import { withStyles } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
-import { Map, TileLayer } from 'react-leaflet';
+import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
+import ThemeDark from '../../../../components/ThemeDark';
 
 const styles = () => ({
   paper: {
@@ -19,15 +31,32 @@ const styles = () => ({
 class LocationMiniMap extends Component {
   constructor(props) {
     super(props);
+    const countriesAliases = pipe(
+      pluck('x_opencti_aliases'),
+      filter((n) => n.length > 0),
+      map((n) => (head(n).length === 3 ? head(n) : last(n))),
+    )(propOr([], 'countries', props));
     this.state = {
-      zoom: 13,
-      lat: props.lat,
-      lng: props.lng,
+      countriesAliases,
     };
   }
 
+  getStyle(feature) {
+    if (includes(feature.properties.ISO3, this.state.countriesAliases)) {
+      return {
+        color: ThemeDark.palette.primary.main,
+        weight: 1,
+        fillOpacity: 0.2,
+      };
+    }
+    return { fillOpacity: 0, color: 'none' };
+  }
+
   render() {
-    const { t } = this.props;
+    const { t, center, zoom } = this.props;
+    const mapTileServer = window.MAP_TILE_SERVER !== '%MAP_TILE_SERVER%'
+      ? window.MAP_TILE_SERVER
+      : 'https://tiles.stadiamaps.com';
     return (
       <div style={{ height: '100%' }}>
         <Typography
@@ -35,21 +64,18 @@ class LocationMiniMap extends Component {
           gutterBottom={true}
           style={{ marginBottom: 10 }}
         >
-          {t('Mini map')}
+          {`${t('Mini map')} (lat. ${center[0]}, long. ${center[1]})`}
         </Typography>
         <Map
-          center={[45.4, -75.7]}
-          zoom={12}
+          center={center}
+          zoom={zoom}
           attributionControl={false}
           zoomControl={false}
-          dragging={false}
-          boxZoom={false}
-          doubleClickZoom={false}
-          scrollWheelZoom={false}
-          touchZoom={false}
-          keyboard={false}
         >
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer
+            url={`${mapTileServer}/tiles/alidade_smooth_dark/{z}/{x}/{y}{r}.png`}
+          />
+          <GeoJSON data={countries} style={this.getStyle.bind(this)} />
         </Map>
       </div>
     );
@@ -57,7 +83,9 @@ class LocationMiniMap extends Component {
 }
 
 LocationMiniMap.propTypes = {
-  location: PropTypes.object,
+  countries: PropTypes.array,
+  city: PropTypes.string,
+  zoom: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
   fd: PropTypes.func,

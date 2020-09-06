@@ -3401,6 +3401,9 @@ input CountryAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
   confidence: Int
   revoked: Boolean
   lang: String
@@ -3506,6 +3509,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parentRegions: RegionConnection
   subRegions: RegionConnection
   isSubRegion: Boolean
+  countries: CountryConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -3517,7 +3521,9 @@ input RegionAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String
-  contact_information: String
+  latitude: Float
+  longitude: Float
+  precision: Float
   confidence: Int
   revoked: Boolean
   lang: String

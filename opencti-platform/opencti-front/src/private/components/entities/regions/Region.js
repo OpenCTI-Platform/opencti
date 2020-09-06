@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -30,6 +30,7 @@ const styles = () => ({
 class RegionComponent extends Component {
   render() {
     const { classes, region } = this.props;
+    const countries = map((n) => n.node, region.countries.edges);
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -46,7 +47,15 @@ class RegionComponent extends Component {
             <StixDomainObjectOverview stixDomainObject={region} />
           </Grid>
           <Grid item={true} xs={6}>
-            <LocationMiniMap location={region} />
+            <LocationMiniMap
+              center={
+                region.latitude && region.longitude
+                  ? [region.latitude, region.longitude]
+                  : [48.8566969, 2.3514616]
+              }
+              countries={countries}
+              zoom={region.isSubRegion ? 4 : 3}
+            />
           </Grid>
         </Grid>
         <Grid
@@ -118,6 +127,7 @@ const Region = createFragmentContainer(RegionComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {
@@ -138,8 +148,19 @@ const Region = createFragmentContainer(RegionComponent, {
           }
         }
       }
+      countries {
+        edges {
+          node {
+            name
+            x_opencti_aliases
+          }
+        }
+      }
       name
+      latitude
+      longitude
       x_opencti_aliases
+      isSubRegion
     }
   `,
 });

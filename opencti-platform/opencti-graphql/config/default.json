@@ -7,6 +7,7 @@
     "base_path" : "",
     "platform_demo": false,
     "performance_logger": false,
+    "map_tile_server": "https://tiles.stadiamaps.com",
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",
