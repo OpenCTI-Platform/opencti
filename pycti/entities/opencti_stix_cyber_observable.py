@@ -626,9 +626,6 @@ class StixCyberObservable:
                     "is_multipart": observable_data["is_multipart"]
                     if "is_multipart" in observable_data
                     else None,
-                    "display_name": observable_data["display_name"]
-                    if "display_name" in observable_data
-                    else None,
                     "attribute_date": observable_data["attribute_date"]
                     if "date" in observable_data
                     else None,
