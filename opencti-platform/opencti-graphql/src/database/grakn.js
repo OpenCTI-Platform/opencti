@@ -647,7 +647,7 @@ export const listFromEntitiesThroughRelation = (toId, toType, relationType, from
     ${toType ? `$to isa ${toType};` : ''}
     $to has internal_id "${escapeString(toId)}"; get;`,
     ['from'],
-    { paginationKey: 'from', infer: infer }
+    { paginationKey: 'from', infer }
   );
 };
 export const listElements = async (baseQuery, elementKey, first, offset, args) => {
@@ -1142,8 +1142,8 @@ export const distributionRelations = async (options) => {
     dateAttribute = 'created_at';
   }
   // Using elastic can only be done if the distribution is a count on types
-  if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
-    distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
+  if (!noCache && (field === 'entity_type' || field === 'internal_id') && operation === 'count' && inferred === false) {
+    distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId, field);
   } else {
     const query = `match $rel($from, $to) isa ${entityType}; ${
       toTypes && toTypes.length > 0

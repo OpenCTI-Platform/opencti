@@ -36,6 +36,7 @@ import {
 import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixDomainObjectNamed } from '../schema/stixDomainObject';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const dateFields = [
   'created',
@@ -379,13 +380,17 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
   });
 };
-export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = null) => {
+// field can be "entity_type" or "internal_id"
+export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = null, field = null) => {
+  if (field !== 'entity_type' && field !== 'internal_id') {
+    throw FunctionalError('Unsupported field', field);
+  }
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
     filters.push({
       range: {
-        start_time: {
+        [isStixCoreRelationship(type) ? 'start_time' : 'created_at']: {
           gte: start,
           lte: end,
         },
@@ -427,7 +432,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
       aggs: {
         genres: {
           terms: {
-            field: `connections.types.keyword`,
+            field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
             size: 100,
           },
         },
@@ -437,6 +442,19 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el.search(query).then((data) => {
     // First need to find all types relations to the fromId
+    if (field === 'internal_id') {
+      const types = R.pipe(
+        R.map((h) => h._source.connections),
+        R.flatten(),
+        R.filter((c) => c.internal_id !== fromId),
+        R.filter((c) => toTypes.length === 0 || R.includes(R.head(toTypes), c.types)),
+        R.map((e) => e.internal_id),
+        R.uniq()
+      )(data.body.hits.hits);
+      const { buckets } = data.body.aggregations.genres;
+      const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
+      return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
+    }
     const types = R.pipe(
       R.map((h) => h._source.connections),
       R.flatten(),
