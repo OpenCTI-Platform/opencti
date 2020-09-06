@@ -266,11 +266,9 @@ class StixDomainObjectKnowledge extends Component {
             <StixCoreObjectStixDomainObjectsBars
               stixCoreObjectId={stixDomainObjectId}
               relationshipType="targets"
-              relationshipType2="part-of"
               toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
               title={t('Top 10 threats targeting this entity')}
               field="internal_id"
-              field2="targets.internal_id"
             />
           </Grid>
           {stixDomainObjectType === 'Sector' ? (

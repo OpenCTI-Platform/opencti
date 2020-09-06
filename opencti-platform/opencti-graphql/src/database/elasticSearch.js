@@ -382,7 +382,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
 };
 // field can be "entity_type" or "internal_id"
 export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = null, field = null) => {
-  if (field !== 'entity_type' && field !== 'internal_id') {
+  if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
   const haveRange = start && end;
@@ -402,9 +402,18 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
       match_phrase: { 'connections.internal_id': fromId },
     });
   }
+  const typesFilters = [];
   for (let index = 0; index < toTypes.length; index += 1) {
-    filters.push({
+    typesFilters.push({
       match_phrase: { 'connections.types': toTypes[index] },
+    });
+  }
+  if (typesFilters.length > 0) {
+    filters.push({
+      bool: {
+        should: typesFilters,
+        minimum_should_match: 1,
+      },
     });
   }
   const query = {
@@ -441,13 +450,12 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
   };
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el.search(query).then((data) => {
-    // First need to find all types relations to the fromId
     if (field === 'internal_id') {
       const types = R.pipe(
         R.map((h) => h._source.connections),
         R.flatten(),
         R.filter((c) => c.internal_id !== fromId),
-        R.filter((c) => toTypes.length === 0 || R.includes(R.head(toTypes), c.types)),
+        R.filter((c) => toTypes.length === 0 || R.includes(R.head(c.types), toTypes)),
         R.map((e) => e.internal_id),
         R.uniq()
       )(data.body.hits.hits);

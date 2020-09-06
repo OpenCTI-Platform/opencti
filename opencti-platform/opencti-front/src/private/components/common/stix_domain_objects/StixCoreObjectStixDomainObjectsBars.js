@@ -279,11 +279,9 @@ class StixCoreObjectStixDomainObjectsBars extends Component {
 StixCoreObjectStixDomainObjectsBars.propTypes = {
   stixCoreObjectId: PropTypes.string,
   relationshipType: PropTypes.string,
-  relationshipType2: PropTypes.string,
   toTypes: PropTypes.array,
   title: PropTypes.string,
   field: PropTypes.string,
-  field2: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
