@@ -58,8 +58,8 @@ import {
   ID_STANDARD,
   IDS_STIX,
   isAbstract,
-  REL_INDEX_PREFIX,
-} from '../schema/general';
+  REL_INDEX_PREFIX, ABSTRACT_STIX_CORE_RELATIONSHIP
+} from "../schema/general";
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
@@ -1136,7 +1136,7 @@ export const distributionRelations = async (options) => {
   const { fromId = null, limit = 50, order, noCache = false, inferred = false } = options;
   const { startDate, endDate, relationship_type: relationshipType, toTypes = [] } = options;
   let distributionData;
-  const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_RELATIONSHIP;
+  const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
   let dateAttribute = 'start_time';
   if (isStixMetaRelationship(entityType)) {
     dateAttribute = 'created_at';

@@ -123,28 +123,6 @@ class TopMenuRegion extends Component {
         >
           {t('Analysis')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/regions/${regionId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/observables`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
-        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

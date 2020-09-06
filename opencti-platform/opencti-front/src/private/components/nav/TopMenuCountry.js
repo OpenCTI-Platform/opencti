@@ -105,45 +105,23 @@ class TopMenuCountry extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/countries/${countryId}/reports`}
+          to={`/dashboard/entities/countries/${countryId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/reports`
+            === `/dashboard/entities/countries/${countryId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/reports`
+            === `/dashboard/entities/countries/${countryId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/countries/${countryId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/countries/${countryId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/countries/${countryId}/observables`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
+          {t('Analysis')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button

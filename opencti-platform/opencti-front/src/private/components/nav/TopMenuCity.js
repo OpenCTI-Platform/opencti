@@ -106,43 +106,23 @@ class TopMenuCity extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/cities/${cityId}/reports`}
+          to={`/dashboard/entities/cities/${cityId}/analysis`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/reports`
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/cities/${cityId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/cities/${cityId}/observables`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
+          {t('Analysis')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
