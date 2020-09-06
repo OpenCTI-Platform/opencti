@@ -425,6 +425,7 @@ class StixCyberObservable:
         simple_observable_description = kwargs.get(
             "simple_observable_description", None
         )
+        x_opencti_score = kwargs.get("x_opencti_score", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
         object_label = kwargs.get("objectLabel", None)
@@ -461,6 +462,13 @@ class StixCyberObservable:
         )
         if simple_observable_description is not None:
             x_opencti_description = simple_observable_description
+        x_opencti_score = (
+            observable_data["x_opencti_score"]
+            if "x_opencti_score" in observable_data
+            else x_opencti_score
+        )
+        if simple_observable_description is not None:
+            x_opencti_description = simple_observable_description
 
         stix_id = observable_data["id"] if "id" in observable_data else None
         if simple_observable_id is not None:
@@ -489,9 +497,7 @@ class StixCyberObservable:
             input_variables = {
                 "type": type,
                 "stix_id": stix_id,
-                "x_opencti_score": observable_data["x_opencti_score"]
-                if "x_opencti_score" in observable_data
-                else None,
+                "x_opencti_score": x_opencti_score,
                 "x_opencti_description": x_opencti_description,
                 "createIndicator": create_indicator,
                 "createdBy": created_by,

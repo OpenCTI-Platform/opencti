@@ -431,11 +431,6 @@ class Report:
             "stixObjectOrStixRelationshipId", None
         )
         if id is not None and stix_object_or_stix_relationship_id is not None:
-            if self.contains_stix_object_or_stix_relationship(
-                id=id,
-                stixObjectOrStixRelationshipId=stix_object_or_stix_relationship_id,
-            ):
-                return True
             self.opencti.log(
                 "info",
                 "Adding StixObjectOrStixRelationship {"
