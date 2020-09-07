@@ -612,6 +612,7 @@ const i18n = {
       'Top 10 threats targeting this entity':
         'Top 10 des menaces ciblant cette entité',
       'Top 10 active threats (3 last months)': 'Top 10 des menaces actives (3 derniers mois)',
+      'Targeted countries (3 last months)': 'Pays ciblés (3 derniers mois)',
       Publication: 'Publication',
       'Entity type': "Type d'entité",
       'Report type': 'Type de rapport',
