@@ -381,7 +381,15 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
   });
 };
 // field can be "entity_type" or "internal_id"
-export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = null, field = null) => {
+export const elAggregationRelationsCount = (
+  type,
+  start,
+  end,
+  toTypes,
+  fromId = null,
+  field = null,
+  dateAttribute = 'start_time'
+) => {
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
@@ -390,7 +398,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
   if (haveRange) {
     filters.push({
       range: {
-        [isStixCoreRelationship(type) ? 'start_time' : 'created_at']: {
+        [dateAttribute]: {
           gte: start,
           lte: end,
         },

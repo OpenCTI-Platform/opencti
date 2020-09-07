@@ -6,7 +6,10 @@ import {
 import { withStyles } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import {
+  Map, TileLayer, GeoJSON, Marker,
+} from 'react-leaflet';
+import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
 import ThemeDark from '../../../../components/ThemeDark';
@@ -20,6 +23,14 @@ const styles = () => ({
     padding: 0,
     borderRadius: 8,
   },
+});
+
+const pointerIcon = new L.Icon({
+  iconUrl: '/static/city.png',
+  iconRetinaUrl: '/static/city.png',
+  iconAnchor: [5, 55],
+  popupAnchor: [10, -44],
+  iconSize: [25, 25],
 });
 
 const LocationMiniMap = (props) => {
@@ -40,8 +51,9 @@ const LocationMiniMap = (props) => {
     return { fillOpacity: 0, color: 'none' };
   };
   const {
-    t, center, zoom, classes,
+    t, center, zoom, classes, city,
   } = props;
+  const position = city && city.latitude ? [city.latitude, city.longitude] : null;
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
@@ -56,6 +68,7 @@ const LocationMiniMap = (props) => {
         >
           <TileLayer url={settings.platform_map_tile_server} />
           <GeoJSON data={countries} style={getStyle} />
+          {position ? <Marker position={position} icon={pointerIcon} /> : ''}
         </Map>
       </Paper>
     </div>

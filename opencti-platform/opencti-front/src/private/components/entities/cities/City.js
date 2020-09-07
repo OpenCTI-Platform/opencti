@@ -52,8 +52,8 @@ class CityComponent extends Component {
                   ? [city.latitude, city.longitude]
                   : [48.8566969, 2.3514616]
               }
-              cities={[city]}
-              zoom={4}
+              city={city}
+              zoom={5}
             />
           </Grid>
         </Grid>

@@ -83,7 +83,7 @@ class CurationStixDomainObjectLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name}
+                {node.name || node.attribute_abstract || node.opinion}
               </div>
               <div
                 className={classes.bodyItem}
@@ -157,6 +157,22 @@ const CurationStixDomainObjectLineFragment = createFragmentContainer(
           name
           description
           aliases
+        }
+        ... on Note {
+          attribute_abstract
+          content
+        }
+        ... on ObservedData {
+          first_observed
+          last_observed
+        }
+        ... on Opinion {
+          opinion
+          explanation
+        }
+        ... on Report {
+          name
+          description
         }
         ... on CourseOfAction {
           name

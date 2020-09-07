@@ -46,3 +46,13 @@ export const setNumberOfElements = (
     callback(numberFormat(currentNumberOfElements));
   }
 };
+
+export const computeLevel = (
+  value,
+  min,
+  max,
+  minAllowed = 1,
+  maxAllowed = 4,
+) => Math.trunc(
+  ((maxAllowed - minAllowed) * (value - min)) / (max - min) + minAllowed,
+);

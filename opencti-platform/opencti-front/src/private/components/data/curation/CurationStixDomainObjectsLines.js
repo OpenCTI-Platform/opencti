@@ -80,21 +80,24 @@ export const curationStixDomainObjectsLinesQuery = graphql`
     $filters: [StixDomainObjectsFiltering]
   ) {
     ...CurationStixDomainObjectsLines_data
-      @arguments(
-        types: $types
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      types: $types
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
 export const curationStixDomainObjectsLinesSearchQuery = graphql`
-  query CurationStixDomainObjectsLinesSearchQuery($search: String) {
-    stixDomainObjects(search: $search) {
+  query CurationStixDomainObjectsLinesSearchQuery(
+    $types: [String]
+    $search: String
+  ) {
+    stixDomainObjects(types: $types, search: $search) {
       edges {
         node {
           id
@@ -110,6 +113,22 @@ export const curationStixDomainObjectsLinesSearchQuery = graphql`
             name
             description
             aliases
+          }
+          ... on Note {
+            attribute_abstract
+            content
+          }
+          ... on ObservedData {
+            first_observed
+            last_observed
+          }
+          ... on Opinion {
+            opinion
+            explanation
+          }
+          ... on Report {
+            name
+            description
           }
           ... on CourseOfAction {
             name
@@ -204,15 +223,15 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment CurationStixDomainObjectsLines_data on Query
-        @argumentDefinitions(
-          types: { type: "[String]" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[StixDomainObjectsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        types: { type: "[String]" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixDomainObjectsFiltering]" }
+      ) {
         stixDomainObjects(
           types: $types
           search: $search

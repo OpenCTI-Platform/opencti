@@ -7876,7 +7876,7 @@ type Query {
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixCoreRelationshipsDistribution(
-    fromId: String!
+    fromId: String
     field: String!
     operation: StatsOperation!
     relationship_type: String
@@ -7884,6 +7884,7 @@ type Query {
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
+    dateAttribute: String
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])

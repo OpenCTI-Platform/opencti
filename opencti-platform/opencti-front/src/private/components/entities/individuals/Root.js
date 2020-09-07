@@ -8,13 +8,13 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Individual from './Individual';
-import IndividualReports from './IndividualReports';
 import IndividualKnowledge from './IndividualKnowledge';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import IndividualPopover from './IndividualPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -36,7 +36,6 @@ const individualQuery = graphql`
       name
       x_opencti_aliases
       ...Individual_individual
-      ...IndividualReports_individual
       ...IndividualKnowledge_individual
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -94,16 +93,6 @@ class RootIndividual extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/entities/individuals/:individualId/reports"
-                    render={(routeProps) => (
-                      <IndividualReports
-                        {...routeProps}
-                        individual={props.individual}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/entities/individuals/:individualId/knowledge"
                     render={() => (
                       <Redirect
@@ -118,6 +107,22 @@ class RootIndividual extends Component {
                         {...routeProps}
                         individual={props.individual}
                       />
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/individuals/:individualId/analysis"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.individual}
+                          PopoverComponent={<IndividualPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={individualId}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route

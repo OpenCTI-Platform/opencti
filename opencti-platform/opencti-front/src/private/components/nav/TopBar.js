@@ -326,6 +326,7 @@ const TopBar = ({
           <Security needs={[EXPLORE]}>
             <Tooltip title={t('Investigate')}>
               <IconButton
+                disabled={true}
                 component={Link}
                 to="/dashboard/investigate"
                 variant={

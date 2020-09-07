@@ -16,7 +16,7 @@ import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
 import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
-import StixCoreObjectStixDomainObjectsBars from './StixCoreObjectStixDomainObjectsBars';
+import StixCoreObjectStixDomainObjectsBars from '../stix_core_objects/StixCoreObjectStixDomainObjectsBars';
 import SectorTargetedOrganizations from '../../entities/sectors/SectorTargetedOrganizations';
 
 const styles = (theme) => ({

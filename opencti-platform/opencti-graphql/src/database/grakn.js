@@ -58,8 +58,9 @@ import {
   ID_STANDARD,
   IDS_STIX,
   isAbstract,
-  REL_INDEX_PREFIX, ABSTRACT_STIX_CORE_RELATIONSHIP
-} from "../schema/general";
+  REL_INDEX_PREFIX,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+} from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
@@ -1134,16 +1135,27 @@ export const distributionEntities = async (entityType, filters = [], options) =>
 export const distributionRelations = async (options) => {
   const { field, operation } = options; // Mandatory fields
   const { fromId = null, limit = 50, order, noCache = false, inferred = false } = options;
-  const { startDate, endDate, relationship_type: relationshipType, toTypes = [] } = options;
+  const {
+    startDate,
+    endDate,
+    relationship_type: relationshipType,
+    dateAttribute = 'start_time',
+    toTypes = [],
+  } = options;
   let distributionData;
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
-  let dateAttribute = 'start_time';
-  if (isStixMetaRelationship(entityType)) {
-    dateAttribute = 'created_at';
-  }
+  const finalDateAttribute = isStixMetaRelationship(entityType) ? 'created_at' : dateAttribute;
   // Using elastic can only be done if the distribution is a count on types
   if (!noCache && (field === 'entity_type' || field === 'internal_id') && operation === 'count' && inferred === false) {
-    distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId, field);
+    distributionData = await elAggregationRelationsCount(
+      entityType,
+      startDate,
+      endDate,
+      toTypes,
+      fromId,
+      field,
+      finalDateAttribute
+    );
   } else {
     const query = `match $rel($from, $to) isa ${entityType}; ${
       toTypes && toTypes.length > 0
@@ -1155,7 +1167,7 @@ export const distributionRelations = async (options) => {
     } ${fromId ? ` $from has internal_id "${escapeString(fromId)}"; ` : ''}
     ${
       startDate && endDate
-        ? `$rel has ${dateAttribute} $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
+        ? `$rel has ${finalDateAttribute} $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
     }
       $to has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
