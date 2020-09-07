@@ -110,7 +110,7 @@ const StixCyberObservable = createFragmentContainer(
         id
         entity_type
         standard_id
-        stix_ids
+        x_opencti_stix_ids
         spec_version
         created_at
         updated_at

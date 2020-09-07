@@ -19,7 +19,7 @@ define
 
   # STIX Common
   spec_version sub attribute, value string;
-  stix_ids sub attribute, value string;
+  x_opencti_stix_ids sub attribute, value string;
   created sub attribute, value datetime;
   modified sub attribute, value datetime;
   confidence sub attribute, value long;
@@ -413,7 +413,7 @@ define
   # STIX relations
   stix-relationship sub basic-relationship,
     abstract,
-    has stix_ids,
+    has x_opencti_stix_ids,
     has spec_version,
     has revoked,
     has confidence,
@@ -909,7 +909,7 @@ define
   # STIX Object Entities
   Stix-Object sub Basic-Object,
     abstract,
-    has stix_ids,
+    has x_opencti_stix_ids,
     has spec_version,
     has created_at,
     has created_at_day,

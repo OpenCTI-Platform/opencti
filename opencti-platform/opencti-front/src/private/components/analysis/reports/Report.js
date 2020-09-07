@@ -81,7 +81,7 @@ const Report = createFragmentContainer(ReportComponent, {
     fragment Report_report on Report {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

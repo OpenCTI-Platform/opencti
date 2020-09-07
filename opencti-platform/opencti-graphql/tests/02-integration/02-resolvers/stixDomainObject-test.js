@@ -100,7 +100,7 @@ describe('StixDomainObject resolver standard behavior', () => {
         stixDomainObjectAdd(input: $input) {
           id
           standard_id
-          stix_ids
+          x_opencti_stix_ids
           objectLabel {
             edges {
               node {
@@ -133,7 +133,7 @@ describe('StixDomainObject resolver standard behavior', () => {
     expect(stixDomainObject.data.stixDomainObjectAdd).not.toBeNull();
     expect(stixDomainObject.data.stixDomainObjectAdd.name).toEqual('StixDomainObject');
     expect(stixDomainObject.data.stixDomainObjectAdd.objectLabel.edges.length).toEqual(2);
-    expect(stixDomainObject.data.stixDomainObjectAdd.stix_ids).toEqual(
+    expect(stixDomainObject.data.stixDomainObjectAdd.x_opencti_stix_ids).toEqual(
       expect.arrayContaining(['report--84dddb68-f440-4cb5-b9f6-a59159079ef5'])
     );
   });

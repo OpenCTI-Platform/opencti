@@ -84,9 +84,9 @@ class StixCyberObservableOverview extends Component {
               <pre style={{ margin: 0 }}>
                 {filter(
                   (n) => uuidVersion(split('--', n)[1]) !== 1,
-                  stixCyberObservable.stix_ids,
+                  stixCyberObservable.x_opencti_stix_ids,
                 ).length > 0
-                  ? stixCyberObservable.stix_ids.map((stixId) => `${stixId}\n`)
+                  ? stixCyberObservable.x_opencti_stix_ids.map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>
             </Grid>

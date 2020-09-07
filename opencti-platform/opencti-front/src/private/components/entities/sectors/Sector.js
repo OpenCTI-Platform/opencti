@@ -101,7 +101,7 @@ const Sector = createFragmentContainer(SectorComponent, {
     fragment Sector_sector on Sector {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

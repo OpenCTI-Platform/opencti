@@ -97,7 +97,7 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
     fragment Indicator_indicator on Indicator {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

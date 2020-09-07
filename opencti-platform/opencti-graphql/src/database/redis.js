@@ -1,10 +1,23 @@
 import Redis from 'ioredis';
 import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { assoc, isEmpty, map } from 'ramda';
+import * as R from 'ramda';
 import conf, { logger } from '../config/conf';
 import { DatabaseError } from '../config/errors';
+import { generateLogMessage, relationTypeToInputName, utcDate } from './utils';
+import { isStixObject } from '../schema/stixCoreObject';
+import { isStixRelationship } from '../schema/stixRelationship';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  EVENT_TYPE_UPDATE,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+} from './rabbitmq';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { buildStixData, stixDataConverter } from './stix';
 
+const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
 const redisOptions = {
   lazyConnect: true,
@@ -27,17 +40,14 @@ const initRedisClient = async () => {
   });
   return redis;
 };
-
 const getClient = async () => {
   if (redis) return redis;
   return initRedisClient();
 };
-
 export const pubsub = new RedisPubSub({
   publisher: new Redis(redisOptions),
   subscriber: new Redis(redisOptions),
 });
-
 export const redisIsAlive = async () => {
   const client = await getClient();
   if (client.status !== 'ready') {
@@ -46,7 +56,6 @@ export const redisIsAlive = async () => {
   }
   return true;
 };
-
 export const getRedisVersion = () => {
   return getClient().then((client) => client.serverInfo.redis_version);
 };
@@ -57,15 +66,10 @@ export const notify = (topic, instance, user, context) => {
   return instance;
 };
 
-/**
- * Set the user edition context in redis
- * @param instanceId
- * @param user
- * @param input
- */
+// region user context
 export const setEditContext = async (user, instanceId, input) => {
   const client = await getClient();
-  const data = assoc('name', user.user_email, input);
+  const data = R.assoc('name', user.user_email, input);
   return client.set(
     `edit:${instanceId}:${user.id}`,
     JSON.stringify(data),
@@ -73,12 +77,6 @@ export const setEditContext = async (user, instanceId, input) => {
     5 * 60 // Key will be remove if user is not active during 5 minutes
   );
 };
-
-/**
- * Fetch all users status for an edition context
- * @param instanceId
- * @returns {Promise<any>}
- */
 export const fetchEditContext = async (instanceId) => {
   const client = await getClient();
   return new Promise((resolve, reject) => {
@@ -98,29 +96,16 @@ export const fetchEditContext = async (instanceId) => {
     });
     stream.on('end', () => {
       Promise.all(elementsPromise).then((data) => {
-        const elements = map((d) => JSON.parse(d), data);
+        const elements = R.map((d) => JSON.parse(d), data);
         resolve(elements);
       });
     });
   });
 };
-
-/**
- * Delete the user context for a specific edition
- * @param user the user
- * @param instanceId
- * @returns {*}
- */
 export const delEditContext = async (user, instanceId) => {
   const client = await getClient();
   return client.del(`edit:${instanceId}:${user.id}`);
 };
-
-/**
- * Delete the user context
- * @param user the user
- * @returns {Promise<>}
- */
 export const delUserContext = async (user) => {
   const client = await getClient();
   return new Promise((resolve, reject) => {
@@ -139,13 +124,14 @@ export const delUserContext = async (user) => {
       reject(error);
     });
     stream.on('end', () => {
-      if (!isEmpty(keys)) {
+      if (!R.isEmpty(keys)) {
         client.del(keys);
       }
       resolve();
     });
   });
 };
+// endregion
 
 // region cache for access token
 export const getAccessCache = async (tokenUUID) => {
@@ -165,6 +151,7 @@ export const clearAccessCache = async (tokenUUID) => {
 };
 // endregion
 
+// region locking
 export const lockResource = async (resources) => {
   const redisClient = await getClient();
   // Retry during 5 secs
@@ -181,3 +168,124 @@ export const lockResource = async (resources) => {
     },
   };
 };
+// endregion
+
+// region opencti stream
+const mapJSToStream = (event) => {
+  const cmdArgs = [];
+  Object.keys(event).forEach((key) => {
+    const value = event[key];
+    if (value !== undefined) {
+      cmdArgs.push(key);
+      cmdArgs.push(JSON.stringify(value));
+    }
+  });
+  return cmdArgs;
+};
+export const storeUpdateEvent = async (user, operation, instance, input) => {
+  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
+    const convertedInput = stixDataConverter(input);
+    // else just continue as usual
+    const now = utcDate().toISOString();
+    const data = {
+      id: instance.standard_id,
+      x_opencti_internal_id: instance.internal_id,
+      type: instance.entity_type,
+      x_data_update: { [operation]: convertedInput },
+    };
+    // Generate the message
+    const message = generateLogMessage(operation, user, instance, convertedInput);
+    // Build and send the event
+    const event = {
+      type: EVENT_TYPE_UPDATE,
+      markings: R.map((i) => i.standard_id, instance.objectMarking || []),
+      user: user.id || user.name,
+      timestamp: now,
+      data,
+      message,
+    };
+    const client = await getClient();
+    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+  }
+  return true;
+};
+export const storeCreateEvent = async (user, instance, input) => {
+  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
+    // If relationship but not stix core
+    if (isStixRelationship(instance.entity_type) && !isStixCoreRelationship(instance.entity_type)) {
+      const field = relationTypeToInputName(instance.entity_type);
+      return storeUpdateEvent(user, UPDATE_OPERATION_ADD, instance.from, { [field]: input.to });
+    }
+    // Create of an event for
+    const identifiers = {
+      id: instance.standard_id,
+      x_opencti_internal_id: instance.internal_id,
+      entity_type: instance.entity_type,
+    };
+    // Convert the input to data
+    const data = buildStixData(Object.assign(identifiers, input));
+    // Generate the message
+    const message = generateLogMessage(EVENT_TYPE_CREATE, user, instance, data);
+    // Build and send the event
+    const now = utcDate().toISOString();
+    const event = {
+      type: EVENT_TYPE_CREATE,
+      markings: data.object_marking_refs || [],
+      user: user.id || user.name,
+      timestamp: now,
+      data,
+      message,
+    };
+    const client = await getClient();
+    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+  }
+  return true;
+};
+export const storeDeleteEvent = async (user, instance) => {
+  const now = utcDate().toISOString();
+  if (isStixObject(instance.entity_type)) {
+    const message = generateLogMessage(EVENT_TYPE_DELETE, user, instance);
+    const data = {
+      id: instance.standard_id,
+      x_opencti_internal_id: instance.internal_id,
+      type: instance.entity_type,
+    };
+    const event = {
+      type: EVENT_TYPE_DELETE,
+      markings: R.map((i) => i.standard_id, instance.objectMarking || []),
+      user: user.id || user.name,
+      timestamp: now,
+      data,
+      message,
+    };
+    const client = await getClient();
+    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+  }
+  if (isStixRelationship(instance.entity_type)) {
+    if (!isStixCoreRelationship(instance.entity_type)) {
+      const field = relationTypeToInputName(instance.entity_type);
+      return storeUpdateEvent(user, UPDATE_OPERATION_REMOVE, instance.from, { [field]: instance.to });
+    }
+    // for other deletion, just produce a delete event
+    const message = generateLogMessage(EVENT_TYPE_DELETE, user, instance);
+    const data = {
+      id: instance.standard_id,
+      x_opencti_internal_id: instance.internal_id,
+      type: instance.entity_type,
+      source_ref: instance.from.standard_id,
+      target_ref: instance.to.standard_id,
+    };
+    const event = {
+      type: EVENT_TYPE_DELETE,
+      markings: R.map((i) => i.standard_id, instance.objectMarking || []),
+      user: user.id || user.name,
+      timestamp: now,
+      data,
+      message,
+    };
+    const client = await getClient();
+    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+  }
+  return true;
+};
+// endregion

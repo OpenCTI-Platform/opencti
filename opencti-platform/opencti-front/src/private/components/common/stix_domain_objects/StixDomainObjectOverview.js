@@ -84,10 +84,10 @@ class StixDomainObjectOverview extends Component {
               </div>
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
-                {stixDomainObject.stix_ids.length > 0
+                {stixDomainObject.x_opencti_stix_ids.length > 0
                   ? filter(
                     (n) => uuidVersion(split('--', n)[1]) !== 1,
-                    stixDomainObject.stix_ids,
+                    stixDomainObject.x_opencti_stix_ids,
                   ).map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>

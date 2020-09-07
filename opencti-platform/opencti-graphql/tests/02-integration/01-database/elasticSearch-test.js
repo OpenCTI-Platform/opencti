@@ -382,7 +382,7 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(2);
     const nodes = map((e) => e.node, data.edges);
-    const malware = find(propEq('stix_ids', ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c']))(nodes);
+    const malware = find(propEq('x_opencti_stix_ids', ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c']))(nodes);
     expect(malware.internal_id).not.toBeNull();
     expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware._index).toEqual(INDEX_STIX_DOMAIN_OBJECTS);

@@ -595,7 +595,7 @@ interface StixObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -609,7 +609,7 @@ interface StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -653,7 +653,7 @@ type MarkingDefinition implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -713,7 +713,7 @@ type Label implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -770,7 +770,7 @@ type ExternalReference implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -832,7 +832,7 @@ type KillChainPhase implements BasicObject & StixObject & StixMetaObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -907,7 +907,7 @@ interface StixCoreObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1000,7 +1000,7 @@ interface StixDomainObject {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1113,7 +1113,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1241,7 +1241,7 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1360,7 +1360,7 @@ interface Container {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1457,7 +1457,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1585,7 +1585,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1710,7 +1710,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1839,7 +1839,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -1968,7 +1968,7 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2089,7 +2089,7 @@ interface Identity {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2207,7 +2207,7 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2338,7 +2338,7 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2463,7 +2463,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2599,7 +2599,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2735,7 +2735,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2852,7 +2852,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -2985,7 +2985,7 @@ interface Location {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3096,7 +3096,7 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3220,7 +3220,7 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3337,7 +3337,7 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3451,7 +3451,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3577,7 +3577,7 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3704,7 +3704,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3834,7 +3834,7 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -3955,7 +3955,7 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4075,7 +4075,7 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4192,7 +4192,7 @@ interface StixCyberObservable {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4270,7 +4270,7 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4357,7 +4357,7 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4448,7 +4448,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4531,7 +4531,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4616,7 +4616,7 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4711,7 +4711,7 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4807,7 +4807,7 @@ interface HashedObservable {
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4887,7 +4887,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -4981,7 +4981,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5083,7 +5083,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5184,7 +5184,7 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5267,7 +5267,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5350,7 +5350,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5433,7 +5433,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5516,7 +5516,7 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5619,7 +5619,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5714,7 +5714,7 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5807,7 +5807,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -5890,7 +5890,7 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6001,7 +6001,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6088,7 +6088,7 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6175,7 +6175,7 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6288,7 +6288,7 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6371,7 +6371,7 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6454,7 +6454,7 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6537,7 +6537,7 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6620,7 +6620,7 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
   entity_type: String!
   parent_types: [String]!
   # StixObject
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   created_at: DateTime!
   updated_at: DateTime!
@@ -6882,7 +6882,7 @@ interface StixRelationship {
   toRole: String
   # StixRelationship
   standard_id: String!
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   inferred: Boolean
@@ -6942,7 +6942,7 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   updated_at: DateTime!
   # StixRelationship
   standard_id: String!
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   inferred: Boolean
@@ -7072,7 +7072,7 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   updated_at: DateTime!
   # StixRelationship
   standard_id: String!
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
@@ -7161,7 +7161,7 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   updated_at: DateTime!
   # StixRelationship
   standard_id: String!
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
@@ -7202,7 +7202,7 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   updated_at: DateTime!
   # StixRelationship
   standard_id: String!
-  stix_ids: [String]
+  x_opencti_stix_ids: [String]
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
@@ -7347,6 +7347,7 @@ type Query {
 
   ######## STIX CORE OBJECT ENTITIES
 
+  stixCoreObjectRaw(id: String!): String @auth(for: [KNOWLEDGE])
   stixCoreObject(id: String!): StixCoreObject @auth(for: [KNOWLEDGE])
   stixCoreObjects(
     first: Int

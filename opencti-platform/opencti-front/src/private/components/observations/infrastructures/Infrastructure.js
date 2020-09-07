@@ -103,7 +103,7 @@ const Infrastructure = createFragmentContainer(InfrastructureComponent, {
     fragment Infrastructure_infrastructure on Infrastructure {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

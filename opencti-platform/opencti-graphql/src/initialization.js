@@ -160,6 +160,7 @@ const createAttributesTypes = async () => {
 const createMarkingDefinitions = async () => {
   // Create marking defs
   await addMarkingDefinition(SYSTEM_USER, {
+    standard_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
     stix_id: 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9',
     definition_type: 'TLP',
     definition: 'TLP:WHITE',
@@ -167,6 +168,7 @@ const createMarkingDefinitions = async () => {
     x_opencti_order: 1,
   });
   await addMarkingDefinition(SYSTEM_USER, {
+    standard_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     stix_id: 'marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da',
     definition_type: 'TLP',
     definition: 'TLP:GREEN',
@@ -174,6 +176,7 @@ const createMarkingDefinitions = async () => {
     x_opencti_order: 2,
   });
   await addMarkingDefinition(SYSTEM_USER, {
+    standard_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     stix_id: 'marking-definition--f88d31f6-486f-44da-b317-01333bde0b82',
     definition_type: 'TLP',
     definition: 'TLP:AMBER',
@@ -181,6 +184,7 @@ const createMarkingDefinitions = async () => {
     x_opencti_order: 3,
   });
   await addMarkingDefinition(SYSTEM_USER, {
+    standard_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     stix_id: 'marking-definition--5e57c739-391a-4eb3-b6be-7d15ca92d5ed',
     definition_type: 'TLP',
     definition: 'TLP:RED',

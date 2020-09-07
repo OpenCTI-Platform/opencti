@@ -83,7 +83,7 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
     fragment ObservedData_observedData on ObservedData {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

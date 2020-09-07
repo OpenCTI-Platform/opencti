@@ -15,10 +15,15 @@ import {
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 import { convertDataToStix } from '../database/stix';
+import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
+import { stixElementLoader } from '../database/grakn';
 
 const stixCoreObjectResolvers = {
   Query: {
     stixCoreObject: (_, { id }) => findById(id),
+    stixCoreObjectRaw: (_, { id }) => {
+      return stixElementLoader(id, ABSTRACT_STIX_CORE_OBJECT).then((data) => JSON.stringify(data));
+    },
     stixCoreObjects: (_, args) => findAll(args),
   },
   StixCoreObject: {
