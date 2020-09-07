@@ -10,8 +10,8 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CityPopover from './CityPopover';
-import CityKnowledgeBar from './CityKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 
 const styles = () => ({
   container: {
@@ -29,8 +29,21 @@ class CityKnowledgeComponent extends Component {
         <StixDomainObjectHeader
           stixDomainObject={city}
           PopoverComponent={<CityPopover />}
+          variant="noaliases"
         />
-        <CityKnowledgeBar cityId={city.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'organizations',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/relations/:relationId"

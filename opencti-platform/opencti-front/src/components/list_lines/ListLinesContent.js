@@ -98,6 +98,7 @@ class ListLinesContent extends Component {
       selectedElements,
       onToggleEntity,
       connectionKey,
+      isTo,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -123,6 +124,7 @@ class ListLinesContent extends Component {
           selectedElements,
           onToggleEntity,
           connectionKey,
+          isTo,
         })}
       </div>
     );
@@ -205,6 +207,7 @@ ListLinesContent.propTypes = {
   selectedElements: PropTypes.object,
   onToggleEntity: PropTypes.func,
   connectionKey: PropTypes.string,
+  isTo: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLinesContent);

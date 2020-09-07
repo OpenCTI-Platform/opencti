@@ -7,7 +7,7 @@
     "base_path" : "",
     "platform_demo": false,
     "performance_logger": false,
-    "map_tile_server": "https://map.opencti.io/styles/3f7a0834-7061-4cd4-a553-447c7156d88b/{z}/{x}/{y}.png",
+    "map_tile_server": "https://map.opencti.io/styles/1fdd936a-084b-46ac-a948-22ce1686aadf/{z}/{x}/{y}.png",
     "admin": {
       "email": "admin@opencti.io",
       "password": "ChangeMe",

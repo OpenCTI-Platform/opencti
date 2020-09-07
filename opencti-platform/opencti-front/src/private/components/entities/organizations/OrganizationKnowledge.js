@@ -164,7 +164,7 @@ class OrganizationKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:threatActorId/knowledge/sightings"
+          path="/dashboard/entities/organizations/:organizationId/knowledge/sightings"
           render={(routeProps) => (
             <EntityStixSightingRelationships
               entityId={organization.id}

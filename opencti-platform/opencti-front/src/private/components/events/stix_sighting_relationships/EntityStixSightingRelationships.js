@@ -80,7 +80,7 @@ class EntityStixSightingRelationships extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
-    const { entityLink } = this.props;
+    const { entityLink, isTo } = this.props;
     // sort only when inferences are disabled or inferences are resolved
     const dataColumns = {
       x_opencti_negative: {
@@ -139,6 +139,7 @@ class EntityStixSightingRelationships extends Component {
               entityLink={entityLink}
               dataColumns={dataColumns}
               initialLoading={props === null}
+              isTo={isTo}
             />
           )}
         />

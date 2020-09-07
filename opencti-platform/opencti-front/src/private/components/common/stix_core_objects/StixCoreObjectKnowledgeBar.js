@@ -30,6 +30,7 @@ import {
   HexagonMultipleOutline,
   ShieldSearch,
   SourceFork,
+  CityVariantOutline,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -78,6 +79,22 @@ class StixCoreObjectKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText primary={t('Overview')} />
           </MenuItem>
+          {includes('cities', availableSections) ? (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/cities`}
+              selected={location.pathname === `${stixCoreObjectLink}/cities`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <CityVariantOutline />
+              </ListItemIcon>
+              <ListItemText primary={t('Cities')} />
+            </MenuItem>
+          ) : (
+            ''
+          )}
           {includes('organizations', availableSections) ? (
             <MenuItem
               component={Link}

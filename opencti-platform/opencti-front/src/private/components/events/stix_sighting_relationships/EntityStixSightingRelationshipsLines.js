@@ -19,6 +19,7 @@ class EntityStixSightingRelationshipsLines extends Component {
       relay,
       entityLink,
       paginationOptions,
+      isTo,
     } = this.props;
     return (
       <ListLinesContent
@@ -42,6 +43,7 @@ class EntityStixSightingRelationshipsLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
         entityLink={entityLink}
+        isTo={isTo}
       />
     );
   }
@@ -56,6 +58,7 @@ EntityStixSightingRelationshipsLines.propTypes = {
   stixSightingRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
+  isTo: PropTypes.bool,
 };
 
 export const entityStixSightingRelationshipsLinesQuery = graphql`
