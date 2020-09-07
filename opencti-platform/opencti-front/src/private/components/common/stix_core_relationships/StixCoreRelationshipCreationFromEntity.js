@@ -51,6 +51,7 @@ import KillChainPhasesField from '../form/KillChainPhasesField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import ConfidenceField from '../form/ConfidenceField';
+import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -320,20 +321,17 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     const { targetEntity } = this.state;
     const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
     const toEntityId = isRelationReversed ? entityId : targetEntity.id;
+    console.log(values);
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
       assoc(
         'start_time',
-        values.start_time && values.start_time.length > 0
-          ? parse(values.start_time).format()
-          : null,
+        values.start_time ? parse(values.start_time).format() : null,
       ),
       assoc(
         'stop_time',
-        values.stop_time && values.stop_time.length > 0
-          ? parse(values.stop_time).format()
-          : null,
+        values.stop_time ? parse(values.stop_time).format() : null,
       ),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),
@@ -412,6 +410,12 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       orderBy: 'created_at',
       orderMode: 'desc',
     };
+    const stixCyberObservablesPaginationOptions = {
+      search: this.state.search,
+      types: targetStixCyberObservableTypes,
+      orderBy: 'created_at',
+      orderMode: 'desc',
+    };
     return (
       <div>
         <div className={classes.header}>
@@ -464,16 +468,14 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 stixCoreRelationshipCreationFromEntityStixCyberObservablesLinesQuery
               }
               variables={{
-                search: this.state.search,
-                types: targetStixCyberObservableTypes,
-                count: 50,
-                orderBy: 'created_at',
-                orderMode: 'desc',
+                count: 25,
+                ...stixCyberObservablesPaginationOptions,
               }}
               render={({ props }) => {
                 if (props) {
                   return (
                     <StixCoreRelationshipCreationFromEntityStixCyberObservablesLines
+                      noPadding={!!targetStixDomainObjectTypes}
                       handleSelect={this.handleSelectEntity.bind(this)}
                       data={props}
                     />
@@ -490,7 +492,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
             ) : (
               ''
             )}
-          {targetStixDomainObjectTypes
+          {!targetStixCyberObservableTypes
+          && targetStixDomainObjectTypes
           && targetStixDomainObjectTypes.length > 0 ? (
             <StixDomainObjectCreation
               display={this.state.open}
@@ -498,6 +501,20 @@ class StixCoreRelationshipCreationFromEntity extends Component {
               inputValue={this.state.search}
               paginationOptions={stixDomainObjectsPaginationOptions}
               targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+            />
+            ) : (
+              ''
+            )}
+          {!targetStixDomainObjectTypes
+          && targetStixCyberObservableTypes
+          && targetStixCyberObservableTypes.length > 0 ? (
+            <StixCyberObservableCreation
+              display={this.state.open}
+              contextual={true}
+              inputValue={this.state.search}
+              paginationKey="Pagination_stixCyberObservables"
+              paginationOptions={stixCyberObservablesPaginationOptions}
+              targetStixDomainObjectTypes={targetStixCyberObservableTypes}
             />
             ) : (
               ''

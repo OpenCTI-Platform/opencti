@@ -128,28 +128,6 @@ class TopMenuOrganization extends Component {
         >
           {t('Analysis')}
         </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/organizations/${organizationId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/organizations/${organizationId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/organizations/${organizationId}/observables`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
-        </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}

@@ -146,7 +146,7 @@ describe('Elasticsearch computation', () => {
       'entity_type',
       undefined, // No start
       undefined, // No end
-      [{ isRelation: true, type: 'bject-marking', value: marking.internal_id }]
+      [{ isRelation: true, type: 'object-marking', value: marking.internal_id }]
     );
     const aggregationMap = new Map(malwaresAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Malware')).toEqual(1);

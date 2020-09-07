@@ -15,6 +15,7 @@ import {
   BugReportOutlined,
   PublicOutlined,
   AccountBalanceOutlined,
+  FlagOutlined,
 } from '@material-ui/icons';
 import {
   Gauge,
@@ -29,6 +30,7 @@ import {
   HexagonMultipleOutline,
   ShieldSearch,
   SourceFork,
+  CityVariantOutline,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
@@ -77,6 +79,22 @@ class StixCoreObjectKnowledgeBar extends Component {
             </ListItemIcon>
             <ListItemText primary={t('Overview')} />
           </MenuItem>
+          {includes('cities', availableSections) ? (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/cities`}
+              selected={location.pathname === `${stixCoreObjectLink}/cities`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <CityVariantOutline />
+              </ListItemIcon>
+              <ListItemText primary={t('Cities')} />
+            </MenuItem>
+          ) : (
+            ''
+          )}
           {includes('organizations', availableSections) ? (
             <MenuItem
               component={Link}
@@ -91,6 +109,22 @@ class StixCoreObjectKnowledgeBar extends Component {
                 <AccountBalanceOutlined />
               </ListItemIcon>
               <ListItemText primary={t('Organizations')} />
+            </MenuItem>
+          ) : (
+            ''
+          )}
+          {includes('countries', availableSections) ? (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/countries`}
+              selected={location.pathname === `${stixCoreObjectLink}/countries`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <FlagOutlined />
+              </ListItemIcon>
+              <ListItemText primary={t('Countries')} />
             </MenuItem>
           ) : (
             ''

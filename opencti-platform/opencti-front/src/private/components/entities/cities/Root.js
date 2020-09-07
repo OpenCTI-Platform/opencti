@@ -8,14 +8,13 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import City from './City';
-import CityReports from './CityReports';
 import CityKnowledge from './CityKnowledge';
-import CityObservables from './CityObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CityPopover from './CityPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootCitiesSubscription($id: ID!) {
@@ -37,9 +36,7 @@ const cityQuery = graphql`
       name
       x_opencti_aliases
       ...City_city
-      ...CityReports_city
       ...CityKnowledge_city
-      ...CityObservables_city
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -93,13 +90,6 @@ class RootCity extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/entities/cities/:cityId/reports"
-                    render={(routeProps) => (
-                      <CityReports {...routeProps} city={props.city} />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/entities/cities/:cityId/knowledge"
                     render={() => (
                       <Redirect
@@ -114,9 +104,19 @@ class RootCity extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/entities/cities/:cityId/observables"
+                    exact
+                    path="/dashboard/entities/cities/:cityId/analysis"
                     render={(routeProps) => (
-                      <CityObservables {...routeProps} city={props.city} />
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.city}
+                          PopoverComponent={<CityPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={cityId}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route

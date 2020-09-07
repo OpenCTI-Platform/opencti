@@ -40,7 +40,7 @@ const contextUsers = (me, context) => {
 };
 
 const SubscriptionAvatarsComponent = ({ classes, context, variant }) => {
-  const me = useContext(UserContext);
+  const { me } = useContext(UserContext);
   const users = contextUsers(me, context);
   return (
     <div
@@ -71,7 +71,7 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(
 );
 
 const SubscriptionFocusComponent = ({ t, fieldName, context }) => {
-  const me = useContext(UserContext);
+  const { me } = useContext(UserContext);
   const users = contextUsers(me, context);
   const focusedUsers = pipe(
     filter((n) => n.name !== me.user_email),

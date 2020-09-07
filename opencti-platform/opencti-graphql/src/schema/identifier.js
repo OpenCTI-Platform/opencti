@@ -35,7 +35,7 @@ const stixCyberObservableContribution = {
     [C.ENTITY_AUTONOMOUS_SYSTEM]: [{ src: 'number' }],
     [C.ENTITY_DIRECTORY]: [{ src: 'name' }],
     [C.ENTITY_DOMAIN_NAME]: [{ src: 'value' }],
-    [C.ENTITY_EMAIL_ADDR]: [{ src: 'name' }],
+    [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }],
     [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }],
     [C.ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [{ src: 'hashes' }, { src: 'payload_bin' }],
     [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [{ src: 'hashes' }, { src: 'name' }, { src: 'extensions' }],

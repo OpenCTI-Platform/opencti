@@ -14,10 +14,10 @@ import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import EntityStixCoreRelationshipsChart from '../stix_core_relationships/EntityStixCoreRelationshipsChart';
-import SimpleEntityStixCoreRelationships from '../stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
 import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
+import StixCoreObjectStixDomainObjectsBars from '../stix_core_objects/StixCoreObjectStixDomainObjectsBars';
+import SectorTargetedOrganizations from '../../entities/sectors/SectorTargetedOrganizations';
 
 const styles = (theme) => ({
   card: {
@@ -242,15 +242,15 @@ class StixDomainObjectKnowledge extends Component {
             </Card>
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+          <Grid item={true} xs={6}>
             <StixCoreObjectReportsBars
               stixCoreObjectId={stixDomainObjectId}
               field="created-by.name"
               title={t('Distribution of sources')}
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
+          <Grid item={true} xs={6}>
             <StixCoreObjectStixCoreRelationshipsCloud
               stixCoreObjectId={stixDomainObjectId}
               stixCoreObjectType="Stix-Domain-Object"
@@ -262,21 +262,25 @@ class StixDomainObjectKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <EntityStixCoreRelationshipsChart
-              entityId={stixDomainObjectId}
-              title={t('Direct relations creations')}
-              field="created_at"
+          <Grid item={true} xs={6}>
+            <StixCoreObjectStixDomainObjectsBars
+              stixCoreObjectId={stixDomainObjectId}
+              relationshipType="targets"
+              toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
+              title={t('Top 10 threats targeting this entity')}
+              field="internal_id"
             />
           </Grid>
-          <Grid item={true} xs={6} style={{ marginBottom: 50 }}>
-            <SimpleEntityStixCoreRelationships
-              stixObjectOrStixRelationshipId={stixDomainObjectId}
-              relationshipType="related-to"
-              targetStixDomainObjectTypes={['Stix-Domain-Object']}
-              entityLink={link}
-            />
-          </Grid>
+          {stixDomainObjectType === 'Sector' ? (
+            <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
+              <SectorTargetedOrganizations
+                sectorId={stixDomainObjectId}
+                link={link}
+              />
+            </Grid>
+          ) : (
+            ''
+          )}
         </Grid>
       </div>
     );

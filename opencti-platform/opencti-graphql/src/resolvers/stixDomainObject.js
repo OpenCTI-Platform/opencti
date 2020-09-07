@@ -5,6 +5,7 @@ import {
   findAll,
   findById,
   stixDomainObjectsNumber,
+  stixDomainObjectsDistributionByEntity,
   stixDomainObjectsTimeSeries,
   addStixDomainObject,
   stixDomainObjectAddRelation,
@@ -24,7 +25,7 @@ import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
-import { stixDomainObjectOptions } from "../schema/stixDomainObject";
+import { stixDomainObjectOptions } from '../schema/stixDomainObject';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -32,6 +33,12 @@ const stixDomainObjectResolvers = {
     stixDomainObjects: (_, args) => findAll(args),
     stixDomainObjectsTimeSeries: (_, args) => stixDomainObjectsTimeSeries(args),
     stixDomainObjectsNumber: (_, args) => stixDomainObjectsNumber(args),
+    stixDomainObjectsDistribution: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return stixDomainObjectsDistributionByEntity(args);
+      }
+      return [];
+    },
     stixDomainObjectsExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context),
   },
   StixDomainObjectsOrdering: stixDomainObjectOptions.StixDomainObjectsOrdering,

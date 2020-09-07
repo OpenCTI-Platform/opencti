@@ -59,6 +59,7 @@ import {
   IDS_STIX,
   isAbstract,
   REL_INDEX_PREFIX,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
@@ -640,17 +641,17 @@ export const listToEntitiesThroughRelation = (fromId, fromType, relationType, to
     { paginationKey: 'to' }
   );
 };
-export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType) => {
+export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType, infer = false) => {
   return find(
     `match $from isa ${fromEntityType}; 
     $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};
     ${toType ? `$to isa ${toType};` : ''}
     $to has internal_id "${escapeString(toId)}"; get;`,
     ['from'],
-    { paginationKey: 'from' }
+    { paginationKey: 'from', infer }
   );
 };
-const listElements = async (baseQuery, elementKey, first, offset, args) => {
+export const listElements = async (baseQuery, elementKey, first, offset, args) => {
   const { orderBy = null, orderMode = 'asc', inferred = false, noCache = false } = args;
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
@@ -1163,7 +1164,7 @@ export const timeSeriesRelations = async (options) => {
 };
 export const distributionEntities = async (entityType, filters = [], options) => {
   // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
-  const { noCache = false, inferred = false, limit = 10, order = 'asc' } = options;
+  const { noCache = false, inferred = false, limit = 10, order = 'desc' } = options;
   const { startDate, endDate, field, operation } = options;
   let distributionData;
   // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
@@ -1179,21 +1180,36 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   }
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
+  if (field === ID_INTERNAL) {
+    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
+    return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
+  }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionRelations = async (options) => {
   const { field, operation } = options; // Mandatory fields
   const { fromId = null, limit = 50, order, noCache = false, inferred = false } = options;
-  const { startDate, endDate, relationship_type: relationshipType, toTypes = [] } = options;
+  const {
+    startDate,
+    endDate,
+    relationship_type: relationshipType,
+    dateAttribute = 'start_time',
+    toTypes = [],
+  } = options;
   let distributionData;
-  const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_RELATIONSHIP;
-  let dateAttribute = 'start_time';
-  if (isStixMetaRelationship(entityType)) {
-    dateAttribute = 'created_at';
-  }
+  const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
+  const finalDateAttribute = isStixMetaRelationship(entityType) ? 'created_at' : dateAttribute;
   // Using elastic can only be done if the distribution is a count on types
-  if (!noCache && field === 'entity_type' && operation === 'count' && inferred === false) {
-    distributionData = await elAggregationRelationsCount(entityType, startDate, endDate, toTypes, fromId);
+  if (!noCache && (field === 'entity_type' || field === 'internal_id') && operation === 'count' && inferred === false) {
+    distributionData = await elAggregationRelationsCount(
+      entityType,
+      startDate,
+      endDate,
+      toTypes,
+      fromId,
+      field,
+      finalDateAttribute
+    );
   } else {
     const query = `match $rel($from, $to) isa ${entityType}; ${
       toTypes && toTypes.length > 0
@@ -1205,7 +1221,7 @@ export const distributionRelations = async (options) => {
     } ${fromId ? ` $from has internal_id "${escapeString(fromId)}"; ` : ''}
     ${
       startDate && endDate
-        ? `$rel has ${dateAttribute} $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
+        ? `$rel has ${finalDateAttribute} $fs; $fs > ${prepareDate(startDate)}; $fs < ${prepareDate(endDate)};`
         : ''
     }
       $to has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
@@ -1236,6 +1252,10 @@ export const distributionEntitiesThroughRelations = async (options) => {
   const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
+  if (field === ID_INTERNAL) {
+    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
+    return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
+  }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 // endregion

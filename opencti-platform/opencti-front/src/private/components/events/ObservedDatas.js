@@ -23,7 +23,7 @@ class ObservedDatas extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-observedDatas${props.objectId ? `-${props.objectId}` : ''}`,
+      `view-observed_data${props.objectId ? `-${props.objectId}` : ''}`,
     );
     this.state = {
       sortBy: propOr('created', 'sortBy', params),
@@ -40,7 +40,7 @@ class ObservedDatas extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-observedDatas${
+      `view-observed_data${
         this.props.objectId ? `-${this.props.objectId}` : ''
       }`,
       dissoc('filters', this.state),

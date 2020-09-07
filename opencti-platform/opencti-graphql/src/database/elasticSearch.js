@@ -36,6 +36,7 @@ import {
 import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixDomainObjectNamed } from '../schema/stixDomainObject';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const dateFields = [
   'created',
@@ -343,7 +344,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     });
   }
   const histoFilters = R.map((f) => {
-    const key = f.isRelation ? `${REL_INDEX_PREFIX}*.internal_id.keyword` : `${f.type}.keyword`;
+    const key = f.isRelation ? `${REL_INDEX_PREFIX}${f.type ? f.type : '*'}.internal_id.keyword` : `${f.type}.keyword`;
     return {
       multi_match: {
         fields: [key],
@@ -382,13 +383,25 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
   });
 };
-export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = null) => {
+// field can be "entity_type" or "internal_id"
+export const elAggregationRelationsCount = (
+  type,
+  start,
+  end,
+  toTypes,
+  fromId = null,
+  field = null,
+  dateAttribute = 'start_time'
+) => {
+  if (!R.includes(field, ['entity_type', 'internal_id', null])) {
+    throw FunctionalError('Unsupported field', field);
+  }
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
     filters.push({
       range: {
-        start_time: {
+        [dateAttribute]: {
           gte: start,
           lte: end,
         },
@@ -400,9 +413,18 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
       match_phrase: { 'connections.internal_id': fromId },
     });
   }
+  const typesFilters = [];
   for (let index = 0; index < toTypes.length; index += 1) {
-    filters.push({
+    typesFilters.push({
       match_phrase: { 'connections.types': toTypes[index] },
+    });
+  }
+  if (typesFilters.length > 0) {
+    filters.push({
+      bool: {
+        should: typesFilters,
+        minimum_should_match: 1,
+      },
     });
   }
   const query = {
@@ -430,7 +452,7 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
       aggs: {
         genres: {
           terms: {
-            field: `connections.types.keyword`,
+            field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
             size: 100,
           },
         },
@@ -439,7 +461,19 @@ export const elAggregationRelationsCount = (type, start, end, toTypes, fromId = 
   };
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el.search(query).then((data) => {
-    // First need to find all types relations to the fromId
+    if (field === 'internal_id') {
+      const types = R.pipe(
+        R.map((h) => h._source.connections),
+        R.flatten(),
+        R.filter((c) => c.internal_id !== fromId),
+        R.filter((c) => toTypes.length === 0 || R.includes(R.head(c.types), toTypes)),
+        R.map((e) => e.internal_id),
+        R.uniq()
+      )(data.body.hits.hits);
+      const { buckets } = data.body.aggregations.genres;
+      const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
+      return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
+    }
     const types = R.pipe(
       R.map((h) => h._source.connections),
       R.flatten(),

@@ -19,7 +19,7 @@ const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '3px 0 0 0',
+    margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
@@ -42,11 +42,11 @@ const styles = (theme) => ({
 class StixCoreRelationshipStixCoreRelationships extends Component {
   render() {
     const {
-      t, classes, entityId, relationship_type,
+      t, classes, entityId, relationshipType,
     } = this.props;
     const paginationOptions = {
       fromId: entityId,
-      relationship_type,
+      relationship_type: relationshipType,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -79,7 +79,6 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
                   {Array.from(Array(5), (e, i) => (
                     <ListItem
                       key={i}
-                      dense={true}
                       divider={true}
                       button={false}
                     >
@@ -110,7 +109,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
 
 StixCoreRelationshipStixCoreRelationships.propTypes = {
   entityId: PropTypes.string,
-  relationship_type: PropTypes.string,
+  relationshipType: PropTypes.string,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

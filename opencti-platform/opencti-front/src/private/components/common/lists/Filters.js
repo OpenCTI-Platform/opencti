@@ -121,10 +121,10 @@ class Filters extends Component {
           });
         });
         break;
-      case 'base_score_gt':
+      case 'x_opencti_base_score_gt':
         this.setState({
           entities: {
-            base_score_gt: union(
+            x_opencti_base_score_gt: union(
               this.state.entities,
               pipe(
                 map((n) => ({
@@ -137,9 +137,25 @@ class Filters extends Component {
           },
         });
         break;
-      case 'base_severity':
+      case 'confidence_gt':
+        this.setState({
+          entities: {
+            confidence_gt: union(
+              this.state.entities,
+              pipe(
+                map((n) => ({
+                  label: t(`confidence_${n.toString()}`),
+                  value: n,
+                  type: 'attribute',
+                })),
+              )(['0', '15', '50', '75', '85']),
+            ),
+          },
+        });
+        break;
+      case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
-          type: 'base_severity',
+          type: 'x_opencti_base_severity',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
@@ -152,13 +168,15 @@ class Filters extends Component {
             })),
           )(data);
           this.setState({
-            entities: { base_severity: union(this.state.entities, entities) },
+            entities: {
+              x_opencti_base_severity: union(this.state.entities, entities),
+            },
           });
         });
         break;
-      case 'attack_vector':
+      case 'x_opencti_attack_vector':
         fetchQuery(attributesSearchQuery, {
-          type: 'attack_vector',
+          type: 'x_opencti_attack_vector',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
@@ -171,13 +189,15 @@ class Filters extends Component {
             })),
           )(data);
           this.setState({
-            entities: { attack_vector: union(this.state.entities, entities) },
+            entities: {
+              x_opencti_attack_vector: union(this.state.entities, entities),
+            },
           });
         });
         break;
-      case 'object_status':
+      case 'x_opencti_report_status':
         fetchQuery(attributesSearchQuery, {
-          type: 'object_status',
+          type: 'x_opencti_report_status',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
@@ -190,7 +210,30 @@ class Filters extends Component {
             })),
           )(data);
           this.setState({
-            entities: { object_status: union(this.state.entities, entities) },
+            entities: {
+              x_opencti_report_status: union(this.state.entities, entities),
+            },
+          });
+        });
+        break;
+      case 'report_types':
+        fetchQuery(attributesSearchQuery, {
+          type: 'report_types',
+          search: event && event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        }).then((data) => {
+          const entities = pipe(
+            pathOr([], ['attributes', 'edges']),
+            map((n) => ({
+              label: t(n.node.value),
+              value: n.node.value,
+              type: 'attribute',
+            })),
+          )(data);
+          this.setState({
+            entities: {
+              report_types: union(this.state.entities, entities),
+            },
           });
         });
         break;

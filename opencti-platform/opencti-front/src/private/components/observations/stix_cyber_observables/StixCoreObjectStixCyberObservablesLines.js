@@ -41,7 +41,7 @@ class StixCoreObjectStixCyberObservablesLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
-        stixCoreObjectLink={stixCoreObjectLink}
+        entityLink={stixCoreObjectLink}
       />
     );
   }

@@ -50,9 +50,9 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
       dataColumns,
       node,
       paginationOptions,
-      stixCoreObjectLink,
+      entityLink,
     } = this.props;
-    const link = `${stixCoreObjectLink}/relations/${node.id}`;
+    const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -117,7 +117,7 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
 
 StixCoreObjectStixCyberObservableLineComponent.propTypes = {
   dataColumns: PropTypes.object,
-  stixCoreObjectLink: PropTypes.string,
+  entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,

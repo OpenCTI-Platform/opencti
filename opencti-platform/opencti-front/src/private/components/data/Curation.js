@@ -39,7 +39,7 @@ class StixCyberObservables extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       filters: {},
-      stixDomainObjectsTypes: propOr([], 'stixDomainObjectsTypes', params),
+      types: propOr([], 'types', params),
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: {},
     };
@@ -71,23 +71,17 @@ class StixCyberObservables extends Component {
   }
 
   handleToggle(type) {
-    if (this.state.stixDomainObjectsTypes.includes(type)) {
+    if (this.state.types.includes(type)) {
       this.setState(
         {
-          stixDomainObjectsTypes: filter(
-            (t) => t !== type,
-            this.state.stixDomainObjectsTypes,
-          ),
+          types: filter((t) => t !== type, this.state.types),
         },
         () => this.saveView(),
       );
     } else {
       this.setState(
         {
-          stixDomainObjectsTypes: append(
-            type,
-            this.state.stixDomainObjectsTypes,
-          ),
+          types: append(type, this.state.types),
         },
         () => this.saveView(),
       );
@@ -219,16 +213,11 @@ class StixCyberObservables extends Component {
   render() {
     const { classes } = this.props;
     const {
-      view,
-      stixDomainObjectsTypes,
-      sortBy,
-      orderAsc,
-      searchTerm,
-      filters,
+      view, types, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
-      types: stixDomainObjectsTypes.length > 0 ? stixDomainObjectsTypes : null,
+      types: types.length > 0 ? types : null,
       search: searchTerm,
       filters: finalFilters,
       orderBy: sortBy,
@@ -238,7 +227,7 @@ class StixCyberObservables extends Component {
       <div className={classes.container}>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixDomainObjectsRightBar
-          stixDomainObjectsTypes={stixDomainObjectsTypes}
+          types={types}
           handleToggle={this.handleToggle.bind(this)}
         />
       </div>

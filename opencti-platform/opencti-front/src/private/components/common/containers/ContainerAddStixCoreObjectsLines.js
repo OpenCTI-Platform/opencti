@@ -6,9 +6,9 @@ import {
   map, filter, keys, groupBy, assoc, compose, append,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -249,7 +249,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
       <div className={classes.container}>
         {stixCoreObjectsTypes.length > 0 ? (
           stixCoreObjectsTypes.map((type) => (
-            <ExpansionPanel
+            <Accordion
               key={type}
               expanded={this.isExpanded(
                 type,
@@ -259,15 +259,15 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
               onChange={this.handleChangePanel.bind(this, type)}
               classes={{ root: classes.expansionPanel }}
             >
-              <ExpansionPanelSummary expandIcon={<ExpandMore />}>
+              <AccordionSummary expandIcon={<ExpandMore />}>
                 <Typography className={classes.heading}>
                   {t(`entity_${type}`)}
                 </Typography>
                 <Typography className={classes.secondaryHeading}>
                   {stixCoreObjects[type].length} {t('entitie(s)')}
                 </Typography>
-              </ExpansionPanelSummary>
-              <ExpansionPanelDetails
+              </AccordionSummary>
+              <AccordionDetails
                 classes={{ root: classes.expansionPanelContent }}
               >
                 <List classes={{ root: classes.list }}>
@@ -322,8 +322,8 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                     );
                   })}
                 </List>
-              </ExpansionPanelDetails>
-            </ExpansionPanel>
+              </AccordionDetails>
+            </Accordion>
           ))
         ) : (
           <div style={{ paddingLeft: 20 }}>

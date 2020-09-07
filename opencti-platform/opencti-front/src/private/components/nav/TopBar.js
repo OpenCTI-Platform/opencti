@@ -43,7 +43,9 @@ import TopMenuEntities from './TopMenuEntities';
 import TopMenuSector from './TopMenuSector';
 import TopMenuOrganization from './TopMenuOrganization';
 import TopMenuIndividual from './TopMenuIndividual';
-import TopMenuLocation from './TopMenuLocation';
+import TopMenuRegion from './TopMenuRegion';
+import TopMenuCountry from './TopMenuCountry';
+import TopMenuCity from './TopMenuCity';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
@@ -212,11 +214,13 @@ const TopBar = ({
             ) : (
               ''
             )}
-          {location.pathname.includes('/dashboard/observations/observables/') ? (
+          {location.pathname.includes(
+            '/dashboard/observations/observables/',
+          ) ? (
             <TopMenuStixCyberObservable />
-          ) : (
-            ''
-          )}
+            ) : (
+              ''
+            )}
           {location.pathname === '/dashboard/threats'
           || location.pathname.match('/dashboard/threats/[a-z_]+$') ? (
             <TopMenuThreats />
@@ -285,8 +289,18 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname.includes('/dashboard/entities/locations/') ? (
-            <TopMenuLocation />
+          {location.pathname.includes('/dashboard/entities/regions/') ? (
+            <TopMenuRegion />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/entities/countries/') ? (
+            <TopMenuCountry />
+          ) : (
+            ''
+          )}
+          {location.pathname.includes('/dashboard/entities/cities/') ? (
+            <TopMenuCity />
           ) : (
             ''
           )}
@@ -312,6 +326,7 @@ const TopBar = ({
           <Security needs={[EXPLORE]}>
             <Tooltip title={t('Investigate')}>
               <IconButton
+                disabled={true}
                 component={Link}
                 to="/dashboard/investigate"
                 variant={

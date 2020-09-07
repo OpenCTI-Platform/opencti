@@ -4,7 +4,6 @@ import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pathOr } from 'ramda';
-import inject18n from '../../../../components/i18n';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine,
@@ -45,65 +44,36 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer exte
       stixObjectOrStixRelationshipId,
       stixObjectOrStixRelationshipLink,
       paginationOptions,
-      t,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
-        {pathOr(
+      <ListLinesContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={pathOr(
           [],
           ['stixCoreRelationshipsOfElement', 'edges'],
           this.props.data,
-        ).length > 0 ? (
-          <ListLinesContent
-            initialLoading={initialLoading}
-            loadMore={relay.loadMore.bind(this)}
-            hasMore={relay.hasMore.bind(this)}
-            isLoading={relay.isLoading.bind(this)}
-            dataList={pathOr(
-              [],
-              ['stixCoreRelationshipsOfElement', 'edges'],
-              this.props.data,
-            )}
-            globalCount={pathOr(
-              nbOfRowsToLoad,
-              ['stixCoreRelationshipsOfElement', 'pageInfo', 'globalCount'],
-              this.props.data,
-            )}
-            LineComponent={
-              <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine />
-            }
-            DummyLineComponent={
-              <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy />
-            }
-            dataColumns={dataColumns}
-            nbOfRowsToLoad={nbOfRowsToLoad}
-            paginationOptions={paginationOptions}
-            entityId={stixObjectOrStixRelationshipId}
-            entityLink={stixObjectOrStixRelationshipLink}
-            connectionKey="Pagination_stixCoreRelationshipsOfElement"
-          />
-          ) : (
-          <div
-            style={{
-              display: 'table',
-              height: '100%',
-              width: '100%',
-              paddingTop: 15,
-              paddingBottom: 15,
-            }}
-          >
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('No entities of this type has been found.')}
-            </span>
-          </div>
-          )}
-      </div>
+        )}
+        globalCount={pathOr(
+          nbOfRowsToLoad,
+          ['stixCoreRelationshipsOfElement', 'pageInfo', 'globalCount'],
+          this.props.data,
+        )}
+        LineComponent={
+          <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine />
+        }
+        DummyLineComponent={
+          <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy />
+        }
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+        paginationOptions={paginationOptions}
+        entityId={stixObjectOrStixRelationshipId}
+        entityLink={stixObjectOrStixRelationshipLink}
+        connectionKey="Pagination_stixCoreRelationshipsOfElement"
+      />
     );
   }
 }
@@ -228,7 +198,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines);
+export default compose(withStyles(styles))(
+  SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines,
+);

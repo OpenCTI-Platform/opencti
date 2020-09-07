@@ -10,8 +10,10 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import OrganizationPopover from './OrganizationPopover';
-import OrganizationKnowledgeBar from './OrganizationKnowledgeBar';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const styles = () => ({
   container: {
@@ -30,7 +32,20 @@ class OrganizationKnowledgeComponent extends Component {
           stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
         />
-        <OrganizationKnowledgeBar organizationId={organization.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'individuals',
+            'organizations',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/relations/:relationId"
@@ -55,39 +70,10 @@ class OrganizationKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:organizationId/knowledge/sectors"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={organization.id}
-              relationshipType="part-of"
-              targetStixDomainObjectTypes={['Sector']}
-              entityLink={link}
-              isRelationReversed={false}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/entities/organizations/:organizationId/knowledge/locations"
-          render={(routeProps) => (
-            <EntityStixCoreRelationships
-              entityId={organization.id}
-              relationshipType="localization"
-              targetStixDomainObjectTypes={['Region', 'Country', 'City']}
-              entityLink={link}
-              isRelationReversed={false}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/organizations"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              role="gather"
               relationshipType="part-of"
               targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
@@ -103,7 +89,7 @@ class OrganizationKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipType="part-of"
-              targetStixDomainObjectTypes={['User']}
+              targetStixDomainObjectTypes={['Individual']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -112,19 +98,12 @@ class OrganizationKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:organizationId/knowledge/threats"
+          path="/dashboard/entities/organizations/:organizationId/knowledge/threat_actors"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
               relationshipType="targets"
-              targetStixDomainObjectTypes={[
-                'Country',
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'XOpenCTIIncident',
-                'Malware',
-              ]}
+              targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}
@@ -133,20 +112,81 @@ class OrganizationKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/dashboard/entities/organizations/:organizationId/knowledge/attribution"
+          path="/dashboard/entities/organizations/:organizationId/knowledge/intrusion_sets"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="attributed-to"
-              targetStixDomainObjectTypes={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'XOpenCTIIncident',
-                'Malware',
-              ]}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/campaigns"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Campaign']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/malwares"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipType="targets"
+              targetStixDomainObjectTypes={['Malware']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/observables"
+          render={(routeProps) => (
+            <StixCoreObjectStixCyberObservables
+              stixCoreObjectId={organization.id}
+              stixCoreObjectLink={link}
+              noRightBar={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/sightings"
+          render={(routeProps) => (
+            <EntityStixSightingRelationships
+              entityId={organization.id}
+              entityLink={link}
+              noRightBar={true}
+              isTo={true}
               {...routeProps}
             />
           )}

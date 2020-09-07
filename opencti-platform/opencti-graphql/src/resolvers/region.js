@@ -1,4 +1,4 @@
-import { addRegion, findAll, findById, parentRegions, subRegions, isSubRegion } from '../domain/region';
+import { addRegion, findAll, findById, parentRegions, subRegions, isSubRegion, countries } from '../domain/region';
 import {
   stixDomainObjectEditContext,
   stixDomainObjectCleanContext,
@@ -19,6 +19,7 @@ const regionResolvers = {
     parentRegions: (region) => parentRegions(region.id),
     subRegions: (region) => subRegions(region.id),
     isSubRegion: (region) => isSubRegion(region.id),
+    countries: (region) => countries(region.id),
   },
   RegionsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

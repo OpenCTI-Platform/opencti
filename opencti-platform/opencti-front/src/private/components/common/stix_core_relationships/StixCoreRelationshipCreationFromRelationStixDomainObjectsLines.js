@@ -6,9 +6,9 @@ import {
   map, keys, groupBy, assoc, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import ExpansionPanel from '@material-ui/core/ExpansionPanel';
-import ExpansionPanelDetails from '@material-ui/core/ExpansionPanelDetails';
-import ExpansionPanelSummary from '@material-ui/core/ExpansionPanelSummary';
+import Accordion from '@material-ui/core/Accordion';
+import AccordionDetails from '@material-ui/core/AccordionDetails';
+import AccordionSummary from '@material-ui/core/AccordionSummary';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
@@ -100,7 +100,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
           stixDomainObjectsTypes.map((type) => {
             increment += 1;
             return (
-              <ExpansionPanel
+              <Accordion
                 key={type}
                 expanded={this.isExpanded(
                   type,
@@ -121,15 +121,15 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                       : 0,
                 }}
               >
-                <ExpansionPanelSummary expandIcon={<ExpandMore />}>
+                <AccordionSummary expandIcon={<ExpandMore />}>
                   <Typography className={classes.heading}>
                     {t(`entity_${type}`)}
                   </Typography>
                   <Typography className={classes.secondaryHeading}>
                     {stixDomainObjects[type].length} {t('entitie(s)')}
                   </Typography>
-                </ExpansionPanelSummary>
-                <ExpansionPanelDetails
+                </AccordionSummary>
+                <AccordionDetails
                   classes={{ root: classes.expansionPanelContent }}
                 >
                   <List classes={{ root: classes.list }}>
@@ -145,7 +145,11 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
-                          primary={stixDomainObject.name}
+                          primary={
+                            stixDomainObject.name
+                            || stixDomainObject.attribute_abstract
+                            || stixDomainObject.opinion
+                          }
                           secondary={truncate(
                             stixDomainObject.description,
                             100,
@@ -154,8 +158,8 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                       </ListItem>
                     ))}
                   </List>
-                </ExpansionPanelDetails>
-              </ExpansionPanel>
+                </AccordionDetails>
+              </Accordion>
             );
           })
         ) : (
@@ -187,14 +191,14 @@ export const stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery
     $orderMode: OrderingMode
   ) {
     ...StixCoreRelationshipCreationFromRelationStixDomainObjectsLines_data
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -203,14 +207,14 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
   {
     data: graphql`
       fragment StixCoreRelationshipCreationFromRelationStixDomainObjectsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixDomainObjects(
           search: $search
           types: $types
@@ -227,6 +231,15 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
               ... on AttackPattern {
                 name
                 description
+              }
+              ... on Note {
+                attribute_abstract
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Report {
+                name
               }
               ... on Campaign {
                 name

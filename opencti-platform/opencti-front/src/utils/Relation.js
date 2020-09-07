@@ -185,7 +185,7 @@ export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
 };
 
 export const resolveTargetTypes = (fromType) => pipe(
-  keys(relationsTypesMapping),
+  keys,
   filter((n) => n.includes(fromType)),
   map((n) => split('_', n)[1]),
 )(relationsTypesMapping);

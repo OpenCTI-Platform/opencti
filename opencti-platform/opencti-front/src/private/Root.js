@@ -59,6 +59,7 @@ const rootQuery = graphql`
       }
     }
     settings {
+      platform_map_tile_server
       ...AppIntlProvider_settings
     }
   }
@@ -73,13 +74,18 @@ const Root = () => {
       render={({ props }) => {
         if (props) {
           return (
-            <UserContext.Provider value={props.me}>
+            <UserContext.Provider
+              value={{ me: props.me, settings: props.settings }}
+            >
               <ConnectedIntlProvider settings={props.settings}>
                 <div className={classes.root}>
                   <TopBar />
                   <LeftBar />
                   <Message />
-                  <main className={classes.content} style={{ paddingRight: 24 }}>
+                  <main
+                    className={classes.content}
+                    style={{ paddingRight: 24 }}
+                  >
                     <div className={classes.toolbar} />
                     <Switch>
                       <BoundaryRoute
@@ -111,8 +117,8 @@ const Root = () => {
                         component={RootThreats}
                       />
                       <BoundaryRoute
-                          path="/dashboard/arsenal"
-                          component={RootArsenal}
+                        path="/dashboard/arsenal"
+                        component={RootArsenal}
                       />
                       <BoundaryRoute
                         path="/dashboard/entities"

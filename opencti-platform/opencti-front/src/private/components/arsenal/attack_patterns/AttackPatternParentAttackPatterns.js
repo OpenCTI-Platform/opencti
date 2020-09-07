@@ -16,8 +16,8 @@ class AttackPatternParentAttackPatternsComponent extends Component {
   render() {
     const { t, attackPattern } = this.props;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+      <div>
+        <Typography variant="h3" gutterBottom={true}>
           {t('Parent attack patterns')}
         </Typography>
         <List>

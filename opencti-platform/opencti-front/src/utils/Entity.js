@@ -28,13 +28,13 @@ export const resolveLink = (type) => {
     case 'Intrusion-Set':
       return '/dashboard/threats/intrusion_sets';
     case 'City':
-      return '/dashboard/entities/locations';
+      return '/dashboard/entities/cities';
     case 'Country':
-      return '/dashboard/entities/locations';
+      return '/dashboard/entities/countries';
     case 'Region':
-      return '/dashboard/entities/locations';
+      return '/dashboard/entities/regions';
     case 'Position':
-      return '/dashboard/entities/locations';
+      return '/dashboard/entities/positions';
     case 'Malware':
       return '/dashboard/arsenal/malwares';
     case 'Threat-Actor':

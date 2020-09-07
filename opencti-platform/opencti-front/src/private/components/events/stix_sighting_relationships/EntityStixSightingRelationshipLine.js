@@ -10,10 +10,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   item: {
@@ -68,11 +70,19 @@ class EntityStixSightingRelationshipLineComponent extends Component {
       dataColumns,
       node,
       paginationOptions,
+      isTo,
     } = this.props;
+    const entity = isTo ? node.from : node.to;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={false}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`${resolveLink(entity.entity_type)}/${entity.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.to.entity_type} />
+          <ItemIcon type={entity.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -104,13 +114,13 @@ class EntityStixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.to.name}
+                {entity.name || entity.observable_value}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.to.entity_type}`)}
+                {t(`entity_${entity.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -155,6 +165,8 @@ EntityStixSightingRelationshipLineComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
+  isTo: PropTypes.bool,
+  entityLink: PropTypes.string,
 };
 
 const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
@@ -172,8 +184,8 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
         last_seen
         description
         inferred
-        to {
-          ... on StixDomainObject {
+        from {
+          ... on StixObject {
             id
             entity_type
             parent_types
@@ -259,6 +271,46 @@ const EntityStixSightingRelationshipLineFragment = createFragmentContainer(
             description
           }
           ... on XOpenCTIIncident {
+            name
+            description
+          }
+          ... on StixCyberObservable {
+            observable_value
+          }
+        }
+        to {
+          ... on StixObject {
+            id
+            entity_type
+            parent_types
+            created_at
+            updated_at
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
             name
             description
           }

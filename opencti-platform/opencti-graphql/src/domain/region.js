@@ -1,4 +1,4 @@
-import { assoc } from 'ramda';
+import { assoc, isNil, map } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -7,10 +7,11 @@ import {
   listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
   loadById,
+  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
@@ -30,6 +31,10 @@ export const subRegions = (regionId) => {
   return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
+export const countries = (regionId) => {
+  return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true);
+};
+
 export const isSubRegion = async (regionId) => {
   const numberOfParents = await getSingleValueNumber(
     `match $parent isa Region; 
@@ -46,5 +51,16 @@ export const addRegion = async (user, region) => {
     assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_REGION, region),
     ENTITY_TYPE_LOCATION_REGION
   );
+  if (region.update === true) {
+    const fieldsToUpdate = ['longitude', 'latitude'];
+    await Promise.all(
+      map((field) => {
+        if (!isNil(region[field])) {
+          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [region[field]] });
+        }
+        return true;
+      }, fieldsToUpdate)
+    );
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

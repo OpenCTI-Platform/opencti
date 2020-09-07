@@ -43,7 +43,7 @@ class AttackPatterns extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-attackPatterns',
+      'view-attack_patterns',
     );
     this.state = {
       searchTerm: propOr('', 'searchTerm', params),
@@ -55,7 +55,7 @@ class AttackPatterns extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-attackPatterns',
+      'view-attack_patterns',
       this.state,
     );
   }

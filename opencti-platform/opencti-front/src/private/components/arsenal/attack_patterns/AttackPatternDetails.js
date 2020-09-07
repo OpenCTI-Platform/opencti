@@ -39,7 +39,18 @@ class AttackPatternDetailsComponent extends Component {
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              {attackPattern.isSubAttackPattern ? (
+                <AttackPatternParentAttackPatterns
+                  attackPattern={attackPattern}
+                />
+              ) : (
+                ''
+              )}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: attackPattern.isSubAttackPattern ? 20 : 0 }}
+              >
                 {t('External ID')}
               </Typography>
               <Chip
@@ -56,51 +67,61 @@ class AttackPatternDetailsComponent extends Component {
               </Typography>
               <ExpandableMarkdown
                 source={attackPattern.description}
-                limit={400}
+                limit={300}
               />
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Platforms')}
-              </Typography>
-              <List>
-                {propOr([], 'x_mitre_platforms', attackPattern).map(
-                  (platform) => (
-                    <ListItem key={platform} dense={true} divider={true}>
-                      <ListItemIcon>
-                        <SettingsApplications />
-                      </ListItemIcon>
-                      <ListItemText primary={platform} />
-                    </ListItem>
-                  ),
-                )}
-              </List>
+              {!attackPattern.isSubAttackPattern ? (
+                <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
+              ) : (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Platforms')}
+                  </Typography>
+                  <List>
+                    {propOr([], 'x_mitre_platforms', attackPattern).map(
+                      (platform) => (
+                        <ListItem key={platform} dense={true} divider={true}>
+                          <ListItemIcon>
+                            <SettingsApplications />
+                          </ListItemIcon>
+                          <ListItemText primary={platform} />
+                        </ListItem>
+                      ),
+                    )}
+                  </List>
+                </div>
+              )}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Kill chain phases')}
               </Typography>
-              <List>
-                {attackPattern.killChainPhases.edges.map(
-                  (killChainPhaseEdge) => {
-                    const killChainPhase = killChainPhaseEdge.node;
-                    return (
-                      <ListItem
-                        key={killChainPhase.phase_name}
-                        dense={true}
-                        divider={true}
-                      >
-                        <ListItemIcon>
-                          <Launch />
-                        </ListItemIcon>
-                        <ListItemText primary={killChainPhase.phase_name} />
-                      </ListItem>
-                    );
-                  },
-                )}
-              </List>
+              {attackPattern.killChainPhases.edges.length > 0 ? (
+                <List>
+                  {attackPattern.killChainPhases.edges.map(
+                    (killChainPhaseEdge) => {
+                      const killChainPhase = killChainPhaseEdge.node;
+                      return (
+                        <ListItem
+                          key={killChainPhase.phase_name}
+                          dense={true}
+                          divider={true}
+                        >
+                          <ListItemIcon>
+                            <Launch />
+                          </ListItemIcon>
+                          <ListItemText primary={killChainPhase.phase_name} />
+                        </ListItem>
+                      );
+                    },
+                  )}
+                </List>
+              ) : (
+                ''
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -112,6 +133,35 @@ class AttackPatternDetailsComponent extends Component {
                 source={attackPattern.x_mitre_detection}
                 limit={400}
               />
+              {!attackPattern.isSubAttackPattern ? (
+                <div>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
+                    {t('Platforms')}
+                  </Typography>
+                  {propOr([], 'x_mitre_platforms', attackPattern) > 0 ? (
+                    <List>
+                      {propOr([], 'x_mitre_platforms', attackPattern).map(
+                        (platform) => (
+                          <ListItem key={platform} dense={true} divider={true}>
+                            <ListItemIcon>
+                              <SettingsApplications />
+                            </ListItemIcon>
+                            <ListItemText primary={platform} />
+                          </ListItem>
+                        ),
+                      )}
+                    </List>
+                  ) : (
+                    ''
+                  )}
+                </div>
+              ) : (
+                ''
+              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -131,13 +181,6 @@ class AttackPatternDetailsComponent extends Component {
                   ),
                 )}
               </List>
-              {attackPattern.isSubAttackPattern ? (
-                <AttackPatternParentAttackPatterns
-                  attackPattern={attackPattern}
-                />
-              ) : (
-                <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
-              )}
             </Grid>
           </Grid>
         </Paper>

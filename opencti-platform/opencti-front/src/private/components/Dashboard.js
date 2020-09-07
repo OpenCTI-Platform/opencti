@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import { compose, head, pathOr } from 'ramda';
+import {
+  compose, head, pathOr, assoc, map, pluck, last,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
@@ -14,7 +16,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import CardContent from '@material-ui/core/CardContent';
 import { DescriptionOutlined } from '@material-ui/icons';
-import { Database, GraphOutline, HexagonMultipleOutline } from 'mdi-material-ui';
+import {
+  Database,
+  GraphOutline,
+  HexagonMultipleOutline,
+} from 'mdi-material-ui';
+import Cell from 'recharts/lib/component/Cell';
 import AreaChart from 'recharts/lib/chart/AreaChart';
 import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
@@ -36,6 +43,11 @@ import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
+import { itemColor } from '../../utils/Colors';
+import { truncate } from '../../utils/String';
+import StixCoreRelationshipsBars from './common/stix_core_relationships/StixCoreRelationshipsBars';
+import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
+import { computeLevel } from '../../utils/Number';
 
 const styles = (theme) => ({
   root: {
@@ -178,6 +190,44 @@ const dashboardStixMetaRelationshipsDistributionQuery = graphql`
   }
 `;
 
+const dashboardStixCoreRelationshipsDistributionQuery = graphql`
+  query DashboardStixCoreRelationshipsDistributionQuery(
+    $field: String!
+    $operation: StatsOperation!
+    $relationship_type: String
+    $toTypes: [String]
+    $startDate: DateTime
+    $endDate: DateTime
+    $dateAttribute: String
+    $limit: Int
+  ) {
+    stixCoreRelationshipsDistribution(
+      field: $field
+      operation: $operation
+      relationship_type: $relationship_type
+      toTypes: $toTypes
+      startDate: $startDate
+      endDate: $endDate
+      dateAttribute: $dateAttribute
+      limit: $limit
+    ) {
+      label
+      value
+      entity {
+        ... on BasicObject {
+          entity_type
+        }
+        ... on Country {
+          name
+          x_opencti_aliases
+          latitude
+          longitude
+        }
+      }
+    }
+  }
+`;
+
 const dashboardStixDomainObjectsTimeSeriesQuery = graphql`
   query DashboardStixDomainObjectsTimeSeriesQuery(
     $field: String!
@@ -297,6 +347,10 @@ const dashboardStixCyberObservablesNumberQuery = graphql`
 `;
 
 class Dashboard extends Component {
+  tickFormatter(title) {
+    return truncate(this.props.t(`entity_${title}`), 10);
+  }
+
   hexToRGB(hex, transp = 0.1) {
     const r = parseInt(hex.slice(1, 3), 16);
     const g = parseInt(hex.slice(3, 5), 16);
@@ -421,7 +475,10 @@ class Dashboard extends Component {
                           <div className={classes.number}>{n(total)}</div>
                           <ItemNumberDifference difference={difference} />
                           <div className={classes.icon}>
-                            <HexagonMultipleOutline color="inherit" fontSize="large" />
+                            <HexagonMultipleOutline
+                              color="inherit"
+                              fontSize="large"
+                            />
                           </div>
                         </CardContent>
                       );
@@ -597,102 +654,86 @@ class Dashboard extends Component {
             </Grid>
           </Grid>
           <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
-            <Grid item={true} xs={4}>
+            <Grid item={true} xs={6}>
+              <StixCoreRelationshipsBars
+                height={400}
+                relationshipType="stix-core-relationship"
+                toTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Malware',
+                ]}
+                title={t('Top 10 active threats (3 last months)')}
+                field="internal_id"
+                startDate={monthsAgo(3)}
+                endDate={now()}
+                dateAttribute="created_at"
+              />
+            </Grid>
+            <Grid item={true} xs={6}>
               <Typography variant="h4" gutterBottom={true}>
-                {t('Observables distribution')}
+                {t('Targeted countries (3 last months)')}
               </Typography>
               <Paper
                 classes={{ root: classes.paper }}
                 elevation={2}
-                style={{ height: 420 }}
+                style={{ height: 400 }}
               >
                 <QueryRenderer
-                  query={dashboardStixCyberObservablesDistributionQuery}
-                  variables={{ field: 'entity_type', operation: 'count' }}
+                  query={dashboardStixCoreRelationshipsDistributionQuery}
+                  variables={{
+                    field: 'internal_id',
+                    operation: 'count',
+                    relationship_type: 'targets',
+                    toTypes: ['Country'],
+                    startDate: monthsAgo(3),
+                    endDate: now(),
+                    dateAttribute: 'created_at',
+                    limit: 20,
+                  }}
                   render={({ props }) => {
                     if (
                       props
-                      && props.stixCyberObservablesDistribution
-                      && props.stixCyberObservablesDistribution.length > 0
+                      && props.stixCoreRelationshipsDistribution
+                      && props.stixCoreRelationshipsDistribution.length > 0
                     ) {
+                      const values = pluck(
+                        'value',
+                        props.stixCoreRelationshipsDistribution,
+                      );
+                      const countries = map(
+                        (x) => assoc(
+                          'level',
+                          computeLevel(
+                            x.value,
+                            last(values),
+                            head(values) + 1,
+                          ),
+                          x.entity,
+                        ),
+                        props.stixCoreRelationshipsDistribution,
+                      );
                       return (
-                        <div className={classes.graphContainer}>
-                          <ResponsiveContainer height={420} width="100%">
-                            <BarChart
-                              layout="vertical"
-                              data={props.stixCyberObservablesDistribution}
-                              margin={{
-                                top: 0,
-                                right: 0,
-                                bottom: 20,
-                                left: 20,
-                              }}
-                            >
-                              <XAxis
-                                type="number"
-                                dataKey="value"
-                                stroke="#ffffff"
-                                allowDecimals={false}
-                              />
-                              <YAxis
-                                stroke="#ffffff"
-                                dataKey="label"
-                                type="category"
-                                angle={-30}
-                                textAnchor="end"
-                              />
-                              <CartesianGrid
-                                strokeDasharray="2 2"
-                                stroke="#0f181f"
-                              />
-                              <Tooltip
-                                cursor={{
-                                  fill: 'rgba(0, 0, 0, 0.2)',
-                                  stroke: 'rgba(0, 0, 0, 0.2)',
-                                  strokeWidth: 2,
-                                }}
-                                contentStyle={{
-                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                                  fontSize: 12,
-                                  borderRadius: 10,
-                                }}
-                              />
-                              <Bar
-                                fill={Theme.palette.primary.main}
-                                dataKey="value"
-                                barSize={20}
-                              />
-                            </BarChart>
-                          </ResponsiveContainer>
-                        </div>
+                        <LocationMiniMapTargets
+                          center={[48.8566969, 2.3514616]}
+                          countries={countries}
+                          zoom={2}
+                        />
                       );
                     }
-                    if (props) {
-                      return (
-                        <div
-                          style={{
-                            display: 'table',
-                            height: '100%',
-                            width: '100%',
-                          }}
-                        >
-                          <span
-                            style={{
-                              display: 'table-cell',
-                              verticalAlign: 'middle',
-                              textAlign: 'center',
-                            }}
-                          >
-                            {t('No entities of this type has been found.')}
-                          </span>
-                        </div>
-                      );
-                    }
-                    return <Loader variant="inElement" />;
+                    return (
+                      <LocationMiniMapTargets
+                        center={[48.8566969, 2.3514616]}
+                        zoom={2}
+                      />
+                    );
                   }}
                 />
               </Paper>
             </Grid>
+          </Grid>
+          <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
             <Grid item={true} xs={8}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Last ingested analysis')}
@@ -796,6 +837,112 @@ class Dashboard extends Component {
                             },
                           )}
                         </List>
+                      );
+                    }
+                    if (props) {
+                      return (
+                        <div
+                          style={{
+                            display: 'table',
+                            height: '100%',
+                            width: '100%',
+                          }}
+                        >
+                          <span
+                            style={{
+                              display: 'table-cell',
+                              verticalAlign: 'middle',
+                              textAlign: 'center',
+                            }}
+                          >
+                            {t('No entities of this type has been found.')}
+                          </span>
+                        </div>
+                      );
+                    }
+                    return <Loader variant="inElement" />;
+                  }}
+                />
+              </Paper>
+            </Grid>
+            <Grid item={true} xs={4}>
+              <Typography variant="h4" gutterBottom={true}>
+                {t('Observables distribution')}
+              </Typography>
+              <Paper
+                classes={{ root: classes.paper }}
+                elevation={2}
+                style={{ height: 420 }}
+              >
+                <QueryRenderer
+                  query={dashboardStixCyberObservablesDistributionQuery}
+                  variables={{ field: 'entity_type', operation: 'count' }}
+                  render={({ props }) => {
+                    if (
+                      props
+                      && props.stixCyberObservablesDistribution
+                      && props.stixCyberObservablesDistribution.length > 0
+                    ) {
+                      return (
+                        <div className={classes.graphContainer}>
+                          <ResponsiveContainer height={420} width="100%">
+                            <BarChart
+                              layout="vertical"
+                              data={props.stixCyberObservablesDistribution}
+                              margin={{
+                                top: 0,
+                                right: 0,
+                                bottom: 20,
+                                left: 0,
+                              }}
+                            >
+                              <XAxis
+                                type="number"
+                                dataKey="value"
+                                stroke="#ffffff"
+                                allowDecimals={false}
+                              />
+                              <YAxis
+                                stroke="#ffffff"
+                                dataKey="label"
+                                type="category"
+                                angle={-30}
+                                textAnchor="end"
+                                tickFormatter={this.tickFormatter.bind(this)}
+                              />
+                              <CartesianGrid
+                                strokeDasharray="2 2"
+                                stroke="#0f181f"
+                              />
+                              <Tooltip
+                                cursor={{
+                                  fill: 'rgba(0, 0, 0, 0.2)',
+                                  stroke: 'rgba(0, 0, 0, 0.2)',
+                                  strokeWidth: 2,
+                                }}
+                                contentStyle={{
+                                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                  fontSize: 12,
+                                  borderRadius: 10,
+                                }}
+                              />
+                              <Bar
+                                fill={Theme.palette.primary.main}
+                                dataKey="value"
+                                barSize={15}
+                              >
+                                {props.stixCyberObservablesDistribution.map(
+                                  (entry, index) => (
+                                    <Cell
+                                      key={`cell-${index}`}
+                                      fill={itemColor(entry.label)}
+                                    />
+                                  ),
+                                )}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
                       );
                     }
                     if (props) {

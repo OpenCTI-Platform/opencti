@@ -21,10 +21,12 @@ const styles = () => ({
 
 class StixCoreRelationshipNotesCardsContainer extends Component {
   render() {
-    const { t, stixCoreRelationshipId, data } = this.props;
+    const {
+      t, stixCoreRelationshipId, marginTop, data,
+    } = this.props;
     const notes = pathOr([], ['stixCoreRelationship', 'notes', 'edges'], data);
     return (
-      <div style={{ height: '100%', marginTop: 40 }}>
+      <div style={{ height: '100%', marginTop: marginTop || 40 }}>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Notes about this relationship')}
         </Typography>
@@ -35,7 +37,11 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
           />
         </Security>
         <div className="clearfix" />
-        <Grid container={true} spacing={3}>
+        <Grid
+          container={true}
+          spacing={3}
+          style={{ transform: 'translateY(-15px)' }}
+        >
           {notes.map((noteEdge) => {
             const note = noteEdge.node;
             return (
@@ -57,6 +63,7 @@ class StixCoreRelationshipNotesCardsContainer extends Component {
 
 StixCoreRelationshipNotesCardsContainer.propTypes = {
   stixCoreRelationshipId: PropTypes.string,
+  marginTop: PropTypes.number,
   data: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

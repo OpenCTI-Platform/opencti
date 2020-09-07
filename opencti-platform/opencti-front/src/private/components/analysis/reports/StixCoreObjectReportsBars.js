@@ -18,6 +18,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import Theme from '../../../../components/ThemeDark';
+import { truncate } from '../../../../utils/String';
 
 const styles = () => ({
   paper: {
@@ -50,6 +51,10 @@ const stixCoreObjectReportsBarsDistributionQuery = graphql`
 `;
 
 class StixCoreObjectReportsBars extends Component {
+  tickFormatter(title) {
+    return truncate(title, 10);
+  }
+
   render() {
     const {
       t, classes, stixCoreObjectId, field, title,
@@ -99,6 +104,7 @@ class StixCoreObjectReportsBars extends Component {
                         type="category"
                         angle={-30}
                         textAnchor="end"
+                        tickFormatter={this.tickFormatter.bind(this)}
                       />
                       <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
                       <Tooltip

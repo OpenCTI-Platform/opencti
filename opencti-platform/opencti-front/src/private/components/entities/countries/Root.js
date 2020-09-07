@@ -8,14 +8,13 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Country from './Country';
-import CountryReports from './CountryReports';
 import CountryKnowledge from './CountryKnowledge';
-import CountryObservables from './CountryObservables';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import CountryPopover from './CountryPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 
 const subscription = graphql`
   subscription RootCountriesSubscription($id: ID!) {
@@ -37,9 +36,7 @@ const countryQuery = graphql`
       name
       x_opencti_aliases
       ...Country_country
-      ...CountryReports_country
       ...CountryKnowledge_country
-      ...CountryObservables_country
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -93,13 +90,6 @@ class RootCountry extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/entities/countries/:countryId/reports"
-                    render={(routeProps) => (
-                      <CountryReports {...routeProps} country={props.country} />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/entities/countries/:countryId/knowledge"
                     render={() => (
                       <Redirect
@@ -117,12 +107,19 @@ class RootCountry extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/entities/countries/:countryId/observables"
+                    exact
+                    path="/dashboard/entities/countries/:countryId/analysis"
                     render={(routeProps) => (
-                      <CountryObservables
-                        {...routeProps}
-                        country={props.country}
-                      />
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.country}
+                          PopoverComponent={<CountryPopover />}
+                        />
+                        <StixCoreObjectOrStixCoreRelationshipContainers
+                          {...routeProps}
+                          stixCoreObjectOrStixCoreRelationshipId={countryId}
+                        />
+                      </React.Fragment>
                     )}
                   />
                   <Route

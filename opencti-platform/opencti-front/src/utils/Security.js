@@ -42,7 +42,7 @@ const Security = ({
   needs, matchAll, children, placeholder = <span />,
 }) => (
   <UserContext.Consumer>
-    {(me) => {
+    {({ me }) => {
       if (granted(me, needs, matchAll)) return children;
       return placeholder;
     }}

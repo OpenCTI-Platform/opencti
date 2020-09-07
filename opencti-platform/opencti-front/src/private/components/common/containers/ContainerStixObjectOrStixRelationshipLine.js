@@ -59,7 +59,13 @@ class ContainerStixObjectOrStixRelationshipLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`${resolveLink(node.entity_type)}/${node.id}`}
+        to={
+          node.relationship_type
+            ? `${resolveLink(node.from.entity_type)}/${
+              node.from.id
+            }/knowledge/relations/${node.id}`
+            : `${resolveLink(node.entity_type)}/${node.id}`
+        }
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.entity_type} />
@@ -71,16 +77,22 @@ class ContainerStixObjectOrStixRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.entity_type}`)}
+                {node.relationship_type
+                  ? t(`relationship_${node.entity_type}`)
+                  : t(`entity_${node.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name
-                  || node.observable_value
-                  || node.attribute_abstract
-                  || node.opinion}
+                {node.relationship_type
+                  ? `${node.from.name || node.from.observable_value} - ${
+                    node.to.name || node.to.observable_value
+                  }`
+                  : node.name
+                    || node.observable_value
+                    || node.attribute_abstract
+                    || node.opinion}
               </div>
               <div
                 className={classes.bodyItem}
@@ -218,7 +230,12 @@ const ContainerStixObjectOrStixRelationshipLineFragment = createFragmentContaine
         ... on StixCyberObservable {
           observable_value
         }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
         ... on StixCoreRelationship {
+          relationship_type
           from {
             ... on BasicObject {
               id

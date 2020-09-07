@@ -24,7 +24,7 @@ class Infrastructures extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-intrusion_sets',
+      'view-infrastructures',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -41,7 +41,7 @@ class Infrastructures extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-intrusion_sets',
+      'view-infrastructures',
       dissoc('filters', this.state),
     );
   }

@@ -341,6 +341,7 @@ type Settings implements InternalObject & BasicObject {
   platform_language: String
   platform_parameters: String
   platform_demo: Boolean
+  platform_map_tile_server: String
   created_at: DateTime!
   updated_at: DateTime!
   # Technical
@@ -1814,6 +1815,7 @@ enum ReportsFilter {
   created_at
   report_types
   x_opencti_report_status
+  confidence
   objectLabel
   createdBy
   markedBy
@@ -2516,6 +2518,7 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parentSectors: SectorConnection
   subSectors: SectorConnection
   isSubSector: Boolean
+  targetedOrganizations: StixCoreRelationshipConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -3399,6 +3402,9 @@ input CountryAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String
+  latitude: Float
+  longitude: Float
+  precision: Float
   confidence: Int
   revoked: Boolean
   lang: String
@@ -3504,6 +3510,7 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   parentRegions: RegionConnection
   subRegions: RegionConnection
   isSubRegion: Boolean
+  countries: CountryConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -3515,7 +3522,9 @@ input RegionAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String
-  contact_information: String
+  latitude: Float
+  longitude: Float
+  precision: Float
   confidence: Int
   revoked: Boolean
   lang: String
@@ -7386,6 +7395,7 @@ type Query {
   stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixDomainObjectsDistribution(
     objectId: String
+    relationship_type: String!
     toTypes: [String]
     field: String!
     operation: StatsOperation!
@@ -7867,7 +7877,7 @@ type Query {
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixCoreRelationshipsDistribution(
-    fromId: String!
+    fromId: String
     field: String!
     operation: StatsOperation!
     relationship_type: String
@@ -7875,6 +7885,7 @@ type Query {
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
+    dateAttribute: String
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])

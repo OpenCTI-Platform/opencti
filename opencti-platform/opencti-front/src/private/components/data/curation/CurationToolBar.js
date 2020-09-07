@@ -15,6 +15,8 @@ import {
   pathOr,
   tail,
   filter,
+  includes,
+  isNil,
 } from 'ramda';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -189,10 +191,18 @@ class CurationToolBar extends Component {
       ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
       : head(selectedElementsList);
     const names = pluck('name', selectedElementsList);
-    const aliaseses = flatten(pluck('aliases', selectedElementsList));
+    const aliases = !isNil(keptElement.aliases)
+      ? filter(
+        (n) => !isNil(n),
+        flatten(pluck('aliases', selectedElementsList)),
+      )
+      : filter(
+        (n) => !isNil(n),
+        flatten(pluck('x_opencti_aliases', selectedElementsList)),
+      );
     const newAliases = filter(
       (n) => n.length > 0,
-      uniq(concat(names, aliaseses)),
+      uniq(concat(names, aliases)),
     );
     const filteredStixDomainObjectsIds = keptEntityId
       ? filter((n) => n !== keptEntityId, stixDomainObjectsIds)
@@ -225,18 +235,34 @@ class CurationToolBar extends Component {
   render() {
     const { t, classes, selectedElements } = this.props;
     const { keptEntityId } = this.state;
+    const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Observed-Data'];
     const numberOfSelectedElements = Object.keys(selectedElements).length;
     const typesAreDifferent = uniq(map((n) => n.entity_type, values(selectedElements))).length > 1;
-    const selectedElementsList = values(selectedElements);
-    const keptElement = keptEntityId
-      ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
-      : head(selectedElementsList);
-    const names = pluck('name', selectedElementsList);
-    const aliases = flatten(pluck('aliases', selectedElementsList));
-    const newAliases = filter(
-      (n) => n.length > 0,
-      uniq(concat(names, aliases)),
+    const typesAreNotMergable = includes(
+      uniq(map((n) => n.entity_type, values(selectedElements)))[0],
+      notMergableTypes,
     );
+    const selectedElementsList = values(selectedElements);
+    let keptElement = null;
+    let newAliases = [];
+    if (!typesAreNotMergable && !typesAreDifferent) {
+      keptElement = keptEntityId
+        ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
+        : head(selectedElementsList);
+      if (keptElement) {
+        const names = pluck('name', selectedElementsList);
+        const aliases = !isNil(keptElement.aliases)
+          ? filter(
+            (n) => !isNil(n),
+            flatten(pluck('aliases', selectedElementsList)),
+          )
+          : filter(
+            (n) => !isNil(n),
+            flatten(pluck('x_opencti_aliases', selectedElementsList)),
+          );
+        newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+      }
+    }
     return (
       <Drawer
         anchor="bottom"
@@ -255,7 +281,11 @@ class CurationToolBar extends Component {
             <span>
               <IconButton
                 aria-label="merge"
-                disabled={typesAreDifferent || numberOfSelectedElements < 2}
+                disabled={
+                  typesAreNotMergable
+                  || typesAreDifferent
+                  || numberOfSelectedElements < 2
+                }
                 onClick={this.handleOpenMerge.bind(this)}
                 color="primary"
               >
@@ -314,8 +344,8 @@ class CurationToolBar extends Component {
                     {pathOr('', ['createdBy', 'name'], element)}
                   </div>
                   <div style={{ marginRight: 50 }}>
-                    {pathOr([], ['objectMarking', 'edges'], element)
-                      .length > 0 ? (
+                    {pathOr([], ['objectMarking', 'edges'], element).length
+                    > 0 ? (
                         map(
                           (markingDefinition) => (
                           <ItemMarking
@@ -404,7 +434,7 @@ class CurationToolBar extends Component {
                     label={markingDefinition.node.definition}
                   />
                   ),
-                  keptElement.objectMarking.edges,
+                  pathOr([], ['objectMarking', 'edges'], keptElement),
                 )
               ) : (
               <ItemMarking label="TLP:WHITE" />

@@ -14,16 +14,16 @@ import { compose } from 'ramda';
 import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import StixCoreRelationshipCreationFromEntity from './StixCoreRelationshipCreationFromEntity';
 import StixCoreRelationshipPopover from './StixCoreRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
+import StixCoreRelationshipCreationFromRelation from './StixCoreRelationshipCreationFromRelation';
 
 const styles = (theme) => ({
   paper: {
     height: '100%',
     minHeight: '100%',
-    margin: '-4px 0 0 0',
-    padding: 0,
+    margin: '-5px 0 0 0',
+    padding: '10px 0 10px 0',
     borderRadius: 6,
   },
   list: {
@@ -55,9 +55,8 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Linked entities')}
         </Typography>
-        <StixCoreRelationshipCreationFromEntity
+        <StixCoreRelationshipCreationFromRelation
           entityId={entityId}
-          isFromRelation={true}
           paddingRight={220}
           variant="inLine"
           paginationOptions={paginationOptions}
@@ -142,14 +141,14 @@ export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCoreRelationshipStixCoreRelationshipsLines_data
-      @arguments(
-        fromId: $fromId
-        relationship_type: $relationship_type
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      fromId: $fromId
+      relationship_type: $relationship_type
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -158,17 +157,17 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
   {
     data: graphql`
       fragment StixCoreRelationshipStixCoreRelationshipsLines_data on Query
-        @argumentDefinitions(
-          fromId: { type: "String" }
-          relationship_type: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCoreRelationshipsOrdering"
-            defaultValue: start_time
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        fromId: { type: "String" }
+        relationship_type: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCoreRelationshipsOrdering"
+          defaultValue: start_time
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCoreRelationships(
           fromId: $fromId
           relationship_type: $relationship_type
@@ -187,6 +186,15 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                   parent_types
                   ... on AttackPattern {
                     name
+                  }
+                  ... on Opinion {
+                    opinion
+                  }
+                  ... on Report { 
+                    name
+                  }
+                  ... on Note {
+                    attribute_abstract
                   }
                   ... on Campaign {
                     name

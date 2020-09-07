@@ -16,7 +16,6 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
       t,
       stixCoreObjectOrStixCoreRelationshipId,
       isRelationship,
-      inputType,
       marginTop,
     } = this.props;
     if (isRelationship) {
@@ -31,7 +30,6 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
                   stixCoreRelationshipId={
                     stixCoreObjectOrStixCoreRelationshipId
                   }
-                  inputType={inputType}
                   data={props}
                   marginTop={marginTop}
                 />
@@ -61,7 +59,6 @@ class StixCoreObjectOrStixCoreRelationshipNotes extends Component {
             return (
               <StixCoreObjectNotesCards
                 stixCoreObjectId={stixCoreObjectOrStixCoreRelationshipId}
-                inputType={inputType}
                 data={props}
                 marginTop={marginTop}
               />
@@ -88,7 +85,6 @@ StixCoreObjectOrStixCoreRelationshipNotes.propTypes = {
   t: PropTypes.func,
   stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   isRelationship: PropTypes.bool,
-  inputType: PropTypes.string,
   marginTop: PropTypes.number,
 };
 

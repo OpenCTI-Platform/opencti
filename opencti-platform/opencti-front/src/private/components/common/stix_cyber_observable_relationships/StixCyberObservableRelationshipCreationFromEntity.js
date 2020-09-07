@@ -25,7 +25,10 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
-import { resolveRelationsTypes } from '../../../../utils/Relation';
+import {
+  resolveRelationsTypes,
+  resolveTargetTypes,
+} from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -355,7 +358,8 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
 
   renderSelectEntity() {
     const { classes, t, entityType } = this.props;
-    const types = resolveRelationsTypes(entityType);
+    console.log(entityType);
+    const types = resolveTargetTypes(entityType);
     console.log(types);
     const paginationOptions = {
       search: this.state.search,

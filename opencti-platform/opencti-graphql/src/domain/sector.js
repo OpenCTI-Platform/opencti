@@ -1,5 +1,6 @@
-import { assoc } from 'ramda';
+import { assoc, map } from 'ramda';
 import {
+  find,
   createEntity,
   escapeString,
   getSingleValueNumber,
@@ -11,8 +12,9 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
-import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
+import { RELATION_PART_OF, RELATION_TARGETS } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { buildPagination } from '../database/utils';
 
 export const findById = (sectorId) => {
   return loadById(sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
@@ -37,6 +39,24 @@ export const isSubSector = async (sectorId) => {
     $subsector has internal_id "${escapeString(sectorId)}"; get; count;`
   );
   return numberOfParents > 0;
+};
+
+export const targetedOrganizations = async (sectorId) => {
+  const result = await find(
+    `match $sector has internal_id "${escapeString(sectorId)}";
+    ($organization, $sector) isa ${RELATION_PART_OF}; 
+  $rel($threat, $organization) isa ${RELATION_TARGETS}, has start_time $order;
+  get; sort $order desc;`,
+    ['rel']
+  ).then((data) =>
+    buildPagination(
+      0,
+      0,
+      map((n) => ({ node: n.rel }), data),
+      data.length
+    )
+  );
+  return result;
 };
 
 export const addSector = async (user, sector) => {
