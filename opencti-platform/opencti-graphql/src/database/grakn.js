@@ -1033,7 +1033,7 @@ const findElementDependencies = async (id, args = {}) => {
     };
     rawData = await Promise.all(map((e) => loader(e), relations.edges));
   } else {
-    const query = `match $rel($from, $to) isa relation; $from has internal_id "${escapeString(id)}"; get;`;
+    const query = `match $rel($from, $to) isa ${relType}; $from has internal_id "${escapeString(id)}"; get;`;
     rawData = await find(query, ['rel', 'to']);
   }
   const simplified = map((r) => ({ entity_type: r.rel.entity_type, target: r.to }), rawData);
@@ -1107,7 +1107,7 @@ const buildAggregationQuery = (entityType, filters, options) => {
     }),
     R.join('')
   )(filters);
-  const groupField = interval ? `${field}_${interval}` : field;
+  const groupField = interval ? `i_${field}_${interval}` : field;
   const groupingQuery = `$from has ${groupField} $g; get; group $g; ${operation};`;
   return `${baseQuery} ${filterQuery} ${groupingQuery}`;
 };
@@ -1267,9 +1267,9 @@ const flatAttributesForObject = (data) => {
       if (value && R.includes(key, statsDateAttributes)) {
         return [
           { key, value },
-          { key: `${key}_day`, value: dayFormat(value) },
-          { key: `${key}_month`, value: monthFormat(value) },
-          { key: `${key}_year`, value: yearFormat(value) },
+          { key: `i_${key}_day`, value: dayFormat(value) },
+          { key: `i_${key}_month`, value: monthFormat(value) },
+          { key: `i_${key}_year`, value: yearFormat(value) },
         ];
       }
       return { key, value };
@@ -1439,13 +1439,13 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
     const dayValue = dayFormat(R.head(input.value));
     const monthValue = monthFormat(R.head(input.value));
     const yearValue = yearFormat(R.head(input.value));
-    const dayInput = { key: `${key}_day`, value: [dayValue] };
+    const dayInput = { key: `i_${key}_day`, value: [dayValue] };
     updatedInputs.push(dayInput);
     updateOperations.push(innerUpdateAttribute(user, instance, dayInput, wTx));
-    const monthInput = { key: `${key}_month`, value: [monthValue] };
+    const monthInput = { key: `i_${key}_month`, value: [monthValue] };
     updatedInputs.push(monthInput);
     updateOperations.push(innerUpdateAttribute(user, instance, monthInput, wTx));
-    const yearInput = { key: `${key}_year`, value: [yearValue] };
+    const yearInput = { key: `i_${key}_year`, value: [yearValue] };
     updatedInputs.push(yearInput);
     updateOperations.push(innerUpdateAttribute(user, instance, yearInput, wTx));
   }
@@ -1696,9 +1696,9 @@ const createRelationRaw = async (user, input, opts = {}) => {
       const monthValue = monthFormat(relationAttributes[dataKeys[index]]);
       const yearValue = yearFormat(relationAttributes[dataKeys[index]]);
       relationAttributes = R.pipe(
-        R.assoc(`${dataKeys[index]}_day`, dayValue),
-        R.assoc(`${dataKeys[index]}_month`, monthValue),
-        R.assoc(`${dataKeys[index]}_year`, yearValue)
+        R.assoc(`i_${dataKeys[index]}_day`, dayValue),
+        R.assoc(`i_${dataKeys[index]}_month`, monthValue),
+        R.assoc(`i_${dataKeys[index]}_year`, yearValue)
       )(relationAttributes);
     }
   }
@@ -1912,9 +1912,9 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
       const monthValue = monthFormat(data[dataKeys[index]]);
       const yearValue = yearFormat(data[dataKeys[index]]);
       data = R.pipe(
-        R.assoc(`${dataKeys[index]}_day`, dayValue),
-        R.assoc(`${dataKeys[index]}_month`, monthValue),
-        R.assoc(`${dataKeys[index]}_year`, yearValue)
+        R.assoc(`i_${dataKeys[index]}_day`, dayValue),
+        R.assoc(`i_${dataKeys[index]}_month`, monthValue),
+        R.assoc(`i_${dataKeys[index]}_year`, yearValue)
       )(data);
     }
   }

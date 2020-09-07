@@ -7,9 +7,9 @@ define
   standard_id sub attribute, value string;
   entity_type sub attribute, value string;
   created_at sub attribute, value datetime;
-  created_at_day sub attribute, value string;
-  created_at_month sub attribute, value string;
-  created_at_year sub attribute, value string;
+  i_created_at_day sub attribute, value string;
+  i_created_at_month sub attribute, value string;
+  i_created_at_year sub attribute, value string;
   updated_at sub attribute, value datetime;
   name sub attribute, value string;
   description sub attribute, value string;
@@ -27,13 +27,13 @@ define
 
   # STIX General
   first_seen sub attribute, value datetime;
-  first_seen_day sub attribute, value string;
-  first_seen_month sub attribute, value string;
-  first_seen_year sub attribute, value string;
+  i_first_seen_day sub attribute, value string;
+  i_first_seen_month sub attribute, value string;
+  i_first_seen_year sub attribute, value string;
   last_seen sub attribute, value datetime;
-  last_seen_day sub attribute, value string;
-  last_seen_month sub attribute, value string;
-  last_seen_year sub attribute, value string;
+  i_last_seen_day sub attribute, value string;
+  i_last_seen_month sub attribute, value string;
+  i_last_seen_year sub attribute, value string;
 
   # Internal Relationships
   grant sub attribute, value string;
@@ -41,13 +41,13 @@ define
   # STIX Core Relationship
   relationship_type sub attribute, value string;
   start_time sub attribute, value datetime;
-  start_time_day sub attribute, value string;
-  start_time_month sub attribute, value string;
-  start_time_year sub attribute, value string;
+  i_start_time_day sub attribute, value string;
+  i_start_time_month sub attribute, value string;
+  i_start_time_year sub attribute, value string;
   stop_time sub attribute, value datetime;
-  stop_time_day sub attribute, value string;
-  stop_time_month sub attribute, value string;
-  stop_time_year sub attribute, value string;
+  i_stop_time_day sub attribute, value string;
+  i_stop_time_month sub attribute, value string;
+  i_stop_time_year sub attribute, value string;
 
   # STIX Sighting Relationship
   attribute_count sub attribute, value long;
@@ -120,13 +120,13 @@ define
   pattern sub attribute, value string;
   indicator_types sub attribute, value string;
   valid_from sub attribute, value datetime;
-  valid_from_day sub attribute, value string;
-  valid_from_month sub attribute, value string;
-  valid_from_year sub attribute, value string;
+  i_valid_from_day sub attribute, value string;
+  i_valid_from_month sub attribute, value string;
+  i_valid_from_year sub attribute, value string;
   valid_until sub attribute, value datetime;
-  valid_until_day sub attribute, value string;
-  valid_until_month sub attribute, value string;
-  valid_until_year sub attribute, value string;
+  i_valid_until_day sub attribute, value string;
+  i_valid_until_month sub attribute, value string;
+  i_valid_until_year sub attribute, value string;
   x_opencti_score sub attribute, value long;
   x_opencti_detection sub attribute, value boolean;
   x_opencti_main_observable_type sub attribute, value string;
@@ -153,9 +153,9 @@ define
   report_types sub attribute, value string;
   x_opencti_report_status sub attribute, value long;
   published sub attribute, value datetime;
-  published_day sub attribute, value string;
-  published_month sub attribute, value string;
-  published_year sub attribute, value string;
+  i_published_day sub attribute, value string;
+  i_published_month sub attribute, value string;
+  i_published_year sub attribute, value string;
   threat_actor_types sub attribute, value string;
   sophistication sub attribute, value string;
   personal_motivations sub attribute, value string;
@@ -376,9 +376,9 @@ define
     key standard_id,
     has entity_type,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at;
 
   # Internal relations
@@ -428,13 +428,13 @@ define
     has relationship_type,
     has description,
     has start_time,
-    has start_time_day,
-    has start_time_month,
-    has start_time_year,
+    has i_start_time_day,
+    has i_start_time_month,
+    has i_start_time_year,
     has stop_time,
-    has stop_time_day,
-    has stop_time_month,
-    has stop_time_year,
+    has i_stop_time_day,
+    has i_stop_time_month,
+    has i_stop_time_year,
     plays created-by_from,
     plays object-marking_from,
     plays object-label_from,
@@ -604,13 +604,13 @@ define
   stix-sighting-relationship sub stix-relationship,
     has description,
     has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
+    has i_first_seen_day,
+    has i_first_seen_month,
+    has i_first_seen_year,
     has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
+    has i_last_seen_day,
+    has i_last_seen_month,
+    has i_last_seen_year,
     has attribute_count,
     has x_opencti_negative,
     has confidence,
@@ -658,13 +658,13 @@ define
     abstract,
     has relationship_type,
     has start_time,
-    has start_time_day,
-    has start_time_month,
-    has start_time_year,
+    has i_start_time_day,
+    has i_start_time_month,
+    has i_start_time_year,
     has stop_time,
-    has stop_time_day,
-    has stop_time_month,
-    has stop_time_year;
+    has i_stop_time_day,
+    has i_stop_time_month,
+    has i_stop_time_year;
 
   operating-system sub stix-cyber-observable-relationship,
     relates operating-system_from,
@@ -801,9 +801,9 @@ define
     has platform_url,
     has platform_language,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at;
 
   MigrationStatus sub Internal-Object,
@@ -822,9 +822,9 @@ define
     has issuer,
     has revoked,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at,
     plays authorized-by_to;
 
@@ -832,9 +832,9 @@ define
     has name,
     has description,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at,
     plays member-of_to;
 
@@ -848,9 +848,9 @@ define
     has language,
     has external,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at,
     plays authorized-by_from,
     plays has-role_from,
@@ -862,9 +862,9 @@ define
     has default_assignation,
     has description,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at,
     plays allowed-by_to,
     plays has-capability_from,
@@ -875,9 +875,9 @@ define
     has attribute_order,
     has description,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at,
     plays has-capability_to;
 
@@ -889,9 +889,9 @@ define
     has connector_state,
     has connector_state_reset,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at;
 
   Workspace sub Internal-Object,
@@ -901,9 +901,9 @@ define
     has x_opencti_graph_data,
     has workspace_data,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at;
 
   # STIX Object Entities
@@ -912,9 +912,9 @@ define
     has x_opencti_stix_ids,
     has spec_version,
     has created_at,
-    has created_at_day,
-    has created_at_month,
-    has created_at_year,
+    has i_created_at_day,
+    has i_created_at_month,
+    has i_created_at_year,
     has updated_at;
 
   # STIX Meta Object Entities
@@ -1000,13 +1000,13 @@ define
     has aliases,
     has i_aliases_ids,
     has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
+    has i_first_seen_day,
+    has i_first_seen_month,
+    has i_first_seen_year,
     has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
+    has i_last_seen_day,
+    has i_last_seen_month,
+    has i_last_seen_year,
     has objective,
     plays attributed-to_from,
     plays compromises_from,
@@ -1044,9 +1044,9 @@ define
     has report_types,
     has x_opencti_report_status,
     has published,
-    has published_day,
-    has published_year,
-    has published_month,
+    has i_published_day,
+    has i_published_year,
+    has i_published_month,
     has x_opencti_graph_data;
 
   Course-Of-Action sub Stix-Domain-Object,
@@ -1098,13 +1098,13 @@ define
     has description,
     has indicator_types,
     has valid_from,
-    has valid_from_day,
-    has valid_from_month,
-    has valid_from_year,
+    has i_valid_from_day,
+    has i_valid_from_month,
+    has i_valid_from_year,
     has valid_until,
-    has valid_until_day,
-    has valid_until_month,
-    has valid_until_year,
+    has i_valid_until_day,
+    has i_valid_until_month,
+    has i_valid_until_year,
     has x_opencti_score,
     has x_opencti_detection,
     has x_opencti_main_observable_type,
@@ -1121,13 +1121,13 @@ define
     has i_aliases_ids,
     has infrastructure_types,
     has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
+    has i_first_seen_day,
+    has i_first_seen_month,
+    has i_first_seen_year,
     has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
+    has i_last_seen_day,
+    has i_last_seen_month,
+    has i_last_seen_year,
     plays kill-chain-phase_from,
     plays communicates-with_from,
     plays consists-of_from,
@@ -1151,13 +1151,13 @@ define
     has aliases,
     has i_aliases_ids,
     has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
+    has i_first_seen_day,
+    has i_first_seen_month,
+    has i_first_seen_year,
     has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
+    has i_last_seen_day,
+    has i_last_seen_month,
+    has i_last_seen_year,
     has goals,
     has resource_level,
     has primary_motivation,
@@ -1207,13 +1207,13 @@ define
     has malware_types,
     has is_family,
     has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
+    has i_first_seen_day,
+    has i_first_seen_month,
+    has i_first_seen_year,
     has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
+    has i_last_seen_day,
+    has i_last_seen_month,
+    has i_last_seen_year,
     has architecture_execution_envs,
     has implementation_languages,
     has capabilities,
@@ -1251,13 +1251,13 @@ define
     has i_aliases_ids,
     has threat_actor_types,
     has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
+    has i_first_seen_day,
+    has i_first_seen_month,
+    has i_first_seen_year,
     has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
+    has i_last_seen_day,
+    has i_last_seen_month,
+    has i_last_seen_year,
     has goals,
     has sophistication,
     has resource_level,
@@ -1315,13 +1315,13 @@ define
     has aliases,
     has i_aliases_ids,
     has first_seen,
-    has first_seen_day,
-    has first_seen_month,
-    has first_seen_year,
+    has i_first_seen_day,
+    has i_first_seen_month,
+    has i_first_seen_year,
     has last_seen,
-    has last_seen_day,
-    has last_seen_month,
-    has last_seen_year,
+    has i_last_seen_day,
+    has i_last_seen_month,
+    has i_last_seen_year,
     has objective,
     plays attributed-to_from,
     plays compromises_from,

@@ -230,7 +230,13 @@ export const generateLogMessage = (type, user, instance, input = null) => {
   }
   if (type === UPDATE_OPERATION_REPLACE || type === UPDATE_OPERATION_ADD || type === UPDATE_OPERATION_REMOVE) {
     const joiner = type === UPDATE_OPERATION_REPLACE ? 'by' : 'value';
-    const fieldMessage = R.map(([key, val]) => `\`${key}\` ${joiner} \`${val}\``, Object.entries(input)).join(', ');
+    const fieldMessage = R.map(([key, val]) => {
+      let isNotEmpty = val && !R.isEmpty(val);
+      if (Array.isArray(val)) {
+        isNotEmpty = R.filter((v) => !R.isEmpty(v), val).length > 0;
+      }
+      return `\`${key}\` ${joiner} \`${isNotEmpty ? val : 'nothing'}\``;
+    }, Object.entries(input)).join(', ');
     return `\`${user.name}\` ${type} the ${fieldMessage}`;
   }
   throw FunctionalError(`Cant generated message for event type ${type}`);

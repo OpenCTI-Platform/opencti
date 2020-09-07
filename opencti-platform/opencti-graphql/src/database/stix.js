@@ -13,6 +13,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import {isMultipleAttribute} from "../schema/fieldDataAdapter";
 
 export const STIX_SPEC_VERSION = '2.1';
 
@@ -106,10 +107,12 @@ export const stixDataConverter = (data) => {
     if (key.startsWith('i_')) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
-      // Because reserved keywords in Grakn
+      // Stix but reserved keywords in Grakn
       const targetKey = key.replace('attribute_', '');
       filteredData[targetKey] = val;
-    } else {
+    } else if (!isMultipleAttribute(key)) {
+      filteredData[key] = Array.isArray(val) ? R.head(val) : val;
+    } else if (!Array.isArray(val) || (Array.isArray(val) && val.length > 0)) {
       filteredData[key] = val;
     }
   }
