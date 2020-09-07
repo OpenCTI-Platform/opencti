@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { generateAliasesId, normalizeName } from '../../../src/schema/identifier';
 import { mergeStixIds } from '../../../src/database/stix';
-import { relationTypeToInputName } from '../../../src/database/redis';
+import { relationTypeToInputName } from '../../../src/database/utils';
 
 test('should name correctly normalize', () => {
   let normalize = normalizeName('My data %test     ');

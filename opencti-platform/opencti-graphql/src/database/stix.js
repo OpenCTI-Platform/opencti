@@ -13,7 +13,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
-import {isMultipleAttribute} from "../schema/fieldDataAdapter";
+import { isMultipleAttribute } from '../schema/fieldDataAdapter';
 
 export const STIX_SPEC_VERSION = '2.1';
 
@@ -62,32 +62,44 @@ export const stixDataConverter = (data) => {
   // Specific input cases
   if (finalData.stix_id) {
     finalData = R.pipe(R.dissoc('stix_id'), R.assoc('x_opencti_stix_ids', [data.stix_id]))(finalData);
+  } else {
+    finalData = R.dissoc('stix_id', finalData);
   }
   // Inner relations
-  if (finalData.objects) {
-    const objectSet = Array.isArray(finalData.objects) ? finalData.objects : [finalData.objects];
+  if (finalData.object) {
+    const objectSet = Array.isArray(finalData.object) ? finalData.object : [finalData.object];
     const objects = R.map((m) => m.standard_id, objectSet);
-    finalData = R.pipe(R.dissoc('objects'), R.assoc('object_refs', objects))(finalData);
+    finalData = R.pipe(R.dissoc('object'), R.assoc('object_refs', objects))(finalData);
+  } else {
+    finalData = R.dissoc('object', finalData);
   }
   if (finalData.objectMarking) {
     const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
     const markings = R.map((m) => m.standard_id, markingSet);
     finalData = R.pipe(R.dissoc('objectMarking'), R.assoc('object_marking_refs', markings))(finalData);
+  } else {
+    finalData = R.dissoc('objectMarking', finalData);
   }
   if (finalData.createdBy) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
     finalData = R.pipe(R.dissoc('createdBy'), R.assoc('created_by_ref', creator.standard_id))(finalData);
+  } else {
+    finalData = R.dissoc('createdBy', finalData);
   }
   // Embedded relations
   if (finalData.objectLabel) {
     const labelSet = Array.isArray(finalData.objectLabel) ? finalData.objectLabel : [finalData.objectLabel];
     const labels = R.map((m) => m.value, labelSet);
     finalData = R.pipe(R.dissoc('objectLabel'), R.assoc('labels', labels))(finalData);
+  } else {
+    finalData = R.dissoc('objectLabel', finalData);
   }
   if (finalData.killChainPhases) {
     const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
     const kills = R.map((k) => R.pick(['kill_chain_name', 'phase_name'], k), killSet);
     finalData = R.pipe(R.dissoc('killChainPhases'), R.assoc('kill_chain_phases', kills))(finalData);
+  } else {
+    finalData = R.dissoc('killChainPhases', finalData);
   }
   if (finalData.externalReferences) {
     const externalSet = Array.isArray(finalData.externalReferences)
@@ -98,13 +110,15 @@ export const stixDataConverter = (data) => {
       externalSet
     );
     finalData = R.pipe(R.dissoc('externalReferences'), R.assoc('external_references', externals))(finalData);
+  } else {
+    finalData = R.dissoc('externalReferences', finalData);
   }
   // Final filtering
   const filteredData = {};
   const entries = Object.entries(finalData);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
-    if (key.startsWith('i_')) {
+    if (key.startsWith('i_') || val === null) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
       // Stix but reserved keywords in Grakn
