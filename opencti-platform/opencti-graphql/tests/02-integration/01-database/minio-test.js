@@ -103,7 +103,7 @@ describe('Minio file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(8411);
+    expect(file.size).toEqual(8518);
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
