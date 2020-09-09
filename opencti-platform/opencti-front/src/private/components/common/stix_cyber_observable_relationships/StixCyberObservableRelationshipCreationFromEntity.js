@@ -264,7 +264,28 @@ const stixCyberObservableRelationshipCreationFromEntityMutation = graphql`
     $input: StixCyberObservableRelationshipAddInput!
   ) {
     stixCyberObservableRelationshipAdd(input: $input) {
-      ...StixCyberObservableObservableLine_node
+      id
+      relationship_type
+      start_time
+      stop_time
+      from {
+        ... on StixCyberObservable {
+          id
+          entity_type
+          observable_value
+          created_at
+          updated_at
+        }
+      }
+      to {
+        ... on StixCyberObservable {
+          id
+          entity_type
+          observable_value
+          created_at
+          updated_at
+        }
+      }
     }
   }
 `;

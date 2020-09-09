@@ -67,6 +67,7 @@ class StixCyberObservableEntitiesLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
         entityLink={entityLink}
+        entityId={entityId}
       />
     );
   }

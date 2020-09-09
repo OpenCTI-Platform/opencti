@@ -165,6 +165,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         variables: {
           id: this.props.stixCyberObservable.id,
           toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {

@@ -88,8 +88,20 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     )(data.stixCoreRelationships.edges);
     const stixCoreRelationships = pipe(
       map((n) => n.node),
-      map((n) => assoc('startTimeYear', yearFormat(n.start_time), n)),
-      map((n) => assoc('stopTimeYear', yearFormat(n.stop_time), n)),
+      map((n) => assoc(
+        'startTimeYear',
+        yearFormat(n.start_time) === '1970'
+          ? t('None')
+          : yearFormat(n.start_time),
+        n,
+      )),
+      map((n) => assoc(
+        'stopTimeYear',
+        yearFormat(n.stop_time) === '5138'
+          ? t('None')
+          : yearFormat(n.stop_time),
+        n,
+      )),
       map((n) => assoc(
         'years',
         n.startTimeYear === n.stopTimeYear
@@ -176,7 +188,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             <ListItemText
                               primary={
                                 stixDomainObject.to.entity_type
-                                === 'attack-pattern' ? (
+                                === 'Attack-Pattern' ? (
                                   <span>
                                     <strong>
                                       {stixDomainObject.to.x_mitre_id}

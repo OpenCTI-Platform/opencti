@@ -279,8 +279,6 @@ const sharedUpdater = (
   newEdge,
 ) => {
   const userProxy = store.get(userId);
-  console.log(paginationOptions);
-  console.log(paginationKey);
   const conn = ConnectionHandler.getConnection(
     userProxy,
     paginationKey,
@@ -373,6 +371,7 @@ class StixCyberObservableCreation extends Component {
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
       objectLabel: pluck('value', values.objectLabel),
+      createIndicator: values.createIndicator,
       [this.state.type.replace(/(?:^|-|_)(\w)/g, (matches, letter) => letter.toUpperCase())]: adaptedValues,
     };
     commitMutation({

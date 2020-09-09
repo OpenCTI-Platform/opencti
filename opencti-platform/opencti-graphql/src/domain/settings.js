@@ -26,6 +26,7 @@ export const getSettings = async () => {
   const config = pipe(
     dissocPath(['app', 'admin']),
     dissocPath(['rabbitmq', 'password']),
+    dissocPath(['elasticsearch', 'url']),
     dissocPath(['minio', 'access_key']),
     dissocPath(['minio', 'secret_key']),
     dissocPath(['jwt']),
