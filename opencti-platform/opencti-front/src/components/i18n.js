@@ -5,7 +5,11 @@ import { numberFormat } from '../utils/Number';
 
 export const isNone = (date) => {
   const parsedDate = moment(date).format();
-  return parsedDate.startsWith('1970-') || parsedDate.startsWith('5138-');
+  return (
+    parsedDate.startsWith('Invalid')
+    || parsedDate.startsWith('1970')
+    || parsedDate.startsWith('5138')
+  );
 };
 
 const inject18n = (WrappedComponent) => {
