@@ -448,6 +448,8 @@ class StixCyberObservable:
             type = (
                 observable_data["type"].title() if "type" in observable_data else None
             )
+        if type is None:
+            return
         if type.lower() == "file":
             type = "StixFile"
         elif type.lower() == "ipv4-addr":
