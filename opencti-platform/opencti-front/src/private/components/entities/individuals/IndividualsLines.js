@@ -71,14 +71,14 @@ export const individualsLinesQuery = graphql`
     $filters: [IndividualsFiltering]
   ) {
     ...IndividualsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -87,14 +87,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment IndividualsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "IndividualsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[IndividualsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "IndividualsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[IndividualsFiltering]" }
+      ) {
         individuals(
           search: $search
           first: $count

@@ -9,8 +9,8 @@ import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
 import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
-import Paper from '@material-ui/core/Paper';
-import Typography from '@material-ui/core/Typography';
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import Drawer from '@material-ui/core/Drawer';
@@ -21,9 +21,8 @@ import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
 import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
-import StixDomainObjectGlobalKillChain, {
-  stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery,
-} from './StixDomainObjectGlobalKillChain';
+import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
+import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -106,11 +105,26 @@ const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   }
 `;
 
+export const stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery = graphql`
+  query StixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery(
+    $fromId: String
+    $fromRole: String
+    $toTypes: [String]
+    $relationship_type: String
+    $inferred: Boolean
+    $first: Int
+  ) {
+    ...StixDomainObjectGlobalKillChain_data
+    ...StixDomainObjectTimeline_data
+  }
+`;
+
 class StixDomainObjectThreatKnowledge extends Component {
   constructor(props) {
     super(props);
     this.state = {
       inferred: false,
+      viewType: 'timeline',
     };
   }
 
@@ -120,8 +134,14 @@ class StixDomainObjectThreatKnowledge extends Component {
     });
   }
 
+  handleChangeViewType(event, type) {
+    this.setState({
+      viewType: type,
+    });
+  }
+
   render() {
-    const { inferred } = this.state;
+    const { inferred, viewType } = this.state;
     const {
       t,
       n,
@@ -133,14 +153,36 @@ class StixDomainObjectThreatKnowledge extends Component {
     const link = `${resolveLink(
       stixDomainObjectType,
     )}/${stixDomainObjectId}/knowledge`;
-    const toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
-    const killChainPaginationOptions = {
+    let toTypes = [];
+    if (viewType === 'timeline') {
+      toTypes = [
+        'Campaign',
+        'X-OpenCTI-Incident',
+        'Malware',
+        'Tool',
+        'Vulnerability',
+        'Sector',
+        'Organization',
+        'Individual',
+        'Region',
+        'Country',
+        'City',
+      ];
+    } else {
+      toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];
+    }
+    const paginationOptions = {
       fromId: stixDomainObjectId,
-      fromRole: 'uses_from',
-      toTypes: filter((n) => n.toLowerCase() !== stixDomainObjectType, toTypes),
+      toTypes: filter((x) => x.toLowerCase() !== stixDomainObjectType, toTypes),
       relationship_type: 'stix-core-relationship',
       inferred,
     };
+    if (viewType === 'timeline') {
+      paginationOptions.orderBy = 'start_time';
+      paginationOptions.orderMode = 'desc';
+    } else {
+      paginationOptions.fromRole = 'uses_from';
+    }
     return (
       <div>
         <Drawer
@@ -320,28 +362,43 @@ class StixDomainObjectThreatKnowledge extends Component {
             />
           </Grid>
         </Grid>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Global kill chain')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          <QueryRenderer
-            query={stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery}
-            variables={{ first: 500, ...killChainPaginationOptions }}
-            render={({ props }) => {
-              if (props) {
+        <Tabs
+          value={viewType}
+          indicatorColor="primary"
+          textColor="primary"
+          onChange={this.handleChangeViewType.bind(this)}
+          style={{ margin: '0 0 20px 0' }}
+        >
+          <Tab label={t('Timeline')} value="timeline" />
+          <Tab label={t('Global kill chain')} value="killchain" />
+        </Tabs>
+        <QueryRenderer
+          query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery}
+          variables={{ first: 500, ...paginationOptions }}
+          render={({ props }) => {
+            if (props) {
+              if (viewType === 'killchain') {
                 return (
                   <StixDomainObjectGlobalKillChain
                     data={props}
                     entityLink={link}
-                    paginationOptions={killChainPaginationOptions}
+                    paginationOptions={paginationOptions}
                     stixDomainObjectId={stixDomainObjectId}
                   />
                 );
               }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Paper>
+              return (
+                <StixDomainObjectTimeline
+                  data={props}
+                  entityLink={link}
+                  paginationOptions={paginationOptions}
+                  stixDomainObjectId={stixDomainObjectId}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
       </div>
     );
   }

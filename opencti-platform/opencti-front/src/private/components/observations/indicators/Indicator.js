@@ -113,6 +113,7 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

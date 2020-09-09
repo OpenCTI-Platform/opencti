@@ -68,14 +68,14 @@ export const reportsLinesQuery = graphql`
     $filters: [ReportsFiltering]
   ) {
     ...ReportsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -84,14 +84,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment ReportsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "ReportsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[ReportsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "ReportsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[ReportsFiltering]" }
+      ) {
         reports(
           search: $search
           first: $count

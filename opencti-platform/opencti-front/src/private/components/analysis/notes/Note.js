@@ -101,6 +101,7 @@ const Note = createFragmentContainer(NoteComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectLabel {

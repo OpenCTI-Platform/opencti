@@ -108,15 +108,13 @@ class TopMenuTool extends Component {
           component={Link}
           to={`/dashboard/arsenal/tools/${toolId}/analysis`}
           variant={
-            location.pathname
-            === `/dashboard/arsenal/tools/${toolId}/analysis`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/arsenal/tools/${toolId}/analysis`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/analysis`
               ? 'primary'
               : 'inherit'
           }
@@ -151,15 +149,13 @@ class TopMenuTool extends Component {
             component={Link}
             to={`/dashboard/arsenal/tools/${toolId}/files`}
             variant={
-              location.pathname
-              === `/dashboard/arsenal/tools/${toolId}/files`
+              location.pathname === `/dashboard/arsenal/tools/${toolId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname
-              === `/dashboard/arsenal/tools/${toolId}/files`
+              location.pathname === `/dashboard/arsenal/tools/${toolId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -172,15 +168,13 @@ class TopMenuTool extends Component {
           component={Link}
           to={`/dashboard/arsenal/tools/${toolId}/history`}
           variant={
-            location.pathname
-            === `/dashboard/arsenal/tools/${toolId}/history`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/arsenal/tools/${toolId}/history`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/history`
               ? 'primary'
               : 'inherit'
           }

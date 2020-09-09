@@ -117,6 +117,7 @@ const Campaign = createFragmentContainer(CampaignComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

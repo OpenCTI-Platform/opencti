@@ -75,21 +75,21 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCoreObjectStixCyberObservablesLines_data
-      @arguments(
-        inferred: $inferred
-        fromId: $fromId
-        toTypes: $toTypes
-        relationship_type: $relationship_type
-        startTimeStart: $startTimeStart
-        startTimeStop: $startTimeStop
-        stopTimeStart: $stopTimeStart
-        stopTimeStop: $stopTimeStop
-        confidences: $confidences
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      inferred: $inferred
+      fromId: $fromId
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      startTimeStart: $startTimeStart
+      startTimeStop: $startTimeStop
+      stopTimeStart: $stopTimeStart
+      stopTimeStop: $stopTimeStop
+      confidences: $confidences
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -98,24 +98,24 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment StixCoreObjectStixCyberObservablesLines_data on Query
-        @argumentDefinitions(
-          inferred: { type: "Boolean" }
-          fromId: { type: "String" }
-          toTypes: { type: "[String]" }
-          relationship_type: { type: "String" }
-          startTimeStart: { type: "DateTime" }
-          startTimeStop: { type: "DateTime" }
-          stopTimeStart: { type: "DateTime" }
-          stopTimeStop: { type: "DateTime" }
-          confidences: { type: "[Int]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCoreRelationshipsOrdering"
-            defaultValue: start_time
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        inferred: { type: "Boolean" }
+        fromId: { type: "String" }
+        toTypes: { type: "[String]" }
+        relationship_type: { type: "String" }
+        startTimeStart: { type: "DateTime" }
+        startTimeStop: { type: "DateTime" }
+        stopTimeStart: { type: "DateTime" }
+        stopTimeStop: { type: "DateTime" }
+        confidences: { type: "[Int]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCoreRelationshipsOrdering"
+          defaultValue: start_time
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCoreRelationships(
           inferred: $inferred
           fromId: $fromId

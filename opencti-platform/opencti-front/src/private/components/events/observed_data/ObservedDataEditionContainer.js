@@ -57,28 +57,28 @@ class ObservedDataEditionContainer extends Component {
     } = this.props;
     const { editContext } = observedData;
     return (
-        <div>
-          <div className={classes.header}>
-            <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={handleClose.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Update a ObservedData')}
-            </Typography>
-            <SubscriptionAvatars context={editContext} />
-            <div className="clearfix" />
-          </div>
-          <div className={classes.container}>
-            <ObservedDataEditionOverview
-                observedData={this.props.observedData}
-                context={editContext}
-            />
-          </div>
+      <div>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
+          </IconButton>
+          <Typography variant="h6" classes={{ root: classes.title }}>
+            {t('Update a ObservedData')}
+          </Typography>
+          <SubscriptionAvatars context={editContext} />
+          <div className="clearfix" />
         </div>
+        <div className={classes.container}>
+          <ObservedDataEditionOverview
+            observedData={this.props.observedData}
+            context={editContext}
+          />
+        </div>
+      </div>
     );
   }
 }
@@ -91,20 +91,23 @@ ObservedDataEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const ObservedDataEditionFragment = createFragmentContainer(ObservedDataEditionContainer, {
-  observedData: graphql`
-    fragment ObservedDataEditionContainer_observedData on ObservedData {
-      id
-      ...ObservedDataEditionOverview_observedData
-      editContext {
-        name
-        focusOn
+const ObservedDataEditionFragment = createFragmentContainer(
+  ObservedDataEditionContainer,
+  {
+    observedData: graphql`
+      fragment ObservedDataEditionContainer_observedData on ObservedData {
+        id
+        ...ObservedDataEditionOverview_observedData
+        editContext {
+          name
+          focusOn
+        }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
-    inject18n,
-    withStyles(styles, { withTheme: true }),
+  inject18n,
+  withStyles(styles, { withTheme: true }),
 )(ObservedDataEditionFragment);

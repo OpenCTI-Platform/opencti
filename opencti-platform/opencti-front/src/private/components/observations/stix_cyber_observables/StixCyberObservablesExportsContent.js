@@ -126,7 +126,7 @@ export const stixCyberObservablesExportsContentQuery = graphql`
     $context: String
   ) {
     ...StixCyberObservablesExportsContent_data
-      @arguments(count: $count, context: $context)
+    @arguments(count: $count, context: $context)
   }
 `;
 
@@ -135,12 +135,12 @@ const StixCyberObservablesExportsContent = createRefetchContainer(
   {
     data: graphql`
       fragment StixCyberObservablesExportsContent_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          context: { type: "String!" }
-        ) {
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 25 }
+        context: { type: "String!" }
+      ) {
         stixCyberObservablesExportFiles(first: $count, context: $context)
-          @connection(key: "Pagination_stixCyberObservablesExportFiles") {
+        @connection(key: "Pagination_stixCyberObservablesExportFiles") {
           edges {
             node {
               id

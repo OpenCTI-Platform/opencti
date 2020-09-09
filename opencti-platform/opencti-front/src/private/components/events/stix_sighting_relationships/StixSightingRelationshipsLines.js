@@ -70,16 +70,16 @@ export const stixSightingRelationshipsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixSightingRelationshipsLines_data
-      @arguments(
-        fromId: $fromId
-        toTypes: $toTypes
-        inferred: $inferred
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      fromId: $fromId
+      toTypes: $toTypes
+      inferred: $inferred
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -88,19 +88,19 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment StixSightingRelationshipsLines_data on Query
-        @argumentDefinitions(
-          fromId: { type: "String" }
-          toTypes: { type: "[String]" }
-          inferred: { type: "Boolean" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixSightingRelationshipsOrdering"
-            defaultValue: first_seen
-          }
-          orderMode: { type: "OrderingMode", defaultValue: desc }
-        ) {
+      @argumentDefinitions(
+        fromId: { type: "String" }
+        toTypes: { type: "[String]" }
+        inferred: { type: "Boolean" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixSightingRelationshipsOrdering"
+          defaultValue: first_seen
+        }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
+      ) {
         stixSightingRelationships(
           fromId: $fromId
           toTypes: $toTypes

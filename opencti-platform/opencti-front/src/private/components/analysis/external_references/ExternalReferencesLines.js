@@ -60,13 +60,13 @@ export const externalReferencesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...ExternalReferencesLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -75,16 +75,16 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment ExternalReferencesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "ExternalReferencesOrdering"
-            defaultValue: source_name
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "ExternalReferencesOrdering"
+          defaultValue: source_name
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         externalReferences(
           search: $search
           first: $count

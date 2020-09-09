@@ -59,7 +59,10 @@ export const observedDataMutationRelationDelete = graphql`
 
 const sharedUpdater = (store, entityId, newEdge) => {
   const entity = store.get(entityId);
-  const conn = ConnectionHandler.getConnection(entity, 'Pagination_ObservedData');
+  const conn = ConnectionHandler.getConnection(
+    entity,
+    'Pagination_ObservedData',
+  );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
@@ -122,7 +125,9 @@ class AddObservedDataLinesContainer extends Component {
         {data.ObservedData.edges.map((observedDataNode) => {
           const observedData = observedDataNode.node;
           const alreadyAdded = entityObservedDataIds.includes(observedData.id);
-          const observedDataId = observedData.external_id ? `(${observedData.external_id})` : '';
+          const observedDataId = observedData.external_id
+            ? `(${observedData.external_id})`
+            : '';
           return (
             <ListItem
               key={observedData.id}
@@ -146,20 +151,21 @@ class AddObservedDataLinesContainer extends Component {
                 {pathOr('', ['createdBy', 'name'], observedData)}
               </div>
               <div style={{ marginRight: 50 }}>
-                {pathOr([], ['objectMarking', 'edges'], observedData).length > 0 ? (
-                  map(
-                    (markingDefinition) => (
+                {pathOr([], ['objectMarking', 'edges'], observedData).length
+                > 0 ? (
+                    map(
+                      (markingDefinition) => (
                       <ItemMarking
                         key={markingDefinition.node.id}
                         label={markingDefinition.node.definition}
                         variant="inList"
                       />
-                    ),
-                    observedData.objectMarking.edges,
-                  )
-                ) : (
+                      ),
+                      observedData.objectMarking.edges,
+                    )
+                  ) : (
                   <ItemMarking label="TLP:WHITE" variant="inList" />
-                )}
+                  )}
               </div>
             </ListItem>
           );
@@ -182,7 +188,7 @@ AddObservedDataLinesContainer.propTypes = {
 export const addObservedDataLinesQuery = graphql`
   query AddObservedDataLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddObservedDataLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -191,13 +197,13 @@ const AddObservedDataLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddObservedDataLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         observedDatas(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_observedDatas") {
+        @connection(key: "Pagination_observedDatas") {
           edges {
             node {
               id

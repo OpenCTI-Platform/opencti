@@ -77,11 +77,7 @@ class StixCoreRelationshipStixCoreRelationships extends Component {
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <List>
                   {Array.from(Array(5), (e, i) => (
-                    <ListItem
-                      key={i}
-                      divider={true}
-                      button={false}
-                    >
+                    <ListItem key={i} divider={true} button={false}>
                       <ListItemIcon>
                         <Avatar classes={{ root: classes.avatarDisabled }}>
                           {i}

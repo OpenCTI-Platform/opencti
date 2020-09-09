@@ -68,14 +68,14 @@ export const notesLinesQuery = graphql`
     $filters: [NotesFiltering]
   ) {
     ...NotesLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -84,14 +84,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment NotesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "NotesOrdering", defaultValue: created }
-          orderMode: { type: "OrderingMode", defaultValue: desc }
-          filters: { type: "[NotesFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "NotesOrdering", defaultValue: created }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
+        filters: { type: "[NotesFiltering]" }
+      ) {
         notes(
           search: $search
           first: $count

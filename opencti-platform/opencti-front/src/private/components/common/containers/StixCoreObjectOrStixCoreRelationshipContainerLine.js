@@ -48,7 +48,7 @@ const styles = (theme) => ({
 class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Component {
   render() {
     const {
-       fd, classes, node, dataColumns, onLabelClick,
+      fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem

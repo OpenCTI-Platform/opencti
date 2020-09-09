@@ -72,18 +72,18 @@ export const entityStixCoreRelationshipsLinesFromQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixCoreRelationshipsLinesFrom_data
-      @arguments(
-        fromId: $fromId
-        fromRole: $fromRole
-        toTypes: $toTypes
-        inferred: $inferred
-        relationship_type: $relationship_type
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      fromId: $fromId
+      fromRole: $fromRole
+      toTypes: $toTypes
+      inferred: $inferred
+      relationship_type: $relationship_type
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -92,21 +92,21 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment EntityStixCoreRelationshipsLinesFrom_data on Query
-        @argumentDefinitions(
-          fromId: { type: "String" }
-          fromRole: { type: "String" }
-          toTypes: { type: "[String]" }
-          inferred: { type: "Boolean" }
-          relationship_type: { type: "String" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCoreRelationshipsOrdering"
-            defaultValue: start_time
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        fromId: { type: "String" }
+        fromRole: { type: "String" }
+        toTypes: { type: "[String]" }
+        inferred: { type: "Boolean" }
+        relationship_type: { type: "String" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCoreRelationshipsOrdering"
+          defaultValue: start_time
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCoreRelationships(
           fromId: $fromId
           fromRole: $fromRole

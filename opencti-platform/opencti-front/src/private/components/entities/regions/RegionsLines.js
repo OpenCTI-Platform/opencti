@@ -97,12 +97,12 @@ const RegionsLinesFragment = createPaginationContainer(
   {
     data: graphql`
       fragment RegionsLines_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         regions(first: $count, after: $cursor)
-          @connection(key: "Pagination_regions") {
+        @connection(key: "Pagination_regions") {
           edges {
             node {
               id

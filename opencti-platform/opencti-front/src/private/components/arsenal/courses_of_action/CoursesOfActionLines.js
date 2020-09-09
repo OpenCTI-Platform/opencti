@@ -69,14 +69,14 @@ export const coursesOfActionLinesQuery = graphql`
     $filters: [CoursesOfActionFiltering]
   ) {
     ...CoursesOfActionLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -86,14 +86,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment CoursesOfActionLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "CoursesOfActionOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[CoursesOfActionFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "CoursesOfActionOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[CoursesOfActionFiltering]" }
+      ) {
         coursesOfAction(
           search: $search
           first: $count

@@ -119,6 +119,7 @@ const Infrastructure = createFragmentContainer(InfrastructureComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

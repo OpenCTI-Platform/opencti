@@ -85,7 +85,7 @@ class RootVulnerability extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId"
+                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId"
                     render={(routeProps) => (
                       <Vulnerability
                         {...routeProps}
@@ -95,15 +95,15 @@ class RootVulnerability extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/knowledge"
+                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
                     render={() => (
                       <Redirect
-                        to={`/dashboard/techniques/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
+                        to={`/dashboard/arsenal/vulnerabilities/${vulnerabilityId}/knowledge/overview`}
                       />
                     )}
                   />
                   <Route
-                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/knowledge"
+                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/knowledge"
                     render={(routeProps) => (
                       <VulnerabilityKnowledge
                         {...routeProps}
@@ -148,7 +148,7 @@ class RootVulnerability extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/files"
+                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -166,7 +166,7 @@ class RootVulnerability extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/vulnerabilities/:vulnerabilityId/history"
+                    path="/dashboard/arsenal/vulnerabilities/:vulnerabilityId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader

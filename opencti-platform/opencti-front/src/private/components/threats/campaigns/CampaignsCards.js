@@ -60,14 +60,14 @@ export const campaignsCardsQuery = graphql`
     $filters: [CampaignsFiltering]
   ) {
     ...CampaignsCards_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -76,14 +76,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment CampaignsCards_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "CampaignsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[CampaignsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "CampaignsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[CampaignsFiltering]" }
+      ) {
         campaigns(
           search: $search
           first: $count

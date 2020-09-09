@@ -49,7 +49,10 @@ const styles = (theme) => ({
 });
 
 export const opinionMutationFieldPatch = graphql`
-  mutation OpinionEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation OpinionEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
     opinionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...OpinionEditionOverview_opinion
@@ -251,10 +254,7 @@ class OpinionEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="opinion"
-                  />
+                  <SubscriptionFocus context={context} fieldName="opinion" />
                 }
               />
               <Field

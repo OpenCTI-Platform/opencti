@@ -72,14 +72,14 @@ export const indicatorsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...IndicatorsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        filters: $filters
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      filters: $filters
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -88,14 +88,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment IndicatorsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          filters: { type: "[IndicatorsFiltering]" }
-          orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
-          orderMode: { type: "OrderingMode", defaultValue: desc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        filters: { type: "[IndicatorsFiltering]" }
+        orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
+      ) {
         indicators(
           search: $search
           first: $count

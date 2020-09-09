@@ -97,7 +97,11 @@ export const numberAttributes = [
   'number_of_subkeys',
 ];
 
-export const booleanAttributes = ['is_self_signed', 'is_multipart', 'is_hidden'];
+export const booleanAttributes = [
+  'is_self_signed',
+  'is_multipart',
+  'is_hidden',
+];
 
 const styles = (theme) => ({
   drawerPaper: {

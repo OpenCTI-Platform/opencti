@@ -148,7 +148,7 @@ export const addAttackPatternsLinesQuery = graphql`
     $cursor: ID
   ) {
     ...AddAttackPatternsLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -157,13 +157,13 @@ const AddAttackPatternsLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddAttackPatternsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         attackPatterns(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_attackPatterns") {
+        @connection(key: "Pagination_attackPatterns") {
           edges {
             node {
               id

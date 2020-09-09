@@ -67,7 +67,7 @@ const stixDomainObjectResolvers = {
       importPush: ({ file }) => stixDomainObjectImportPush(user, null, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, null, id, file),
-      mergeEntities: ({ stixDomainObjectsIds, alias }) => stixDomainObjectMerge(user, id, stixDomainObjectsIds, alias),
+      mergeEntities: ({ stixDomainObjectsIds, aliases }) => stixDomainObjectMerge(user, id, stixDomainObjectsIds, aliases),
     }),
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
     stixDomainObjectAdd: (_, { input }, { user }) => addStixDomainObject(user, input),

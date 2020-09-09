@@ -119,6 +119,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

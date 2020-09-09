@@ -48,7 +48,9 @@ class CourseOfActionComponent extends Component {
             <CourseOfActionDetails courseOfAction={courseOfAction} />
           </Grid>
           <Grid item={true} xs={4}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={courseOfAction.id} />
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={courseOfAction.id}
+            />
           </Grid>
         </Grid>
         <StixCoreObjectNotes stixCoreObjectId={courseOfAction.id} />

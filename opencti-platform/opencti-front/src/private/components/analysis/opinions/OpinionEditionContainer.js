@@ -57,28 +57,28 @@ class OpinionEditionContainer extends Component {
     } = this.props;
     const { editContext } = opinion;
     return (
-        <div>
-          <div className={classes.header}>
-            <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={handleClose.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Update a opinions')}
-            </Typography>
-            <SubscriptionAvatars context={editContext} />
-            <div className="clearfix" />
-          </div>
-          <div className={classes.container}>
-            <OpinionEditionOverview
-                opinion={this.props.opinion}
-                context={editContext}
-            />
-          </div>
+      <div>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose.bind(this)}
+          >
+            <Close fontSize="small" />
+          </IconButton>
+          <Typography variant="h6" classes={{ root: classes.title }}>
+            {t('Update a opinions')}
+          </Typography>
+          <SubscriptionAvatars context={editContext} />
+          <div className="clearfix" />
         </div>
+        <div className={classes.container}>
+          <OpinionEditionOverview
+            opinion={this.props.opinion}
+            context={editContext}
+          />
+        </div>
+      </div>
     );
   }
 }
@@ -91,20 +91,23 @@ OpinionEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const OpinionEditionFragment = createFragmentContainer(OpinionEditionContainer, {
-  opinion: graphql`
-    fragment OpinionEditionContainer_opinion on Opinion {
-      id
-      ...OpinionEditionOverview_opinion
-      editContext {
-        name
-        focusOn
+const OpinionEditionFragment = createFragmentContainer(
+  OpinionEditionContainer,
+  {
+    opinion: graphql`
+      fragment OpinionEditionContainer_opinion on Opinion {
+        id
+        ...OpinionEditionOverview_opinion
+        editContext {
+          name
+          focusOn
+        }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
-    inject18n,
-    withStyles(styles, { withTheme: true }),
+  inject18n,
+  withStyles(styles, { withTheme: true }),
 )(OpinionEditionFragment);

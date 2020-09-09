@@ -149,13 +149,15 @@ class TopMenuReport extends Component {
             component={Link}
             to={`/dashboard/analysis/reports/${reportId}/files`}
             variant={
-              location.pathname === `/dashboard/analysis/reports/${reportId}/files`
+              location.pathname
+              === `/dashboard/analysis/reports/${reportId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === `/dashboard/analysis/reports/${reportId}/files`
+              location.pathname
+              === `/dashboard/analysis/reports/${reportId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -168,13 +170,15 @@ class TopMenuReport extends Component {
           component={Link}
           to={`/dashboard/analysis/reports/${reportId}/history`}
           variant={
-            location.pathname === `/dashboard/analysis/reports/${reportId}/history`
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/analysis/reports/${reportId}/history`
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/history`
               ? 'primary'
               : 'inherit'
           }

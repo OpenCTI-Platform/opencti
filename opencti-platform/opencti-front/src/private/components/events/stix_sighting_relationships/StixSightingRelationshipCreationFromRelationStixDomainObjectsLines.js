@@ -187,14 +187,14 @@ export const stixSightingRelationshipCreationFromRelationStixDomainObjectsLinesQ
     $orderMode: OrderingMode
   ) {
     ...StixSightingRelationshipCreationFromRelationStixDomainObjectsLines_data
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -203,14 +203,14 @@ const StixSightingRelationshipCreationFromRelationStixDomainObjectsLines = creat
   {
     data: graphql`
       fragment StixSightingRelationshipCreationFromRelationStixDomainObjectsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixDomainObjects(
           search: $search
           types: $types

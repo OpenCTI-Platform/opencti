@@ -190,7 +190,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                   ... on Opinion {
                     opinion
                   }
-                  ... on Report { 
+                  ... on Report {
                     name
                   }
                   ... on Note {

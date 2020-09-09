@@ -72,14 +72,14 @@ export const attributesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...AttributesLines_data
-      @arguments(
-        type: $type
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      type: $type
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -88,14 +88,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment AttributesLines_data on Query
-        @argumentDefinitions(
-          type: { type: "String!" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "AttributesOrdering", defaultValue: value }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        type: { type: "String!" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "AttributesOrdering", defaultValue: value }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         attributes(
           type: $type
           search: $search

@@ -1498,7 +1498,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (!R.isEmpty(esData)) {
       postOperations.push(elReplace(index, instance.internal_id, { doc: esData }));
     }
-    const noLogKeys = ['x_opencti_graph_data', 'updated_at', 'modified'];
+    const noLogKeys = ['x_opencti_graph_data', 'updated_at', 'modified', 'i_aliases_ids'];
     const dataToLogSend = R.filter((input) => !R.includes(input.key, noLogKeys), updatedInputs);
     if (!noLog && !R.isEmpty(dataToLogSend)) {
       const baseData = {

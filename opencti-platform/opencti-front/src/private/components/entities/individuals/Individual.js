@@ -120,6 +120,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

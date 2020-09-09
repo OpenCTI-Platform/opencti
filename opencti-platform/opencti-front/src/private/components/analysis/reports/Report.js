@@ -97,6 +97,7 @@ const Report = createFragmentContainer(ReportComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectLabel {

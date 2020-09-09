@@ -75,13 +75,13 @@ export const markingDefinitionsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...MarkingDefinitionsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -90,16 +90,16 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment MarkingDefinitionsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "MarkingDefinitionsOrdering"
-            defaultValue: definition
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "MarkingDefinitionsOrdering"
+          defaultValue: definition
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         markingDefinitions(
           search: $search
           first: $count

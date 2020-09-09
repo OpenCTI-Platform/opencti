@@ -195,4 +195,8 @@ ObservedDataPopover.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(ObservedDataPopover);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(ObservedDataPopover);
