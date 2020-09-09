@@ -50,7 +50,6 @@ import { lockResource } from './redis';
 import { mergeStixIds, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   IDS_ALIASES,
