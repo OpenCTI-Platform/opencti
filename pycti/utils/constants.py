@@ -26,6 +26,7 @@ class StixCyberObservableTypes(Enum):
     WINDOWS_REGISTRY_KEY = "Windows-Registry-Key"
     WINDOWS_REGISTRY_VALUE_TYPE = "Windows-Registry-Value-Type"
     X509_V3_EXTENSIONS_TYPE_ = "X509-V3-Extensions-Type"
+    X_OPENCTI_HOSTNAME = "X-OpenCTI-Hostname"
     X_OPENCTI_CRYPTOGRAPHIC_KEY = "X-OpenCTI-Cryptographic-Key"
     X_OPENCTI_CRYPTOCURRENCY_WALLET = "X-OpenCTI-Cryptocurrency-Wallet"
     X_OPENCTI_TEXT = "X-OpenCTI-Text"
