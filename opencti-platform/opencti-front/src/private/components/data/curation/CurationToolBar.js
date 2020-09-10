@@ -109,14 +109,10 @@ const curationToolBarDeletionMutation = graphql`
 const curationToolBarMergeMutation = graphql`
   mutation CurationToolBarMergeMutation(
     $id: ID!
-    $stixDomainObjectsIds: [String]!
-    $aliases: [String]
+    $stixCoreObjectsIds: [String]!
   ) {
-    stixDomainObjectEdit(id: $id) {
-      mergeEntities(
-        stixDomainObjectsIds: $stixDomainObjectsIds
-        aliases: $aliases
-      ) {
+    stixCoreObjectEdit(id: $id) {
+      merge(stixCoreObjectsIds: $stixCoreObjectsIds) {
         id
       }
     }
@@ -190,20 +186,6 @@ class CurationToolBar extends Component {
     const keptElement = keptEntityId
       ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
       : head(selectedElementsList);
-    const names = pluck('name', selectedElementsList);
-    const aliases = !isNil(keptElement.aliases)
-      ? filter(
-        (n) => !isNil(n),
-        flatten(pluck('aliases', selectedElementsList)),
-      )
-      : filter(
-        (n) => !isNil(n),
-        flatten(pluck('x_opencti_aliases', selectedElementsList)),
-      );
-    const newAliases = filter(
-      (n) => n.length > 0,
-      uniq(concat(names, aliases)),
-    );
     const filteredStixDomainObjectsIds = keptEntityId
       ? filter((n) => n !== keptEntityId, stixDomainObjectsIds)
       : tail(stixDomainObjectsIds);
@@ -211,8 +193,7 @@ class CurationToolBar extends Component {
       mutation: curationToolBarMergeMutation,
       variables: {
         id: keptElement.id,
-        stixDomainObjectsIds: filteredStixDomainObjectsIds,
-        aliases: newAliases,
+        stixCoreObjectsIds: filteredStixDomainObjectsIds,
       },
       updater: (store) => {
         const container = store.getRoot();

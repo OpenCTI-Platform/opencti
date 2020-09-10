@@ -11,6 +11,7 @@ import {
   stixCoreObjectAddRelations,
   stixCoreObjectDeleteRelation,
   stixCoreRelationships,
+  stixCoreObjectMerge,
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
@@ -47,6 +48,7 @@ const stixCoreObjectResolvers = {
       relationsAdd: ({ input }) => stixCoreObjectAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixCoreObjectDeleteRelation(user, id, toId, relationshipType),
+      merge: ({ stixCoreObjectsIds }) => stixCoreObjectMerge(user, id, stixCoreObjectsIds),
     }),
   },
 };

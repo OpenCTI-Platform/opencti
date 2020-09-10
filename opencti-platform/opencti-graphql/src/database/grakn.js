@@ -92,6 +92,7 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { stixCoreObjectMerge } from '../domain/stixCoreObject';
 
 // region global variables
 export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
@@ -1455,6 +1456,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(instance.internal_id);
+    let finalExistingEntity = null;
     await executeWrite(async (wTx) => {
       // Update all needed attributes
       for (let index = 0; index < elements.length; index += 1) {
@@ -1481,12 +1483,22 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         const updatedInstance = mergeInstanceWithInputs(instance, updatedInputs);
         const standardId = generateStandardId(instanceType, updatedInstance);
         const standardInput = { key: ID_STANDARD, value: [standardId] };
-        // eslint-disable-next-line no-await-in-loop
-        const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
-        // currentInstanceData = R.assoc(ID_STANDARD, standardId, currentInstanceData);
-        updatedInputs.push(...ins);
+        // check if an entity exists with this ID
+        const existingEntity = await internalLoadById(standardId);
+        // Return the merged entity
+        if (existingEntity) {
+          finalExistingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id]);
+        } else {
+          // eslint-disable-next-line no-await-in-loop
+          const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
+          // currentInstanceData = R.assoc(ID_STANDARD, standardId, currentInstanceData);
+          updatedInputs.push(...ins);
+        }
       }
     });
+    if (finalExistingEntity) {
+      return finalExistingEntity;
+    }
     // Update elasticsearch and send logs
     const postOperations = [];
     const index = inferIndexFromConceptType(instance.entity_type);

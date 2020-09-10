@@ -95,7 +95,13 @@ class UserLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <UserPopover userId={node.id} paginationOptions={paginationOptions} />
+          <UserPopover
+            disabled={
+              node.id === '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
+            }
+            userId={node.id}
+            paginationOptions={paginationOptions}
+          />
         </ListItemSecondaryAction>
       </ListItem>
     );
