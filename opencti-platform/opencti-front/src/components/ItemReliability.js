@@ -6,15 +6,19 @@ import Chip from '@material-ui/core/Chip';
 const styles = () => ({
   chip: {
     fontSize: 12,
-    lineHeight: '12px',
     height: 25,
     marginRight: 7,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    width: 150,
   },
   chipInList: {
     fontSize: 12,
-    lineHeight: '12px',
     height: 20,
     float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    width: 150,
   },
 });
 
@@ -24,16 +28,20 @@ const inlineStyles = {
     color: '#2b2b2b',
   },
   green: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+    color: '#4caf50',
   },
   darkGreen: {
-    backgroundColor: '#1b5e20',
+    backgroundColor: 'rgba(27,94,32, 0.08)',
+    color: '#1b5e20',
   },
   red: {
-    backgroundColor: '#f44336',
+    backgroundColor: 'rgba(244, 67, 54, 0.08)',
+    color: '#f44336',
   },
   orange: {
-    backgroundColor: '#ff9800',
+    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+    color: '#ff9800',
   },
   blueGrey: {
     backgroundColor: '#607d8b',

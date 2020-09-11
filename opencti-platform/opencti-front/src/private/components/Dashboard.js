@@ -541,7 +541,7 @@ class Dashboard extends Component {
                                       {n(line.value)}
                                     </div>
                                     <div className={classes.labelValue}>
-                                      {line.entity.value}
+                                      {truncate(line.entity.value, 15)}
                                     </div>
                                   </div>
                                 </Grid>

@@ -83,7 +83,7 @@ const organizationValidation = (t) => Yup.object().shape({
   x_opencti_organization_type: Yup.string().required(
     t('This field is required'),
   ),
-  reliability: Yup.string().required(t('This field is required')),
+  x_opencti_reliability: Yup.string().required(t('This field is required')),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
@@ -178,7 +178,7 @@ class OrganizationCreation extends Component {
               initialValues={{
                 name: '',
                 description: '',
-                reliability: '',
+                x_opencti_reliability: '',
                 x_opencti_organization_type: 'other',
                 createdBy: '',
                 objectMarking: [],
@@ -227,7 +227,7 @@ class OrganizationCreation extends Component {
                   </Field>
                   <Field
                     component={SelectField}
-                    name="reliability"
+                    name="x_opencti_reliability"
                     label={t('Reliability')}
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}

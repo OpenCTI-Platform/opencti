@@ -71,6 +71,12 @@ const styles = (theme) => ({
     width: 24,
     height: 24,
   },
+  speedDial: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
+    zIndex: 2000,
+  },
 });
 
 class ContainerAddStixCoreObjects extends Component {
@@ -104,9 +110,10 @@ class ContainerAddStixCoreObjects extends Component {
       targetStixCoreObjectTypes,
       simple,
     } = this.props;
+    const { search } = this.state;
     const paginationOptions = {
       types: targetStixCoreObjectTypes,
-      search: this.state.search,
+      search,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -230,6 +237,20 @@ class ContainerAddStixCoreObjects extends Component {
             contextual={true}
             inputValue={this.state.search}
             paginationKey="Pagination_stixCoreObjects"
+            paginationOptions={paginationOptions}
+            defaultCreatedBy={defaultCreatedBy}
+            defaultMarkingDefinitions={defaultMarkingDefinitions}
+          />
+          ) : (
+            ''
+          )}
+        {!targetStixCoreObjectTypes
+        || (includes('Stix-Cyber-Observable', targetStixCoreObjectTypes)
+          && includes('Stix-Domain-Object', targetStixCoreObjectTypes)) ? (
+          <StixDomainObjectCreation
+            display={this.state.open}
+            contextual={true}
+            inputValue={this.state.search}
             paginationOptions={paginationOptions}
             defaultCreatedBy={defaultCreatedBy}
             defaultMarkingDefinitions={defaultMarkingDefinitions}

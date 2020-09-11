@@ -54,7 +54,7 @@ describe('Settings resolver standard behavior', () => {
     const aggregationMap = new Map(about.dependencies.map((q) => [q.name, q]));
     const grakn = aggregationMap.get('Grakn');
     expect(grakn).not.toBeUndefined();
-    expect(grakn.version).toEqual('1.8.1');
+    expect(grakn.version).toEqual('1.9.1');
   });
   it('should settings information', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: {} });

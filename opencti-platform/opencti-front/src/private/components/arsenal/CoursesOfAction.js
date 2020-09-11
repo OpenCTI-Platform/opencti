@@ -94,7 +94,7 @@ class CoursesOfAction extends Component {
       objectLabel: {
         label: 'Labels',
         width: '25%',
-        isSortable: true,
+        isSortable: false,
       },
       created: {
         label: 'Creation date',
