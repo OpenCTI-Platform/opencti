@@ -130,7 +130,7 @@ export const stixDomainObjectsExportsContentQuery = graphql`
     $context: String
   ) {
     ...StixDomainObjectsExportsContent_data
-      @arguments(count: $count, type: $type, context: $context)
+    @arguments(count: $count, type: $type, context: $context)
   }
 `;
 
@@ -139,11 +139,11 @@ const StixDomainObjectsExportsContent = createRefetchContainer(
   {
     data: graphql`
       fragment StixDomainObjectsExportsContent_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          type: { type: "String!" }
-          context: { type: "String!" }
-        ) {
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 25 }
+        type: { type: "String!" }
+        context: { type: "String!" }
+      ) {
         stixDomainObjectsExportFiles(
           first: $count
           type: $type

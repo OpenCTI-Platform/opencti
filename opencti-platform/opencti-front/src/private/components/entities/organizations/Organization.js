@@ -120,6 +120,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

@@ -10,10 +10,13 @@ import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import StixCyberObservableLinks from './StixCyberObservableLinks';
+import StixCyberObservableLinks, {
+  stixCyberObservableLinksQuery,
+} from './StixCyberObservableLinks';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemScore from '../../../../components/ItemScore';
 import { ignoredAttributes } from './StixCyberObservableCreation';
+import { QueryRenderer } from '../../../../relay/environment';
 
 const styles = () => ({
   paper: {
@@ -35,6 +38,11 @@ class StixCyberObservableDetailsComponent extends Component {
       map((n) => ({ key: n[0], value: n[1] })),
       filter((n) => n.value && !includes(n.key, ignoredAttributes)),
     )(stixCyberObservable);
+    const paginationOptions = {
+      elementId: stixCyberObservable.id,
+      orderBy: 'created_at',
+      orderMode: 'desc',
+    };
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -84,9 +92,17 @@ class StixCyberObservableDetailsComponent extends Component {
               );
             })}
           </Grid>
-          <StixCyberObservableLinks
-            stixCyberObservableId={stixCyberObservable.id}
-            stixCyberObservableType={stixCyberObservable.entity_type}
+          <QueryRenderer
+            query={stixCyberObservableLinksQuery}
+            variables={{ count: 25, ...paginationOptions }}
+            render={({ props }) => (
+              <StixCyberObservableLinks
+                stixCyberObservableId={stixCyberObservable.id}
+                stixCyberObservableType={stixCyberObservable.entity_type}
+                paginationOptions={paginationOptions}
+                data={props}
+              />
+            )}
           />
         </Paper>
       </div>

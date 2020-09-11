@@ -297,7 +297,11 @@ class ReportKnowledgeGraphComponent extends Component {
       const newNodes = map(
         (n) => new EntityNodeModel({
           id: n.node.id,
-          name: n.node.name,
+          name:
+              n.node.name
+              || n.node.observable_value
+              || n.node.attribute_abstract
+              || n.node.opinion,
           type: n.node.entity_type,
         }),
         added,
@@ -392,7 +396,11 @@ class ReportKnowledgeGraphComponent extends Component {
     forEach((n) => {
       const newNode = new EntityNodeModel({
         id: n.node.id,
-        name: n.node.name,
+        name:
+          n.node.name
+          || n.node.observable_value
+          || n.node.attribute_abstract
+          || n.node.opinion,
         type: n.node.entity_type,
       });
       newNode.addListener({
@@ -758,7 +766,11 @@ class ReportKnowledgeGraphComponent extends Component {
         const nodeObject = model.getNode(currentNode);
         nodeObject.setExtras({
           id: currentNode.extras.id,
-          name: stixCoreObject.name || stixCoreObject.observable_value,
+          name:
+            stixCoreObject.name
+            || stixCoreObject.observable_value
+            || stixCoreObject.attribute_abstract
+            || stixCoreObject.opinion,
           type: stixCoreObject.entity_type,
         });
         this.props.engine.repaintCanvas();
@@ -1056,6 +1068,9 @@ const ReportKnowledgeGraph = createFragmentContainer(
               ... on XOpenCTIIncident {
                 name
                 description
+              }
+              ... on StixCyberObservable {
+                observable_value
               }
               ... on BasicRelationship {
                 id

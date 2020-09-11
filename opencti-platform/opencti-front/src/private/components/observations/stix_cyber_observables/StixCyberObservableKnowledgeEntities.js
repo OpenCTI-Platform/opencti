@@ -61,6 +61,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
 
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
+    const { entityId } = this.props;
     const dataColumns = {
       relationship_type: {
         label: 'Relation',
@@ -113,6 +114,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
               dataColumns={dataColumns}
               initialLoading={props === null}
               displayRelation={true}
+              entityId={entityId}
             />
           )}
         />

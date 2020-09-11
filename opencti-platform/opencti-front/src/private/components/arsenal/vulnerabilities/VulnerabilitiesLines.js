@@ -66,14 +66,14 @@ export const vulnerabilitiesLinesQuery = graphql`
     $filters: [VulnerabilitiesFiltering]
   ) {
     ...VulnerabilitiesLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -82,14 +82,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment VulnerabilitiesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "VulnerabilitiesOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[VulnerabilitiesFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "VulnerabilitiesOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[VulnerabilitiesFiltering]" }
+      ) {
         vulnerabilities(
           search: $search
           first: $count

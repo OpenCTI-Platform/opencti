@@ -8113,6 +8113,7 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject
+  merge(stixCoreObjectsIds: [String]!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
@@ -8130,7 +8131,6 @@ type StixDomainObjectEditMutations {
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
-  mergeEntities(stixDomainObjectsIds: [String]!, aliases: [String]): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type AttackPatternEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])

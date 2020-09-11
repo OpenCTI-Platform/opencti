@@ -91,7 +91,7 @@ describe('Minio file listing', () => {
     let file = head(list.edges).node;
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(8411);
+    expect(file.size).toEqual(8518);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData['content-type']).toEqual('application/octet-stream');
     expect(file.metaData.category).toEqual('export');
@@ -103,7 +103,7 @@ describe('Minio file listing', () => {
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;
     expect(file.id).toEqual(importFileId);
-    expect(file.size).toEqual(8411);
+    expect(file.size).toEqual(8518);
     expect(file.name).toEqual(exportFileName);
   });
   it('should file download', async () => {
@@ -122,7 +122,7 @@ describe('Minio file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(8411);
+    expect(file.size).toEqual(8518);
   });
   it('should delete file', async () => {
     let deleted = await deleteFile({ user_email: 'test@opencti.io' }, exportFileId);

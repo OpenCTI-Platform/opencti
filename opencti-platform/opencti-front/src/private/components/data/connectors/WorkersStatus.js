@@ -140,7 +140,7 @@ const WorkersStatus = createRefetchContainer(
   {
     data: graphql`
       fragment WorkersStatus_data on Query
-        @argumentDefinitions(prefix: { type: "String" }) {
+      @argumentDefinitions(prefix: { type: "String" }) {
         rabbitMQMetrics(prefix: $prefix) {
           consumers
           overview {

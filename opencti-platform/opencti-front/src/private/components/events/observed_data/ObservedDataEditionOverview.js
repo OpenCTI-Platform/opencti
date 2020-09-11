@@ -263,7 +263,10 @@ class ObservedDataEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus context={context} fieldName="first_observed" />
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="first_observed"
+                  />
                 }
               />
               <Field
@@ -276,7 +279,10 @@ class ObservedDataEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus context={context} fieldName="last_observed" />
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="last_observed"
+                  />
                 }
               />
               <Field
@@ -288,7 +294,10 @@ class ObservedDataEditionOverviewComponent extends Component {
                 onFocus={this.handleChangeFocus.bind(this)}
                 onSubmit={this.handleSubmitField.bind(this)}
                 helperText={
-                  <SubscriptionFocus context={context} fieldName="number_observed" />
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="number_observed"
+                  />
                 }
               />
               <ConfidenceField

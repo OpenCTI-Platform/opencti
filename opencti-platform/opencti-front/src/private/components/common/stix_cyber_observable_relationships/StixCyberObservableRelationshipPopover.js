@@ -96,7 +96,9 @@ class StixCyberObservableRelationshipPopover extends Component {
       },
       updater: (store) => {
         const container = store.getRoot();
-        const payload = store.getRootField('stixCyberObservableRelationshipEdit');
+        const payload = store.getRootField(
+          'stixCyberObservableRelationshipEdit',
+        );
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,

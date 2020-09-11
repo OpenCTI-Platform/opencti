@@ -1,4 +1,5 @@
 import moment from 'moment-timezone';
+import { isNone } from '../components/i18n';
 
 const defaultDateFormat = 'YYYY-MM-DD';
 const yearDateFormat = 'YYYY';
@@ -24,6 +25,11 @@ export const yearsAgo = (number) => moment().subtract(number, 'years').format();
 
 export const yearFormat = (data) => (data && data !== '-' ? parse(data).format(yearDateFormat) : '');
 
-export const dateFormat = (data, specificFormat) => (data && data !== '-'
-  ? parse(data).format(specificFormat || defaultDateFormat)
-  : '');
+export const dateFormat = (data, specificFormat) => {
+  if (isNone(data)) {
+    return null;
+  }
+  return data && data !== '-'
+    ? parse(data).format(specificFormat || defaultDateFormat)
+    : '';
+};

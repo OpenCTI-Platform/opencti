@@ -57,13 +57,13 @@ export const labelsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...LabelsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -72,13 +72,13 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment LabelsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "LabelsOrdering", defaultValue: value }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "LabelsOrdering", defaultValue: value }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         labels(
           search: $search
           first: $count

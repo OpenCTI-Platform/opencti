@@ -69,14 +69,14 @@ export const XOpenCTIIncidentsLinesQuery = graphql`
     $filters: [XOpenCTIIncidentsFiltering]
   ) {
     ...XOpenCTIIncidentsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -85,14 +85,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment XOpenCTIIncidentsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "XOpenCTIIncidentsOrdering", defaultValue: name }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-          filters: { type: "[XOpenCTIIncidentsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "XOpenCTIIncidentsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[XOpenCTIIncidentsFiltering]" }
+      ) {
         xOpenCTIIncidents(
           search: $search
           first: $count

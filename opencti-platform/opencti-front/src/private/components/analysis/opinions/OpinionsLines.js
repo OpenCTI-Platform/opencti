@@ -68,14 +68,14 @@ export const opinionsLinesQuery = graphql`
     $filters: [OpinionsFiltering]
   ) {
     ...OpinionsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    )
   }
 `;
 
@@ -84,14 +84,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment OpinionsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "OpinionsOrdering", defaultValue: created }
-          orderMode: { type: "OrderingMode", defaultValue: desc }
-          filters: { type: "[OpinionsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "OpinionsOrdering", defaultValue: created }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
+        filters: { type: "[OpinionsFiltering]" }
+      ) {
         opinions(
           search: $search
           first: $count

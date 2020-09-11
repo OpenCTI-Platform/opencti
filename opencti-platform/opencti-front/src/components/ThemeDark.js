@@ -33,6 +33,14 @@ export default {
       fontWeight: 400,
       fontSize: 22,
     },
+    h2: {
+      margin: '0 0 10px 0',
+      padding: 0,
+      color: '#ffffff',
+      fontWeight: 500,
+      fontSize: 16,
+      textTransform: 'uppercase',
+    },
     h3: {
       margin: '0 0 10px 0',
       padding: 0,

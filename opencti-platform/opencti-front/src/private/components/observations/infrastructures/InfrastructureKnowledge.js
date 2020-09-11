@@ -79,19 +79,19 @@ class InfrastructureKnowledgeComponent extends Component {
             />
           )}
         />
-          <Route
-              exact
-              path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/intrusion_sets"
-              render={(routeProps) => (
-                  <EntityStixCoreRelationships
-                      entityId={infrastructure.id}
-                      targetStixDomainObjectTypes={['Intrusion-Set']}
-                      entityLink={link}
-                      isRelationReversed={true}
-                      {...routeProps}
-                  />
-              )}
-          />
+        <Route
+          exact
+          path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/intrusion_sets"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={infrastructure.id}
+              targetStixDomainObjectTypes={['Intrusion-Set']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
         <Route
           exact
           path="/dashboard/observations/infrastructures/:infrastructureId/knowledge/campaigns"

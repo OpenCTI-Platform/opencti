@@ -122,7 +122,9 @@ class AddOpinionsLinesContainer extends Component {
         {data.opinions.edges.map((opinionNode) => {
           const opinion = opinionNode.node;
           const alreadyAdded = entityOpinionsIds.includes(opinion.id);
-          const opinionId = opinion.external_id ? `(${opinion.external_id})` : '';
+          const opinionId = opinion.external_id
+            ? `(${opinion.external_id})`
+            : '';
           return (
             <ListItem
               key={opinion.id}
@@ -182,7 +184,7 @@ AddOpinionsLinesContainer.propTypes = {
 export const addOpinionsLinesQuery = graphql`
   query AddOpinionsLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddOpinionsLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -191,13 +193,13 @@ const AddOpinionsLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddOpinionsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         opinions(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_opinions") {
+        @connection(key: "Pagination_opinions") {
           edges {
             node {
               id

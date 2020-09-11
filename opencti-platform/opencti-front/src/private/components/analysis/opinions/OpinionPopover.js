@@ -195,4 +195,8 @@ OpinionPopover.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(OpinionPopover);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(OpinionPopover);

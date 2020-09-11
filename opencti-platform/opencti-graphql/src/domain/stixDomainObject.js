@@ -1,4 +1,4 @@
-import { assoc, dissoc, invertObj, map, pathOr, pipe, propOr, filter } from 'ramda';
+import { assoc, dissoc, invertObj, map, pipe, propOr, filter } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -21,12 +21,8 @@ import { generateFileExportName, upload } from '../database/minio';
 import { connectorsForExport } from './connector';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { noteContainsStixObjectOrStixRelationship } from './note';
-import { reportContainsStixObjectOrStixRelationship } from './report';
-import { addStixCoreRelationship, findAll as findAllStixRelations } from './stixCoreRelationship';
 import { FunctionalError } from '../config/errors';
 import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { createdBy, killChainPhases, markingDefinitions, reports, notes } from './stixCoreObject';
 import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
@@ -263,110 +259,6 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input)
   const updatedStixDomainObject = await updateAttribute(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user);
 };
-
-export const stixDomainObjectMerge = async (user, stixDomainObjectId, stixDomainObjectsIds, alias) => {
-  // 1. Update aliases
-  await stixDomainObjectEditField(user, stixDomainObjectId, { key: 'alias', value: alias });
-  // 2. Copy the relationships
-  await Promise.all(
-    stixDomainObjectsIds.map(async (id) => {
-      const relations = await findAllStixRelations({ fromId: id });
-      return Promise.all(
-        relations.edges.map(async (relationEdge) => {
-          const relation = relationEdge.node;
-          const relationCreatedBy = await createdBy(relation.id);
-          const relationMarkingDefinitions = await markingDefinitions(relation.id);
-          const relationkillChainPhases = await killChainPhases(relation.id);
-          const relationReports = await reports(relation.id);
-          const relationNotes = await notes(relation.id);
-          const relationToCreate = {
-            fromId: relation.fromInternalId,
-            fromRole: relation.fromRole,
-            toId: relation.toInternalId,
-            toRole: relation.toRole,
-            relationship_type: relation.entity_type,
-            confidence: relation.confidence,
-            description: relation.description,
-            first_seen: relation.first_seen,
-            last_seen: relation.last_seen,
-            created: relation.created,
-            modified: relation.modified,
-            createdBy: pathOr(null, ['node', 'id'], relationCreatedBy),
-            markingDefinitions: map((n) => n.node.id, relationMarkingDefinitions.edges),
-            killChainPhases: map((n) => n.node.id, relationkillChainPhases.edges),
-          };
-          if (relationToCreate.fromId !== relationToCreate.toId) {
-            const newRelation = await addStixCoreRelationship(user, relationToCreate);
-            await Promise.all(
-              relationReports.edges.map((report) => {
-                return stixDomainObjectAddRelation(user, report.node.id, {
-                  toId: newRelation.internal_id,
-                  relationship_type: RELATION_OBJECT,
-                });
-              })
-            );
-            await Promise.all(
-              relationNotes.edges.map((note) => {
-                return stixDomainObjectAddRelation(user, note.node.id, {
-                  toId: newRelation.internal_id,
-                });
-              })
-            );
-            return true;
-          }
-          return true;
-        })
-      );
-    })
-  );
-  // 3. Copy reports refs
-  await Promise.all(
-    stixDomainObjectsIds.map(async (id) => {
-      const stixDomainObjectReports = await reports(id);
-      return Promise.all(
-        stixDomainObjectReports.edges.map(async (reportEdge) => {
-          const report = reportEdge.node;
-          const alreadyInReport = await reportContainsStixObjectOrStixRelationship(report.id, stixDomainObjectId);
-          if (!alreadyInReport) {
-            return stixDomainObjectAddRelation(user, report.id, {
-              toId: stixDomainObjectId,
-              relationship_type: RELATION_OBJECT,
-            });
-          }
-          return true;
-        })
-      );
-    })
-  );
-
-  // 4. Copy notes refs
-  await Promise.all(
-    stixDomainObjectsIds.map(async (id) => {
-      const stixDomainObjectNotes = await notes(id);
-      return Promise.all(
-        stixDomainObjectNotes.edges.map(async (noteEdge) => {
-          const note = noteEdge.node;
-          const alreadyInNote = await noteContainsStixObjectOrStixRelationship(note.id, stixDomainObjectId);
-          if (!alreadyInNote) {
-            return stixDomainObjectAddRelation(user, note.id, {
-              toId: stixDomainObjectId,
-              relationship_type: RELATION_OBJECT,
-            });
-          }
-          return true;
-        })
-      );
-    })
-  );
-
-  // 5. Delete entities
-  await stixDomainObjectsDelete(user, stixDomainObjectsIds);
-  // 6. Return entity
-  return loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT).then((stixDomainObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user)
-  );
-};
-// endregion
 
 // region context
 export const stixDomainObjectCleanContext = async (user, stixDomainObjectId) => {

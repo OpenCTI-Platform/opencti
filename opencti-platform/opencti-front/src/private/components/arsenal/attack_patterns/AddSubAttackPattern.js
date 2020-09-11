@@ -84,7 +84,10 @@ class AddSubAttackPattern extends Component {
 
   render() {
     const {
-      t, classes, attackPatternId, attackPatternSubAttackPatterns,
+      t,
+      classes,
+      attackPatternId,
+      attackPatternSubAttackPatterns,
     } = this.props;
     const paginationOptions = {
       search: this.state.search,
@@ -136,7 +139,9 @@ class AddSubAttackPattern extends Component {
                   return (
                     <AddSubAttackPatternsLines
                       attackPatternId={attackPatternId}
-                      attackPatternSubAttackPatterns={attackPatternSubAttackPatterns}
+                      attackPatternSubAttackPatterns={
+                        attackPatternSubAttackPatterns
+                      }
                       data={props}
                     />
                   );

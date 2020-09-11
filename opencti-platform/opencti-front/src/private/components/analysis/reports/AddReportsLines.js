@@ -176,7 +176,7 @@ AddReportsLinesContainer.propTypes = {
 export const addReportsLinesQuery = graphql`
   query AddReportsLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddReportsLines_data
-      @arguments(search: $search, count: $count, cursor: $cursor)
+    @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -185,13 +185,13 @@ const AddReportsLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddReportsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         reports(search: $search, first: $count, after: $cursor)
-          @connection(key: "Pagination_reports") {
+        @connection(key: "Pagination_reports") {
           edges {
             node {
               id

@@ -1,6 +1,16 @@
 import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
+import moment from 'moment-timezone';
 import { numberFormat } from '../utils/Number';
+
+export const isNone = (date) => {
+  const parsedDate = moment(date).format();
+  return (
+    parsedDate.startsWith('Invalid')
+    || parsedDate.startsWith('1970')
+    || parsedDate.startsWith('5138')
+  );
+};
 
 const inject18n = (WrappedComponent) => {
   class InjectIntl extends Component {
@@ -10,41 +20,89 @@ const inject18n = (WrappedComponent) => {
       const formatNumber = (number) => `${this.props.intl.formatNumber(numberFormat(number).number)}${
         numberFormat(number).symbol
       }`;
-      const longDate = (date) => this.props.intl.formatDate(date, {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-      });
-      const longDateTime = (date) => this.props.intl.formatDate(date, {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric',
-        second: 'numeric',
-        minute: 'numeric',
-        hour: 'numeric',
-      });
-      const shortDate = (date) => this.props.intl.formatDate(date, {
-        day: 'numeric',
-        month: 'short',
-        year: 'numeric',
-      });
-      const shortNumericDate = (date) => this.props.intl.formatDate(date, {
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric',
-      });
-      const shortNumericDateTime = (date) => this.props.intl.formatDate(date, {
-        second: 'numeric',
-        minute: 'numeric',
-        hour: 'numeric',
-        day: 'numeric',
-        month: 'numeric',
-        year: 'numeric',
-      });
-      const standardDate = (date) => this.props.intl.formatDate(date);
-      const monthDate = (date) => this.props.intl.formatDate(date, { month: 'short', year: 'numeric' });
-      const monthTextDate = (date) => this.props.intl.formatDate(date, { month: 'long' });
-      const yearDate = (date) => this.props.intl.formatDate(date, { year: 'numeric' });
+      const longDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+      };
+      const longDateTime = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+          second: 'numeric',
+          minute: 'numeric',
+          hour: 'numeric',
+        });
+      };
+      const shortDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
+      };
+      const shortNumericDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, {
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+        });
+      };
+      const shortNumericDateTime = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, {
+          second: 'numeric',
+          minute: 'numeric',
+          hour: 'numeric',
+          day: 'numeric',
+          month: 'numeric',
+          year: 'numeric',
+        });
+      };
+      const standardDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date);
+      };
+      const monthDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, {
+          month: 'short',
+          year: 'numeric',
+        });
+      };
+      const monthTextDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, { month: 'long' });
+      };
+      const yearDate = (date) => {
+        if (isNone(date)) {
+          return translate('None');
+        }
+        return this.props.intl.formatDate(date, { year: 'numeric' });
+      };
       return (
         <WrappedComponent
           {...this.props}

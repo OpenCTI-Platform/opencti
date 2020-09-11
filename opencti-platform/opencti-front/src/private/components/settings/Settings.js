@@ -131,23 +131,6 @@ class Settings extends Component {
       .catch(() => false);
   }
 
-  getConfig(parameters, service) {
-    switch (service) {
-      case 'grakn':
-        return `${parameters.grakn.hostname}:${parameters.grakn.port}`;
-      case 'elasticsearch':
-        return parameters.elasticsearch.url;
-      case 'redis':
-        return `${parameters.redis.hostname}:${parameters.redis.port}`;
-      case 'minio':
-        return `${parameters.minio.endpoint}:${parameters.minio.port}`;
-      case 'rabbitmq':
-        return `${parameters.rabbitmq.hostname}:${parameters.rabbitmq.port}`;
-      default:
-        return 'Unknown';
-    }
-  }
-
   getProviderConfig(provider) {
     switch (provider.strategy) {
       case 'LocalStrategy':
@@ -341,21 +324,12 @@ class Settings extends Component {
                                   </Typography>
                                   <List>
                                     <ListItem divider={true}>
-                                      <ListItemText
-                                        primary={'OpenCTI'}
-                                        secondary={`0.0.0.0:${parameters.app.port}`}
-                                      />
+                                      <ListItemText primary={'OpenCTI'} />
                                       <Chip label={version} />
                                     </ListItem>
                                     {dependencies.map((dep) => (
                                       <ListItem key={dep.name} divider={true}>
-                                        <ListItemText
-                                          primary={t(dep.name)}
-                                          secondary={this.getConfig(
-                                            parameters,
-                                            dep.name.toLowerCase(),
-                                          )}
-                                        />
+                                        <ListItemText primary={t(dep.name)} />
                                         <Chip label={dep.version} />
                                       </ListItem>
                                     ))}

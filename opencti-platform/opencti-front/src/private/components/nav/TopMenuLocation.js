@@ -108,13 +108,15 @@ class TopMenuLocation extends Component {
           component={Link}
           to={`/dashboard/entities/cities/${cityId}/analysis`}
           variant={
-            location.pathname === `/dashboard/entities/cities/${cityId}/analysis`
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/cities/${cityId}/analysis`
+            location.pathname
+            === `/dashboard/entities/cities/${cityId}/analysis`
               ? 'primary'
               : 'inherit'
           }
@@ -195,4 +197,8 @@ TopMenuLocation.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter, withStyles(styles))(TopMenuLocation);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(TopMenuLocation);

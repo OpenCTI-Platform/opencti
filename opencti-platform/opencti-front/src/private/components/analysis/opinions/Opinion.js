@@ -104,6 +104,7 @@ const Opinion = createFragmentContainer(OpinionComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectLabel {

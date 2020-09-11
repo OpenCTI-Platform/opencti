@@ -54,10 +54,11 @@ class StixCyberObservableEntityLineComponent extends Component {
       displayRelation,
       entityId,
     } = this.props;
-    const link = node.to.parent_types.includes('stix-core-relationship')
+    const targetEntity = node.from.id === entityId ? node.to : node.from;
+    const link = targetEntity.parent_types.includes('stix-core-relationship')
       ? `/dashboard/observations/observables/${entityId}/knowledge/relations/${node.id}`
-      : `${resolveLink(node.to.entity_type)}/${
-        node.to.id
+      : `${resolveLink(targetEntity.entity_type)}/${
+        targetEntity.id
       }/knowledge/relations/${node.id}`;
     return (
       <ListItem
@@ -68,7 +69,7 @@ class StixCyberObservableEntityLineComponent extends Component {
         to={link}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.to.entity_type} />
+          <ItemIcon type={targetEntity.entity_type} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -89,10 +90,10 @@ class StixCyberObservableEntityLineComponent extends Component {
               >
                 {t(
                   `entity_${
-                    node.to.entity_type === 'stix_relation'
-                    || node.to.entity_type === 'stix-relation'
-                      ? node.to.parent_types[0]
-                      : node.to.entity_type
+                    targetEntity.entity_type === 'stix_relation'
+                    || targetEntity.entity_type === 'stix-relation'
+                      ? targetEntity.parent_types[0]
+                      : targetEntity.entity_type
                   }`,
                 )}
               </div>
@@ -100,12 +101,12 @@ class StixCyberObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.to.entity_type === 'stix_relation'
-                || node.to.entity_type === 'stix-relation'
-                  ? `${node.to.from.name} ${String.fromCharCode(8594)} ${
-                    node.to.to.name
+                {targetEntity.entity_type === 'stix_relation'
+                || targetEntity.entity_type === 'stix-relation'
+                  ? `${targetEntity.from.name} ${String.fromCharCode(8594)} ${
+                    targetEntity.to.name
                   }`
-                  : node.to.name}
+                  : targetEntity.name}
               </div>
               {!displayRelation ? (
                 <div
@@ -181,6 +182,263 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
         stop_time
         description
         inferred
+        from {
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixObject {
+            created_at
+            updated_at
+          }
+          ... on AttackPattern {
+            name
+            description
+          }
+          ... on AttackPattern {
+            name
+            description
+          }
+          ... on Campaign {
+            name
+            description
+          }
+          ... on CourseOfAction {
+            name
+            description
+          }
+          ... on Individual {
+            name
+            description
+          }
+          ... on Organization {
+            name
+            description
+          }
+          ... on Sector {
+            name
+            description
+          }
+          ... on Indicator {
+            name
+          }
+          ... on Infrastructure {
+            name
+          }
+          ... on IntrusionSet {
+            name
+            description
+          }
+          ... on Position {
+            name
+            description
+          }
+          ... on City {
+            name
+            description
+          }
+          ... on Country {
+            name
+            description
+          }
+          ... on Region {
+            name
+            description
+          }
+          ... on Malware {
+            name
+            description
+          }
+          ... on ThreatActor {
+            name
+            description
+          }
+          ... on Tool {
+            name
+            description
+          }
+          ... on Vulnerability {
+            name
+            description
+          }
+          ... on XOpenCTIIncident {
+            name
+            description
+          }
+          ... on StixCoreRelationship {
+            from {
+              ... on BasicObject {
+                id
+                entity_type
+                parent_types
+              }
+              ... on StixObject {
+                created_at
+                updated_at
+              }
+              ... on AttackPattern {
+                name
+                description
+              }
+              ... on AttackPattern {
+                name
+                description
+              }
+              ... on Campaign {
+                name
+                description
+              }
+              ... on CourseOfAction {
+                name
+                description
+              }
+              ... on Individual {
+                name
+                description
+              }
+              ... on Organization {
+                name
+                description
+              }
+              ... on Sector {
+                name
+                description
+              }
+              ... on Indicator {
+                name
+              }
+              ... on Infrastructure {
+                name
+              }
+              ... on IntrusionSet {
+                name
+                description
+              }
+              ... on Position {
+                name
+                description
+              }
+              ... on City {
+                name
+                description
+              }
+              ... on Country {
+                name
+                description
+              }
+              ... on Region {
+                name
+                description
+              }
+              ... on Malware {
+                name
+                description
+              }
+              ... on ThreatActor {
+                name
+                description
+              }
+              ... on Tool {
+                name
+                description
+              }
+              ... on Vulnerability {
+                name
+                description
+              }
+              ... on XOpenCTIIncident {
+                name
+                description
+              }
+            }
+            to {
+              ... on BasicObject {
+                id
+                entity_type
+                parent_types
+              }
+              ... on StixObject {
+                created_at
+                updated_at
+              }
+              ... on AttackPattern {
+                name
+                description
+              }
+              ... on AttackPattern {
+                name
+                description
+              }
+              ... on Campaign {
+                name
+                description
+              }
+              ... on CourseOfAction {
+                name
+                description
+              }
+              ... on Individual {
+                name
+                description
+              }
+              ... on Organization {
+                name
+                description
+              }
+              ... on Sector {
+                name
+                description
+              }
+              ... on Indicator {
+                name
+              }
+              ... on Infrastructure {
+                name
+              }
+              ... on IntrusionSet {
+                name
+                description
+              }
+              ... on Position {
+                name
+                description
+              }
+              ... on City {
+                name
+                description
+              }
+              ... on Country {
+                name
+                description
+              }
+              ... on Region {
+                name
+                description
+              }
+              ... on Malware {
+                name
+                description
+              }
+              ... on ThreatActor {
+                name
+                description
+              }
+              ... on Tool {
+                name
+                description
+              }
+              ... on Vulnerability {
+                name
+                description
+              }
+              ... on XOpenCTIIncident {
+                name
+                description
+              }
+            }
+          }
+        }
         to {
           ... on BasicObject {
             id

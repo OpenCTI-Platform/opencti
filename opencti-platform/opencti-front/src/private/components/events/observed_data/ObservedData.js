@@ -99,6 +99,7 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectLabel {

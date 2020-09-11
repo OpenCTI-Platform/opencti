@@ -35,9 +35,9 @@ import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
-import SearchInput from '../../../../components/SearchInput';
 import ItemMarking from '../../../../components/ItemMarking';
 import ItemIcon from '../../../../components/ItemIcon';
+import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledge';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -51,11 +51,7 @@ const styles = (theme) => ({
 class StixDomainObjectGlobalKillChainComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedLines: {}, searchTerm: '' };
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.state = { expandedLines: {} };
   }
 
   handleToggleLine(lineKey) {
@@ -88,8 +84,20 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
     )(data.stixCoreRelationships.edges);
     const stixCoreRelationships = pipe(
       map((n) => n.node),
-      map((n) => assoc('startTimeYear', yearFormat(n.start_time), n)),
-      map((n) => assoc('stopTimeYear', yearFormat(n.stop_time), n)),
+      map((n) => assoc(
+        'startTimeYear',
+        yearFormat(n.start_time) === '1970'
+          ? t('None')
+          : yearFormat(n.start_time),
+        n,
+      )),
+      map((n) => assoc(
+        'stopTimeYear',
+        yearFormat(n.stop_time) === '5138'
+          ? t('None')
+          : yearFormat(n.stop_time),
+        n,
+      )),
       map((n) => assoc(
         'years',
         n.startTimeYear === n.stopTimeYear
@@ -114,8 +122,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
       sortWith([ascend(prop('x_opencti_order'))]),
     )(data.stixCoreRelationships.edges);
     return (
-      <div>
-        <SearchInput variant="small" onSubmit={this.handleSearch.bind(this)} />
+      <div style={{ marginBottom: 90 }}>
         <div id="container">
           <List id="test">
             {stixCoreRelationships.map((stixCoreRelationship) => (
@@ -176,7 +183,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             <ListItemText
                               primary={
                                 stixDomainObject.to.entity_type
-                                === 'attack-pattern' ? (
+                                === 'Attack-Pattern' ? (
                                   <span>
                                     <strong>
                                       {stixDomainObject.to.x_mitre_id}
@@ -256,19 +263,6 @@ StixDomainObjectGlobalKillChainComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
 };
-
-export const stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery = graphql`
-  query StixDomainObjectGlobalKillChainStixCoreRelationshipsQuery(
-    $fromId: String
-    $fromRole: String
-    $toTypes: [String]
-    $relationship_type: String
-    $inferred: Boolean
-    $first: Int
-  ) {
-    ...StixDomainObjectGlobalKillChain_data
-  }
-`;
 
 const StixDomainObjectGlobalKillChain = createRefetchContainer(
   StixDomainObjectGlobalKillChainComponent,
@@ -402,7 +396,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
       }
     `,
   },
-  stixDomainObjectGlobalKillChainStixCoreRelationshipsQuery,
+  stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery,
 );
 
 export default compose(

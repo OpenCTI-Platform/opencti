@@ -17,6 +17,7 @@ import {
   filter,
   includes,
 } from 'ramda';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -66,6 +67,7 @@ const stixCyberObservableMutationFieldPatch = graphql`
   ) {
     stixCyberObservableEdit(id: $id) {
       fieldPatch(input: $input) {
+        id
         ...StixCyberObservableEditionOverview_stixCyberObservable
       }
     }
@@ -138,6 +140,16 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         id: this.props.stixCyberObservable.id,
         input: { key: finalName, value },
       },
+      onCompleted: (response) => {
+        if (
+          response.stixCyberObservableEdit.fieldPatch.id
+          !== this.props.stixCyberObservable.id
+        ) {
+          this.props.history.push(
+            `/dashboard/observations/observables/${response.stixCyberObservableEdit.fieldPatch.id}`,
+          );
+        }
+      },
     });
   }
 
@@ -165,6 +177,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
         variables: {
           id: this.props.stixCyberObservable.id,
           toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -508,6 +521,7 @@ StixCyberObservableEditionOverviewComponent.propTypes = {
   t: PropTypes.func,
   stixCyberObservable: PropTypes.object,
   context: PropTypes.array,
+  history: PropTypes.object,
 };
 
 const StixCyberObservableEditionOverview = createFragmentContainer(
@@ -711,5 +725,6 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
 
 export default compose(
   inject18n,
+  withRouter,
   withStyles(styles, { withTheme: true }),
 )(StixCyberObservableEditionOverview);

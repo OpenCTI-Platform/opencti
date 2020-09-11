@@ -106,9 +106,7 @@ class StixCoreRelationshipCreationFromRelationStixCyberObservablesLinesContainer
                 {stixCyberObservables[type].length} {t('observable(s)')}
               </Typography>
             </AccordionSummary>
-            <AccordionDetails
-              classes={{ root: classes.expansionPanelContent }}
-            >
+            <AccordionDetails classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
                 {stixCyberObservables[type].map((stixCyberObservable) => (
                   <ListItem
@@ -155,14 +153,14 @@ export const stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQu
     $orderMode: OrderingMode
   ) {
     ...StixCoreRelationshipCreationFromRelationStixCyberObservablesLines_data
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -171,17 +169,17 @@ const StixCoreRelationshipCreationFromRelationStixCyberObservablesLines = create
   {
     data: graphql`
       fragment StixCoreRelationshipCreationFromRelationStixCyberObservablesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          types: { type: "[String]" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        types: { type: "[String]" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCyberObservablesOrdering"
+          defaultValue: created_at
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCyberObservables(
           search: $search
           types: $types

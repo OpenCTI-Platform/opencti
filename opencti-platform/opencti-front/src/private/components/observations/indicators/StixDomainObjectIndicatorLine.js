@@ -108,16 +108,15 @@ class StixDomainObjectIndicatorLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(
-                  1,
-                  pathOr([], ['objectMarking', 'edges'], node.to),
-                ).map((markingDefinition) => (
-                  <ItemMarking
-                    key={markingDefinition.node.id}
-                    variant="inList"
-                    label={markingDefinition.node.definition}
-                  />
-                ))}
+                {take(1, pathOr([], ['objectMarking', 'edges'], node.to)).map(
+                  (markingDefinition) => (
+                    <ItemMarking
+                      key={markingDefinition.node.id}
+                      variant="inList"
+                      label={markingDefinition.node.definition}
+                    />
+                  ),
+                )}
               </div>
             </div>
           }

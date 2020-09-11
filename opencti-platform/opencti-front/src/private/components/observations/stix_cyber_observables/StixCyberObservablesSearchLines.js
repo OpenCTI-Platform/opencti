@@ -115,9 +115,7 @@ class StixCyberObservablesContainer extends Component {
                 {stixCyberObservables[type].length} {t('observable(s)')}
               </Typography>
             </AccordionSummary>
-            <AccordionDetails
-              classes={{ root: classes.expansionPanelContent }}
-            >
+            <AccordionDetails classes={{ root: classes.expansionPanelContent }}>
               <List classes={{ root: classes.list }}>
                 {stixCyberObservables[type].map((stixCyberObservable) => (
                   <ListItem
@@ -171,13 +169,13 @@ export const stixCyberObservablesSearchLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCyberObservablesSearchLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -186,16 +184,16 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
   {
     data: graphql`
       fragment StixCyberObservablesSearchLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCyberObservablesOrdering"
-            defaultValue: created_at
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCyberObservablesOrdering"
+          defaultValue: created_at
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCyberObservables(
           search: $search
           first: $count

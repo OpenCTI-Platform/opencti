@@ -19,13 +19,13 @@ import {
   stixDomainObjectExportAsk,
   stixDomainObjectExportPush,
   stixDomainObjectImportPush,
-  stixDomainObjectMerge,
 } from '../domain/stixDomainObject';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
+import { stixCoreObjectMerge } from '../domain/stixCoreObject';
 
 const stixDomainObjectResolvers = {
   Query: {
@@ -67,7 +67,6 @@ const stixDomainObjectResolvers = {
       importPush: ({ file }) => stixDomainObjectImportPush(user, null, id, file),
       exportAsk: (args) => stixDomainObjectExportAsk(assoc('stixDomainObjectId', id, args)),
       exportPush: ({ file }) => stixDomainObjectExportPush(user, null, id, file),
-      mergeEntities: ({ stixDomainObjectsIds, alias }) => stixDomainObjectMerge(user, id, stixDomainObjectsIds, alias),
     }),
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
     stixDomainObjectAdd: (_, { input }, { user }) => addStixDomainObject(user, input),

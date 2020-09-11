@@ -352,7 +352,4 @@ StixCoreObjectLabelsView.propTypes = {
   labels: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectLabelsView);
+export default compose(inject18n, withStyles(styles))(StixCoreObjectLabelsView);

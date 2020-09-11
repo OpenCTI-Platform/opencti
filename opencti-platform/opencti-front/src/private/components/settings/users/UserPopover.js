@@ -122,7 +122,9 @@ class UserPopover extends Component {
   }
 
   render() {
-    const { classes, t, userId } = this.props;
+    const {
+      classes, t, userId, disabled,
+    } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -141,7 +143,10 @@ class UserPopover extends Component {
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+          <MenuItem
+            onClick={this.handleOpenDelete.bind(this)}
+            disabled={disabled}
+          >
             {t('Delete')}
           </MenuItem>
         </Menu>
@@ -205,6 +210,7 @@ UserPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(UserPopover);

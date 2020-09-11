@@ -14,9 +14,7 @@ import { Add, Close } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddOpinionsLines, {
-  addOpinionsLinesQuery,
-} from './AddOpinionsLines';
+import AddOpinionsLines, { addOpinionsLinesQuery } from './AddOpinionsLines';
 import OpinionCreation from './OpinionCreation';
 
 const styles = (theme) => ({

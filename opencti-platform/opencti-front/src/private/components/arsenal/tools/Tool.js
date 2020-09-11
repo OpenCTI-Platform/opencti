@@ -117,6 +117,7 @@ const Tool = createFragmentContainer(ToolComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

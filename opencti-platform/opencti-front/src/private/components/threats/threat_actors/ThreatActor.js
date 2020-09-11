@@ -119,6 +119,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
         }
       }
       creator {
+        id
         name
       }
       objectMarking {

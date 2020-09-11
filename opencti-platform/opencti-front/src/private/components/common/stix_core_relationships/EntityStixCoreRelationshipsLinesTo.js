@@ -72,18 +72,18 @@ export const entityStixCoreRelationshipsLinesToQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixCoreRelationshipsLinesTo_data
-      @arguments(
-        fromTypes: $fromTypes
-        toId: $toId
-        toRole: $toRole
-        inferred: $inferred
-        relationship_type: $relationship_type
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    @arguments(
+      fromTypes: $fromTypes
+      toId: $toId
+      toRole: $toRole
+      inferred: $inferred
+      relationship_type: $relationship_type
+      search: $search
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
@@ -92,21 +92,21 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment EntityStixCoreRelationshipsLinesTo_data on Query
-        @argumentDefinitions(
-          fromTypes: { type: "[String]" }
-          toId: { type: "String" }
-          toRole: { type: "String" }
-          inferred: { type: "Boolean" }
-          relationship_type: { type: "String" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "StixCoreRelationshipsOrdering"
-            defaultValue: start_time
-          }
-          orderMode: { type: "OrderingMode", defaultValue: asc }
-        ) {
+      @argumentDefinitions(
+        fromTypes: { type: "[String]" }
+        toId: { type: "String" }
+        toRole: { type: "String" }
+        inferred: { type: "Boolean" }
+        relationship_type: { type: "String" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: {
+          type: "StixCoreRelationshipsOrdering"
+          defaultValue: start_time
+        }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         stixCoreRelationships(
           fromTypes: $fromTypes
           toId: $toId

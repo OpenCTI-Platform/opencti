@@ -36,7 +36,7 @@ const stixCoreRelationshipsBarsDistributionQuery = graphql`
     $operation: StatsOperation!
     $startDate: DateTime
     $endDate: DateTime
-    $dateAttribute: String    
+    $dateAttribute: String
     $limit: Int
   ) {
     stixCoreRelationshipsDistribution(
