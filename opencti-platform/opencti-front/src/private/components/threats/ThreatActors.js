@@ -97,9 +97,7 @@ class ThreatActors extends Component {
       name: {
         label: 'Name',
       },
-      objectLabel: {
-        label: 'Labels',
-      },
+
       created: {
         label: 'Creation date',
       },
@@ -167,7 +165,7 @@ class ThreatActors extends Component {
       objectLabel: {
         label: 'Labels',
         width: '25%',
-        isSortable: true,
+        isSortable: false,
       },
       created: {
         label: 'Creation date',

@@ -97,9 +97,6 @@ class Campaigns extends Component {
       name: {
         label: 'Name',
       },
-      objectLabel: {
-        label: 'Labels',
-      },
       created: {
         label: 'Creation date',
       },
@@ -167,7 +164,7 @@ class Campaigns extends Component {
       objectLabel: {
         label: 'Labels',
         width: '25%',
-        isSortable: true,
+        isSortable: false,
       },
       created: {
         label: 'Creation date',

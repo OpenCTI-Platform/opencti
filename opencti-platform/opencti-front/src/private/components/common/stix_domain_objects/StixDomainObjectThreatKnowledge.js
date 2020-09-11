@@ -124,7 +124,7 @@ class StixDomainObjectThreatKnowledge extends Component {
     super(props);
     this.state = {
       inferred: false,
-      viewType: 'timeline',
+      viewType: 'killchain',
     };
   }
 
@@ -369,8 +369,8 @@ class StixDomainObjectThreatKnowledge extends Component {
           onChange={this.handleChangeViewType.bind(this)}
           style={{ margin: '0 0 20px 0' }}
         >
-          <Tab label={t('Timeline')} value="timeline" />
           <Tab label={t('Global kill chain')} value="killchain" />
+          <Tab label={t('Timeline')} value="timeline" />
         </Tabs>
         <QueryRenderer
           query={stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery}

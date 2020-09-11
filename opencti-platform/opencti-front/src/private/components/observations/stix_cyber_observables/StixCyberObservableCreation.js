@@ -139,6 +139,12 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 2000,
   },
+  createButtonContextualSpeedDial: {
+    position: 'fixed',
+    bottom: 90,
+    right: 30,
+    zIndex: 2000,
+  },
   buttons: {
     marginTop: 20,
     textAlign: 'right',

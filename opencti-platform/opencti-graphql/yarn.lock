@@ -1057,7 +1057,7 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@elastic/elasticsearch@^7.8.0":
+"@elastic/elasticsearch@^7.9.0":
   version "7.9.0"
   resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.9.0.tgz#098f8adbe45cba1864ea5edc59638ea983904fe5"
   integrity sha512-iSLQvQafspN03YayzccShkKgJeRsUbncbtIhIL2SeiH01xwdnOZcp0nCvSNaMsH28A3YQ4ogTs9K8eXe42UaUA==

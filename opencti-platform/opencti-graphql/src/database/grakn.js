@@ -1516,7 +1516,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(instance.internal_id);
-    let finalExistingEntity = null;
+    let eventualMergingEntity = null;
     await executeWrite(async (wTx) => {
       // Update all needed attributes
       for (let index = 0; index < elements.length; index += 1) {
@@ -1550,7 +1550,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         const existingEntity = await internalLoadById(standardId);
         // Return the merged entity
         if (existingEntity) {
-          finalExistingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id]);
+          eventualMergingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id]);
         } else {
           // eslint-disable-next-line no-await-in-loop
           const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
@@ -1559,8 +1559,8 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         }
       }
     });
-    if (finalExistingEntity) {
-      return finalExistingEntity;
+    if (eventualMergingEntity) {
+      return eventualMergingEntity;
     }
     // region send the event to the stream
     if (updatedInputs.length > 0) {

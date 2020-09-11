@@ -52,8 +52,6 @@ class Search extends Component {
           variables={{
             search: keyword,
             count: 100,
-            orderBy: 'created_at',
-            orderMode: 'desc',
           }}
           render={({ props }) => {
             if (props) {
@@ -67,8 +65,6 @@ class Search extends Component {
           variables={{
             search: keyword,
             count: 100,
-            orderBy: 'created_at',
-            orderMode: 'desc',
           }}
           render={({ props }) => {
             if (props) {
