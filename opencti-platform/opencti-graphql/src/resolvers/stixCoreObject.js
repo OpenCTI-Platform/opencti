@@ -36,7 +36,7 @@ const stixCoreObjectResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    toStix: (stixCoreObject) => convertDataToStix(stixCoreObject).then((stixData) => JSON.stringify(stixData)),
+    toStix: (stixCoreObject) => JSON.stringify(convertDataToStix(stixCoreObject)),
     creator: (stixCoreObject) => creator(stixCoreObject.id),
     createdBy: (stixCoreObject) => createdBy(stixCoreObject.id),
     objectMarking: (stixCoreObject) => markingDefinitions(stixCoreObject.id),

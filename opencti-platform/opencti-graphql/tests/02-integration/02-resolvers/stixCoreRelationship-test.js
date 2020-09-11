@@ -16,9 +16,9 @@ const READ_QUERY = gql`
   }
 `;
 
+const stixCoreRelationshipStixId = 'relationship--3d8bb13a-6cad-493d-933a-ae4ff5a203ca';
 describe('StixCoreRelationship resolver standard behavior', () => {
   let stixCoreRelationshipInternalId;
-  const stixCoreRelationshipStixId = 'relationship--3d8bb13a-6cad-493d-933a-ae4ff5a203ca';
   it('should stixCoreRelationship created', async () => {
     const CREATE_QUERY = gql`
       mutation StixDomainRelationAdd($input: StixCoreRelationshipAddInput) {
@@ -90,7 +90,10 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: stixCoreRelationshipInternalId, input: { key: 'description', value: ['StixCoreRelationship - test'] } },
+      variables: {
+        id: stixCoreRelationshipInternalId,
+        input: { key: 'description', value: ['StixCoreRelationship - test'] },
+      },
     });
     expect(queryResult.data.stixCoreRelationshipEdit.fieldPatch.description).toEqual('StixCoreRelationship - test');
   });
@@ -157,7 +160,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_ADD_QUERY,
       variables: {
-        id: stixCoreRelationshipInternalId,
+        id: stixCoreRelationshipStixId,
         input: {
           toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
           relationship_type: 'object-marking',
@@ -186,7 +189,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: RELATION_DELETE_QUERY,
       variables: {
-        id: stixCoreRelationshipInternalId,
+        id: stixCoreRelationshipStixId,
         toId: 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27',
         relationship_type: 'object-marking',
       },

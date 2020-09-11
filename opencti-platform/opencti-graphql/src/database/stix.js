@@ -146,7 +146,15 @@ export const buildStixData = (data, onlyBase = false) => {
     R.dissoc('parent_types'),
     R.dissoc('base_type'),
     R.dissoc('entity_type'),
-    R.dissoc('update')
+    R.dissoc('update'),
+    // Relations
+    R.dissoc('fromId'),
+    R.dissoc('fromRole'),
+    R.dissoc('fromType'),
+    R.dissoc('toId'),
+    R.dissoc('toRole'),
+    R.dissoc('toType'),
+    R.dissoc('connections')
   )(data);
   const stixData = stixDataConverter(rawData);
   if (onlyBase) {

@@ -1760,11 +1760,9 @@ const createRelationRaw = async (user, input, opts = {}) => {
   // 06. Prepare the final data with Grakn IDs
   const created = R.pipe(
     R.assoc('id', internalId),
-    R.assoc('from', from),
     R.assoc('fromId', from.internal_id),
     R.assoc('fromRole', fromRole),
     R.assoc('fromType', from.entity_type),
-    R.assoc('to', to),
     R.assoc('toId', to.internal_id),
     R.assoc('toRole', toRole),
     R.assoc('toType', to.entity_type),
@@ -1791,10 +1789,18 @@ const createRelationRaw = async (user, input, opts = {}) => {
   if (isInternalEvent === false) {
     if (input.relationship_type === RELATION_OBJECT_MARKING) {
       // We need to full reload the from entity to redispatch it.
-      const updatedFrom = await loadByIdWithRelations(from.id, from.entity_type, opts);
-      await storeCreateEvent(user, updatedFrom, updatedFrom);
+      let upFrom = await loadByIdWithRelations(from.id, from.entity_type, opts);
+      // Marking can be added to a relation.
+      const isRelation = upFrom.base_type === BASE_TYPE_RELATION;
+      if (isRelation) {
+        // In this case we need to resolve the from and to for the history ,essa
+        const [rFrom, rTo] = await Promise.all([internalLoadById(upFrom.fromId), internalLoadById(upFrom.toId)]);
+        upFrom = R.mergeRight(upFrom, { from: rFrom, to: rTo });
+      }
+      await storeCreateEvent(user, upFrom, upFrom);
     } else {
-      await storeCreateEvent(user, created, input);
+      const relWithConnections = Object.assign(created, { from, to });
+      await storeCreateEvent(user, relWithConnections, input);
     }
   }
   // 09. Return result if no need to reverse the relations from and to
@@ -2095,7 +2101,9 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
     throw FunctionalError(`You need to specify a type when deleting a relation`);
   }
   const rel = await loadByIdWithRelations(relationId, type, options);
-  if (rel === null) throw DatabaseError(`Cant find relation to delete ${relationId}`);
+  if (rel === null) {
+    throw DatabaseError(`Cant find relation to delete ${relationId}`);
+  }
   const [from, to] = await Promise.all([loadByIdWithRelations(rel.fromId), loadByIdWithRelations(rel.toId)]);
   const relation = R.mergeRight(rel, { from, to });
   await deleteElementById(user, relation, true, options);
@@ -2106,12 +2114,12 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   if (R.isNil(scopeType)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
   }
-  const fromThing = await internalLoadById(fromId);
-  const toThing = await internalLoadById(toId);
+  const fromThing = await internalLoadById(fromId, opts);
+  const toThing = await internalLoadById(toId, opts);
   const read = `match $from has internal_id "${fromThing.internal_id}"; 
     $to has internal_id "${toThing.internal_id}"; 
     $rel($from, $to) isa ${relationshipType}; get;`;
-  const relationsToDelete = await find(read, ['rel']);
+  const relationsToDelete = await find(read, ['rel'], opts);
   for (let i = 0; i < relationsToDelete.length; i += 1) {
     const r = relationsToDelete[i];
     // eslint-disable-next-line no-await-in-loop

@@ -62,7 +62,7 @@ const stixCoreRelationshipResolvers = {
   StixCoreRelationship: {
     from: (rel) => loadById(rel.fromId, rel.fromType),
     to: (rel) => loadById(rel.toId, rel.toType),
-    toStix: (rel) => convertDataToStix(rel).then((stixData) => JSON.stringify(stixData)),
+    toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
     creator: (rel) => creator(rel.id),
     createdBy: (rel) => createdBy(rel.id),
     objectMarking: (rel) => markingDefinitions(rel.id),

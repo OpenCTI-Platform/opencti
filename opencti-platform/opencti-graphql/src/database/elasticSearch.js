@@ -287,11 +287,13 @@ export const elCount = (indexName, options = {}) => {
   if (fromId !== null) {
     must = R.append(
       {
-        bool: {
-          should: {
-            match_phrase: { 'connections.internal_id': fromId },
+        nested: {
+          path: 'connections',
+          query: {
+            bool: {
+              must: [{ match_phrase: { [`connections.internal_id`]: fromId } }],
+            },
           },
-          minimum_should_match: 1,
         },
       },
       must
