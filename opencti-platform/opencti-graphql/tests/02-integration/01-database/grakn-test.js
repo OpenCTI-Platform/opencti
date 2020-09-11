@@ -266,16 +266,16 @@ describe('Grakn attribute updater', () => {
     expect(update.internal_id).toEqual(campaignId);
     campaign = await internalLoadById(stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-20T08:45:43.366Z');
-    expect(campaign.first_seen_day).toEqual('2020-02-20');
-    expect(campaign.first_seen_month).toEqual('2020-02');
-    expect(campaign.first_seen_year).toEqual('2020');
+    expect(campaign.i_first_seen_day).toEqual('2020-02-20');
+    expect(campaign.i_first_seen_month).toEqual('2020-02');
+    expect(campaign.i_first_seen_year).toEqual('2020');
     // Value back to before
     patch = { first_seen: '2020-02-27T08:45:43.365Z' };
     update = await patchAttribute(ADMIN_USER, campaignId, type, patch);
     expect(update.internal_id).toEqual(campaignId);
     campaign = await internalLoadById(stixId, { noCache });
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
-    expect(campaign.first_seen_day).toEqual('2020-02-27');
+    expect(campaign.i_first_seen_day).toEqual('2020-02-27');
   });
   it.each(noCacheCases)('should update numeric', async (noCache) => {
     const stixId = 'relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416';

@@ -104,7 +104,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
     fragment Organization_organization on Organization {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

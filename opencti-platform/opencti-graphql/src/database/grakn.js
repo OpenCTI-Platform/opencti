@@ -50,7 +50,6 @@ import { lockResource, storeCreateEvent, storeDeleteEvent, storeUpdateEvent } fr
 import { buildStixData, mergeStixIds, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   IDS_ALIASES,
@@ -1150,14 +1149,15 @@ export const timeSeriesRelations = async (options) => {
   let histogramData;
   const entityType = relationshipType ? escape(relationshipType) : 'stix-relationship';
   if (!noCache && operation === 'count' && inferred === false) {
-    const filters = [];
-    if (fromId) filters.push({ isRelation: false, type: 'connections.internal_id', value: fromId });
+    const filters = fromId
+      ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }]
+      : [];
     histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
   } else {
     const query = `match $x ${fromId ? '($from)' : ''} isa ${entityType}; ${
       fromId ? `$from has internal_id "${escapeString(fromId)}";` : ''
     }`;
-    const finalQuery = `${query} $x has ${field}_${interval} $g; get; group $g; ${operation};`;
+    const finalQuery = `${query} $x has i_${field}_${interval} $g; get; group $g; ${operation};`;
     histogramData = await graknTimeSeries(finalQuery, 'date', 'value', inferred);
   }
   return fillTimeSeries(startDate, endDate, interval, histogramData);

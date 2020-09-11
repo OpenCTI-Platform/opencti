@@ -110,7 +110,7 @@ const City = createFragmentContainer(CityComponent, {
     fragment City_city on City {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

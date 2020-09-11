@@ -104,7 +104,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
     fragment Individual_individual on Individual {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

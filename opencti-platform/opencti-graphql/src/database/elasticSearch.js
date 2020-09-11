@@ -36,7 +36,6 @@ import {
 import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixDomainObjectNamed } from '../schema/stixDomainObject';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 const dateFields = [
   'created',
@@ -396,21 +395,25 @@ export const elAggregationRelationsCount = (
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
+  const toRoleFilter = { query_string: { query: `*_to`, fields: [`connections.role`] } };
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
-    filters.push({
-      range: {
-        [dateAttribute]: {
-          gte: start,
-          lte: end,
-        },
-      },
-    });
+    filters.push({ range: { [dateAttribute]: { gte: start, lte: end } } });
   }
   if (fromId) {
     filters.push({
-      match_phrase: { 'connections.internal_id': fromId },
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            must: [
+              { match_phrase: { [`connections.internal_id`]: fromId } },
+              // { query_string: { query: `*_from`, fields: [`connections.role`] } },
+            ],
+          },
+        },
+      },
     });
   }
   const typesFilters = [];
@@ -421,12 +424,19 @@ export const elAggregationRelationsCount = (
   }
   if (typesFilters.length > 0) {
     filters.push({
-      bool: {
-        should: typesFilters,
-        minimum_should_match: 1,
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            must: toRoleFilter,
+            should: typesFilters,
+            minimum_should_match: 1,
+          },
+        },
       },
     });
   }
+
   const query = {
     index: RELATIONSHIPS_INDICES,
     body: {
@@ -450,10 +460,26 @@ export const elAggregationRelationsCount = (
         },
       },
       aggs: {
-        genres: {
-          terms: {
-            field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
-            size: 100,
+        connections: {
+          nested: {
+            path: 'connections',
+          },
+          aggs: {
+            filtered: {
+              filter: {
+                bool: {
+                  must: typesFilters.length > 0 ? toRoleFilter : [],
+                },
+              },
+              aggs: {
+                genres: {
+                  terms: {
+                    size: 100,
+                    field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -470,7 +496,7 @@ export const elAggregationRelationsCount = (
         R.map((e) => e.internal_id),
         R.uniq()
       )(data.body.hits.hits);
-      const { buckets } = data.body.aggregations.genres;
+      const { buckets } = data.body.aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
       return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
     }
@@ -485,25 +511,39 @@ export const elAggregationRelationsCount = (
       R.filter((f) => !isAbstract(f)),
       R.map((u) => u.toLowerCase())
     )(data.body.hits.hits);
-    const { buckets } = data.body.aggregations.genres;
+    const { buckets } = data.body.aggregations.connections.filtered.genres;
     const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });
 };
 export const elHistogramCount = async (type, field, interval, start, end, filters) => {
   // const tzStart = moment.parseZone(start).format('Z');
-  const histoFilters = R.map((f) => {
-    // eslint-disable-next-line no-nested-ternary
-    const key = f.isRelation
-      ? f.type
-        ? `${REL_INDEX_PREFIX}${f.type}.internal_id`
-        : `${REL_INDEX_PREFIX}*.internal_id`
-      : `${f.type}.keyword`;
+  // Filter: { type: 'relation/attribute/nested' }
+  const histogramFilters = R.map((f) => {
+    // isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId
+    const { isRelation = false, isNested = false, type: filterType, value } = f;
+    if (isNested) {
+      const [path] = filterType.split('.');
+      return {
+        nested: {
+          path,
+          query: {
+            bool: {
+              must: [{ match_phrase: { [filterType]: value } }],
+            },
+          },
+        },
+      };
+    }
+    let key = `${filterType}.keyword`;
+    if (isRelation) {
+      key = filterType ? `${REL_INDEX_PREFIX}${f.type}.internal_id` : `${REL_INDEX_PREFIX}*.internal_id`;
+    }
     return {
       multi_match: {
         fields: [key],
         type: 'phrase',
-        query: f.value,
+        query: value,
       },
     };
   }, filters);
@@ -547,7 +587,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
                 },
               },
             ],
-            histoFilters
+            histogramFilters
           ),
         },
       },
