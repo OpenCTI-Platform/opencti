@@ -321,7 +321,6 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     const { targetEntity } = this.state;
     const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
     const toEntityId = isRelationReversed ? entityId : targetEntity.id;
-    console.log(values);
     const finalValues = pipe(
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
@@ -398,6 +397,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   }
 
   renderSelectEntity() {
+    const { search } = this.state;
     const {
       classes,
       t,
@@ -405,16 +405,16 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       targetStixCyberObservableTypes,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
-      search: this.state.search,
+      search,
       types: targetStixDomainObjectTypes,
-      orderBy: 'created_at',
-      orderMode: 'desc',
+      orderBy: search.length > 0 ? null : 'created_at',
+      orderMode: search.length > 0 ? null : 'desc',
     };
     const stixCyberObservablesPaginationOptions = {
-      search: this.state.search,
+      search,
       types: targetStixCyberObservableTypes,
-      orderBy: 'created_at',
-      orderMode: 'desc',
+      orderBy: search.length > 0 ? null : 'created_at',
+      orderMode: search.length > 0 ? null : 'desc',
     };
     return (
       <div>

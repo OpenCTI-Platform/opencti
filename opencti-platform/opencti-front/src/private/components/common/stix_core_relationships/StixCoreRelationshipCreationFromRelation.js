@@ -485,6 +485,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
   }
 
   renderSelectEntity() {
+    const { search } = this.state;
     const {
       classes,
       t,
@@ -492,15 +493,15 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       onlyObservables,
     } = this.props;
     const stixDomainObjectsPaginationOptions = {
-      search: this.state.search,
+      search,
       types: targetStixDomainObjectTypes
         ? filter(
           (n) => n !== 'Stix-Cyber-Observable',
           targetStixDomainObjectTypes,
         )
         : null,
-      orderBy: 'created_at',
-      orderMode: 'desc',
+      orderBy: search.length > 0 ? null : 'created_at',
+      orderMode: search.length > 0 ? null : 'desc',
     };
     return (
       <div>
