@@ -1484,11 +1484,14 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         const standardId = generateStandardId(instanceType, updatedInstance);
         const standardInput = { key: ID_STANDARD, value: [standardId] };
         // check if an entity exists with this ID
-        const existingEntity = await internalLoadById(standardId);
-        // Return the merged entity
+        let existingEntity;
+        if (standardId !== instance.standard_id) {
+          existingEntity = await internalLoadById(standardId);
+        }
         if (existingEntity) {
           await lock.unlock();
-          eventualMergingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id]);
+          // Return the merged entity
+          eventualMergingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id], keys);
         } else {
           // eslint-disable-next-line no-await-in-loop
           const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);

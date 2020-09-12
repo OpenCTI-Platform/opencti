@@ -117,8 +117,8 @@ export const stixCoreRelationships = (stixCoreObjectId, args) => {
 
 export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) => {
   const data = await internalLoadById(stixCoreObjectId);
-  if (!isStixCoreObject(data.type) || !isStixRelationship(input.relationship_type)) {
-    throw ForbiddenAccess();
+  if (!isStixCoreObject(data.entity_type) || !isStixRelationship(input.relationship_type)) {
+    throw FunctionalError('Only stix-meta-relationship can be added through this method.', { stixCoreObjectId, input });
   }
   const finalInput = assoc('fromId', stixCoreObjectId, input);
   return createRelation(user, finalInput);
@@ -180,7 +180,7 @@ export const stixCoreObjectsDelete = async (user, stixCoreObjectsIds) => {
   return stixCoreObjectsIds;
 };
 
-export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObjectsIds) => {
+export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObjectsIds, fieldsToCopy = []) => {
   // 0. Get the object
   const stixCoreObject = await loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
@@ -206,6 +206,17 @@ export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObject
       key: aliasField,
       value: newAliases,
     });
+  }
+  // eslint-disable-next-line no-restricted-syntax
+  for (const field of fieldsToCopy) {
+    const values = flatten(pluck(field, stixCoreObjectsToBeMerged));
+    if (values.length > 0 && values[0].length > 0) {
+      // eslint-disable-next-line no-await-in-loop
+      await stixCoreObjectEditField(user, stixCoreObjectId, {
+        key: field,
+        value: values[0],
+      });
+    }
   }
   // 2. Copy the relationships
   await Promise.all(
