@@ -1487,6 +1487,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         const existingEntity = await internalLoadById(standardId);
         // Return the merged entity
         if (existingEntity) {
+          await lock.unlock();
           eventualMergingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id]);
         } else {
           // eslint-disable-next-line no-await-in-loop
@@ -1497,7 +1498,6 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       }
     });
     if (eventualMergingEntity) {
-      await lock.unlock();
       return eventualMergingEntity;
     }
     // Update elasticsearch and send logs
