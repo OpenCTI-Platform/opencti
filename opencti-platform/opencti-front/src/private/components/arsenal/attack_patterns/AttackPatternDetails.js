@@ -17,6 +17,7 @@ import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import AttackPatternParentAttackPatterns from './AttackPatternParentAttackPatterns';
 import AttackPatternSubAttackPatterns from './AttackPatternSubAttackPatterns';
+import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 
 const styles = () => ({
   paper: {
@@ -69,31 +70,28 @@ class AttackPatternDetailsComponent extends Component {
                 source={attackPattern.description}
                 limit={300}
               />
-              {!attackPattern.isSubAttackPattern ? (
-                <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
-              ) : (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Platforms')}
-                  </Typography>
-                  <List>
-                    {propOr([], 'x_mitre_platforms', attackPattern).map(
-                      (platform) => (
-                        <ListItem key={platform} dense={true} divider={true}>
-                          <ListItemIcon>
-                            <SettingsApplications />
-                          </ListItemIcon>
-                          <ListItemText primary={platform} />
-                        </ListItem>
-                      ),
-                    )}
-                  </List>
-                </div>
-              )}
+              <div>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Platforms')}
+                </Typography>
+                <List>
+                  {propOr([], 'x_mitre_platforms', attackPattern).map(
+                    (platform) => (
+                      <ListItem key={platform} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <SettingsApplications />
+                        </ListItemIcon>
+                        <ListItemText primary={platform} />
+                      </ListItem>
+                    ),
+                  )}
+                </List>
+              </div>
+              <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -133,35 +131,6 @@ class AttackPatternDetailsComponent extends Component {
                 source={attackPattern.x_mitre_detection}
                 limit={400}
               />
-              {!attackPattern.isSubAttackPattern ? (
-                <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
-                    {t('Platforms')}
-                  </Typography>
-                  {propOr([], 'x_mitre_platforms', attackPattern) > 0 ? (
-                    <List>
-                      {propOr([], 'x_mitre_platforms', attackPattern).map(
-                        (platform) => (
-                          <ListItem key={platform} dense={true} divider={true}>
-                            <ListItemIcon>
-                              <SettingsApplications />
-                            </ListItemIcon>
-                            <ListItemText primary={platform} />
-                          </ListItem>
-                        ),
-                      )}
-                    </List>
-                  ) : (
-                    ''
-                  )}
-                </div>
-              ) : (
-                ''
-              )}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -181,6 +150,7 @@ class AttackPatternDetailsComponent extends Component {
                   ),
                 )}
               </List>
+              <AttackPatternCoursesOfAction attackPattern={attackPattern} />
             </Grid>
           </Grid>
         </Paper>
@@ -233,6 +203,7 @@ const AttackPatternDetails = createFragmentContainer(
         }
         ...AttackPatternSubAttackPatterns_attackPattern
         ...AttackPatternParentAttackPatterns_attackPattern
+        ...AttackPatternCoursesOfAction_attackPattern
       }
     `,
   },

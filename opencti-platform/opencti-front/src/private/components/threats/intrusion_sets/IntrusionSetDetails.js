@@ -14,6 +14,7 @@ import { BullseyeArrow, ArmFlexOutline } from 'mdi-material-ui';
 import ListItemText from '@material-ui/core/ListItemText';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
+import IntrusionSetLocations from './IntrusionSetLocations';
 
 const styles = () => ({
   paper: {
@@ -95,7 +96,12 @@ class IntrusionSetDetailsComponent extends Component {
               </List>
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <IntrusionSetLocations intrusionSet={intrusionSet} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('First seen')}
               </Typography>
               {fd(intrusionSet.first_seen)}
@@ -170,6 +176,7 @@ const IntrusionSetDetails = createFragmentContainer(
         primary_motivation
         secondary_motivations
         goals
+        ...IntrusionSetLocations_intrusionSet
       }
     `,
   },

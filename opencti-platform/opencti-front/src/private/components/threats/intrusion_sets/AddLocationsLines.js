@@ -9,11 +9,12 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { CheckCircle, Domain } from '@material-ui/icons';
+import { CheckCircle } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   avatar: {
@@ -25,20 +26,20 @@ const styles = (theme) => ({
   },
 });
 
-const addSubSectorsLinesMutationRelationAdd = graphql`
-  mutation AddSubSectorsLinesRelationAddMutation(
+const addLocationsLinesMutationRelationAdd = graphql`
+  mutation AddLocationsLinesRelationAddMutation(
     $input: StixCoreRelationshipAddInput
   ) {
     stixCoreRelationshipAdd(input: $input) {
-      to {
-        ...SectorSubSectors_sector
+      from {
+        ...IntrusionSetLocations_intrusionSet
       }
     }
   }
 `;
 
-export const addSubSectorsMutationRelationDelete = graphql`
-  mutation AddSubSectorsLinesRelationDeleteMutation(
+export const addLocationsMutationRelationDelete = graphql`
+  mutation AddLocationsLinesRelationDeleteMutation(
     $fromId: String!
     $toId: String!
     $relationship_type: String!
@@ -51,74 +52,79 @@ export const addSubSectorsMutationRelationDelete = graphql`
   }
 `;
 
-class AddSubSectorsLinesContainer extends Component {
-  toggleSubSector(subSector) {
-    const { sectorId, sectorSubSectors } = this.props;
-    const sectorSubSectorsIds = map((n) => n.node.id, sectorSubSectors);
-    const alreadyAdded = sectorSubSectorsIds.includes(subSector.id);
-
+class AddLocationsLinesContainer extends Component {
+  toggleLocation(location) {
+    const { intrusionSetId, intrusionSetLocations } = this.props;
+    const intrusionSetLocationsIds = map(
+      (n) => n.node.id,
+      intrusionSetLocations,
+    );
+    const alreadyAdded = intrusionSetLocationsIds.includes(location.id);
     if (alreadyAdded) {
-      const existingSubSector = head(
-        filter((n) => n.node.id === subSector.id, sectorSubSectors),
+      const existingLocation = head(
+        filter((n) => n.node.id === location.id, intrusionSetLocations),
       );
       commitMutation({
-        mutation: addSubSectorsMutationRelationDelete,
+        mutation: addLocationsMutationRelationDelete,
         variables: {
-          fromId: existingSubSector.node.id,
-          toId: sectorId,
-          relationship_type: 'part-of',
+          fromId: intrusionSetId,
+          toId: existingLocation.node.id,
+          relationship_type: 'originates-from',
         },
         updater: (store) => {
-          const node = store.get(this.props.sectorId);
-          const subSectors = node.getLinkedRecord('subSectors');
-          const edges = subSectors.getLinkedRecords('edges');
+          const node = store.get(intrusionSetId);
+          const locations = node.getLinkedRecord('locations');
+          const edges = locations.getLinkedRecords('edges');
           const newEdges = filter(
             (n) => n.getLinkedRecord('node').getValue('id')
-              !== existingSubSector.node.id,
+              !== existingLocation.node.id,
             edges,
           );
-          subSectors.setLinkedRecords(newEdges, 'edges');
+          locations.setLinkedRecords(newEdges, 'edges');
         },
       });
     } else {
       const input = {
-        relationship_type: 'part-of',
-        fromId: subSector.id,
-        toId: sectorId,
+        relationship_type: 'originates-from',
+        fromId: intrusionSetId,
+        toId: location.id,
       };
       commitMutation({
-        mutation: addSubSectorsLinesMutationRelationAdd,
+        mutation: addLocationsLinesMutationRelationAdd,
         variables: { input },
       });
     }
   }
 
   render() {
-    const { classes, data, sectorSubSectors } = this.props;
-    const sectorSubSectorsIds = map((n) => n.node.id, sectorSubSectors);
+    const { classes, data, intrusionSetLocations } = this.props;
+    const intrusionSetLocationsIds = map(
+      (n) => n.node.id,
+      intrusionSetLocations,
+    );
     return (
       <List>
-        {data.sectors.edges.map((sectorNode) => {
-          const sector = sectorNode.node;
-          const alreadyAdded = sectorSubSectorsIds.includes(sector.id);
+        {data.locations.edges.map((locationNode) => {
+          const location = locationNode.node;
+          const alreadyAdded = intrusionSetLocationsIds.includes(location.id);
           return (
             <ListItem
-              key={sector.id}
+              key={location.id}
               classes={{ root: classes.menuItem }}
               divider={true}
               button={true}
-              onClick={this.toggleSubSector.bind(this, sector)}
+              onClick={this.toggleLocation.bind(this, location)}
             >
               <ListItemIcon>
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
-                  <Domain />
+                  <ItemIcon type={location.entity_type} />
                 )}
               </ListItemIcon>
               <ListItemText
-                primary={sector.name}
-                secondary={truncate(sector.description, 120)}
+                primary={location.name}
+                secondary={truncate(location.description, 120)}
               />
             </ListItem>
           );
@@ -128,35 +134,36 @@ class AddSubSectorsLinesContainer extends Component {
   }
 }
 
-AddSubSectorsLinesContainer.propTypes = {
-  sectorId: PropTypes.string,
-  sectorSubSectors: PropTypes.array,
+AddLocationsLinesContainer.propTypes = {
+  intrusionSetId: PropTypes.string,
+  intrusionSetLocations: PropTypes.array,
   data: PropTypes.object,
   classes: PropTypes.object,
 };
 
-export const addSubSectorsLinesQuery = graphql`
-  query AddSubSectorsLinesQuery($search: String, $count: Int!, $cursor: ID) {
-    ...AddSubSectorsLines_data
+export const addLocationsLinesQuery = graphql`
+  query AddLocationsLinesQuery($search: String, $count: Int!, $cursor: ID) {
+    ...AddLocationsLines_data
     @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
-const AddSubSectorsLines = createPaginationContainer(
-  AddSubSectorsLinesContainer,
+const AddLocationsLines = createPaginationContainer(
+  AddLocationsLinesContainer,
   {
     data: graphql`
-      fragment AddSubSectorsLines_data on Query
+      fragment AddLocationsLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
       ) {
-        sectors(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_sectors") {
+        locations(search: $search, first: $count, after: $cursor)
+        @connection(key: "Pagination_locations") {
           edges {
             node {
               id
+              entity_type
               name
               description
             }
@@ -168,7 +175,7 @@ const AddSubSectorsLines = createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.subSectors;
+      return props.data && props.data.locations;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -184,8 +191,8 @@ const AddSubSectorsLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: addSubSectorsLinesQuery,
+    query: addLocationsLinesQuery,
   },
 );
 
-export default compose(inject18n, withStyles(styles))(AddSubSectorsLines);
+export default compose(inject18n, withStyles(styles))(AddLocationsLines);

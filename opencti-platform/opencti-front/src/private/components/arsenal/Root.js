@@ -6,10 +6,12 @@ import Malwares from './Malwares';
 import RootMalware from './malwares/Root';
 import AttackPatterns from './AttackPatterns';
 import RootAttackPattern from './attack_patterns/Root';
+import RootCourseOfAction from './courses_of_action/Root';
 import Tools from './Tools';
 import RootTool from './tools/Root';
 import Vulnerabilities from './Vulnerabilities';
 import RootVulnerabilities from './vulnerabilities/Root';
+import CoursesOfAction from "./CoursesOfAction";
 
 class Root extends Component {
   render() {
@@ -38,6 +40,17 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/arsenal/attack_patterns/:attackPatternId"
           render={(routeProps) => <RootAttackPattern {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/arsenal/courses_of_action"
+          component={CoursesOfAction}
+        />
+        <BoundaryRoute
+          path="/dashboard/arsenal/courses_of_action/:courseOfActionId"
+          render={(routeProps) => (
+            <RootCourseOfAction {...routeProps} me={me} />
+          )}
         />
         <BoundaryRoute
           exact

@@ -25,7 +25,6 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
-import { stixCoreObjectMerge } from '../domain/stixCoreObject';
 
 const stixDomainObjectResolvers = {
   Query: {

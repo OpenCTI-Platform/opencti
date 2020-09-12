@@ -9,8 +9,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
 import { CheckCircle } from '@material-ui/icons';
+import { ProgressWrench } from 'mdi-material-ui';
 import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
@@ -39,10 +39,16 @@ const addCoursesOfActionLinesMutationRelationAdd = graphql`
 `;
 
 export const addCoursesOfActionMutationRelationDelete = graphql`
-  mutation AddCoursesOfActionLinesRelationDeleteMutation($id: ID!) {
-    stixCoreRelationshipEdit(id: $id) {
-      delete
-    }
+  mutation AddCoursesOfActionLinesRelationDeleteMutation(
+    $fromId: String!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
   }
 `;
 
@@ -56,7 +62,6 @@ class AddCoursesOfActionLinesContainer extends Component {
     const alreadyAdded = attackPatternCoursesOfActionIds.includes(
       courseOfAction.id,
     );
-
     if (alreadyAdded) {
       const existingCourseOfAction = head(
         filter(
@@ -66,9 +71,13 @@ class AddCoursesOfActionLinesContainer extends Component {
       );
       commitMutation({
         mutation: addCoursesOfActionMutationRelationDelete,
-        variables: { id: existingCourseOfAction.relation.id },
+        variables: {
+          fromId: existingCourseOfAction.node.id,
+          toId: attackPatternId,
+          relationship_type: 'mitigates',
+        },
         updater: (store) => {
-          const node = store.get(this.props.attackPatternId);
+          const node = store.get(attackPatternId);
           const coursesOfAction = node.getLinkedRecord('coursesOfAction');
           const edges = coursesOfAction.getLinkedRecords('edges');
           const newEdges = filter(
@@ -117,9 +126,7 @@ class AddCoursesOfActionLinesContainer extends Component {
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
-                  <Avatar classes={{ root: classes.avatar }}>
-                    {courseOfAction.name.substring(0, 1)}
-                  </Avatar>
+                  <ProgressWrench />
                 )}
               </ListItemIcon>
               <ListItemText

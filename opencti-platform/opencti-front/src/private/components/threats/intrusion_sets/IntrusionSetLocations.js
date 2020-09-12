@@ -7,27 +7,24 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import Avatar from '@material-ui/core/Avatar';
 import { Link } from 'react-router-dom';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import { LinkOff } from '@material-ui/icons';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { truncate } from '../../../../utils/String';
-import AddCoursesOfAction from './AddAttackPatterns';
-import { addAttackPatternsLinesMutationRelationDelete } from './AddAttackPatternsLines';
+import AddLocations from './AddLocations';
+import { addLocationsMutationRelationDelete } from './AddLocationsLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
+import { resolveLink } from '../../../../utils/Entity';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const styles = (theme) => ({
   avatar: {
     width: 24,
     height: 24,
     backgroundColor: theme.palette.primary.main,
-  },
-  list: {
-    padding: 0,
   },
   avatarDisabled: {
     width: 24,
@@ -40,67 +37,63 @@ const styles = (theme) => ({
   },
 });
 
-class CourseOfActionAttackPatternComponent extends Component {
-  removeAttackPattern(attackPatternEdge) {
+class IntrusionSetLocationsComponent extends Component {
+  removeLocation(locationEdge) {
     commitMutation({
-      mutation: addAttackPatternsLinesMutationRelationDelete,
+      mutation: addLocationsMutationRelationDelete,
       variables: {
-        id: attackPatternEdge.relation.id,
+        fromId: this.props.intrusionSet.id,
+        toId: locationEdge.node.id,
+        relationship_type: 'originates-from',
       },
       updater: (store) => {
-        const node = store.get(this.props.courseOfAction.id);
-        const attackPatterns = node.getLinkedRecord('attackPatterns');
-        const edges = attackPatterns.getLinkedRecords('edges');
+        const node = store.get(this.props.intrusionSet.id);
+        const locations = node.getLinkedRecord('locations');
+        const edges = locations.getLinkedRecords('edges');
         const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id')
-            !== attackPatternEdge.node.id,
+          (n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id,
           edges,
         );
-        attackPatterns.setLinkedRecords(newEdges, 'edges');
+        locations.setLinkedRecords(newEdges, 'edges');
       },
     });
   }
 
   render() {
-    const { t, classes, courseOfAction } = this.props;
+    const { t, intrusionSet } = this.props;
     return (
-      <div style={{ marginTop: 20 }}>
+      <div style={{ marginTop: -20 }}>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Mitigated attack patterns')}
+          {t('Originates from')}
         </Typography>
-        <AddCoursesOfAction
-          courseOfActionId={courseOfAction.id}
-          courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
+        <AddLocations
+          intrusionSetId={intrusionSet.id}
+          intrusionSetLocations={intrusionSet.locations.edges}
         />
         <div className="clearfix" />
-        <List classes={{ root: classes.list }}>
-          {courseOfAction.attackPatterns.edges.map((attackPatternEdge) => {
-            const attackPattern = attackPatternEdge.node;
+        <List style={{ marginTop: -10 }}>
+          {intrusionSet.locations.edges.map((locationEdge) => {
+            const location = locationEdge.node;
+            const link = resolveLink(location.entity_type);
             return (
               <ListItem
-                key={attackPattern.id}
+                key={location.id}
                 dense={true}
                 divider={true}
                 button={true}
                 component={Link}
-                to={`/dashboard/arsenal/attack_patterns/${attackPattern.id}`}
+                to={`${link}/${location.id}`}
               >
                 <ListItemIcon>
-                  <Avatar classes={{ root: classes.avatar }}>
-                    {attackPattern.name.substring(0, 1)}
-                  </Avatar>
+                  <ListItemIcon>
+                    <ItemIcon type={location.entity_type} />
+                  </ListItemIcon>
                 </ListItemIcon>
-                <ListItemText
-                  primary={attackPattern.name}
-                  secondary={truncate(attackPattern.description, 60)}
-                />
+                <ListItemText primary={location.name} />
                 <ListItemSecondaryAction>
                   <IconButton
                     aria-label="Remove"
-                    onClick={this.removeAttackPattern.bind(
-                      this,
-                      attackPatternEdge,
-                    )}
+                    onClick={this.removeLocation.bind(this, locationEdge)}
                   >
                     <LinkOff />
                   </IconButton>
@@ -114,23 +107,24 @@ class CourseOfActionAttackPatternComponent extends Component {
   }
 }
 
-CourseOfActionAttackPatternComponent.propTypes = {
+IntrusionSetLocationsComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
-  courseOfAction: PropTypes.object,
+  intrusionSet: PropTypes.object,
 };
 
-const CourseOfActionAttackPattern = createFragmentContainer(
-  CourseOfActionAttackPatternComponent,
+const IntrusionSetLocations = createFragmentContainer(
+  IntrusionSetLocationsComponent,
   {
-    courseOfAction: graphql`
-      fragment CourseOfActionAttackPatterns_courseOfAction on CourseOfAction {
+    intrusionSet: graphql`
+      fragment IntrusionSetLocations_intrusionSet on IntrusionSet {
         id
-        attackPatterns {
+        locations {
           edges {
             node {
               id
+              entity_type
               name
               description
             }
@@ -141,7 +135,4 @@ const CourseOfActionAttackPattern = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(CourseOfActionAttackPattern);
+export default compose(inject18n, withStyles(styles))(IntrusionSetLocations);

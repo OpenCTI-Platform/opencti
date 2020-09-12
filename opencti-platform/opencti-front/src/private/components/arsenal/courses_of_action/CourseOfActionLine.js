@@ -54,7 +54,7 @@ class CourseOfActionLineComponent extends Component {
         divider={true}
         button={true}
         component={Link}
-        to={`/dashboard/techniques/courses_of_action/${node.id}`}
+        to={`/dashboard/arsenal/courses_of_action/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ProgressWrench />

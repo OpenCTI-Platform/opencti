@@ -80,7 +80,7 @@ class RootCourseOfAction extends Component {
                 <div>
                   <Route
                     exact
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId"
+                    path="/dashboard/arsenal/courses_of_action/:courseOfActionId"
                     render={(routeProps) => (
                       <CourseOfAction
                         {...routeProps}
@@ -90,7 +90,7 @@ class RootCourseOfAction extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/files"
+                    path="/dashboard/arsenal/courses_of_action/:courseOfActionId/files"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
@@ -108,7 +108,7 @@ class RootCourseOfAction extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/techniques/courses_of_action/:courseOfActionId/history"
+                    path="/dashboard/arsenal/courses_of_action/:courseOfActionId/history"
                     render={(routeProps) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
