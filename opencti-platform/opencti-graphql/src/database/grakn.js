@@ -1497,6 +1497,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       }
     });
     if (eventualMergingEntity) {
+      await lock.unlock();
       return eventualMergingEntity;
     }
     // Update elasticsearch and send logs
