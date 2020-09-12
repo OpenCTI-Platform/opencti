@@ -7,16 +7,19 @@ const PORT = conf.get('app:port');
 
 const createHttpServer = () => {
   const apolloServer = createApolloServer();
-  const app = createApp(apolloServer);
+  const { app, seeMiddleware } = createApp(apolloServer);
   const httpServer = http.createServer(app);
   apolloServer.installSubscriptionHandlers(httpServer);
-  return httpServer;
+  return { httpServer, seeMiddleware };
 };
 
 export const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
-      const httpServer = createHttpServer();
+      const { httpServer, seeMiddleware } = createHttpServer();
+      httpServer.on('close', () => {
+        seeMiddleware.shutdown();
+      });
       httpServer.listen(PORT, () => {
         logger.info(`OPENCTI Ready on port ${PORT}`);
         resolve(httpServer);

@@ -288,4 +288,56 @@ export const storeDeleteEvent = async (user, instance) => {
   }
   return true;
 };
+
+let streamListening = true;
+const fetchLatestEventId = async (client) => {
+  const res = await client.call('XREVRANGE', OPENCTI_STREAM, '+', '-', 'COUNT', 1);
+  if (res.length > 0) {
+    return res[0][0];
+  }
+  return 0;
+};
+const mapStreamToJS = ([id, data]) => {
+  const count = data.length / 2;
+  const result = { eventId: id };
+  for (let i = 0; i < count; i += 1) {
+    result[data[2 * i]] = JSON.parse(data[2 * i + 1]);
+  }
+  return result;
+};
+export const listenStream = async (callback) => {
+  const client = await getClient();
+  let lastEventId = await fetchLatestEventId(client);
+  const processStep = () => {
+    return client.xread('BLOCK', 1, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, lastEventId).then(async (streamResult) => {
+      if (streamResult && streamResult.length > 0) {
+        const [, results] = R.head(streamResult);
+        const streamData = R.map((r) => mapStreamToJS(r), results);
+        const lastElement = R.last(streamData);
+        for (let index = 0; index < streamData.length; index += 1) {
+          const dataElement = streamData[index];
+          const { eventId, type, markings, user, timestamp, data, message } = dataElement;
+          const eventData = { user, markings, timestamp, data, message };
+          callback(eventId, type, eventData);
+        }
+        lastEventId = lastElement.eventId;
+      }
+      return true;
+    });
+  };
+  const processingLoop = async () => {
+    while (streamListening) {
+      // eslint-disable-next-line no-await-in-loop
+      await processStep();
+    }
+  };
+  // noinspection ES6MissingAwait
+  processingLoop();
+  return {
+    currentEvent: () => lastEventId,
+    shutdown: () => {
+      streamListening = false;
+    },
+  };
+};
 // endregion
