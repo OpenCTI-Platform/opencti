@@ -2,7 +2,7 @@ import moment from 'moment';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import * as R from 'ramda';
-import { __ } from 'ramda';
+import { __, isNil, map } from 'ramda';
 import {
   DatabaseError,
   DuplicateEntryError,
@@ -1807,7 +1807,7 @@ export const createRelations = async (user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-const upsertEntity = async (user, entity, type, data) => {
+const upsertEntity = async (user, entity, type, data, fieldsToUpdate = []) => {
   let updatedEntity = entity;
   const id = entity.internal_id;
   // Upsert the stix ids
@@ -1824,16 +1824,30 @@ const upsertEntity = async (user, entity, type, data) => {
     const patch = { [key]: aliases };
     updatedEntity = patchAttribute(user, id, type, patch, { operation: EVENT_TYPE_UPDATE_ADD });
   }
+  // Upsert fields
+  if (data.update === true) {
+    await Promise.all(
+      map((field) => {
+        if (!isNil(data[field])) {
+          return updateAttribute(user, id, data.entity_type, {
+            key: field,
+            value: Array.isArray(data[field]) ? data[field] : [data[field]],
+          });
+        }
+        return true;
+      }, fieldsToUpdate)
+    );
+  }
   return updatedEntity;
 };
 const createRawEntity = async (user, standardId, participantIds, input, type, opts = {}) => {
-  const { noLog = false } = opts;
+  const { noLog = false, fieldsToUpdate = [] } = opts;
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
   const existingEntity = await loadById(participantIds, type);
   if (existingEntity) {
-    return upsertEntity(user, existingEntity, type, input);
+    return upsertEntity(user, existingEntity, type, input, fieldsToUpdate);
   }
   // Complete with identifiers
   const today = now();
@@ -1955,6 +1969,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   return created;
 };
 export const createEntity = async (user, input, type, opts = {}) => {
+  const { fieldsToUpdate = [] } = opts;
   let lock;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
@@ -1980,7 +1995,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
       const existingEntityRefreshed = await loadById(err.data.id, type);
-      return upsertEntity(user, existingEntityRefreshed, type, resolvedInput);
+      return upsertEntity(user, existingEntityRefreshed, type, resolvedInput, fieldsToUpdate);
     }
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Operation still in progress (redis lock)', { participantIds });

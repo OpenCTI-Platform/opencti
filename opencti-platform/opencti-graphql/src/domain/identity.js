@@ -1,5 +1,5 @@
-import { pipe, assoc, dissoc, filter, map, isNil } from "ramda";
-import { createEntity, listEntities, loadById, updateAttribute } from "../database/grakn";
+import { pipe, assoc, dissoc, filter } from 'ramda';
+import { createEntity, listEntities, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';
@@ -26,17 +26,6 @@ export const addIdentity = async (user, identity) => {
     identityClass = 'class';
   }
   const identityToCreate = pipe(assoc('identity_class', identityClass), dissoc('type'))(identity);
-  const created = await createEntity(user, identityToCreate, identity.type);
-  if (identity.update === true) {
-    const fieldsToUpdate = ['description'];
-    await Promise.all(
-      map((field) => {
-        if (!isNil(identity[field])) {
-          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [identity[field]] });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
-  }
+  const created = await createEntity(user, identityToCreate, identity.type, { fieldsToUpdate: ['description'] });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

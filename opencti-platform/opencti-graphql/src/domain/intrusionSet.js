@@ -1,4 +1,4 @@
-import { assoc, pipe, isNil, map } from 'ramda';
+import { assoc, pipe, isNil } from 'ramda';
 import {
   createEntity,
   listEntities,
@@ -6,7 +6,6 @@ import {
   FROM_START,
   UNTIL_END,
   listToEntitiesThroughRelation,
-  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -27,9 +26,8 @@ export const addIntrusionSet = async (user, intrusionSet) => {
     assoc('first_seen', isNil(intrusionSet.first_seen) ? new Date(FROM_START) : intrusionSet.first_seen),
     assoc('last_seen', isNil(intrusionSet.last_seen) ? new Date(UNTIL_END) : intrusionSet.last_seen)
   )(intrusionSet);
-  const created = await createEntity(user, intrusionSetToCreate, ENTITY_TYPE_INTRUSION_SET);
-  if (intrusionSet.update === true) {
-    const fieldsToUpdate = [
+  const created = await createEntity(user, intrusionSetToCreate, ENTITY_TYPE_INTRUSION_SET, {
+    fieldsToUpdate: [
       'description',
       'first_seen',
       'last_seen',
@@ -37,16 +35,8 @@ export const addIntrusionSet = async (user, intrusionSet) => {
       'resource_level',
       'primary_motivation',
       'secondary_motivations',
-    ];
-    await Promise.all(
-      map((field) => {
-        if (!isNil(intrusionSet[field])) {
-          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [intrusionSet[field]] });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
-  }
+    ],
+  });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

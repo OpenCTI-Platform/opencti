@@ -1,4 +1,4 @@
-import { assoc, isNil, map } from 'ramda';
+import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -7,7 +7,6 @@ import {
   listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
   loadById,
-  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -49,18 +48,8 @@ export const addRegion = async (user, region) => {
   const created = await createEntity(
     user,
     assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_REGION, region),
-    ENTITY_TYPE_LOCATION_REGION
+    ENTITY_TYPE_LOCATION_REGION,
+    { fieldsToUpdate: ['description', 'longitude', 'latitude'] }
   );
-  if (region.update === true) {
-    const fieldsToUpdate = ['description', 'longitude', 'latitude'];
-    await Promise.all(
-      map((field) => {
-        if (!isNil(region[field])) {
-          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [region[field]] });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
-  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

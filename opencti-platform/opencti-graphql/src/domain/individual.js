@@ -1,11 +1,5 @@
-import { assoc, isNil, map } from 'ramda';
-import {
-  createEntity,
-  listEntities,
-  listToEntitiesThroughRelation,
-  loadById,
-  updateAttribute,
-} from '../database/grakn';
+import { assoc } from 'ramda';
+import { createEntity, listEntities, listToEntitiesThroughRelation, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
@@ -24,19 +18,9 @@ export const addIndividual = async (user, individual) => {
   const created = await createEntity(
     user,
     assoc('identity_class', ENTITY_TYPE_IDENTITY_INDIVIDUAL.toLowerCase(), individual),
-    ENTITY_TYPE_IDENTITY_INDIVIDUAL
+    ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+    { fieldsToUpdate: ['description'] }
   );
-  if (individual.update === true) {
-    const fieldsToUpdate = ['description'];
-    await Promise.all(
-      map((field) => {
-        if (!isNil(individual[field])) {
-          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [individual[field]] });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
-  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
