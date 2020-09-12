@@ -41,8 +41,8 @@ export const isSubSector = async (sectorId) => {
   return numberOfParents > 0;
 };
 
-export const targetedOrganizations = async (sectorId) => {
-  const result = await find(
+export const targetedOrganizations = async (sectorId) =>
+  find(
     `match $sector has internal_id "${escapeString(sectorId)}";
     ($organization, $sector) isa ${RELATION_PART_OF}; 
   $rel($threat, $organization) isa ${RELATION_TARGETS}, has start_time $order;
@@ -56,8 +56,6 @@ export const targetedOrganizations = async (sectorId) => {
       data.length
     )
   );
-  return result;
-};
 
 export const addSector = async (user, sector) => {
   const created = await createEntity(

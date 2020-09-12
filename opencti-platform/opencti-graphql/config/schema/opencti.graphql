@@ -2907,6 +2907,7 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
   resource_level: String
   primary_motivation: String
   secondary_motivations: [String]
+  locations: LocationConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection
@@ -3769,6 +3770,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   primary_motivation: String
   secondary_motivations: [String]
   personal_motivations: [String]
+  locations: LocationConnection
   # Technical
   creator: User
   importFiles(first: Int): FileConnection

@@ -1,4 +1,4 @@
-import { addIntrusionSet, findAll, findById } from '../domain/intrusionSet';
+import { addIntrusionSet, findAll, findById, locations } from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -14,6 +14,9 @@ const intrusionSetResolvers = {
   Query: {
     intrusionSet: (_, { id }) => findById(id),
     intrusionSets: (_, args) => findAll(args),
+  },
+  IntrusionSet: {
+    locations: (intrusionSet) => locations(intrusionSet.id),
   },
   IntrusionSetsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,

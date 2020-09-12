@@ -361,6 +361,8 @@ const i18n = {
       Malware: 'Code malveillant',
       'Courses of action': 'Conduites à suivre',
       'Course of action': 'Conduite à suivre',
+      'Originates from': 'Originaire de',
+      'Add locations': 'Ajouter une localisation',
       Tools: 'Outils',
       Tool: 'Outil',
       Vulnerabilities: 'Vulnérabilités',

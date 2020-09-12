@@ -64,13 +64,13 @@ const styles = (theme) => ({
   },
 });
 
-export const identityCreationIdentitiesSearchQuery = graphql`
-  query IdentityCreationIdentitiesSearchQuery(
+export const locationCreationLocationsSearchQuery = graphql`
+  query LocationCreationLocationsSearchQuery(
     $types: [String]
     $search: String
     $first: Int
   ) {
-    identities(types: $types, search: $search, first: $first) {
+    locations(types: $types, search: $search, first: $first) {
       edges {
         node {
           id
@@ -82,9 +82,9 @@ export const identityCreationIdentitiesSearchQuery = graphql`
   }
 `;
 
-const identityMutation = graphql`
-  mutation IdentityCreationMutation($input: IdentityAddInput!) {
-    identityAdd(input: $input) {
+const locationMutation = graphql`
+  mutation LocationCreationMutation($input: LocationAddInput!) {
+    locationAdd(input: $input) {
       id
       name
       entity_type
@@ -92,12 +92,12 @@ const identityMutation = graphql`
   }
 `;
 
-const identityValidation = (t) => Yup.object().shape({
+const locationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   type: Yup.string().required(t('This field is required')),
 });
 
-class IdentityCreation extends Component {
+class LocationCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -113,7 +113,7 @@ class IdentityCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     commitMutation({
-      mutation: identityMutation,
+      mutation: locationMutation,
       variables: {
         input: values,
       },
@@ -136,7 +136,9 @@ class IdentityCreation extends Component {
   }
 
   onResetContextual() {
-    this.props.handleClose();
+    if (this.props.handleClose) {
+      this.props.handleClose();
+    }
   }
 
   renderClassic() {
@@ -174,7 +176,7 @@ class IdentityCreation extends Component {
                 description: '',
                 type: '',
               }}
-              validationSchema={identityValidation(t)}
+              validationSchema={locationValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onResetClassic.bind(this)}
             >
@@ -185,7 +187,7 @@ class IdentityCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['Organization', 'Individual']}
+                    detectDuplicate={['City', 'Country', 'Region']}
                   />
                   <Field
                     component={TextField}
@@ -207,11 +209,9 @@ class IdentityCreation extends Component {
                     }}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                    <MenuItem value="Region">{t('Region')}</MenuItem>
+                    <MenuItem value="Country">{t('Country')}</MenuItem>
+                    <MenuItem value="City">{t('City')}</MenuItem>
                   </Field>
                   <div className={classes.buttons}>
                     <Button
@@ -254,7 +254,7 @@ class IdentityCreation extends Component {
             description: '',
             type: '',
           }}
-          validationSchema={identityValidation(t)}
+          validationSchema={locationValidation(t)}
           onSubmit={this.onSubmit.bind(this)}
           onReset={this.onResetContextual.bind(this)}
         >
@@ -350,7 +350,7 @@ class IdentityCreation extends Component {
   }
 }
 
-IdentityCreation.propTypes = {
+LocationCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -366,4 +366,4 @@ IdentityCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(IdentityCreation);
+)(LocationCreation);

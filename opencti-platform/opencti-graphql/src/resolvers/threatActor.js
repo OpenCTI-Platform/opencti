@@ -1,4 +1,4 @@
-import { addThreatActor, findAll, findById } from '../domain/threatActor';
+import { addThreatActor, findAll, findById, locations } from '../domain/threatActor';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -14,6 +14,9 @@ const threatActorResolvers = {
   Query: {
     threatActor: (_, { id }) => findById(id),
     threatActors: (_, args) => findAll(args),
+  },
+  ThreatActor: {
+    locations: (threatActor) => locations(threatActor.id),
   },
   ThreatActorsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
