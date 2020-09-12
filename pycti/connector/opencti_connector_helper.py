@@ -17,7 +17,11 @@ from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
 
 def get_config_variable(
-    env_var: str, yaml_path: list, config: Dict = {}, isNumber: Optional[bool] = False
+    env_var: str,
+    yaml_path: list,
+    config: Dict = {},
+    isNumber: Optional[bool] = False,
+    default=None,
 ) -> Union[bool, int, None, str]:
     """[summary]
 
@@ -33,9 +37,9 @@ def get_config_variable(
         if yaml_path[0] in config and yaml_path[1] in config[yaml_path[0]]:
             result = config[yaml_path[0]][yaml_path[1]]
         else:
-            return None
+            return default
     else:
-        return None
+        return default
 
     if result == "yes" or result == "true" or result == "True":
         return True
@@ -201,6 +205,9 @@ class OpenCTIConnectorHelper:
         self.connect_scope = get_config_variable(
             "CONNECTOR_SCOPE", ["connector", "scope"], config
         )
+        self.connect_auto = get_config_variable(
+            "CONNECTOR_AUTO", ["connector", "auto"], config, False, False
+        )
         self.log_level = get_config_variable(
             "CONNECTOR_LOG_LEVEL", ["connector", "log_level"], config
         )
@@ -219,7 +226,11 @@ class OpenCTIConnectorHelper:
 
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
-            self.connect_id, self.connect_name, self.connect_type, self.connect_scope
+            self.connect_id,
+            self.connect_name,
+            self.connect_type,
+            self.connect_scope,
+            self.connect_auto,
         )
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_id = connector_configuration["id"]

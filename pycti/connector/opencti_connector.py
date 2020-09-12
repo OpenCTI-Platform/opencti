@@ -33,7 +33,12 @@ class OpenCTIConnector:
     """
 
     def __init__(
-        self, connector_id: str, connector_name: str, connector_type: str, scope: str
+        self,
+        connector_id: str,
+        connector_name: str,
+        connector_type: str,
+        scope: str,
+        auto: bool,
     ):
         self.id = connector_id
         self.name = connector_name
@@ -41,6 +46,7 @@ class OpenCTIConnector:
         if self.type is None:
             raise ValueError("Invalid connector type: " + connector_type)
         self.scope = scope.split(",")
+        self.auto = auto
 
     def to_input(self) -> dict:
         """connector input to use in API query
@@ -54,5 +60,6 @@ class OpenCTIConnector:
                 "name": self.name,
                 "type": self.type.name,
                 "scope": self.scope,
+                "auto": self.auto,
             }
         }
