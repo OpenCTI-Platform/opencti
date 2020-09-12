@@ -33,7 +33,10 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
-import { resolveRelationsTypes } from '../../../../utils/Relation';
+import {
+  hasKillChainPhase,
+  resolveRelationsTypes,
+} from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
@@ -570,7 +573,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         onReset={this.handleClose.bind(this)}
       >
         {({
-          submitForm, handleReset, isSubmitting, setFieldValue,
+          submitForm, handleReset, isSubmitting, setFieldValue, values,
         }) => (
           <Form>
             <div className={classes.header}>
@@ -715,10 +718,14 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 rows="4"
                 style={{ marginTop: 20 }}
               />
-              <KillChainPhasesField
-                name="killChainPhases"
-                style={{ marginTop: 20, width: '100%' }}
-              />
+              {hasKillChainPhase(values.relationship_type) ? (
+                <KillChainPhasesField
+                  name="killChainPhases"
+                  style={{ marginTop: 20, width: '100%' }}
+                />
+              ) : (
+                ''
+              )}
               <CreatedByField
                 name="createdBy"
                 style={{ marginTop: 20, width: '100%' }}

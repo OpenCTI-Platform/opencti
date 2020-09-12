@@ -292,11 +292,9 @@ class ConnectorsStatusComponent extends Component {
                         style={inlineStyles.connector_type}
                       >
                         {connector.connector_type === 'INTERNAL_ENRICHMENT'
-                          ? `${t(connector.connector_type)
-                          } (${
-                            t('auto:')
-                          }${t(connector.auto.toString())
-                          })`
+                          ? `${t(connector.connector_type)} (${t('auto:')} ${t(
+                            connector.auto.toString(),
+                          )})`
                           : t(connector.connector_type)}
                       </div>
                       <div
