@@ -24,7 +24,7 @@ export const addLocation = async (user, location) => {
   const locationToCreate = pipe(assoc('x_opencti_location_type', location.type), dissoc('type'))(location);
   const created = await createEntity(user, locationToCreate, location.type);
   if (location.update === true) {
-    const fieldsToUpdate = ['longitude', 'latitude'];
+    const fieldsToUpdate = ['description', 'longitude', 'latitude'];
     await Promise.all(
       map((field) => {
         if (!isNil(location[field])) {

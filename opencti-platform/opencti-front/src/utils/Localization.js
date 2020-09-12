@@ -153,6 +153,7 @@ const i18n = {
       Merge: 'Fusionner',
       Cancel: 'Annuler',
       Import: 'Importer',
+      'auto:': 'auto :',
       'Import data': 'Importer des données',
       'Import successfully asked': "L'import a été demandé",
       'Import type': "Type d'import",

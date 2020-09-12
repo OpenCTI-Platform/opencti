@@ -1,4 +1,11 @@
-import { createEntity, listEntities, listFromEntitiesThroughRelation, loadById } from '../database/grakn';
+import { isNil, map } from 'ramda';
+import {
+  createEntity,
+  listEntities,
+  listFromEntitiesThroughRelation,
+  loadById,
+  updateAttribute,
+} from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/stixDomainObject';
@@ -15,6 +22,25 @@ export const findAll = (args) => {
 
 export const addThreatActor = async (user, threatActor) => {
   const created = await createEntity(user, threatActor, ENTITY_TYPE_THREAT_ACTOR);
+  if (threatActor.update === true) {
+    const fieldsToUpdate = [
+      'description',
+      'first_seen',
+      'last_seen',
+      'goals',
+      'resource_level',
+      'primary_motivation',
+      'secondary_motivations',
+    ];
+    await Promise.all(
+      map((field) => {
+        if (!isNil(threatActor[field])) {
+          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [threatActor[field]] });
+        }
+        return true;
+      }, fieldsToUpdate)
+    );
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

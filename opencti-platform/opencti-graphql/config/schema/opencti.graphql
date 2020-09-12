@@ -518,6 +518,7 @@ input RegisterConnectorInput {
   name: String!
   type: ConnectorType!
   scope: [String!]
+  auto: Boolean
 }
 type ConnectorConfig {
   uri: String!
@@ -534,6 +535,7 @@ type Connector implements BasicObject & InternalObject {
   # Connector
   name: String!
   active: Boolean
+  auto: Boolean
   connector_type: String
   connector_scope: [String!]
   connector_state: String

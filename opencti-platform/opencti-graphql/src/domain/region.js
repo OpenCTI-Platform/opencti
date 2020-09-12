@@ -52,7 +52,7 @@ export const addRegion = async (user, region) => {
     ENTITY_TYPE_LOCATION_REGION
   );
   if (region.update === true) {
-    const fieldsToUpdate = ['longitude', 'latitude'];
+    const fieldsToUpdate = ['description', 'longitude', 'latitude'];
     await Promise.all(
       map((field) => {
         if (!isNil(region[field])) {

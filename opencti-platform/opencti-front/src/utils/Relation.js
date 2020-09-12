@@ -1,5 +1,5 @@
 import {
-  append, keys, pipe, filter, map, split,
+  append, keys, pipe, filter, map, split, includes,
 } from 'ramda';
 
 const relationsTypesMapping = {
@@ -189,3 +189,5 @@ export const resolveTargetTypes = (fromType) => pipe(
   filter((n) => n.includes(fromType)),
   map((n) => split('_', n)[1]),
 )(relationsTypesMapping);
+
+export const hasKillChainPhase = (type) => includes(type, ['uses', 'exploits', 'drops', 'indicates']);

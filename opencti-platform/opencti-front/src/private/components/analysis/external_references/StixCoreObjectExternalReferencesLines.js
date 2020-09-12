@@ -138,6 +138,18 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                   const externalReferenceId = externalReference.external_id
                     ? `(${externalReference.external_id})`
                     : '';
+                  let externalReferenceSecondary = '';
+                  if (
+                    externalReference.url
+                    && externalReference.url.length > 0
+                  ) {
+                    externalReferenceSecondary = externalReference.url;
+                  } else if (
+                    externalReference.description
+                    && externalReference.description.length > 0
+                  ) {
+                    externalReferenceSecondary = externalReference.description;
+                  }
                   if (externalReference.url) {
                     return (
                       <ListItem
@@ -156,13 +168,7 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                         </ListItemIcon>
                         <ListItemText
                           primary={`${externalReference.source_name} ${externalReferenceId}`}
-                          secondary={truncate(
-                            externalReference.description !== null
-                              && externalReference.description.length > 0
-                              ? externalReference.description
-                              : externalReference.url,
-                            90,
-                          )}
+                          secondary={truncate(externalReferenceSecondary, 90)}
                         />
                         <ListItemSecondaryAction>
                           <IconButton

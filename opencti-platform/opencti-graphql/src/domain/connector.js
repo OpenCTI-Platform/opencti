@@ -31,11 +31,12 @@ export const connectors = () => {
   return find(query, ['c']).then((elements) => map((conn) => completeConnector(conn.c), elements));
 };
 
-export const connectorsFor = async (type, scope, onlyAlive = false) => {
+export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = false) => {
   const connects = await connectors();
   return pipe(
     filter((c) => c.connector_type === type),
     filter((c) => (onlyAlive ? c.active === true : true)),
+    filter((c) => (onlyAuto ? c.auto === true : true)),
     // eslint-disable-next-line prettier/prettier
     filter((c) =>
       scope
@@ -76,18 +77,18 @@ export const resetStateConnector = async (user, id) => {
 };
 
 export const registerConnector = async (user, connectorData) => {
-  const { id, name, type, scope } = connectorData;
+  const { id, name, type, scope, auto = null } = connectorData;
   const connector = await loadById(id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
-    const patch = { name, updated_at: now(), connector_scope: scope.join(',') };
+    const patch = { name, updated_at: now(), connector_scope: scope.join(','), auto };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
     return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
-  const connectorToCreate = { internal_id: id, name, connector_type: type, connector_scope: scope.join(',') };
+  const connectorToCreate = { internal_id: id, name, connector_type: type, connector_scope: scope.join(','), auto };
   const createdConnector = await createEntity(user, connectorToCreate, ENTITY_TYPE_CONNECTOR, {
     noLog: true,
   });
