@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {
-  compose, pathOr, pipe, map, union,
+  compose, pathOr, pipe, map, union, filter, includes,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -38,7 +38,14 @@ const styles = (theme) => ({
     flexGrow: 1,
     marginLeft: 10,
   },
+  autocomplete: {
+    float: 'left',
+    margin: '5px 10px 0 10px',
+    width: 200,
+  },
 });
+
+const directFilters = ['report_types'];
 
 class Filters extends Component {
   constructor(props) {
@@ -243,7 +250,9 @@ class Filters extends Component {
   }
 
   handleChange(filterKey, event, value) {
-    this.props.handleAddFilter(filterKey, value.value, value.label, event);
+    if (value) {
+      this.props.handleAddFilter(filterKey, value.value, value.label, event);
+    }
   }
 
   handleChangeDate(filterKey, date, value) {
@@ -259,7 +268,11 @@ class Filters extends Component {
     const { open, anchorEl, entities } = this.state;
     return (
       <div className={classes.filters}>
-        <IconButton color="primary" onClick={this.handleOpenFilters.bind(this)}>
+        <IconButton
+          color="primary"
+          onClick={this.handleOpenFilters.bind(this)}
+          style={{ float: 'left' }}
+        >
           <FilterListOutlined />
         </IconButton>
         <Popover
@@ -277,7 +290,10 @@ class Filters extends Component {
           }}
         >
           <Grid container={true} spacing={2}>
-            {availableFilterKeys.map((filterKey) => {
+            {filter(
+              (n) => !includes(n, directFilters),
+              availableFilterKeys,
+            ).map((filterKey) => {
               const currentValue = currentFilters[filterKey]
                 ? currentFilters[filterKey][0]
                 : null;
@@ -305,7 +321,6 @@ class Filters extends Component {
               return (
                 <Grid key={filterKey} item={true} xs={6}>
                   <Autocomplete
-                    className={classes.autocomplete}
                     selectOnFocus={true}
                     autoSelect={false}
                     autoHighlight={true}
@@ -315,7 +330,6 @@ class Filters extends Component {
                     options={entities[filterKey] ? entities[filterKey] : []}
                     onInputChange={this.searchEntities.bind(this, filterKey)}
                     onChange={this.handleChange.bind(this, filterKey)}
-                    value={currentValue ? currentValue.value : null}
                     getOptionSelected={(option, value) => option.value === value
                     }
                     renderInput={(params) => (
@@ -345,6 +359,42 @@ class Filters extends Component {
             })}
           </Grid>
         </Popover>
+        {filter((n) => includes(n, directFilters), availableFilterKeys).map(
+          (filterKey) => (
+            <Autocomplete
+              key={filterKey}
+              className={classes.autocomplete}
+              selectOnFocus={true}
+              autoSelect={false}
+              autoHighlight={true}
+              getOptionLabel={(option) => (option.label ? option.label : '')}
+              noOptionsText={t('No available options')}
+              options={entities[filterKey] ? entities[filterKey] : []}
+              onInputChange={this.searchEntities.bind(this, filterKey)}
+              onChange={this.handleChange.bind(this, filterKey)}
+              getOptionSelected={(option, value) => option.value === value}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t(`filter_${filterKey}`)}
+                  variant="outlined"
+                  size="small"
+                  fullWidth={true}
+                  onFocus={this.searchEntities.bind(this, filterKey)}
+                />
+              )}
+              renderOption={(option) => (
+                <React.Fragment>
+                  <div className={classes.icon} style={{ color: option.color }}>
+                    <ItemIcon type={option.type} />
+                  </div>
+                  <div className={classes.text}>{option.label}</div>
+                </React.Fragment>
+              )}
+            />
+          ),
+        )}
+        <div className="clearfix" />
       </div>
     );
   }

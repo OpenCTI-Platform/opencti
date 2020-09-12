@@ -1,22 +1,22 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import CourseOfActionOverview from './CourseOfActionOverview';
 import CourseOfActionDetails from './CourseOfActionDetails';
 import CourseOfActionEdition from './CourseOfActionEdition';
 import CourseOfActionPopover from './CourseOfActionPopover';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import EntityStixCoreRelationshipsPie from '../../common/stix_core_relationships/EntityStixCoreRelationshipsPie';
-import EntityReportsChart from '../../analysis/reports/StixCoreObjectReportsChart';
-import EntityStixCoreRelationshipsChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsChart';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
-import StixCoreObjectNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
   container: {
@@ -35,48 +35,56 @@ class CourseOfActionComponent extends Component {
         <StixDomainObjectHeader
           stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
+          isOpenctiAlias={true}
         />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={4}>
-            <CourseOfActionOverview courseOfAction={courseOfAction} />
+          <Grid item={true} xs={6}>
+            <StixDomainObjectOverview stixDomainObject={courseOfAction} />
           </Grid>
-          <Grid item={true} xs={4}>
+          <Grid item={true} xs={6}>
             <CourseOfActionDetails courseOfAction={courseOfAction} />
           </Grid>
-          <Grid item={true} xs={4}>
-            <StixCoreObjectExternalReferences
-              stixCoreObjectId={courseOfAction.id}
-            />
-          </Grid>
         </Grid>
-        <StixCoreObjectNotes stixCoreObjectId={courseOfAction.id} />
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 15 }}
+          style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={4}>
-            <EntityStixCoreRelationshipsChart
-              entityId={courseOfAction.id}
-              relationshipType="uses"
+          <Grid item={true} xs={6}>
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={courseOfAction.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/arsenal/attack_patterns/${courseOfAction.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityStixCoreRelationshipsPie
-              entityId={courseOfAction.id}
-              entityType="Stix-Domain-Object"
-              field="entity_type"
+          <Grid item={true} xs={6}>
+            <StixCoreObjectOrStixCoreRelationshipLastReports
+              stixCoreObjectOrStixCoreRelationshipId={courseOfAction.id}
             />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={courseOfAction.id} />
           </Grid>
         </Grid>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
+        >
+          <Grid item={true} xs={6}>
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={courseOfAction.id}
+            />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <StixCoreObjectLatestHistory stixCoreObjectId={courseOfAction.id} />
+          </Grid>
+        </Grid>
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={courseOfAction.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />
         </Security>
@@ -95,9 +103,46 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
   courseOfAction: graphql`
     fragment CourseOfAction_courseOfAction on CourseOfAction {
       id
+      standard_id
+      stix_ids
+      spec_version
+      revoked
+      confidence
+      created
+      modified
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      creator {
+        id
+        name
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
+          }
+        }
+      }
       name
       x_opencti_aliases
-      ...CourseOfActionOverview_courseOfAction
       ...CourseOfActionDetails_courseOfAction
     }
   `,

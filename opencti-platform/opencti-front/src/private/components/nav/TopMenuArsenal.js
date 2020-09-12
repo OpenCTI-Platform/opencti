@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { BugReportOutlined } from '@material-ui/icons';
-import { LockPattern, Application, Biohazard } from 'mdi-material-ui';
+import { LockPattern, ProgressWrench, Application, Biohazard } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -63,6 +63,25 @@ class TopMenuArsenal extends Component {
         >
           <LockPattern className={classes.icon} fontSize="small" />
           {t('Attack patterns')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/arsenal/courses_of_action"
+          variant={
+            location.pathname === '/dashboard/arsenal/courses_of_action'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/arsenal/courses_of_action'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <ProgressWrench className={classes.icon} fontSize="small" />
+          {t('Courses of action')}
         </Button>
         <Button
           component={Link}

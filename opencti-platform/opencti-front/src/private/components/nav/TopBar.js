@@ -55,6 +55,7 @@ import Security, {
   KNOWLEDGE_KNASKIMPORT,
   EXPLORE,
 } from '../../../utils/Security';
+import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 
 const styles = (theme) => ({
   appBar: {
@@ -263,6 +264,13 @@ const TopBar = ({
           ) : (
             ''
           )}
+          {location.pathname.includes(
+            '/dashboard/arsenal/courses_of_action/',
+          ) ? (
+            <TopMenuCourseOfAction />
+            ) : (
+              ''
+            )}
           {location.pathname.includes('/dashboard/arsenal/vulnerabilities/') ? (
             <TopMenuVulnerability />
           ) : (

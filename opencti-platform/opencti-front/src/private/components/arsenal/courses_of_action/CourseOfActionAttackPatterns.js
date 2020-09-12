@@ -66,7 +66,7 @@ class CourseOfActionAttackPatternComponent extends Component {
     return (
       <div style={{ marginTop: 20 }}>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Mitigated TTPs')}
+          {t('Mitigated attack patterns')}
         </Typography>
         <AddCoursesOfAction
           courseOfActionId={courseOfAction.id}
@@ -83,7 +83,7 @@ class CourseOfActionAttackPatternComponent extends Component {
                 divider={true}
                 button={true}
                 component={Link}
-                to={`/dashboard/techniques/attack_patterns/${attackPattern.id}`}
+                to={`/dashboard/arsenal/attack_patterns/${attackPattern.id}`}
               >
                 <ListItemIcon>
                   <Avatar classes={{ root: classes.avatar }}>

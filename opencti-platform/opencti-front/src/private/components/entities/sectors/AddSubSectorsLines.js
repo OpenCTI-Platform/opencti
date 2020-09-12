@@ -113,7 +113,7 @@ class AddSubSectorsLinesContainer extends Component {
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
-                  <Domain classes={{ root: classes.icon }} />
+                  <Domain />
                 )}
               </ListItemIcon>
               <ListItemText

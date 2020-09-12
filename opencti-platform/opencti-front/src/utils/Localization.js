@@ -424,7 +424,7 @@ const i18n = {
       'Processing status': 'Etat du traitement',
       'Attack patterns': "Motifs d'attaque",
       TTPs: 'TTPs',
-      'Mitigated TTPs': 'TTPs atténuées',
+      'Mitigated attack patterns': "Motifs d'attaque atténués",
       Techniques: 'Techniques',
       'All reports': 'Tous les rapports',
       Tactics: 'Tactiques',
@@ -883,6 +883,7 @@ const i18n = {
       'entity_X-OpenCTI-User-Agent': 'User agent',
       'entity_X-Opencti-User-Agent': 'User agent',
       // Relations
+      'relationship_revoked-by': 'révoqué par',
       relationship_delivers: 'délivre',
       relationship_targets: 'cible',
       relationship_uses: 'utilise',
@@ -1054,6 +1055,7 @@ const i18n = {
       'entity_X-OpenCTI-Text': 'Text',
       'entity_X-OpenCTI-User-Agent': 'User agent',
       // Relations
+      'relationship_revoked-by': 'revoked by',
       relationship_delivers: 'delivers',
       relationship_targets: 'targets',
       relationship_uses: 'uses',

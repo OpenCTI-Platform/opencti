@@ -51,7 +51,7 @@ class TopMenuCourseOfAction extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/techniques/courses_of_action"
+          to="/dashboard/arsenal/courses_of_action"
           variant="contained"
           size="small"
           color="inherit"
@@ -66,17 +66,17 @@ class TopMenuCourseOfAction extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}`}
+          to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}`}
           variant={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
               ? 'primary'
               : 'inherit'
           }
@@ -87,17 +87,17 @@ class TopMenuCourseOfAction extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/files`}
+            to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`}
             variant={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+              === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+              === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -108,17 +108,17 @@ class TopMenuCourseOfAction extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/history`}
+          to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`}
           variant={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/history`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/history`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
               ? 'primary'
               : 'inherit'
           }

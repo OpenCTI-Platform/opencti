@@ -72,7 +72,11 @@ class AddSubAttackPatternsLinesContainer extends Component {
       );
       commitMutation({
         mutation: addSubAttackPatternsMutationRelationDelete,
-        variables: { id: existingSubAttackPattern.relation.id },
+        variables: {
+          fromId: existingSubAttackPattern.node.id,
+          toId: attackPatternId,
+          relationship_type: 'subtechnique-of',
+        },
         updater: (store) => {
           const node = store.get(this.props.attackPatternId);
           const subAttackPatterns = node.getLinkedRecord('subAttackPatterns');
@@ -123,7 +127,7 @@ class AddSubAttackPatternsLinesContainer extends Component {
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
-                  <LockPattern classes={{ root: classes.icon }} />
+                  <LockPattern />
                 )}
               </ListItemIcon>
               <ListItemText
