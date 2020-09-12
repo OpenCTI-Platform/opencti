@@ -1829,7 +1829,7 @@ const upsertEntity = async (user, entity, type, data, fieldsToUpdate = []) => {
     await Promise.all(
       map((field) => {
         if (!isNil(data[field])) {
-          return updateAttribute(user, id, data.entity_type, {
+          return updateAttribute(user, id, type, {
             key: field,
             value: Array.isArray(data[field]) ? data[field] : [data[field]],
           });
