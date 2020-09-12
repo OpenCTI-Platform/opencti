@@ -88,7 +88,6 @@ class StixCoreRelationshipPopover extends Component {
   }
 
   submitDelete() {
-    console.log(this.props.connectionKey);
     this.setState({ deleting: true });
     commitMutation({
       mutation: stixCoreRelationshipPopoverDeletionMutation,

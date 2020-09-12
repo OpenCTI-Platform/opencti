@@ -114,8 +114,8 @@ class ContainerAddStixCoreObjects extends Component {
     const paginationOptions = {
       types: targetStixCoreObjectTypes,
       search,
-      orderBy: 'created_at',
-      orderMode: 'desc',
+      orderBy: search.length > 0 ? null : 'created_at',
+      orderMode: search.length > 0 ? null : 'desc',
     };
     return (
       <div>

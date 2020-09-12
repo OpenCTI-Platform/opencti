@@ -378,15 +378,14 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   }
 
   renderSelectEntity() {
+    const { search } = this.state;
     const { classes, t, entityType } = this.props;
-    console.log(entityType);
     const types = resolveTargetTypes(entityType);
-    console.log(types);
     const paginationOptions = {
-      search: this.state.search,
+      search,
       types,
-      orderBy: 'created_at',
-      orderMode: 'desc',
+      orderBy: search.length > 0 ? null : 'created_at',
+      orderMode: search.length > 0 ? null : 'desc',
     };
     return (
       <div>
