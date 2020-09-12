@@ -85,13 +85,13 @@ const inlineStylesHeaders = {
   },
   connector_type: {
     float: 'left',
-    width: '15%',
+    width: '20%',
     fontSize: 12,
     fontWeight: '700',
   },
   connector_scope: {
     float: 'left',
-    width: '45%',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -113,7 +113,7 @@ const inlineStyles = {
   },
   connector_type: {
     float: 'left',
-    width: '15%',
+    width: '20%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -121,7 +121,7 @@ const inlineStyles = {
   },
   connector_scope: {
     float: 'left',
-    width: '45%',
+    width: '40%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -291,7 +291,13 @@ class ConnectorsStatusComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.connector_type}
                       >
-                        {t(connector.connector_type)}
+                        {connector.connector_type === 'INTERNAL_ENRICHMENT'
+                          ? `${t(connector.connector_type)
+                          } (${
+                            t('auto:')
+                          }${t(connector.auto.toString())
+                          })`
+                          : t(connector.connector_type)}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -368,6 +374,7 @@ const ConnectorsStatus = createRefetchContainer(
           id
           name
           active
+          auto
           connector_type
           connector_scope
           updated_at

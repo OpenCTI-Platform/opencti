@@ -7,12 +7,12 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 
-export const connectorsForEnrichment = async (scope, onlyAlive = false) =>
-  connectorsFor(CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive);
+export const connectorsForEnrichment = async (scope, onlyAlive = false, onlyAuto = false) =>
+  connectorsFor(CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 
 export const askEnrich = async (observableId, scope) => {
   // Get the list of compatible connectors
-  const targetConnectors = await connectorsForEnrichment(scope, true);
+  const targetConnectors = await connectorsForEnrichment(scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {

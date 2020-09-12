@@ -72,6 +72,7 @@ define
   default_assignation sub attribute, value boolean;
   attribute_order sub attribute, value double;
   active sub attribute, value boolean;
+  auto sub attribute, value boolean;
   connector_type sub attribute, value string;
   connector_scope sub attribute, value string;
   connector_state sub attribute, value string;
@@ -884,6 +885,7 @@ define
   Connector sub Internal-Object,
     has name,
     has active,
+    has auto,
     has connector_type,
     has connector_scope,
     has connector_state,
