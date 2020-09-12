@@ -1,9 +1,11 @@
-import { assoc } from 'ramda';
+import { assoc, map } from 'ramda';
 import {
   createEntity,
   createRelation,
   deleteEntityById,
   deleteRelationsByFromAndTo,
+  escapeString,
+  find,
   listEntities,
   listFromEntitiesThroughRelation,
   loadById,
@@ -12,7 +14,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 
@@ -26,6 +28,15 @@ export const findAll = (args) => {
 
 export const members = async (groupId) => {
   return listFromEntitiesThroughRelation(groupId, ENTITY_TYPE_GROUP, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+};
+
+export const markingDefinitions = async (groupId) => {
+  const data = await find(
+    `match $group isa Group, has internal_id "${escapeString(groupId)}";
+            (${RELATION_ACCESSES_TO}_from: $group, ${RELATION_ACCESSES_TO}_to: $marking) isa ${RELATION_ACCESSES_TO}; get;`,
+    ['marking']
+  );
+  return map((r) => r.marking, data);
 };
 
 export const addGroup = async (user, group) => {

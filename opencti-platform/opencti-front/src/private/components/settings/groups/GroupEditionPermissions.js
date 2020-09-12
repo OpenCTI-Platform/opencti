@@ -67,7 +67,7 @@ class GroupEditionPermissionsComponent extends Component {
           id: this.props.group.id,
           input: {
             toId: markingDefinitionId,
-            relationship_type: 'grants',
+            relationship_type: 'accesses-to',
           },
         },
       });
@@ -84,17 +84,11 @@ class GroupEditionPermissionsComponent extends Component {
 
   render() {
     const { classes, group, t } = this.props;
-    const groupMarkingDefinitions = pipe(
-      pathOr([], ['permissions', 'edges']),
-      map((n) => ({ id: n.node.id })),
-    )(group);
-
+    const groupMarkingDefinitions = group.allowed_marking || [];
     return (
       <div style={{ paddingTop: 15 }}>
         <Alert severity="warning" style={{ marginBottom: 10 }}>
-          {t(
-            'Groups permissions on data marking is not fully implemented yet.',
-          )}
+          {t('Groups marking definitions will filter the stream consumer to only data he can access to.')}
         </Alert>
         <QueryRenderer
           query={markingDefinitionsLinesSearchQuery}
@@ -103,7 +97,7 @@ class GroupEditionPermissionsComponent extends Component {
             if (props) {
               // Done
               const markingDefinitions = pipe(
-                pathOr([], ['objectMarking', 'edges']),
+                pathOr([], ['markingDefinitions', 'edges']),
                 map((n) => n.node),
               )(props);
               return (
@@ -158,6 +152,9 @@ const GroupEditionPermissions = createFragmentContainer(
     group: graphql`
       fragment GroupEditionPermissions_group on Group {
         id
+        allowed_marking {
+          id
+        }
       }
     `,
   },

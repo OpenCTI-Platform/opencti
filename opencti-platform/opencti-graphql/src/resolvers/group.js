@@ -10,6 +10,7 @@ import {
   groupAddRelation,
   groupCleanContext,
   groupEditContext,
+  markingDefinitions,
 } from '../domain/group';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -22,6 +23,7 @@ const groupResolvers = {
     groups: (_, args) => findAll(args),
   },
   Group: {
+    allowed_marking: (stixCoreObject) => markingDefinitions(stixCoreObject.id),
     members: (group) => members(group.id),
     editContext: (group) => fetchEditContext(group.id),
   },

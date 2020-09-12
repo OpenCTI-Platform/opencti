@@ -5,9 +5,9 @@ import createApolloServer from './graphql/graphql';
 
 const PORT = conf.get('app:port');
 
-const createHttpServer = () => {
+const createHttpServer = async () => {
   const apolloServer = createApolloServer();
-  const { app, seeMiddleware } = createApp(apolloServer);
+  const { app, seeMiddleware } = await createApp(apolloServer);
   const httpServer = http.createServer(app);
   apolloServer.installSubscriptionHandlers(httpServer);
   return { httpServer, seeMiddleware };
@@ -16,13 +16,15 @@ const createHttpServer = () => {
 export const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
-      const { httpServer, seeMiddleware } = createHttpServer();
-      httpServer.on('close', () => {
-        seeMiddleware.shutdown();
-      });
-      httpServer.listen(PORT, () => {
-        logger.info(`OPENCTI Ready on port ${PORT}`);
-        resolve(httpServer);
+      const serverPromise = createHttpServer();
+      serverPromise.then(({ httpServer, seeMiddleware }) => {
+        httpServer.on('close', () => {
+          seeMiddleware.shutdown();
+        });
+        httpServer.listen(PORT, () => {
+          logger.info(`OPENCTI Ready on port ${PORT}`);
+          resolve(httpServer);
+        });
       });
     } catch (e) {
       logger.error(`[OPENCTI] Start http server fail`, { error: e });

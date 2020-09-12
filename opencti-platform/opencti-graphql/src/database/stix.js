@@ -124,7 +124,7 @@ export const stixDataConverter = (data) => {
       // Stix but reserved keywords in Grakn
       const targetKey = key.replace('attribute_', '');
       filteredData[targetKey] = val;
-    } else if (!isMultipleAttribute(key)) {
+    } else if (!isMultipleAttribute(key) && !key.endsWith('_refs')) {
       filteredData[key] = Array.isArray(val) ? R.head(val) : val;
     } else if (!Array.isArray(val) || (Array.isArray(val) && val.length > 0)) {
       filteredData[key] = val;

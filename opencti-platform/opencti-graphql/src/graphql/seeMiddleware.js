@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { logger, OPENCTI_TOKEN } from '../config/conf';
 import { authentication } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
@@ -13,24 +14,25 @@ const createBroadcastClient = (client) => {
     client,
     catchingUp: true,
     sendEvent: (eventId, topic, data) => {
-      const { communities } = client;
-      const { markings } = data;
-      // TODO check markings in regards of communities
-      client.sendEvent(eventId, topic, data);
+      const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
+      const isUserHaveAccess = data.markings.length > 0 && data.markings.every((m) => clientMarkings.includes(m));
+      if (isUserHaveAccess) {
+        client.sendEvent(eventId, topic, data);
+      }
       return true;
     },
     sendHeartbeat: () => {
       client.sendEvent(undefined, 'heartbeat', new Date());
     },
-    sendConnected: () => {
-      client.sendEvent(undefined, 'connected', 'connected');
+    sendConnected: (lastEventId) => {
+      client.sendEvent(undefined, 'connected', lastEventId);
       broadcastClient.sendHeartbeat();
     },
   };
   return broadcastClient;
 };
 
-const initBroadcaster = async () => {
+export const initBroadcaster = async () => {
   // Listen the stream from now
   // noinspection JSIgnoredPromiseFromCall
   const stream = await listenStream((eventId, topic, data) => {
@@ -68,6 +70,7 @@ const authenticate = async (req, res, next) => {
   const auth = await authentication(token);
   if (auth) {
     req.userId = auth.id;
+    req.allowed_marking = auth.allowed_marking;
     req.expirationTime = new Date(2100, 10, 10); // auth.token.expirationTime;
     next();
   } else {
@@ -75,17 +78,14 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const createSeeMiddleware = () => {
-  let streamListener;
-  initBroadcaster().then((stream) => {
-    streamListener = stream;
-  });
+const createSeeMiddleware = (broadcaster) => {
   const eventsHandler = (req, res) => {
     const clientId = generateInternalId();
     const client = {
       id: clientId,
       userId: req.userId,
       expirationTime: req.expirationTime,
+      allowed_marking: req.allowed_marking,
       sendEvent: (id, topic, data) => {
         if (req.finished) {
           logger.info('Trying to write on an already terminated response', { id: client.id });
@@ -125,12 +125,13 @@ const createSeeMiddleware = () => {
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });
     const broadcastClient = createBroadcastClient(client);
-    broadcastClient.sendConnected();
+    broadcastClient.sendConnected(broadcaster.currentEvent());
     broadcastClients[client.id] = broadcastClient;
+    logger.info('[STREAM] > New client connected', { userId: req.userId });
   };
   return {
     shutdown: () => {
-      streamListener.shutdown();
+      broadcaster.shutdown();
       clearInterval(heartbeat);
       Object.values(broadcastClients).forEach((c) => c.client.close());
     },

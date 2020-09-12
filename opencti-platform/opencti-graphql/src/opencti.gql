@@ -277,6 +277,8 @@ define
   has-role_to sub role;
   has-capability_from sub role;
   has-capability_to sub role;
+  accesses-to_from sub role;
+  accesses-to_to sub role;
 
   # STIX Knowledge Relationships
   delivers_from sub role;
@@ -389,6 +391,10 @@ define
   authorized-by sub internal-relationship,
     relates authorized-by_from,
     relates authorized-by_to;
+
+  accesses-to sub internal-relationship,
+    relates accesses-to_from,
+    relates accesses-to_to;
 
   migrates sub internal-relationship,
     relates migrates_from,
@@ -837,7 +843,8 @@ define
     has i_created_at_month,
     has i_created_at_year,
     has updated_at,
-    plays member-of_to;
+    plays member-of_to,
+    plays accesses-to_from;
 
   User sub Internal-Object,
     has user_email,
@@ -930,6 +937,7 @@ define
     has definition,
     has x_opencti_order,
     has x_opencti_color,
+    plays accesses-to_to,
     plays object-marking_to;
 
   Label sub Stix-Meta-Object,

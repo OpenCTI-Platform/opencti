@@ -136,18 +136,18 @@ export const delUserContext = async (user) => {
 // region cache for access token
 export const getAccessCache = async (tokenUUID) => {
   const client = await getClient();
-  const data = await client.get(tokenUUID);
+  const data = await client.get(`access-${tokenUUID}`);
   return data && JSON.parse(data);
 };
-export const storeAccessCache = async (tokenUUID, access, expiration = REDIS_EXPIRE_TIME) => {
+export const storeUserAccessCache = async (tokenUUID, access, expiration = REDIS_EXPIRE_TIME) => {
   const client = await getClient();
   const val = JSON.stringify(access);
-  await client.set(tokenUUID, val, 'ex', expiration);
+  await client.set(`access-${tokenUUID}`, val, 'ex', expiration);
   return access;
 };
-export const clearAccessCache = async (tokenUUID) => {
+export const clearUserAccessCache = async (tokenUUID) => {
   const client = await getClient();
-  await client.del(tokenUUID);
+  await client.del(`access-${tokenUUID}`);
 };
 // endregion
 

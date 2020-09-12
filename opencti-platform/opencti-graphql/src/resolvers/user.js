@@ -28,6 +28,7 @@ import {
   roleCleanContext,
   userEditContext,
   userCleanContext,
+  getMarkings,
 } from '../domain/user';
 import { BUS_TOPICS, logger } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -49,6 +50,7 @@ const userResolvers = {
   User: {
     groups: (user) => groups(user.id),
     roles: (user) => getRoles(user.id),
+    allowed_marking: (user) => getMarkings(user.id),
     capabilities: (user) => getCapabilities(user.id),
     token: (user, args, context) => token(user.id, args, context),
     editContext: (user) => fetchEditContext(user.id),
