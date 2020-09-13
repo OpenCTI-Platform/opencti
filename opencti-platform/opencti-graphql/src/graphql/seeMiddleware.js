@@ -91,7 +91,7 @@ const catchupHandler = async (req, res) => {
   const connectedClient = R.find(([, data]) => {
     return data.client.userId === userId;
   }, clients);
-  if (connectedClient.length === 0) {
+  if (!connectedClient) {
     res.status(401).json({ status: 'User stream not connected' });
   } else {
     const { from = '-', size = 50 } = body;
@@ -141,7 +141,7 @@ const createSeeMiddleware = (broadcaster) => {
       },
     };
     req.on('close', () => {
-      if (client === broadcastClients[client.id]?.client) {
+      if (client === broadcastClients[client.userId]?.client) {
         delete broadcastClients[client.userId];
       }
     });
