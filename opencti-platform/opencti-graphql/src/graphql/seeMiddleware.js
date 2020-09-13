@@ -20,8 +20,14 @@ const createBroadcastClient = (client) => {
       const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
       const isMarking = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
       const isUserHaveAccess = event.markings.length > 0 && event.markings.every((m) => clientMarkings.includes(m));
-      const accessData = isMarking || isUserHaveAccess ? Object.assign(event, { granted: true }) : { granted: false };
-      client.sendEvent(eventId, topic, accessData);
+      const granted = isMarking || isUserHaveAccess;
+      const accessData = Object.assign(event, { granted });
+      if (granted) {
+        client.sendEvent(eventId, topic, accessData);
+      } else {
+        const filteredData = R.pick(['markings', 'timestamp', 'granted'], accessData);
+        client.sendEvent(eventId, topic, filteredData);
+      }
       return true;
     },
     sendHeartbeat: () => {
@@ -92,10 +98,14 @@ const catchupHandler = async (req, res) => {
   } else {
     const { from = '-', size = 50 } = body;
     const broadcastClient = R.last(connectedClient);
-    await catchup(from, size, (eventId, topic, data) => {
-      broadcastClient.sendEvent(eventId, topic, data);
-    });
-    res.json({ success: true });
+    try {
+      await catchup(from, size, (eventId, topic, data) => {
+        broadcastClient.sendEvent(eventId, topic, data);
+      });
+      res.json({ success: true });
+    } catch (e) {
+      res.json({ success: false, error: e.message });
+    }
   }
 };
 
