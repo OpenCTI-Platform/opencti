@@ -290,12 +290,11 @@ export const storeDeleteEvent = async (user, instance) => {
 };
 
 let streamListening = true;
-const fetchLatestEventId = async (client) => {
-  const res = await client.call('XREVRANGE', OPENCTI_STREAM, '+', '-', 'COUNT', 1);
-  if (res.length > 0) {
-    return res[0][0];
-  }
-  return 0;
+const fetchStreamInfo = async (client) => {
+  const res = await client.call('XINFO', 'STREAM', OPENCTI_STREAM);
+  // eslint-disable-next-line
+  const [, size,, keys,, nodes,, lastId,, groups,, firstEntry,, lastEntry] = res;
+  return { lastId, size };
 };
 const mapStreamToJS = ([id, data]) => {
   const count = data.length / 2;
@@ -305,22 +304,27 @@ const mapStreamToJS = ([id, data]) => {
   }
   return result;
 };
+const processStreamResult = (results, callback) => {
+  const streamData = R.map((r) => mapStreamToJS(r), results);
+  const lastElement = R.last(streamData);
+  for (let index = 0; index < streamData.length; index += 1) {
+    const dataElement = streamData[index];
+    const { eventId, type, markings, user, timestamp, data, message } = dataElement;
+    const eventData = { user, markings, timestamp, data, message };
+    callback(eventId, type, eventData);
+  }
+  return lastElement.eventId;
+};
 export const listenStream = async (callback) => {
   const client = await getClient();
-  let lastEventId = await fetchLatestEventId(client);
+  const streamInfo = await fetchStreamInfo(client);
+  let lastEventId = streamInfo.lastId;
   const processStep = () => {
     return client.xread('BLOCK', 1, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, lastEventId).then(async (streamResult) => {
       if (streamResult && streamResult.length > 0) {
         const [, results] = R.head(streamResult);
-        const streamData = R.map((r) => mapStreamToJS(r), results);
-        const lastElement = R.last(streamData);
-        for (let index = 0; index < streamData.length; index += 1) {
-          const dataElement = streamData[index];
-          const { eventId, type, markings, user, timestamp, data, message } = dataElement;
-          const eventData = { user, markings, timestamp, data, message };
-          callback(eventId, type, eventData);
-        }
-        lastEventId = lastElement.eventId;
+        const lastElementId = processStreamResult(results, callback);
+        lastEventId = lastElementId || lastEventId;
       }
       return true;
     });
@@ -334,10 +338,20 @@ export const listenStream = async (callback) => {
   // noinspection ES6MissingAwait
   processingLoop();
   return {
-    currentEvent: () => lastEventId,
+    info: () => streamInfo,
     shutdown: () => {
       streamListening = false;
     },
   };
+};
+export const catchup = async (from, limit, callback) => {
+  const client = await getClient();
+  const size = limit > 50 ? 50 : limit;
+  return client.call('XRANGE', OPENCTI_STREAM, from, '+', 'COUNT', size).then(async (results) => {
+    if (results && results.length > 0) {
+      processStreamResult(results, callback);
+    }
+    return true;
+  });
 };
 // endregion

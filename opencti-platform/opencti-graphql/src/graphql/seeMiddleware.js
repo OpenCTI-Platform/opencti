@@ -1,9 +1,11 @@
 import * as R from 'ramda';
+import * as bodyParser from 'body-parser';
 import { logger, OPENCTI_TOKEN } from '../config/conf';
 import { authentication } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
 import { generateInternalId } from '../schema/identifier';
-import { listenStream } from '../database/redis';
+import { catchup, listenStream } from '../database/redis';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 let heartbeat;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
@@ -13,19 +15,20 @@ const createBroadcastClient = (client) => {
   const broadcastClient = {
     client,
     catchingUp: true,
-    sendEvent: (eventId, topic, data) => {
+    sendEvent: (eventId, topic, event) => {
+      const { data } = event;
       const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
-      const isUserHaveAccess = data.markings.length > 0 && data.markings.every((m) => clientMarkings.includes(m));
-      if (isUserHaveAccess) {
-        client.sendEvent(eventId, topic, data);
-      }
+      const isMarking = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
+      const isUserHaveAccess = event.markings.length > 0 && event.markings.every((m) => clientMarkings.includes(m));
+      const accessData = isMarking || isUserHaveAccess ? Object.assign(event, { granted: true }) : { granted: false };
+      client.sendEvent(eventId, topic, accessData);
       return true;
     },
     sendHeartbeat: () => {
       client.sendEvent(undefined, 'heartbeat', new Date());
     },
-    sendConnected: (lastEventId) => {
-      client.sendEvent(undefined, 'connected', lastEventId);
+    sendConnected: (streamInfo) => {
+      client.sendEvent(undefined, 'connected', streamInfo);
       broadcastClient.sendHeartbeat();
     },
   };
@@ -78,6 +81,24 @@ const authenticate = async (req, res, next) => {
   }
 };
 
+const catchupHandler = async (req, res) => {
+  const { userId, body } = req;
+  const clients = Object.entries(broadcastClients);
+  const connectedClient = R.find(([, data]) => {
+    return data.client.userId === userId;
+  }, clients);
+  if (!connectedClient) {
+    res.status(401).json({ status: 'User stream not connected' });
+  } else {
+    const { from = '-', size = 50 } = body;
+    const { client } = R.last(connectedClient);
+    await catchup(from, size, (eventId, topic, data) => {
+      client.sendEvent(eventId, topic, data);
+    });
+    res.json({ success: true });
+  }
+};
+
 const createSeeMiddleware = (broadcaster) => {
   const eventsHandler = (req, res) => {
     const clientId = generateInternalId();
@@ -115,8 +136,9 @@ const createSeeMiddleware = (broadcaster) => {
     };
     req.on('close', () => {
       Object.values(broadcastClients)
-        .filter((c) => c.client.id === req.userId)
+        .filter((c) => c.client.userId === req.userId)
         .forEach((c) => c.client.close());
+      delete broadcastClients[client.id];
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
@@ -125,7 +147,7 @@ const createSeeMiddleware = (broadcaster) => {
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });
     const broadcastClient = createBroadcastClient(client);
-    broadcastClient.sendConnected(broadcaster.currentEvent());
+    broadcastClient.sendConnected(broadcaster.info());
     broadcastClients[client.id] = broadcastClient;
     logger.info('[STREAM] > New client connected', { userId: req.userId });
   };
@@ -138,6 +160,8 @@ const createSeeMiddleware = (broadcaster) => {
     applyMiddleware: ({ app }) => {
       app.use('/stream', authenticate);
       app.get('/stream', eventsHandler);
+      app.use('/stream/catchup', bodyParser.json());
+      app.post('/stream/catchup', catchupHandler);
     },
   };
 };
