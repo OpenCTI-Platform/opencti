@@ -3,7 +3,6 @@ import * as bodyParser from 'body-parser';
 import { logger, OPENCTI_TOKEN } from '../config/conf';
 import { authentication } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
-import { generateInternalId } from '../schema/identifier';
 import { catchup, listenStream } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
@@ -14,7 +13,6 @@ const broadcastClients = {};
 const createBroadcastClient = (client) => {
   const broadcastClient = {
     client,
-    catchingUp: true,
     sendEvent: (eventId, topic, event) => {
       const { data } = event;
       const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
@@ -93,7 +91,7 @@ const catchupHandler = async (req, res) => {
   const connectedClient = R.find(([, data]) => {
     return data.client.userId === userId;
   }, clients);
-  if (!connectedClient) {
+  if (connectedClient.length === 0) {
     res.status(401).json({ status: 'User stream not connected' });
   } else {
     const { from = '-', size = 50 } = body;
@@ -111,15 +109,13 @@ const catchupHandler = async (req, res) => {
 
 const createSeeMiddleware = (broadcaster) => {
   const eventsHandler = (req, res) => {
-    const clientId = generateInternalId();
     const client = {
-      id: clientId,
       userId: req.userId,
       expirationTime: req.expirationTime,
       allowed_marking: req.allowed_marking,
       sendEvent: (id, topic, data) => {
         if (req.finished) {
-          logger.info('Trying to write on an already terminated response', { id: client.id });
+          logger.info('Trying to write on an already terminated response', { id: client.userId });
           return;
         }
         let message = '';
@@ -140,15 +136,14 @@ const createSeeMiddleware = (broadcaster) => {
         try {
           res.end();
         } catch (e) {
-          logger.error(e, 'Failing to close client', { clientId: client.id });
+          logger.error(e, 'Failing to close client', { clientId: client.userId });
         }
       },
     };
     req.on('close', () => {
-      Object.values(broadcastClients)
-        .filter((c) => c.client.userId === req.userId)
-        .forEach((c) => c.client.close());
-      delete broadcastClients[client.id];
+      if (client === broadcastClients[client.id]?.client) {
+        delete broadcastClients[client.userId];
+      }
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
@@ -156,10 +151,18 @@ const createSeeMiddleware = (broadcaster) => {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });
+    // Only one connection per client
+    const previousClient = broadcastClients[req.userId];
+    if (previousClient) {
+      previousClient.client.close();
+      delete broadcastClients[req.userId];
+    }
+    // Create the new connection
     const broadcastClient = createBroadcastClient(client);
-    broadcastClient.sendConnected(broadcaster.info());
-    broadcastClients[client.id] = broadcastClient;
-    logger.info('[STREAM] > New client connected', { userId: req.userId });
+    broadcastClients[client.userId] = broadcastClient;
+    const clients = Object.entries(broadcastClients).length;
+    broadcastClient.sendConnected(Object.assign(broadcaster.info(), { clients }));
+    logger.debug('[STREAM SSE] > New client connected', { userId: req.userId, clients });
   };
   return {
     shutdown: () => {

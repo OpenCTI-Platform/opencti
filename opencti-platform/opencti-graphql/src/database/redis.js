@@ -294,7 +294,7 @@ const fetchStreamInfo = async (client) => {
   const res = await client.call('XINFO', 'STREAM', OPENCTI_STREAM);
   // eslint-disable-next-line
   const [, size,, keys,, nodes,, lastId,, groups,, firstEntry,, lastEntry] = res;
-  return { lastId, size };
+  return { lastEventId: lastId, streamSize: size };
 };
 const mapStreamToJS = ([id, data]) => {
   const count = data.length / 2;
@@ -318,13 +318,13 @@ const processStreamResult = (results, callback) => {
 export const listenStream = async (callback) => {
   const client = await getClient();
   const streamInfo = await fetchStreamInfo(client);
-  let lastEventId = streamInfo.lastId;
+  let startEventId = streamInfo.lastEventId;
   const processStep = () => {
-    return client.xread('BLOCK', 1, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, lastEventId).then(async (streamResult) => {
+    return client.xread('BLOCK', 1, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, startEventId).then(async (streamResult) => {
       if (streamResult && streamResult.length > 0) {
         const [, results] = R.head(streamResult);
         const lastElementId = processStreamResult(results, callback);
-        lastEventId = lastElementId || lastEventId;
+        startEventId = lastElementId || startEventId;
       }
       return true;
     });
