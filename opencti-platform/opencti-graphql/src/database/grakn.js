@@ -1488,10 +1488,14 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         if (standardId !== instance.standard_id) {
           existingEntity = await internalLoadById(standardId);
         }
-        if (existingEntity) {
-          await lock.unlock();
+        if (existingEntity && isStixCoreObject(existingEntity.entity_type)) {
           // Return the merged entity
           eventualMergingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id], keys);
+        } else if (existingEntity) {
+          throw FunctionalError(`Based on this update, the generated standard ID already exists, doing nothing`, {
+            id,
+            type,
+          });
         } else {
           // eslint-disable-next-line no-await-in-loop
           const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);

@@ -1,4 +1,4 @@
-import { assoc, filter, map, propOr, isNil, flatten, concat, pluck, uniq } from 'ramda';
+import { assoc, filter, map, propOr, isNil, flatten, concat, pluck, uniq, includes } from 'ramda';
 import {
   createRelation,
   createRelations,
@@ -20,7 +20,7 @@ import {
 } from './stixCoreRelationship';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess, FunctionalError } from '../config/errors';
+import { FunctionalError } from '../config/errors';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
@@ -181,16 +181,23 @@ export const stixCoreObjectsDelete = async (user, stixCoreObjectsIds) => {
 };
 
 export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObjectsIds, fieldsToCopy = []) => {
+  // Pre-checks
+  if (includes(stixCoreObjectId, stixCoreObjectsIds)) {
+    throw FunctionalError(`Cannot merge entities, same ID detected in source and destination`, {
+      stixCoreObjectId,
+      stixCoreObjectsIds,
+    });
+  }
   // 0. Get the object
   const stixCoreObject = await loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot merge the other objects, Stix-Object cannot be found.');
   }
-  // 1. Update aliases & stix_ids
+  // 1. Update aliases & STIX IDs
   const stixCoreObjectsToBeMerged = await Promise.all(
     stixCoreObjectsIds.map(async (id) => loadById(id, ABSTRACT_STIX_CORE_OBJECT))
   );
-  // 1.1 Update stix IDs
+  // 1.1 Update STIX IDs
   const stixIdsToAdd = flatten(pluck('stix_ids', stixCoreObjectsToBeMerged));
   const newStixIds = uniq(concat(stixCoreObject.stix_ids, stixIdsToAdd));
   await stixCoreObjectEditField(user, stixCoreObjectId, {
@@ -294,7 +301,6 @@ export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObject
       );
     })
   );
-
   // 4. Copy notes refs
   await Promise.all(
     stixCoreObjectsIds.map(async (id) => {
@@ -314,7 +320,6 @@ export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObject
       );
     })
   );
-
   // 5. Copy opinions refs
   await Promise.all(
     stixCoreObjectsIds.map(async (id) => {
@@ -334,7 +339,6 @@ export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObject
       );
     })
   );
-
   // 8. Delete entities
   await stixCoreObjectsDelete(user, stixCoreObjectsIds);
   // 9. Return entity
