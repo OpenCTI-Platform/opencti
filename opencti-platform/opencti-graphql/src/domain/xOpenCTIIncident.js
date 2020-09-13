@@ -30,6 +30,8 @@ export const addXOpenCTIIncident = async (user, incident) => {
     assoc('first_seen', incident.first_seen ? incident.first_seen : currentDate),
     assoc('last_seen', incident.last_seen ? incident.last_seen : currentDate)
   )(incident);
-  const created = await createEntity(user, incidentToCreate, ENTITY_TYPE_X_OPENCTI_INCIDENT);
+  const created = await createEntity(user, incidentToCreate, ENTITY_TYPE_X_OPENCTI_INCIDENT, {
+    fieldsToUpdate: ['description'],
+  });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

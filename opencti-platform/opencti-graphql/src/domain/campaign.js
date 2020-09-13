@@ -1,13 +1,5 @@
-import { assoc, pipe, isNil, map } from 'ramda';
-import {
-  createEntity,
-  listEntities,
-  loadById,
-  timeSeriesEntities,
-  FROM_START,
-  UNTIL_END,
-  updateAttribute,
-} from '../database/grakn';
+import { assoc, pipe, isNil } from 'ramda';
+import { createEntity, listEntities, loadById, timeSeriesEntities, FROM_START, UNTIL_END } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';
@@ -37,17 +29,8 @@ export const addCampaign = async (user, campaign) => {
     assoc('first_seen', isNil(campaign.first_seen) ? new Date(FROM_START) : campaign.first_seen),
     assoc('last_seen', isNil(campaign.last_seen) ? new Date(UNTIL_END) : campaign.last_seen)
   )(campaign);
-  const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN);
-  if (campaign.update === true) {
-    const fieldsToUpdate = ['description', 'first_seen', 'last_seen'];
-    await Promise.all(
-      map((field) => {
-        if (!isNil(campaign[field])) {
-          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [campaign[field]] });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
-  }
+  const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN, {
+    fieldsToUpdate: ['description', 'first_seen', 'last_seen'],
+  });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

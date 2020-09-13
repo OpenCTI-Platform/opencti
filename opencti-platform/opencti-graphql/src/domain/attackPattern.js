@@ -1,4 +1,3 @@
-import { isNil, map } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -7,7 +6,6 @@ import {
   listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
   loadById,
-  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -24,18 +22,9 @@ export const findAll = (args) => {
 };
 
 export const addAttackPattern = async (user, attackPattern) => {
-  const created = await createEntity(user, attackPattern, ENTITY_TYPE_ATTACK_PATTERN);
-  if (attackPattern.update === true) {
-    const fieldsToUpdate = ['description', 'x_mitre_platforms', 'x_mitre_permissions_required', 'x_mitre_detection'];
-    await Promise.all(
-      map((field) => {
-        if (!isNil(attackPattern[field])) {
-          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [attackPattern[field]] });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
-  }
+  const created = await createEntity(user, attackPattern, ENTITY_TYPE_ATTACK_PATTERN, {
+    fieldsToUpdate: ['description', 'x_mitre_platforms', 'x_mitre_permissions_required', 'x_mitre_detection'],
+  });
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

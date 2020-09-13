@@ -1,4 +1,4 @@
-import { assoc, isNil, map } from 'ramda';
+import { assoc, map } from 'ramda';
 import {
   find,
   createEntity,
@@ -8,7 +8,6 @@ import {
   listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
   loadById,
-  updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -61,19 +60,8 @@ export const targetedOrganizations = async (sectorId) =>
 export const addSector = async (user, sector) => {
   const created = await createEntity(
     user,
-    assoc('identity_class', ENTITY_TYPE_IDENTITY_SECTOR.toLowerCase(), sector),
+    assoc('identity_class', ENTITY_TYPE_IDENTITY_SECTOR.toLowerCase(), sector, { fieldsToUpdate: ['description'] }),
     ENTITY_TYPE_IDENTITY_SECTOR
   );
-  if (sector.update === true) {
-    const fieldsToUpdate = ['description'];
-    await Promise.all(
-      map((field) => {
-        if (!isNil(sector[field])) {
-          return updateAttribute(user, created.id, created.entity_type, { key: field, value: [sector[field]] });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
-  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
