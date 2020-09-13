@@ -91,9 +91,9 @@ const catchupHandler = async (req, res) => {
     res.status(401).json({ status: 'User stream not connected' });
   } else {
     const { from = '-', size = 50 } = body;
-    const { client } = R.last(connectedClient);
+    const broadcastClient = R.last(connectedClient);
     await catchup(from, size, (eventId, topic, data) => {
-      client.sendEvent(eventId, topic, data);
+      broadcastClient.sendEvent(eventId, topic, data);
     });
     res.json({ success: true });
   }
