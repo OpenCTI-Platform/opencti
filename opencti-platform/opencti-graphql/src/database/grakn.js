@@ -2138,11 +2138,16 @@ export const getRelationInferredById = async (id) => {
     const vars = extractQueryVars(query);
     const concepts = await getConcepts(rTx, [answerConceptMap], vars, [INFERRED_RELATION_KEY], { noCache: true });
     const relation = R.head(concepts).rel;
-    const explanation = await answerConceptMap.explanation();
-    const explanationAnswers = explanation.getAnswers();
+    // First get the rule explanation
+    const ruleExplanation = await answerConceptMap.explanation();
+    const ruleExplanationAnswers = ruleExplanation.getAnswers();
+    const ruleExplanationAnswer = R.head(ruleExplanationAnswers);
+    // Then get the join explanation
+    const joinExplanation = await ruleExplanationAnswer.explanation();
+    const joinExplanationAnswers = joinExplanation.getAnswers();
     const inferences = [];
     // eslint-disable-next-line no-restricted-syntax
-    for (const explanationAnswer of explanationAnswers) {
+    for (const explanationAnswer of joinExplanationAnswers) {
       const explanationMap = explanationAnswer.map();
       const explanationKeys = Array.from(explanationMap.keys());
       const queryVars = R.map((v) => ({ alias: v }), explanationKeys);

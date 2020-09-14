@@ -751,7 +751,7 @@ describe('Grakn relations listing', () => {
   });
 });
 
-describe.skip('Grakn relations with inferences', () => {
+describe('Grakn relations with inferences', () => {
   it('should inference explanation correctly resolved', async () => {
     await inferenceEnable(PART_OF_TARGETS_RULE);
     // Find the Grakn ID of the connections to build the inferred relation
