@@ -278,6 +278,12 @@ class OpenCTIConnectorHelper:
         listen_queue = ListenQueue(self, self.config, message_callback)
         listen_queue.start()
 
+    def get_opencti_url(self):
+        return self.opencti_url
+
+    def get_opencti_token(self):
+        return self.opencti_token
+
     def get_connector(self):
         return self.connector
 
