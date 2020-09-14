@@ -15,6 +15,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -173,7 +174,7 @@ class RoleCreation extends Component {
                     fullWidth={true}
                   />
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

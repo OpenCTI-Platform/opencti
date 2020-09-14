@@ -10,10 +10,12 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVertOutlined, HelpOutlined } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   item: {
@@ -64,13 +66,20 @@ class StixSightingRelationshipLineComponent extends Component {
     const {
       nsd,
       t,
+      fd,
       classes,
       dataColumns,
       node,
       paginationOptions,
     } = this.props;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={false}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`${resolveLink(node.from.entity_type)}/${node.from.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.from.entity_type} />
         </ListItemIcon>
@@ -104,7 +113,12 @@ class StixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.from.name || node.from.observable_value}
+                {node.from.name
+                  || node.from.attribute_abstract
+                  || node.from.observable_value
+                  || `${fd(node.from.first_observed)} - ${fd(
+                    node.from.last_observed,
+                  )}`}
               </div>
               <div
                 className={classes.bodyItem}
@@ -264,6 +278,10 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
           }
           ... on StixCyberObservable {
             observable_value
+          }
+          ... on ObservedData {
+            first_observed
+            last_observed
           }
         }
       }

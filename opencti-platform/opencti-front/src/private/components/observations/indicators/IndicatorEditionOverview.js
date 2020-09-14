@@ -23,6 +23,7 @@ import DatePickerField from '../../../../components/DatePickerField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -333,7 +334,7 @@ class IndicatorEditionOverviewComponent extends Component {
               }
             />
             <Field
-              component={TextField}
+              component={MarkDownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

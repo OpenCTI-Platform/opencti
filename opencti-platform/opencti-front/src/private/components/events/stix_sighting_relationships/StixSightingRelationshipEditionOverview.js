@@ -37,6 +37,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   header: {
@@ -395,7 +396,7 @@ const StixSightingRelationshipEditionContainer = ({
                 }
               />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}

@@ -22,6 +22,7 @@ import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -204,7 +205,7 @@ class OrganizationCreation extends Component {
                     detectDuplicate={['Organization']}
                   />
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

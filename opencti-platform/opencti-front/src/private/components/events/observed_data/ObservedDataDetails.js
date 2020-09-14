@@ -44,13 +44,13 @@ class ObservedDataDetailsComponent extends Component {
               >
                 {t('Number observed')}
               </Typography>
-              {fldt(observedData.first_observed)}
+              {observedData.number_observed}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Last observed')}
               </Typography>
-              {observedData.number_observed}
+              {fldt(observedData.last_observed)}
             </Grid>
           </Grid>
           <br />

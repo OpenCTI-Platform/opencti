@@ -136,7 +136,7 @@ export const observableValue = (stixCyberObservable) => {
     case ENTITY_USER_ACCOUNT:
       return stixCyberObservable.account_login || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_KEY:
-      return stixCyberObservable.attribute_key;
+      return stixCyberObservable.attribute_key || 'Unknown';
     default:
       return stixCyberObservable.value || 'Unknown';
   }

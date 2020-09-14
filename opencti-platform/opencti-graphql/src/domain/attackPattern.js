@@ -22,9 +22,7 @@ export const findAll = (args) => {
 };
 
 export const addAttackPattern = async (user, attackPattern) => {
-  const created = await createEntity(user, attackPattern, ENTITY_TYPE_ATTACK_PATTERN, {
-    fieldsToUpdate: ['description', 'x_mitre_platforms', 'x_mitre_permissions_required', 'x_mitre_detection'],
-  });
+  const created = await createEntity(user, attackPattern, ENTITY_TYPE_ATTACK_PATTERN);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

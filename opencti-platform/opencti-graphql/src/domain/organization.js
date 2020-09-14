@@ -21,9 +21,7 @@ export const sectors = (organizationId) => {
 export const addOrganization = async (user, organization) => {
   const created = await createEntity(
     user,
-    assoc('identity_class', ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), organization, {
-      fieldsToUpdate: ['description', 'x_opencti_organization_type', 'x_opencti_reliability'],
-    }),
+    assoc('identity_class', ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), organization),
     ENTITY_TYPE_IDENTITY_ORGANIZATION
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

@@ -26,6 +26,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import SelectField from '../../../../components/SelectField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -324,7 +325,7 @@ class OpinionCreation extends Component {
                     </MenuItem>
                   </Field>
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="explanation"
                     label={t('Explanation')}
                     fullWidth={true}

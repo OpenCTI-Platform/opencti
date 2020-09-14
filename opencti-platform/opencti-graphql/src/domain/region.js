@@ -48,8 +48,7 @@ export const addRegion = async (user, region) => {
   const created = await createEntity(
     user,
     assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_REGION, region),
-    ENTITY_TYPE_LOCATION_REGION,
-    { fieldsToUpdate: ['description', 'longitude', 'latitude'] }
+    ENTITY_TYPE_LOCATION_REGION
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

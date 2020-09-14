@@ -13,8 +13,6 @@ export const findAll = (args) => {
 };
 
 export const addInfrastructure = async (user, infrastructure) => {
-  const created = await createEntity(user, infrastructure, ENTITY_TYPE_INFRASTRUCTURE, {
-    fieldsToUpdate: ['description'],
-  });
+  const created = await createEntity(user, infrastructure, ENTITY_TYPE_INFRASTRUCTURE);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

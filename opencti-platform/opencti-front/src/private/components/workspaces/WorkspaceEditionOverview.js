@@ -9,6 +9,7 @@ import * as Yup from 'yup';
 import { commitMutation } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
+import MarkDownField from '../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../components/Subscription';
 
 const styles = (theme) => ({
@@ -124,7 +125,7 @@ class WorkspaceEditionOverviewComponent extends Component {
                   }
                 />
                 <Field
-                  component={TextField}
+                  component={MarkDownField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

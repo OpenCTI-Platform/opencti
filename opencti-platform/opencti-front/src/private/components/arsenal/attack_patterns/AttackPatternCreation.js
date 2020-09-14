@@ -21,6 +21,7 @@ import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -224,7 +225,7 @@ class AttackPatternCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

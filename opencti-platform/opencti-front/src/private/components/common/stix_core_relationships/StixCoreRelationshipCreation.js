@@ -21,7 +21,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
-import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import DatePickerField from '../../../../components/DatePickerField';
 import { truncate } from '../../../../utils/String';
@@ -435,8 +435,8 @@ class StixCoreRelationshipCreation extends Component {
                 style={{ marginTop: 20 }}
               />
               <Field
-                component={TextField}
-                name="description"
+                component={MarkDownField}
+              name="description"
                 label={t('Description')}
                 fullWidth={true}
                 multiline={true}

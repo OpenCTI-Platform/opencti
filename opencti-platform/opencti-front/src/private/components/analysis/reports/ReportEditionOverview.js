@@ -28,20 +28,9 @@ import Loader from '../../../../components/Loader';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import MarkDownField from '../../../../components/MarkDownField';
 
-const styles = (theme) => ({
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'hidden',
-    backgroundColor: theme.palette.navAlt.background,
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: '30px 30px 30px 30px',
-  },
+const styles = () => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
@@ -327,7 +316,7 @@ class ReportEditionOverviewComponent extends Component {
                           }
                         />
                         <Field
-                          component={TextField}
+                          component={MarkDownField}
                           name="description"
                           label={t('Description')}
                           fullWidth={true}
@@ -336,12 +325,6 @@ class ReportEditionOverviewComponent extends Component {
                           style={{ marginTop: 20 }}
                           onFocus={this.handleChangeFocus.bind(this)}
                           onSubmit={this.handleSubmitField.bind(this)}
-                          helperText={
-                            <SubscriptionFocus
-                              context={context}
-                              fieldName="description"
-                            />
-                          }
                         />
                         <Field
                           component={SelectField}

@@ -39,7 +39,10 @@ export const buildViewParamsFromUrlAndStorage = (
 ) => {
   const queryParams = [
     ...new URLSearchParams(location.search).entries(),
-  ].reduce((q, [k, v]) => Object.assign(q, { [k]: v }), {});
+  ].reduce(
+    (q, [k, v]) => Object.assign(q, { [k]: v === 'null' ? null : v }),
+    {},
+  );
   let finalParams = queryParams;
   if (localStorage.getItem(localStorageKey)) {
     const localParams = JSON.parse(localStorage.getItem(localStorageKey));
@@ -64,6 +67,11 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.observableTypes === 'string') {
     finalParams.observableTypes = finalParams.observableTypes
       ? split(',', finalParams.observableTypes)
+      : '';
+  }
+  if (typeof finalParams.toType === 'string') {
+    finalParams.toType = finalParams.toType
+      ? split(',', finalParams.toType)
       : '';
   }
   saveViewParameters(history, location, localStorageKey, finalParams);

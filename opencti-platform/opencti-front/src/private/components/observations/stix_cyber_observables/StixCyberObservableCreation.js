@@ -46,6 +46,7 @@ import {
 } from './StixCyberObservablesLines';
 import DatePickerField from '../../../../components/DatePickerField';
 import { parse } from '../../../../utils/Time';
+import MarkDownField from '../../../../components/MarkDownField';
 
 export const ignoredAttributes = [
   'internal_id',
@@ -506,6 +507,15 @@ class StixCyberObservableCreation extends Component {
                         label={t('Score')}
                         fullWidth={true}
                         type="number"
+                      />
+                      <Field
+                        component={MarkDownField}
+                        name="x_opencti_description"
+                        label={t('Description')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={{ marginTop: 20 }}
                       />
                       {attributes.map((attribute) => {
                         if (attribute.value === 'hashes') {

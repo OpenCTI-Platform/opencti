@@ -34,6 +34,7 @@ import {
 import { dateFormat } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
 import SwitchField from '../../../../components/SwitchField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -322,7 +323,7 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                       }
                     />
                     <Field
-                      component={TextField}
+                      component={MarkDownField}
                       name="x_opencti_description"
                       label={t('Description')}
                       fullWidth={true}

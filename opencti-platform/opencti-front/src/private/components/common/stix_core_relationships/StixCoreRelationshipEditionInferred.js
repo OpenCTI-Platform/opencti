@@ -150,8 +150,8 @@ class StixCoreRelationshipEditionInferred extends Component {
                     disabled={true}
                   />
                   <Field
-                    component={TextField}
-                    name="description"
+                    component={MarkDownField}
+              name="description"
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}

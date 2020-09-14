@@ -89,6 +89,7 @@ import {
   isStixDomainObject,
   isStixDomainObjectNamed,
   resolveAliasesField,
+  stixDomainObjectFieldsToBeUpdated,
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -1870,7 +1871,7 @@ export const createRelations = async (user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-const upsertEntity = async (user, entity, type, data, fieldsToUpdate = []) => {
+const upsertEntity = async (user, entity, type, data) => {
   let updatedEntity = entity;
   const id = entity.internal_id;
   // Upsert the stix ids
@@ -1889,17 +1890,19 @@ const upsertEntity = async (user, entity, type, data, fieldsToUpdate = []) => {
   }
   // Upsert fields
   if (data.update === true) {
-    await Promise.all(
-      R.map((field) => {
-        if (!R.isNil(data[field])) {
-          return updateAttribute(user, id, type, {
-            key: field,
-            value: Array.isArray(data[field]) ? data[field] : [data[field]],
-          });
-        }
-        return true;
-      }, fieldsToUpdate)
-    );
+    if (isStixDomainObject(type) && stixDomainObjectFieldsToBeUpdated[type]) {
+      await Promise.all(
+        R.map((field) => {
+          if (!R.isNil(data[field])) {
+            return updateAttribute(user, id, type, {
+              key: field,
+              value: Array.isArray(data[field]) ? data[field] : [data[field]],
+            });
+          }
+          return true;
+        }, stixDomainObjectFieldsToBeUpdated[type])
+      );
+    }
   }
   return updatedEntity;
 };
@@ -2027,7 +2030,6 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   return created;
 };
 export const createEntity = async (user, input, type, opts = {}) => {
-  const { fieldsToUpdate = [] } = opts;
   let lock;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
@@ -2054,7 +2056,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
       const existingEntityRefreshed = await loadById(err.data.id, type);
-      return upsertEntity(user, existingEntityRefreshed, type, resolvedInput, fieldsToUpdate);
+      return upsertEntity(user, existingEntityRefreshed, type, resolvedInput);
     }
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Operation still in progress (redis lock)', { participantIds });

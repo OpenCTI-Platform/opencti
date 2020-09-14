@@ -17,7 +17,7 @@ import {
 import * as Yup from 'yup';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -244,7 +244,7 @@ class NoteEditionOverviewComponent extends Component {
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="attribute_abstract"
                 label={t('Abstract')}
                 fullWidth={true}
@@ -258,7 +258,7 @@ class NoteEditionOverviewComponent extends Component {
                 }
               />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="content"
                 label={t('Content')}
                 fullWidth={true}

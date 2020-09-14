@@ -19,6 +19,7 @@ import { Add, Close } from '@material-ui/icons';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -212,8 +213,8 @@ class ExternalReferenceCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    component={TextField}
-                    name="description"
+                    component={MarkDownField}
+              name="description"
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
@@ -300,8 +301,8 @@ class ExternalReferenceCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <Field
-                    component={TextField}
-                    name="description"
+                    component={MarkDownField}
+              name="description"
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}

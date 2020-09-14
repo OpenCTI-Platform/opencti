@@ -8,6 +8,7 @@ import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
 
@@ -114,7 +115,7 @@ class GroupEditionOverviewComponent extends Component {
                 }
               />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
