@@ -703,20 +703,28 @@ export const elPaginate = async (indexName, options = {}) => {
         for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
           const nestedElement = nested[nestIndex];
           const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
+          const nestedShould = [];
           for (let i = 0; i < nestedValues.length; i += 1) {
             if (nestedOperator === 'wildcard') {
-              nestedMust.push({
+              nestedShould.push({
                 query_string: {
                   query: `${nestedValues[i].toString()}`,
                   fields: [`${key}.${nestedKey}`],
                 },
               });
             } else {
-              nestedMust.push({
+              nestedShould.push({
                 match_phrase: { [`${key}.${nestedKey}`]: nestedValues[i].toString() },
               });
             }
           }
+          const should = {
+            bool: {
+              should: nestedShould,
+              minimum_should_match: 1,
+            },
+          };
+          nestedMust.push(should);
         }
         const nestedQuery = {
           path: key,

@@ -821,8 +821,8 @@ export const listRelations = async (relationshipType, args) => {
     const nestedFrom = [];
     if (fromId) {
       nestedFrom.push(
-        { key: 'internal_id', values: [fromId] },
-        { key: 'role', values: ['*_from'], operator: 'wildcard' }
+        { key: 'internal_id', values: [fromId] }
+        // { key: 'role', values: ['*_from'], operator: 'wildcard' }
       );
     }
     if (fromTypes && fromTypes.length > 0) {
@@ -835,7 +835,10 @@ export const listRelations = async (relationshipType, args) => {
     // region to filtering
     const nestedTo = [];
     if (toId) {
-      nestedTo.push({ key: 'internal_id', values: [toId] }, { key: 'role', values: ['*_to'], operator: 'wildcard' });
+      nestedTo.push(
+        { key: 'internal_id', values: [toId] }
+        // { key: 'role', values: ['*_to'], operator: 'wildcard' }
+      );
     }
     if (toTypes && toTypes.length > 0) {
       nestedTo.push({ key: 'types', values: toTypes });

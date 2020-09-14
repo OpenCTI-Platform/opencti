@@ -6,7 +6,7 @@ import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
-import { ensureRabbitMQAndLogsQueue } from './database/rabbitmq';
+import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
@@ -92,7 +92,7 @@ export const checkSystemDependencies = async () => {
   await isStorageAlive();
   logger.info(`[PRE-CHECK] > Minio is alive`);
   // Check if RabbitMQ is here and create the logs exchange/queue
-  await ensureRabbitMQAndLogsQueue();
+  await rabbitMQIsAlive();
   logger.info(`[PRE-CHECK] > RabbitMQ is alive`);
   // Check if redis is here
   await redisIsAlive();

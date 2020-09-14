@@ -5,6 +5,7 @@ import { authentication } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
 import { catchup, listenStream } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { OPENCTI_ADMIN_UUID } from '../schema/general';
 
 let heartbeat;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
@@ -20,7 +21,8 @@ const createBroadcastClient = (client) => {
       const isUserHaveAccess = event.markings.length > 0 && event.markings.every((m) => clientMarkings.includes(m));
       const granted = isMarking || isUserHaveAccess;
       const accessData = Object.assign(event, { granted });
-      if (granted) {
+      // TODO JRI: Use the role "Bypass" instead of the admin UUID for overriding
+      if (granted || client.userId === OPENCTI_ADMIN_UUID) {
         client.sendEvent(eventId, topic, accessData);
       } else {
         const filteredData = R.pick(['markings', 'timestamp', 'granted'], accessData);

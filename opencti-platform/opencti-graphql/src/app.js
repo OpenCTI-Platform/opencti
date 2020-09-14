@@ -15,7 +15,7 @@ import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
-import createSeeMiddleware, { initBroadcaster } from './graphql/seeMiddleware';
+import createSeeMiddleware, { initBroadcaster } from './graphql/sseMiddleware';
 
 const createApp = async (apolloServer) => {
   // Init the http server

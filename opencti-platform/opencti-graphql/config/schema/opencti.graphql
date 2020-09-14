@@ -514,6 +514,7 @@ enum ConnectorType {
   INTERNAL_IMPORT_FILE
   INTERNAL_ENRICHMENT
   INTERNAL_EXPORT_FILE
+  STREAM
 }
 input RegisterConnectorInput {
   id: ID!
@@ -1167,7 +1168,7 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
   x_mitre_platforms: [String]
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
-  x_mitre_id: String!
+  x_mitre_id: String
   killChainPhases: KillChainPhaseConnection
   coursesOfAction: CourseOfActionConnection
   parentAttackPatterns: AttackPatternConnection
@@ -1191,7 +1192,7 @@ input AttackPatternAddInput {
   x_mitre_platforms: [String]
   x_mitre_permissions_required: [String]
   x_mitre_detection: String
-  x_mitre_id: String!
+  x_mitre_id: String! @constraint(minLength: 1)
   createdBy: String
   objectMarking: [String]
   objectLabel: [String]

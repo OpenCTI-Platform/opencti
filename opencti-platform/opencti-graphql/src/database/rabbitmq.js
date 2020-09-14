@@ -6,7 +6,6 @@ import { DatabaseError } from '../config/errors';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
-export const LOGS_EXCHANGE = 'amqp.logs.exchange';
 
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_UPDATE = 'update';
@@ -166,10 +165,10 @@ export const unregisterConnector = async (id) => {
   return { listen, push };
 };
 
-export const ensureRabbitMQAndLogsQueue = async () => {
+export const rabbitMQIsAlive = async () => {
   // 01. Ensure exchange exists
   await amqpExecute((channel) =>
-    channel.assertExchange(LOGS_EXCHANGE, 'topic', {
+    channel.assertExchange(CONNECTOR_EXCHANGE, 'direct', {
       durable: true,
     })
   ).catch(
@@ -177,33 +176,10 @@ export const ensureRabbitMQAndLogsQueue = async () => {
       throw DatabaseError('RabbitMQ seems down');
     }
   );
-  // 02. Ensure logs queue exists
-  const listenQueue = 'logs_all';
-  await amqpExecute((channel) =>
-    channel.assertQueue(listenQueue, {
-      exclusive: false,
-      durable: true,
-      autoDelete: false,
-      arguments: {
-        name: 'OpenCTI logs queue',
-      },
-    })
-  ).catch(
-    /* istanbul ignore next */ () => {
-      throw DatabaseError('RabbitMQ seems down');
-    }
-  );
-  // 03. bind queue for the each connector scope
-  // eslint-disable-next-line prettier/prettier
-  await amqpExecute((c) => c.bindQueue(listenQueue, LOGS_EXCHANGE, 'community.*'));
 };
 
 export const pushToConnector = (connector, message) => {
   return send(CONNECTOR_EXCHANGE, listenRouting(connector.internal_id), JSON.stringify(message));
-};
-
-export const pushToLogs = (communityId, message) => {
-  return send(LOGS_EXCHANGE, `community.${communityId}`, JSON.stringify(message));
 };
 
 export const getRabbitMQVersion = () => {
