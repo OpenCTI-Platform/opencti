@@ -1835,7 +1835,7 @@ const upsertEntity = async (user, entity, type, data) => {
   }
   // Upsert fields
   if (data.update === true) {
-    if (isStixDomainObject(type)) {
+    if (isStixDomainObject(type) && stixDomainObjectFieldsToBeUpdated[type]) {
       await Promise.all(
         map((field) => {
           if (!isNil(data[field])) {
@@ -1845,7 +1845,7 @@ const upsertEntity = async (user, entity, type, data) => {
             });
           }
           return true;
-        }, stixDomainObjectFieldsToBeUpdated)
+        }, stixDomainObjectFieldsToBeUpdated[type])
       );
     }
   }
