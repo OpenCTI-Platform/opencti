@@ -15,6 +15,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
@@ -209,8 +210,8 @@ class ExternalReferenceEditionContainer extends Component {
                   }
                 />
                 <Field
-                  component={TextField}
-                  name="description"
+                  component={MarkDownField}
+              name="description"
                   label={t('Description')}
                   fullWidth={true}
                   multiline={true}

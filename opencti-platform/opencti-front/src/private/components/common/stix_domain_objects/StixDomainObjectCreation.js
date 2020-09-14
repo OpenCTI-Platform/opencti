@@ -29,6 +29,7 @@ import { Add, Close } from '@material-ui/icons';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
@@ -453,7 +454,7 @@ class StixDomainObjectCreation extends Component {
                     ''
                   )}
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -596,7 +597,7 @@ class StixDomainObjectCreation extends Component {
                     ''
                   )}
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}

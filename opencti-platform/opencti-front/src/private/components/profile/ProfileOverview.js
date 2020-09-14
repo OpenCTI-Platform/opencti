@@ -14,6 +14,7 @@ import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
+import MarkDownField from '../../../components/MarkDownField';
 
 const styles = () => ({
   panel: {
@@ -161,7 +162,7 @@ class ProfileOverviewComponent extends Component {
                   <MenuItem value="fr">Français</MenuItem>
                 </Field>
                 <Field
-                  component={TextField}
+                  component={MarkDownField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

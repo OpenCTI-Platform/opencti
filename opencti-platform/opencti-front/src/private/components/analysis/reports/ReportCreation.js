@@ -26,6 +26,7 @@ import { attributesQuery } from '../../settings/attributes/AttributesLines';
 import Loader from '../../../../components/Loader';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -248,7 +249,7 @@ class ReportCreation extends Component {
                               ))}
                             </Field>
                             <Field
-                              component={TextField}
+                              component={MarkDownField}
                               name="description"
                               label={t('Description')}
                               fullWidth={true}

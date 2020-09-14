@@ -25,6 +25,7 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
 import {
   SubscriptionAvatars,
@@ -387,7 +388,7 @@ class StixDomainObjectEditionContainer extends Component {
                   ''
                 )}
                 <Field
-                  component={TextField}
+                  component={MarkDownField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}

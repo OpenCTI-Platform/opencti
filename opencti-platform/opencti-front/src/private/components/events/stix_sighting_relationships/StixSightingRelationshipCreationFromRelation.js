@@ -40,6 +40,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -744,7 +745,7 @@ class StixSightingRelationshipCreationFromRelation extends Component {
                 style={{ marginTop: 20 }}
               />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}

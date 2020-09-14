@@ -1,20 +1,20 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
+import React, { Component } from "react";
+import * as PropTypes from "prop-types";
+import { Route, withRouter } from "react-router-dom";
+import graphql from "babel-plugin-relay/macro";
 import {
   QueryRenderer,
   requestSubscription,
-} from '../../../../relay/environment';
-import TopBar from '../../nav/TopBar';
-import ObservedData from './ObservedData';
-import ObservedDataPopover from './ObservedDataPopover';
-import FileManager from '../../common/files/FileManager';
-import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import ContainerHeader from '../../common/containers/ContainerHeader';
-import Loader from '../../../../components/Loader';
-import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
-import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+} from "../../../../relay/environment";
+import TopBar from "../../nav/TopBar";
+import ObservedData from "./ObservedData";
+import ObservedDataPopover from "./ObservedDataPopover";
+import FileManager from "../../common/files/FileManager";
+import StixCoreObjectHistory from "../../common/stix_core_objects/StixCoreObjectHistory";
+import ContainerHeader from "../../common/containers/ContainerHeader";
+import Loader from "../../../../components/Loader";
+import ContainerStixDomainObjects from "../../common/containers/ContainerStixDomainObjects";
+import ContainerStixCyberObservables from "../../common/containers/ContainerStixCyberObservables";
 
 const subscription = graphql`
   subscription RootObservedDataSubscription($id: ID!) {
@@ -157,7 +157,7 @@ class RootObservedData extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityStandardId={observedDataId}
+                          stixCoreObjectId={observedDataId}
                         />
                       </React.Fragment>
                     )}

@@ -5,6 +5,7 @@ import './resources/css/index.css';
 import './resources/css/leaflet.css';
 import 'storm-react-diagrams/dist/style.min.css';
 import 'react-grid-layout/css/styles.css';
+import 'react-mde/lib/styles/css/react-mde-all.css';
 import * as serviceWorker from './config/serviceWorker';
 import App from './app';
 

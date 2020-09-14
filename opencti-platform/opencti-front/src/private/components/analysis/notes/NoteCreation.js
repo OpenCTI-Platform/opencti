@@ -20,10 +20,10 @@ import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -198,13 +198,13 @@ class NoteCreation extends Component {
               }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
                   />
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="content"
                     label={t('Content')}
                     fullWidth={true}
@@ -294,13 +294,13 @@ class NoteCreation extends Component {
                 <DialogTitle>{t('Create a note')}</DialogTitle>
                 <DialogContent>
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="attribute_abstract"
                     label={t('Abstract')}
                     fullWidth={true}
                   />
                   <Field
-                    component={TextField}
+                    component={MarkDownField}
                     name="content"
                     label={t('Content')}
                     fullWidth={true}

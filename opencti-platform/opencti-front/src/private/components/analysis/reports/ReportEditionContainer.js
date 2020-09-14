@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { compose } from 'ramda';
@@ -42,15 +42,6 @@ const styles = (theme) => ({
 });
 
 class ReportEditionContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { currentTab: 0 };
-  }
-
-  handleChangeTab(event, value) {
-    this.setState({ currentTab: value });
-  }
-
   render() {
     const {
       t, classes, handleClose, report,
@@ -67,7 +58,7 @@ class ReportEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a report')}
+            {t('Update an report')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />

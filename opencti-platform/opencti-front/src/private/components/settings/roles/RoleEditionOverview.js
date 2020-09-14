@@ -17,6 +17,7 @@ import ListSubheader from '@material-ui/core/ListSubheader';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import SwitchField from '../../../../components/SwitchField';
@@ -190,7 +191,7 @@ const RoleEditionOverviewComponent = ({
               }
             />
             <Field
-              component={TextField}
+              component={MarkDownField}
               name="description"
               label={t('Description')}
               fullWidth={true}

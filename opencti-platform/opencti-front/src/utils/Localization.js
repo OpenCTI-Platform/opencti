@@ -652,6 +652,7 @@ const i18n = {
       References: 'Références',
       'Source name': 'Nom de la source',
       'External ID': 'ID externe',
+      external: 'externe',
       Relations: 'Relations',
       relations: 'relations',
       URL: 'URL',

@@ -78,7 +78,7 @@ class StixCoreObjectHistory extends Component {
               if (props) {
                 return (
                   <StixCoreObjectHistoryLines
-                    entityStandardId={stixCoreObjectId}
+                    stixCoreObjectId={stixCoreObjectId}
                     data={props}
                     isRelationLog={false}
                   />

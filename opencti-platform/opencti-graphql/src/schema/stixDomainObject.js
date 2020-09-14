@@ -132,3 +132,7 @@ export const stixDomainObjectOptions = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
 };
+
+export const fieldsToBeUpdated = (type) => {
+
+}

@@ -22,6 +22,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -258,7 +259,7 @@ class OpinionEditionOverviewComponent extends Component {
                 }
               />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="explanation"
                 label={t('Explanation')}
                 fullWidth={true}

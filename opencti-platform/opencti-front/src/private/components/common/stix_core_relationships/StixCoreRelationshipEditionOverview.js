@@ -27,7 +27,7 @@ import {
   commitMutation,
   requestSubscription,
 } from '../../../../relay/environment';
-import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import {
   SubscriptionAvatars,
   SubscriptionFocus,
@@ -422,7 +422,7 @@ const StixCoreRelationshipEditionContainer = ({
                 }
               />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}

@@ -210,3 +210,31 @@ div.srd-port:hover {
   height: 100%;
   border-radius: 6px;
 }
+
+.react-mde {
+  box-sizing: border-box !important;
+  border: 0 !important;
+  border-bottom: 1px solid #b9bfc1 !important;
+}
+.react-mde:hover {
+  border-bottom: 2px solid #ffffff !important;
+}
+
+.mde-header {
+  border: 0 !important;
+  background-color: transparent !important;
+  color: #ffffff !important;
+}
+
+.mde-header-item button {
+  color: #ffffff !important;
+}
+
+.mde-tabs button {
+  color: #ffffff !important;
+}
+
+.mde-textarea-wrapper textarea {
+  color: #ffffff;
+  background-color: #14262c;
+}

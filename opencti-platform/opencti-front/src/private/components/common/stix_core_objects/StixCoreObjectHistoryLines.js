@@ -4,12 +4,12 @@ import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { createRefetchContainer } from 'react-relay';
-import Paper from '@material-ui/core/Paper/Paper';
+import Paper from '@material-ui/core/Paper';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectHistoryLine from './StixCoreObjectHistoryLine';
 
 const styles = () => ({
-  paper: {
+  paperHistory: {
     height: '100%',
     margin: '10px 0 0 0',
     padding: 15,
@@ -24,7 +24,7 @@ class StixCoreObjectHistoryLinesComponent extends Component {
     } = this.props;
     const logs = pathOr([], ['logs', 'edges'], data);
     return (
-      <Paper classes={{ root: classes.paper }} elevation={2}>
+      <Paper classes={{ root: classes.paperHistory }} elevation={2}>
         {logs.length > 0 ? (
           logs.map((logEdge) => {
             const log = logEdge.node;

@@ -24,6 +24,7 @@ import SelectField from '../../../../components/SelectField';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = () => ({
   icon: {
@@ -321,7 +322,7 @@ class UserEditionOverviewComponent extends Component {
                 }
               />
               <Field
-                component={TextField}
+                component={MarkDownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}

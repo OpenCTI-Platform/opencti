@@ -23,6 +23,7 @@ import { now } from '../../../../utils/Time';
 import { sectorsSearchQuery } from '../Sectors';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
@@ -293,7 +294,7 @@ class SectorEditionOverviewComponent extends Component {
               }
             />
             <Field
-              component={TextField}
+              component={MarkDownField}
               name="description"
               label={t('Description')}
               fullWidth={true}
