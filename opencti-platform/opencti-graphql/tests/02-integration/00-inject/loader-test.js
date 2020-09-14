@@ -28,12 +28,4 @@ describe('Database provision', () => {
       expect(execution.status).toEqual('success');
       await stopServer(httpServer);
     }, FIVE_MINUTES);
-
-  it('Should worker consume succeed', async () => {
-      const httpServer = await listenServer();
-      const execution = await execPython3(PYTHON_PATH, 'local_worker.py', workerOpts);
-      expect(execution).not.toBeNull();
-      expect(execution.status).toEqual('success');
-      await stopServer(httpServer);
-    }, FIVE_MINUTES);
 });
