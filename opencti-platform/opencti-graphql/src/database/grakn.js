@@ -815,7 +815,7 @@ export const listRelations = async (relationshipType, args) => {
       }
     }
     if (elementId) {
-      finalFilters.push({ key: 'connections.internal_id', values: [elementId] });
+      finalFilters.push({ key: 'internal_id', values: [elementId] });
     }
     // region from filtering
     const nestedFrom = [];

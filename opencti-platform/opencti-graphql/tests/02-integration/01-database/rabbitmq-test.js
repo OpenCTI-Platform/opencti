@@ -26,10 +26,6 @@ describe('Rabbit basic and utils', () => {
     expect(data.overview.message_stats.return_unroutable).toEqual(undefined);
     expect(data.overview.queue_totals.messages_unacknowledged).toEqual(0);
     expect(data.queues.length).toEqual(1);
-    const logQueue = head(data.queues);
-    expect(logQueue.name).toEqual('logs_all');
-    expect(logQueue.state).toEqual('running');
-    expect(logQueue.arguments.name).toEqual('OpenCTI logs queue');
   });
 });
 
@@ -52,7 +48,6 @@ describe('Rabbit connector management', () => {
     expect(data).not.toBeNull();
     expect(data.queues.length).toEqual(3);
     const aggregationMap = new Map(data.queues.map((q) => [q.name, q]));
-    expect(aggregationMap.get('logs_all')).not.toBeUndefined();
     expect(aggregationMap.get(`listen_${connectorId}`)).not.toBeUndefined();
     expect(aggregationMap.get(`push_${connectorId}`)).not.toBeUndefined();
   });
