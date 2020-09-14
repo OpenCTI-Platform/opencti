@@ -1907,13 +1907,12 @@ const upsertEntity = async (user, entity, type, data) => {
   return updatedEntity;
 };
 const createRawEntity = async (user, standardId, participantIds, input, type, opts = {}) => {
-  const { fieldsToUpdate = [] } = opts;
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
   const existingEntity = await loadById(participantIds, type);
   if (existingEntity) {
-    return upsertEntity(user, existingEntity, type, input, fieldsToUpdate);
+    return upsertEntity(user, existingEntity, type, input);
   }
   // Complete with identifiers
   const today = now();
