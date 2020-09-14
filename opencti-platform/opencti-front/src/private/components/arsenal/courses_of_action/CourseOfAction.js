@@ -104,7 +104,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
     fragment CourseOfAction_courseOfAction on CourseOfAction {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

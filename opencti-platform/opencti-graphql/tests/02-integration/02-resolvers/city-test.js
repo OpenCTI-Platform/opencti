@@ -25,7 +25,7 @@ const LIST_QUERY = gql`
         node {
           id
           standard_id
-          stix_ids
+          x_opencti_stix_ids
           name
           description
         }
@@ -45,7 +45,7 @@ const READ_QUERY = gql`
       country {
         id
         standard_id
-        stix_ids
+        x_opencti_stix_ids
         name
       }
     }

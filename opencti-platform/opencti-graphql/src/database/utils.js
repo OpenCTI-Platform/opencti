@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
@@ -25,7 +25,14 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
-import { isStixRelationship } from '../schema/stixRelationship';
+import {
+  EVENT_TYPE_CREATE,
+  EVENT_TYPE_DELETE,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_REMOVE,
+  UPDATE_OPERATION_REPLACE,
+} from './rabbitmq';
+import { isStixObject } from '../schema/stixCoreObject';
 
 // Entities
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
@@ -194,50 +201,45 @@ const extractEntityMainValue = (entityData) => {
   return mainValue;
 };
 
-export const generateLogMessage = (eventType, eventUser, eventData, eventExtraData) => {
-  let fromValue;
-  let fromType;
-  let toValue;
-  let toType;
-  let toRelationshipType;
-  if (eventExtraData && eventExtraData.from) {
-    fromValue = extractEntityMainValue(eventExtraData.from);
-    fromType = eventExtraData.from.entity_type;
-  }
-  if (eventExtraData && eventExtraData.to) {
-    toValue = extractEntityMainValue(eventExtraData.to);
-    toType = eventExtraData.to.entity_type;
-    toRelationshipType = eventExtraData.to.entity_type;
-  }
-  const name = extractEntityMainValue(eventData);
-  let message = '';
-  if (eventType === 'create') {
-    message += 'created a ';
-  } else if (eventType === 'update') {
-    message += 'updated the field ';
-  } else if (eventType === 'update_add') {
-    message += 'added the ';
-  } else if (eventType === 'update_remove') {
-    message += 'removed the ';
-  } else if (eventType === 'delete') {
-    message += 'deleted the ';
-  }
-  if (isStixCoreRelationship(eventData.entity_type)) {
-    message += `relation \`${eventData.entity_type}\` from ${fromType} \`${fromValue}\` to ${toType} \`${toValue}\`.`;
-  } else if (isStixMetaRelationship(eventData.entity_type)) {
-    if (eventType === 'update') {
-      message += `\`${eventData.entity_type}\` with the value \`${toValue}\`.`;
-    } else if (isStixRelationship(toType)) {
-      message += `relation \`${toRelationshipType}\`${toValue ? `with value \`${toValue}\`` : ''}.`;
+export const relationTypeToInputName = (type) => {
+  let inputName = '';
+  const elements = type.split('-');
+  for (let index = 0; index < elements.length; index += 1) {
+    const element = elements[index];
+    if (index > 0) {
+      inputName += element.charAt(0).toUpperCase() + element.slice(1);
     } else {
-      message += `\`${toType}\` with value \`${toValue}\`.`;
+      inputName += element;
     }
-  } else if (eventExtraData.key && eventType === 'update') {
-    message += `\`${eventExtraData.key}\` with \`${R.join(', ', eventExtraData.value)}\`.`;
-  } else {
-    message += `${eventData.entity_type} \`${name}\`.`;
   }
-  return message;
+  return inputName;
+};
+
+export const generateLogMessage = (type, user, instance, input = null) => {
+  const name = extractEntityMainValue(instance);
+  if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE) {
+    if (isStixObject(instance.entity_type)) {
+      return `\`${user.name}\` ${type} a ${instance.entity_type} \`${name}\``;
+    }
+    // Relation
+    const from = extractEntityMainValue(instance.from);
+    const fromType = instance.from.entity_type;
+    const to = extractEntityMainValue(instance.to);
+    const toType = instance.to.entity_type;
+    return `\`${user.name}\` ${type} the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
+  }
+  if (type === UPDATE_OPERATION_REPLACE || type === UPDATE_OPERATION_ADD || type === UPDATE_OPERATION_REMOVE) {
+    const joiner = type === UPDATE_OPERATION_REPLACE ? 'by' : 'value';
+    const fieldMessage = R.map(([key, val]) => {
+      let isNotEmpty = val && !R.isEmpty(val);
+      if (Array.isArray(val)) {
+        isNotEmpty = R.filter((v) => !R.isEmpty(v), val).length > 0;
+      }
+      return `\`${key}\` ${joiner} \`${isNotEmpty ? val : 'nothing'}\``;
+    }, Object.entries(input)).join(', ');
+    return `\`${user.name}\` ${type} the ${fieldMessage}`;
+  }
+  throw FunctionalError(`Cant generated message for event type ${type}`);
 };
 
 export const pascalize = (s) => {

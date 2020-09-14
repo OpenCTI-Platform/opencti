@@ -103,7 +103,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
     fragment ThreatActor_threatActor on ThreatActor {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

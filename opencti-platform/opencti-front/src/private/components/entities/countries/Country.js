@@ -110,7 +110,7 @@ const Country = createFragmentContainer(CountryComponent, {
     fragment Country_country on Country {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

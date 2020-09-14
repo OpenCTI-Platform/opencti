@@ -101,7 +101,7 @@ const Campaign = createFragmentContainer(CampaignComponent, {
     fragment Campaign_campaign on Campaign {
       id
       standard_id
-      stix_ids
+      x_opencti_stix_ids
       spec_version
       revoked
       confidence

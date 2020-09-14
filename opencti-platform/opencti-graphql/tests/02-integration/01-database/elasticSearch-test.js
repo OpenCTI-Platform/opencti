@@ -172,6 +172,9 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('Sector')).toEqual(1);
   });
   it('should relation aggregation with date accurate', async () => {
+    // "target_ref": "location--c3794ffd-0e71-4670-aa4d-978b4cbdc72c", City -> Hietzing
+    // "target_ref": "malware--faa5b705-cf44-4e50-8472-29e5fec43c3c"
+    // "target_ref": "identity--c017f212-546b-4f21-999d-97d3dc558f7b", organization -> Allied Universal
     const intrusionSet = await elLoadByIds('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
     const intrusionRelationsAggregation = await elAggregationRelationsCount(
       'stix-core-relationship',
@@ -182,7 +185,7 @@ describe('Elasticsearch computation', () => {
     );
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('City')).toEqual(1);
-    expect(aggregationMap.get('Indicator')).toEqual(1);
+    expect(aggregationMap.get('Indicator')).toEqual(undefined);
     expect(aggregationMap.get('Organization')).toEqual(1);
     expect(aggregationMap.get('Malware')).toEqual(undefined); // Because of date filtering
   });
@@ -382,7 +385,7 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(2);
     const nodes = map((e) => e.node, data.edges);
-    const malware = find(propEq('stix_ids', ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c']))(nodes);
+    const malware = find(propEq('x_opencti_stix_ids', ['malware--faa5b705-cf44-4e50-8472-29e5fec43c3c']))(nodes);
     expect(malware.internal_id).not.toBeNull();
     expect(malware.name).toEqual('Paradise Ransomware');
     expect(malware._index).toEqual(INDEX_STIX_DOMAIN_OBJECTS);

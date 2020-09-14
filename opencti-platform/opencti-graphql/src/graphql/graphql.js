@@ -9,7 +9,8 @@ import { authentication } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 
-const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
+export const extractTokenFromBearer = (bearer) =>
+  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
 const createApolloServer = () => {
   return new ApolloServer({
     schema: createSchema(),
