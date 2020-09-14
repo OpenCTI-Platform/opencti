@@ -29,8 +29,6 @@ export const addCampaign = async (user, campaign) => {
     assoc('first_seen', isNil(campaign.first_seen) ? new Date(FROM_START) : campaign.first_seen),
     assoc('last_seen', isNil(campaign.last_seen) ? new Date(UNTIL_END) : campaign.last_seen)
   )(campaign);
-  const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN, {
-    fieldsToUpdate: ['description', 'first_seen', 'last_seen'],
-  });
+  const created = await createEntity(user, campaignToCreate, ENTITY_TYPE_CAMPAIGN);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

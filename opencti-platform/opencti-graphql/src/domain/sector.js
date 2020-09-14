@@ -60,7 +60,7 @@ export const targetedOrganizations = async (sectorId) =>
 export const addSector = async (user, sector) => {
   const created = await createEntity(
     user,
-    assoc('identity_class', ENTITY_TYPE_IDENTITY_SECTOR.toLowerCase(), sector, { fieldsToUpdate: ['description'] }),
+    assoc('identity_class', ENTITY_TYPE_IDENTITY_SECTOR.toLowerCase(), sector),
     ENTITY_TYPE_IDENTITY_SECTOR
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

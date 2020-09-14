@@ -18,8 +18,7 @@ export const addIndividual = async (user, individual) => {
   const created = await createEntity(
     user,
     assoc('identity_class', ENTITY_TYPE_IDENTITY_INDIVIDUAL.toLowerCase(), individual),
-    ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-    { fieldsToUpdate: ['description'] }
+    ENTITY_TYPE_IDENTITY_INDIVIDUAL
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

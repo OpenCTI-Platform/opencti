@@ -14,17 +14,7 @@ export const findAll = (args) => {
 };
 
 export const addThreatActor = async (user, threatActor) => {
-  const created = await createEntity(user, threatActor, ENTITY_TYPE_THREAT_ACTOR, {
-    fieldsToUpdate: [
-      'description',
-      'first_seen',
-      'last_seen',
-      'goals',
-      'resource_level',
-      'primary_motivation',
-      'secondary_motivations',
-    ],
-  });
+  const created = await createEntity(user, threatActor, ENTITY_TYPE_THREAT_ACTOR);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
