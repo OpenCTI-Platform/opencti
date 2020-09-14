@@ -107,7 +107,7 @@ const XOpenCTIXOpenCTIIncident = createFragmentContainer(
       fragment XOpenCTIIncident_xOpenCTIIncident on XOpenCTIIncident {
         id
         standard_id
-        stix_ids
+        x_opencti_stix_ids
         spec_version
         revoked
         confidence

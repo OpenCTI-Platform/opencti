@@ -42,10 +42,10 @@ class StixDomainObjectOverview extends Component {
     const {
       t, fldt, classes, stixDomainObject, withoutMarking,
     } = this.props;
-    const stixIds = stixDomainObject.stix_ids.length > 0
+    const stixIds = stixDomainObject.x_opencti_stix_ids.length > 0
       ? filter(
         (n) => uuidVersion(split('--', n)[1]) !== 1,
-        stixDomainObject.stix_ids,
+        stixDomainObject.x_opencti_stix_ids,
       )
       : [];
     return (

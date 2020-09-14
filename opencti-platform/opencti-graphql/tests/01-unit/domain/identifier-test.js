@@ -1,6 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { generateAliasesId, normalizeName } from '../../../src/schema/identifier';
 import { mergeStixIds } from '../../../src/database/stix';
+import { relationTypeToInputName } from '../../../src/database/utils';
 
 test('should name correctly normalize', () => {
   let normalize = normalizeName('My data %test     ');
@@ -123,4 +124,9 @@ test('should multi stix id correctly max sized', () => {
   expect(ids.includes(_2020_09_04T14_39_43)).toBeTruthy();
   expect(ids.includes(_2020_09_03T22_41_18)).toBeFalsy();
   expect(ids.includes(_2020_09_03T22_41_32)).toBeFalsy();
+});
+
+test('should relation to input name', () => {
+  const name = relationTypeToInputName('object-marking');
+  expect(name).toEqual('objectMarking');
 });

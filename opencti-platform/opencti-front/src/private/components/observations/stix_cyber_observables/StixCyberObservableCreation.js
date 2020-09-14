@@ -52,7 +52,7 @@ export const ignoredAttributes = [
   'internal_id',
   'standard_id',
   'x_opencti_description',
-  'stix_ids',
+  'x_opencti_stix_ids',
   'entity_type',
   'spec_version',
   'extensions',

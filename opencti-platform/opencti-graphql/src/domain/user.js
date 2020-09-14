@@ -1,15 +1,15 @@
-import { append, assoc, dissoc, find as rFind, flatten, head, includes, isNil, map, pipe, propEq } from 'ramda';
+import * as R from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import {
-  clearAccessCache,
+  clearUserAccessCache,
   delEditContext,
   delUserContext,
   getAccessCache,
   notify,
   setEditContext,
-  storeAccessCache,
+  storeUserAccessCache,
 } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import conf, {
@@ -46,10 +46,12 @@ import {
   isInternalRelationship,
   RELATION_AUTHORIZED_BY,
   RELATION_HAS_CAPABILITY,
+  RELATION_ACCESSES_TO,
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
 } from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID, REL_INDEX_PREFIX } from '../schema/general';
+import { findAll as allMarkings } from './markingDefinition';
 import { generateStandardId } from '../schema/identifier';
 
 // region utils
@@ -84,7 +86,7 @@ export const ROLE_ADMINISTRATOR = 'Administrator';
 
 export const findById = async (userId) => {
   const data = await loadById(userId, ENTITY_TYPE_USER);
-  return data ? dissoc('password', data) : data;
+  return data ? R.dissoc('password', data) : data;
 };
 
 export const findAll = (args) => {
@@ -96,8 +98,8 @@ export const groups = (userId) => {
 };
 
 export const token = async (userId, args, context) => {
-  const capabilities = map((n) => n.name, context.user.capabilities);
-  if (userId !== context.user.id && !includes('SETACCESSES', capabilities) && !includes('BYPASS', capabilities)) {
+  const capabilities = R.map((n) => n.name, context.user.capabilities);
+  if (userId !== context.user.id && !R.includes('SETACCESSES', capabilities) && !R.includes('BYPASS', capabilities)) {
     throw ForbiddenAccess();
   }
   const element = await load(
@@ -125,18 +127,40 @@ const internalGetTokenByUUID = async (tokenUUID) => {
 };
 
 const clearUserTokenCache = (userId) => {
-  return internalGetToken(userId).then((tokenValue) => clearAccessCache(tokenValue.uuid));
+  return internalGetToken(userId).then((tokenValue) => clearUserAccessCache(tokenValue.uuid));
 };
 
 export const getRoles = async (userId) => {
   const data = await find(
     `match $client isa User, has internal_id "${escapeString(userId)}";
             (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE};
-            $role has internal_id $role_id;
-            get;`,
+            $role has internal_id $role_id; get;`,
     ['role']
   );
-  return map((r) => r.role, data);
+  return R.map((r) => r.role, data);
+};
+
+export const getMarkings = async (userId) => {
+  const userMarkingsPromise = find(
+    `match $client isa User, has internal_id "${escapeString(userId)}";
+            (${RELATION_MEMBER_OF}_from: $client, ${RELATION_MEMBER_OF}_to: $group) isa ${RELATION_MEMBER_OF}; 
+            (${RELATION_ACCESSES_TO}_from: $group, ${RELATION_ACCESSES_TO}_to: $marking) isa ${RELATION_ACCESSES_TO}; get;`,
+    ['marking']
+  ).then((data) => R.map((r) => r.marking, data));
+  const allMarkingsPromise = allMarkings().then((data) => R.map((i) => i.node, data.edges));
+  const [userMarkings, markings] = await Promise.all([userMarkingsPromise, allMarkingsPromise]);
+  const computedMarkings = [];
+  for (let index = 0; index < userMarkings.length; index += 1) {
+    const userMarking = userMarkings[index];
+    computedMarkings.push(userMarking);
+    // Find all marking of same type with rank <=
+    const { id, x_opencti_order: order, definition_type: type } = userMarking;
+    const matchingMarkings = R.filter((m) => {
+      return id !== m.id && m.definition_type === type && m.x_opencti_order <= order;
+    }, markings);
+    computedMarkings.push(...matchingMarkings);
+  }
+  return computedMarkings;
 };
 
 export const getCapabilities = async (userId) => {
@@ -144,12 +168,11 @@ export const getCapabilities = async (userId) => {
     `match $client isa User, has internal_id "${escapeString(userId)}";
             (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE}; 
             (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
-            $capability has internal_id $capability_id;
-            get;`,
+            $capability has internal_id $capability_id; get;`,
     ['capability']
   );
-  const capabilities = map((r) => r.capability, data);
-  if (userId === OPENCTI_ADMIN_UUID && !rFind(propEq('name', BYPASS))(capabilities)) {
+  const capabilities = R.map((r) => r.capability, data);
+  if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, internal_id: id, name: BYPASS });
   }
@@ -161,11 +184,10 @@ export const getRoleCapabilities = async (roleId) => {
     `match $role isa Role, has internal_id "${escapeString(roleId)}";
             (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
             $role has internal_id $role_id;
-            $capability has internal_id $capability_id;
-            get;`,
+            $capability has internal_id $capability_id; get;`,
     ['capability']
   );
-  return map((r) => r.capability, data);
+  return R.map((r) => r.capability, data);
 };
 
 export const findRoleById = (roleId) => {
@@ -177,7 +199,7 @@ export const findRoles = (args) => {
 };
 
 export const findCapabilities = (args) => {
-  const finalArgs = assoc('orderBy', 'attribute_order', args);
+  const finalArgs = R.assoc('orderBy', 'attribute_order', args);
   return listEntities([ENTITY_TYPE_CAPABILITY], ['description'], finalArgs);
 };
 
@@ -186,7 +208,7 @@ export const roleDelete = async (user, roleId) => {
   const impactedUsers = await findAll({
     filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
   });
-  await Promise.all(map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
+  await Promise.all(R.map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
   return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE, { noLog: true });
 };
 
@@ -216,17 +238,17 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   // Assign default roles to user
   const defaultRoles = await findRoles({ filters: [{ key: 'default_assignation', values: [true] }] });
   if (defaultRoles && defaultRoles.edges.length > 0) {
-    userRoles = pipe(
-      map((n) => n.node.name),
-      append(userRoles),
-      flatten
+    userRoles = R.pipe(
+      R.map((n) => n.node.name),
+      R.append(userRoles),
+      R.flatten
     )(defaultRoles.edges);
   }
-  const userToCreate = pipe(
-    assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
-    assoc('language', newUser.language ? newUser.language : 'auto'),
-    assoc('external', newUser.external ? newUser.external : false),
-    dissoc('roles')
+  const userToCreate = R.pipe(
+    R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
+    R.assoc('language', newUser.language ? newUser.language : 'auto'),
+    R.assoc('external', newUser.external ? newUser.external : false),
+    R.dissoc('roles')
   )(newUser);
   const userOptions = { noLog: true };
   const userCreated = await createEntity(user, userToCreate, ENTITY_TYPE_USER, userOptions);
@@ -240,7 +262,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   };
   await createRelation(user, input, { noLog: true });
   // Link to the roles
-  await Promise.all(map((role) => assignRoleToUser(user, userCreated.id, role), userRoles));
+  await Promise.all(R.map((role) => assignRoleToUser(user, userCreated.id, role), userRoles));
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
@@ -257,7 +279,7 @@ export const roleAddRelation = async (user, roleId, input) => {
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
-  const finalInput = assoc('fromId', roleId, input);
+  const finalInput = R.assoc('fromId', roleId, input);
   return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
     return relationData;
@@ -281,7 +303,7 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
 // User related
 export const userEditField = async (user, userId, input) => {
   const { key } = input;
-  const value = key === 'password' ? [bcrypt.hashSync(head(input.value).toString(), 10)] : input.value;
+  const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString(), 10)] : input.value;
   const patch = { [key]: value };
   const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch, { noLog: true });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
@@ -295,7 +317,7 @@ export const userDelete = async (user, userId) => {
   const userToken = await internalGetToken(userId);
   if (userToken) {
     await deleteEntityById(user, userToken.id, ENTITY_TYPE_TOKEN, { noLog: true });
-    await clearAccessCache(userToken.uuid);
+    await clearUserAccessCache(userToken.uuid);
   }
   await deleteEntityById(user, userId, ENTITY_TYPE_USER);
   return userId;
@@ -309,7 +331,7 @@ export const userAddRelation = async (user, userId, input) => {
   if (!isInternalRelationship(input.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
-  const finalInput = assoc('fromId', userId, input);
+  const finalInput = R.assoc('fromId', userId, input);
   return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
     return relationData;
@@ -337,7 +359,7 @@ export const loginFromProvider = async (email, name) => {
     (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token); get;`,
     ['client', 'token']
   );
-  if (isNil(result)) {
+  if (R.isNil(result)) {
     const newUser = { name, user_email: email, external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
@@ -346,7 +368,7 @@ export const loginFromProvider = async (email, name) => {
   await userEditField(SYSTEM_USER, result.client.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
   await userEditField(SYSTEM_USER, result.client.id, inputExternal);
-  await clearAccessCache(result.token.id);
+  await clearUserAccessCache(result.token.id);
   return result.token;
 };
 
@@ -357,17 +379,17 @@ export const login = async (email, password) => {
    $token has internal_id $token_id;
    get;`;
   const result = await load(query, ['client', 'token']);
-  if (isNil(result)) throw AuthenticationFailure();
+  if (R.isNil(result)) throw AuthenticationFailure();
   const dbPassword = result.client.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
-  await clearAccessCache(result.token.uuid);
+  await clearUserAccessCache(result.token.uuid);
   return result.token;
 };
 
 export const logout = async (user, res) => {
   res.clearCookie(OPENCTI_TOKEN);
-  await clearAccessCache(user.token.uuid);
+  await clearUserAccessCache(user.token.uuid);
   await delUserContext(user);
   return user.id;
 };
@@ -406,16 +428,21 @@ export const findByTokenUUID = async (tokenValue) => {
       `match $token isa Token;
             $token has uuid "${escapeString(tokenValue)}", has revoked false;
             (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; get;`,
-      ['token', 'client']
+      ['client', 'token']
     );
     if (!data) return undefined;
     // eslint-disable-next-line no-shadow
     const { client, token } = data;
     if (!client) return undefined;
     logger.debug(`Setting cache access for ${tokenValue}`);
-    const capabilities = await getCapabilities(client.id);
-    user = pipe(assoc('token', token), assoc('capabilities', capabilities))(client);
-    await storeAccessCache(tokenValue, user);
+    const [capabilities, markings] = await Promise.all([getCapabilities(client.id), getMarkings(client.id)]);
+    user = R.pipe(
+      R.assoc('token', token),
+      // Assoc extra information
+      R.assoc('capabilities', capabilities),
+      R.assoc('allowed_marking', markings)
+    )(client);
+    await storeUserAccessCache(tokenValue, user);
   }
   const { created_at: createdAt } = user.token;
   const maxDuration = moment.duration(user.token.duration);

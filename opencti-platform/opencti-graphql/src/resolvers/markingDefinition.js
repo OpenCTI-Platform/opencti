@@ -24,7 +24,7 @@ const markingDefinitionResolvers = {
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
   },
   MarkingDefinition: {
-    toStix: (markingDefinition) => convertDataToStix(markingDefinition).then((stixData) => JSON.stringify(stixData)),
+    toStix: (markingDefinition) => JSON.stringify(convertDataToStix(markingDefinition)),
     editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {

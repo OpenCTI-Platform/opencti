@@ -34,7 +34,7 @@ const LIST_QUERY = gql`
   }
 `;
 
-describe('Note resolver standard behavior', () => {
+describe.skip('Logs resolver standard behavior', () => {
   it('should list logs', async () => {
     const identity = await elLoadByIds('identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132');
     const queryResult = await queryAsAdmin({

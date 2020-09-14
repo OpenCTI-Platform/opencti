@@ -1,14 +1,14 @@
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
-  clearAccessCache,
+  clearUserAccessCache,
   delEditContext,
   delUserContext,
   fetchEditContext,
   getAccessCache,
   getRedisVersion, lockResource,
   setEditContext,
-  storeAccessCache,
+  storeUserAccessCache,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
@@ -65,7 +65,7 @@ describe('Redis context management', () => {
     const accessData = { token: OPENCTI_ADMIN_UUID };
     let data = await getAccessCache(tokenUUID);
     expect(data).toBeNull();
-    await storeAccessCache(tokenUUID, accessData, 5);
+    await storeUserAccessCache(tokenUUID, accessData, 5);
     data = await getAccessCache(tokenUUID);
     expect(data).toEqual(accessData);
     // Wait expiration time
@@ -73,10 +73,10 @@ describe('Redis context management', () => {
     data = await getAccessCache(tokenUUID);
     expect(data).toBeNull();
     // Manual clean
-    await storeAccessCache(tokenUUID, accessData);
+    await storeUserAccessCache(tokenUUID, accessData);
     data = await getAccessCache(tokenUUID);
     expect(data).toEqual(accessData);
-    await clearAccessCache(tokenUUID);
+    await clearUserAccessCache(tokenUUID);
     data = await getAccessCache(tokenUUID);
     expect(data).toBeNull();
   });

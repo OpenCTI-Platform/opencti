@@ -15,8 +15,9 @@ import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
+import createSeeMiddleware, { initBroadcaster } from './graphql/seeMiddleware';
 
-const createApp = (apolloServer) => {
+const createApp = async (apolloServer) => {
   // Init the http server
   const app = express();
   const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -48,6 +49,10 @@ const createApp = (apolloServer) => {
     })
   );
   app.use(bodyParser.json({ limit: '100mb' }));
+
+  const broadcaster = await initBroadcaster();
+  const seeMiddleware = createSeeMiddleware(broadcaster);
+  seeMiddleware.applyMiddleware({ app });
 
   const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
   const AppBasePath = nconf.get('app:base_path');
@@ -127,7 +132,7 @@ const createApp = (apolloServer) => {
     next();
   });
 
-  return app;
+  return { app, seeMiddleware };
 };
 
 export default createApp;

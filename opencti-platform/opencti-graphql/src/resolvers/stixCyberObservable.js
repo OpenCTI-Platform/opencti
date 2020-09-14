@@ -67,8 +67,7 @@ const stixCyberObservableResolvers = {
     connectors: (stixCyberObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixCyberObservable.entity_type, onlyAlive),
     stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
-    toStix: (stixCyberObservable) =>
-      convertDataToStix(stixCyberObservable).then((stixData) => JSON.stringify(stixData)),
+    toStix: (stixCyberObservable) => JSON.stringify(convertDataToStix(stixCyberObservable)),
   },
   Mutation: {
     stixCyberObservableEdit: (_, { id }, { user }) => ({

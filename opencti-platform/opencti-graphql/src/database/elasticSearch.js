@@ -41,30 +41,30 @@ const dateFields = [
   'created',
   'modified',
   'created_at',
-  'created_at_day',
-  'created_at_month',
+  'i_created_at_day',
+  'i_created_at_month',
   'updated_at',
   'first_seen',
-  'first_seen_day',
-  'first_seen_month',
+  'i_first_seen_day',
+  'i_first_seen_month',
   'last_seen',
-  'last_seen_day',
-  'last_seen_month',
+  'i_last_seen_day',
+  'i_last_seen_month',
   'start_time',
-  'start_time_day',
-  'start_time_month',
+  'i_start_time_day',
+  'i_start_time_month',
   'stop_time',
-  'stop_time_day',
-  'stop_time_month',
+  'i_stop_time_day',
+  'i_stop_time_month',
   'published',
-  'published_day',
-  'published_month',
+  'i_published_day',
+  'i_published_month',
   'valid_from',
-  'valid_from_day',
-  'valid_from_month',
+  'i_valid_from_day',
+  'i_valid_from_month',
   'valid_until',
-  'valid_until_day',
-  'valid_until_month',
+  'i_valid_until_day',
+  'i_valid_until_month',
   'observable_date',
   'event_date',
 ];
@@ -207,6 +207,9 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
                   x_opencti_report_status: {
                     type: 'integer',
                   },
+                  connections: {
+                    type: 'nested',
+                  },
                 },
               },
             },
@@ -284,11 +287,13 @@ export const elCount = (indexName, options = {}) => {
   if (fromId !== null) {
     must = R.append(
       {
-        bool: {
-          should: {
-            match_phrase: { 'connections.internal_id': fromId },
+        nested: {
+          path: 'connections',
+          query: {
+            bool: {
+              must: [{ match_phrase: { [`connections.internal_id`]: fromId } }],
+            },
           },
-          minimum_should_match: 1,
         },
       },
       must
@@ -392,21 +397,25 @@ export const elAggregationRelationsCount = (
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
+  const toRoleFilter = { query_string: { query: `*_to`, fields: [`connections.role`] } };
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
-    filters.push({
-      range: {
-        [dateAttribute]: {
-          gte: start,
-          lte: end,
-        },
-      },
-    });
+    filters.push({ range: { [dateAttribute]: { gte: start, lte: end } } });
   }
   if (fromId) {
     filters.push({
-      match_phrase: { 'connections.internal_id': fromId },
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            must: [
+              { match_phrase: { [`connections.internal_id`]: fromId } },
+              // { query_string: { query: `*_from`, fields: [`connections.role`] } },
+            ],
+          },
+        },
+      },
     });
   }
   const typesFilters = [];
@@ -417,12 +426,19 @@ export const elAggregationRelationsCount = (
   }
   if (typesFilters.length > 0) {
     filters.push({
-      bool: {
-        should: typesFilters,
-        minimum_should_match: 1,
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            must: toRoleFilter,
+            should: typesFilters,
+            minimum_should_match: 1,
+          },
+        },
       },
     });
   }
+
   const query = {
     index: RELATIONSHIPS_INDICES,
     body: {
@@ -446,10 +462,26 @@ export const elAggregationRelationsCount = (
         },
       },
       aggs: {
-        genres: {
-          terms: {
-            field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
-            size: 100,
+        connections: {
+          nested: {
+            path: 'connections',
+          },
+          aggs: {
+            filtered: {
+              filter: {
+                bool: {
+                  must: typesFilters.length > 0 ? toRoleFilter : [],
+                },
+              },
+              aggs: {
+                genres: {
+                  terms: {
+                    size: 100,
+                    field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
+                  },
+                },
+              },
+            },
           },
         },
       },
@@ -466,7 +498,7 @@ export const elAggregationRelationsCount = (
         R.map((e) => e.internal_id),
         R.uniq()
       )(data.body.hits.hits);
-      const { buckets } = data.body.aggregations.genres;
+      const { buckets } = data.body.aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
       return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
     }
@@ -481,25 +513,39 @@ export const elAggregationRelationsCount = (
       R.filter((f) => !isAbstract(f)),
       R.map((u) => u.toLowerCase())
     )(data.body.hits.hits);
-    const { buckets } = data.body.aggregations.genres;
+    const { buckets } = data.body.aggregations.connections.filtered.genres;
     const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });
 };
 export const elHistogramCount = async (type, field, interval, start, end, filters) => {
   // const tzStart = moment.parseZone(start).format('Z');
-  const histoFilters = R.map((f) => {
-    // eslint-disable-next-line no-nested-ternary
-    const key = f.isRelation
-      ? f.type
-        ? `${REL_INDEX_PREFIX}${f.type}.internal_id`
-        : `${REL_INDEX_PREFIX}*.internal_id`
-      : `${f.type}.keyword`;
+  // Filter: { type: 'relation/attribute/nested' }
+  const histogramFilters = R.map((f) => {
+    // isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId
+    const { isRelation = false, isNested = false, type: filterType, value } = f;
+    if (isNested) {
+      const [path] = filterType.split('.');
+      return {
+        nested: {
+          path,
+          query: {
+            bool: {
+              must: [{ match_phrase: { [filterType]: value } }],
+            },
+          },
+        },
+      };
+    }
+    let key = `${filterType}.keyword`;
+    if (isRelation) {
+      key = filterType ? `${REL_INDEX_PREFIX}${f.type}.internal_id` : `${REL_INDEX_PREFIX}*.internal_id`;
+    }
     return {
       multi_match: {
         fields: [key],
         type: 'phrase',
-        query: f.value,
+        query: value,
       },
     };
   }, filters);
@@ -543,7 +589,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
                 },
               },
             ],
-            histoFilters
+            histogramFilters
           ),
         },
       },
@@ -638,8 +684,6 @@ export const elPaginate = async (indexName, options = {}) => {
       },
       must
     );
-  } else {
-    must = R.append({ match_all: {} }, must);
   }
   if (types !== null && types.length > 0) {
     const should = R.flatten(
@@ -649,37 +693,68 @@ export const elPaginate = async (indexName, options = {}) => {
     );
     must = R.append({ bool: { should, minimum_should_match: 1 } }, must);
   }
-  const validFilters = R.filter((f) => f && f.values.length > 0, filters || []);
+  const validFilters = R.filter((f) => f?.values?.length > 0 || f?.nested?.length > 0, filters || []);
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
-      const { key, values, operator = 'eq' } = validFilters[index];
-      for (let i = 0; i < values.length; i += 1) {
-        if (values[i] === null) {
-          mustnot = R.append({ exists: { field: key } }, mustnot);
-        } else if (values[i] === 'EXISTS') {
-          valuesFiltering.push({ exists: { field: key } });
-        } else if (operator === 'eq') {
-          const isDateOrNumber = dateFields.includes(key) || numericOrBooleanFields.includes(key);
-          valuesFiltering.push({
-            match_phrase: { [`${isDateOrNumber ? key : `${key}.keyword`}`]: values[i].toString() },
-          });
-        } else if (operator === 'match') {
-          valuesFiltering.push({
-            match_phrase: { [key]: values[i].toString() },
-          });
-        } else if (operator === 'wildcard') {
-          valuesFiltering.push({
-            query_string: {
-              query: `"${values[i].toString()}"`,
-              fields: [key],
-            },
-          });
-        } else {
-          valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
+      const { key, values, nested, operator = 'eq' } = validFilters[index];
+      if (nested) {
+        const nestedMust = [];
+        for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
+          const nestedElement = nested[nestIndex];
+          const { key: nestedKey, values: nestedValues, operator: nestedOperator = 'eq' } = nestedElement;
+          for (let i = 0; i < nestedValues.length; i += 1) {
+            if (nestedOperator === 'wildcard') {
+              nestedMust.push({
+                query_string: {
+                  query: `${nestedValues[i].toString()}`,
+                  fields: [`${key}.${nestedKey}`],
+                },
+              });
+            } else {
+              nestedMust.push({
+                match_phrase: { [`${key}.${nestedKey}`]: nestedValues[i].toString() },
+              });
+            }
+          }
         }
+        const nestedQuery = {
+          path: key,
+          query: {
+            bool: {
+              must: nestedMust,
+            },
+          },
+        };
+        must = R.append({ nested: nestedQuery }, must);
+      } else {
+        for (let i = 0; i < values.length; i += 1) {
+          if (values[i] === null) {
+            mustnot = R.append({ exists: { field: key } }, mustnot);
+          } else if (values[i] === 'EXISTS') {
+            valuesFiltering.push({ exists: { field: key } });
+          } else if (operator === 'eq') {
+            const isDateOrNumber = dateFields.includes(key) || numericOrBooleanFields.includes(key);
+            valuesFiltering.push({
+              match_phrase: { [`${isDateOrNumber ? key : `${key}.keyword`}`]: values[i].toString() },
+            });
+          } else if (operator === 'match') {
+            valuesFiltering.push({
+              match_phrase: { [key]: values[i].toString() },
+            });
+          } else if (operator === 'wildcard') {
+            valuesFiltering.push({
+              query_string: {
+                query: `${values[i].toString()}`,
+                fields: [key],
+              },
+            });
+          } else {
+            valuesFiltering.push({ range: { [key]: { [operator]: values[i] } } });
+          }
+        }
+        must = R.append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
       }
-      must = R.append({ bool: { should: valuesFiltering, minimum_should_match: 1 } }, must);
     }
   }
   if (orderBy !== null && orderBy.length > 0) {
