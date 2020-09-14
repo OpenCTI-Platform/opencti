@@ -908,8 +908,8 @@ class StixCyberObservable:
                 }
             elif type == "Windows-Registry-Key":
                 input_variables["WindowsRegistryKey "] = {
-                    "attribute_key": observable_data["attribute_key"]
-                    if "attribute_key" in observable_data
+                    "attribute_key": observable_data["key"]
+                    if "key" in observable_data
                     else None,
                     "modified_time": observable_data["modified_time"]
                     if "modified_time" in observable_data
