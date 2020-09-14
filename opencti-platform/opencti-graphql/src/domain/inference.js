@@ -45,6 +45,20 @@ const inferences = {
     description:
       'This rule can be used to infer the following fact: if an entity A targets an entity B and the entity A is attributed to an entity C, the entity C also targets the entity B.',
   },
+  '266b1b3b-0c94-439e-bac0-e14130bb1465': {
+    id: '266b1b3b-0c94-439e-bac0-e14130bb1465',
+    name: 'PartOfPartOfRule',
+    rule:
+      'PartOfPartOfRule sub rule,\n' +
+      '    when {\n' +
+      '      $rel1_part-of_from_part-of_to(part-of_from: $subLocation, part-of_to: $location) isa part-of;\n' +
+      '      $rel2_part-of_from_part-of_to(part-of_from: $location, part-of_to: $parentLocation) isa part-of;\n' +
+      '    }, then {\n' +
+      '      (part-of_from: $subLocation, part-of_to: $parentLocation) isa part-of;\n' +
+      '    };',
+    description:
+      'This rule can be used to infer the following fact: if an entity A is part of an entity B and the entity B is part of an entity C, then the entity A is also part of the entity C.',
+  },
   'fcbd7aa7-680c-4796-9572-03463956880b': {
     id: 'fcbd7aa7-680c-4796-9572-03463956880b',
     name: 'LocatedAtLocatedAtRule',
@@ -57,7 +71,7 @@ const inferences = {
       '      (located-at_from: $subLocation, located-at_to: $parentLocation) isa located-at;\n' +
       '    };',
     description:
-      'This rule can be used to infer the following fact: if an entity A is located in an entity B and the entity B is located in an entity C, then the entity A is also located in the entity C.',
+      'This rule can be used to infer the following fact: if an entity A is located at an entity B and the entity B is located at an entity C, then the entity A is also located at the entity C.',
   },
   'e6a6989b-7992-4f7e-9f07-741145423181': {
     id: 'e6a6989b-7992-4f7e-9f07-741145423181',
@@ -65,13 +79,13 @@ const inferences = {
     rule:
       '    LocationOfTargetsRule sub rule,\n' +
       '    when {\n' +
-      '      $rel1_source_target(source: $entity, target: $target) isa targets;\n' +
-      '      $rel2_localized_location(location: $location, localized: $rel1_source_target) isa localization;\n' +
+      '      $rel1_targets_from_targets_to(targets_from: $entity, targets_to: $target) isa targets;\n' +
+      '      $rel2_located-at_from_located-at_to(located-at_from: $rel1_targets_from_targets_to, located-at_to: $location) isa located-at;\n' +
       '    }, then {\n' +
-      '      (source: $entity, target: $location) isa targets;\n' +
+      '      (targets_from: $entity, targets_to: $location) isa targets;\n' +
       '    };',
     description:
-      'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is located in an entity C, then the entity A also targets the entity C.',
+      'This rule can be used to infer the following fact: if an entity A targets an entity B through a relation X, and the relation X is located at an entity C, then the entity A also targets the entity C.',
   },
   [PART_OF_TARGETS_RULE]: {
     id: PART_OF_TARGETS_RULE,
@@ -94,7 +108,7 @@ const inferences = {
       '    MalwareUsageTargetsRule sub rule,\n' +
       '    when {\n' +
       '      $malware isa Malware;\n' +
-      '      $incident isa Incident;\n' +
+      '      $incident isa X-OpenCTI-Incident;\n' +
       '      $rel1_targets_from_targets_to(targets_from: $incident, targets_to: $target) isa targets;\n' +
       '      $rel2_uses_from_uses_to(uses_from: $incident, uses_to: $malware) isa uses;\n' +
       '    }, then {\n' +

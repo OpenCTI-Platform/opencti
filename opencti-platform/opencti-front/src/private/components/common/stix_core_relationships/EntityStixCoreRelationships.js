@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose, includes, pipe, assoc,
+  compose, includes, pipe, assoc, propOr,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
@@ -23,6 +23,10 @@ import EntityStixCoreRelationshipsLinesFrom, {
 import EntityStixCoreRelationshipsLinesTo, {
   entityStixCoreRelationshipsLinesToQuery,
 } from './EntityStixCoreRelationshipsLinesTo';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 const styles = (theme) => ({
   container: {
@@ -47,23 +51,38 @@ const styles = (theme) => ({
 class EntityStixCoreRelationships extends Component {
   constructor(props) {
     super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-relationships-${props.entityId}`,
+    );
     this.state = {
-      sortBy: 'start_time',
-      orderAsc: true,
-      searchTerm: '',
+      sortBy: propOr(null, 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
+      searchTerm: propOr('', 'searchTerm', params),
+      view: propOr('lines', 'view', params),
+      inferred: propOr(false, 'inferred', params),
+      toType: propOr('All', 'toType', params),
+      numberOfElements: { number: 0, symbol: '' },
       openToType: false,
-      toType: 'All',
-      inferred: false,
-      view: 'lines',
     };
   }
 
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-relationships-${this.props.entityId}`,
+      this.state,
+    );
+  }
+
   handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
+    this.setState({ sortBy: field, orderAsc }, () => this.saveView());
   }
 
   handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   handleOpenToType() {
@@ -79,17 +98,20 @@ class EntityStixCoreRelationships extends Component {
     if (value === 'All' && this.props.targetStixDomainObjectTypes.length > 1) {
       return this.setState({
         openToType: false,
-        toType: 'All',
+        toType: ['All'],
       });
     }
-    return this.setState({ openToType: false, toType: value });
+    return this.setState({ openToType: false, toType: [value] }, () => this.saveView());
   }
 
   handleChangeInferred() {
-    this.setState({
-      inferred: !this.state.inferred,
-      sortBy: !this.state.inferred ? null : this.state.sortBy,
-    });
+    this.setState(
+      {
+        inferred: !this.state.inferred,
+        sortBy: !this.state.inferred ? null : this.state.sortBy,
+      },
+      () => this.saveView(),
+    );
   }
 
   renderLines(paginationOptions) {
@@ -204,7 +226,7 @@ class EntityStixCoreRelationships extends Component {
       paginationOptions = pipe(
         assoc(
           'fromTypes',
-          toType === 'All' ? targetStixDomainObjectTypes : [toType],
+          toType.includes('All') ? targetStixDomainObjectTypes : [toType],
         ),
         assoc('toId', entityId),
         assoc('toRole', role || null),
@@ -215,7 +237,7 @@ class EntityStixCoreRelationships extends Component {
         assoc('fromRole', role || null),
         assoc(
           'toTypes',
-          toType === 'All' ? targetStixDomainObjectTypes : [toType],
+          toType.includes('All') ? targetStixDomainObjectTypes : [toType],
         ),
       )(paginationOptions);
     }
