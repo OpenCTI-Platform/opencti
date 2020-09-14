@@ -22,7 +22,7 @@ describe('Rabbit basic and utils', () => {
     expect(data).not.toBeNull();
     expect(data.consumers).toEqual(0);
     expect(data.overview.management_version).toEqual(expect.stringMatching(/^3.8\./g));
-    expect(data.overview.message_stats.redeliver).toEqual(0);
+    expect(data.overview.message_stats.redeliver).toEqual(undefined);
     expect(data.overview.message_stats.return_unroutable).toEqual(undefined);
     expect(data.overview.queue_totals.messages_unacknowledged).toEqual(0);
     expect(data.queues.length).toEqual(1);

@@ -190,7 +190,7 @@ export const storeUpdateEvent = async (user, operation, instance, input) => {
     const data = {
       id: instance.standard_id,
       x_opencti_internal_id: instance.internal_id,
-      type: instance.entity_type,
+      type: instance.entity_type.toLowerCase(),
       x_data_update: { [operation]: convertedInput },
     };
     // Generate the message
@@ -218,7 +218,7 @@ export const storeCreateEvent = async (user, instance, input) => {
     }
     // Create of an event for
     const identifiers = {
-      id: instance.standard_id,
+      standard_id: instance.standard_id,
       x_opencti_internal_id: instance.internal_id,
       entity_type: instance.entity_type,
     };
@@ -248,7 +248,7 @@ export const storeDeleteEvent = async (user, instance) => {
     const data = {
       id: instance.standard_id,
       x_opencti_internal_id: instance.internal_id,
-      type: instance.entity_type,
+      type: instance.entity_type.toLowerCase(),
     };
     const event = {
       type: EVENT_TYPE_DELETE,
@@ -271,7 +271,7 @@ export const storeDeleteEvent = async (user, instance) => {
     const data = {
       id: instance.standard_id,
       x_opencti_internal_id: instance.internal_id,
-      type: instance.entity_type,
+      type: instance.entity_type.toLowerCase(),
       source_ref: instance.from.standard_id,
       target_ref: instance.to.standard_id,
     };

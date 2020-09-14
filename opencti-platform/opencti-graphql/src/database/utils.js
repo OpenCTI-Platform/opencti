@@ -219,14 +219,14 @@ export const generateLogMessage = (type, user, instance, input = null) => {
   const name = extractEntityMainValue(instance);
   if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE) {
     if (isStixObject(instance.entity_type)) {
-      return `\`${user.name}\` ${type} a ${instance.entity_type} \`${name}\``;
+      return `\`${user.name}\` ${type}s a ${instance.entity_type} \`${name}\``;
     }
     // Relation
     const from = extractEntityMainValue(instance.from);
     const fromType = instance.from.entity_type;
     const to = extractEntityMainValue(instance.to);
     const toType = instance.to.entity_type;
-    return `\`${user.name}\` ${type} the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
+    return `\`${user.name}\` ${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
   }
   if (type === UPDATE_OPERATION_REPLACE || type === UPDATE_OPERATION_ADD || type === UPDATE_OPERATION_REMOVE) {
     const joiner = type === UPDATE_OPERATION_REPLACE ? 'by' : 'value';
@@ -237,7 +237,7 @@ export const generateLogMessage = (type, user, instance, input = null) => {
       }
       return `\`${key}\` ${joiner} \`${isNotEmpty ? val : 'nothing'}\``;
     }, Object.entries(input)).join(', ');
-    return `\`${user.name}\` ${type} the ${fieldMessage}`;
+    return `\`${user.name}\` ${type}s the ${fieldMessage}`;
   }
   throw FunctionalError(`Cant generated message for event type ${type}`);
 };
