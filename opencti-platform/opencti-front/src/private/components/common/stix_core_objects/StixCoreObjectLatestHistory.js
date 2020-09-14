@@ -21,12 +21,12 @@ class StixCoreObjectLatestHistory extends Component {
             filters: [
               { key: 'entity_id', values: [stixCoreObjectId] },
               {
-                key: 'event_type',
-                values: ['create', 'update', 'update_add', 'update_remove'],
+                key: 'event',
+                values: ['create', 'update'],
               },
             ],
             first: 5,
-            orderBy: 'event_date',
+            orderBy: 'timestamp',
             orderMode: 'desc',
           }}
           render={({ props }) => {

@@ -169,11 +169,11 @@ type LogsWorkerConfig {
   rabbitmq_url: String!
 }
 enum LogsOrdering {
-  event_type
-  event_date
+  event
+  timestamp
 }
 enum LogsFilter {
-  event_type
+  event
   entity_id
   connection_id
 }
@@ -192,11 +192,11 @@ type LogEdge {
 }
 type Log {
   id: ID!
-  event_type: String!
-  event_date: DateTime!
-  event_user: User
-  event_data: String!
-  event_message: String!
+  event: String!
+  timestamp: DateTime!
+  user: User
+  data: String!
+  message: String!
 }
 
 ############## Inferences

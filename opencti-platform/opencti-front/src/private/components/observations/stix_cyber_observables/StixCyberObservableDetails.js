@@ -14,7 +14,6 @@ import StixCyberObservableLinks, {
   stixCyberObservableLinksQuery,
 } from './StixCyberObservableLinks';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import ItemScore from '../../../../components/ItemScore';
 import { ignoredAttributes } from './StixCyberObservableCreation';
 import { QueryRenderer } from '../../../../relay/environment';
 

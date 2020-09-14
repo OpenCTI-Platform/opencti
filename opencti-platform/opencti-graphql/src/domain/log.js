@@ -12,13 +12,13 @@ export const creator = async (entityId) => {
   const entity = await loadById(entityId, ABSTRACT_STIX_CORE_OBJECT);
   return elPaginate(INDEX_HISTORY, {
     filters: [
-      { key: 'event_type', values: [EVENT_TYPE_CREATE] },
-      { key: 'event_data.x_opencti_id', values: [entity.internal_id] },
+      { key: 'event', values: [EVENT_TYPE_CREATE] },
+      { key: 'data.x_opencti_id', values: [entity.internal_id] },
     ],
     connectionFormat: false,
   }).then((logs) =>
-    logs.length > 0 && head(logs).event_user
-      ? findById(head(logs).event_user)
+    logs.length > 0 && head(logs).user
+      ? findById(head(logs).user)
       : { id: OPENCTI_ADMIN_UUID, name: SYSTEM_USER.name }
   );
 };

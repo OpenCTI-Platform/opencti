@@ -65,12 +65,12 @@ class StixCoreObjectHistory extends Component {
               filters: [
                 { key: 'entity_id', values: [stixCoreObjectId] },
                 {
-                  key: 'event_type',
-                  values: ['create', 'update', 'update_add', 'update_remove'],
+                  key: 'event',
+                  values: ['create', 'update', 'delete'],
                 },
               ],
               first: 20,
-              orderBy: 'event_date',
+              orderBy: 'timestamp',
               orderMode: 'desc',
               search: entitySearchTerm,
             }}
@@ -114,12 +114,12 @@ class StixCoreObjectHistory extends Component {
                   operator: 'wildcard',
                 },
                 {
-                  key: 'event_type',
+                  key: 'event',
                   values: ['create', 'delete'],
                 },
               ],
               first: 20,
-              orderBy: 'event_date',
+              orderBy: 'timestamp',
               orderMode: 'desc',
               search: relationsSearchTerm,
             }}

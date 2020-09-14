@@ -24,7 +24,7 @@ describe('Rabbit basic and utils', () => {
     expect(data.overview.management_version).toEqual(expect.stringMatching(/^3.8\./g));
     expect(data.overview.message_stats.redeliver).toEqual(undefined);
     expect(data.overview.message_stats.return_unroutable).toEqual(undefined);
-    expect(data.overview.queue_totals.messages_unacknowledged).toEqual(0);
+    expect(data.overview.queue_totals.messages_unacknowledged).toEqual(undefined);
     expect(data.queues.length).toEqual(1);
   });
 });
@@ -46,7 +46,7 @@ describe('Rabbit connector management', () => {
     // Just wait one second to let redis client initialize
     const data = await metrics();
     expect(data).not.toBeNull();
-    expect(data.queues.length).toEqual(3);
+    expect(data.queues.length).toEqual(2);
     const aggregationMap = new Map(data.queues.map((q) => [q.name, q]));
     expect(aggregationMap.get(`listen_${connectorId}`)).not.toBeUndefined();
     expect(aggregationMap.get(`push_${connectorId}`)).not.toBeUndefined();

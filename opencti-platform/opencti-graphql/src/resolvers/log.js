@@ -7,11 +7,11 @@ const logResolvers = {
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    event_user: (log) => findById(log.event_user),
+    user: (log) => findById(log.user),
   },
   LogsFilter: {
-    entity_id: 'event_data.x_opencti_id',
-    connection_id: 'event_data.*_ref',
+    entity_id: 'data.x_opencti_id',
+    connection_id: 'data.*_ref',
   },
 };
 

@@ -67,6 +67,7 @@ const dateFields = [
   'i_valid_until_month',
   'observable_date',
   'event_date',
+  'timestamp',
 ];
 const numericOrBooleanFields = [
   'object_status',

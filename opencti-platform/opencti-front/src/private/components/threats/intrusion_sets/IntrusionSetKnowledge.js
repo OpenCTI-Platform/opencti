@@ -16,7 +16,6 @@ import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDo
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import ObservedDatas from '../../events/ObservedDatas';
 
 const styles = () => ({
   container: {

@@ -179,7 +179,7 @@ class StixCoreObjectHistoryLineComponent extends Component {
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
-          {this.renderIcon(node.event_type, isRelation)}
+          {this.renderIcon(node.event, isRelation)}
         </div>
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
@@ -189,14 +189,14 @@ class StixCoreObjectHistoryLineComponent extends Component {
               title={
                 <Markdown
                   className="markdown"
-                  source={`\`${node.event_user.name}\` ${node.event_message}`}
+                  source={node.message}
                 />
               }
             >
               <div className={classes.description}>
                 <Markdown
                   className="markdown"
-                  source={`\`${node.event_user.name}\` ${node.event_message}`}
+                  source={node.message}
                 />
               </div>
             </Tooltip>
@@ -222,13 +222,12 @@ const StixCoreObjectHistoryLine = createFragmentContainer(
     node: graphql`
       fragment StixCoreObjectHistoryLine_node on Log {
         id
-        event_type
-        event_date
-        event_user {
+        event
+        timestamp
+        user {
           name
         }
-        event_message
-        event_data
+        message
       }
     `,
   },
