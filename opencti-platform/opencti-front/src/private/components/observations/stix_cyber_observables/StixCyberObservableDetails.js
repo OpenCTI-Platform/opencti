@@ -59,12 +59,6 @@ class StixCyberObservableDetailsComponent extends Component {
                 limit={400}
               />
             </Grid>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Score')}
-              </Typography>
-              <ItemScore score={stixCyberObservable.x_opencti_score} />
-            </Grid>
             {observableAttributes.map((observableAttribute) => {
               if (observableAttribute.key === 'hashes') {
                 return observableAttribute.value.map((hash) => (
