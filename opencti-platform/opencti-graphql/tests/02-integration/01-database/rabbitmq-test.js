@@ -31,7 +31,7 @@ describe('Rabbit connector management', () => {
   const connectorType = CONNECTOR_INTERNAL_IMPORT_FILE;
   const connectorScope = 'application/json';
   it('should register the connector', async () => {
-    const config = await registerConnectorQueues(connectorId, connectorName, connec torType, connectorScope);
+    const config = await registerConnectorQueues(connectorId, connectorName, connectorType, connectorScope);
     expect(config.uri).not.toBeNull();
     expect(config.push).toEqual(`push_${connectorId}`);
     expect(config.push_exchange).toEqual('amqp.worker.exchange');
