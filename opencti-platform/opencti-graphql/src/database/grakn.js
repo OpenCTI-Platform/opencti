@@ -12,7 +12,7 @@ import {
   TYPE_LOCK_ERROR,
   UnsupportedError,
 } from '../config/errors';
-import conf, { logger } from '../config/conf';
+import conf, { BUS_TOPICS, logger } from '../config/conf';
 import {
   buildPagination,
   fillTimeSeries,
@@ -38,7 +38,7 @@ import {
   RELATIONSHIPS_INDICES,
   useCache,
 } from './elasticSearch';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './rabbitmq';
+import { EVENT_TYPE_UPDATE, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './rabbitmq';
 import {
   generateAliasesId,
   generateInternalId,
@@ -46,7 +46,7 @@ import {
   isFieldContributingToStandardId,
   normalizeName,
 } from '../schema/identifier';
-import { lockResource, storeCreateEvent, storeDeleteEvent, storeUpdateEvent } from './redis';
+import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeUpdateEvent } from './redis';
 import { buildStixData, mergeStixIds, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
@@ -59,6 +59,7 @@ import {
   isAbstract,
   REL_INDEX_PREFIX,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
@@ -93,7 +94,6 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { stixCoreObjectMerge } from '../domain/stixCoreObject';
 
 // region global variables
 export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
@@ -1027,23 +1027,54 @@ export const loadById = async (id, type, args = {}) => {
   const loadArgs = R.assoc('type', type, args);
   return internalLoadById(id, loadArgs);
 };
-const findElementDependencies = async (id, args = {}) => {
-  let rawData;
-  const { onlyMarking = false } = args;
+const transformRawRelationsToAttributes = (data, orientation) => {
+  return R.mergeAll(
+    Object.entries(
+      R.groupBy(
+        (a) => a.entity_type,
+        R.filter((f) => f.direction === orientation, data)
+      )
+    ).map(([k, v]) => ({ [k]: R.map((i) => R.assoc('i_rel_id', i.id, i.target), v) }))
+  );
+};
+const findElementDependencies = async (instance, args = {}) => {
+  const { onlyMarking = false, orientation = 'from' } = args;
+  const isRelation = instance.base_type === BASE_TYPE_RELATION;
   const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
-  if (useCache(args)) {
-    const relations = await listRelations(relType, { fromId: id });
-    const loader = (e) => {
-      return loadById(e.node.toId, e.node.toType).then((d) => ({ rel: e.node, to: { standard_id: d.standard_id } }));
-    };
-    rawData = await Promise.all(R.map((e) => loader(e), relations.edges));
+  const relations = await listRelations(relType, { elementId: instance.id });
+  const targetsToResolve = R.map((e) => e.node.toId, relations.edges);
+  const rawDataPromise = internalFindByIds(targetsToResolve).then((ids) => {
+    return R.map((e) => {
+      const to = R.find((s) => s.id === e.node.toId, ids);
+      return { rel: e.node, to: { id: to.id, standard_id: to.standard_id } };
+    }, relations.edges);
+  });
+  let rawData;
+  const data = { i_fully_resolved: true };
+  if (isRelation) {
+    const [rFrom, rTo, rData] = await Promise.all([
+      internalLoadById(instance.fromId),
+      internalLoadById(instance.toId),
+      rawDataPromise,
+    ]);
+    data.from = rFrom;
+    data.to = rTo;
+    rawData = rData;
   } else {
-    const query = `match $rel($from, $to) isa ${relType}; $from has internal_id "${escapeString(id)}"; get;`;
-    rawData = await find(query, ['rel', 'to']);
+    rawData = await rawDataPromise;
   }
-  const simplified = R.map((r) => ({ entity_type: r.rel.entity_type, target: r.to }), rawData);
-  const grouped = R.groupBy((a) => relationTypeToInputName(a.entity_type), simplified);
-  const data = {};
+  const simplified = R.map((r) => {
+    const direction = r.rel.fromId === instance.id ? 'from' : 'to';
+    return { id: r.rel.standard_id, entity_type: r.rel.entity_type, target: r.to, direction };
+  }, rawData);
+  data.i_relations_from = transformRawRelationsToAttributes(simplified, 'from');
+  data.i_relations_to = transformRawRelationsToAttributes(simplified, 'to');
+  // Filter if needed
+  let filtered = simplified;
+  if (orientation !== 'all') {
+    filtered = R.filter((s) => s.direction === orientation, simplified);
+  }
+  const grouped = R.groupBy((a) => relationTypeToInputName(a.entity_type), filtered);
   const entries = Object.entries(grouped);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, values] = entries[index];
@@ -1051,15 +1082,15 @@ const findElementDependencies = async (id, args = {}) => {
   }
   return data;
 };
-const loadByIdWithRelations = async (id, type, args = {}) => {
+export const loadByIdFullyResolved = async (id, type, args = {}) => {
   const typeOpts = type ? args : R.assoc('type', type, args);
   const element = await internalLoadById(id, typeOpts);
   if (!element) return null;
-  const deps = await findElementDependencies(id, typeOpts);
+  const deps = await findElementDependencies(element, typeOpts);
   return R.mergeRight(element, deps);
 };
 export const stixElementLoader = async (id, type) => {
-  const element = await loadByIdWithRelations(id, type);
+  const element = await loadByIdFullyResolved(id, type);
   return element && buildStixData(element);
 };
 // endregion
@@ -1333,7 +1364,7 @@ const inputResolveRefs = async (input) => {
         id = R.map((label) => idLabel(label), id);
         keyPromise = internalFindByIds(id);
       } else if (src === 'fromId' || src === 'toId') {
-        keyPromise = loadByIdWithRelations(id, null, { onlyMarking: true });
+        keyPromise = loadByIdFullyResolved(id, null, { onlyMarking: true });
       } else {
         keyPromise = isListing ? internalFindByIds(id) : internalLoadById(id);
       }
@@ -1358,6 +1389,19 @@ const inputResolveRefs = async (input) => {
 // endregion
 
 // region mutation update
+const updatedInputsToData = (inputs) => {
+  const inputPairs = R.map((input) => {
+    const { key, value } = input;
+    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
+    return { [key]: val };
+  }, inputs);
+  return R.mergeAll(inputPairs);
+};
+const mergeInstanceWithInputs = (instance, inputs) => {
+  const data = updatedInputsToData(inputs);
+  return R.mergeRight(instance, data);
+};
+
 const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
   const { id } = instance;
   const { forceUpdate = false, operation = UPDATE_OPERATION_REPLACE } = options;
@@ -1493,118 +1537,236 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
   await Promise.all(updateOperations);
   return updatedInputs;
 };
-
-const updatedInputsToData = (inputs) => {
-  const inputPairs = R.map((input) => {
-    const { key, value } = input;
-    const val = R.includes(key, multipleAttributes) ? value : R.head(value);
-    return { [key]: val };
-  }, inputs);
-  return R.mergeAll(inputPairs);
-};
-const mergeInstanceWithInputs = (instance, inputs) => {
-  const data = updatedInputsToData(inputs);
-  return R.mergeRight(instance, data);
-};
-export const updateAttribute = async (user, id, type, inputs, options = {}) => {
+export const updateAttributeRaw = async (user, instance, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const { operation = UPDATE_OPERATION_REPLACE } = options;
-  const instance = await loadByIdWithRelations(id, type, options);
-  if (!instance) {
-    throw FunctionalError(`Cant find element to update`, { id, type });
-  }
-  // --- take lock, ensure no one currently create or update this element
-  let lock;
   const updatedInputs = [];
   const impactedInputs = [];
-  try {
-    // Try to get the lock in redis
-    lock = await lockResource(instance.internal_id);
-    let eventualMergingEntity = null;
-    await executeWrite(async (wTx) => {
-      // Update all needed attributes
-      for (let index = 0; index < elements.length; index += 1) {
-        const input = elements[index];
+  await executeWrite(async (wTx) => {
+    // Update all needed attributes
+    for (let index = 0; index < elements.length; index += 1) {
+      const input = elements[index];
+      // eslint-disable-next-line no-await-in-loop
+      const ins = await innerUpdateAttribute(user, instance, input, wTx, options);
+      if (ins.length > 0) {
+        updatedInputs.push(input);
+      }
+      impactedInputs.push(...ins);
+      // If input impact aliases (aliases or x_opencti_aliases)
+      const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
+      const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
+      if (isAliasesImpacted) {
+        const aliasesId = generateAliasesId(input.value);
+        const aliasInput = { key: IDS_ALIASES, value: aliasesId };
         // eslint-disable-next-line no-await-in-loop
-        const ins = await innerUpdateAttribute(user, instance, input, wTx, options);
-        if (ins.length > 0) {
-          updatedInputs.push(input);
-        }
-        impactedInputs.push(...ins);
-        // If input impact aliases (aliases or x_opencti_aliases)
-        const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
-        const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
-        if (isAliasesImpacted) {
-          const aliasesId = generateAliasesId(input.value);
-          const aliasInput = { key: IDS_ALIASES, value: aliasesId };
-          // eslint-disable-next-line no-await-in-loop
-          const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, wTx, options);
-          impactedInputs.push(...aliasIns);
-        }
+        const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, wTx, options);
+        impactedInputs.push(...aliasIns);
       }
-      // If update is part of the key, update the standard_id
-      const instanceType = instance.entity_type;
-      const isRelation = instance.base_type === BASE_TYPE_RELATION;
-      const keys = R.map((t) => t.key, impactedInputs);
-      if (!isRelation && isFieldContributingToStandardId(instanceType, keys)) {
-        const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-        const standardId = generateStandardId(instanceType, updatedInstance);
-        const standardInput = { key: ID_STANDARD, value: [standardId] };
-        // check if an entity exists with this ID
-        let existingEntity;
-        if (standardId !== instance.standard_id) {
-          existingEntity = await internalLoadById(standardId);
-        }
-        if (existingEntity && isStixCoreObject(existingEntity.entity_type)) {
-          // Return the merged entity
-          eventualMergingEntity = await stixCoreObjectMerge(user, existingEntity.internal_id, [id], keys);
-        } else if (existingEntity) {
-          throw FunctionalError(`Based on this update, the generated standard ID already exists, doing nothing`, {
-            id,
-            type,
-          });
-        } else {
-          // eslint-disable-next-line no-await-in-loop
-          const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
-          // currentInstanceData = R.assoc(ID_STANDARD, standardId, currentInstanceData);
-          impactedInputs.push(...ins);
-        }
-      }
-    });
-    if (eventualMergingEntity) {
-      return eventualMergingEntity;
     }
-    // region send the event to the stream
-    if (updatedInputs.length > 0) {
-      const data = updatedInputsToData(updatedInputs);
-      await storeUpdateEvent(user, operation, instance, data);
+    // If update is part of the key, update the standard_id
+    const instanceType = instance.entity_type;
+    const keys = R.map((t) => t.key, impactedInputs);
+    if (isFieldContributingToStandardId(instance, keys)) {
+      const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
+      const standardId = generateStandardId(instanceType, updatedInstance);
+      const standardInput = { key: ID_STANDARD, value: [standardId] };
+      const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
+      // currentInstanceData = R.assoc(ID_STANDARD, standardId, currentInstanceData);
+      impactedInputs.push(...ins);
     }
-    // endregion
-    // region Update elasticsearch and send logs
-    const index = inferIndexFromConceptType(instance.entity_type);
-    const updateAsObject = R.mergeAll(
-      R.map(({ key, value }) => ({ [key]: isMultipleAttribute(key) ? value : R.head(value) }), impactedInputs)
-    );
-    const esData = prepareElementForIndexing(updateAsObject);
-    if (!R.isEmpty(esData)) {
-      await elReplace(index, instance.internal_id, { doc: esData });
-    }
-    // endregion
-  } finally {
-    if (lock) await lock.unlock();
+  });
+  // region send the event to the stream
+  if (updatedInputs.length > 0) {
+    const data = updatedInputsToData(updatedInputs);
+    await storeUpdateEvent(user, operation, instance, data);
   }
+  // endregion
+  // region Update elasticsearch
+  const index = inferIndexFromConceptType(instance.entity_type);
+  const updateAsObject = R.mergeAll(
+    R.map(({ key, value }) => ({ [key]: isMultipleAttribute(key) ? value : R.head(value) }), impactedInputs)
+  );
+  const esData = prepareElementForIndexing(updateAsObject);
+  if (!R.isEmpty(esData)) {
+    await elReplace(index, instance.internal_id, { doc: esData });
+  }
+  // endregion
   // Return fully updated instance
   return mergeInstanceWithInputs(instance, impactedInputs);
 };
 
-export const patchAttribute = async (user, id, type, patch, options = {}) => {
-  const inputs = R.pipe(
+const targetedRelations = (entities, direction) => {
+  return R.flatten(
+    R.map((s) => {
+      const relations = [];
+      const info = Object.entries(s[`i_relations_${direction}`]);
+      for (let index = 0; index < info.length; index += 1) {
+        const [key, values] = info[index];
+        if (key !== RELATION_CREATED_BY) {
+          // Except created by ref (mono valued)
+          relations.push(...R.map((val) => ({ id: val.i_rel_id, type: key, connect: val.standard_id }), values));
+        }
+      }
+      return relations;
+    }, entities)
+  );
+};
+const filterTargetByExisting = (sources, targets) => {
+  return R.filter((f) => {
+    return !R.find((t) => t.type === f.type && t.connect === f.connect, targets);
+  }, sources);
+};
+export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities) => {
+  // Pre-checks
+  const sourceIds = R.map((e) => e.internal_id, sourceEntities);
+  if (R.includes(targetEntity.internal_id, sourceIds)) {
+    throw FunctionalError(`Cannot merge an entity on itself`, {
+      dest: targetEntity.internal_id,
+      source: sourceIds,
+    });
+  }
+  const targetType = targetEntity.entity_type;
+  const sourceTypes = R.map((s) => s.entity_type, sourceEntities);
+  const isWorkingOnSameType = sourceTypes.every((v) => v === targetType);
+  if (!isWorkingOnSameType) {
+    throw FunctionalError(`Cannot merge entities of different types`, {
+      dest: targetType,
+      source: sourceTypes,
+    });
+  }
+  // 1. Update STIX IDs and aliases
+  const updateAttributes = [];
+  const stixIdsToAdd = R.flatten(R.pluck('x_opencti_stix_ids', sourceEntities));
+  const newStixIds = R.uniq(R.concat(targetEntity.x_opencti_stix_ids || [], stixIdsToAdd));
+  const stixIdsInput = { key: 'x_opencti_stix_ids', value: newStixIds };
+  updateAttributes.push(stixIdsInput);
+  const aliasField = resolveAliasesField(targetEntity.entity_type);
+  if (!R.isNil(targetEntity[aliasField])) {
+    const aliasesToAdd = R.flatten(R.pluck(aliasField, sourceEntities));
+    const newAliases = R.uniq(R.concat(targetEntity[aliasField], aliasesToAdd));
+    const aliasInput = { key: aliasField, value: newAliases };
+    updateAttributes.push(aliasInput);
+  }
+  await updateAttributeRaw(user, targetEntity, updateAttributes);
+  // EACH SOURCE (Ignore createdBy)
+  // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY + REINDEX RELATION
+  // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY + REINDEX RELATION
+  // region CHANGING FROM
+  const allTargetToRelations = targetedRelations([targetEntity], 'from');
+  const allSourcesToRelations = targetedRelations(sourceEntities, 'from');
+  const relationsToRedirectFrom = filterTargetByExisting(allSourcesToRelations, allTargetToRelations);
+  // region CHANGING TO
+  const allTargetFromRelations = targetedRelations([targetEntity], 'to');
+  const allSourcesFromRelations = targetedRelations(sourceEntities, 'to');
+  const relationsFromRedirectTo = filterTargetByExisting(allSourcesFromRelations, allTargetFromRelations);
+  await executeWrite(async (wTx) => {
+    const queries = [];
+    for (let indexFrom = 0; indexFrom < relationsToRedirectFrom.length; indexFrom += 1) {
+      const r = relationsToRedirectFrom[indexFrom];
+      const removeOldSource = `match $rel(${r.type}_from:$from, ${r.type}_to:$to) isa ${r.type}; 
+      $rel has standard_id "${r.id}"; delete $rel (${r.type}_from:$from);`;
+      const insertNewSource = `match $rel(${r.type}_to:$to) isa ${r.type}; 
+      $new-from isa entity, has standard_id "${targetEntity.standard_id}"; 
+      $rel has standard_id "${r.id}"; insert $rel (${r.type}_from:$new-from);`;
+      queries.push(wTx.query(removeOldSource).then(() => wTx.query(insertNewSource)));
+    }
+    for (let indexTo = 0; indexTo < relationsFromRedirectTo.length; indexTo += 1) {
+      const r = relationsFromRedirectTo[indexTo];
+      const removeOldSource = `match $rel(${r.type}_from:$from, ${r.type}_to:$to) isa ${r.type}; 
+      $rel has standard_id "${r.id}"; delete $rel (${r.type}_to:$to);`;
+      const insertNewSource = `match $rel(${r.type}_from:$from) isa ${r.type}; 
+      $new-to isa entity, has standard_id "${targetEntity.standard_id}"; 
+      $rel has standard_id "${r.id}"; insert $rel (${r.type}_to:$new-to);`;
+      queries.push(wTx.query(removeOldSource).then(() => wTx.query(insertNewSource)));
+    }
+    await Promise.all(queries);
+  });
+  const reindexRelations = [];
+  // eslint-disable-next-line no-restricted-syntax
+  for (const test of [...relationsToRedirectFrom, ...relationsFromRedirectTo]) {
+    reindexRelations.push(
+      internalLoadById(test.id, { noCache: true }) //
+        .then((rel) => elIndexElements([rel]))
+    );
+  }
+  await Promise.all(reindexRelations);
+  // Delete sourcing entities
+  const deletePromise = [];
+  for (let delIndex = 0; delIndex < sourceEntities.length; delIndex += 1) {
+    const sourceEntity = sourceEntities[delIndex];
+    // eslint-disable-next-line no-use-before-define
+    deletePromise.push(deleteElementById(user, sourceEntity, false));
+  }
+  await Promise.all(deletePromise);
+  // 9. Return entity
+  return loadById(targetEntity.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
+    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
+  );
+};
+
+export const updateAttribute = async (user, id, type, inputs, options = {}) => {
+  const elements = Array.isArray(inputs) ? inputs : [inputs];
+  const { operation = EVENT_TYPE_UPDATE } = options;
+  if (operation !== EVENT_TYPE_UPDATE && elements.length > 1) {
+    throw FunctionalError(`Unsupported operation`, { operation, elements });
+  }
+  const instance = await loadByIdFullyResolved(id, type, options);
+  if (!instance) {
+    throw FunctionalError(`Cant find element to update`, { id, type });
+  }
+  const participantIds = [instance.standard_id];
+  let mergingEntity = null;
+  // 01. Check if this update is not resulting to an entity merging
+  const keys = R.map((t) => t.key, inputs);
+  if (isFieldContributingToStandardId(instance, keys)) {
+    const updatedInstance = mergeInstanceWithInputs(instance, inputs);
+    const targetStandardId = generateStandardId(instance.entity_type, updatedInstance);
+    if (targetStandardId !== instance.standard_id) {
+      const existingEntity = await loadByIdFullyResolved(targetStandardId);
+      if (existingEntity && isStixCoreObject(existingEntity.entity_type)) {
+        mergingEntity = existingEntity;
+        participantIds.push(targetStandardId);
+      } else if (existingEntity) {
+        throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+      }
+    }
+  }
+  // --- take lock, ensure no one currently create or update this element
+  let lock;
+  try {
+    // Try to get the lock in redis
+    lock = await lockResource(participantIds);
+    if (mergingEntity) {
+      // noinspection UnnecessaryLocalVariableJS
+      const merged = await mergeEntitiesRaw(user, mergingEntity, [instance], keys);
+      // Return merged element after waiting for it.
+      return merged;
+      // eslint-disable-next-line
+    } else {
+      // noinspection UnnecessaryLocalVariableJS
+      const updated = await updateAttributeRaw(user, instance, inputs, options);
+      // Return updated element after waiting for it.
+      return updated;
+    }
+  } finally {
+    if (lock) await lock.unlock();
+  }
+};
+const transformPathToInput = (patch) => {
+  return R.pipe(
     R.toPairs,
     R.map((t) => {
       const val = R.last(t);
       return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
     })
   )(patch);
+};
+export const patchAttributeRaw = async (user, instance, patch, options = {}) => {
+  const inputs = transformPathToInput(patch);
+  return updateAttributeRaw(user, instance, inputs, options);
+};
+export const patchAttribute = async (user, id, type, patch, options = {}) => {
+  const inputs = transformPathToInput(patch);
   return updateAttribute(user, id, type, inputs, options);
 };
 // endregion
@@ -1612,9 +1774,8 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 // region mutation relation
 const upsertRelation = async (user, relationship, type, data) => {
   if (isNotEmptyField(data.stix_id)) {
-    const id = relationship.internal_id;
     const patch = { x_opencti_stix_ids: [data.stix_id] };
-    return patchAttribute(user, id, type, patch, { operation: UPDATE_OPERATION_ADD });
+    return patchAttributeRaw(user, relationship, patch, { operation: UPDATE_OPERATION_ADD });
   }
   return relationship;
 };
@@ -1801,14 +1962,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
   if (isInternalEvent === false) {
     if (input.relationship_type === RELATION_OBJECT_MARKING) {
       // We need to full reload the from entity to redispatch it.
-      let upFrom = await loadByIdWithRelations(from.id, from.entity_type, opts);
-      // Marking can be added to a relation.
-      const isRelation = upFrom.base_type === BASE_TYPE_RELATION;
-      if (isRelation) {
-        // In this case we need to resolve the from and to for the history ,essa
-        const [rFrom, rTo] = await Promise.all([internalLoadById(upFrom.fromId), internalLoadById(upFrom.toId)]);
-        upFrom = R.mergeRight(upFrom, { from: rFrom, to: rTo });
-      }
+      const upFrom = await loadByIdFullyResolved(from.id, from.entity_type, opts);
       await storeCreateEvent(user, upFrom, upFrom);
     } else {
       const relWithConnections = Object.assign(created, { from, to });
@@ -1876,11 +2030,10 @@ export const createRelations = async (user, inputs, opts = {}) => {
 // region mutation entity
 const upsertEntity = async (user, entity, type, data) => {
   let updatedEntity = entity;
-  const id = entity.internal_id;
   // Upsert the stix ids
   if (isNotEmptyField(data.stix_id)) {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
-    updatedEntity = patchAttribute(user, id, type, patch, { operation: UPDATE_OPERATION_ADD });
+    updatedEntity = await patchAttributeRaw(user, updatedEntity, patch, { operation: UPDATE_OPERATION_ADD });
   }
   // Upsert the aliases
   if (isStixDomainObjectNamed(type)) {
@@ -1889,22 +2042,23 @@ const upsertEntity = async (user, entity, type, data) => {
     const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
     if (normalizeName(entity.name) !== normalizeName(name)) aliases.push(name);
     const patch = { [key]: aliases };
-    updatedEntity = patchAttribute(user, id, type, patch, { operation: UPDATE_OPERATION_ADD });
+    updatedEntity = await patchAttributeRaw(user, updatedEntity, patch, { operation: UPDATE_OPERATION_ADD });
   }
   // Upsert fields
   if (data.update === true) {
-    if (isStixDomainObject(type) && stixDomainObjectFieldsToBeUpdated[type]) {
-      await Promise.all(
-        R.map((field) => {
-          if (!R.isNil(data[field])) {
-            return updateAttribute(user, id, type, {
-              key: field,
-              value: Array.isArray(data[field]) ? data[field] : [data[field]],
-            });
-          }
-          return true;
-        }, stixDomainObjectFieldsToBeUpdated[type])
-      );
+    const fields = stixDomainObjectFieldsToBeUpdated[type];
+    if (isStixDomainObject(type) && fields) {
+      const patch = {};
+      for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
+        const fieldKey = fields[fieldIndex];
+        const inputData = data[fieldKey];
+        if (isNotEmptyField(inputData)) {
+          patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
+        }
+      }
+      if (!R.isEmpty(patch)) {
+        updatedEntity = await patchAttributeRaw(user, updatedEntity, patch);
+      }
     }
   }
   return updatedEntity;
@@ -2115,7 +2269,7 @@ export const deleteEntityById = async (user, entityId, type, options = {}) => {
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   // Check consistency
-  const entity = await loadByIdWithRelations(entityId, type, options);
+  const entity = await loadById(entityId, type, options);
   if (entity === null) {
     throw DatabaseError(`Cant find entity to delete ${entityId}`);
   }
@@ -2128,13 +2282,11 @@ export const deleteRelationById = async (user, relationId, type, options = {}) =
     /* istanbul ignore next */
     throw FunctionalError(`You need to specify a type when deleting a relation`);
   }
-  const rel = await loadByIdWithRelations(relationId, type, options);
+  const rel = await loadByIdFullyResolved(relationId, type, options);
   if (rel === null) {
     throw DatabaseError(`Cant find relation to delete ${relationId}`);
   }
-  const [from, to] = await Promise.all([loadByIdWithRelations(rel.fromId), loadByIdWithRelations(rel.toId)]);
-  const relation = R.mergeRight(rel, { from, to });
-  await deleteElementById(user, relation, true, options);
+  await deleteElementById(user, rel, true, options);
   return relationId;
 };
 export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType, opts = {}) => {

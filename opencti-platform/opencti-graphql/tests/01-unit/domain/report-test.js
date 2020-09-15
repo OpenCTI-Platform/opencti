@@ -9,7 +9,10 @@ test('should report ids stable', () => {
     published: new Date('2020-03-01T14:02:48.111Z'),
     createdBy: 'identity--7b82b010-b1c0-4dae-981f-7756374a17df', // Will not be used in the key
   };
-  const isContributing = isFieldContributingToStandardId(ENTITY_TYPE_CONTAINER_REPORT, ['test', 'published']);
+  const isContributing = isFieldContributingToStandardId({ entity_type: ENTITY_TYPE_CONTAINER_REPORT }, [
+    'test',
+    'published',
+  ]);
   expect(isContributing).toBeTruthy();
   for (let i = 0; i < 100; i += 1) {
     // eslint-disable-next-line no-await-in-loop

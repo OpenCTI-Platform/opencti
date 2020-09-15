@@ -8,7 +8,7 @@ import * as I from './internalObject';
 import * as D from './stixDomainObject';
 import * as M from './stixMetaObject';
 import * as C from './stixCyberObservableObject';
-import { OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
+import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
 import { isStixCyberObservable } from './stixCyberObservableObject';
@@ -150,11 +150,14 @@ const stixEntityContribution = {
 const resolveContribution = (type) => {
   return isStixCyberObservable(type) ? stixCyberObservableContribution : stixEntityContribution;
 };
-export const isFieldContributingToStandardId = (type, keys) => {
-  const contrib = resolveContribution(type);
-  const properties = contrib.definition[type];
+export const isFieldContributingToStandardId = (instance, keys) => {
+  const instanceType = instance.entity_type;
+  const isRelation = instance.base_type === BASE_TYPE_RELATION;
+  if (isRelation) return false;
+  const contrib = resolveContribution(instanceType);
+  const properties = contrib.definition[instanceType];
   if (!properties) {
-    throw DatabaseError(`Unknown definition for type ${type}`);
+    throw DatabaseError(`Unknown definition for type ${instanceType}`);
   }
   if (properties.length === 0) return true;
   const propertiesToKeep = R.flatten(R.map((t) => t.src, properties));
@@ -186,7 +189,9 @@ const filteredIdContributions = (contrib, way, data) => {
 const generateDataUUID = (type, data) => {
   const contrib = resolveContribution(type);
   const properties = contrib.definition[type];
-  if (!properties) throw DatabaseError(`Unknown definition for type ${type}`);
+  if (!properties) {
+    throw DatabaseError(`Unknown definition for type ${type}`);
+  }
   if (properties.length === 0) return data;
   // Handle specific case of static uuid
   if (!Array.isArray(properties)) return properties;
