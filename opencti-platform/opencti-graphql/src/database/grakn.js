@@ -1738,7 +1738,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     lock = await lockResource(participantIds);
     if (mergingEntity) {
       // noinspection UnnecessaryLocalVariableJS
-      const merged = await mergeEntitiesRaw(user, mergingEntity, [instance], keys);
+      const merged = await mergeEntitiesRaw(user, mergingEntity, [instance]);
       // Return merged element after waiting for it.
       return merged;
       // eslint-disable-next-line
@@ -1772,7 +1772,7 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 // endregion
 
 // region mutation relation
-const upsertRelation = async (user, relationship, type, data) => {
+const upsertRelation = async (user, relationship, data) => {
   if (isNotEmptyField(data.stix_id)) {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
     return patchAttributeRaw(user, relationship, patch, { operation: UPDATE_OPERATION_ADD });
@@ -1828,7 +1828,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     existingRelationship = R.head(existingRelationships.edges).node;
   }
   if (existingRelationship) {
-    return upsertRelation(user, existingRelationship, relationshipType, input);
+    return upsertRelation(user, existingRelationship, input);
   }
   // 05. Prepare the relation to be created
   const today = now();
@@ -2003,7 +2003,7 @@ export const createRelation = async (user, input, opts = {}) => {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
       const existingRelationship = loadById(err.data.id, input.relationship_type);
-      return upsertRelation(user, existingRelationship, input.relationship_type, input);
+      return upsertRelation(user, existingRelationship, input);
     }
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Operation still in progress (redis lock)', { lockIds });

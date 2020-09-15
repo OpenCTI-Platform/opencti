@@ -23,7 +23,7 @@ const MarkDownField = (props) => {
   const submit = (event) => {
     const { value } = event.target;
     if (typeof onSubmit === 'function' && value && value.length > 3) {
-      onSubmit(name, value || '');
+      onSubmit(name, value);
     }
   };
   return (
