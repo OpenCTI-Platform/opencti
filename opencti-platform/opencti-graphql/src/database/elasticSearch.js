@@ -754,7 +754,7 @@ export const elPaginate = async (indexName, options = {}) => {
           } else if (operator === 'wildcard') {
             valuesFiltering.push({
               query_string: {
-                query: `${values[i].toString()}`,
+                query: `"${values[i].toString()}"`,
                 fields: [key],
               },
             });

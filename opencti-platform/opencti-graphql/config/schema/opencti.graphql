@@ -5066,7 +5066,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   hashes: [Hash]
   # File
   extensions: String
-  size: String
+  size: Int
   name: String
   name_enc: String
   magic_number_hex: String
@@ -5084,7 +5084,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 input StixFileAddInput {
   hashes: [HashInput]!
   extensions: String
-  size: String
+  size: Int
   name: String
   name_enc: String
   magic_number_hex: String

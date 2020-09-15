@@ -151,7 +151,7 @@ class RootCountry extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={countryId}
+                          stixCoreObjectId={countryId}
                         />
                       </React.Fragment>
                     )}

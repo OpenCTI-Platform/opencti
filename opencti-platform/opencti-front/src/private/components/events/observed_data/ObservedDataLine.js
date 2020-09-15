@@ -140,6 +140,8 @@ const ObservedDataLineFragment = createFragmentContainer(
       fragment ObservedDataLine_node on ObservedData {
         id
         created
+        first_observed
+        last_observed
         createdBy {
           ... on Identity {
             id

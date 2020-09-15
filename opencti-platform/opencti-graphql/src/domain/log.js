@@ -17,9 +17,7 @@ export const creator = async (entityId) => {
     ],
     connectionFormat: false,
   }).then((logs) =>
-    logs.length > 0 && head(logs).user
-      ? findById(head(logs).user)
-      : { id: OPENCTI_ADMIN_UUID, name: SYSTEM_USER.name }
+    logs.length > 0 && head(logs).user ? findById(head(logs).user) : { id: OPENCTI_ADMIN_UUID, name: SYSTEM_USER.name }
   );
 };
 

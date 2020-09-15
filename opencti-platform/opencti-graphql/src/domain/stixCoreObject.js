@@ -198,10 +198,10 @@ export const stixCoreObjectMerge = async (user, stixCoreObjectId, stixCoreObject
     stixCoreObjectsIds.map(async (id) => loadById(id, ABSTRACT_STIX_CORE_OBJECT))
   );
   // 1.1 Update STIX IDs
-  const stixIdsToAdd = flatten(pluck('stix_ids', stixCoreObjectsToBeMerged));
-  const newStixIds = uniq(concat(stixCoreObject.stix_ids, stixIdsToAdd));
+  const stixIdsToAdd = flatten(pluck('x_opencti_stix_ids', stixCoreObjectsToBeMerged));
+  const newStixIds = uniq(concat(stixCoreObject.x_opencti_stix_ids, stixIdsToAdd));
   await stixCoreObjectEditField(user, stixCoreObjectId, {
-    key: 'stix_ids',
+    key: 'x_opencti_stix_ids',
     value: newStixIds,
   });
   // 1.2 Update the alias field
