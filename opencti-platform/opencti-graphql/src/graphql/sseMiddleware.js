@@ -96,7 +96,7 @@ const catchupHandler = async (req, res) => {
   if (!connectedClient) {
     res.status(401).json({ status: 'User stream not connected' });
   } else {
-    const { from = '-', size = 50 } = body;
+    const { from = '-', size = 200000 } = body;
     const broadcastClient = R.last(connectedClient);
     try {
       await catchup(from, size, (eventId, topic, data) => {
@@ -149,7 +149,7 @@ const createSeeMiddleware = (broadcaster) => {
     });
     res.writeHead(200, {
       Connection: 'keep-alive',
-      'Content-Type': 'text/event-stream',
+      'Content-Type': 'text/event-stream; charset=utf-8',
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });

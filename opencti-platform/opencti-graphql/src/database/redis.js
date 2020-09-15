@@ -346,7 +346,7 @@ export const listenStream = async (callback) => {
 };
 export const catchup = async (from, limit, callback) => {
   const client = await getClient();
-  const size = limit > 50 ? 50 : limit;
+  const size = limit > 50 ? 20000 : limit;
   return client.call('XRANGE', OPENCTI_STREAM, from, '+', 'COUNT', size).then(async (results) => {
     if (results && results.length > 0) {
       processStreamResult(results, callback);
