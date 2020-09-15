@@ -47,6 +47,7 @@ export const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_obs
 export const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
 
 export const isNotEmptyField = (field) => !R.isEmpty(field) && !R.isNil(field);
+export const isEmptyField = (field) => !isNotEmptyField(field);
 
 export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 

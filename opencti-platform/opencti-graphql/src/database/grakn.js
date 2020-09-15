@@ -17,6 +17,7 @@ import {
   buildPagination,
   fillTimeSeries,
   inferIndexFromConceptType,
+  isEmptyField,
   isNotEmptyField,
   relationTypeToInputName,
   utcDate,
@@ -1035,7 +1036,12 @@ const transformRawRelationsToAttributes = (data, orientation) => {
         (a) => a.entity_type,
         R.filter((f) => f.direction === orientation, data)
       )
-    ).map(([k, v]) => ({ [k]: R.map((i) => R.assoc('i_rel_id', i.id, i.target), v) }))
+    ).map(([k, v]) => ({
+      [k]: R.map((i) => {
+        const info = { i_rel_internal_id: i.internal_id, i_rel_standard_id: i.standard_id };
+        return Object.assign(i.target, info);
+      }, v),
+    }))
   );
 };
 const findElementDependencies = async (instance, args = {}) => {
@@ -1066,7 +1072,13 @@ const findElementDependencies = async (instance, args = {}) => {
   }
   const simplified = R.map((r) => {
     const direction = r.rel.fromId === instance.id ? 'from' : 'to';
-    return { id: r.rel.standard_id, entity_type: r.rel.entity_type, target: r.to, direction };
+    return {
+      internal_id: r.rel.internal_id,
+      standard_id: r.rel.standard_id,
+      entity_type: r.rel.entity_type,
+      target: r.to,
+      direction,
+    };
   }, rawData);
   data.i_relations_from = transformRawRelationsToAttributes(simplified, 'from');
   data.i_relations_to = transformRawRelationsToAttributes(simplified, 'to');
@@ -1402,12 +1414,9 @@ const mergeInstanceWithInputs = (instance, inputs) => {
   const data = updatedInputsToData(inputs);
   return R.mergeRight(instance, data);
 };
-
-const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
-  const { id } = instance;
+const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) => {
   const { forceUpdate = false, operation = UPDATE_OPERATION_REPLACE } = options;
   const { key, value } = rawInput; // value can be multi valued
-  // Format the data in regards of the operation for multiple attributes
   const isMultiple = R.includes(key, multipleAttributes);
   let finalVal;
   let finalKey = key;
@@ -1455,15 +1464,21 @@ const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {})
       finalVal = value;
     }
     if (!forceUpdate && R.equals(finalVal.sort(), currentValues.sort())) {
-      return []; // No need to update the attribute
+      return {}; // No need to update the attribute
     }
   } else {
     finalVal = value;
     if (!forceUpdate && R.equals(instance[key], R.head(value))) {
-      return []; // No need to update the attribute
+      return {}; // No need to update the attribute
     }
   }
-  const input = { key: finalKey, value: finalVal };
+  return { key: finalKey, value: finalVal };
+};
+const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
+  const { id } = instance;
+  const { key } = rawInput;
+  const input = rebuildAndMergeInputFromExistingData(rawInput, instance, options);
+  if (R.isEmpty(input)) return [];
   const updatedInputs = [input];
   // --- 01 Get the current attribute types
   const escapedKey = escape(input.key);
@@ -1605,7 +1620,16 @@ const targetedRelations = (entities, direction) => {
         const [key, values] = info[index];
         if (key !== RELATION_CREATED_BY) {
           // Except created by ref (mono valued)
-          relations.push(...R.map((val) => ({ id: val.i_rel_id, type: key, connect: val.standard_id }), values));
+          relations.push(
+            ...R.map((val) => {
+              return {
+                internal_id: val.i_rel_internal_id,
+                standard_id: val.i_rel_standard_id,
+                entity_type: key,
+                connect: val.standard_id,
+              };
+            }, values)
+          );
         }
       }
       return relations;
@@ -1614,10 +1638,12 @@ const targetedRelations = (entities, direction) => {
 };
 const filterTargetByExisting = (sources, targets) => {
   return R.filter((f) => {
-    return !R.find((t) => t.type === f.type && t.connect === f.connect, targets);
+    return !R.find((t) => t.entity_type === f.entity_type && t.connect === f.connect, targets);
   }, sources);
 };
-export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities) => {
+export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
+  // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
+  const { chosenFields = {} } = opts;
   // Pre-checks
   const sourceIds = R.map((e) => e.internal_id, sourceEntities);
   if (R.includes(targetEntity.internal_id, sourceIds)) {
@@ -1635,21 +1661,37 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities) => {
       source: sourceTypes,
     });
   }
-  // 1. Update STIX IDs and aliases
   const updateAttributes = [];
-  const stixIdsToAdd = R.flatten(R.pluck('x_opencti_stix_ids', sourceEntities));
-  const newStixIds = R.uniq(R.concat(targetEntity.x_opencti_stix_ids || [], stixIdsToAdd));
-  const stixIdsInput = { key: 'x_opencti_stix_ids', value: newStixIds };
-  updateAttributes.push(stixIdsInput);
-  const aliasField = resolveAliasesField(targetEntity.entity_type);
-  if (!R.isNil(targetEntity[aliasField])) {
-    const aliasesToAdd = R.flatten(R.pluck(aliasField, sourceEntities));
-    const newAliases = R.uniq(R.concat(targetEntity[aliasField], aliasesToAdd));
-    const aliasInput = { key: aliasField, value: newAliases };
-    updateAttributes.push(aliasInput);
+  // 1. Update required attributes
+  const attributes = await queryAttributes(targetType);
+  const sourceFields = R.map((a) => a.node.value, attributes.edges);
+  for (let fieldIndex = 0; fieldIndex < sourceFields.length; fieldIndex += 1) {
+    const sourceFieldKey = sourceFields[fieldIndex];
+    const mergedEntityCurrentFieldValue = targetEntity[sourceFieldKey];
+    const chosenSourceEntityId = chosenFields[sourceFieldKey];
+    const takenFrom = chosenSourceEntityId
+      ? R.find((i) => i.standard_id === chosenSourceEntityId, sourceEntities)
+      : R.head(sourceEntities); // If not specified, take the first one.
+    const sourceFieldValue = takenFrom[sourceFieldKey];
+    // Check if we need to do something
+    // Special case of dictionary
+    if (isDictionaryAttribute(sourceFieldKey)) {
+      const dictInputs = Object.entries(sourceFieldValue).map(([k, v]) => ({
+        key: `${sourceFieldKey}.${k}`,
+        value: [v],
+      }));
+      updateAttributes.push(...dictInputs);
+    } else if (isMultipleAttribute(sourceFieldKey)) {
+      const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
+      if (mergedEntityCurrentFieldValue.length !== sourceFieldValue.length) {
+        updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
+      }
+    } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
+      updateAttributes.push({ key: sourceFieldKey, value: [sourceFieldValue] });
+    }
   }
   await updateAttributeRaw(user, targetEntity, updateAttributes);
-  // EACH SOURCE (Ignore createdBy)
+  // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY + REINDEX RELATION
   // - EVERYTHING TARGETING ME (-> from) ==> We change to relationship TO -> TARGET ENTITY + REINDEX RELATION
   // region CHANGING FROM
@@ -1664,29 +1706,43 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities) => {
     const queries = [];
     for (let indexFrom = 0; indexFrom < relationsToRedirectFrom.length; indexFrom += 1) {
       const r = relationsToRedirectFrom[indexFrom];
-      const removeOldSource = `match $rel(${r.type}_from:$from, ${r.type}_to:$to) isa ${r.type}; 
-      $rel has standard_id "${r.id}"; delete $rel (${r.type}_from:$from);`;
-      const insertNewSource = `match $rel(${r.type}_to:$to) isa ${r.type}; 
+      const type = r.entity_type;
+      const removeOldFrom = `match $rel(${type}_from:$from, ${type}_to:$to) isa ${type}; 
+      $rel has internal_id "${r.internal_id}"; delete $rel (${type}_from:$from);`;
+      const insertNewFrom = `match $rel(${type}_to:$to) isa ${type}; 
       $new-from isa entity, has standard_id "${targetEntity.standard_id}"; 
-      $rel has standard_id "${r.id}"; insert $rel (${r.type}_from:$new-from);`;
-      queries.push(wTx.query(removeOldSource).then(() => wTx.query(insertNewSource)));
+      $rel has internal_id "${r.internal_id}"; insert $rel (${type}_from:$new-from);`;
+      queries.push(wTx.query(removeOldFrom).then(() => wTx.query(insertNewFrom)));
     }
     for (let indexTo = 0; indexTo < relationsFromRedirectTo.length; indexTo += 1) {
       const r = relationsFromRedirectTo[indexTo];
-      const removeOldSource = `match $rel(${r.type}_from:$from, ${r.type}_to:$to) isa ${r.type}; 
-      $rel has standard_id "${r.id}"; delete $rel (${r.type}_to:$to);`;
-      const insertNewSource = `match $rel(${r.type}_from:$from) isa ${r.type}; 
+      const type = r.entity_type;
+      const removeOldTo = `match $rel(${type}_from:$from, ${type}_to:$to) isa ${type}; 
+      $rel has internal_id "${r.internal_id}"; delete $rel (${type}_to:$to);`;
+      const insertNewTo = `match $rel(${type}_from:$from) isa ${type}; 
       $new-to isa entity, has standard_id "${targetEntity.standard_id}"; 
-      $rel has standard_id "${r.id}"; insert $rel (${r.type}_to:$new-to);`;
-      queries.push(wTx.query(removeOldSource).then(() => wTx.query(insertNewSource)));
+      $rel has internal_id "${r.internal_id}"; insert $rel (${type}_to:$new-to);`;
+      queries.push(wTx.query(removeOldTo).then(() => wTx.query(insertNewTo)));
     }
     await Promise.all(queries);
   });
+  // 3. Create and push stream events
+  const streamEvents = [];
+  for (let indexFrom = 0; indexFrom < relationsToRedirectFrom.length; indexFrom += 1) {
+    const r = relationsToRedirectFrom[indexFrom];
+    streamEvents.push(storeUpdateEvent(user, UPDATE_OPERATION_REPLACE, r, { from: targetEntity }));
+  }
+  for (let indexTo = 0; indexTo < relationsFromRedirectTo.length; indexTo += 1) {
+    const r = relationsFromRedirectTo[indexTo];
+    streamEvents.push(storeUpdateEvent(user, UPDATE_OPERATION_REPLACE, r, { to: targetEntity }));
+  }
+  await Promise.all(streamEvents);
+  // 4. Reindex all relations
   const reindexRelations = [];
   // eslint-disable-next-line no-restricted-syntax
   for (const test of [...relationsToRedirectFrom, ...relationsFromRedirectTo]) {
     reindexRelations.push(
-      internalLoadById(test.id, { noCache: true }) //
+      internalLoadById(test.internal_id, { noCache: true }) //
         .then((rel) => elIndexElements([rel]))
     );
   }
@@ -1718,9 +1774,14 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   const participantIds = [instance.standard_id];
   let mergingEntity = null;
   // 01. Check if this update is not resulting to an entity merging
-  const keys = R.map((t) => t.key, inputs);
+  const keys = R.map((t) => t.key, elements);
   if (isFieldContributingToStandardId(instance, keys)) {
-    const updatedInstance = mergeInstanceWithInputs(instance, inputs);
+    // In this case we need to reconstruct the data like if an update already appears
+    const resolvedInputs = R.filter(
+      (f) => !R.isEmpty(f),
+      R.map((i) => rebuildAndMergeInputFromExistingData(i, instance, options), elements)
+    );
+    const updatedInstance = mergeInstanceWithInputs(instance, resolvedInputs);
     const targetStandardId = generateStandardId(instance.entity_type, updatedInstance);
     if (targetStandardId !== instance.standard_id) {
       const existingEntity = await loadByIdFullyResolved(targetStandardId);

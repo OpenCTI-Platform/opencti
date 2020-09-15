@@ -160,8 +160,9 @@ export const isFieldContributingToStandardId = (instance, keys) => {
     throw DatabaseError(`Unknown definition for type ${instanceType}`);
   }
   if (properties.length === 0) return true;
+  const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
   const propertiesToKeep = R.flatten(R.map((t) => t.src, properties));
-  const keysIncluded = R.filter((p) => R.includes(p, keys), propertiesToKeep);
+  const keysIncluded = R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
   return keysIncluded.length > 0;
 };
 const filteredIdContributions = (contrib, way, data) => {
