@@ -339,6 +339,7 @@ export const queryAttributes = async (type) => {
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('value')));
     const finalResult = R.pipe(
       sortByLabel,
+      R.filter((f) => !f.value.startsWith('i_')), // Filter all internal fields
       R.uniqBy((n) => n.value),
       R.map((n) => ({ node: n }))
     )(result);
