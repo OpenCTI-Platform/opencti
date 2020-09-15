@@ -907,7 +907,7 @@ class StixCyberObservable:
                     else None,
                 }
             elif type == "Windows-Registry-Key":
-                input_variables["WindowsRegistryKey "] = {
+                input_variables["WindowsRegistryKey"] = {
                     "attribute_key": observable_data["key"]
                     if "key" in observable_data
                     else None,
@@ -918,8 +918,9 @@ class StixCyberObservable:
                     if "number_of_subkeys" in observable_data
                     else None,
                 }
+                print(input_variables)
             elif type == "Windows-Registry-Value-Type":
-                input_variables["WindowsRegistryKeyValueType "] = {
+                input_variables["WindowsRegistryKeyValueType"] = {
                     "name": observable_data["name"]
                     if "name" in observable_data
                     else None,
@@ -931,7 +932,7 @@ class StixCyberObservable:
                     else None,
                 }
             elif type == "X509-V3-Extensions-Type":
-                input_variables["X509V3ExtensionsType "] = {
+                input_variables["X509V3ExtensionsType"] = {
                     "basic_constraints": observable_data["basic_constraints"]
                     if "basic_constraints" in observable_data
                     else None,
