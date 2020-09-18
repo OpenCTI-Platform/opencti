@@ -19,7 +19,7 @@ const createHttpServer = async () => {
 export const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
-      const serverPromise = createHttpServer(broadcaster);
+      const serverPromise = createHttpServer();
       serverPromise.then(({ httpServer, seeMiddleware }) => {
         httpServer.on('close', () => {
           seeMiddleware.shutdown();

@@ -325,6 +325,10 @@ export const createStreamProcessor = (callback) => {
   };
   const processStep = async (client) => {
     const streamResult = await client.xread('BLOCK', WAIT_TIME, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, startEventId);
+    // since previous call is async (and blocking) we should check if we are still running before processing the message
+    if (!streamListening) {
+      return false;
+    }
     if (streamResult && streamResult.length > 0) {
       const [, results] = R.head(streamResult);
       const lastElementId = await processStreamResult(results, callback);
