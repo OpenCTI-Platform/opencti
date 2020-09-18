@@ -1,13 +1,14 @@
 import express from 'express';
-// noinspection NodeJsCodingAssistanceForCoreModules
+// noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
+// noinspection NodeCoreCodingAssistance
+import path from 'path';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import compression from 'compression';
 import helmet from 'helmet';
 import { isEmpty } from 'ramda';
-import path from 'path';
 import nconf from 'nconf';
 import { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
@@ -15,9 +16,9 @@ import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
-import createSeeMiddleware, { initBroadcaster } from './graphql/sseMiddleware';
+import createSeeMiddleware from './graphql/sseMiddleware';
 
-const createApp = async (apolloServer) => {
+const createApp = async (apolloServer, broadcaster) => {
   // Init the http server
   const app = express();
   const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
@@ -50,10 +51,8 @@ const createApp = async (apolloServer) => {
   );
   app.use(bodyParser.json({ limit: '100mb' }));
 
-  const broadcaster = await initBroadcaster();
   const seeMiddleware = createSeeMiddleware(broadcaster);
   seeMiddleware.applyMiddleware({ app });
-
   const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
   const AppBasePath = nconf.get('app:base_path');
   const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;

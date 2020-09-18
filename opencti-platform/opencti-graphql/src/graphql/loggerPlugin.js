@@ -25,6 +25,7 @@ const tryResolveKeyPromises = async (data) => {
   }
 };
 
+const API_CALL_MESSAGE = 'API Call'; // If you touch this, you need to change the performance agent
 const perfLog = nconf.get('app:performance_logger') || false;
 export default {
   requestDidStart: /* istanbul ignore next */ () => {
@@ -71,12 +72,12 @@ export default {
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
           if (includes(callError.name, ['AuthRequired', 'AuthFailure', 'ForbiddenAccess'])) {
-            logger.warn('API Call', Object.assign(callMetaData, { error }));
+            logger.warn(API_CALL_MESSAGE, Object.assign(callMetaData, { error }));
           } else {
-            logger.error('API Call', Object.assign(callMetaData, { error }));
+            logger.error(API_CALL_MESSAGE, Object.assign(callMetaData, { error }));
           }
         } else if (perfLog) {
-          logger.info('API Call', callMetaData);
+          logger.info(API_CALL_MESSAGE, callMetaData);
         }
       },
     };

@@ -64,14 +64,14 @@ const userResolvers = {
       // We need to iterate on each provider to find one that validated the credentials
       const formProviders = filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
-        logger.error('[Configuration] Cant authenticate without any form providers');
+        logger.error('[AUTH] Cant authenticate without any form providers');
       }
       for (let index = 0; index < formProviders.length; index += 1) {
         const auth = formProviders[index];
         // eslint-disable-next-line no-await-in-loop
         const loginToken = await new Promise((resolve) => {
           passport.authenticate(auth.provider, { session: false }, (err, tokenAuth, info) => {
-            if (err || info) logger.warn(`[AUTH ERROR] > ${auth.provider}`, { error: err, info });
+            if (err || info) logger.warn(`[AUTH] ${auth.provider}`, { error: err, info });
             resolve(tokenAuth);
           })({ body: { username: input.email, password: input.password } });
         });

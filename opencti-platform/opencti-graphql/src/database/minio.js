@@ -72,7 +72,7 @@ export const extractName = (entityType = null, entityId = null, filename = '') =
 };
 
 export const deleteFile = async (user, id) => {
-  logger.debug(`FileManager > delete file ${id} by ${user.user_email}`);
+  logger.debug(`[MINIO] delete file ${id} by ${user.user_email}`);
   await minioClient.removeObject(bucketName, id);
   await deleteWorkForFile(id);
   return true;
@@ -101,7 +101,7 @@ const rawFilesListing = (directory) => {
     stream.on('data', async (obj) => files.push(assoc('id', obj.name, obj)));
     /* istanbul ignore next */
     stream.on('error', (e) => {
-      logger.error('MINIO > Error listing files', { error: e });
+      logger.error('[MINIO] Error listing files', { error: e });
       reject(e);
     });
     stream.on('end', () => resolve(files));
@@ -148,7 +148,7 @@ export const upload = async (
   }
   // eslint-disable-next-line prettier/prettier
   const fileDirName = `${category}${context ? `/${context}` : ''}/${extractName(finalEntityType, entityId, filename)}`;
-  logger.debug(`FileManager > upload file ${filename} to ${fileDirName} by ${user.user_email}`);
+  logger.debug(`[MINIO] Upload file ${filename} to ${fileDirName} by ${user.user_email}`);
   // Upload the file in the storage
   return new Promise((resolve, reject) => {
     return minioClient.putObject(bucketName, fileDirName, createReadStream(), null, metadata, (err) => {

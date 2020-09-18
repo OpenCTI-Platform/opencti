@@ -35,7 +35,7 @@ const graknStateStorage = {
     const query = `match $from isa MigrationStatus; 
     $rel(${RELATION_MIGRATES}_from:$from, ${RELATION_MIGRATES}_to:$to) isa ${RELATION_MIGRATES}; get;`;
     const migrations = await find(query, ['from', 'to'], { noCache: true });
-    logger.info(`[MIGRATION] > Read ${migrations.length} migrations from the database`);
+    logger.info(`[MIGRATION] Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.status.lastRun,
       migrations: map(
@@ -77,11 +77,11 @@ const graknStateStorage = {
           has internal_id "${uuid()}", has standard_id "migrates--${uuid()}";`;
         logger.debug(`[MIGRATION] step 4`, { query: q4 });
         await wTx.query(q4);
-        logger.info(`[MIGRATION] > Saving current configuration, ${mig.title}`);
+        logger.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
       });
       return fn();
     } catch (err) {
-      logger.error('[MIGRATION] > Error saving the migration state');
+      logger.error('[MIGRATION] Error saving the migration state');
       return fn();
     }
   },
@@ -108,16 +108,16 @@ const applyMigration = () => {
       /** Match the files migrations to the database migrations.
        Plays migrations that doesnt have matching name / timestamp */
       if (migrationToApply.length > 0) {
-        logger.info(`[MIGRATION] > ${migrationToApply.length} migrations will be executed`);
+        logger.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
       } else {
-        logger.info(`[MIGRATION] > Platform already up to date, nothing to migrate`);
+        logger.info(`[MIGRATION] Platform already up to date, nothing to migrate`);
       }
       for (let index = 0; index < migrationToApply.length; index += 1) {
         const migSet = migrationToApply[index];
         const migration = new Migration(migSet.title, migSet.up, migSet.down);
         const stateMigration = alreadyAppliedMigrations.get(migration.title);
         if (stateMigration) {
-          logger.info(`[MIGRATION] > Replaying migration ${migration.title}`);
+          logger.info(`[MIGRATION] Replaying migration ${migration.title}`);
         }
         set.addMigration(migration);
       }
@@ -127,7 +127,7 @@ const applyMigration = () => {
           logger.error('[GRAKN] Error during migration');
           reject(migrationError);
         }
-        logger.info('[MIGRATION] > Migration process completed');
+        logger.info('[MIGRATION] Migration process completed');
         resolve();
       });
     });

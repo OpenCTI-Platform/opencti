@@ -1,11 +1,10 @@
 import * as R from 'ramda';
 import * as bodyParser from 'body-parser';
 import { logger, OPENCTI_TOKEN } from '../config/conf';
-import { authentication } from '../domain/user';
+import { authentication, BYPASS } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
-import { catchup, listenStream } from '../database/redis';
+import { getStreamRange, createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { OPENCTI_ADMIN_UUID } from '../schema/general';
 
 let heartbeat;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
@@ -21,8 +20,7 @@ const createBroadcastClient = (client) => {
       const isUserHaveAccess = event.markings.length > 0 && event.markings.every((m) => clientMarkings.includes(m));
       const granted = isMarking || isUserHaveAccess;
       const accessData = Object.assign(event, { granted });
-      // TODO JRI: Use the role "Bypass" instead of the admin UUID for overriding
-      if (granted || client.userId === OPENCTI_ADMIN_UUID) {
+      if (granted || client.bypass_role) {
         client.sendEvent(eventId, topic, accessData);
       } else {
         const filteredData = R.pick(['markings', 'timestamp', 'granted'], accessData);
@@ -41,16 +39,7 @@ const createBroadcastClient = (client) => {
   return broadcastClient;
 };
 
-export const initBroadcaster = async () => {
-  // Listen the stream from now
-  // noinspection JSIgnoredPromiseFromCall
-  const stream = await listenStream((eventId, topic, data) => {
-    const now = Date.now() / 1000;
-    Object.values(broadcastClients)
-      // Filter is required as the close is asynchronous
-      .filter((c) => now < c.client.expirationTime)
-      .forEach((c) => c.sendEvent(eventId, topic, data));
-  });
+const createHeartbeatProcessor = () => {
   // Setup the heart beat
   heartbeat = setInterval(() => {
     const now = Date.now() / 1000;
@@ -64,7 +53,16 @@ export const initBroadcaster = async () => {
       .filter((c) => now < c.client.expirationTime)
       .forEach((c) => c.sendHeartbeat());
   }, KEEP_ALIVE_INTERVAL_MS);
-  return stream;
+};
+
+export const initBroadcaster = () => {
+  return createStreamProcessor(async (eventId, topic, data) => {
+    const now = Date.now() / 1000;
+    Object.values(broadcastClients)
+      // Filter is required as the close is asynchronous
+      .filter((c) => now < c.client.expirationTime)
+      .forEach((c) => c.sendEvent(eventId, topic, data));
+  });
 };
 
 export const broadcast = (event, data) => {
@@ -79,6 +77,7 @@ const authenticate = async (req, res, next) => {
   const auth = await authentication(token);
   if (auth) {
     req.userId = auth.id;
+    req.bypass_role = R.find((s) => s.name === BYPASS, auth.capabilities) !== undefined;
     req.allowed_marking = auth.allowed_marking;
     req.expirationTime = new Date(2100, 10, 10); // auth.token.expirationTime;
     next();
@@ -87,21 +86,20 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-const catchupHandler = async (req, res) => {
+const streamHistoryHandler = async (req, res) => {
   const { userId, body } = req;
   const clients = Object.entries(broadcastClients);
   const connectedClient = R.find(([, data]) => {
     return data.client.userId === userId;
   }, clients);
   if (!connectedClient) {
-    res.status(401).json({ status: 'User stream not connected' });
+    res.status(401).json({ status: 'Users stream not connected' });
   } else {
-    const { from = '-', size = 50 } = body;
+    const { from = '-', size = 200 } = body;
     const broadcastClient = R.last(connectedClient);
     try {
-      await catchup(from, size, (eventId, topic, data) => {
-        broadcastClient.sendEvent(eventId, topic, data);
-      });
+      const rangeProcessor = (eventId, topic, data) => broadcastClient.sendEvent(eventId, topic, data);
+      await getStreamRange(from, size, rangeProcessor);
       res.json({ success: true });
     } catch (e) {
       res.json({ success: false, error: e.message });
@@ -110,14 +108,16 @@ const catchupHandler = async (req, res) => {
 };
 
 const createSeeMiddleware = (broadcaster) => {
+  createHeartbeatProcessor();
   const eventsHandler = (req, res) => {
     const client = {
       userId: req.userId,
       expirationTime: req.expirationTime,
       allowed_marking: req.allowed_marking,
+      bypass_role: req.bypass_role,
       sendEvent: (id, topic, data) => {
         if (req.finished) {
-          logger.info('Trying to write on an already terminated response', { id: client.userId });
+          logger.info('[STREAM] Write on an already terminated response', { id: client.userId });
           return;
         }
         let message = '';
@@ -138,7 +138,7 @@ const createSeeMiddleware = (broadcaster) => {
         try {
           res.end();
         } catch (e) {
-          logger.error(e, 'Failing to close client', { clientId: client.userId });
+          logger.error('[STREAM] Failing to close client', { clientId: client.userId, error: e });
         }
       },
     };
@@ -164,19 +164,19 @@ const createSeeMiddleware = (broadcaster) => {
     broadcastClients[client.userId] = broadcastClient;
     const clients = Object.entries(broadcastClients).length;
     broadcastClient.sendConnected(Object.assign(broadcaster.info(), { clients }));
-    logger.debug('[STREAM SSE] > New client connected', { userId: req.userId, clients });
+    logger.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
   };
   return {
     shutdown: () => {
-      broadcaster.shutdown();
       clearInterval(heartbeat);
       Object.values(broadcastClients).forEach((c) => c.client.close());
+      broadcaster.shutdown();
     },
     applyMiddleware: ({ app }) => {
       app.use('/stream', authenticate);
       app.get('/stream', eventsHandler);
-      app.use('/stream/catchup', bodyParser.json());
-      app.post('/stream/catchup', catchupHandler);
+      app.use('/stream/history', bodyParser.json());
+      app.post('/stream/history', streamHistoryHandler);
     },
   };
 };

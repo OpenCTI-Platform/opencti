@@ -1,28 +1,31 @@
+// noinspection NodeCoreCodingAssistance
 import http from 'http';
 import conf, { logger } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
+import { initBroadcaster } from './graphql/sseMiddleware';
 
 const PORT = conf.get('app:port');
-
+const broadcaster = initBroadcaster();
 const createHttpServer = async () => {
   const apolloServer = createApolloServer();
-  const { app, seeMiddleware } = await createApp(apolloServer);
+  const { app, seeMiddleware } = await createApp(apolloServer, broadcaster);
   const httpServer = http.createServer(app);
   apolloServer.installSubscriptionHandlers(httpServer);
+  await broadcaster.start();
   return { httpServer, seeMiddleware };
 };
 
 export const listenServer = async () => {
   return new Promise((resolve, reject) => {
     try {
-      const serverPromise = createHttpServer();
+      const serverPromise = createHttpServer(broadcaster);
       serverPromise.then(({ httpServer, seeMiddleware }) => {
         httpServer.on('close', () => {
           seeMiddleware.shutdown();
         });
         httpServer.listen(PORT, () => {
-          logger.info(`OPENCTI Ready on port ${PORT}`);
+          logger.info(`[OPENCTI] Servers ready on port ${PORT}`);
           resolve(httpServer);
         });
       });
@@ -32,10 +35,10 @@ export const listenServer = async () => {
     }
   });
 };
-export const restartServer = (httpServer) => {
+export const restartServer = async (httpServer) => {
   return new Promise((resolve, reject) => {
     httpServer.close(() => {
-      logger.info('OPENCTI server stopped');
+      logger.info('[OPENCTI] GraphQL server stopped');
       listenServer()
         .then((server) => resolve(server))
         .catch((e) => reject(e));
@@ -43,8 +46,8 @@ export const restartServer = (httpServer) => {
     httpServer.emit('close'); // force server close
   });
 };
-
-export const stopServer = (httpServer) => {
+export const stopServer = async (httpServer) => {
+  await broadcaster.shutdown();
   return new Promise((resolve) => {
     httpServer.close(() => {
       resolve();

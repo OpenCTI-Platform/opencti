@@ -434,7 +434,7 @@ export const findByTokenUUID = async (tokenValue) => {
     // eslint-disable-next-line no-shadow
     const { client, token } = data;
     if (!client) return undefined;
-    logger.debug(`Setting cache access for ${tokenValue}`);
+    logger.debug(`[REDIS] Setting cache access for ${tokenValue}`);
     const [capabilities, markings] = await Promise.all([getCapabilities(client.id), getMarkings(client.id)]);
     user = R.pipe(
       R.assoc('token', token),

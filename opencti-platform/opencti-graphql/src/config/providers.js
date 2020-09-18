@@ -38,7 +38,7 @@ export const initializeAdminUser = async () => {
     // Initialize the admin account
     // noinspection JSIgnoredPromiseFromCall
     await initAdmin(adminEmail, adminPassword, adminToken);
-    logger.info(`[ADMIN_SETUP] admin user initialized`);
+    logger.info(`[INIT] admin user initialized`);
   }
 };
 
@@ -135,14 +135,14 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const client = new Client(config);
       const options = { client, params: { scope: 'openid email profile' } };
       const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
-        logger.debug(`[OpenID] Successfully logged`, { userinfo });
+        logger.debug(`[OPENID] Successfully logged`, { userinfo });
         const { email, name } = userinfo;
         loginFromProvider(email, name || email)
           .then((token) => {
             done(null, token);
           })
           .catch((err) => {
-            logger.warn(`[OpenID] Login error`, { error: err });
+            logger.warn(`[OPENID] Login error`, { error: err });
             done(err);
           });
       });
@@ -156,7 +156,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const facebookStrategy = new FacebookStrategy(facebookOptions, (accessToken, refreshToken, profile, done) => {
       // eslint-disable-next-line no-underscore-dangle
       const data = profile._json;
-      logger.debug(`[Facebook] Successfully logged`, { profile: data });
+      logger.debug(`[FACEBOOK] Successfully logged`, { profile: data });
       const name = `${data.last_name} ${data.first_name}`;
       const { email } = data;
       loginFromProvider(email, data.first_name && data.last_name ? name : email)
@@ -164,7 +164,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, token);
         })
         .catch((err) => {
-          logger.warn(`[Facebook] Login error`, { error: err });
+          logger.warn(`[FACEBOOK] Login error`, { error: err });
           done(err);
         });
     });
@@ -175,7 +175,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const specificConfig = { scope: 'email' };
     const googleOptions = { ...mappedConfig, ...specificConfig };
     const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
-      logger.debug(`[Google] Successfully logged`, { profile });
+      logger.debug(`[GOOGLE] Successfully logged`, { profile });
       const email = head(profile.emails).value;
       const name = profile.displayNamel;
       // let picture = head(profile.photos).value;
@@ -184,7 +184,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, loggedToken);
         })
         .catch((err) => {
-          logger.warn(`[Google] Login error`, { error: err });
+          logger.warn(`[GOOGLE] Login error`, { error: err });
           done(err);
         });
     });
@@ -195,7 +195,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     const specificConfig = { scope: 'user:email' };
     const githubOptions = { ...mappedConfig, ...specificConfig };
     const githubStrategy = new GithubStrategy(githubOptions, (token, tokenSecret, profile, done) => {
-      logger.debug(`[Github] Successfully logged`, { profile });
+      logger.debug(`[GITHUB] Successfully logged`, { profile });
       const { displayName } = profile;
       const email = head(profile.emails).value;
       // let picture = profile.avatar_url;
@@ -204,7 +204,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, loggedToken);
         })
         .catch((err) => {
-          logger.warn(`[Github] Login error`, { error: err });
+          logger.warn(`[GITHUB] Login error`, { error: err });
           done(err);
         });
     });
@@ -213,7 +213,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   }
   if (strategy === 'Auth0Strategy') {
     const auth0Strategy = new Auth0Strategy(mappedConfig, (accessToken, refreshToken, extraParams, profile, done) => {
-      logger.debug(`[Auth0] Successfully logged`, { profile });
+      logger.debug(`[AUTH0] Successfully logged`, { profile });
       const userName = profile.displayName;
       const email = head(profile.emails).value;
       loginFromProvider(email, userName || email)
@@ -221,7 +221,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null, token);
         })
         .catch((err) => {
-          logger.warn(`[Auth0] Login error`, { error: err });
+          logger.warn(`[AUTH0] Login error`, { error: err });
           done(err);
         });
     });

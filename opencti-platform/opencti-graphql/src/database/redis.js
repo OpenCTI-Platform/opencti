@@ -3,7 +3,6 @@ import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { logger } from '../config/conf';
-import { DatabaseError } from '../config/errors';
 import { generateLogMessage, relationTypeToInputName, utcDate } from './utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
@@ -16,6 +15,7 @@ import {
 } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, stixDataConverter } from './stix';
+import { DatabaseError } from '../config/errors';
 
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
@@ -29,20 +29,16 @@ const redisOptions = {
 };
 
 let redis = null;
-const initRedisClient = async () => {
-  redis = redis || new Redis(redisOptions);
-  if (redis.status !== 'ready') {
-    await redis.connect();
-  }
-  redis.on('error', (error) => {
-    /* istanbul ignore next */
-    logger.error('[REDIS] An error occurred on redis', { error });
-  });
-  return redis;
+const createRedisClient = async () => {
+  const client = new Redis(redisOptions);
+  if (client.status !== 'ready') await client.connect();
+  client.on('connect', () => logger.debug('[REDIS] Redis client connected'));
+  return client;
 };
 const getClient = async () => {
   if (redis) return redis;
-  return initRedisClient();
+  redis = createRedisClient();
+  return redis;
 };
 export const pubsub = new RedisPubSub({
   publisher: new Redis(redisOptions),
@@ -56,8 +52,9 @@ export const redisIsAlive = async () => {
   }
   return true;
 };
-export const getRedisVersion = () => {
-  return getClient().then((client) => client.serverInfo.redis_version);
+export const getRedisVersion = async () => {
+  const client = await getClient();
+  return client.serverInfo.redis_version;
 };
 
 /* istanbul ignore next */
@@ -163,7 +160,7 @@ export const lockResource = async (resources) => {
       try {
         await lock.unlock();
       } catch (e) {
-        logger.debug(e, 'Failed to unlock resource', { resources });
+        logger.debug(e, '[REDIS] Failed to unlock resource', { resources });
       }
     },
   };
@@ -205,7 +202,7 @@ export const storeUpdateEvent = async (user, operation, instance, input) => {
       message,
     };
     const client = await getClient();
-    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    await client.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
   return true;
 };
@@ -237,7 +234,7 @@ export const storeCreateEvent = async (user, instance, input) => {
       message,
     };
     const client = await getClient();
-    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    await client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
   return true;
 };
@@ -289,7 +286,6 @@ export const storeDeleteEvent = async (user, instance) => {
   return true;
 };
 
-let streamListening = true;
 const fetchStreamInfo = async (client) => {
   const res = await client.call('XINFO', 'STREAM', OPENCTI_STREAM);
   // eslint-disable-next-line
@@ -304,52 +300,70 @@ const mapStreamToJS = ([id, data]) => {
   }
   return result;
 };
-const processStreamResult = (results, callback) => {
+const processStreamResult = async (results, callback) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
   const lastElement = R.last(streamData);
   for (let index = 0; index < streamData.length; index += 1) {
     const dataElement = streamData[index];
     const { eventId, type, markings, user, timestamp, data, message } = dataElement;
     const eventData = { user, markings, timestamp, data, message };
-    callback(eventId, type, eventData);
+    // eslint-disable-next-line no-await-in-loop
+    await callback(eventId, type, eventData);
   }
   return lastElement.eventId;
 };
-export const listenStream = async (callback) => {
-  const client = await getClient();
-  const streamInfo = await fetchStreamInfo(client);
-  let startEventId = streamInfo.lastEventId;
-  const processStep = () => {
-    return client.xread('BLOCK', 1, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, startEventId).then(async (streamResult) => {
-      if (streamResult && streamResult.length > 0) {
-        const [, results] = R.head(streamResult);
-        const lastElementId = processStreamResult(results, callback);
-        startEventId = lastElementId || startEventId;
-      }
-      return true;
-    });
+
+let processingLoopPromise;
+let streamListening = true;
+const MAX_RANGE_MESSAGES = 2000;
+const WAIT_TIME = 20000;
+export const createStreamProcessor = (callback) => {
+  let startEventId;
+  const processInfo = async () => {
+    const client = await getClient();
+    return fetchStreamInfo(client);
+  };
+  const processStep = async (client) => {
+    const streamResult = await client.xread('BLOCK', WAIT_TIME, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, startEventId);
+    if (streamResult && streamResult.length > 0) {
+      const [, results] = R.head(streamResult);
+      const lastElementId = await processStreamResult(results, callback);
+      startEventId = lastElementId || startEventId;
+    }
+    return true;
   };
   const processingLoop = async () => {
+    const client = await createRedisClient();
+    const streamInfo = await processInfo();
+    startEventId = streamInfo.lastEventId;
     while (streamListening) {
       // eslint-disable-next-line no-await-in-loop
-      await processStep();
+      if (!(await processStep(client))) {
+        break;
+      }
     }
   };
-  // noinspection ES6MissingAwait
-  processingLoop();
   return {
-    info: () => streamInfo,
-    shutdown: () => {
+    info: async () => processInfo(),
+    start: async () => {
+      logger.info('[STREAM] Starting streaming processor');
+      processingLoopPromise = processingLoop();
+    },
+    shutdown: async () => {
+      logger.info('[STREAM] Shutdown streaming processor');
       streamListening = false;
+      if (processingLoopPromise) {
+        await processingLoopPromise;
+      }
     },
   };
 };
-export const catchup = async (from, limit, callback) => {
+export const getStreamRange = async (from, limit, callback) => {
   const client = await getClient();
-  const size = limit > 50 ? 50 : limit;
+  const size = limit > MAX_RANGE_MESSAGES ? MAX_RANGE_MESSAGES : limit;
   return client.call('XRANGE', OPENCTI_STREAM, from, '+', 'COUNT', size).then(async (results) => {
     if (results && results.length > 0) {
-      processStreamResult(results, callback);
+      await processStreamResult(results, callback);
     }
     return true;
   });

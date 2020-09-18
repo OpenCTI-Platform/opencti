@@ -84,22 +84,22 @@ export const CAPABILITIES = [
 export const checkSystemDependencies = async () => {
   // Check if Grakn is available
   await graknIsAlive();
-  logger.info(`[PRE-CHECK] > Grakn is alive`);
+  logger.info(`[CHECK] Grakn is alive`);
   // Check if elasticsearch is available
   await elIsAlive();
-  logger.info(`[PRE-CHECK] > ElasticSearch is alive`);
+  logger.info(`[CHECK] ElasticSearch is alive`);
   // Check if minio is here
   await isStorageAlive();
-  logger.info(`[PRE-CHECK] > Minio is alive`);
+  logger.info(`[CHECK] Minio is alive`);
   // Check if RabbitMQ is here and create the logs exchange/queue
   await rabbitMQIsAlive();
-  logger.info(`[PRE-CHECK] > RabbitMQ is alive`);
+  logger.info(`[CHECK] RabbitMQ is alive`);
   // Check if redis is here
   await redisIsAlive();
-  logger.info(`[PRE-CHECK] > Redis is alive`);
+  logger.info(`[CHECK] Redis is alive`);
   // Check if Python is available
   await checkPythonStix2();
-  logger.info(`[PRE-CHECK] > Python3 is available`);
+  logger.info(`[CHECK] Python3 is available`);
   return true;
 };
 
@@ -108,17 +108,17 @@ const initializeSchema = async () => {
   // Inject grakn schema
   const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
   await internalDirectWrite(schema);
-  logger.info(`[INIT] > Grakn schema loaded`);
+  logger.info(`[INIT] Grakn schema loaded`);
   // New platform so delete all indices to prevent conflict
   await elDeleteIndexes(PLATFORM_INDICES);
   // Create default indexes
   await elCreateIndexes();
-  logger.info(`[INIT] > Elasticsearch indexes loaded`);
+  logger.info(`[INIT] Elasticsearch indexes loaded`);
   return true;
 };
 
 const initializeMigration = async () => {
-  logger.info('[INIT] > Creating migration structure');
+  logger.info('[INIT] Creating migration structure');
   const time = new Date().getTime();
   const lastRunInit = `${parseInt(time, 10) + 1}-init`;
   await internalDirectWrite(
@@ -225,7 +225,7 @@ export const createBasicRolesAndCapabilities = async () => {
 };
 
 const initializeDefaultValues = async () => {
-  logger.info(`[INIT] > Initialization of settings and basic elements`);
+  logger.info(`[INIT] Initialization of settings and basic elements`);
   // Create default elements
   await addSettings(SYSTEM_USER, {
     platform_title: 'Cyber threat intelligence platform',
@@ -240,7 +240,7 @@ const initializeDefaultValues = async () => {
 
 const initializeData = async () => {
   await initializeDefaultValues();
-  logger.info(`[INIT] > Platform default initialized`);
+  logger.info(`[INIT] Platform default initialized`);
   return true;
 };
 
@@ -258,13 +258,13 @@ const platformInit = async (noMigration = false) => {
   try {
     const needToBeInitialized = await isEmptyPlatform();
     if (needToBeInitialized) {
-      logger.info(`[INIT] > New platform detected, initialization...`);
+      logger.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
       await initializeMigration();
       await initializeData();
       await initializeAdminUser();
     } else {
-      logger.info('[INIT] > Existing platform detected, initialization...');
+      logger.info('[INIT] Existing platform detected, initialization...');
       // Always reset the admin user
       await initializeAdminUser();
       if (!noMigration) {
@@ -272,7 +272,7 @@ const platformInit = async (noMigration = false) => {
       }
     }
   } catch (e) {
-    logger.error(`[OPENCTI] > Platform init fail`, { error: e });
+    logger.error(`[OPENCTI] Platform initialization fail`, { error: e });
     throw e;
   }
   return true;

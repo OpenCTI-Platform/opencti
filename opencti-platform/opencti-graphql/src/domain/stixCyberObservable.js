@@ -175,7 +175,7 @@ const createIndicatorFromObservable = async (user, input, observable) => {
       await addIndicator(user, indicatorToCreate);
     }
   } catch (err) {
-    logger.info(`Cannot create indicator`, { error: err });
+    logger.info(`[OPENCTI] Cannot create indicator`, { error: err });
   }
 };
 

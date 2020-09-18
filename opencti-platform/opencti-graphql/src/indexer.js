@@ -6,5 +6,5 @@ const start = moment();
 logger.info(`> ---------------------------------------------------------------------`);
 index().then(() => {
   const execDuration = moment.duration(moment().diff(start));
-  logger.info(`Indexing done in ${execDuration.asSeconds()} seconds (${execDuration.humanize()})`);
+  logger.info(`[INDEXER] Indexing done in ${execDuration.asSeconds()} seconds (${execDuration.humanize()})`);
 });

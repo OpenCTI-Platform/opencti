@@ -23,7 +23,7 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
         }
       });
       shell.on('stderr', (stderr) => {
-        logger.info(`[API-PYTHON] > ${stderr}`);
+        logger.info(`[BRIDGE] ${stderr}`);
         /* istanbul ignore if */
         if (DEV_MODE && stderr.startsWith('ERROR:')) {
           jsonResult = { status: 'error', message: stderr };
@@ -51,7 +51,7 @@ export const createStixPattern = async (observableType, observableValue) => {
     const result = await execPython3('./src/python', 'stix2_create_pattern.py', [observableType, observableValue]);
     return result.data;
   } catch (err) {
-    logger.warn(`[Python3] createStixPattern error > ${err.message}`);
+    logger.warn(`[BRIDGE] createStixPattern error > ${err.message}`);
     return null;
   }
 };
@@ -61,7 +61,7 @@ export const checkIndicatorSyntax = async (patternType, indicatorValue) => {
     const result = await execPython3('./src/python', 'check_indicator.py', [patternType, indicatorValue]);
     return result.data;
   } catch (err) {
-    logger.warn(`[Python3] extractObservables error > ${err.message}`);
+    logger.warn(`[BRIDGE] extractObservables error > ${err.message}`);
     return null;
   }
 };

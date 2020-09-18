@@ -82,10 +82,10 @@ const indexElement = async (type, isRelation = false, fromType = null, toType = 
 const index = async () => {
   // 01. Delete current indexes
   await elDeleteIndexes(DATA_INDICES);
-  logger.info(`Indexing > Old indices deleted`);
+  logger.info(`[INDEX] Old indices deleted`);
   // 02. Create new ones
   await elCreateIndexes();
-  logger.info(`Indexing > New indices created`);
+  logger.info(`[INDEX] New indices created`);
   // 03. Handle every entity subbing entity
   // MigrationsStatus  - Not needed, migration related.
   // MigrationReference  - Not needed, migration related.
