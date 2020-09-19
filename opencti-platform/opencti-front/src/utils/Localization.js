@@ -1129,7 +1129,7 @@ const i18n = {
       motivation_dominance: 'Dominance/Power',
       motivation_ideology: 'Ideology/Belief',
       motivation_notoriety: 'Notoriety/Prestige',
-      'motivation_organizational-gain': 'Competitive advanlabele',
+      'motivation_organizational-gain': 'Competitive advantage',
       'motivation_individualal-gain': 'Individual gain',
       'motivation_individualal-satisfaction': 'Individualal satisfaction',
       motivation_revenge: 'Revenge/Retaliation',
