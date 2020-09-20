@@ -1,6 +1,7 @@
 import datetime
 import threading
 import uuid
+import requests
 
 import pika
 import logging
@@ -10,10 +11,13 @@ import base64
 import os
 
 from typing import Callable, Dict, List, Optional, Union
+from sseclient import SSEClient
 from pika.exceptions import UnroutableError, NackError
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
+
+EVENTS_QUEUE = []
 
 
 def get_config_variable(
@@ -171,6 +175,52 @@ class PingAlive(threading.Thread):
         self.ping()
 
 
+class StreamCatcher(threading.Thread):
+    def __init__(
+        self, opencti_url, opencti_token, connector_last_event_id, last_event_id
+    ):
+        threading.Thread.__init__(self)
+        self.opencti_url = opencti_url
+        self.opencti_token = opencti_token
+        self.connector_last_event_id = connector_last_event_id
+        self.last_event_id = last_event_id
+
+    def get_range(self, from_id):
+        payload = {"from": from_id, "size": 2000}
+        headers = {"Authorization": "Bearer " + self.opencti_token}
+        r = requests.post(
+            self.opencti_url + "/stream/history", json=payload, headers=headers
+        )
+        return r.json()["lastEventId"]
+
+    def run(self):
+        from_event_id = self.connector_last_event_id
+        from_event_timestamp = 0
+        last_event_timestamp = int(self.last_event_id.split("-")[0])
+        while (
+            from_event_timestamp <= last_event_timestamp
+            and from_event_id != self.last_event_id
+        ):
+            from_event_id = self.get_range(from_event_id)
+            from_event_timestamp = int(from_event_id.split("-")[0])
+        logging.error("Events catchup requests done.")
+
+
+class StreamProcessor(threading.Thread):
+    def __init__(self, message_callback, set_state):
+        threading.Thread.__init__(self)
+        self.message_callback = message_callback
+        self.set_state = set_state
+
+    def run(self):
+        logging.info("All old events processed, consuming is now LIVE!")
+        while True:
+            if len(EVENTS_QUEUE) > 0:
+                for msg in EVENTS_QUEUE:
+                    self.message_callback(msg)
+                    self.set_state({"connectorLastEventId": msg.id})
+
+
 class OpenCTIConnectorHelper:
     """Python API for OpenCTI connector
 
@@ -277,6 +327,59 @@ class OpenCTIConnectorHelper:
 
         listen_queue = ListenQueue(self, self.config, message_callback)
         listen_queue.start()
+
+    def listen_stream(self, message_callback) -> None:
+        """listen for messages and register callback function
+
+        :param message_callback: callback function to process messages
+        """
+        current_state = self.get_state()
+        if current_state is None:
+            current_state = {"connectorLastEventId": "-"}
+
+        # Get the last event ID with the "connected" event msg
+        messages = SSEClient(
+            self.opencti_url + "/stream",
+            headers={"Authorization": "Bearer " + self.opencti_token},
+        )
+
+        # Create processor thread
+        processor_thread = StreamProcessor(message_callback, self.set_state)
+
+        last_event_id = None
+        last_event_id_timestamp = 0
+        for msg in messages:
+            data = json.loads(msg.data)
+            if msg.event == "heartbeat":
+                continue
+            elif msg.event == "connected":
+                last_event_id = data["lastEventId"]
+                # Launch processor if up to date
+                if current_state["connectorLastEventId"] == last_event_id:
+                    processor_thread.start()
+                # Launch catcher if not up to date
+                last_event_id_timestamp = int(last_event_id.split("-")[0])
+                if last_event_id != current_state["connectorLastEventId"]:
+                    logging.info(
+                        "Some events have not been processed, catching them..."
+                    )
+                    catcher_thread = StreamCatcher(
+                        self.opencti_url,
+                        self.opencti_token,
+                        current_state["connectorLastEventId"],
+                        last_event_id,
+                    )
+                    catcher_thread.start()
+            else:
+                # If receiving the last message, launch processor
+                if msg.id == last_event_id:
+                    processor_thread.start()
+                msg_id_timestamp = int(msg.id.split("-")[0])
+                if msg_id_timestamp > last_event_id_timestamp and "catchup" not in data:
+                    EVENTS_QUEUE.append(msg)
+                else:
+                    message_callback(msg)
+                    self.set_state({"connectorLastEventId": msg.id})
 
     def get_opencti_url(self):
         return self.opencti_url

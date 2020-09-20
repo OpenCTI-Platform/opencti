@@ -57,6 +57,7 @@ setup(
         "stix2==2.0.2",
         "pytz==2020.1",
         "pika==1.1.0",
+        "sseclient==0.0.26",
         "python-magic==0.4.18;sys.platform=='linux' or sys.platform=='darwin'",
         "python-magic-bin==0.4.14;sys.platform=='win32'",
     ],
