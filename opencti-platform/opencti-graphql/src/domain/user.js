@@ -56,6 +56,7 @@ import { generateStandardId } from '../schema/identifier';
 
 // region utils
 export const BYPASS = 'BYPASS';
+export const STREAMAPI = 'STREAMAPI';
 
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   uuid: tokenValue,

@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import * as bodyParser from 'body-parser';
 import { logger, OPENCTI_TOKEN } from '../config/conf';
-import { authentication, BYPASS } from '../domain/user';
+import { authentication, BYPASS, STREAMAPI } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
 import { getStreamRange, createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -17,15 +17,12 @@ const createBroadcastClient = (client) => {
     sendEvent: (eventId, topic, event) => {
       const { data } = event;
       const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
-      const isMarking = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-      const isUserHaveAccess = event.markings.length > 0 && event.markings.every((m) => clientMarkings.includes(m));
-      const granted = isMarking || isUserHaveAccess;
-      const accessData = Object.assign(event, { granted });
-      if (granted || client.bypass_role) {
-        client.sendEvent(eventId, topic, accessData);
-      } else {
-        const filteredData = R.pick(['markings', 'timestamp', 'granted'], accessData);
-        client.sendEvent(eventId, topic, filteredData);
+      const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
+      const isUserHaveMarking = event.markings.length > 0 && event.markings.every((m) => clientMarkings.includes(m));
+      const isBypass = R.find((s) => s.name === BYPASS, client.capabilities || []) !== undefined;
+      const isGrantedForData = isMarkingObject || isUserHaveMarking;
+      if (isGrantedForData || isBypass) {
+        client.sendEvent(eventId, topic, event);
       }
       return true;
     },
@@ -76,9 +73,11 @@ const authenticate = async (req, res, next) => {
   let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
   token = token || extractTokenFromBearer(req.headers.authorization);
   const auth = await authentication(token);
-  if (auth) {
+  const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
+  const isUserGranted = R.find(capabilityControl, auth.capabilities || []) !== undefined;
+  if (auth && isUserGranted) {
     req.userId = auth.id;
-    req.bypass_role = R.find((s) => s.name === BYPASS, auth.capabilities) !== undefined;
+    req.capabilities = auth.capabilities;
     req.allowed_marking = auth.allowed_marking;
     req.expirationTime = new Date(2100, 10, 10); // auth.token.expirationTime;
     next();
@@ -114,7 +113,7 @@ const createSeeMiddleware = (broadcaster) => {
       userId: req.userId,
       expirationTime: req.expirationTime,
       allowed_marking: req.allowed_marking,
-      bypass_role: req.bypass_role,
+      capabilities: req.capabilities,
       sendEvent: (id, topic, data) => {
         if (req.finished) {
           logger.info('[STREAM] Write on an already terminated response', { id: client.userId });

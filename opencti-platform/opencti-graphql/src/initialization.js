@@ -9,7 +9,7 @@ import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, SYSTEM_USER } from './domain/user';
+import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
@@ -77,6 +77,11 @@ export const CAPABILITIES = [
     name: 'CONNECTORAPI',
     attribute_order: 4000,
     description: 'Connectors API usage: register, ping, export push ...',
+  },
+  {
+    name: STREAMAPI,
+    attribute_order: 5000,
+    description: 'Connect and consume the platform stream',
   },
 ];
 
