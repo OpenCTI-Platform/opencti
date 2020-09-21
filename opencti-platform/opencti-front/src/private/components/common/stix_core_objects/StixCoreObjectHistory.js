@@ -65,7 +65,7 @@ class StixCoreObjectHistory extends Component {
               filters: [
                 { key: 'entity_id', values: [stixCoreObjectId] },
                 {
-                  key: 'event',
+                  key: 'event_type',
                   values: ['create', 'update', 'delete'],
                 },
               ],
@@ -114,7 +114,7 @@ class StixCoreObjectHistory extends Component {
                   operator: 'wildcard',
                 },
                 {
-                  key: 'event',
+                  key: 'event_type',
                   values: ['create', 'delete'],
                 },
               ],

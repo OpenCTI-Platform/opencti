@@ -21,7 +21,7 @@ class StixCoreObjectLatestHistory extends Component {
             filters: [
               { key: 'entity_id', values: [stixCoreObjectId] },
               {
-                key: 'event',
+                key: 'event_type',
                 values: ['create', 'update'],
               },
             ],

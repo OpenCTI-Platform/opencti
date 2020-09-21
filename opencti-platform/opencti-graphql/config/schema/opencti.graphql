@@ -173,7 +173,7 @@ enum LogsOrdering {
   timestamp
 }
 enum LogsFilter {
-  event
+  event_type
   entity_id
   connection_id
 }
@@ -190,13 +190,20 @@ type LogEdge {
   cursor: String!
   node: Log!
 }
+type ContextData {
+  id: String!
+  entity_type: String!
+  from_id: String
+  to_id: String
+  message: String!
+}
 type Log {
   id: ID!
-  event: String!
+  event_type: String!
   timestamp: DateTime!
+  user_id: String!
   user: User
-  data: String!
-  message: String!
+  context_data: ContextData
 }
 
 ############## Inferences
