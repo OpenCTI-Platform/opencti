@@ -347,7 +347,6 @@ class OpenCTIConnectorHelper:
         processor_thread = StreamProcessor(message_callback, self.set_state)
 
         last_event_id = None
-        last_event_id_timestamp = 0
         for msg in messages:
             data = json.loads(msg.data)
             if msg.event == "heartbeat":
@@ -358,7 +357,6 @@ class OpenCTIConnectorHelper:
                 if current_state["connectorLastEventId"] == last_event_id:
                     processor_thread.start()
                 # Launch catcher if not up to date
-                last_event_id_timestamp = int(last_event_id.split("-")[0])
                 if last_event_id != current_state["connectorLastEventId"]:
                     logging.info(
                         "Some events have not been processed, catching them..."
