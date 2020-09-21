@@ -178,16 +178,17 @@ class PingAlive(threading.Thread):
 
 class StreamCatcher(threading.Thread):
     def __init__(
-        self, opencti_url, opencti_token, connector_last_event_id, last_event_id
+        self, opencti_url, opencti_token, connector_last_event_id, last_event_id, stream_connection_id
     ):
         threading.Thread.__init__(self)
         self.opencti_url = opencti_url
         self.opencti_token = opencti_token
         self.connector_last_event_id = connector_last_event_id
         self.last_event_id = last_event_id
+        self.stream_connection_id = stream_connection_id
 
     def get_range(self, from_id):
-        payload = {"from": from_id, "size": 2000}
+        payload = {"from": from_id, "size": 2000, "connectionId": self.stream_connection_id}
         headers = {"Authorization": "Bearer " + self.opencti_token}
         r = requests.post(
             self.opencti_url + "/stream/history", json=payload, headers=headers
@@ -353,6 +354,7 @@ class OpenCTIConnectorHelper:
                 continue
             elif msg.event == "connected":
                 last_event_id = data["lastEventId"]
+                stream_connection_id = data["connectionId"]
                 # Launch processor if up to date
                 if current_state["connectorLastEventId"] == last_event_id:
                     processor_thread.start()
@@ -366,13 +368,14 @@ class OpenCTIConnectorHelper:
                         self.opencti_token,
                         current_state["connectorLastEventId"],
                         last_event_id,
+                        stream_connection_id
                     )
                     catcher_thread.start()
             else:
                 # If receiving the last message, launch processor
                 if msg.id == last_event_id:
                     processor_thread.start()
-                if "catchup" not in data:
+                elif "catchup" not in data:
                     EVENTS_QUEUE.put(msg)
                 else:
                     message_callback(msg)
