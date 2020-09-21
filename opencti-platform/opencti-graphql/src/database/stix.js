@@ -106,7 +106,7 @@ export const stixDataConverter = (data) => {
       ? finalData.externalReferences
       : [finalData.externalReferences];
     const externals = R.map(
-      (e) => R.pick(['source_name ', 'description', 'url', 'hashes', 'external_id'], e),
+      (e) => R.pick(['source_name', 'description', 'url', 'hashes', 'external_id'], e),
       externalSet
     );
     finalData = R.pipe(R.dissoc('externalReferences'), R.assoc('external_references', externals))(finalData);

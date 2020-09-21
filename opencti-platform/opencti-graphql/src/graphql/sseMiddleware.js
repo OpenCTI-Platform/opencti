@@ -5,6 +5,7 @@ import { authentication, BYPASS } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
 import { getStreamRange, createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { generateInternalId } from '../schema/identifier';
 
 let heartbeat;
 const KEEP_ALIVE_INTERVAL_MS = 20000;
@@ -88,18 +89,15 @@ const authenticate = async (req, res, next) => {
 
 const streamHistoryHandler = async (req, res) => {
   const { userId, body } = req;
-  const clients = Object.entries(broadcastClients);
-  const connectedClient = R.find(([, data]) => {
-    return data.client.userId === userId;
-  }, clients);
-  if (!connectedClient) {
-    res.status(401).json({ status: 'Users stream not connected' });
+  const { from = '-', size = 200, connectionId } = body;
+  const connectedClient = broadcastClients[connectionId];
+  // Check if connection exist and the client is correctly related
+  if (!connectedClient || connectedClient.client.userId !== userId) {
+    res.status(401).json({ status: 'This stream connection doesnt exist' });
   } else {
-    const { from = '-', size = 200 } = body;
-    const broadcastClient = R.last(connectedClient);
     try {
       const rangeProcessor = (eventId, topic, data) =>
-        broadcastClient.sendEvent(eventId, topic, R.assoc('catchup', true, data));
+        connectedClient.sendEvent(eventId, topic, R.assoc('catchup', true, data));
       const streamRangeResult = await getStreamRange(from, size, rangeProcessor);
       res.json(streamRangeResult);
     } catch (e) {
@@ -112,6 +110,7 @@ const createSeeMiddleware = (broadcaster) => {
   createHeartbeatProcessor();
   const eventsHandler = async (req, res) => {
     const client = {
+      id: generateInternalId(),
       userId: req.userId,
       expirationTime: req.expirationTime,
       allowed_marking: req.allowed_marking,
@@ -144,8 +143,8 @@ const createSeeMiddleware = (broadcaster) => {
       },
     };
     req.on('close', () => {
-      if (client === broadcastClients[client.userId]?.client) {
-        delete broadcastClients[client.userId];
+      if (client === broadcastClients[client.id]?.client) {
+        delete broadcastClients[client.id];
       }
     });
     res.writeHead(200, {
@@ -154,18 +153,12 @@ const createSeeMiddleware = (broadcaster) => {
       'Access-Control-Allow-Origin': '*',
       'Cache-Control': 'no-cache, no-transform', // no-transform is required for dev proxy
     });
-    // Only one connection per client
-    const previousClient = broadcastClients[req.userId];
-    if (previousClient) {
-      previousClient.client.close();
-      delete broadcastClients[req.userId];
-    }
     // Create the new connection
     const broadcastClient = createBroadcastClient(client);
-    broadcastClients[client.userId] = broadcastClient;
+    broadcastClients[client.id] = broadcastClient;
     const clients = Object.entries(broadcastClients).length;
     const broadcasterInfo = await broadcaster.info();
-    broadcastClient.sendConnected(Object.assign(broadcasterInfo, { clients }));
+    broadcastClient.sendConnected(Object.assign(broadcasterInfo, { connectionId: client.id, clients }));
     logger.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
   };
   return {

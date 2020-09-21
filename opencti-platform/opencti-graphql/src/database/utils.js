@@ -24,7 +24,11 @@ import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import {
+  isStixInternalMetaRelationship,
+  isStixMetaRelationship,
+  RELATION_OBJECT_LABEL,
+} from '../schema/stixMetaRelationship';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -204,6 +208,7 @@ const extractEntityMainValue = (entityData) => {
 
 export const relationTypeToInputName = (type) => {
   let inputName = '';
+  const isMeta = isStixInternalMetaRelationship(type) && type !== RELATION_OBJECT_LABEL;
   const elements = type.split('-');
   for (let index = 0; index < elements.length; index += 1) {
     const element = elements[index];
@@ -213,7 +218,7 @@ export const relationTypeToInputName = (type) => {
       inputName += element;
     }
   }
-  return inputName;
+  return inputName + (isMeta ? 's' : '');
 };
 
 export const generateLogMessage = (type, user, instance, input = null) => {
@@ -232,11 +237,17 @@ export const generateLogMessage = (type, user, instance, input = null) => {
   if (type === UPDATE_OPERATION_REPLACE || type === UPDATE_OPERATION_ADD || type === UPDATE_OPERATION_REMOVE) {
     const joiner = type === UPDATE_OPERATION_REPLACE ? 'by' : 'value';
     const fieldMessage = R.map(([key, val]) => {
-      let isNotEmpty = val && !R.isEmpty(val);
+      let translatedVal;
       if (Array.isArray(val)) {
-        isNotEmpty = R.filter((v) => !R.isEmpty(v), val).length > 0;
+        const values = R.filter((v) => isNotEmptyField(v), val);
+        translatedVal = values.length > 0 ? values.join(', ') : null;
+      } else if (typeof val === 'object') {
+        const valEntries = R.filter(([, v]) => isNotEmptyField(v), Object.entries(val));
+        translatedVal = valEntries.map(([k, v]) => `${k}: ${v}`).join(', ');
+      } else {
+        translatedVal = isNotEmptyField(val) ? val.toString() : null;
       }
-      return `\`${key}\` ${joiner} \`${isNotEmpty ? val : 'nothing'}\``;
+      return `\`${key}\` ${joiner} \`${translatedVal || 'nothing'}\``;
     }, Object.entries(input)).join(', ');
     return `\`${user.name}\` ${type}s the ${fieldMessage}`;
   }
