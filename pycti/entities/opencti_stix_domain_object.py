@@ -155,7 +155,7 @@ class StixDomainObject:
             ... on Individual {
                 name
                 description
-                aliases
+                x_opencti_aliases
                 contact_information
                 x_opencti_firstname
                 x_opencti_lastname
@@ -163,7 +163,7 @@ class StixDomainObject:
             ... on Organization {
                 name
                 description
-                aliases
+                x_opencti_aliases
                 contact_information
                 x_opencti_organization_type
                 x_opencti_reliability
@@ -171,7 +171,7 @@ class StixDomainObject:
             ... on Sector {
                 name
                 description
-                aliases
+                x_opencti_aliases
                 contact_information
             }
             ... on Indicator {
