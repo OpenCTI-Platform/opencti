@@ -14,28 +14,33 @@ const converter = new Showdown.Converter({
 
 const MarkDownField = (props) => {
   const {
+    form: { setFieldValue, setTouched },
     field: { name },
     onSubmit,
     label,
     style,
   } = props;
   const [selectedTab, setSelectedTab] = React.useState('write');
-  const [field, meta, helpers] = useField(name);
+  const [field, meta] = useField(name);
   const onBlur = (event) => {
-    helpers.setTouched(true);
+    setTouched(name, true);
     const { value } = event.target;
     if (typeof onSubmit === 'function' && value && value.length > 3) {
       onSubmit(name, value);
     }
   };
   return (
-    <div style={style} onBlur={onBlur} className={meta.touched && meta.error ? 'error' : 'main'}>
+    <div
+      style={style}
+      onBlur={onBlur}
+      className={meta.touched && meta.error ? 'error' : 'main'}
+    >
       <InputLabel style={{ fontSize: 10, marginBottom: 10 }}>
         {label}
       </InputLabel>
       <ReactMde
         value={field.value}
-        onChange={helpers.setValue}
+        onChange={(value) => setFieldValue(name, value)}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
         onBlur={onBlur}
