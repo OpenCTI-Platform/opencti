@@ -178,7 +178,12 @@ class PingAlive(threading.Thread):
 
 class StreamCatcher(threading.Thread):
     def __init__(
-        self, opencti_url, opencti_token, connector_last_event_id, last_event_id, stream_connection_id
+        self,
+        opencti_url,
+        opencti_token,
+        connector_last_event_id,
+        last_event_id,
+        stream_connection_id,
     ):
         threading.Thread.__init__(self)
         self.opencti_url = opencti_url
@@ -188,7 +193,11 @@ class StreamCatcher(threading.Thread):
         self.stream_connection_id = stream_connection_id
 
     def get_range(self, from_id):
-        payload = {"from": from_id, "size": 2000, "connectionId": self.stream_connection_id}
+        payload = {
+            "from": from_id,
+            "size": 2000,
+            "connectionId": self.stream_connection_id,
+        }
         headers = {"Authorization": "Bearer " + self.opencti_token}
         r = requests.post(
             self.opencti_url + "/stream/history", json=payload, headers=headers
@@ -368,7 +377,7 @@ class OpenCTIConnectorHelper:
                         self.opencti_token,
                         current_state["connectorLastEventId"],
                         last_event_id,
-                        stream_connection_id
+                        stream_connection_id,
                     )
                     catcher_thread.start()
             else:
