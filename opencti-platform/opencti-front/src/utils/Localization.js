@@ -995,6 +995,7 @@ const i18n = {
       INTERNAL_IMPORT_FILE: 'Import de fichiers',
       INTERNAL_EXPORT_FILE: 'Export de fichiers',
       INTERNAL_ENRICHMENT: 'Enrichissement',
+      STREAM: 'Streaming',
     },
     en: {
       progress: 'In progress',
@@ -1167,6 +1168,7 @@ const i18n = {
       INTERNAL_IMPORT_FILE: 'Files import',
       INTERNAL_EXPORT_FILE: 'Files export',
       INTERNAL_ENRICHMENT: 'Enrichment',
+      STREAM: 'Streaming',
       'Observed datas': 'Observed data',
     },
   },
