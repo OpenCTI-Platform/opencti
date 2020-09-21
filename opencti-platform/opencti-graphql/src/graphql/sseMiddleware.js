@@ -74,8 +74,8 @@ const authenticate = async (req, res, next) => {
   token = token || extractTokenFromBearer(req.headers.authorization);
   const auth = await authentication(token);
   const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
-  const isUserGranted = R.find(capabilityControl, auth.capabilities || []) !== undefined;
-  if (auth && isUserGranted) {
+  const isUserGranted = auth && R.find(capabilityControl, auth.capabilities || []) !== undefined;
+  if (isUserGranted) {
     req.userId = auth.id;
     req.capabilities = auth.capabilities;
     req.allowed_marking = auth.allowed_marking;
