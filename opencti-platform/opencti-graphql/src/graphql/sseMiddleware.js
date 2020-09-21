@@ -98,18 +98,19 @@ const streamHistoryHandler = async (req, res) => {
     const { from = '-', size = 200 } = body;
     const broadcastClient = R.last(connectedClient);
     try {
-      const rangeProcessor = (eventId, topic, data) => broadcastClient.sendEvent(eventId, topic, data);
-      await getStreamRange(from, size, rangeProcessor);
-      res.json({ success: true });
+      const rangeProcessor = (eventId, topic, data) =>
+        broadcastClient.sendEvent(eventId, topic, R.assoc('catchup', true, data));
+      const streamRangeResult = await getStreamRange(from, size, rangeProcessor);
+      res.json(streamRangeResult);
     } catch (e) {
-      res.json({ success: false, error: e.message });
+      res.status(401).json({ status: e.message });
     }
   }
 };
 
 const createSeeMiddleware = (broadcaster) => {
   createHeartbeatProcessor();
-  const eventsHandler = (req, res) => {
+  const eventsHandler = async (req, res) => {
     const client = {
       userId: req.userId,
       expirationTime: req.expirationTime,
@@ -163,7 +164,8 @@ const createSeeMiddleware = (broadcaster) => {
     const broadcastClient = createBroadcastClient(client);
     broadcastClients[client.userId] = broadcastClient;
     const clients = Object.entries(broadcastClients).length;
-    broadcastClient.sendConnected(Object.assign(broadcaster.info(), { clients }));
+    const broadcasterInfo = await broadcaster.info();
+    broadcastClient.sendConnected(Object.assign(broadcasterInfo, { clients }));
     logger.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
   };
   return {

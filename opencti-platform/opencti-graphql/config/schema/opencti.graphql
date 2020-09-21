@@ -4984,7 +4984,7 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 input ArtifactAddInput {
-  hashes: [HashInput]!
+  hashes: [HashInput]
   mime_type: String
   payload_bin: String
   url: String
@@ -5082,7 +5082,7 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 input StixFileAddInput {
-  hashes: [HashInput]!
+  hashes: [HashInput]
   extensions: String
   size: Int
   name: String
@@ -5182,10 +5182,7 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   jobs(first: Int): [Work]
 }
 input X509CertificateAddInput {
-  md5: String
-  sha1: String
-  sha256: String
-  sha512: String
+  hashes: [HashInput]
   is_self_signed: Boolean
   version: String
   serial_number: String

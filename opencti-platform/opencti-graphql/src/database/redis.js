@@ -289,7 +289,7 @@ export const storeDeleteEvent = async (user, instance) => {
 const fetchStreamInfo = async (client) => {
   const res = await client.call('XINFO', 'STREAM', OPENCTI_STREAM);
   // eslint-disable-next-line
-  const [, size,, keys,, nodes,, lastId,, groups,, firstEntry,, lastEntry] = res;
+  const [, size, , keys, , nodes, , lastId, , groups, , firstEntry, , lastEntry] = res;
   return { lastEventId: lastId, streamSize: size };
 };
 const mapStreamToJS = ([id, data]) => {
@@ -363,13 +363,14 @@ export const createStreamProcessor = (callback) => {
   };
 };
 export const getStreamRange = async (from, limit, callback) => {
-  const client = await getClient();
+  const client = await createRedisClient();
   const size = limit > MAX_RANGE_MESSAGES ? MAX_RANGE_MESSAGES : limit;
   return client.call('XRANGE', OPENCTI_STREAM, from, '+', 'COUNT', size).then(async (results) => {
     if (results && results.length > 0) {
       await processStreamResult(results, callback);
     }
-    return true;
+    const lastResult = R.last(results);
+    return { lastEventId: R.head(lastResult) };
   });
 };
 // endregion
