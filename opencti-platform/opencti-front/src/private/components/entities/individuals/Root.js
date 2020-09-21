@@ -154,7 +154,7 @@ class RootIndividual extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={individualId}
+                          stixCoreObjectId={individualId}
                         />
                       </React.Fragment>
                     )}

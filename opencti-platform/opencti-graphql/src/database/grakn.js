@@ -2123,7 +2123,7 @@ const upsertEntity = async (user, entity, type, data) => {
       }
     }
   }
-  return updatedEntity;
+  return R.assoc('i_upserted', true, updatedEntity);
 };
 const createRawEntity = async (user, standardId, participantIds, input, type, opts = {}) => {
   // Generate the internal id if needed

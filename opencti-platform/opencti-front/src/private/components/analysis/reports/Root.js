@@ -165,6 +165,7 @@ class RootReport extends Component {
                         <StixCoreObjectHistory
                           {...routeProps}
                           stixCoreObjectId={reportId}
+                          withoutRelations={true}
                         />
                       </React.Fragment>
                     )}

@@ -216,7 +216,9 @@ export const addStixCyberObservable = async (user, input) => {
   }
   // If everything ok, create adapt/create the observable and notify for enrichment
   const created = await createEntity(user, observableInput, input.type);
-  await askEnrich(created.id, input.type);
+  if (!created.i_upserted) {
+    await askEnrich(created.id, input.type);
+  }
   // create the linked indicator if needed
   if (input.createIndicator) {
     await createIndicatorFromObservable(user, input, created);

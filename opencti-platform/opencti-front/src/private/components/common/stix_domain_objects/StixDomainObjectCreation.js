@@ -292,9 +292,9 @@ class StixDomainObjectCreation extends Component {
             ''
           )}
         {targetStixDomainObjectTypes === undefined
-        || targetStixDomainObjectTypes.includes('User')
+        || targetStixDomainObjectTypes.includes('Individual')
         || targetStixDomainObjectTypes.includes('Identity') ? (
-          <MenuItem value="User">{t('Individual')}</MenuItem>
+          <MenuItem value="Individual">{t('Individual')}</MenuItem>
           ) : (
             ''
           )}

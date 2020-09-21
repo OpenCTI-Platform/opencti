@@ -35,7 +35,9 @@ class StixCoreObjectHistory extends Component {
   }
 
   render() {
-    const { classes, t, stixCoreObjectId } = this.props;
+    const {
+      classes, t, stixCoreObjectId, withoutRelations,
+    } = this.props;
     const { entitySearchTerm, relationsSearchTerm } = this.state;
     return (
       <Grid
@@ -43,7 +45,7 @@ class StixCoreObjectHistory extends Component {
         spacing={3}
         classes={{ container: classes.gridContainer }}
       >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={withoutRelations ? 12 : 6}>
           <Typography
             variant="h4"
             gutterBottom={true}
@@ -88,55 +90,59 @@ class StixCoreObjectHistory extends Component {
             }}
           />
         </Grid>
-        <Grid item={true} xs={6}>
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left', marginTop: 10 }}
-          >
-            {t('Relations of the entity')}
-          </Typography>
-          <div style={{ float: 'right' }}>
-            <SearchInput
-              variant="small"
-              onSubmit={this.handleSearchRelations.bind(this)}
-              keyword={entitySearchTerm}
+        {!withoutRelations ? (
+          <Grid item={true} xs={6}>
+            <Typography
+              variant="h4"
+              gutterBottom={true}
+              style={{ float: 'left', marginTop: 10 }}
+            >
+              {t('Relations of the entity')}
+            </Typography>
+            <div style={{ float: 'right' }}>
+              <SearchInput
+                variant="small"
+                onSubmit={this.handleSearchRelations.bind(this)}
+                keyword={entitySearchTerm}
+              />
+            </div>
+            <div className="clearfix" />
+            <QueryRenderer
+              query={stixCoreObjectHistoryLinesQuery}
+              variables={{
+                filters: [
+                  {
+                    key: 'connection_id',
+                    values: [stixCoreObjectId],
+                    operator: 'wildcard',
+                  },
+                  {
+                    key: 'event_type',
+                    values: ['create', 'delete'],
+                  },
+                ],
+                first: 20,
+                orderBy: 'timestamp',
+                orderMode: 'desc',
+                search: relationsSearchTerm,
+              }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <StixCoreObjectHistoryLines
+                      stixCoreObjectId={stixCoreObjectId}
+                      data={props}
+                      isRelationLog={true}
+                    />
+                  );
+                }
+                return <div />;
+              }}
             />
-          </div>
-          <div className="clearfix" />
-          <QueryRenderer
-            query={stixCoreObjectHistoryLinesQuery}
-            variables={{
-              filters: [
-                {
-                  key: 'connection_id',
-                  values: [stixCoreObjectId],
-                  operator: 'wildcard',
-                },
-                {
-                  key: 'event_type',
-                  values: ['create', 'delete'],
-                },
-              ],
-              first: 20,
-              orderBy: 'timestamp',
-              orderMode: 'desc',
-              search: relationsSearchTerm,
-            }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixCoreObjectHistoryLines
-                    stixCoreObjectId={stixCoreObjectId}
-                    data={props}
-                    isRelationLog={true}
-                  />
-                );
-              }
-              return <div />;
-            }}
-          />
-        </Grid>
+          </Grid>
+        ) : (
+          ''
+        )}
       </Grid>
     );
   }
@@ -145,6 +151,7 @@ class StixCoreObjectHistory extends Component {
 StixCoreObjectHistory.propTypes = {
   t: PropTypes.func,
   stixCoreObjectId: PropTypes.string,
+  withoutRelations: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(StixCoreObjectHistory);
