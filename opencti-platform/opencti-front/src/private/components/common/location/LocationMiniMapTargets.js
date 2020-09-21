@@ -35,12 +35,13 @@ const LocationMiniMapTargets = (props) => {
     pluck('x_opencti_aliases'),
     flatten,
     uniq,
+    filter((n) => n !== null),
   )(propOr([], 'countries', props));
   const getStyle = (feature) => {
     if (includes(feature.properties.ISO3, countriesAliases)) {
       const country = head(
         filter(
-          (n) => includes(feature.properties.ISO3, n.x_opencti_aliases),
+          (n) => includes(feature.properties.ISO3, propOr([], 'x_opencti_aliases', n)),
           props.countries,
         ),
       );

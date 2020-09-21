@@ -398,7 +398,7 @@ export const elAggregationRelationsCount = (
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
-  const toRoleFilter = { query_string: { query: `*_to`, fields: [`connections.role`] } };
+  // const toRoleFilter = { query_string: { query: `*_to`, fields: [`connections.role`] } };
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
@@ -431,7 +431,7 @@ export const elAggregationRelationsCount = (
         path: 'connections',
         query: {
           bool: {
-            must: toRoleFilter,
+            // must: toRoleFilter,
             should: typesFilters,
             minimum_should_match: 1,
           },
@@ -471,7 +471,7 @@ export const elAggregationRelationsCount = (
             filtered: {
               filter: {
                 bool: {
-                  must: typesFilters.length > 0 ? toRoleFilter : [],
+                  must: [], // typesFilters.length > 0 ? toRoleFilter : [],
                 },
               },
               aggs: {
