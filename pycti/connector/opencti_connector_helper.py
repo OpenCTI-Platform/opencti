@@ -1,5 +1,6 @@
 import datetime
 import threading
+import queue
 import uuid
 import requests
 
@@ -17,7 +18,7 @@ from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector.opencti_connector import OpenCTIConnector
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
 
-EVENTS_QUEUE = []
+EVENTS_QUEUE = queue.Queue()
 
 
 def get_config_variable(
@@ -215,10 +216,9 @@ class StreamProcessor(threading.Thread):
     def run(self):
         logging.info("All old events processed, consuming is now LIVE!")
         while True:
-            if len(EVENTS_QUEUE) > 0:
-                for msg in EVENTS_QUEUE:
-                    self.message_callback(msg)
-                    self.set_state({"connectorLastEventId": msg.id})
+            msg = EVENTS_QUEUE.get()
+            self.message_callback(msg)
+            self.set_state({"connectorLastEventId": msg.id})
 
 
 class OpenCTIConnectorHelper:
@@ -374,9 +374,8 @@ class OpenCTIConnectorHelper:
                 # If receiving the last message, launch processor
                 if msg.id == last_event_id:
                     processor_thread.start()
-                msg_id_timestamp = int(msg.id.split("-")[0])
-                if msg_id_timestamp > last_event_id_timestamp and "catchup" not in data:
-                    EVENTS_QUEUE.append(msg)
+                if "catchup" not in data:
+                    EVENTS_QUEUE.put(msg)
                 else:
                     message_callback(msg)
                     self.set_state({"connectorLastEventId": msg.id})
