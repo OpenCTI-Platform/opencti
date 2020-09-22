@@ -6756,6 +6756,7 @@ input InternalRelationshipAddInput {
 ######## STIX RELATIONSHIPS
 enum StixObjectOrStixRelationshipsOrdering {
   name
+  entity_type
   created_at
   updated_at
   createdBy

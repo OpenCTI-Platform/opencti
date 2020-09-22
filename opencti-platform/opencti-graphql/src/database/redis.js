@@ -270,7 +270,9 @@ export const storeDeleteEvent = async (user, instance) => {
       x_opencti_id: instance.internal_id,
       type: instance.entity_type.toLowerCase(),
       source_ref: instance.from.standard_id,
+      x_opencti_source_ref: instance.from.internal_id,
       target_ref: instance.to.standard_id,
+      x_opencti_target_ref: instance.to.internal_id,
     };
     const event = {
       type: EVENT_TYPE_DELETE,
