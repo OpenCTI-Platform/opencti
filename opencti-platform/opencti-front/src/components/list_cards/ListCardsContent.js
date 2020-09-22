@@ -1,7 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import windowDimensions from 'react-window-dimensions';
 import { compose, differenceWith } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import {
@@ -13,18 +12,14 @@ import {
 } from 'react-virtualized';
 import inject18n from '../i18n';
 
+const numberOfCardsPerLine = 4;
+
 const styles = () => ({
   windowScrollerWrapper: {
     flex: '1 1 auto',
   },
-  defaultPad: {
+  defaultCard: {
     padding: '0 15px 30px 15px',
-  },
-  leftPad: {
-    padding: '0 0 30px 30px',
-  },
-  rightPad: {
-    padding: '0 30px 30px 0',
   },
 });
 
@@ -52,19 +47,6 @@ class ListCardsContent extends Component {
     if (diff.length > 0) {
       this.gridRef.forceUpdate();
     }
-  }
-
-  numberOfCardsPerLine() {
-    if (this.props.width < 576) {
-      return 1;
-    }
-    if (this.props.width < 900) {
-      return 2;
-    }
-    if (this.props.width < 1200) {
-      return 3;
-    }
-    return 4;
   }
 
   _setRef(windowScroller) {
@@ -102,8 +84,8 @@ class ListCardsContent extends Component {
     rowStartIndex,
     rowStopIndex,
   }) {
-    const startIndex = rowStartIndex * this.numberOfCardsPerLine() + columnStartIndex;
-    const stopIndex = rowStopIndex * this.numberOfCardsPerLine() + columnStopIndex;
+    const startIndex = rowStartIndex * numberOfCardsPerLine + columnStartIndex;
+    const stopIndex = rowStopIndex * numberOfCardsPerLine + columnStopIndex;
     this._onRowsRendered({
       startIndex,
       stopIndex,
@@ -125,8 +107,8 @@ class ListCardsContent extends Component {
       initialLoading,
       onLabelClick,
     } = this.props;
-    const index = rowIndex * this.numberOfCardsPerLine() + columnIndex;
-    const className = classes.rightPad;
+    const index = rowIndex * numberOfCardsPerLine + columnIndex;
+    const className = classes.defaultCard;
     if (initialLoading || !this._isCellLoaded({ index })) {
       return (
         <div className={className} key={key} style={style}>
@@ -161,12 +143,8 @@ class ListCardsContent extends Component {
       isLoading,
       nbOfCardsToLoad,
     } = this.props;
-    const nbLineForCards = Math.ceil(
-      dataList.length / this.numberOfCardsPerLine(),
-    );
-    const nbOfLinesToLoad = Math.ceil(
-      nbOfCardsToLoad / this.numberOfCardsPerLine(),
-    );
+    const nbLineForCards = Math.ceil(dataList.length / numberOfCardsPerLine);
+    const nbOfLinesToLoad = Math.ceil(nbOfCardsToLoad / numberOfCardsPerLine);
     const nbLinesWithLoading = isLoading()
       ? nbLineForCards + this.state.loadingCardCount
       : nbLineForCards;
@@ -188,33 +166,36 @@ class ListCardsContent extends Component {
                   <AutoSizer disableHeight>
                     {({ width }) => (
                       <ColumnSizer
-                        columnCount={this.numberOfCardsPerLine()}
+                        columnCount={numberOfCardsPerLine}
                         width={width}
                       >
-                        {({ adjustedWidth, getColumnWidth }) => (
-                          <Grid
-                            ref={(ref) => {
-                              this.gridRef = ref;
-                              registerChild(ref);
-                            }}
-                            autoHeight={true}
-                            height={height}
-                            onRowsRendered={onRowsRendered}
-                            isScrolling={isScrolling}
-                            onScroll={onChildScroll}
-                            columnWidth={getColumnWidth}
-                            columnCount={this.numberOfCardsPerLine()}
-                            rowHeight={195}
-                            overscanColumnCount={this.numberOfCardsPerLine()}
-                            overscanRowCount={2}
-                            rowCount={rowCount}
-                            cellRenderer={this._cellRenderer}
-                            onSectionRendered={this._onSectionRendered}
-                            scrollToIndex={-1}
-                            scrollTop={scrollTop}
-                            width={adjustedWidth}
-                          />
-                        )}
+                        {({ adjustedWidth, getColumnWidth }) => {
+                          const columnWidth = getColumnWidth();
+                          return (
+                            <Grid
+                              ref={(ref) => {
+                                this.gridRef = ref;
+                                registerChild(ref);
+                              }}
+                              autoHeight={true}
+                              height={height}
+                              onRowsRendered={onRowsRendered}
+                              isScrolling={isScrolling}
+                              onScroll={onChildScroll}
+                              columnWidth={columnWidth}
+                              columnCount={numberOfCardsPerLine}
+                              rowHeight={195}
+                              overscanColumnCount={numberOfCardsPerLine}
+                              overscanRowCount={2}
+                              rowCount={rowCount}
+                              cellRenderer={this._cellRenderer}
+                              onSectionRendered={this._onSectionRendered}
+                              scrollToIndex={-1}
+                              scrollTop={scrollTop}
+                              width={adjustedWidth}
+                            />
+                          );
+                        }}
                       </ColumnSizer>
                     )}
                   </AutoSizer>
@@ -244,8 +225,4 @@ ListCardsContent.propTypes = {
   onLabelClick: PropTypes.func,
 };
 
-export default compose(
-  windowDimensions(),
-  inject18n,
-  withStyles(styles),
-)(ListCardsContent);
+export default compose(inject18n, withStyles(styles))(ListCardsContent);

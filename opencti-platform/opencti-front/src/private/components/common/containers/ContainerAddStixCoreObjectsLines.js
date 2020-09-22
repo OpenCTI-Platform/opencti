@@ -3,7 +3,14 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map, filter, keys, groupBy, assoc, compose, append,
+  map,
+  filter,
+  keys,
+  groupBy,
+  assoc,
+  compose,
+  append,
+  pipe,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Accordion from '@material-ui/core/Accordion';
@@ -237,7 +244,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
       t, classes, data, containerStixCoreObjects, fd,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const stixCoreObjectsNodes = map((n) => n.node, data.stixCoreObjects.edges);
+    const stixCoreObjectsNodes = pipe(
+      map((n) => n.node),
+      filter(
+        (n) => n.entity_type !== 'Note'
+          && n.entity_type !== 'Opinion'
+          && n.entity_type !== 'Report',
+      ),
+    )(data.stixCoreObjects.edges);
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
     const stixCoreObjects = byType(stixCoreObjectsNodes);
     const stixCoreObjectsTypes = keys(stixCoreObjects);

@@ -45,7 +45,6 @@
     "react-router-dom": "^5.2.0",
     "react-swipeable-views": "^0.13.9",
     "react-virtualized": "^9.22.2",
-    "react-window-dimensions": "^1.0.2",
     "recharts": "^2.0.0-beta.6",
     "relay-runtime": "^10.0.1",
     "rxjs": "^6.6.2",

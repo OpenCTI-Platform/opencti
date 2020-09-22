@@ -28,6 +28,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
+    marginLeft: -10,
   },
   containerOpenExports: {
     flexGrow: 1,
@@ -35,11 +36,11 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginRight: 310,
+    margin: '0 300px 0 -10px',
   },
   parameters: {
     float: 'left',
-    marginTop: -10,
+    margin: '-10px 0 0 15px',
   },
   views: {
     display: 'flex',
