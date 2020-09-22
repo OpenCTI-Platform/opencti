@@ -1096,38 +1096,11 @@ class OpenCTIStix2:
                     if "objectMarking" in stix_core_relationship
                     else None,
                 ):
-                    objects_to_get.append(stix_core_relationship["to"])
-                    relation_object_data = self.prepare_export(
-                        self.generate_export(stix_core_relationship),
-                        "simple",
-                        max_marking_definition_entity,
+                    objects_to_get.append(
+                        stix_core_relationship["to"]
+                        if stix_core_relationship["to"]["id"] != entity["x_opencti_id"]
+                        else stix_core_relationship["from"]
                     )
-                    relation_object_bundle = self.filter_objects(
-                        uuids, relation_object_data
-                    )
-                    uuids = uuids + [x["id"] for x in relation_object_bundle]
-                    result = result + relation_object_bundle
-                else:
-                    self.opencti.log(
-                        "info",
-                        "Marking definitions of "
-                        + stix_core_relationship["entity_type"]
-                        + ' "'
-                        + stix_core_relationship["id"]
-                        + '" are less than max definition, not exporting the relation AND the target entity.',
-                    )
-            # Get extra relations (to)
-            stix_core_relationships = self.opencti.stix_core_relationship.list(
-                toId=entity["x_opencti_id"]
-            )
-            for stix_core_relationship in stix_core_relationships:
-                if self.check_max_marking_definition(
-                    max_marking_definition_entity,
-                    stix_core_relationship["objectMarking"]
-                    if "objectMarking" in stix_core_relationship
-                    else None,
-                ):
-                    objects_to_get.append(stix_core_relationship["to"])
                     relation_object_data = self.prepare_export(
                         self.generate_export(stix_core_relationship),
                         "simple",
@@ -1166,14 +1139,19 @@ class OpenCTIStix2:
                 "Tool": self.opencti.tool.read,
                 "Vulnerability": self.opencti.vulnerability.read,
                 "X-OpenCTI-Incident": self.opencti.x_opencti_incident.read,
+                "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
             }
             # Get extra objects
             for entity_object in objects_to_get:
                 # Map types
+                if entity_object["entity_type"] == "StixFile":
+                    entity_object["entity_type"] = "File"
                 if IdentityTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Identity"
                 if LocationTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Location"
+                if StixCyberObservableTypes.has_value(entity_object["entity_type"]):
+                    entity_object["entity_type"] = "Stix-Cyber-Observable"
                 do_read = reader.get(
                     entity_object["entity_type"],
                     lambda **kwargs: self.unknown_type(
@@ -1324,6 +1302,8 @@ class OpenCTIStix2:
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
+        if entity_type == "StixFile":
+            entity_type = "File"
 
         if IdentityTypes.has_value(entity_type):
             if filters is not None:
