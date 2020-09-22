@@ -128,7 +128,11 @@ class StixDomainObjectOverview extends Component {
               </Button>
               {!withoutMarking && stixDomainObject.objectMarking ? (
                 <div>
-                  <Typography variant="h3" gutterBottom={true}>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ marginTop: 20 }}
+                  >
                     {t('Marking')}
                   </Typography>
                   {stixDomainObject.objectMarking.edges.length > 0 ? (

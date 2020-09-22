@@ -79,22 +79,27 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
               query={
                 simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery
               }
-              variables={{ count: 9, ...paginationOptions }}
-              render={({ props }) => (
-                <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
-                  stixObjectOrStixRelationshipId={
-                    stixObjectOrStixRelationshipId
-                  }
-                  stixObjectOrStixRelationshipLink={
-                    stixObjectOrStixRelationshipLink
-                  }
-                  data={props}
-                  container={props ? props.container : null}
-                  dataColumns={dataColumns}
-                  initialLoading={props === null}
-                  paginationOptions={paginationOptions}
-                />
-              )}
+              variables={{ count: 8, ...paginationOptions }}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                    <SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines
+                      stixObjectOrStixRelationshipId={
+                        stixObjectOrStixRelationshipId
+                      }
+                      stixObjectOrStixRelationshipLink={
+                        stixObjectOrStixRelationshipLink
+                      }
+                      data={props}
+                      container={props.container}
+                      dataColumns={dataColumns}
+                      initialLoading={false}
+                      paginationOptions={paginationOptions}
+                    />
+                  );
+                }
+                return <div />;
+              }}
             />
           </ListLines>
         </Paper>

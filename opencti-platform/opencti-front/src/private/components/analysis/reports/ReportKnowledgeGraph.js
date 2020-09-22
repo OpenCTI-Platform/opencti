@@ -885,7 +885,7 @@ class ReportKnowledgeGraphComponent extends Component {
     } = this.state;
     return (
       <div>
-        {report.objects.edges.length > 500 ? (
+        {report.objects.edges.length > 200 ? (
           <div className={classes.container} ref={this.diagramContainer}>
             <Alert severity="info" style={{ marginTop: 20 }}>
               <AlertTitle>{t('Too many objects')}</AlertTitle>
