@@ -1682,9 +1682,11 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
       }));
       updateAttributes.push(...dictInputs);
     } else if (isMultipleAttribute(sourceFieldKey)) {
-      const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
-      if (mergedEntityCurrentFieldValue.length !== sourceFieldValue.length) {
-        updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
+      if( mergedEntityCurrentFieldValue && sourceFieldValue ) {
+        const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
+        if (mergedEntityCurrentFieldValue.length !== sourceFieldValue.length) {
+          updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
+        }
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
       updateAttributes.push({ key: sourceFieldKey, value: [sourceFieldValue] });
