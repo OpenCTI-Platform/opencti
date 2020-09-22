@@ -375,7 +375,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(ENTITIES_INDICES, { after: offsetToCursor(30) });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(61);
+    expect(data.edges.length).toEqual(60);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,

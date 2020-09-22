@@ -234,12 +234,13 @@ class IndicatorCreation extends Component {
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    <MenuItem value="stix">stix</MenuItem>
-                    <MenuItem value="pcre">pcre</MenuItem>
-                    <MenuItem value="sigma">sigma</MenuItem>
-                    <MenuItem value="snort">snort</MenuItem>
-                    <MenuItem value="suricata">suricata</MenuItem>
-                    <MenuItem value="yara">yara</MenuItem>
+                    <MenuItem value="stix">STIX</MenuItem>
+                    <MenuItem value="pcre">PCRE</MenuItem>
+                    <MenuItem value="sigma">SIGMA</MenuItem>
+                    <MenuItem value="snort">SNORT</MenuItem>
+                    <MenuItem value="suricata">Suricata</MenuItem>
+                    <MenuItem value="yara">YARA</MenuItem>
+                    <MenuItem value="tanium-signal">Tanium Signal</MenuItem>
                   </Field>
                   <Field
                     component={TextField}

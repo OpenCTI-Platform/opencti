@@ -42,6 +42,9 @@ const inlineStyles = {
   yara: {
     backgroundColor: '#c62828',
   },
+  'tanium-signal': {
+    backgroundColor: '#8d1212',
+  },
 };
 
 class ItemPatternType extends Component {
@@ -107,6 +110,14 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.yara}
+            label={this.props.label}
+          />
+        );
+      case 'tanium-signal':
+        return (
+          <Chip
+            classes={{ root: style }}
+            style={inlineStyles['tanium-signal']}
             label={this.props.label}
           />
         );

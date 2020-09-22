@@ -152,6 +152,19 @@ class IndicatorsRightBar extends Component {
             />
             <ListItemText primary="YARA" />
           </ListItem>
+          <ListItem
+            dense={true}
+            button={true}
+            onClick={handleToggleIndicatorType.bind(this, 'tanium-signal')}
+            classes={{ root: classes.item }}
+          >
+            <Checkbox
+              checked={indicatorTypes.includes('tanium-signal')}
+              disableRipple={true}
+              size="small"
+            />
+            <ListItemText primary="Tanium Signal" />
+          </ListItem>
         </List>
         <QueryRenderer
           query={stixCyberObservablesLinesSubTypesQuery}
