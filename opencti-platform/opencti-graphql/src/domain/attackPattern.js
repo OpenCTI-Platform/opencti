@@ -1,3 +1,4 @@
+import { pipe, assoc } from 'ramda';
 import {
   createEntity,
   escapeString,
@@ -18,10 +19,16 @@ export const findById = (attackPatternId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_ATTACK_PATTERN], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_ATTACK_PATTERN], ['name', 'description', 'x_mitre_id', 'aliases'], args);
 };
 
 export const addAttackPattern = async (user, attackPattern) => {
+  if (attackPattern.name.match(/^T\d+/)) {
+    const existingAttackPattern = await findAll({ filters: [{ key: 'x_mitre_id', values: [attackPattern.name] }] });
+    if (existingAttackPattern.edges.length > 0) {
+      return existingAttackPattern.edges[0].node;
+    }
+  }
   const created = await createEntity(user, attackPattern, ENTITY_TYPE_ATTACK_PATTERN);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

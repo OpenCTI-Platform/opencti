@@ -18,6 +18,7 @@ import ItemCreator from '../../../../components/ItemCreator';
 import ItemRevoked from '../../../../components/ItemRevoked';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
 import ItemMarking from '../../../../components/ItemMarking';
+import ItemPatternType from '../../../../components/ItemPatternType';
 
 const styles = () => ({
   paper: {
@@ -40,7 +41,12 @@ const styles = () => ({
 class StixDomainObjectOverview extends Component {
   render() {
     const {
-      t, fldt, classes, stixDomainObject, withoutMarking,
+      t,
+      fldt,
+      classes,
+      stixDomainObject,
+      withoutMarking,
+      withPattern,
     } = this.props;
     const stixIds = stixDomainObject.x_opencti_stix_ids.length > 0
       ? filter(
@@ -96,7 +102,21 @@ class StixDomainObjectOverview extends Component {
               </pre>
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              {withPattern ? (
+                <div>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Pattern type')}
+                  </Typography>
+                  <ItemPatternType label={stixDomainObject.pattern_type} />
+                </div>
+              ) : (
+                ''
+              )}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: withPattern ? 20 : 0 }}
+              >
                 {t('STIX version')}
               </Typography>
               <Button
@@ -108,11 +128,7 @@ class StixDomainObjectOverview extends Component {
               </Button>
               {!withoutMarking && stixDomainObject.objectMarking ? (
                 <div>
-                  <Typography
-                    variant="h3"
-                    gutterBottom={true}
-                    style={{ marginTop: 20 }}
-                  >
+                  <Typography variant="h3" gutterBottom={true}>
                     {t('Marking')}
                   </Typography>
                   {stixDomainObject.objectMarking.edges.length > 0 ? (

@@ -36,6 +36,7 @@ class AttackPatternsLinesComponent extends Component {
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || n.x_mitre_id.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || propOr('', 'subattackPatterns_text', n)
         .toLowerCase()
         .indexOf(keyword.toLowerCase()) !== -1;
@@ -45,7 +46,9 @@ class AttackPatternsLinesComponent extends Component {
       map((n) => assoc(
         'subattackPatterns_text',
         pipe(
-          map((o) => `${o.node.name} ${o.node.description}`),
+          map(
+            (o) => `${o.node.x_mitre_id} ${o.node.name} ${o.node.description}`,
+          ),
           join(' | '),
         )(pathOr([], ['subAttackPatterns', 'edges'], n)),
         n,

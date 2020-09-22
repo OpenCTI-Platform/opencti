@@ -11,6 +11,7 @@ import inject18n from '../../../../components/i18n';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import ExpandablePre from '../../../../components/ExpandablePre';
 
 const styles = () => ({
   paper: {
@@ -36,7 +37,7 @@ class IndicatorDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Indicator pattern')}
           </Typography>
-          <pre>{indicator.pattern}</pre>
+          <ExpandablePre source={indicator.pattern} limit={300} />
           <Grid container={true} spacing={3} style={{ marginTop: 10 }}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>

@@ -2,15 +2,17 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core/styles';
 import Chip from '@material-ui/core/Chip';
+import { compose } from 'ramda';
+import inject18n from './i18n';
 
 const styles = () => ({
   chip: {
-    fontSize: 12,
-    lineHeight: '12px',
-    height: 25,
+    fontSize: 15,
+    lineHeight: '18px',
+    height: 30,
     margin: '0 7px 7px 0',
     borderRadius: 5,
-    width: 80,
+    width: 130,
   },
   chipInList: {
     fontSize: 12,
@@ -25,31 +27,39 @@ const styles = () => ({
 
 const inlineStyles = {
   stix: {
-    backgroundColor: '#283593',
+    backgroundColor: 'rgba(40, 53, 147, 0.08)',
+    color: '#283593',
   },
   pcre: {
-    backgroundColor: '#4527a0',
+    backgroundColor: 'rgba(92, 123, 245, 0.08)',
+    color: '#5c7bf5',
   },
   sigma: {
-    backgroundColor: '#2e7d32',
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+    color: '#4caf50',
   },
   snort: {
     backgroundColor: '#4e342e',
   },
   suricata: {
-    backgroundColor: '#00695c',
+    backgroundColor: 'rgba(0, 105, 92, 0.08)',
+    color: '#00695c',
   },
   yara: {
-    backgroundColor: '#c62828',
+    backgroundColor: 'rgba(244, 67, 54, 0.08)',
+    color: '#f44336',
   },
   'tanium-signal': {
-    backgroundColor: '#8d1212',
+    backgroundColor: 'rgba(243, 25, 25, 0.08)',
+    color: '#f31919',
   },
 };
 
 class ItemPatternType extends Component {
   render() {
-    const { classes, variant } = this.props;
+    const {
+      classes, variant, label, t,
+    } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
     if (this.props.color) {
       return (
@@ -70,7 +80,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.stix}
-            label={this.props.label}
+            label={t(label)}
           />
         );
       case 'pcre':
@@ -78,7 +88,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.pcre}
-            label={this.props.label}
+            label={t(label)}
           />
         );
       case 'sigma':
@@ -86,7 +96,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.sigma}
-            label={this.props.label}
+            label={t(label)}
           />
         );
       case 'snort':
@@ -94,7 +104,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.snort}
-            label={this.props.label}
+            label={t(label)}
           />
         );
       case 'suricata':
@@ -102,7 +112,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.suricata}
-            label={this.props.label}
+            label={t(label)}
           />
         );
       case 'yara':
@@ -110,7 +120,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.yara}
-            label={this.props.label}
+            label={t(label)}
           />
         );
       case 'tanium-signal':
@@ -118,7 +128,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles['tanium-signal']}
-            label={this.props.label}
+            label={t(label)}
           />
         );
       default:
@@ -126,7 +136,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.stix}
-            label={this.props.label}
+            label={t(label)}
           />
         );
     }
@@ -140,4 +150,4 @@ ItemPatternType.propTypes = {
   color: PropTypes.string,
 };
 
-export default withStyles(styles)(ItemPatternType);
+export default compose(inject18n, withStyles(styles))(ItemPatternType);

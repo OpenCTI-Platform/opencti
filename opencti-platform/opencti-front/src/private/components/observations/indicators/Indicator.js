@@ -41,6 +41,7 @@ class IndicatorComponent extends Component {
             <StixDomainObjectOverview
               stixDomainObject={indicator}
               withoutMarking={true}
+              withPattern={true}
             />
           </Grid>
           <Grid item={true} xs={6}>
@@ -135,6 +136,7 @@ const Indicator = createFragmentContainer(IndicatorComponent, {
         }
       }
       name
+      pattern_type
       ...IndicatorDetails_indicator
     }
   `,
