@@ -1682,7 +1682,7 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
       }));
       updateAttributes.push(...dictInputs);
     } else if (isMultipleAttribute(sourceFieldKey)) {
-      if( mergedEntityCurrentFieldValue && sourceFieldValue ) {
+      if (mergedEntityCurrentFieldValue && sourceFieldValue) {
         const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
         if (mergedEntityCurrentFieldValue.length !== sourceFieldValue.length) {
           updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
@@ -2131,9 +2131,28 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
-  const existingEntity = await loadById(participantIds, type);
-  if (existingEntity) {
-    return upsertEntity(user, existingEntity, type, input);
+  const existingEntities = await findElementById(participantIds, type);
+  if (existingEntities.length > 0) {
+    if (existingEntities.length === 1) {
+      return upsertEntity(user, R.head(existingEntities), type, input);
+    }
+    // Sometimes multiple entities can match
+    // Looking for aliasA, aliasB, find in different entities for example
+    // In this case, we try to find if one match the standard id
+    const existingByStandard = R.find((e) => e.standard_id === standardId, existingEntities);
+    if (existingByStandard) {
+      // In this mode we can safely consider this entity like the existing one.
+      // We can upsert element except the aliases that are part of other entities
+      const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
+      const key = resolveAliasesField(type);
+      const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
+      const filteredAliases = R.filter((i) => !concurrentAliases.includes(i), input[key]);
+      const inputAliases = Object.assign(input, { [key]: filteredAliases });
+      return upsertEntity(user, existingByStandard, type, inputAliases);
+    }
+    // If not we dont know what to do, just throw an exception.
+    const entityIds = R.map((i) => i.standard_id, existingEntities);
+    throw DatabaseError('Too many entities resolved', { input, entityIds });
   }
   // Complete with identifiers
   const today = now();
