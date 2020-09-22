@@ -188,11 +188,17 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
   type: Yup.string().required(t('This field is required')),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+const sharedUpdater = (
+  store,
+  userId,
+  paginationOptions,
+  paginationKey,
+  newEdge,
+) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixDomainObjects',
+    paginationKey,
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -247,6 +253,7 @@ class StixDomainObjectCreation extends Component {
           store,
           container.getDataID(),
           this.props.paginationOptions,
+          this.props.paginationKey || 'Pagination_stixDomainObjects',
           newEdge,
         );
       },
@@ -653,6 +660,7 @@ class StixDomainObjectCreation extends Component {
 }
 
 StixDomainObjectCreation.propTypes = {
+  paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,
   targetStixDomainObjectTypes: PropTypes.array,
   classes: PropTypes.object,

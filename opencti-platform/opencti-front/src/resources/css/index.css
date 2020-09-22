@@ -251,3 +251,8 @@ div.srd-port:hover {
   color: #ffffff;
   background-color: #14262c;
 }
+
+.MuiDialog-container .mde-textarea-wrapper textarea {
+  color: #ffffff !important;
+  background-color: #28353a !important;
+}

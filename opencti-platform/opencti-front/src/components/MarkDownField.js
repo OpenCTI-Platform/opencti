@@ -43,7 +43,6 @@ const MarkDownField = (props) => {
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
-        onBlur={onBlur}
         generateMarkdownPreview={(markdown) => Promise.resolve(converter.makeHtml(markdown))
         }
       />

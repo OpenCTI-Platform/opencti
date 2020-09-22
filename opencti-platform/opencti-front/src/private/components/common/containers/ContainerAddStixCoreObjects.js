@@ -222,6 +222,7 @@ class ContainerAddStixCoreObjects extends Component {
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
+            paginationKey='Pagination_stixCoreObjects'
             paginationOptions={paginationOptions}
             defaultCreatedBy={defaultCreatedBy}
             defaultMarkingDefinitions={defaultMarkingDefinitions}
@@ -251,6 +252,7 @@ class ContainerAddStixCoreObjects extends Component {
             display={this.state.open}
             contextual={true}
             inputValue={this.state.search}
+            paginationKey='Pagination_stixCoreObjects'
             paginationOptions={paginationOptions}
             defaultCreatedBy={defaultCreatedBy}
             defaultMarkingDefinitions={defaultMarkingDefinitions}

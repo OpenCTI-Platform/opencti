@@ -27,8 +27,10 @@ import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import { AspectRatio } from '@material-ui/icons';
 import { GraphOutline } from 'mdi-material-ui';
-import { debounce } from 'rxjs/operators/index';
-import { Subject, timer } from 'rxjs/index';
+import { debounce } from 'rxjs/operators';
+import { Subject, timer } from 'rxjs';
+import Alert from '@material-ui/lab/Alert';
+import AlertTitle from '@material-ui/lab/AlertTitle/AlertTitle';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import EntityNodeModel from '../../../../components/graph_node/EntityNodeModel';
@@ -867,7 +869,9 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   render() {
-    const { classes, engine, report } = this.props;
+    const {
+      classes, engine, report, t,
+    } = this.props;
     const {
       openCreateRelation,
       createRelationFrom,
@@ -880,75 +884,88 @@ class ReportKnowledgeGraphComponent extends Component {
       lastLinkLastSeen,
     } = this.state;
     return (
-      <div className={classes.container} ref={this.diagramContainer}>
-        <IconButton
-          color="primary"
-          className={classes.icon}
-          onClick={this.zoomToFit.bind(this)}
-          style={{ left: 200 }}
-        >
-          <AspectRatio />
-        </IconButton>
-        <IconButton
-          color="primary"
-          className={classes.icon}
-          onClick={this.distribute.bind(this, 'LR')}
-          style={{ left: 250 }}
-        >
-          <GraphOutline style={{ transform: 'rotate(-90deg)' }} />
-        </IconButton>
-        <IconButton
-          color="primary"
-          className={classes.icon}
-          onClick={this.distribute.bind(this, 'TB')}
-          style={{ left: 300 }}
-        >
-          <GraphOutline />
-        </IconButton>
-        <DiagramWidget
-          className={classes.canvas}
-          deleteKeys={[]}
-          diagramEngine={engine}
-          inverseZoom={true}
-          allowLooseLinks={false}
-          maxNumberPointsPerLink={0}
-          actionStoppedFiring={this.handleMovesChange.bind(this)}
-        />
-        <ContainerAddStixCoreObjects
-          containerId={report.id}
-          containerStixCoreObjects={report.objects.edges}
-          knowledgeGraph={true}
-          defaultCreatedBy={propOr(null, 'createdBy', report)}
-          defaultMarkingDefinitions={map(
-            (n) => n.node,
-            pathOr([], ['objectMarking', 'edges'], report),
-          )}
-        />
-        <StixCoreRelationshipCreation
-          open={openCreateRelation}
-          from={createRelationFrom}
-          to={createRelationTo}
-          firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
-          lastSeen={lastLinkLastSeen || dateFormat(report.published)}
-          weight={report.confidence}
-          handleClose={this.handleCloseRelationCreation.bind(this)}
-          handleResult={this.handleResultRelationCreation.bind(this)}
-          defaultCreatedBy={propOr(null, 'createdBy', report)}
-          defaultMarkingDefinitions={map(
-            (n) => n.node,
-            pathOr([], ['objectMarking', 'edges'], report),
-          )}
-        />
-        <StixCoreRelationshipEdition
-          open={openEditRelation}
-          stixCoreRelationshipId={editRelationId}
-          handleClose={this.handleCloseRelationEdition.bind(this)}
-        />
-        <StixDomainObjectEdition
-          open={openEditEntity}
-          stixDomainObjectId={editEntityId}
-          handleClose={this.handleCloseEntityEdition.bind(this)}
-        />
+      <div>
+        {report.objects.edges.length > 500 ? (
+          <div className={classes.container} ref={this.diagramContainer}>
+            <Alert severity="info" style={{ marginTop: 20 }}>
+              <AlertTitle>{t('Too many objects')}</AlertTitle>
+              {t(
+                'This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.',
+              )}
+            </Alert>
+          </div>
+        ) : (
+          <div className={classes.container} ref={this.diagramContainer}>
+            <IconButton
+              color="primary"
+              className={classes.icon}
+              onClick={this.zoomToFit.bind(this)}
+              style={{ left: 200 }}
+            >
+              <AspectRatio />
+            </IconButton>
+            <IconButton
+              color="primary"
+              className={classes.icon}
+              onClick={this.distribute.bind(this, 'LR')}
+              style={{ left: 250 }}
+            >
+              <GraphOutline style={{ transform: 'rotate(-90deg)' }} />
+            </IconButton>
+            <IconButton
+              color="primary"
+              className={classes.icon}
+              onClick={this.distribute.bind(this, 'TB')}
+              style={{ left: 300 }}
+            >
+              <GraphOutline />
+            </IconButton>
+            <DiagramWidget
+              className={classes.canvas}
+              deleteKeys={[]}
+              diagramEngine={engine}
+              inverseZoom={true}
+              allowLooseLinks={false}
+              maxNumberPointsPerLink={0}
+              actionStoppedFiring={this.handleMovesChange.bind(this)}
+            />
+            <ContainerAddStixCoreObjects
+              containerId={report.id}
+              containerStixCoreObjects={report.objects.edges}
+              knowledgeGraph={true}
+              defaultCreatedBy={propOr(null, 'createdBy', report)}
+              defaultMarkingDefinitions={map(
+                (n) => n.node,
+                pathOr([], ['objectMarking', 'edges'], report),
+              )}
+            />
+            <StixCoreRelationshipCreation
+              open={openCreateRelation}
+              from={createRelationFrom}
+              to={createRelationTo}
+              firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
+              lastSeen={lastLinkLastSeen || dateFormat(report.published)}
+              weight={report.confidence}
+              handleClose={this.handleCloseRelationCreation.bind(this)}
+              handleResult={this.handleResultRelationCreation.bind(this)}
+              defaultCreatedBy={propOr(null, 'createdBy', report)}
+              defaultMarkingDefinitions={map(
+                (n) => n.node,
+                pathOr([], ['objectMarking', 'edges'], report),
+              )}
+            />
+            <StixCoreRelationshipEdition
+              open={openEditRelation}
+              stixCoreRelationshipId={editRelationId}
+              handleClose={this.handleCloseRelationEdition.bind(this)}
+            />
+            <StixDomainObjectEdition
+              open={openEditEntity}
+              stixDomainObjectId={editEntityId}
+              handleClose={this.handleCloseEntityEdition.bind(this)}
+            />
+          </div>
+        )}
       </div>
     );
   }

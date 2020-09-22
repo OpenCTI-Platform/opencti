@@ -121,6 +121,7 @@ class RootNote extends Component {
                         <StixCoreObjectHistory
                           {...routeProps}
                           stixCoreObjectId={noteId}
+                          withoutRelations={true}
                         />
                       </React.Fragment>
                     )}

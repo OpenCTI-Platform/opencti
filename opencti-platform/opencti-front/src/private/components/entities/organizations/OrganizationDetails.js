@@ -11,6 +11,7 @@ import Markdown from 'react-markdown';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -61,6 +62,17 @@ class OrganizationDetailsComponent extends Component {
                     : 'organization_other',
                 )}
               />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown
+                source={organization.description}
+                limit={400}
+              />
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -70,19 +82,19 @@ class OrganizationDetailsComponent extends Component {
                 reliability={organization.x_opencti_reliability}
                 label={t(`reliability_${organization.x_opencti_reliability}`)}
               />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Contact information')}
+              </Typography>
+              <Markdown
+                className="markdown"
+                source={organization.contact_information}
+              />
             </Grid>
           </Grid>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Contact information')}
-          </Typography>
-          <Markdown
-            className="markdown"
-            source={organization.contact_information}
-          />
         </Paper>
       </div>
     );
@@ -102,6 +114,7 @@ const OrganizationDetails = createFragmentContainer(
     organization: graphql`
       fragment OrganizationDetails_organization on Organization {
         id
+        description
         contact_information
         x_opencti_reliability
         x_opencti_organization_type
