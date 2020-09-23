@@ -3,8 +3,8 @@
 from pycti import OpenCTIApiClient
 
 # Variables
-api_url = "http://localhost:4000"
-api_token = "1197406e-9d93-4d87-be55-a4f96f400995"
+api_url = "https://demo.opencti.io"
+api_token = "2b4f29e3-5ea8-4890-8cf5-a76f61f1e2b2"
 
 # OpenCTI initialization
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
