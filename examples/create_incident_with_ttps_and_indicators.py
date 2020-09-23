@@ -19,7 +19,7 @@ object_refs = []
 observable_refs = []
 
 # Create the incident
-incident = opencti_api_client.incident.create(
+incident = opencti_api_client.x_opencti_incident.create(
     name="My new incident",
     description="We have been compromised",
     objective="Espionage",
@@ -39,7 +39,7 @@ report = opencti_api_client.report.create(
 ttp1 = opencti_api_client.attack_pattern.read(
     filters=[{"key": "external_id", "values": ["T1193"]}]
 )
-ttp1_relation = opencti_api_client.stix_relation.create(
+ttp1_relation = opencti_api_client.stix_domain_object.create(
     fromType="Incident",
     fromId=incident["id"],
     toType="Attack-Pattern",
@@ -51,7 +51,7 @@ ttp1_relation = opencti_api_client.stix_relation.create(
 )
 # Add kill chain phases to the relation
 for kill_chain_phase_id in ttp1["killChainPhasesIds"]:
-    opencti_api_client.stix_relation.add_kill_chain_phase(
+    opencti_api_client.stix_core_relationship.add_kill_chain_phase(
         id=ttp1_relation["id"], kill_chain_phase_id=kill_chain_phase_id
     )
 
@@ -63,7 +63,7 @@ observable_ttp1 = opencti_api_client.stix_cyber_observable.create(
 # Get the indicator
 indicator_ttp1 = observable_ttp1["indicators"][0]
 # Indicates the relation Incident => uses => TTP
-indicator_ttp1_relation = opencti_api_client.stix_relation.create(
+indicator_ttp1_relation = opencti_api_client.stix_core_relationship.create(
     fromType="Indicator",
     fromId=indicator_ttp1["id"],
     toType="stix_relation",
@@ -90,7 +90,7 @@ ttp2 = opencti_api_client.attack_pattern.read(
     filters=[{"key": "external_id", "values": ["T1060"]}]
 )
 # Create the relation
-ttp2_relation = opencti_api_client.stix_relation.create(
+ttp2_relation = opencti_api_client.stix_core_relationship.create(
     fromType="Incident",
     fromId=incident["id"],
     toType="Attack-Pattern",
@@ -102,7 +102,7 @@ ttp2_relation = opencti_api_client.stix_relation.create(
 )
 # Add kill chain phases to the relation
 for kill_chain_phase_id in ttp2["killChainPhasesIds"]:
-    opencti_api_client.stix_relation.add_kill_chain_phase(
+    opencti_api_client.stix_core_relationship.add_kill_chain_phase(
         id=ttp2_relation["id"], kill_chain_phase_id=kill_chain_phase_id
     )
 
@@ -114,7 +114,7 @@ observable_ttp2 = opencti_api_client.stix_cyber_observable.create(
 # Get the indicator
 indicator_ttp2 = observable_ttp2["indicators"][0]
 # Indicates the relation Incident => uses => TTP
-indicator_ttp2_relation = opencti_api_client.stix_relation.create(
+indicator_ttp2_relation = opencti_api_client.stix_core_relationship.create(
     fromType="Indicator",
     fromId=indicator_ttp2["id"],
     toType="stix_relation",
@@ -139,7 +139,7 @@ observable_refs.append(observable_ttp2["id"])
 ttp3 = opencti_api_client.attack_pattern.read(
     filters=[{"key": "external_id", "values": ["T1022"]}]
 )
-ttp3_relation = opencti_api_client.stix_relation.create(
+ttp3_relation = opencti_api_client.stix_core_relationship.create(
     fromType="Incident",
     fromId=incident["id"],
     toType="Attack-Pattern",
@@ -151,7 +151,7 @@ ttp3_relation = opencti_api_client.stix_relation.create(
 )
 # Add kill chain phases to the relation
 for kill_chain_phase_id in ttp3["killChainPhasesIds"]:
-    opencti_api_client.stix_relation.add_kill_chain_phase(
+    opencti_api_client.stix_core_relationship.add_kill_chain_phase(
         id=ttp3_relation["id"], kill_chain_phase_id=kill_chain_phase_id
     )
 # Elements for the report
@@ -166,7 +166,7 @@ for observable_ref in observable_refs:
     opencti_api_client.report.add_stix_observable(
         id=report["id"], report=report, stix_observable_id=observable_ref
     )
-    opencti_api_client.stix_relation.create(
+    opencti_api_client.stix_core_relationship.create(
         fromType="Stix-Observable",
         fromId=observable_ref,
         toType="Incident",

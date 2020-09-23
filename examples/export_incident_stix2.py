@@ -11,7 +11,7 @@ api_token = "2b4f29e3-5ea8-4890-8cf5-a76f61f1e2b2"
 opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Get the incident created in the create_incident_with_ttps_and_indicators.py
-incident = opencti_api_client.incident.read(
+incident = opencti_api_client.x_opencti_incident.read(
     filters=[{"key": "name", "values": ["My new incident"]}]
 )
 

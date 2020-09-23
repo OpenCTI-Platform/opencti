@@ -35,7 +35,7 @@ campaign = opencti_api_client.campaign.create(
 print(campaign)
 
 # Attribute the Campaign to the Intrusion Set
-relation = opencti_api_client.stix_relation.create(
+relation = opencti_api_client.stix_core_relationship.create(
     fromType="Campaign",
     fromId=campaign["id"],
     toType="Intrusion-Set",
