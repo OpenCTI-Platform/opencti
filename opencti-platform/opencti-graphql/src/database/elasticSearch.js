@@ -468,18 +468,12 @@ export const elAggregationRelationsCount = (
             path: 'connections',
           },
           aggs: {
-            filtered: {
-              filter: {
-                bool: {
-                  must: [], // typesFilters.length > 0 ? toRoleFilter : [],
-                },
-              },
-              aggs: {
-                genres: {
-                  terms: {
-                    size: 100,
-                    field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
-                  },
+            genres: {
+              terms: {
+                size: 100,
+                field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
+                order: {
+                  _count: 'desc',
                 },
               },
             },
@@ -491,17 +485,8 @@ export const elAggregationRelationsCount = (
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el.search(query).then((data) => {
     if (field === 'internal_id') {
-      const types = R.pipe(
-        R.map((h) => h._source.connections),
-        R.flatten(),
-        R.filter((c) => c.internal_id !== fromId),
-        R.filter((c) => toTypes.length === 0 || R.includes(R.head(c.types), toTypes)),
-        R.map((e) => e.internal_id),
-        R.uniq()
-      )(data.body.hits.hits);
-      const { buckets } = data.body.aggregations.connections.filtered.genres;
-      const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
-      return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
+      const { buckets } = data.body.aggregations.connections.genres;
+      return R.map((b) => ({ label: b.key, value: b.doc_count }), buckets);
     }
     const types = R.pipe(
       R.map((h) => h._source.connections),
@@ -514,7 +499,7 @@ export const elAggregationRelationsCount = (
       R.filter((f) => !isAbstract(f)),
       R.map((u) => u.toLowerCase())
     )(data.body.hits.hits);
-    const { buckets } = data.body.aggregations.connections.filtered.genres;
+    const { buckets } = data.body.aggregations.connections.genres;
     const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });
