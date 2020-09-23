@@ -122,7 +122,7 @@ describe('Minio file listing', () => {
     expect(file).not.toBeNull();
     expect(file.id).toEqual(exportFileId);
     expect(file.name).toEqual(exportFileName);
-    expect(file.size).toEqual(8518);
+    expect(file.size).toEqual(10419);
   });
   it('should delete file', async () => {
     let deleted = await deleteFile({ user_email: 'test@opencti.io' }, exportFileId);
