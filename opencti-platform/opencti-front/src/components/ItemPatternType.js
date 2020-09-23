@@ -27,31 +27,39 @@ const styles = () => ({
 
 const inlineStyles = {
   stix: {
-    backgroundColor: 'rgba(40, 53, 147, 0.08)',
-    color: '#283593',
+    backgroundColor: 'rgba(32, 58, 246, 0.08)',
+    color: '#203af6',
+    border: '1px solid #203af6',
   },
   pcre: {
     backgroundColor: 'rgba(92, 123, 245, 0.08)',
     color: '#5c7bf5',
+    border: '1px solid #5c7bf5',
   },
   sigma: {
     backgroundColor: 'rgba(76, 175, 80, 0.08)',
     color: '#4caf50',
+    border: '1px solid #4caf50',
   },
   snort: {
-    backgroundColor: '#4e342e',
+    backgroundColor: 'rgba(78, 52, 46, 0.08)',
+    color: '#4e342e',
+    border: '1px solid #4e342e',
   },
   suricata: {
     backgroundColor: 'rgba(0, 105, 92, 0.08)',
     color: '#00695c',
+    border: '1px solid #00695c',
   },
   yara: {
     backgroundColor: 'rgba(244, 67, 54, 0.08)',
     color: '#f44336',
+    border: '1px solid #f44336',
   },
   'tanium-signal': {
     backgroundColor: 'rgba(243, 25, 25, 0.08)',
     color: '#f31919',
+    border: '1px solid #f31919',
   },
 };
 
