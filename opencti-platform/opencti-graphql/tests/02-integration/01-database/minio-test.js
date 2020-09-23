@@ -113,7 +113,7 @@ describe('Minio file listing', () => {
     expect(data).not.toBeNull();
     const jsonData = JSON.parse(data);
     expect(jsonData).not.toBeNull();
-    expect(jsonData.objects.length).toEqual(8);
+    expect(jsonData.objects.length).toEqual(9);
     const user = head(jsonData.objects);
     expect(user.name).toEqual('Paradise Ransomware');
   });
