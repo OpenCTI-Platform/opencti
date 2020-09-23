@@ -1076,6 +1076,8 @@ class OpenCTIStix2:
             objects_to_get.append(entity["to"]["standard_id"])
         if "to" in entity:
             del entity["to"]
+        if "observable_value" in entity:
+            del entity["observable_value"]
 
         result.append(entity)
 

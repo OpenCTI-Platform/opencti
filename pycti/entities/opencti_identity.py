@@ -92,6 +92,7 @@ class Identity:
             confidence
             created
             modified
+            identity_class
             name
             description
             x_opencti_aliases

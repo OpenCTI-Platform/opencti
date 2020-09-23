@@ -36,7 +36,7 @@ indicator = opencti_api_client.indicator.create(
 print(indicator)
 
 # Create the relation
-relation = opencti_api_client.stix_relation.create(
+relation = opencti_api_client.stix_core_relationship.create(
     fromType="Indicator",
     fromId=indicator["id"],
     toType="Campaign",

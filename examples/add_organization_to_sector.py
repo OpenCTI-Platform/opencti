@@ -20,14 +20,13 @@ organization = opencti_api_client.identity.create(
 )
 
 # Create the relation
-relation = opencti_api_client.stix_relation.create(
+relation = opencti_api_client.stix_core_relationship.create(
     fromType="Organization",
     fromId=organization["id"],
     toType="Sector",
     toId=sector["id"],
-    relationship_type="gathering",
+    relationship_type="part-of",
     description="BNP Paribas is part of the sector Banking institutions.",
-    ignore_dates=True,
 )
 
 # Print
