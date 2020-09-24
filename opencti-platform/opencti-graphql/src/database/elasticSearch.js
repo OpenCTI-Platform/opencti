@@ -486,7 +486,8 @@ export const elAggregationRelationsCount = (
   return el.search(query).then((data) => {
     if (field === 'internal_id') {
       const { buckets } = data.body.aggregations.connections.genres;
-      return R.map((b) => ({ label: b.key, value: b.doc_count }), buckets);
+      const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
+      return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
     }
     const types = R.pipe(
       R.map((h) => h._source.connections),
