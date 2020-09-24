@@ -460,6 +460,8 @@ class StixCyberObservable:
             type = "X-OpenCTI-Hostname"
         elif type.lower() == "x-opencti-cryptocurrency-wallet":
             type = "X-OpenCTI-Cryptocurrency-Wallet"
+        elif type.lower() == "x-opencti-user-agent":
+            type = "X-OpenCTI-User-Agent"
 
         x_opencti_description = (
             observable_data["x_opencti_description"]
