@@ -1055,6 +1055,7 @@ class StixCyberObservable:
                     stixCyberObservableEdit(id: $id) {
                         fieldPatch(input: $input) {
                             id
+                            standard_id
                         }
                     }
                 }
