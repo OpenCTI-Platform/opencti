@@ -398,7 +398,7 @@ export const elAggregationRelationsCount = (
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
-  // const toRoleFilter = { query_string: { query: `*_to`, fields: [`connections.role`] } };
+  const toRoleFilter = { query_string: { query: `*_to`, fields: [`connections.role`] } };
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
@@ -468,12 +468,18 @@ export const elAggregationRelationsCount = (
             path: 'connections',
           },
           aggs: {
-            genres: {
-              terms: {
-                size: 100,
-                field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
-                order: {
-                  _count: 'desc',
+            filtered: {
+              filter: {
+                bool: {
+                  must: typesFilters.length > 0 ? toRoleFilter : [],
+                },
+              },
+              aggs: {
+                genres: {
+                  terms: {
+                    size: 100,
+                    field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
+                  },
                 },
               },
             },
@@ -485,7 +491,7 @@ export const elAggregationRelationsCount = (
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
   return el.search(query).then((data) => {
     if (field === 'internal_id') {
-      const { buckets } = data.body.aggregations.connections.genres;
+      const { buckets } = data.body.aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
       return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
     }
@@ -500,7 +506,7 @@ export const elAggregationRelationsCount = (
       R.filter((f) => !isAbstract(f)),
       R.map((u) => u.toLowerCase())
     )(data.body.hits.hits);
-    const { buckets } = data.body.aggregations.connections.genres;
+    const { buckets } = data.body.aggregations.connections.filtered.genres;
     const filteredBuckets = R.filter((b) => R.includes(b.key, types), buckets);
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });

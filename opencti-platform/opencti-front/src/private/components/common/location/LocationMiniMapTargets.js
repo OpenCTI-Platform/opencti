@@ -27,7 +27,18 @@ const styles = () => ({
   },
 });
 
-const colors = ['#ffcc80', '#ffa726', '#fb8c00', '#ef6c00'];
+const colors = [
+  '#fff59d',
+  '#ffe082',
+  '#ffb300',
+  '#ffb74d',
+  '#fb8c00',
+  '#d95f00',
+  '#e64a19',
+  '#f44336',
+  '#d32f2f',
+  '#b71c1c',
+];
 
 const LocationMiniMapTargets = (props) => {
   const { settings } = useContext(UserContext);
@@ -41,7 +52,10 @@ const LocationMiniMapTargets = (props) => {
     if (includes(feature.properties.ISO3, countriesAliases)) {
       const country = head(
         filter(
-          (n) => includes(feature.properties.ISO3, propOr([], 'x_opencti_aliases', n)),
+          (n) => includes(
+            feature.properties.ISO3,
+            propOr([], 'x_opencti_aliases', n),
+          ),
           props.countries,
         ),
       );
