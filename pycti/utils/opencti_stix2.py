@@ -999,7 +999,13 @@ class OpenCTIStix2:
 
         return {k: v for k, v in entity.items() if self.opencti.not_empty(v)}
 
-    def prepare_export(self, entity, mode="simple", max_marking_definition_entity=None):
+    def prepare_export(
+        self,
+        entity,
+        mode="simple",
+        max_marking_definition_entity=None,
+        no_custom_attributes=False,
+    ):
         if (
             self.check_max_marking_definition(
                 max_marking_definition_entity,
@@ -1025,6 +1031,11 @@ class OpenCTIStix2:
         if "createdBy" in entity:
             del entity["createdBy"]
             del entity["createdById"]
+
+        if no_custom_attributes:
+            for key in entity.keys():
+                if key.startswith("x_opencti_"):
+                    del entity[key]
 
         # ObjectMarkingRefs
         if "objectMarking" in entity and len(entity["objectMarking"]) > 0:
@@ -1232,7 +1243,12 @@ class OpenCTIStix2:
             return []
 
     def export_entity(
-        self, entity_type, entity_id, mode="simple", max_marking_definition=None
+        self,
+        entity_type,
+        entity_id,
+        mode="simple",
+        max_marking_definition=None,
+        no_custom_attributes=False,
     ):
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
@@ -1278,7 +1294,10 @@ class OpenCTIStix2:
             self.opencti.log("error", "Cannot export entity (not found)")
             return bundle
         stix_objects = self.prepare_export(
-            self.generate_export(entity), mode, max_marking_definition_entity
+            self.generate_export(entity),
+            mode,
+            max_marking_definition_entity,
+            no_custom_attributes,
         )
         if stix_objects is not None:
             bundle["objects"].extend(stix_objects)
