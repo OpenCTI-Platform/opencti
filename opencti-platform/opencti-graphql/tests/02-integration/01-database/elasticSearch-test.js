@@ -185,7 +185,7 @@ describe('Elasticsearch computation', () => {
     );
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('City')).toEqual(1);
-    expect(aggregationMap.get('Indicator')).toEqual(1);
+    expect(aggregationMap.get('Indicator')).toEqual(undefined);
     expect(aggregationMap.get('Organization')).toEqual(1);
     expect(aggregationMap.get('Malware')).toEqual(undefined); // Because of date filtering
   });
