@@ -7895,6 +7895,7 @@ type Query {
     relationship_type: String
     inferred: Boolean
     toTypes: [String]
+    isTo: Boolean
     startDate: DateTime
     endDate: DateTime
     dateAttribute: String

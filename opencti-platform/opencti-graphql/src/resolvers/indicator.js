@@ -29,6 +29,7 @@ const indicatorResolvers = {
   },
   Indicator: {
     observables: (indicator) => observables(indicator.id),
+    indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {
     indicatorEdit: (_, { id }, { user }) => ({

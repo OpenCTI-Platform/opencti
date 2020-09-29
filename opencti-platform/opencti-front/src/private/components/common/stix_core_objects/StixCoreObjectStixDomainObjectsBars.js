@@ -36,6 +36,7 @@ const stixCoreObjectStixDomainObjectsBarsDistributionQuery = graphql`
     $fromId: String!
     $relationship_type: String!
     $toTypes: [String]
+    $isTo: Boolean
     $field: String!
     $operation: StatsOperation!
     $limit: Int
@@ -44,6 +45,7 @@ const stixCoreObjectStixDomainObjectsBarsDistributionQuery = graphql`
       fromId: $fromId
       relationship_type: $relationship_type
       toTypes: $toTypes
+      isTo: $isTo
       field: $field
       operation: $operation
       limit: $limit
@@ -145,6 +147,7 @@ class StixCoreObjectStixDomainObjectsBars extends Component {
       toTypes,
       field,
       title,
+      isTo,
     } = this.props;
     const stixDomainObjectsDistributionVariables = {
       fromId: stixCoreObjectId,
@@ -153,6 +156,7 @@ class StixCoreObjectStixDomainObjectsBars extends Component {
       field: field || 'entity_type',
       operation: 'count',
       limit: 8,
+      isTo: isTo || false,
     };
     return (
       <div style={{ height: '100%' }}>
@@ -284,6 +288,7 @@ StixCoreObjectStixDomainObjectsBars.propTypes = {
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
+  isTo: PropTypes.bool,
 };
 
 export default compose(

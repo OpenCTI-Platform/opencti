@@ -257,7 +257,6 @@ class StixDomainObjectKnowledge extends Component {
               relationshipType="stix-core-relationship"
               title={t('Distribution of relations')}
               field="entity_type"
-              inferred={true}
             />
           </Grid>
         </Grid>
@@ -269,6 +268,7 @@ class StixDomainObjectKnowledge extends Component {
               toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
               title={t('Top 10 threats targeting this entity')}
               field="internal_id"
+              isTo={true}
             />
           </Grid>
           {stixDomainObjectType === 'Sector' ? (

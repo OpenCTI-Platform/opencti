@@ -17,7 +17,7 @@ import { isMultipleAttribute } from '../schema/fieldDataAdapter';
 
 export const STIX_SPEC_VERSION = '2.1';
 
-const convertTypeToStixType = (type) => {
+export const convertTypeToStixType = (type) => {
   if (isStixDomainObjectIdentity(type)) {
     return 'identity';
   }

@@ -393,12 +393,13 @@ export const elAggregationRelationsCount = (
   toTypes,
   fromId = null,
   field = null,
-  dateAttribute = 'start_time'
+  dateAttribute = 'start_time',
+  isTo = false
 ) => {
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
-  const toRoleFilter = { query_string: { query: `*_to`, fields: [`connections.role`] } };
+  const roleFilter = { query_string: { query: !isTo ? `*_to` : `*_from`, fields: [`connections.role`] } };
   const haveRange = start && end;
   const filters = [];
   if (haveRange) {
@@ -439,7 +440,6 @@ export const elAggregationRelationsCount = (
       },
     });
   }
-
   const query = {
     index: RELATIONSHIPS_INDICES,
     body: {
@@ -471,7 +471,7 @@ export const elAggregationRelationsCount = (
             filtered: {
               filter: {
                 bool: {
-                  must: typesFilters.length > 0 ? toRoleFilter : [],
+                  must: typesFilters.length > 0 && !isAbstract(toTypes[0]) ? roleFilter : [],
                 },
               },
               aggs: {

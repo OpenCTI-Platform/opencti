@@ -41,6 +41,11 @@ const styles = (theme) => ({
     position: 'fixed',
     bottom: 30,
     right: 30,
+  },
+  createButtonContextual: {
+    position: 'fixed',
+    bottom: 30,
+    right: 30,
     zIndex: 2000,
   },
   buttons: {
@@ -265,7 +270,7 @@ class NoteCreation extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
+          className={classes.createButtonContextual}
         >
           <Add />
         </Fab>

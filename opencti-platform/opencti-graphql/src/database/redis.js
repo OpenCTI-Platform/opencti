@@ -14,7 +14,7 @@ import {
   UPDATE_OPERATION_REMOVE,
 } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { buildStixData, stixDataConverter } from './stix';
+import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
 import { DatabaseError } from '../config/errors';
 
 const OPENCTI_STREAM = 'stream.opencti';
@@ -187,7 +187,7 @@ export const storeUpdateEvent = async (user, operation, instance, input) => {
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
-      type: instance.entity_type.toLowerCase(),
+      type: convertTypeToStixType(instance.entity_type),
       x_data_update: { [operation]: convertedInput },
     };
     // Generate the message
@@ -245,7 +245,7 @@ export const storeDeleteEvent = async (user, instance) => {
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
-      type: instance.entity_type.toLowerCase(),
+      type: convertTypeToStixType(instance.entity_type),
     };
     const event = {
       type: EVENT_TYPE_DELETE,
@@ -268,7 +268,7 @@ export const storeDeleteEvent = async (user, instance) => {
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
-      type: instance.entity_type.toLowerCase(),
+      type: convertTypeToStixType(instance.entity_type),
       source_ref: instance.from.standard_id,
       x_opencti_source_ref: instance.from.internal_id,
       target_ref: instance.to.standard_id,

@@ -103,11 +103,13 @@ class StixCoreObjectOrStixCoreRelationshipNoteCardComponent extends Component {
       mutation: noteMutationRelationDelete,
       variables: {
         id: note.id,
-        toId: this.props.stixCoreObjectId,
+        toId: this.props.stixCoreObjectOrStixCoreRelationshipId,
         relationship_type: 'object',
       },
       updater: (store) => {
-        const entity = store.get(this.props.stixCoreObjectId);
+        const entity = store.get(
+          this.props.stixCoreObjectOrStixCoreRelationshipId,
+        );
         const conn = ConnectionHandler.getConnection(
           entity,
           'Pagination_notes',
