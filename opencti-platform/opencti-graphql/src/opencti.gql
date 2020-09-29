@@ -1117,6 +1117,7 @@ define
     has x_opencti_score,
     has x_opencti_detection,
     has x_opencti_main_observable_type,
+    has x_mitre_platforms,
     plays kill-chain-phase_from,
     plays indicates_from,
     plays based-on_from,
