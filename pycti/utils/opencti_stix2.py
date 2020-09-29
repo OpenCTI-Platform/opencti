@@ -1032,8 +1032,9 @@ class OpenCTIStix2:
             del entity["createdBy"]
             del entity["createdById"]
 
+        entity_copy = entity.copy()
         if no_custom_attributes:
-            for key in entity.keys():
+            for key in entity_copy.keys():
                 if key.startswith("x_opencti_"):
                     del entity[key]
 
