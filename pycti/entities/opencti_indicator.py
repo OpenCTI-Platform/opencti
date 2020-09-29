@@ -107,6 +107,7 @@ class Indicator:
             x_opencti_score
             x_opencti_detection
             x_opencti_main_observable_type
+            x_mitre_platforms
             killChainPhases {
                 edges {
                     node {

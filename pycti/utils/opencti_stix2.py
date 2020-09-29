@@ -1046,6 +1046,8 @@ class OpenCTIStix2:
 
         entity_copy = entity.copy()
         if no_custom_attributes:
+            if "external_references" in entity:
+                del entity["external_references"]
             for key in entity_copy.keys():
                 if key.startswith("x_opencti_"):
                     del entity[key]
