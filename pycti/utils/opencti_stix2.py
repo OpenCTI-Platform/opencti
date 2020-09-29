@@ -1025,7 +1025,11 @@ class OpenCTIStix2:
         objects_to_get = []
         relations_to_get = []
         # CreatedByRef
-        if "createdBy" in entity and entity["createdBy"] is not None:
+        if (
+            not no_custom_attributes
+            and "createdBy" in entity
+            and entity["createdBy"] is not None
+        ):
             created_by = self.generate_export(entity["createdBy"])
             entity["created_by_ref"] = created_by["id"]
             result.append(created_by)
@@ -1053,7 +1057,11 @@ class OpenCTIStix2:
                     del entity[key]
 
         # ObjectMarkingRefs
-        if "objectMarking" in entity and len(entity["objectMarking"]) > 0:
+        if (
+            not no_custom_attributes
+            and "objectMarking" in entity
+            and len(entity["objectMarking"]) > 0
+        ):
             entity["object_marking_refs"] = []
             for entity_marking_definition in entity["objectMarking"]:
                 if entity_marking_definition["definition_type"] == "TLP":
@@ -1082,7 +1090,11 @@ class OpenCTIStix2:
             del entity["objectMarking"]
             del entity["objectMarkingIds"]
         # ObjectRefs
-        if "objects" in entity and len(entity["objects"]) > 0:
+        if (
+            not no_custom_attributes
+            and "objects" in entity
+            and len(entity["objects"]) > 0
+        ):
             entity["object_refs"] = []
             objects_to_get = entity["objects"]
             for entity_object in entity["objects"]:
