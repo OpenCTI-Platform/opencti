@@ -100,6 +100,7 @@ const indicatorValidation = (t) => Yup.object().shape({
     t('This field is required'),
   ),
   x_opencti_detection: Yup.boolean(),
+  x_mitre_platforms: Yup.array(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
