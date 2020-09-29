@@ -219,7 +219,7 @@ class ExternalReference:
             return None
 
     def delete(self, id):
-        self.opencti.log("info", "Deleting + " + id + "...")
+        self.opencti.log("info", "Deleting External-Reference " + id + "...")
         query = """
              mutation ExternalReferenceEdit($id: ID!) {
                  externalReferenceEdit(id: $id) {
