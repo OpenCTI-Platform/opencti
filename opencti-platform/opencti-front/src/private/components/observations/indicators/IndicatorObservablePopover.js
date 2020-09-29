@@ -41,17 +41,15 @@ Transition.displayName = 'TransitionSlide';
 
 const indicatorObservablePopoverDeletionMutation = graphql`
   mutation IndicatorObservablePopoverDeletionMutation(
-    $id: ID!
+    $fromId: String!
     $toId: String!
     $relationship_type: String!
   ) {
-    stixCoreRelationshipEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        from {
-          ...IndicatorObservables_indicator
-        }
-      }
-    }
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
   }
 `;
 
@@ -88,12 +86,15 @@ class IndicatorObservablePopover extends Component {
     commitMutation({
       mutation: indicatorObservablePopoverDeletionMutation,
       variables: {
-        id: this.props.indicatorId,
+        fromId: this.props.indicatorId,
         toId: this.props.observableId,
         relationship_type: 'based-on',
       },
       onCompleted: () => {
         this.handleCloseDelete();
+        if (this.props.onDelete) {
+          this.props.onDelete();
+        }
       },
     });
   }
@@ -160,6 +161,7 @@ IndicatorObservablePopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export default compose(

@@ -13,8 +13,10 @@ import {
   pick,
   difference,
   head,
+  propOr,
 } from 'ramda';
 import * as Yup from 'yup';
+import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -24,6 +26,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
+import SelectField from '../../../../components/SelectField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -117,6 +120,7 @@ const indicatorValidation = (t) => Yup.object().shape({
   x_opencti_score: Yup.number(),
   description: Yup.string(),
   x_opencti_detection: Yup.boolean(),
+  x_mitre_platforms: Yup.array(),
 });
 
 class IndicatorEditionOverviewComponent extends Component {
@@ -244,6 +248,7 @@ class IndicatorEditionOverviewComponent extends Component {
     const initialValues = pipe(
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
+      assoc('x_mitre_platforms', propOr([], 'x_mitre_platforms', indicator)),
       pick([
         'name',
         'pattern',
@@ -252,6 +257,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'valid_until',
         'x_opencti_score',
         'x_opencti_detection',
+        'x_mitre_platforms',
         'createdBy',
         'killChainPhases',
         'objectMarking',
@@ -317,6 +323,27 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="valid_until" />
               }
             />
+            <Field
+              component={SelectField}
+              name="x_mitre_platforms"
+              multiple={true}
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Platforms')}
+              fullWidth={true}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_mitre_platforms"
+                />
+              }
+            >
+              <MenuItem value="Android">{t('Android')}</MenuItem>
+              <MenuItem value="macOS">{t('macOS')}</MenuItem>
+              <MenuItem value="Linux">{t('Linux')}</MenuItem>
+              <MenuItem value="Windows">{t('Windows')}</MenuItem>
+            </Field>
             <Field
               component={TextField}
               name="x_opencti_score"
@@ -409,6 +436,7 @@ const IndicatorEditionOverview = createFragmentContainer(
         valid_until
         x_opencti_score
         x_opencti_detection
+        x_mitre_platforms
         createdBy {
           ... on Identity {
             id

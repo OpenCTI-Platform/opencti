@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  compose, includes, filter, append,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
@@ -74,6 +76,15 @@ const inlineStyles = {
 };
 
 class IndicatorObservablesComponent extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { deleted: [] };
+  }
+
+  onDelete(id) {
+    this.setState({ deleted: append(id, this.state.deleted) });
+  }
+
   render() {
     const {
       t, fd, classes, indicator,
@@ -91,7 +102,10 @@ class IndicatorObservablesComponent extends Component {
         </Security>
         <div className="clearfix" />
         <List style={{ marginTop: -15 }}>
-          {indicator.observables.edges.map((observableEdge) => (
+          {filter(
+            (n) => !includes(n.node.id, this.state.deleted),
+            indicator.observables.edges,
+          ).map((observableEdge) => (
             <ListItem
               key={observableEdge.node.id}
               classes={{ root: classes.item }}
@@ -130,7 +144,8 @@ class IndicatorObservablesComponent extends Component {
               <ListItemSecondaryAction>
                 <IndicatorObservablePopover
                   indicatorId={indicator.id}
-                  entityId={observableEdge.node.id}
+                  observableId={observableEdge.node.id}
+                  onDelete={this.onDelete.bind(this, observableEdge.node.id)}
                 />
               </ListItemSecondaryAction>
             </ListItem>

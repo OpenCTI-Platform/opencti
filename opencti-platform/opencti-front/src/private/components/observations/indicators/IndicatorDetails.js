@@ -1,12 +1,17 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import { SettingsApplications } from '@material-ui/icons';
+import ListItemText from '@material-ui/core/ListItemText';
 import inject18n from '../../../../components/i18n';
 import ItemScore from '../../../../components/ItemScore';
 import IndicatorObservables from './IndicatorObservables';
@@ -44,15 +49,19 @@ class IndicatorDetailsComponent extends Component {
                 {t('Valid from')}
               </Typography>
               {fld(indicator.valid_from)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Valid until')}
               </Typography>
               {fld(indicator.valid_until)}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Description')}
               </Typography>
               <ExpandableMarkdown source={indicator.description} limit={400} />
@@ -62,6 +71,27 @@ class IndicatorDetailsComponent extends Component {
                 {t('Score')}
               </Typography>
               <ItemScore score={indicator.x_opencti_score} />
+              <div>
+                <Typography
+                  variant="h3"
+                  gutterBottom={true}
+                  style={{ marginTop: 20 }}
+                >
+                  {t('Platforms')}
+                </Typography>
+                <List>
+                  {propOr([], 'x_mitre_platforms', indicator).map(
+                    (platform) => (
+                      <ListItem key={platform} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <SettingsApplications />
+                        </ListItemIcon>
+                        <ListItemText primary={platform} />
+                      </ListItem>
+                    ),
+                  )}
+                </List>
+              </div>
             </Grid>
           </Grid>
           <IndicatorObservables indicator={indicator} />
@@ -88,6 +118,7 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       valid_until
       x_opencti_score
       x_opencti_detection
+      x_mitre_platforms
       creator {
         id
         name

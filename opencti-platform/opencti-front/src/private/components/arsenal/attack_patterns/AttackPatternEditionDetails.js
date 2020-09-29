@@ -68,8 +68,8 @@ export const attackPatternEditionDetailsFocus = graphql`
 
 const attackPatternValidation = () => Yup.object().shape({
   x_mitre_id: Yup.string(),
-  x_mitre_platforms: Yup.string(),
-  x_mitre_permissions_required: Yup.string(),
+  x_mitre_platforms: Yup.array(),
+  x_mitre_permissions_required: Yup.array(),
 });
 
 class AttackPatternEditionDetailsComponent extends Component {

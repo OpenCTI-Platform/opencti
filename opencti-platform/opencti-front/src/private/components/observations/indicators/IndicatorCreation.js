@@ -201,6 +201,7 @@ class IndicatorCreation extends Component {
                 pattern: '',
                 pattern_type: '',
                 x_opencti_main_observable_type: '',
+                x_mitre_platforms: [],
                 valid_from: null,
                 valid_until: null,
                 description: '',
@@ -277,6 +278,19 @@ class IndicatorCreation extends Component {
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
+                  <Field
+                    component={SelectField}
+                    name="x_mitre_platforms"
+                    multiple={true}
+                    label={t('Platforms')}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                  >
+                    <MenuItem value="Android">{t('Android')}</MenuItem>
+                    <MenuItem value="macOS">{t('macOS')}</MenuItem>
+                    <MenuItem value="Linux">{t('Linux')}</MenuItem>
+                    <MenuItem value="Windows">{t('Windows')}</MenuItem>
+                  </Field>
                   <Field
                     component={MarkDownField}
                     name="description"
