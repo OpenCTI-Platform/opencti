@@ -214,7 +214,7 @@ class StreamCatcher(threading.Thread):
         ):
             from_event_id = self.get_range(from_event_id)
             from_event_timestamp = int(from_event_id.split("-")[0])
-        logging.error("Events catchup requests done.")
+        logging.info("Events catchup requests done.")
 
 
 class StreamProcessor(threading.Thread):
