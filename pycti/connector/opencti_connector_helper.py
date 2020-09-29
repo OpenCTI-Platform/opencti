@@ -358,7 +358,11 @@ class OpenCTIConnectorHelper:
 
         last_event_id = None
         for msg in messages:
-            data = json.loads(msg.data)
+            try:
+                data = json.loads(msg.data)
+            except:
+                logging.error("Failed to load JSON: " + msg.data)
+                continue
             if msg.event == "heartbeat":
                 continue
             elif msg.event == "connected":
