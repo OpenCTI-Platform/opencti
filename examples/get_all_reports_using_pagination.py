@@ -18,16 +18,17 @@ custom_attributes = """
 """
 
 final_reports = []
-data = opencti_api_client.report.list(
-    first=50, customAttributes=custom_attributes, withPagination=True
-)
-final_reports = final_reports + data["entities"]
-
+data = {"pagination": {"hasNextPage": True, "endCursor": None}}
 while data["pagination"]["hasNextPage"]:
     after = data["pagination"]["endCursor"]
     print("Listing reports after " + after)
     data = opencti_api_client.report.list(
-        first=50, after=after, customAttributes=custom_attributes, withPagination=True
+        first=50,
+        after=after,
+        customAttributes=custom_attributes,
+        withPagination=True,
+        orderBy="created_at",
+        orderMode="asc",
     )
     final_reports = final_reports + data["entities"]
 
