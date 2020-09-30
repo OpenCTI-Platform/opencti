@@ -7,6 +7,7 @@ import {
   map,
   head,
   last,
+  assoc,
 } from 'ramda';
 
 export const saveViewParameters = (
@@ -16,7 +17,7 @@ export const saveViewParameters = (
   params,
 ) => {
   localStorage.setItem(localStorageKey, JSON.stringify(params));
-  const urlParams = pipe(
+  let urlParams = pipe(
     dissoc('view'),
     dissoc('types'),
     dissoc('openExports'),
@@ -26,6 +27,9 @@ export const saveViewParameters = (
     dissoc('lastSeenStop'),
     dissoc('inferred'),
   )(params);
+  if (params.filters) {
+    urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
+  }
   history.replace(
     `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
   );
@@ -73,6 +77,11 @@ export const buildViewParamsFromUrlAndStorage = (
     finalParams.toType = finalParams.toType
       ? split(',', finalParams.toType)
       : '';
+  }
+  if (typeof finalParams.filters === 'string') {
+    finalParams.filters = finalParams.filters
+      ? JSON.parse(finalParams.filters)
+      : {};
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;

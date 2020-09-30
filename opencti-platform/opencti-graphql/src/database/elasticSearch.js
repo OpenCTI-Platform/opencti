@@ -37,7 +37,7 @@ import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixDomainObjectNamed } from '../schema/stixDomainObject';
 
-const dateFields = [
+export const dateFields = [
   'created',
   'modified',
   'created_at',

@@ -6938,6 +6938,8 @@ enum StixCoreRelationshipsFilter {
   createdBy
   markedBy
   labelledBy
+  toName
+  toCreatedAt
   toPatternType
   toMainObservableType
 }

@@ -28,7 +28,7 @@ class Reports extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      filters: {},
+      filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -39,7 +39,7 @@ class Reports extends Component {
       this.props.history,
       this.props.location,
       `view-reports${this.props.objectId ? `-${this.props.objectId}` : ''}`,
-      dissoc('filters', this.state),
+      this.state,
     );
   }
 
@@ -64,13 +64,16 @@ class Reports extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    this.setState({
-      filters: assoc(key, [{ id, value }], this.state.filters),
-    });
+    this.setState(
+      {
+        filters: assoc(key, [{ id, value }], this.state.filters),
+      },
+      () => this.saveView(),
+    );
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) });
+    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {

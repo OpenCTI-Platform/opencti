@@ -38,6 +38,7 @@ import {
   prepareElementForIndexing,
   RELATIONSHIPS_INDICES,
   useCache,
+  dateFields,
 } from './elasticSearch';
 import { EVENT_TYPE_UPDATE, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './rabbitmq';
 import {
@@ -293,6 +294,19 @@ export const extractQueryVars = (query) => {
       R.assoc('role', associatedRole ? associatedRole.role : undefined)
     )(v);
   }, varWithKey);
+};
+const prepareAttribute = (key, value) => {
+  if (isDictionaryAttribute(key)) return `"${escapeString(JSON.stringify(value))}"`;
+  // Attribute is coming from GraphQL
+  if (value instanceof Date) return prepareDate(value);
+  // Attribute is coming from internal
+  if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
+  // TODO @Sam Delete that
+  if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/.test(value))
+    return prepareDate(value);
+  if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\dZ$/.test(value)) return prepareDate(value);
+  if (typeof value === 'string') return `"${escapeString(value)}"`;
+  return escape(value);
 };
 // endregion
 
@@ -963,8 +977,16 @@ export const listRelations = async (relationshipType, args) => {
       // eslint-disable-next-line prettier/prettier
       const filterKey = f.key.replace(REL_INDEX_PREFIX, '').replace(REL_CONNECTED_SUFFIX, '').split('.');
       const [key, val] = filterKey;
+      let operator = '';
+      if (f.operator === 'match') {
+        operator = 'contains';
+      } else if (f.operator === 'gt') {
+        operator = '>';
+      } else if (f.operator === 'lt') {
+        operator = '<';
+      }
       const queryFilters = R.pipe(
-        R.map((e) => `{ $${key} has ${val} ${f.operator === 'match' ? 'contains' : ''} "${escapeString(e)}"; }`),
+        R.map((e) => `{ $${key} has ${val} ${operator} ${prepareAttribute(key, e)}; }`),
         R.join(' or '),
         R.concat(__, ';')
       )(f.values);
@@ -1312,19 +1334,6 @@ export const distributionEntitiesThroughRelations = async (options) => {
 // endregion
 
 // region mutation common
-const prepareAttribute = (key, value) => {
-  if (isDictionaryAttribute(key)) return `"${escapeString(JSON.stringify(value))}"`;
-  // Attribute is coming from GraphQL
-  if (value instanceof Date) return prepareDate(value);
-  // Attribute is coming from internal
-  if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
-  // TODO @Sam Delete that
-  if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/.test(value))
-    return prepareDate(value);
-  if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\dZ$/.test(value)) return prepareDate(value);
-  if (typeof value === 'string') return `"${escapeString(value)}"`;
-  return escape(value);
-};
 const flatAttributesForObject = (data) => {
   const elements = Object.entries(data);
   return R.pipe(
@@ -2133,7 +2142,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
-  const existingEntities = await findElementById(participantIds, type);
+  const existingEntities = await internalFindByIds(participantIds, { type });
   if (existingEntities.length > 0) {
     if (existingEntities.length === 1) {
       return upsertEntity(user, R.head(existingEntities), type, input);

@@ -711,7 +711,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
               />
               <Field
                 component={MarkDownField}
-              name="description"
+                name="description"
                 label={t('Description')}
                 fullWidth={true}
                 multiline={true}
@@ -789,7 +789,11 @@ class StixCoreRelationshipCreationFromEntity extends Component {
 
   render() {
     const {
-      classes, entityId, variant, paddingRight,
+      classes,
+      entityId,
+      variant,
+      paddingRight,
+      openExports,
     } = this.props;
     const { open, step } = this.state;
     return (
@@ -803,7 +807,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           >
             <Add fontSize="small" />
           </IconButton>
-        ) : (
+        ) : !openExports ? (
           <Fab
             onClick={this.handleOpen.bind(this)}
             color="secondary"
@@ -813,6 +817,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           >
             <Add />
           </Fab>
+        ) : (
+          ''
         )}
         <Drawer
           open={open}
@@ -853,7 +859,8 @@ StixCoreRelationshipCreationFromEntity.propTypes = {
   nsd: PropTypes.func,
   variant: PropTypes.string,
   onCreate: PropTypes.func,
-  paddingRight: PropTypes.bool,
+  paddingRight: PropTypes.number,
+  openExports: PropTypes.bool,
 };
 
 export default compose(

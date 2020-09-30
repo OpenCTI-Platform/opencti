@@ -138,6 +138,7 @@ class RootIntrusionSet extends Component {
                         <StixDomainObjectHeader
                           stixDomainObject={props.intrusionSet}
                           PopoverComponent={<IntrusionSetPopover />}
+                          variant='noaliases'
                         />
                         <StixDomainObjectIndicators
                           {...routeProps}

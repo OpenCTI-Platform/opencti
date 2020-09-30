@@ -70,7 +70,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromPatternType.width }}
+                style={{ width: dataColumns.toPatternType.width }}
               >
                 <ItemPatternType
                   variant="inList"
@@ -79,7 +79,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromName.width }}
+                style={{ width: dataColumns.toName.width }}
               >
                 {node.from.name}
               </div>
@@ -94,13 +94,13 @@ class StixDomainObjectIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromValidFrom.width }}
+                style={{ width: dataColumns.toCreatedAt.width }}
               >
-                {nsd(node.from.valid_from)}
+                {nsd(node.from.created_at)}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromValidUntil.width }}
+                style={{ width: dataColumns.toValidUntil.width }}
               >
                 {nsd(node.from.valid_until)}
               </div>
@@ -163,6 +163,7 @@ const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
             valid_from
             valid_until
             created
+            created_at
             x_opencti_score
             x_opencti_main_observable_type
             objectMarking {
@@ -207,13 +208,13 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromPatternType.width }}
+                style={{ width: dataColumns.toPatternType.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromName.width }}
+                style={{ width: dataColumns.toName.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -225,13 +226,13 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromValidFrom.width }}
+                style={{ width: dataColumns.toCreatedAt.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.fromValidUntil.width }}
+                style={{ width: dataColumns.toValidUntil.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

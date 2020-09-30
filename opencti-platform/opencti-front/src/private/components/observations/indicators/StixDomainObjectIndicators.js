@@ -1,16 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  append,
-  assoc,
-  dissoc,
-  filter,
-  head,
-  last,
-  map,
-  pipe,
-  propOr,
-  toPairs,
+  append, assoc, dissoc, filter, map, propOr,
 } from 'ramda';
 import StixDomainObjectIndicatorsLines, {
   stixDomainObjectIndicatorsLinesQuery,
@@ -20,6 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import IndicatorsRightBar from './IndicatorsRightBar';
@@ -34,11 +26,11 @@ class StixDomainObjectIndicators extends Component {
       `view-indicators-${props.stixDomainObjectId}`,
     );
     this.state = {
-      sortBy: propOr('start_time', 'sortBy', params),
+      sortBy: propOr('toCreatedAt', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      filters: {},
+      filters: propOr({}, 'filters', params),
       indicatorTypes: [],
       observableTypes: [],
       openExports: false,
@@ -96,16 +88,21 @@ class StixDomainObjectIndicators extends Component {
     }
   }
 
-  handleAddFilter(key, id, value, event) {
-    event.stopPropagation();
-    event.preventDefault();
-    this.setState({
-      filters: assoc(key, [{ id, value }], this.state.filters),
-    });
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    this.setState(
+      {
+        filters: assoc(key, [{ id, value }], this.state.filters),
+      },
+      () => this.saveView(),
+    );
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) });
+    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -119,15 +116,16 @@ class StixDomainObjectIndicators extends Component {
       searchTerm,
       openExports,
       numberOfElements,
+      filters,
     } = this.state;
     const { stixDomainObjectId, stixDomainObjectLink } = this.props;
     const dataColumns = {
-      fromPatternType: {
+      toPatternType: {
         label: 'Type',
         width: '10%',
         isSortable: true,
       },
-      fromName: {
+      toName: {
         label: 'Name',
         width: '30%',
         isSortable: true,
@@ -137,12 +135,12 @@ class StixDomainObjectIndicators extends Component {
         width: '15%',
         isSortable: false,
       },
-      fromValidFrom: {
-        label: 'Valid from',
+      toCreatedAt: {
+        label: 'Creation date',
         width: '15%',
         isSortable: true,
       },
-      fromValidUntil: {
+      toValidUntil: {
         label: 'Valid until',
         width: '15%',
         isSortable: true,
@@ -157,10 +155,11 @@ class StixDomainObjectIndicators extends Component {
       toName: 'name',
       toValidFrom: 'valid_from',
       toValidUntil: 'valid_until',
+      toCreatedAt: 'created_at',
     };
     const exportPaginationOptions = {
       filters: [{ key: 'indicates', values: [stixDomainObjectId] }],
-      orderBy: orderByMapping[sortBy === 'start_time' ? 'toValidFrom' : sortBy],
+      orderBy: orderByMapping[sortBy === 'start_time' ? 'toCreatedAt' : sortBy],
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,
     };
@@ -171,15 +170,19 @@ class StixDomainObjectIndicators extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
         noPadding={typeof this.props.onChangeOpenExports === 'function'}
         paginationOptions={exportPaginationOptions}
         exportEntityType="Indicator"
+        filters={filters}
         exportContext={`of-entity-${stixDomainObjectId}`}
         keyword={searchTerm}
         secondaryAction={true}
         numberOfElements={numberOfElements}
+        availableFilterKeys={['toCreatedAt_start_date', 'toCreatedAt_end_date']}
       >
         <QueryRenderer
           query={stixDomainObjectIndicatorsLinesQuery}
@@ -213,14 +216,7 @@ class StixDomainObjectIndicators extends Component {
       observableTypes,
       openExports,
     } = this.state;
-    let finalFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
+    let finalFilters = convertFilters(filters);
     if (indicatorTypes.length > 0) {
       finalFilters = append(
         { key: 'toPatternType', values: indicatorTypes },
