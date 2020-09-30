@@ -403,7 +403,12 @@ class OpenCTIConnectorHelper:
                     EVENTS_QUEUE.put(msg)
                 else:
                     message_callback(msg)
-                    self.set_state({"connectorLastEventId": msg.id})
+                    state = self.get_state()
+                    if state is not None:
+                        state["connectorLastEventId"] = msg.id
+                        self.set_state(state)
+                    else:
+                        self.set_state({"connectorLastEventId": msg.id})
 
     def get_opencti_url(self):
         return self.opencti_url
