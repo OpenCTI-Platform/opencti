@@ -218,17 +218,23 @@ class StreamCatcher(threading.Thread):
 
 
 class StreamProcessor(threading.Thread):
-    def __init__(self, message_callback, set_state):
+    def __init__(self, message_callback, get_state, set_state):
         threading.Thread.__init__(self)
         self.message_callback = message_callback
+        self.get_state = get_state
         self.set_state = set_state
 
     def run(self):
         logging.info("All old events processed, consuming is now LIVE!")
         while True:
-            msg = EVENTS_QUEUE.get()
+            msg = EVENTS_QUEUE.get(block=True, timeout=None)
             self.message_callback(msg)
-            self.set_state({"connectorLastEventId": msg.id})
+            state = self.get_state()
+            if state is not None:
+                state["connectorLastEventId"] = msg.id
+                self.set_state(state)
+            else:
+                self.set_state({"connectorLastEventId": msg.id})
 
 
 class OpenCTIConnectorHelper:
@@ -303,6 +309,9 @@ class OpenCTIConnectorHelper:
         )
         self.ping.start()
 
+    def get_name(self):
+        return self.connect_name
+
     def set_state(self, state) -> None:
         """sets the connector state
 
@@ -354,7 +363,9 @@ class OpenCTIConnectorHelper:
         )
 
         # Create processor thread
-        processor_thread = StreamProcessor(message_callback, self.set_state)
+        processor_thread = StreamProcessor(
+            message_callback, self.get_state, self.set_state
+        )
 
         last_event_id = None
         for msg in messages:
