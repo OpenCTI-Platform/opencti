@@ -59,11 +59,11 @@ tags = args.tags.split(",")
 operation = args.operation
 
 # Resolve the entity
-entities = opencti_api_client.stix_domain_object.list(
+threat = opencti_api_client.stix_domain_object.read(
     types=[entity_type], filters=[{"key": "name", "values": [name]}]
 )
 
-if len(entities) == 0:
+if not threat:
     raise ValueError("Cannot find the entity with the name " + name)
 
 # Resolve all tags
@@ -72,7 +72,6 @@ for tag in tags:
     labels.append(opencti_api_client.label.create(value=tag))
 
 # Get indicators
-threat = entities[0]
 custom_attributes = """
     id
     created_at
