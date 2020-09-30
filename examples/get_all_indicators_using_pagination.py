@@ -16,20 +16,17 @@ custom_attributes = """
     created
 """
 
-final_indicators = []
-data = opencti_api_client.indicator.list(
-    first=50, customAttributes=custom_attributes, withPagination=True
-)
-final_indicators = final_indicators + data["entities"]
-
+data = {"pagination": {"hasNextPage": True, "endCursor": None}}
 while data["pagination"]["hasNextPage"]:
     after = data["pagination"]["endCursor"]
     print("Listing indicators after " + after)
     data = opencti_api_client.indicator.list(
-        first=50, after=after, customAttributes=custom_attributes, withPagination=True
+        first=50,
+        after=after,
+        customAttributes=custom_attributes,
+        withPagination=True,
+        orderBy="created_at",
+        orderMode="asc",
     )
-    final_indicators = final_indicators + data["entities"]
-
-# Print
-for indicator in final_indicators:
-    print("[" + indicator["created"] + "] " + indicator["indicator_pattern"])
+    for indicator in data["entities"]:
+        print("[" + indicator["created"] + "] " + indicator["id"])
