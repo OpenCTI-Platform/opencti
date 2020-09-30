@@ -763,6 +763,8 @@ enum ExternalReferencesOrdering {
 enum ExternalReferencesFilter {
   url
   usedBy
+  source_name
+  external_id
 }
 input ExternalReferencesFiltering {
   key: ExternalReferencesFilter!
@@ -4197,6 +4199,7 @@ enum StixCyberObservablesFilter {
   labelledBy
   relatedTo
   objectContained
+  hasExternalReference
 }
 input StixCyberObservablesFiltering {
   key: StixCyberObservablesFilter!

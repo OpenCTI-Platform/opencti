@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, REL_INDEX_PREFIX } from './general';
 import {
   RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
@@ -84,5 +85,6 @@ export const stixCyberObservableOptions = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
     relatedTo: `${REL_INDEX_PREFIX}${RELATION_RELATED_TO}.internal_id`,
     objectContained: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
+    hasExternalReference: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
   },
 };

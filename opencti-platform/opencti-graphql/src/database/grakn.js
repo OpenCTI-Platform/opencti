@@ -1852,6 +1852,12 @@ const upsertRelation = async (user, relationship, data) => {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
     return patchAttributeRaw(user, relationship, patch, { operation: UPDATE_OPERATION_ADD });
   }
+  if (isStixSightingRelationship(relationship.entity_type)) {
+    if (data.attribute_count) {
+      const patch = { attribute_count: relationship.attribute_count + data.attribute_count };
+      return patchAttributeRaw(user, relationship, patch, { operation: UPDATE_OPERATION_ADD });
+    }
+  }
   return relationship;
 };
 const addInnerRelation = async (user, from, to, type, opts) => {
