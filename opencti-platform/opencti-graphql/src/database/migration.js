@@ -106,7 +106,7 @@ const applyMigration = () => {
       }, filesMigrationSet);
       const alreadyAppliedMigrations = new Map(state.migrations ? state.migrations.map((i) => [i.title, i]) : null);
       /** Match the files migrations to the database migrations.
-       Plays migrations that doesnt have matching name / timestamp */
+       Plays migrations that does not have matching name / timestamp */
       if (migrationToApply.length > 0) {
         logger.info(`[MIGRATION] ${migrationToApply.length} migrations will be executed`);
       } else {
