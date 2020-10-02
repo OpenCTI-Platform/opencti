@@ -527,7 +527,7 @@ class StixDomainObject:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
-        operation = kwargs.get("value", "replace")
+        operation = kwargs.get("operation", "replace")
 
         if id is not None and key is not None and value is not None:
             self.opencti.log(
@@ -853,6 +853,16 @@ class StixDomainObject:
     def add_label(self, **kwargs):
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
+        label_name = kwargs.get("label_name", None)
+        if label_name is not None:
+            label = self.opencti.label.read(
+                filters=[{"key": "value", "values": [label_name]}]
+            )
+            if label:
+                label_id = label["id"]
+            else:
+                label = self.opencti.label.create(value=label_name)
+                label_id = label["id"]
         if id is not None and label_id is not None:
             self.opencti.log(
                 "info",
@@ -893,6 +903,13 @@ class StixDomainObject:
     def remove_label(self, **kwargs):
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
+        label_name = kwargs.get("label_name", None)
+        if label_name is not None:
+            label = self.opencti.label.read(
+                filters=[{"key": "value", "values": [label_name]}]
+            )
+            if label:
+                label_id = label["id"]
         if id is not None and label_id is not None:
             self.opencti.log(
                 "info",
