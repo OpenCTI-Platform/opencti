@@ -347,7 +347,7 @@ class OpenCTIConnectorHelper:
         listen_queue = ListenQueue(self, self.config, message_callback)
         listen_queue.start()
 
-    def listen_stream(self, message_callback) -> None:
+    def listen_stream(self, message_callback, url=None, token=None) -> None:
         """listen for messages and register callback function
 
         :param message_callback: callback function to process messages
@@ -357,10 +357,16 @@ class OpenCTIConnectorHelper:
             current_state = {"connectorLastEventId": "-"}
 
         # Get the last event ID with the "connected" event msg
-        messages = SSEClient(
-            self.opencti_url + "/stream",
-            headers={"Authorization": "Bearer " + self.opencti_token},
-        )
+        if url is not None and token is not None:
+            messages = SSEClient(
+                url + "/stream",
+                headers={"Authorization": "Bearer " + token},
+            )
+        else:
+            messages = SSEClient(
+                self.opencti_url + "/stream",
+                headers={"Authorization": "Bearer " + self.opencti_token},
+            )
 
         # Create processor thread
         processor_thread = StreamProcessor(

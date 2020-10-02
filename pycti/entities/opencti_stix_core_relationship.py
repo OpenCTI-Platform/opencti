@@ -765,6 +765,108 @@ class StixCoreRelationship:
             return False
 
     """
+        Update the Identity author of a Stix-Domain-Object object (created_by)
+
+        :param id: the id of the Stix-Domain-Object
+        :param identity_id: the id of the Identity
+        :return Boolean
+    """
+
+    def update_created_by(self, **kwargs):
+        id = kwargs.get("id", None)
+        identity_id = kwargs.get("identity_id", None)
+        if id is not None and identity_id is not None:
+            custom_attributes = """
+                id
+                createdBy {
+                    ... on Identity {
+                        id
+                        standard_id
+                        entity_type
+                        parent_types
+                        name
+                        aliases
+                        description
+                        created
+                        modified
+                    }
+                    ... on Organization {
+                        x_opencti_organization_type
+                        x_opencti_reliability
+                    }
+                    ... on Individual {
+                        x_opencti_firstname
+                        x_opencti_lastname
+                    }
+                }
+            """
+            opencti_stix_object_or_stix_relationship = self.read(
+                id=id, customAttributes=custom_attributes
+            )
+            if opencti_stix_object_or_stix_relationship is None:
+                self.opencti.log("error", "Cannot update created_by, entity not found")
+                return False
+            current_identity_id = None
+            current_relation_id = None
+            if opencti_stix_object_or_stix_relationship["createdBy"] is not None:
+                current_identity_id = opencti_stix_object_or_stix_relationship[
+                    "createdBy"
+                ]["id"]
+            # Current identity is the same
+            if current_identity_id == identity_id:
+                return True
+            else:
+                self.opencti.log(
+                    "info",
+                    "Updating author of Stix-Domain-Object {"
+                    + id
+                    + "} with Identity {"
+                    + identity_id
+                    + "}",
+                )
+                # Current identity is different, delete the old relation
+                if current_relation_id is not None:
+                    query = """
+                        mutation StixDomainObjectEdit($id: ID!, $relationId: ID!) {
+                            stixDomainObjectEdit(id: $id) {
+                                relationDelete(relationId: $relationId) {
+                                    id
+                                }
+                            }
+                        }
+                    """
+                    self.opencti.query(
+                        query,
+                        {
+                            "id": id,
+                            "toId": current_identity_id,
+                            "relationship_type": "created-by",
+                        },
+                    )
+                # Add the new relation
+                query = """
+                   mutation Stix-Domain-ObjectEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                       Stix-Domain-ObjectEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                variables = {
+                    "id": id,
+                    "input": {
+                        "toId": identity_id,
+                        "relationship_type": "created-by",
+                    },
+                }
+                self.opencti.query(query, variables)
+
+        else:
+            self.opencti.log("error", "Missing parameters: id and identity_id")
+            return False
+
+    """
         Import an Indicator object from a STIX2 object
 
         :param stixObject: the Stix-Object Indicator
