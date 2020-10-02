@@ -466,6 +466,52 @@ class Report:
             return False
 
     """
+        Remove a Stix-Entity object to Report object (object_refs)
+
+        :param id: the id of the Report
+        :param entity_id: the id of the Stix-Entity
+        :return Boolean
+    """
+
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        id = kwargs.get("id", None)
+        stix_object_or_stix_relationship_id = kwargs.get(
+            "stixObjectOrStixRelationshipId", None
+        )
+        if id is not None and stix_object_or_stix_relationship_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing StixObjectOrStixRelationship {"
+                + stix_object_or_stix_relationship_id
+                + "} to Report {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation ReportEditRelationDelete($id: ID!, $toId: String!, $relationship_type: String!) {
+                   reportEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": stix_object_or_stix_relationship_id,
+                    "relationship_type": "object",
+                },
+            )
+            return True
+        else:
+            self.opencti.log(
+                "error", "[opencti_report] Missing parameters: id and entity_id"
+            )
+            return False
+
+    """
         Import a Report object from a STIX2 object
 
         :param stixObject: the Stix-Object Report

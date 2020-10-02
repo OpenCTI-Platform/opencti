@@ -393,13 +393,22 @@ class OpenCTIConnectorHelper:
                     logging.info(
                         "Some events have not been processed, catching them..."
                     )
-                    catcher_thread = StreamCatcher(
-                        self.opencti_url,
-                        self.opencti_token,
-                        current_state["connectorLastEventId"],
-                        last_event_id,
-                        stream_connection_id,
-                    )
+                    if url is not None and token is not None:
+                        catcher_thread = StreamCatcher(
+                            url,
+                            token,
+                            current_state["connectorLastEventId"],
+                            last_event_id,
+                            stream_connection_id,
+                        )
+                    else:
+                        catcher_thread = StreamCatcher(
+                            self.opencti_url,
+                            self.opencti_token,
+                            current_state["connectorLastEventId"],
+                            last_event_id,
+                            stream_connection_id,
+                        )
                     catcher_thread.start()
             else:
                 # If receiving the last message, launch processor

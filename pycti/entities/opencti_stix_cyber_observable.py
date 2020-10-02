@@ -1048,14 +1048,16 @@ class StixCyberObservable:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
+        operation = kwargs.get("operation", "replace")
+
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info", "Updating Stix-Observable {" + id + "} field {" + key + "}."
             )
             query = """
-                mutation StixCyberObservableEdit($id: ID!, $input: EditInput!) {
+                mutation StixCyberObservableEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
                     stixCyberObservableEdit(id: $id) {
-                        fieldPatch(input: $input) {
+                        fieldPatch(input: $input, operation: $operation) {
                             id
                             standard_id
                         }
@@ -1063,7 +1065,12 @@ class StixCyberObservable:
                 }
             """
             result = self.opencti.query(
-                query, {"id": id, "input": {"key": key, "value": value}}
+                query,
+                {
+                    "id": id,
+                    "input": {"key": key, "value": value},
+                    "operation": operation,
+                },
             )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixCyberObservableEdit"]["fieldPatch"]
@@ -1202,6 +1209,16 @@ class StixCyberObservable:
     def add_label(self, **kwargs):
         id = kwargs.get("id", None)
         label_id = kwargs.get("label_id", None)
+        label_name = kwargs.get("label_name", None)
+        if label_name is not None:
+            label = self.opencti.label.read(
+                filters=[{"key": "value", "values": [label_name]}]
+            )
+            if label:
+                label_id = label["id"]
+            else:
+                label = self.opencti.label.create(value=label_name)
+                label_id = label["id"]
         if id is not None and label_id is not None:
             self.opencti.log(
                 "info",
@@ -1224,6 +1241,51 @@ class StixCyberObservable:
                         "toId": label_id,
                         "relationship_type": "object-label",
                     },
+                },
+            )
+            return True
+        else:
+            self.opencti.log("error", "Missing parameters: id and label_id")
+            return False
+
+    """
+        Remove a Label object to Stix-Cyber-Observable object
+
+        :param id: the id of the Stix-Cyber-Observable
+        :param label_id: the id of the Label
+        :return Boolean
+    """
+
+    def remove_label(self, **kwargs):
+        id = kwargs.get("id", None)
+        label_id = kwargs.get("label_id", None)
+        label_name = kwargs.get("label_name", None)
+        if label_name is not None:
+            label = self.opencti.label.read(
+                filters=[{"key": "value", "values": [label_name]}]
+            )
+            if label:
+                label_id = label["id"]
+        if id is not None and label_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing label {" + label_id + "} to Stix-Domain-Object {" + id + "}",
+            )
+            query = """
+               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixCyberObservableEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": label_id,
+                    "relationship_type": "object-label",
                 },
             )
             return True
