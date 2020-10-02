@@ -527,21 +527,28 @@ class StixDomainObject:
         id = kwargs.get("id", None)
         key = kwargs.get("key", None)
         value = kwargs.get("value", None)
+        operation = kwargs.get("value", "replace")
+
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info", "Updating Stix-Domain-Object {" + id + "} field {" + key + "}."
             )
             query = """
-                    mutation StixDomainObjectEdit($id: ID!, $input: EditInput!) {
+                    mutation StixDomainObjectEdit($id: ID!, $input: EditInput!, $operation: EditOperation) {
                         stixDomainObjectEdit(id: $id) {
-                            fieldPatch(input: $input) {
+                            fieldPatch(input: $input, operation: $operation) {
                                 id
                             }
                         }
                     }
                 """
             result = self.opencti.query(
-                query, {"id": id, "input": {"key": key, "value": value}}
+                query,
+                {
+                    "id": id,
+                    "input": {"key": key, "value": value},
+                    "operation": operation,
+                },
             )
             return self.opencti.process_multiple_fields(
                 result["data"]["stixDomainObjectEdit"]["fieldPatch"]
@@ -741,8 +748,8 @@ class StixDomainObject:
                     )
                 # Add the new relation
                 query = """
-                   mutation Stix-Domain-ObjectEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       Stix-Domain-ObjectEdit(id: $id) {
+                   mutation StixDomainObjectEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                       stixDomainObjectEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
                             }
