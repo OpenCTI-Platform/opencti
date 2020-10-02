@@ -92,7 +92,7 @@ const streamHistoryHandler = async (req, res) => {
   const connectedClient = broadcastClients[connectionId];
   // Check if connection exist and the client is correctly related
   if (!connectedClient || connectedClient.client.userId !== userId) {
-    res.status(401).json({ status: 'This stream connection doesnt exist' });
+    res.status(401).json({ status: 'This stream connection does not exist' });
   } else {
     try {
       const rangeProcessor = (eventId, topic, data) =>

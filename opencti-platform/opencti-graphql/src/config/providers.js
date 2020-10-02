@@ -43,7 +43,7 @@ export const initializeAdminUser = async () => {
 };
 
 // Map every configuration that required camelCase
-// This is due to env variables that doesnt not support case
+// This is due to env variables that does not not support case
 const configurationMapping = {
   // Generic for google / facebook / github and auth0
   client_id: 'clientID',

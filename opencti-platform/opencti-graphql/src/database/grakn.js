@@ -1240,7 +1240,7 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   let distributionData;
   // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
   if (field.includes('.')) {
-    throw FunctionalError('Distribution entities doesnt support relation aggregation field');
+    throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
   const supportedFilters = R.filter((f) => f.start || f.end || f.from || f.to, filters).length === 0;
   if (!noCache && operation === 'count' && supportedFilters && inferred === false) {
