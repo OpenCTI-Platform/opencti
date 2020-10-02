@@ -27,6 +27,9 @@ export const convertTypeToStixType = (type) => {
   if (type === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
     return 'file';
   }
+  if (isStixCoreRelationship(type)) {
+    return 'relationship';
+  }
   return type.toLowerCase();
 };
 
