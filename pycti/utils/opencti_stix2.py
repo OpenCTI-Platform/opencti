@@ -412,7 +412,6 @@ class OpenCTIStix2:
                     )["id"]
                 self.mapping_cache[url] = {"id": external_reference_id}
                 external_references_ids.append(external_reference_id)
-
                 if (
                     stix_object["type"]
                     in [
@@ -423,7 +422,7 @@ class OpenCTIStix2:
                         "malware",
                         "relationship",
                     ]
-                    and "report" in types
+                    and (types is not None and "report" in types)
                 ):
                     # Add a corresponding report
                     # Extract date
