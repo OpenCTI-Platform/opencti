@@ -1096,6 +1096,51 @@ class StixDomainObject:
             return False
 
     """
+        Remove a Kill-Chain-Phase object to Stix-Domain-Object object
+
+        :param id: the id of the Stix-Domain-Object
+        :param kill_chain_phase_id: the id of the Kill-Chain-Phase
+        :return Boolean
+    """
+
+    def remove_kill_chain_phase(self, **kwargs):
+        id = kwargs.get("id", None)
+        kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
+        if id is not None and kill_chain_phase_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing Kill-Chain-Phase {"
+                + kill_chain_phase_id
+                + "} from Stix-Domain-Object {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixDomainObjectEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": kill_chain_phase_id,
+                    "relationship_type": "kill-chain-phase",
+                },
+            )
+            return True
+        else:
+            self.opencti.log(
+                "error",
+                "[stix_domain_object] Missing parameters: id and kill_chain_phase_id",
+            )
+            return False
+
+    """
         Get the reports about a Stix-Domain-Object object
 
         :param id: the id of the Stix-Domain-Object
