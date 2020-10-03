@@ -90,6 +90,44 @@ class OpenCTIStix2Update:
                     id=id, external_reference_id=external_reference["id"]
                 )
 
+    def add_kill_chain_phases(self, entity_type, id, kill_chain_phases):
+        for kill_chain_phase in kill_chain_phases:
+            kill_chain_phase_id = self.opencti.kill_chain_phase.create(
+                kill_chain_name=kill_chain_phase["kill_chain_name"],
+                phase_name=kill_chain_phase["phase_name"],
+                phase_order=kill_chain_phase["x_opencti_order"]
+                if "x_opencti_order" in kill_chain_phase
+                else 0,
+                stix_id=kill_chain_phase["id"] if "id" in kill_chain_phase else None,
+            )["id"]
+            if entity_type == "relationship":
+                self.opencti.stix_core_relationship.add_kill_chain_phase(
+                    id=id, kill_chain_phase_id=kill_chain_phase_id
+                )
+            elif StixCyberObservableTypes.has_value(entity_type):
+                self.opencti.stix_cyber_observable.add_kill_chain_phase(
+                    id=id, kill_chain_phase_id=kill_chain_phase_id
+                )
+            else:
+                self.opencti.stix_domain_object.add_kill_chain_phase(
+                    id=id, kill_chain_phase_id=kill_chain_phase_id
+                )
+
+    def remove_kill_chain_phases(self, entity_type, id, kill_chain_phases):
+        for kill_chain_phase in kill_chain_phases:
+            if entity_type == "relationship":
+                self.opencti.stix_core_relationship.remove_kill_chain_phase(
+                    id=id, kill_chain_phase_id=kill_chain_phase["id"]
+                )
+            elif StixCyberObservableTypes.has_value(entity_type):
+                self.opencti.stix_cyber_observable.remove_kill_chain_phase(
+                    id=id, kill_chain_phase_id=kill_chain_phase["id"]
+                )
+            else:
+                self.opencti.stix_domain_object.remove_kill_chain_phase(
+                    id=id, kill_chain_phase_id=kill_chain_phase["id"]
+                )
+
     def add_object_refs(self, entity_type, id, object_refs):
         for object_ref in object_refs:
             if entity_type == "report":
@@ -204,6 +242,12 @@ class OpenCTIStix2Update:
                             data["id"],
                             data["x_data_update"]["add"]["external_references"],
                         )
+                    elif key == "kill_chain_phases":
+                        self.add_kill_chain_phases(
+                            data["type"],
+                            data["id"],
+                            data["x_data_update"]["add"]["kill_chain_phases"],
+                        )
                     elif key == "created_by_ref":
                         self.replace_created_by_ref(
                             data["type"],
@@ -243,6 +287,12 @@ class OpenCTIStix2Update:
                             data["type"],
                             data["id"],
                             data["x_data_update"]["remove"]["external_references"],
+                        )
+                    elif key == "kill_chain_phases":
+                        self.remove_kill_chain_phases(
+                            data["type"],
+                            data["id"],
+                            data["x_data_update"]["remove"]["kill_chain_phases"],
                         )
                     elif key == "created_by_ref":
                         self.replace_created_by_ref(
