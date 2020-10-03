@@ -311,6 +311,16 @@ class OpenCTIStix2:
                     label_id = self.opencti.label.create(value=label)["id"]
                 if label_id is not None:
                     object_label_ids.append(label_id)
+        elif "x_opencti_tags" in stix_object:
+            for tag in stix_object["x_opencti_tags"]:
+                label = tag["value"]
+                color = tag["color"] if "color" in tag else None
+                if "label_" + label in self.mapping_cache:
+                    label_id = self.mapping_cache["label_" + label]
+                else:
+                    label_id = self.opencti.label.create(value=label, color=color)["id"]
+                if label_id is not None:
+                    object_label_ids.append(label_id)
 
         # Kill Chain Phases
         kill_chain_phases_ids = []
