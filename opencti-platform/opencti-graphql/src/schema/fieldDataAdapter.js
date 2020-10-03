@@ -28,6 +28,7 @@ export const multipleAttributes = [
   'x_mitre_permissions_required',
   'x_opencti_aliases',
   'labels',
+  'external_references',
 ];
 export const statsDateAttributes = [
   'created_at',

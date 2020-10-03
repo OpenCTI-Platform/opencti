@@ -38,7 +38,6 @@ import {
   prepareElementForIndexing,
   RELATIONSHIPS_INDICES,
   useCache,
-  dateFields,
 } from './elasticSearch';
 import { EVENT_TYPE_UPDATE, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE, UPDATE_OPERATION_REPLACE } from './rabbitmq';
 import {
