@@ -12,6 +12,7 @@ import dateutil.parser
 import pytz
 
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
+from pycti.utils.opencti_stix2_update import OpenCTIStix2Update
 from pycti.utils.constants import (
     IdentityTypes,
     LocationTypes,
@@ -20,9 +21,6 @@ from pycti.utils.constants import (
 
 datefinder.ValueError = ValueError, OverflowError
 utc = pytz.UTC
-
-# ObservableRelations
-OBSERVABLE_RELATIONS = ["corresponds", "belongs"]
 
 # Spec version
 SPEC_VERSION = "2.1"
@@ -36,6 +34,7 @@ class OpenCTIStix2:
 
     def __init__(self, opencti):
         self.opencti = opencti
+        self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = {}
 
     ######### UTILS
@@ -1440,7 +1439,9 @@ class OpenCTIStix2:
         # Marking definitions
         for bundle in bundles:
             for item in bundle["objects"]:
-                if item["type"] == "relationship":
+                if "x_data_update" in item:
+                    self.stix2_update.process_update(item)
+                elif item["type"] == "relationship":
                     self.import_relationship(item, update, types)
                 elif item["type"] == "sighting":
                     # Resolve the to
