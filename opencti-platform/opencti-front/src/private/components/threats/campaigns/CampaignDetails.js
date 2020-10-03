@@ -7,9 +7,9 @@ import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
-import ItemCreator from '../../../../components/ItemCreator';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -32,42 +32,36 @@ class CampaignDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixCoreObjectLabelsView
-            labels={campaign.objectLabel}
-            id={campaign.id}
-          />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          <ItemCreator creator={campaign.creator} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('First seen')}
-          </Typography>
-          {fld(campaign.first_seen)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Last seen')}
-          </Typography>
-          {fld(campaign.last_seen)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Objective')}
-          </Typography>
-          <Markdown className="markdown" source={campaign.objective} />
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown source={campaign.description} limit={400} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Objective')}
+              </Typography>
+              <Markdown className="markdown" source={campaign.objective} />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('First seen')}
+              </Typography>
+              {fld(campaign.first_seen)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Last seen')}
+              </Typography>
+              {fld(campaign.last_seen)}
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
@@ -85,22 +79,10 @@ const CampaignDetails = createFragmentContainer(CampaignDetailsComponent, {
   campaign: graphql`
     fragment CampaignDetails_campaign on Campaign {
       id
+      description
       first_seen
       last_seen
       objective
-      creator {
-        id
-        name
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
     }
   `,
 });
