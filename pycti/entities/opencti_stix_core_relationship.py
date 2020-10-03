@@ -670,9 +670,9 @@ class StixCoreRelationship:
             return False
 
     """
-        Add a Label object to Stix-Domain-Object object (labelging)
+        Add a Label object to stix_core_relationship(labelging)
 
-        :param id: the id of the Stix-Domain-Object
+        :param id: the id of the stix_core_relationship
         :param label_id: the id of the Label
         :return Boolean
     """
@@ -724,9 +724,9 @@ class StixCoreRelationship:
             return False
 
     """
-        Add a External-Reference object to Stix-Core-Relationship (external-reference)
+        Add a External-Reference object to stix_core_relationship (external-reference)
 
-        :param id: the id of the Stix-Core-Relationship
+        :param id: the id of the stix_core_relationship
         :param marking_definition_id: the id of the Marking-Definition
         :return Boolean
     """
@@ -770,10 +770,10 @@ class StixCoreRelationship:
             return False
 
     """
-        Remove a Label object to stix_core_relationship object
+        Remove a External-Reference object to stix_core_relationship object
 
         :param id: the id of the stix_core_relationship
-        :param label_id: the id of the Label
+        :param external_reference_id: the id of the External-Reference
         :return Boolean
     """
 
@@ -855,6 +855,51 @@ class StixCoreRelationship:
             self.opencti.log(
                 "error",
                 "[opencti_stix_core_relationship] Missing parameters: id and kill_chain_phase_id",
+            )
+            return False
+
+    """
+        Remove a Kill-Chain-Phase object to stix_core_relationship object
+
+        :param id: the id of the stix_core_relationship
+        :param kill_chain_phase_id: the id of the Kill-Chain-Phase
+        :return Boolean
+    """
+
+    def remove_kill_chain_phase(self, **kwargs):
+        id = kwargs.get("id", None)
+        kill_chain_phase_id = kwargs.get("kill_chain_phase_id", None)
+        if id is not None and kill_chain_phase_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing Kill-Chain-Phase {"
+                + kill_chain_phase_id
+                + "} from stix_core_relationship {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixCoreRelationshipRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixCoreRelationshipEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": kill_chain_phase_id,
+                    "relationship_type": "kill-chain-phase",
+                },
+            )
+            return True
+        else:
+            self.opencti.log(
+                "error",
+                "[stix_core_relationship] Missing parameters: id and kill_chain_phase_id",
             )
             return False
 
