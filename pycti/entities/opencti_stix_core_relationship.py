@@ -1028,6 +1028,10 @@ class StixCoreRelationship:
                     if "x_opencti_last_seen" in stix_relation
                     else None
                 )
+            if stix_relation["relationship_type"] == "gathering":
+                stix_relation["rrelationship_type"] = "part-of"
+            elif stix_relation["relationship_type"] == "localization":
+                stix_relation["rrelationship_type"] = "located-at"
 
             return self.create(
                 fromId=stix_relation["source_ref"],
