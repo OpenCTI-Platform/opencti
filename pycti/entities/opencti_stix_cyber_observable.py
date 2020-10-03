@@ -1108,94 +1108,89 @@ class StixCyberObservable:
             return None
 
     """
-        Update the Identity author of a Stix-Observable object (created_by)
+        Update the Identity author of a Stix-Cyber-Observable object (created_by)
 
-        :param id: the id of the Stix-Observable
+        :param id: the id of the Stix-Cyber-Observable
         :param identity_id: the id of the Identity
         :return Boolean
     """
 
     def update_created_by(self, **kwargs):
         id = kwargs.get("id", None)
-        opencti_stix_object_or_stix_relationship = kwargs.get("entity", None)
         identity_id = kwargs.get("identity_id", None)
-        if id is not None and identity_id is not None:
-            if opencti_stix_object_or_stix_relationship is None:
-                custom_attributes = """
-                    id
-                    createdBy {
-                        node {
-                            id
-                            entity_type
-                            stix_id
-                            stix_label
-                            name
-                            alias
-                            description
-                            created
-                            modified
-                            ... on Organization {
-                                x_opencti_organization_type
+        if id is not None:
+            self.opencti.log(
+                "info",
+                "Updating author of Stix-Cyber-Observable {"
+                + id
+                + "} with Identity {"
+                + str(identity_id)
+                + "}",
+            )
+            custom_attributes = """
+                id
+                createdBy {
+                    ... on Identity {
+                        id
+                        standard_id
+                        entity_type
+                        parent_types
+                        name
+                        x_opencti_aliases
+                        description
+                        created
+                        modified
+                    }
+                    ... on Organization {
+                        x_opencti_organization_type
+                        x_opencti_reliability
+                    }
+                    ... on Individual {
+                        x_opencti_firstname
+                        x_opencti_lastname
+                    }
+                }
+            """
+            stix_domain_object = self.read(id=id, customAttributes=custom_attributes)
+            if stix_domain_object["createdBy"] is not None:
+                query = """
+                    mutation StixCyberObservableEdit($id: ID!, $toId: String! $relationship_type: String!) {
+                        stixCyberObservableEdit(id: $id) {
+                            relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                                id
                             }
                         }
-                    }    
+                    }
                 """
-                opencti_stix_object_or_stix_relationship = self.read(
-                    id=id, customAttributes=custom_attributes
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "toId": stix_domain_object["createdBy"]["id"],
+                        "relationship_type": "created-by",
+                    },
                 )
-            if opencti_stix_object_or_stix_relationship is None:
-                self.opencti.log("error", "Cannot update created_by, entity not found")
-                return False
-            current_identity_id = None
-            if opencti_stix_object_or_stix_relationship["createdBy"] is not None:
-                current_identity_id = opencti_stix_object_or_stix_relationship[
-                    "createdBy"
-                ]["id"]
-            # Current identity is the same
-            if current_identity_id == identity_id:
-                return True
-            else:
-                self.opencti.log(
-                    "info",
-                    "Updating author of Stix-Cyber-Observable {"
-                    + id
-                    + "} with Identity {"
-                    + identity_id
-                    + "}",
-                )
-                # Current identity is different, delete the old relation
-                if current_identity_id is not None:
-                    query = """
-                        mutation StixCyberObservableEdit($id: ID!, $relationId: ID!) {
-                            stixCyberObservableEdit(id: $id) {
-                                relationDelete(toId: $toId) {
-                                    id
-                                }
-                            }
-                        }
-                    """
-                    self.opencti.query(query, {"id": id, "toId": current_identity_id})
+            if identity_id is not None:
                 # Add the new relation
                 query = """
-                   mutation StixCyberObservableEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       stixCyberObservableEdit(id: $id) {
+                    mutation StixCyberObservableEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                        stixCyberObservableEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
                             }
-                       }
-                   }
-                """
+                        }
+                    }
+               """
                 variables = {
                     "id": id,
                     "input": {
                         "toId": identity_id,
-                        "through": "created-by",
+                        "relationship_type": "created-by",
                     },
                 }
                 self.opencti.query(query, variables)
-
         else:
-            self.opencti.log("error", "Missing parameters: id and identity_id")
+            self.opencti.log("error", "Missing parameters: id")
             return False
 
     """
