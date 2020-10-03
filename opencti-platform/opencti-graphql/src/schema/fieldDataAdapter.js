@@ -29,6 +29,7 @@ export const multipleAttributes = [
   'x_opencti_aliases',
   'labels',
   'external_references',
+  'kill_chain_phases'
 ];
 export const statsDateAttributes = [
   'created_at',
