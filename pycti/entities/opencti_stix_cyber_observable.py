@@ -1199,6 +1199,121 @@ class StixCyberObservable:
             return False
 
     """
+        Add a Marking-Definition object to Stix-Cyber-Observable object (object_marking_refs)
+
+        :param id: the id of the Stix-Cyber-Observable
+        :param marking_definition_id: the id of the Marking-Definition
+        :return Boolean
+    """
+
+    def add_marking_definition(self, **kwargs):
+        id = kwargs.get("id", None)
+        marking_definition_id = kwargs.get("marking_definition_id", None)
+        if id is not None and marking_definition_id is not None:
+            custom_attributes = """
+                id
+                objectMarking {
+                    edges {
+                        node {
+                            id
+                            standard_id
+                            entity_type
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                            created
+                            modified
+                        }
+                    }
+                }
+            """
+            stix_cyber_observable = self.read(id=id, customAttributes=custom_attributes)
+            if stix_cyber_observable is None:
+                self.opencti.log(
+                    "error", "Cannot add Marking-Definition, entity not found"
+                )
+                return False
+            if marking_definition_id in stix_cyber_observable["markingDefinitionsIds"]:
+                return True
+            else:
+                self.opencti.log(
+                    "info",
+                    "Adding Marking-Definition {"
+                    + marking_definition_id
+                    + "} to Stix-Cyber-Observable {"
+                    + id
+                    + "}",
+                )
+                query = """
+                   mutation StixCyberObservableAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                       stixCyberObservableEdit(id: $id) {
+                            relationAdd(input: $input) {
+                                id
+                            }
+                       }
+                   }
+                """
+                self.opencti.query(
+                    query,
+                    {
+                        "id": id,
+                        "input": {
+                            "toId": marking_definition_id,
+                            "relationship_type": "object-marking",
+                        },
+                    },
+                )
+                return True
+        else:
+            self.opencti.log(
+                "error", "Missing parameters: id and marking_definition_id"
+            )
+            return False
+
+    """
+        Remove a Marking-Definition object to Stix-Cyber-Observable object
+
+        :param id: the id of the Stix-Cyber-Observable
+        :param marking_definition_id: the id of the Marking-Definition
+        :return Boolean
+    """
+
+    def remove_marking_definition(self, **kwargs):
+        id = kwargs.get("id", None)
+        marking_definition_id = kwargs.get("marking_definition_id", None)
+        if id is not None and marking_definition_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing Marking-Definition {"
+                + marking_definition_id
+                + "} from Stix-Cyber-Observable {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixCyberObservableEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": marking_definition_id,
+                    "relationship_type": "object-marking",
+                },
+            )
+            return True
+        else:
+            self.opencti.log("error", "Missing parameters: id and label_id")
+            return False
+
+    """
         Add a Label object to Stix-Cyber-Observable object
 
         :param id: the id of the Stix-Cyber-Observable
@@ -1269,7 +1384,11 @@ class StixCyberObservable:
         if id is not None and label_id is not None:
             self.opencti.log(
                 "info",
-                "Removing label {" + label_id + "} to Stix-Domain-Object {" + id + "}",
+                "Removing label {"
+                + label_id
+                + "} to Stix-Cyber-Observable {"
+                + id
+                + "}",
             )
             query = """
                mutation StixCyberObservableRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
@@ -1365,4 +1484,46 @@ class StixCyberObservable:
             self.opencti.log(
                 "error", "Missing parameters: id and external_reference_id"
             )
+            return False
+
+    """
+        Remove a Label object to Stix-Cyber-Observable object
+
+        :param id: the id of the Stix-Cyber-Observable
+        :param label_id: the id of the Label
+        :return Boolean
+    """
+
+    def remove_external_reference(self, **kwargs):
+        id = kwargs.get("id", None)
+        external_reference_id = kwargs.get("external_reference_id", None)
+        if id is not None and external_reference_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing External-Reference {"
+                + external_reference_id
+                + "} to Stix-Cyber-Observable {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixCyberObservableRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixCyberObservableEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": external_reference_id,
+                    "relationship_type": "external-reference",
+                },
+            )
+            return True
+        else:
+            self.opencti.log("error", "Missing parameters: id and label_id")
             return False

@@ -436,6 +436,52 @@ class Opinion:
             return False
 
     """
+        Remove a Stix-Entity object from Opinion object (object_refs)
+
+        :param id: the id of the Opinion
+        :param entity_id: the id of the Stix-Entity
+        :return Boolean
+    """
+
+    def remove_stix_object_or_stix_relationship(self, **kwargs):
+        id = kwargs.get("id", None)
+        stix_object_or_stix_relationship_id = kwargs.get(
+            "stixObjectOrStixRelationshipId", None
+        )
+        if id is not None and stix_object_or_stix_relationship_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing StixObjectOrStixRelationship {"
+                + stix_object_or_stix_relationship_id
+                + "} to Opinion {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation OpinionEditRelationDelete($id: ID!, $toId: String!, $relationship_type: String!) {
+                   opinionEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": stix_object_or_stix_relationship_id,
+                    "relationship_type": "object",
+                },
+            )
+            return True
+        else:
+            self.opencti.log(
+                "error", "[opencti_opinion] Missing parameters: id and entity_id"
+            )
+            return False
+
+    """
         Import a Opinion object from a STIX2 object
 
         :param stixObject: the Stix-Object Opinion

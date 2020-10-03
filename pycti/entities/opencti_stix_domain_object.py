@@ -843,6 +843,48 @@ class StixDomainObject:
             return False
 
     """
+        Remove a Marking-Definition object to Stix-Domain-Object object
+
+        :param id: the id of the Stix-Domain-Object
+        :param marking_definition_id: the id of the Marking-Definition
+        :return Boolean
+    """
+
+    def remove_marking_definition(self, **kwargs):
+        id = kwargs.get("id", None)
+        marking_definition_id = kwargs.get("marking_definition_id", None)
+        if id is not None and marking_definition_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing Marking-Definition {"
+                + marking_definition_id
+                + "} from Stix-Domain-Object {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixDomainObjectEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": marking_definition_id,
+                    "relationship_type": "object-marking",
+                },
+            )
+            return True
+        else:
+            self.opencti.log("error", "Missing parameters: id and label_id")
+            return False
+
+    """
         Add a Label object to Stix-Domain-Object object
 
         :param id: the id of the Stix-Domain-Object
@@ -981,6 +1023,48 @@ class StixDomainObject:
             self.opencti.log(
                 "error", "Missing parameters: id and external_reference_id"
             )
+            return False
+
+    """
+        Remove a Label object to Stix-Domain-Object object
+
+        :param id: the id of the Stix-Domain-Object
+        :param label_id: the id of the Label
+        :return Boolean
+    """
+
+    def remove_external_reference(self, **kwargs):
+        id = kwargs.get("id", None)
+        external_reference_id = kwargs.get("external_reference_id", None)
+        if id is not None and external_reference_id is not None:
+            self.opencti.log(
+                "info",
+                "Removing External-Reference {"
+                + external_reference_id
+                + "} to Stix-Domain-Object {"
+                + id
+                + "}",
+            )
+            query = """
+               mutation StixDomainObjectRemoveRelation($id: ID!, $toId: String!, $relationship_type: String!) {
+                   stixDomainObjectEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
+                   }
+               }
+            """
+            self.opencti.query(
+                query,
+                {
+                    "id": id,
+                    "toId": external_reference_id,
+                    "relationship_type": "external-reference",
+                },
+            )
+            return True
+        else:
+            self.opencti.log("error", "Missing parameters: id and label_id")
             return False
 
     """
