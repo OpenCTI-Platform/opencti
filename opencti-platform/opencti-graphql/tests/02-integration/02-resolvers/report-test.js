@@ -216,7 +216,7 @@ describe('Report resolver standard behavior', () => {
   });
   it('should list reports', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.reports.edges.length).toEqual(7);
+    expect(queryResult.data.reports.edges.length).toEqual(2);
   });
   it('should timeseries reports to be accurate', async () => {
     const queryResult = await queryAsAdmin({
@@ -275,8 +275,8 @@ describe('Report resolver standard behavior', () => {
         endDate: now(),
       },
     });
-    expect(queryResult.data.reportsNumber.total).toEqual(7);
-    expect(queryResult.data.reportsNumber.count).toEqual(7);
+    expect(queryResult.data.reportsNumber.total).toEqual(2);
+    expect(queryResult.data.reportsNumber.count).toEqual(2);
   });
   it('should reports number by entity to be accurate', async () => {
     const queryResult = await queryAsAdmin({
@@ -286,8 +286,8 @@ describe('Report resolver standard behavior', () => {
         endDate: now(),
       },
     });
-    expect(queryResult.data.reportsNumber.total).toEqual(4);
-    expect(queryResult.data.reportsNumber.count).toEqual(4);
+    expect(queryResult.data.reportsNumber.total).toEqual(1);
+    expect(queryResult.data.reportsNumber.count).toEqual(1);
   });
   it('should reports distribution to be accurate', async () => {
     const queryResult = await queryAsAdmin({

@@ -229,11 +229,11 @@ describe('Grakn loaders', () => {
     expect(await countObjects('Workspace')).toEqual(0);
     expect(await countObjects('Token')).toEqual(1);
     expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain-Object')).toEqual(36);
+    expect(await countObjects('Stix-Domain-Object')).toEqual(28);
     expect(await countObjects('Role')).toEqual(2);
     expect(await countObjects('Capability')).toEqual(20);
     expect(await countObjects('Stix-Cyber-Observable')).toEqual(1);
-    expect(await countObjects('Basic-Object')).toEqual(91);
+    expect(await countObjects('Basic-Object')).toEqual(83);
 
     // Relations
   });
@@ -336,7 +336,7 @@ describe('Grakn entities listing', () => {
   it.each(noCacheCases)('should list multiple entities (noCache = %s)', async (noCache) => {
     const entities = await listEntities(['Malware', 'Organization'], ['name'], { noCache });
     expect(entities).not.toBeNull();
-    expect(entities.edges.length).toEqual(10); // 2 malwares + 8 organizations
+    expect(entities.edges.length).toEqual(7); // 2 malwares + 8 organizations
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
     expect(aggregationMap.get('Paradise Ransomware')).not.toBeUndefined();
     expect(aggregationMap.get('Allied Universal')).not.toBeUndefined();
@@ -427,7 +427,7 @@ describe('Grakn entities listing', () => {
       const options = { filters, noCache };
       const entities = await listEntities(['Stix-Domain-Object'], ['name'], options);
       expect(entities).not.toBeNull();
-      expect(entities.edges.length).toEqual(5);
+      expect(entities.edges.length).toEqual(3);
       const aggregationMap = new Map(entities.edges.map((i) => [head(i.node.x_opencti_stix_ids || ['fake']), i.node]));
       expect(aggregationMap.get('attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17')).not.toBeUndefined();
       expect(aggregationMap.get('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc')).not.toBeUndefined();
@@ -533,7 +533,7 @@ describe('Grakn relations listing', () => {
     expect(stixCoreRelationships.edges.length).toEqual(21);
     const stixMetaRelationships = await listRelations('stix-meta-relationship', { noCache });
     expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(128);
+    expect(stixMetaRelationships.edges.length).toEqual(109);
   });
   it.each(noCacheCases)('should list relations with roles (noCache = %s)', async (noCache) => {
     const stixRelations = await listRelations('uses', { noCache, fromRole: 'uses_from', toRole: 'uses_to' });

@@ -1,4 +1,3 @@
-import { pipe, assoc } from 'ramda';
 import {
   createEntity,
   escapeString,

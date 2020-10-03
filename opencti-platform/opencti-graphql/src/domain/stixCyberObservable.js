@@ -281,8 +281,14 @@ export const stixCyberObservableDeleteRelation = async (user, stixCyberObservabl
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 
-export const stixCyberObservableEditField = async (user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await updateAttribute(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE, input);
+export const stixCyberObservableEditField = async (user, stixCyberObservableId, input, options = {}) => {
+  const stixCyberObservable = await updateAttribute(
+    user,
+    stixCyberObservableId,
+    ABSTRACT_STIX_CYBER_OBSERVABLE,
+    input,
+    options
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 // endregion

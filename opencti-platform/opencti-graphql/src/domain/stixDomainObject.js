@@ -251,12 +251,18 @@ export const stixDomainObjectDeleteRelation = async (user, stixDomainObjectId, t
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user);
 };
 
-export const stixDomainObjectEditField = async (user, stixDomainObjectId, input) => {
+export const stixDomainObjectEditField = async (user, stixDomainObjectId, input, options = {}) => {
   const stixDomainObject = await loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
   }
-  const updatedStixDomainObject = await updateAttribute(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT, input);
+  const updatedStixDomainObject = await updateAttribute(
+    user,
+    stixDomainObjectId,
+    ABSTRACT_STIX_DOMAIN_OBJECT,
+    input,
+    options
+  );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user);
 };
 
