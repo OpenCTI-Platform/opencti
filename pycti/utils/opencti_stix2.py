@@ -423,7 +423,7 @@ class OpenCTIStix2:
                         "malware",
                         "relationship",
                     ]
-                    and (types is None or "report" in types)
+                    and "report" in types
                 ):
                     # Add a corresponding report
                     # Extract date
