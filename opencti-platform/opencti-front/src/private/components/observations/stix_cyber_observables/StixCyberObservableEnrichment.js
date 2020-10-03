@@ -110,7 +110,7 @@ const StixCyberObservableEnrichment = (props) => {
           stixCyberObservable.connectors.map((connector) => {
             const jobs = pipe(
               propOr([], 'jobs'),
-              filter((n) => n.connector.id === connector.id),
+              filter((n) => n.connector && n.connector.id === connector.id),
             )(stixCyberObservable);
             const isRefreshing = filter((node) => node.status !== 'complete', jobs).length > 0;
             return (
