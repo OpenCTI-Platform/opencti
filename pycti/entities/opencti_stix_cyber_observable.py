@@ -462,6 +462,10 @@ class StixCyberObservable:
             type = "X-OpenCTI-Cryptocurrency-Wallet"
         elif type.lower() == "x-opencti-user-agent":
             type = "X-OpenCTI-User-Agent"
+        elif type.lower() == "x-opencti-cryptographic-key":
+            type = "X-OpenCTI-Cryptographic-Key"
+        elif type.lower() == "x-opencti-text":
+            type = "X-OpenCTI-text"
 
         x_opencti_description = (
             observable_data["x_opencti_description"]
@@ -483,11 +487,11 @@ class StixCyberObservable:
             stix_id = simple_observable_id
 
         hashes = []
-        if simple_observable_key == "File.hashes.MD5":
+        if simple_observable_key.lower() == "file.hashes.md5":
             hashes.append({"algorithm": "MD5", "hash": simple_observable_value})
-        if simple_observable_key == "File.hashes.SHA-1":
+        if simple_observable_key.lower() == "file.hashes.sha-1":
             hashes.append({"algorithm": "SHA-1", "hash": simple_observable_value})
-        if simple_observable_key == "File.hashes.SHA-256":
+        if simple_observable_key.lower() == "file.hashes.sha-256":
             hashes.append({"algorithm": "SHA-256", "hash": simple_observable_value})
         if "hashes" in observable_data:
             for key, value in observable_data["hashes"].items():
