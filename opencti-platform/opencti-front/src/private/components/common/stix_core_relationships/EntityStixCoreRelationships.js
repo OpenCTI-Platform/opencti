@@ -51,11 +51,14 @@ const styles = (theme) => ({
 class EntityStixCoreRelationships extends Component {
   constructor(props) {
     super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.history,
-      props.location,
-      `view-relationships-${props.entityId}`,
-    );
+    let params = {};
+    if (!props.noState) {
+      params = buildViewParamsFromUrlAndStorage(
+        props.history,
+        props.location,
+        `view-relationships-${props.entityId}`,
+      );
+    }
     this.state = {
       sortBy: propOr(null, 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
@@ -69,12 +72,14 @@ class EntityStixCoreRelationships extends Component {
   }
 
   saveView() {
-    saveViewParameters(
-      this.props.history,
-      this.props.location,
-      `view-relationships-${this.props.entityId}`,
-      this.state,
-    );
+    if (!this.props.noState) {
+      saveViewParameters(
+        this.props.history,
+        this.props.location,
+        `view-relationships-${this.props.entityId}`,
+        this.state,
+      );
+    }
   }
 
   handleSort(field, orderAsc) {
@@ -468,6 +473,7 @@ EntityStixCoreRelationships.propTypes = {
   isRelationReversed: PropTypes.bool,
   noBottomBar: PropTypes.bool,
   inference: PropTypes.bool,
+  noState: PropTypes.bool,
 };
 
 export default compose(

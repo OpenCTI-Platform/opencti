@@ -86,7 +86,7 @@ class StixDomainObjectVictimology extends Component {
     if (type === 'regions') {
       types = ['Region', 'Country', 'City'];
     } else if (type === 'individuals') {
-      types = ['User'];
+      types = ['Individual'];
     }
     const paginationOptions = {
       fromId: stixDomainObjectId,
@@ -194,12 +194,14 @@ class StixDomainObjectVictimology extends Component {
         )}
         {type === 'individuals' ? (
           <EntityStixCoreRelationships
+            entityLink={entityLink}
             entityId={stixDomainObjectId}
             targetStixDomainObjectTypes={types}
             relationshipType="targets"
             noBottomBar={true}
             isRelationReversed={false}
             inference={inferred}
+            noState={true}
           />
         ) : (
           ''
