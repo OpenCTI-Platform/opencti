@@ -440,7 +440,7 @@ class StixCyberObservable:
         attribute = None
         if simple_observable_key is not None:
             key_split = simple_observable_key.split(".")
-            type = key_split[0]
+            type = key_split[0].title()
             attribute = key_split[1]
             if attribute not in ["hashes", "extensions"]:
                 observable_data[attribute] = simple_observable_value
