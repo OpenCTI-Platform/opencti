@@ -4,7 +4,7 @@ import conf from '../config/conf';
 import { amqpUri, EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById, SYSTEM_USER } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { loadById } from '../database/grakn';
+import { loadById, timeSeriesEntities } from '../database/grakn';
 
 export const findAll = (args) => elPaginate(INDEX_HISTORY, args);
 
@@ -21,6 +21,14 @@ export const creator = async (entityId) => {
       ? findById(head(logs).user_id)
       : { id: OPENCTI_ADMIN_UUID, name: SYSTEM_USER.name }
   );
+};
+
+export const logsTimeSeries = (args) => {
+  let filters = [];
+  if (args.userId) {
+    filters = [{ isRelation: false, type: 'user_id', value: args.userId }];
+  }
+  return timeSeriesEntities(null, filters, args);
 };
 
 export const logsWorkerConfig = () => ({

@@ -6,15 +6,14 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import {
-  MoreVertOutlined,
   PersonOutlined,
   PermIdentityOutlined,
+  KeyboardArrowRightOutlined,
 } from '@material-ui/icons';
 import { compose } from 'ramda';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
-import UserPopover from './UserPopover';
 
 const styles = (theme) => ({
   item: {
@@ -50,11 +49,17 @@ const styles = (theme) => ({
 class UserLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, paginationOptions,
+      fd, classes, dataColumns, node,
     } = this.props;
     const external = node.external === true;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`/dashboard/settings/accesses/users/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           {external ? <PermIdentityOutlined /> : <PersonOutlined />}
         </ListItemIcon>
@@ -94,15 +99,9 @@ class UserLineComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <UserPopover
-            disabled={
-              node.id === '88ec0c6a-13ce-5e39-b486-354fe4a7084f'
-            }
-            userId={node.id}
-            paginationOptions={paginationOptions}
-          />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -180,9 +179,9 @@ class UserLineDummyComponent extends Component {
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVertOutlined />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }

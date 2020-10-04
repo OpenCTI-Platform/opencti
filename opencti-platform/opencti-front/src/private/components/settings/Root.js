@@ -3,6 +3,7 @@ import { Switch, Redirect } from 'react-router-dom';
 import Settings from './Settings';
 import Inferences from './Inferences';
 import Users from './Users';
+import RootUser from './users/Root';
 import Groups from './Groups';
 import Roles from './Roles';
 import MarkingDefinitions from './MarkingDefinitions';
@@ -28,6 +29,10 @@ const Root = () => (
       exact
       path="/dashboard/settings/accesses/users"
       component={Users}
+    />
+    <BoundaryRoute
+      path="/dashboard/settings/accesses/users/:userId"
+      render={(routeProps) => <RootUser {...routeProps} />}
     />
     <BoundaryRoute
       exact

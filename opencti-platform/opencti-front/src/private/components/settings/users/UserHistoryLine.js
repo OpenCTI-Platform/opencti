@@ -7,9 +7,9 @@ import {
   green,
   pink,
   deepOrange,
-  deepPurple,
   yellow,
   indigo,
+  red,
 } from '@material-ui/core/colors';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -18,9 +18,8 @@ import Avatar from '@material-ui/core/Avatar';
 import {
   AddOutlined,
   EditOutlined,
-  LinkOutlined,
-  LinkOffOutlined,
   HelpOutlined,
+  DeleteOutlined,
 } from '@material-ui/icons';
 import { LinkVariantPlus, LinkVariantRemove } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
@@ -76,94 +75,78 @@ const styles = (theme) => ({
   },
 });
 
-class StixCoreObjectHistoryLineComponent extends Component {
-  renderIcon(eventType, isRelation, eventMesage) {
-    if (isRelation) {
-      if (eventType === 'create') {
-        return (
-          <Avatar
-            style={{
-              marginTop: 5,
-              backgroundColor: pink[500],
-              color: '#ffffff',
-            }}
-          >
-            <LinkOutlined />
-          </Avatar>
-        );
-      }
-      if (eventType === 'delete') {
-        return (
-          <Avatar
-            style={{
-              marginTop: 5,
-              backgroundColor: deepPurple[500],
-              color: '#ffffff',
-            }}
-          >
-            <LinkOffOutlined />
-          </Avatar>
-        );
-      }
-    } else {
-      if (eventType === 'create') {
-        return (
-          <Avatar
-            style={{
-              marginTop: 5,
-              backgroundColor: pink[500],
-              color: '#ffffff',
-            }}
-          >
-            <AddOutlined />
-          </Avatar>
-        );
-      }
-      if (eventType === 'update' && eventMesage.includes('replaces the')) {
-        return (
-          <Avatar
-            style={{
-              marginTop: 5,
-              backgroundColor: green[500],
-              color: '#ffffff',
-            }}
-          >
-            <EditOutlined />
-          </Avatar>
-        );
-      }
-      if (eventType === 'update' && eventMesage.includes('adds the')) {
-        return (
-          <Avatar
-            style={{
-              marginTop: 5,
-              backgroundColor: indigo[500],
-              color: '#ffffff',
-            }}
-          >
-            <LinkVariantPlus />
-          </Avatar>
-        );
-      }
-      if (eventType === 'update' && eventMesage.includes('removes the')) {
-        return (
-          <Avatar
-            style={{
-              marginTop: 5,
-              backgroundColor: deepOrange[500],
-              color: '#ffffff',
-            }}
-          >
-            <LinkVariantRemove />
-          </Avatar>
-        );
-      }
+class UserHistoryLineComponent extends Component {
+  renderIcon(eventType, eventMesage) {
+    if (eventType === 'create') {
+      return (
+        <Avatar
+          style={{
+            marginTop: 5,
+            backgroundColor: pink[500],
+            color: '#ffffff',
+          }}
+        >
+          <AddOutlined />
+        </Avatar>
+      );
+    }
+    if (eventType === 'update' && eventMesage.includes('replaces the')) {
+      return (
+        <Avatar
+          style={{
+            marginTop: 5,
+            backgroundColor: green[500],
+            color: '#ffffff',
+          }}
+        >
+          <EditOutlined />
+        </Avatar>
+      );
+    }
+    if (eventType === 'delete') {
+      return (
+        <Avatar
+          style={{
+            marginTop: 5,
+            backgroundColor: red[500],
+            color: '#ffffff',
+          }}
+        >
+          <DeleteOutlined />
+        </Avatar>
+      );
+    }
+    if (eventType === 'update' && eventMesage.includes('adds the')) {
+      return (
+        <Avatar
+          style={{
+            marginTop: 5,
+            backgroundColor: indigo[500],
+            color: '#ffffff',
+          }}
+        >
+          <LinkVariantPlus />
+        </Avatar>
+      );
+    }
+    if (eventType === 'update' && eventMesage.includes('removes the')) {
+      return (
+        <Avatar
+          style={{
+            marginTop: 5,
+            backgroundColor: deepOrange[500],
+            color: '#ffffff',
+          }}
+        >
+          <LinkVariantRemove />
+        </Avatar>
+      );
     }
     return (
       <Avatar
         style={{
           marginTop: 5,
-          backgroundColor: yellow[800],
+          backgroundColor: yellow[500],
           color: '#ffffff',
         }}
       >
@@ -173,17 +156,11 @@ class StixCoreObjectHistoryLineComponent extends Component {
   }
 
   render() {
-    const {
-      nsdt, classes, node, isRelation,
-    } = this.props;
+    const { nsdt, classes, node } = this.props;
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
-          {this.renderIcon(
-            node.event_type,
-            isRelation,
-            node.context_data.message,
-          )}
+          {this.renderIcon(node.event_type, node.context_data.message)}
         </div>
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
@@ -212,34 +189,27 @@ class StixCoreObjectHistoryLineComponent extends Component {
   }
 }
 
-StixCoreObjectHistoryLineComponent.propTypes = {
+UserHistoryLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsdt: PropTypes.func,
-  isRelation: PropTypes.bool,
 };
 
-const StixCoreObjectHistoryLine = createFragmentContainer(
-  StixCoreObjectHistoryLineComponent,
-  {
-    node: graphql`
-      fragment StixCoreObjectHistoryLine_node on Log {
-        id
-        event_type
-        timestamp
-        user {
-          name
-        }
-        context_data {
-          message
-        }
+const UserHistoryLine = createFragmentContainer(UserHistoryLineComponent, {
+  node: graphql`
+    fragment UserHistoryLine_node on Log {
+      id
+      event_type
+      timestamp
+      user {
+        name
       }
-    `,
-  },
-);
+      context_data {
+        message
+      }
+    }
+  `,
+});
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectHistoryLine);
+export default compose(inject18n, withStyles(styles))(UserHistoryLine);

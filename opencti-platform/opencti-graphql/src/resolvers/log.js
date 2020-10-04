@@ -1,9 +1,10 @@
-import { findAll, logsWorkerConfig } from '../domain/log';
+import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
 import { findById } from '../domain/user';
 
 const logResolvers = {
   Query: {
     logs: (_, args) => findAll(args),
+    logsTimeSeries: (_, args) => logsTimeSeries(args),
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {

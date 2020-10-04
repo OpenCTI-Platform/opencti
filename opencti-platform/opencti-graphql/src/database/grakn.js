@@ -1173,7 +1173,7 @@ const buildAggregationQuery = (entityType, filters, options) => {
         const relation = `$rel_${type}(${fromRole}:$from, ${toRole}:$${type}_to) isa ${type};`;
         return `${relation} ${dateRange} $${type}_to has internal_id "${eValue}";`;
       }
-      return `$from has ${type} "${eValue}";`;
+      return `$from has ${type || 'thing'} "${eValue}";`;
     }),
     R.join('')
   )(filters);

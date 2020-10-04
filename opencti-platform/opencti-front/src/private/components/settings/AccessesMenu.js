@@ -45,9 +45,9 @@ class SettingsMenu extends Component {
           <MenuItem
             component={Link}
             to={'/dashboard/settings/accesses/users'}
-            selected={
-              location.pathname === '/dashboard/settings/accesses/users'
-            }
+            selected={location.pathname.includes(
+              '/dashboard/settings/accesses/users',
+            )}
             dense={false}
           >
             <ListItemText primary={t('Users')} />

@@ -181,6 +181,7 @@ enum LogsFilter {
   event_type
   entity_id
   connection_id
+  user_id
 }
 type LogConnection {
   pageInfo: PageInfo!
@@ -7271,6 +7272,14 @@ type Query {
     filterMode: FilterMode
     search: String
   ): LogConnection @auth(for: [KNOWLEDGE])
+  logsTimeSeries(
+    userId: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
   inferences: [Inference] @auth(for: [SETTINGS])
   attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
   attributes(

@@ -556,34 +556,37 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
     default:
       throw FunctionalError('Unsupported interval, please choose between year, month or day', interval);
   }
+  let baseFilters = [
+    {
+      range: {
+        [field]: {
+          gte: start,
+          lte: end,
+        },
+      },
+    },
+  ];
+  if (type) {
+    baseFilters = R.append(
+      {
+        bool: {
+          should: [
+            { match_phrase: { 'entity_type.keyword': type } },
+            { match_phrase: { 'parent_types.keyword': type } },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+      baseFilters
+    );
+  }
   const query = {
     index: PLATFORM_INDICES,
     _source_excludes: '*', // Dont need to get anything
     body: {
       query: {
         bool: {
-          must: R.concat(
-            [
-              {
-                bool: {
-                  should: [
-                    { match_phrase: { 'entity_type.keyword': type } },
-                    { match_phrase: { 'parent_types.keyword': type } },
-                  ],
-                  minimum_should_match: 1,
-                },
-              },
-              {
-                range: {
-                  [field]: {
-                    gte: start,
-                    lte: end,
-                  },
-                },
-              },
-            ],
-            histogramFilters
-          ),
+          must: R.concat(baseFilters, histogramFilters),
         },
       },
       aggs: {

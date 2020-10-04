@@ -51,7 +51,7 @@ const userPopoverDeletionMutation = graphql`
   }
 `;
 
-const userEditionQuery = graphql`
+export const userEditionQuery = graphql`
   query UserPopoverEditionQuery($id: String!) {
     user(id: $id) {
       ...UserEdition_user
