@@ -487,11 +487,20 @@ class StixCyberObservable:
             stix_id = simple_observable_id
 
         hashes = []
-        if simple_observable_key.lower() == "file.hashes.md5":
+        if (
+            simple_observable_key is not None
+            and simple_observable_key.lower() == "file.hashes.md5"
+        ):
             hashes.append({"algorithm": "MD5", "hash": simple_observable_value})
-        if simple_observable_key.lower() == "file.hashes.sha-1":
+        if (
+            simple_observable_key is not None
+            and simple_observable_key.lower() == "file.hashes.sha-1"
+        ):
             hashes.append({"algorithm": "SHA-1", "hash": simple_observable_value})
-        if simple_observable_key.lower() == "file.hashes.sha-256":
+        if (
+            simple_observable_key is not None
+            and simple_observable_key.lower() == "file.hashes.sha-256"
+        ):
             hashes.append({"algorithm": "SHA-256", "hash": simple_observable_value})
         if "hashes" in observable_data:
             for key, value in observable_data["hashes"].items():
