@@ -1004,12 +1004,6 @@ class StixCoreRelationship:
         if stix_relation is not None:
 
             # TODO: Compatibility with OpenCTI 3.X to be REMOVED
-            if "report_types" not in stix_relation:
-                stix_relation["report_types"] = (
-                    [stix_relation["x_opencti_report_class"]]
-                    if "x_opencti_report_class" in stix_relation
-                    else None
-                )
             if "confidence" not in stix_relation:
                 stix_relation["confidence"] = (
                     stix_relation["x_opencti_weight"]
@@ -1029,9 +1023,9 @@ class StixCoreRelationship:
                     else None
                 )
             if stix_relation["relationship_type"] == "gathering":
-                stix_relation["rrelationship_type"] = "part-of"
+                stix_relation["relationship_type"] = "part-of"
             elif stix_relation["relationship_type"] == "localization":
-                stix_relation["rrelationship_type"] = "located-at"
+                stix_relation["relationship_type"] = "located-at"
 
             return self.create(
                 fromId=stix_relation["source_ref"],
