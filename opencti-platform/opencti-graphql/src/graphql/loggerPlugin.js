@@ -1,4 +1,4 @@
-import { filter, head, isEmpty, isNil, includes } from 'ramda';
+import { filter, head, isEmpty, isNil, includes, dissoc } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql';
 import nconf from 'nconf';
 import { logger } from '../config/conf';
@@ -72,7 +72,7 @@ export default {
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
           if (includes(callError.name, ['AuthRequired', 'AuthFailure', 'ForbiddenAccess'])) {
-            logger.warn(API_CALL_MESSAGE, Object.assign(callMetaData, { error }));
+            logger.warn(API_CALL_MESSAGE, Object.assign(dissoc('variables', callMetaData), { error }));
           } else {
             logger.error(API_CALL_MESSAGE, Object.assign(callMetaData, { error }));
           }
