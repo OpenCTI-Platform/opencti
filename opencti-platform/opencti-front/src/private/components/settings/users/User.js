@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
-import { Edit, Security } from '@material-ui/icons';
+import {Edit, Group, Security} from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import AreaChart from 'recharts/lib/chart/AreaChart';
@@ -231,7 +231,7 @@ class UserComponent extends Component {
                         button={false}
                       >
                         <ListItemIcon>
-                          <Security color="primary" />
+                          <Group color="primary" />
                         </ListItemIcon>
                         <ListItemText
                           primary={groupEdge.node.name}
