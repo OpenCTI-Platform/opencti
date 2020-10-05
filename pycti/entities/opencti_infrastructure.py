@@ -374,7 +374,7 @@ class Infrastructure:
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
                 infrastructure_types=stix_object["infrastructure_types"]
                 if "infrastructure_types" in stix_object
-                else "",
+                else None,
                 first_seen=stix_object["first_seen"]
                 if "first_seen" in stix_object
                 else None,
