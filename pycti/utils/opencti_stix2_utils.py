@@ -74,6 +74,7 @@ class OpenCTIStix2Utils:
             properties.ReferenceProperty(valid_types="identity", spec_version="2.1"),
         ),
         ("x_opencti_score", properties.IntegerProperty()),
+        ("x_opencti_create_indicator", properties.BooleanProperty()),
         ("labels", properties.ListProperty(properties.StringProperty)),
         ("external_references", properties.ListProperty(ExternalReference)),
         (
