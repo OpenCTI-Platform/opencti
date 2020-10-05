@@ -2821,6 +2821,7 @@ input InfrastructureAddInput {
   stix_id: String
   name: String! @constraint(minLength: 2)
   description: String
+  aliases: [String]
   infrastructure_types: [String]
   first_seen: DateTime
   last_seen: DateTime
