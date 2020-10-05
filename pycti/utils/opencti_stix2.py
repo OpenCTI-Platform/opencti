@@ -706,7 +706,6 @@ class OpenCTIStix2:
                 x_opencti_score=stix_object["x_opencti_score"]
                 if "x_opencti_score" in stix_object
                 else None,
-                simp=stix_object["value"],
                 createdBy=extras["created_by_id"]
                 if "created_by_id" in extras
                 else None,
@@ -719,6 +718,9 @@ class OpenCTIStix2:
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
                 else [],
+                createIndicator=stix_object["x_opencti_create_indicator"]
+                if "x_opencti_create_indicator" in stix_object
+                else None,
                 update=update,
             )
         else:
