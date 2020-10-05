@@ -90,7 +90,7 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Compone
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created.width }}
               >
-                {fd(node.created)}
+                {fd(node.first_observed || node.published || node.created)}
               </div>
               <div
                 className={classes.bodyItem}
