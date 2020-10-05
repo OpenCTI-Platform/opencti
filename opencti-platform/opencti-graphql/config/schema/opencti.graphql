@@ -6937,7 +6937,6 @@ enum StixCoreRelationshipsOrdering {
   toValidFrom
   toValidUntil
   toPatternType
-  toCreatedAt
 }
 enum StixCoreRelationshipsFilter {
   created
@@ -6948,7 +6947,6 @@ enum StixCoreRelationshipsFilter {
   markedBy
   labelledBy
   toName
-  toCreatedAt
   toPatternType
   toMainObservableType
 }
