@@ -2832,6 +2832,7 @@ input InfrastructureAddInput {
   objectMarking: [String]
   objectLabel: [String]
   externalReferences: [String]
+  killChainPhases: [String]
   created: DateTime
   modified: DateTime
   clientMutationId: String
