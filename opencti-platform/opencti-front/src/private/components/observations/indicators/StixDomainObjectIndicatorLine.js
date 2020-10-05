@@ -94,9 +94,9 @@ class StixDomainObjectIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toCreatedAt.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
-                {nsd(node.from.created_at)}
+                {nsd(node.created_at)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -154,6 +154,7 @@ const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
         description
         confidence
         inferred
+        created_at
         from {
           ... on Indicator {
             id
@@ -226,7 +227,7 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toCreatedAt.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

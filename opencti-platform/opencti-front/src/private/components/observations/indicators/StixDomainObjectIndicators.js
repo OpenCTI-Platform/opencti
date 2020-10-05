@@ -26,7 +26,7 @@ class StixDomainObjectIndicators extends Component {
       `view-indicators-${props.stixDomainObjectId}`,
     );
     this.state = {
-      sortBy: propOr('toCreatedAt', 'sortBy', params),
+      sortBy: propOr('created_at', 'sortBy', params),
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
@@ -135,7 +135,7 @@ class StixDomainObjectIndicators extends Component {
         width: '15%',
         isSortable: false,
       },
-      toCreatedAt: {
+      created_at: {
         label: 'Creation date',
         width: '15%',
         isSortable: true,
@@ -201,7 +201,7 @@ class StixDomainObjectIndicators extends Component {
       </ListLines>
     );
   }
-
+  created_at
   render() {
     const { stixDomainObjectId, relationshipType } = this.props;
     const {
