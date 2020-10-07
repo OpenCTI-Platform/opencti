@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { createHash } from 'crypto';
-import { assoc, dissoc, invertObj, map, pipe, propOr, filter, values } from 'ramda';
+import { assoc, dissoc, map, pipe, filter, values } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -9,7 +9,8 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  escape, internalLoadById,
+  escape,
+  internalLoadById,
   listEntities,
   listToEntitiesThroughRelation,
   loadById,
@@ -26,9 +27,7 @@ import { askEnrich } from './enrichment';
 import { FunctionalError } from '../config/errors';
 import { createStixPattern } from '../python/pythonBridge';
 import { checkObservableSyntax } from '../utils/syntax';
-import { connectorsForExport } from './connector';
-import { findById as findMarkingDefinitionById } from './markingDefinition';
-import { generateFileExportName, upload } from '../database/minio';
+import { upload } from '../database/minio';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -50,9 +49,9 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from 
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import {ENTITY_TYPE_INDICATOR, stixDomainObjectOptions} from '../schema/stixDomainObject';
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
-import {askEntityExport, askListExport, exportTransformFilters} from "./stixCoreObject";
+import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 
 export const findById = (stixCyberObservableId) => {
   return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);

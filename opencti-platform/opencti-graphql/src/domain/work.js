@@ -54,7 +54,7 @@ export const worksForSource = async (sourceId, args = {}) => {
 };
 
 export const loadExportWorksAsProgressFiles = async (sourceId) => {
-  const works = await worksForSource(sourceId, CONNECTOR_INTERNAL_EXPORT_FILE, { first: 200 });
+  const works = await worksForSource(sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
   const onlyProgressWorks = R.filter((w) => w.status === 'progress', works);
   return R.map((item) => workToExportFile(item), onlyProgressWorks);
 };

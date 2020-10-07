@@ -35,7 +35,7 @@ const FileImportViewerBase = ({
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
-  const isContainer = (entity && entity.entity_type !== 'Report');
+  const isContainer = entity.entity_type !== 'Report';
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {

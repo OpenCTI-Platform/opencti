@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
 import conf from '../config/conf';
-import { DatabaseError, FunctionalError } from '../config/errors';
+import { DatabaseError } from '../config/errors';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
