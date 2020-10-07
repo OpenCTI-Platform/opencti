@@ -151,6 +151,7 @@ class RootTool extends Component {
                         <FileManager
                           {...routeProps}
                           id={toolId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.tool}
                         />

@@ -28,9 +28,7 @@ scalar Upload
 enum Status {
   wait
   progress
-  partial
   complete
-  error
 }
 enum Capabilities {
   CONNECTORAPI
@@ -243,6 +241,10 @@ input AttributeAddInput {
   value: String!
   clientMutationId: String
 }
+input WorkErrorInput {
+  error: String
+  source: String
+}
 input AttributeEditInput {
   type: String!
   value: String!
@@ -267,20 +269,27 @@ type SubType {
 }
 
 ############## Files
-type Job {
-  id: ID!
-  messages: [String]
-  job_status: Status!
-  created_at: DateTime!
-  updated_at: DateTime!
+type WorkMessage {
+  timestamp: DateTime
+  message: String,
+  sequence: Int
+  source: String
 }
 type Work {
   id: ID!
-  jobs: [Job]
-  status: Status!
+  name: String
+  user: User
   connector: Connector
-  work_type: String!
-  created_at: DateTime!
+  timestamp: DateTime!
+  status: Status!
+  event_source_id: String
+  received_time: DateTime
+  processed_time: DateTime
+  import_expected_number: Int
+  import_last_processed: DateTime
+  import_processed_number: Int
+  messages: [WorkMessage]
+  errors: [WorkMessage]
 }
 type WorkEdge {
   cursor: String!
@@ -290,15 +299,10 @@ type WorkConnection {
   pageInfo: PageInfo!
   edges: [WorkEdge]
 }
-enum FileCategory {
-  import
-  export
-}
 type FileMetadata {
-  category: FileCategory!
   encoding: String
   mimetype: String
-  listargs: String
+  list_filters: String
 }
 type File {
   id: ID!
@@ -318,7 +322,6 @@ type FileConnection {
   pageInfo: PageInfo!
   edges: [FileEdge]
 }
-
 ###### ENTITIES
 
 interface BasicObject {
@@ -559,6 +562,7 @@ type Connector implements BasicObject & InternalObject {
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
+  works: [Work]
 }
 
 ############## Workspaces
@@ -7416,7 +7420,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  stixDomainObjectsExportFiles(first: Int, type: String!, context: String): FileConnection
+  stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection
   @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     type: String
@@ -8068,6 +8072,14 @@ type AttributeEditMutations {
   update(input: AttributeEditInput): Attribute
 }
 
+type WorkEditMutations {
+  delete: ID!
+  reportExpectation(error: WorkErrorInput): Work!
+  addExpectations(expectations: Int): Work!
+  toReceived(message: String): Work!
+  toProcessed(message: String): Work!
+}
+
 ######## INTERNAL OBJECT ENTITIES
 
 type SettingsEditMutations {
@@ -8425,12 +8437,13 @@ type Mutation {
   inferenceDisable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
-  deleteWork(id: ID!): ID! @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  initiateJob(workId: ID!): Job @auth(for: [CONNECTORAPI])
-  updateJob(jobId: ID!, status: Status!, messages: [String]): Job @auth(for: [CONNECTORAPI])
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
-  askJobImport(fileName: ID!, context: String): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+  askJobImport(fileName: ID!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
+
+  ### WORK
+  workAdd(connectorId: String!, friendlyName: String): Work! @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String
@@ -8487,7 +8500,7 @@ type Mutation {
     mergeAliases: Boolean
   ): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
-  stixDomainObjectsExportPush(type: String!, file: Upload!, context: String, listArgs: String): Boolean
+  stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
   @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   attackPatternEdit(id: ID!): AttackPatternEditMutations

@@ -95,6 +95,7 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
 
 // region global variables
 export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
@@ -1065,6 +1066,15 @@ const transformRawRelationsToAttributes = (data, orientation) => {
     }))
   );
 };
+
+export const loadByIdFullyResolved = async (id, type, args = {}) => {
+  const typeOpts = type ? args : R.assoc('type', type, args);
+  const element = await internalLoadById(id, typeOpts);
+  if (!element) return null;
+  // eslint-disable-next-line no-use-before-define
+  const deps = await findElementDependencies(element, typeOpts);
+  return R.mergeRight(element, deps);
+};
 const findElementDependencies = async (instance, args = {}) => {
   const { onlyMarking = false, orientation = 'from' } = args;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
@@ -1078,11 +1088,11 @@ const findElementDependencies = async (instance, args = {}) => {
     }, relations.edges);
   });
   let rawData;
-  const data = { i_fully_resolved: true };
-  if (isRelation) {
+  const data = {};
+  if (isRelation && !onlyMarking) {
     const [rFrom, rTo, rData] = await Promise.all([
-      internalLoadById(instance.fromId),
-      internalLoadById(instance.toId),
+      loadByIdFullyResolved(instance.fromId, null, { onlyMarking: true }),
+      loadByIdFullyResolved(instance.toId, null, { onlyMarking: true }),
       rawDataPromise,
     ]);
     data.from = rFrom;
@@ -1115,13 +1125,6 @@ const findElementDependencies = async (instance, args = {}) => {
     data[key] = R.map((v) => v.target, values);
   }
   return data;
-};
-export const loadByIdFullyResolved = async (id, type, args = {}) => {
-  const typeOpts = type ? args : R.assoc('type', type, args);
-  const element = await internalLoadById(id, typeOpts);
-  if (!element) return null;
-  const deps = await findElementDependencies(element, typeOpts);
-  return R.mergeRight(element, deps);
 };
 export const stixElementLoader = async (id, type) => {
   const element = await loadByIdFullyResolved(id, type);
@@ -1797,7 +1800,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     const targetStandardId = generateStandardId(instance.entity_type, updatedInstance);
     if (targetStandardId !== instance.standard_id) {
       const existingEntity = await loadByIdFullyResolved(targetStandardId);
-      if (existingEntity && isStixCoreObject(existingEntity.entity_type)) {
+      if (existingEntity && isStixCyberObservable(existingEntity.entity_type)) {
         mergingEntity = existingEntity;
         participantIds.push(targetStandardId);
       } else if (existingEntity) {
@@ -1846,18 +1849,19 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 // endregion
 
 // region mutation relation
-const upsertRelation = async (user, relationship, data) => {
+const upsertRelation = async (user, relationId, type, data) => {
+  let updatedRelation = await loadByIdFullyResolved(relationId, type, { onlyMarking: true });
   if (isNotEmptyField(data.stix_id)) {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
-    return patchAttributeRaw(user, relationship, patch, { operation: UPDATE_OPERATION_ADD });
+    updatedRelation = await patchAttributeRaw(user, updatedRelation, patch, { operation: UPDATE_OPERATION_ADD });
   }
-  if (isStixSightingRelationship(relationship.entity_type)) {
+  if (isStixSightingRelationship(type)) {
     if (data.attribute_count) {
-      const patch = { attribute_count: relationship.attribute_count + data.attribute_count };
-      return patchAttributeRaw(user, relationship, patch, { operation: UPDATE_OPERATION_ADD });
+      const patch = { attribute_count: updatedRelation.attribute_count + data.attribute_count };
+      updatedRelation = await patchAttributeRaw(user, updatedRelation, patch);
     }
   }
-  return relationship;
+  return R.assoc('i_upserted', true, updatedRelation);
 };
 const addInnerRelation = async (user, from, to, type, opts) => {
   const targets = Array.isArray(to) ? to : [to];
@@ -1908,7 +1912,7 @@ const createRelationRaw = async (user, input, opts = {}) => {
     existingRelationship = R.head(existingRelationships.edges).node;
   }
   if (existingRelationship) {
-    return upsertRelation(user, existingRelationship, input);
+    return upsertRelation(user, existingRelationship.id, relationshipType, input);
   }
   // 05. Prepare the relation to be created
   const today = now();
@@ -2082,8 +2086,7 @@ export const createRelation = async (user, input, opts = {}) => {
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
-      const existingRelationship = loadById(err.data.id, input.relationship_type);
-      return upsertRelation(user, existingRelationship, input);
+      return upsertRelation(user, err.data.id, input.relationship_type, input);
     }
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Operation still in progress (redis lock)', { lockIds });
@@ -2108,8 +2111,9 @@ export const createRelations = async (user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-const upsertEntity = async (user, entity, type, data) => {
-  let updatedEntity = entity;
+const upsertEntity = async (user, entityId, type, data) => {
+  // We need to reload the existing entity with the markings
+  let updatedEntity = await loadByIdFullyResolved(entityId, type, { onlyMarking: true });
   // Upsert the stix ids
   if (isNotEmptyField(data.stix_id)) {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
@@ -2120,7 +2124,7 @@ const upsertEntity = async (user, entity, type, data) => {
     const { name } = data;
     const key = resolveAliasesField(type);
     const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (normalizeName(entity.name) !== normalizeName(name)) aliases.push(name);
+    if (normalizeName(updatedEntity.name) !== normalizeName(name)) aliases.push(name);
     const patch = { [key]: aliases };
     updatedEntity = await patchAttributeRaw(user, updatedEntity, patch, { operation: UPDATE_OPERATION_ADD });
   }
@@ -2150,7 +2154,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   const existingEntities = await internalFindByIds(participantIds, { type });
   if (existingEntities.length > 0) {
     if (existingEntities.length === 1) {
-      return upsertEntity(user, R.head(existingEntities), type, input);
+      return upsertEntity(user, R.head(existingEntities).id, type, input);
     }
     // Sometimes multiple entities can match
     // Looking for aliasA, aliasB, find in different entities for example
@@ -2164,7 +2168,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
       const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
       const filteredAliases = R.filter((i) => !concurrentAliases.includes(i), input[key]);
       const inputAliases = Object.assign(input, { [key]: filteredAliases });
-      return upsertEntity(user, existingByStandard, type, inputAliases);
+      return upsertEntity(user, existingByStandard.id, type, inputAliases);
     }
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, existingEntities);
@@ -2310,8 +2314,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
-      const existingEntityRefreshed = await loadById(err.data.id, type);
-      return upsertEntity(user, existingEntityRefreshed, type, resolvedInput);
+      return upsertEntity(user, err.data.id, type, resolvedInput);
     }
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Operation still in progress (redis lock)', { participantIds });

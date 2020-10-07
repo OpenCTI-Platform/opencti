@@ -21,10 +21,12 @@ import {
   stixCyberObservableExportPush,
   stixCyberObservableDistribution,
   stixCyberObservableDistributionByEntity,
+  stixCyberObservablesExportPush,
+  stixCyberObservablesExportAsk,
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { workForEntity } from '../domain/work';
+import { worksForSource } from '../domain/work';
 import { connectorsForEnrichment } from '../domain/enrichment';
 import { convertDataToStix } from '../database/stix';
 import { stixCoreRelationships } from '../domain/stixCoreObject';
@@ -45,8 +47,7 @@ const stixCyberObservableResolvers = {
       }
       return stixCyberObservableDistribution(args);
     },
-    stixCyberObservablesExportFiles: (_, { first, context }) =>
-      filesListing(first, 'export', 'stix-observable', null, context),
+    stixCyberObservablesExportFiles: (_, { first }) => filesListing(first, 'export/stix-observable/'),
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
   StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
@@ -63,7 +64,7 @@ const stixCyberObservableResolvers = {
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
     indicators: (stixCyberObservable) => indicators(stixCyberObservable.id),
-    jobs: (stixCyberObservable, args) => workForEntity(stixCyberObservable.id, args),
+    jobs: (stixCyberObservable, args) => worksForSource(stixCyberObservable.id, args),
     connectors: (stixCyberObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixCyberObservable.entity_type, onlyAlive),
     stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
@@ -79,13 +80,14 @@ const stixCyberObservableResolvers = {
       relationsAdd: ({ input }) => stixCyberObservableAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixCyberObservableDeleteRelation(user, id, toId, relationshipType),
-      exportAsk: (args) => stixCyberObservableExportAsk(assoc('stixCyberObservableId', id, args)),
-      askEnrichment: ({ connectorId }) => stixCyberObservableAskEnrichment(id, connectorId),
+      exportAsk: (args) => stixCyberObservableExportAsk(user, assoc('stixCyberObservableId', id, args)),
+      exportPush: ({ file }) => stixCyberObservableExportPush(user, id, file),
+      askEnrichment: ({ connectorId }) => stixCyberObservableAskEnrichment(user, id, connectorId),
     }),
     stixCyberObservableAdd: (_, args, { user }) => addStixCyberObservable(user, args),
-    stixCyberObservablesExportAsk: (_, args) => stixCyberObservableExportAsk(args),
-    stixCyberObservablesExportPush: (_, { file, context, listArgs }, { user }) =>
-      stixCyberObservableExportPush(user, null, file, context, listArgs),
+    stixCyberObservablesExportAsk: (_, args, { user }) => stixCyberObservablesExportAsk(user, args),
+    stixCyberObservablesExportPush: (_, { file, listArgs }, { user }) =>
+      stixCyberObservablesExportPush(user, file, listArgs),
   },
   Subscription: {
     stixCyberObservable: {

@@ -169,6 +169,7 @@ class RootInfrastructure extends Component {
                         <FileManager
                           {...routeProps}
                           id={infrastructureId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.infrastructure}
                         />

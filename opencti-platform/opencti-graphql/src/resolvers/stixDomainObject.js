@@ -19,6 +19,8 @@ import {
   stixDomainObjectExportAsk,
   stixDomainObjectExportPush,
   stixDomainObjectImportPush,
+  stixDomainObjectsExportPush,
+  stixDomainObjectsExportAsk,
 } from '../domain/stixDomainObject';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -39,7 +41,7 @@ const stixDomainObjectResolvers = {
       }
       return [];
     },
-    stixDomainObjectsExportFiles: (_, { type, first, context }) => filesListing(first, 'export', type, null, context),
+    stixDomainObjectsExportFiles: (_, { type, first }) => filesListing(first, `export/${type}/`),
   },
   StixDomainObjectsOrdering: stixDomainObjectOptions.StixDomainObjectsOrdering,
   StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
@@ -51,8 +53,8 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (entity, { first }) => filesListing(first, 'import', entity.entity_type, entity),
-    exportFiles: (entity, { first }) => filesListing(first, 'export', entity.entity_type, entity),
+    importFiles: (entity, { first }) => filesListing(first, `import/${entity.entity_type}/${entity.id}/`),
+    exportFiles: (entity, { first }) => filesListing(first, `export/${entity.entity_type}/${entity.id}/`),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, { user }) => ({
@@ -65,15 +67,15 @@ const stixDomainObjectResolvers = {
       relationsAdd: ({ input }) => stixDomainObjectAddRelations(user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) =>
         stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
-      importPush: ({ file }) => stixDomainObjectImportPush(user, null, id, file),
-      exportAsk: (args) => stixDomainObjectExportAsk(assoc('stixDomainObjectId', id, args)),
-      exportPush: ({ file }) => stixDomainObjectExportPush(user, null, id, file),
+      importPush: ({ file }) => stixDomainObjectImportPush(user, id, file),
+      exportAsk: (args) => stixDomainObjectExportAsk(user, assoc('stixDomainObjectId', id, args)),
+      exportPush: ({ file }) => stixDomainObjectExportPush(user, id, file),
     }),
     stixDomainObjectsDelete: (_, { id }, { user }) => stixDomainObjectsDelete(user, id),
     stixDomainObjectAdd: (_, { input }, { user }) => addStixDomainObject(user, input),
-    stixDomainObjectsExportAsk: (_, args) => stixDomainObjectExportAsk(args),
-    stixDomainObjectsExportPush: (_, { type, file, context, listArgs }, { user }) =>
-      stixDomainObjectExportPush(user, type, null, file, context, listArgs),
+    stixDomainObjectsExportAsk: (_, args, { user }) => stixDomainObjectsExportAsk(user, args),
+    stixDomainObjectsExportPush: (_, { type, file, listFilters }, { user }) =>
+      stixDomainObjectsExportPush(user, type, file, listFilters),
   },
   Subscription: {
     stixDomainObject: {

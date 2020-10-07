@@ -6,14 +6,34 @@ import yaml
 import pika
 import os
 import time
+import queue
 import json
 import base64
 import threading
 import ctypes
 
 from requests.exceptions import RequestException
-from itertools import groupby
 from pycti import OpenCTIApiClient
+
+ACK_QUEUE = queue.Queue()
+
+
+class ReportQueueProcessor(threading.Thread):
+    def __init__(self, api):
+        threading.Thread.__init__(self)
+        self.api = api
+
+    def run(self):
+        logging.info("Listening to ack/nack actions")
+        while True:
+            msg = ACK_QUEUE.get(block=True)
+            work_id = msg["work_id"]
+            if msg["type"] == "ack":
+                self.api.work.report_expectation(work_id, None)
+            else:
+                error = msg["error"]
+                content = msg["content"]
+                self.api.work.report_expectation(work_id, {"error": error, "source": content})
 
 
 class Consumer(threading.Thread):
@@ -94,13 +114,35 @@ class Consumer(threading.Thread):
             self.pika_connection.sleep(0.05)
         logging.info("Message processed, thread terminated")
 
+    def report_error(self, work_id, content, error):
+        # Add in queue
+        ACK_QUEUE.put(
+            {
+                "type": "nack",
+                "work_id": work_id,
+                "content": content,
+                "error": str(error),
+            }
+        )
+
+    def report_success(self, work_id):
+        # Add in queue
+        ACK_QUEUE.put(
+            {
+                "type": "ack",
+                "work_id": work_id,
+            }
+        )
+
     # Data handling
     def data_handler(self, connection, channel, delivery_tag, data):
+        # Set the API headers
+        applicant_id = data["applicant_id"]
+        self.api.set_applicant_id_header(applicant_id)
+        work_id = data["work_id"] if "work_id" in data else None
+        # Execute the import
         self.processing_count += 1
-        job_id = data["job_id"]
-        token = None
-        if "token" in data:
-            token = data["token"]
+        content = "Unparseable"
         try:
             content = base64.b64decode(data["content"]).decode("utf-8")
             types = (
@@ -109,20 +151,12 @@ class Consumer(threading.Thread):
                 else None
             )
             update = data["update"] if "update" in data else False
-            if token:
-                self.api.set_token(token)
-            imported_data = self.api.stix2.import_bundle_from_json(
-                content, update, types
-            )
-            self.api.set_token(self.opencti_token)
-            if job_id is not None:
-                messages = []
-                by_types = groupby(imported_data, key=lambda x: x["type"])
-                for key, grp in by_types:
-                    messages.append(str(len(list(grp))) + " imported " + key)
-                self.api.job.update_job(job_id, "complete", messages)
+            self.api.stix2.import_bundle_from_json(content, update, types)
+            # Ack the message
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
+            if work_id is not None:
+                self.report_success(work_id)
             return True
         except RequestException as re:
             logging.error("A connection error occurred: { " + str(re) + " }")
@@ -133,8 +167,8 @@ class Consumer(threading.Thread):
             cb = functools.partial(self.nack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
             return False
-        except Exception as e:
-            error = str(e)
+        except Exception as ex:
+            error = str(ex)
             if "UnsupportedError" not in error and self.processing_count <= 5:
                 time.sleep(2)
                 logging.info(
@@ -146,12 +180,12 @@ class Consumer(threading.Thread):
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
             else:
-                logging.error(str(e))
+                logging.error(str(ex))
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
-                if job_id is not None:
-                    self.api.job.update_job(job_id, "error", [str(e)])
+                if work_id is not None:
+                    self.report_error(work_id, content, ex)
                 return False
 
     def run(self):
@@ -188,6 +222,10 @@ class Worker:
         self.api = OpenCTIApiClient(
             self.opencti_url, self.opencti_token, self.log_level
         )
+
+        # Start the ack/nack queue processor
+        processor = ReportQueueProcessor(self.api)
+        processor.start()
 
         # Configure logger
         numeric_level = getattr(logging, self.log_level.upper(), None)

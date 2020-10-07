@@ -131,6 +131,7 @@ class RootRegion extends Component {
                         <FileManager
                           {...routeProps}
                           id={regionId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.region}
                         />

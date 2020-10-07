@@ -38,13 +38,7 @@ export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = f
     filter((c) => (onlyAlive ? c.active === true : true)),
     filter((c) => (onlyAuto ? c.auto === true : true)),
     // eslint-disable-next-line prettier/prettier
-    filter((c) =>
-      scope
-        ? includes(
-            scope.toLowerCase(),
-            map((s) => s.toLowerCase(), c.connector_scope)
-          )
-        : true
+    filter((c) => scope ? includes(scope.toLowerCase(), map((s) => s.toLowerCase(), c.connector_scope)) : true
     )
   )(connects);
 };

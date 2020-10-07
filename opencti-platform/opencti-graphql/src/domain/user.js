@@ -50,7 +50,12 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
 } from '../schema/internalRelationship';
-import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID, REL_INDEX_PREFIX } from '../schema/general';
+import {
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  OPENCTI_ADMIN_UUID,
+  OPENCTI_SYSTEM_UUID,
+  REL_INDEX_PREFIX,
+} from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { generateStandardId } from '../schema/identifier';
 
@@ -81,7 +86,11 @@ export const setAuthenticationCookie = (token, res) => {
 };
 // endregion
 
-export const SYSTEM_USER = { name: 'system' };
+export const SYSTEM_USER = {
+  id: OPENCTI_SYSTEM_UUID,
+  name: 'system',
+  origin: { source: 'internal', user_id: OPENCTI_SYSTEM_UUID },
+};
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 

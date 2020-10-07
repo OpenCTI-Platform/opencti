@@ -49,13 +49,15 @@ const FileLineDeleteMutation = graphql`
 
 const FileLineAskDeleteMutation = graphql`
   mutation FileLineAskDeleteMutation($workId: ID!) {
-    deleteWork(id: $workId)
+    workEdit(id: $workId) {
+      delete
+    }
   }
 `;
 
 const FileLineImportAskJobMutation = graphql`
-  mutation FileLineImportAskJobMutation($fileName: ID!, $context: String) {
-    askJobImport(fileName: $fileName, context: $context) {
+  mutation FileLineImportAskJobMutation($fileName: ID!) {
+    askJobImport(fileName: $fileName) {
       ...FileLine_file
     }
   }
@@ -65,7 +67,7 @@ class FileLineComponent extends Component {
   askForImportJob() {
     commitMutation({
       mutation: FileLineImportAskJobMutation,
-      variables: { fileName: this.props.file.id, context: this.props.context },
+      variables: { fileName: this.props.file.id },
       onCompleted: () => {
         MESSAGING$.notifySuccess('Import successfully asked');
       },
@@ -119,7 +121,7 @@ class FileLineComponent extends Component {
     const fileName = propOr('', 'name', file).includes('_')
       ? pipe(split('_'), drop(1), join('_'))(file.name)
       : file.name;
-    const toolTip = pathOr('', ['metaData', 'listargs'], file);
+    const toolTip = pathOr('', ['metaData', 'list_filters'], file);
     return (
       <div>
         <ListItem
@@ -155,8 +157,7 @@ class FileLineComponent extends Component {
                     disabled={isProgress || !isImportActive()}
                     onClick={this.askForImportJob.bind(this)}
                     aria-haspopup="true"
-                    color="primary"
-                  >
+                    color="primary">
                     <ProgressUpload />
                   </IconButton>
                 </span>
@@ -171,8 +172,7 @@ class FileLineComponent extends Component {
                     disabled={isProgress}
                     href={`/storage/get/${file.id}`}
                     aria-haspopup="true"
-                    color="primary"
-                  >
+                    color="primary">
                     <GetAppOutlined />
                   </IconButton>
                 </span>
@@ -197,8 +197,7 @@ class FileLineComponent extends Component {
                   <IconButton
                     disabled={isProgress}
                     color="primary"
-                    onClick={this.handleRemoveFile.bind(this, file.id)}
-                  >
+                    onClick={this.handleRemoveFile.bind(this, file.id)}>
                     <DeleteOutlined />
                   </IconButton>
                 </span>
@@ -221,7 +220,6 @@ FileLineComponent.propTypes = {
   dense: PropTypes.bool,
   disableImport: PropTypes.bool,
   directDownload: PropTypes.bool,
-  context: PropTypes.string,
 };
 
 const FileLine = createFragmentContainer(FileLineComponent, {
@@ -233,9 +231,8 @@ const FileLine = createFragmentContainer(FileLineComponent, {
       lastModified
       lastModifiedSinceMin
       metaData {
-        category
         mimetype
-        listargs
+        list_filters
       }
       ...FileWork_file
     }

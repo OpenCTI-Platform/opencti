@@ -131,6 +131,7 @@ class RootCity extends Component {
                         <FileManager
                           {...routeProps}
                           id={cityId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.city}
                         />

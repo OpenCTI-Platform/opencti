@@ -147,7 +147,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
       variables: {
         type: this.props.exportEntityType,
         format: values.format,
-        exportType: 'all',
+        exportType: 'full',
         maxMarkingDefinition,
         context,
         ...paginationOptions,
@@ -168,9 +168,9 @@ class StixDomainObjectsExportCreationComponent extends Component {
       flatten(map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
+    // eslint-disable-next-line max-len
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
-
     return (
       <div className={classes.createButton}>
         <Tooltip

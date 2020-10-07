@@ -165,6 +165,7 @@ class RootCampaign extends Component {
                         <FileManager
                           {...routeProps}
                           id={campaignId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.campaign}
                         />

@@ -1,18 +1,18 @@
 import { deleteFile, filesListing } from '../database/minio';
 import { askJobImport, uploadImport } from '../domain/file';
-import { loadFileWorks } from '../domain/work';
+import { worksForSource } from '../domain/work';
 
 const fileResolvers = {
   Query: {
-    importFiles: (entity, { first }) => filesListing(first, 'import'),
+    importFiles: (entity, { first }) => filesListing(first, 'import/global/'),
   },
   File: {
-    works: (file) => loadFileWorks(file.id),
+    works: (file) => worksForSource(file.id),
   },
   Mutation: {
     uploadImport: (_, { file }, { user }) => uploadImport(user, file),
     deleteImport: (_, { fileName }, { user }) => deleteFile(user, fileName),
-    askJobImport: (_, { fileName, context }, { user }) => askJobImport(user, fileName, context),
+    askJobImport: (_, { fileName }, { user }) => askJobImport(user, fileName),
   },
 };
 

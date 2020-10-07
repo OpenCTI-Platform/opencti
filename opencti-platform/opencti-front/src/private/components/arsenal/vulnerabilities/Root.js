@@ -159,6 +159,7 @@ class RootVulnerability extends Component {
                         <FileManager
                           {...routeProps}
                           id={vulnerabilityId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.vulnerability}
                         />

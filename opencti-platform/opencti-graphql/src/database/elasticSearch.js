@@ -83,7 +83,6 @@ const numericOrBooleanFields = [
   'x_opencti_order',
 ];
 
-export const INDEX_JOBS = 'opencti_jobs';
 export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_to`,
@@ -101,7 +100,6 @@ export const DATA_INDICES = [
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
-  INDEX_JOBS,
 ];
 export const PLATFORM_INDICES = [INDEX_HISTORY, ...DATA_INDICES];
 export const ENTITIES_INDICES = [

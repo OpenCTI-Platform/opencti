@@ -3,7 +3,6 @@ import { internalLoadById } from '../../../src/database/grakn';
 import {
   deleteFile,
   downloadFile,
-  extractName,
   filesListing,
   generateFileExportName,
   getMinIOVersion,
@@ -30,11 +29,7 @@ describe('Minio basic and utils', () => {
     expect(minioVersion).toEqual(expect.stringContaining('RELEASE.20'));
   });
   it('should simple name correctly generated', async () => {
-    let fileName = extractName(null, null, 'test-filename');
-    expect(fileName).toEqual('global/test-filename');
-    fileName = extractName('Malware', null, 'test-filename');
-    expect(fileName).toEqual('malware/lists/test-filename');
-    fileName = generateFileExportName('application/json', { name: 'ExportFileStix' });
+    let fileName = generateFileExportName('application/json', { name: 'ExportFileStix' });
     expect(fileName).toEqual(expect.stringContaining('_(ExportFileStix)_null.json'));
     fileName = generateFileExportName('application/json', { name: 'ExportFileStix' }, null, 'full');
     expect(fileName).toEqual(expect.stringContaining('_(ExportFileStix)_full.json'));
@@ -71,7 +66,7 @@ describe('Minio file listing', () => {
     const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     malwareId = malware.internal_id;
     exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
-    exportFileId = `export/malware/${malwareId}/${exportFileName}`;
+    exportFileId = `export/Malware/${malwareId}/${exportFileName}`;
     importFileId = `import/global/${exportFileName}`;
     importOpts = [API_URI, API_TOKEN, malwareId, exportFileName];
   });
@@ -85,7 +80,7 @@ describe('Minio file listing', () => {
   });
   it('should file listing', async () => {
     const entity = { id: malwareId };
-    let list = await filesListing(25, 'export', 'Malware', entity);
+    let list = await filesListing(25, `export/Malware/${entity.id}/`);
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     let file = head(list.edges).node;
@@ -94,11 +89,10 @@ describe('Minio file listing', () => {
     expect(file.size).toEqual(10485);
     expect(file.metaData).not.toBeNull();
     expect(file.metaData['content-type']).toEqual('application/octet-stream');
-    expect(file.metaData.category).toEqual('export');
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('text/plain');
-    list = await filesListing(25, 'import');
+    list = await filesListing(25, 'import/global/');
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;

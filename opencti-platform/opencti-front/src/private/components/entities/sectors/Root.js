@@ -132,6 +132,7 @@ class RootSector extends Component {
                         <FileManager
                           {...routeProps}
                           id={sectorId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.sector}
                         />

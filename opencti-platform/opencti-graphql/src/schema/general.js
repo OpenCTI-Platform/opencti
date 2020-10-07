@@ -14,8 +14,9 @@ export const BASE_TYPE_ENTITY = 'ENTITY';
 // General UUID
 export const OASIS_NAMESPACE = '00abedb4-aa42-466c-9c01-fed23315a9b7';
 export const OPENCTI_NAMESPACE = 'b639ff3b-00eb-42ed-aa36-a8dd6f8fb4cf';
-export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
 export const OPENCTI_PLATFORM_UUID = 'd06053cb-7123-404b-b092-6606411702d2';
+export const OPENCTI_ADMIN_UUID = '88ec0c6a-13ce-5e39-b486-354fe4a7084f';
+export const OPENCTI_SYSTEM_UUID = '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505';
 
 // Relations
 export const ABSTRACT_BASIC_RELATIONSHIP = 'basic-relationship';

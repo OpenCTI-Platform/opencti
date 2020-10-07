@@ -168,6 +168,7 @@ class RootThreatActor extends Component {
                         <FileManager
                           {...routeProps}
                           id={threatActorId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.threatActor}
                         />

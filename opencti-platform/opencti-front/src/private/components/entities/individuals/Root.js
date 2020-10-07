@@ -137,6 +137,7 @@ class RootIndividual extends Component {
                         <FileManager
                           {...routeProps}
                           id={individualId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.individual}
                         />

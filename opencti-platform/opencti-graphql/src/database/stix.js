@@ -121,7 +121,7 @@ export const stixDataConverter = (data) => {
   const entries = Object.entries(finalData);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
-    if (key.startsWith('i_') || val === null) {
+    if (key.startsWith('i_') || key === 'x_opencti_graph_data' || val === null) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
       // Stix but reserved keywords in Grakn
@@ -129,7 +129,7 @@ export const stixDataConverter = (data) => {
       filteredData[targetKey] = val;
     } else if (!isMultipleAttribute(key) && !key.endsWith('_refs')) {
       filteredData[key] = Array.isArray(val) ? R.head(val) : val;
-    } else if (!Array.isArray(val) || val.length > 0) {
+    } else {
       filteredData[key] = val;
     }
   }
@@ -214,13 +214,6 @@ export const convertDataToStix = (data, type) => {
   if (!finalData) {
     throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
   }
-  // if (eventType === 'update' && eventExtraData.key) {
-  //   return assoc(
-  //     eventExtraData.key,
-  //     includes(eventExtraData.key, multipleAttributes) ? eventExtraData.value : head(eventExtraData.value),
-  //     finalData
-  //   );
-  // }
   return finalData;
 };
 

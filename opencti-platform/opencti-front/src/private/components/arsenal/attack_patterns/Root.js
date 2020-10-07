@@ -171,6 +171,7 @@ class RootAttackPattern extends Component {
                           {...routeProps}
                           id={attackPatternId}
                           connectorsExport={props.connectorsForExport}
+                          connectorsImport={[]}
                           entity={props.attackPattern}
                         />
                       </React.Fragment>

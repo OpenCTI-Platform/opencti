@@ -100,6 +100,7 @@ class RootCourseOfAction extends Component {
                         <FileManager
                           {...routeProps}
                           id={courseOfActionId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.courseOfAction}
                         />

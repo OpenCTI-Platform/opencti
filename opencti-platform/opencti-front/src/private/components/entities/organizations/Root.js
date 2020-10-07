@@ -139,6 +139,7 @@ class RootOrganization extends Component {
                         <FileManager
                           {...routeProps}
                           id={organizationId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.organization}
                         />

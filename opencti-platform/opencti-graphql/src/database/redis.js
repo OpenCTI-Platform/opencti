@@ -3,7 +3,7 @@ import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { logger } from '../config/conf';
-import { generateLogMessage, relationTypeToInputName, utcDate } from './utils';
+import { generateLogMessage, relationTypeToInputName } from './utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import {
@@ -16,6 +16,7 @@ import {
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
 import { DatabaseError } from '../config/errors';
+import {isStixSightingRelationship} from "../schema/stixSightingRelationship";
 
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
@@ -179,11 +180,19 @@ const mapJSToStream = (event) => {
   });
   return cmdArgs;
 };
+const buildEvent = (eventType, user, markings, message, data) => {
+  return {
+    type: eventType,
+    origin: user.origin,
+    markings,
+    message,
+    data,
+  };
+};
 export const storeUpdateEvent = async (user, operation, instance, input) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     const convertedInput = stixDataConverter(input);
     // else just continue as usual
-    const now = utcDate().toISOString();
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
@@ -191,16 +200,10 @@ export const storeUpdateEvent = async (user, operation, instance, input) => {
       x_data_update: { [operation]: convertedInput },
     };
     // Generate the message
-    const message = generateLogMessage(operation, user, instance, convertedInput);
+    const message = generateLogMessage(operation, instance, convertedInput);
     // Build and send the event
-    const event = {
-      type: EVENT_TYPE_UPDATE,
-      markings: R.map((i) => i.standard_id, instance.objectMarking || []),
-      user: user.id || user.name,
-      timestamp: now,
-      data,
-      message,
-    };
+    const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
+    const event = buildEvent(EVENT_TYPE_UPDATE, user, markings, message, data);
     const client = await getClient();
     await client.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
@@ -209,7 +212,9 @@ export const storeUpdateEvent = async (user, operation, instance, input) => {
 export const storeCreateEvent = async (user, instance, input) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     // If relationship but not stix core
-    if (isStixRelationship(instance.entity_type) && !isStixCoreRelationship(instance.entity_type)) {
+    const isCore = isStixCoreRelationship(instance.entity_type);
+    const isSighting = isStixSightingRelationship(instance.entity_type);
+    if (isStixRelationship(instance.entity_type) && !isCore && !isSighting) {
       const field = relationTypeToInputName(instance.entity_type);
       return storeUpdateEvent(user, UPDATE_OPERATION_ADD, instance.from, { [field]: input.to });
     }
@@ -222,49 +227,37 @@ export const storeCreateEvent = async (user, instance, input) => {
     // Convert the input to data
     const data = buildStixData(Object.assign(identifiers, input));
     // Generate the message
-    const message = generateLogMessage(EVENT_TYPE_CREATE, user, instance, data);
+    const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
     // Build and send the event
-    const now = utcDate().toISOString();
-    const event = {
-      type: EVENT_TYPE_CREATE,
-      markings: data.object_marking_refs || [],
-      user: user.id || user.name,
-      timestamp: now,
-      data,
-      message,
-    };
+    const markings = data.object_marking_refs || [];
+    const event = buildEvent(EVENT_TYPE_CREATE, user, markings, message, data);
     const client = await getClient();
     await client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
   return true;
 };
 export const storeDeleteEvent = async (user, instance) => {
-  const now = utcDate().toISOString();
   if (isStixObject(instance.entity_type)) {
-    const message = generateLogMessage(EVENT_TYPE_DELETE, user, instance);
+    const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
       type: convertTypeToStixType(instance.entity_type),
     };
-    const event = {
-      type: EVENT_TYPE_DELETE,
-      markings: R.map((i) => i.standard_id, instance.objectMarking || []),
-      user: user.id || user.name,
-      timestamp: now,
-      data,
-      message,
-    };
+    const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
+    const event = buildEvent(EVENT_TYPE_DELETE, user, markings, message, data);
     const client = await getClient();
     return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
   if (isStixRelationship(instance.entity_type)) {
-    if (!isStixCoreRelationship(instance.entity_type)) {
+    const isCore = isStixCoreRelationship(instance.entity_type);
+    const isSighting = isStixSightingRelationship(instance.entity_type);
+    if (!isCore && !isSighting) {
       const field = relationTypeToInputName(instance.entity_type);
       return storeUpdateEvent(user, UPDATE_OPERATION_REMOVE, instance.from, { [field]: instance.to });
     }
     // for other deletion, just produce a delete event
-    const message = generateLogMessage(EVENT_TYPE_DELETE, user, instance);
+    const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
@@ -274,14 +267,8 @@ export const storeDeleteEvent = async (user, instance) => {
       target_ref: instance.to.standard_id,
       x_opencti_target_ref: instance.to.internal_id,
     };
-    const event = {
-      type: EVENT_TYPE_DELETE,
-      markings: R.map((i) => i.standard_id, instance.objectMarking || []),
-      user: user.id || user.name,
-      timestamp: now,
-      data,
-      message,
-    };
+    const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
+    const event = buildEvent(EVENT_TYPE_DELETE, user, markings, message, data);
     const client = await getClient();
     return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
@@ -307,8 +294,8 @@ const processStreamResult = async (results, callback) => {
   const lastElement = R.last(streamData);
   for (let index = 0; index < streamData.length; index += 1) {
     const dataElement = streamData[index];
-    const { eventId, type, markings, user, timestamp, data, message } = dataElement;
-    const eventData = { user, markings, timestamp, data, message };
+    const { eventId, type, markings, origin, data, message } = dataElement;
+    const eventData = { markings, origin, data, message };
     // eslint-disable-next-line no-await-in-loop
     await callback(eventId, type, eventData);
   }

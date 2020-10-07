@@ -25,7 +25,15 @@ const createApolloServer = () => {
       let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
       token = token || extractTokenFromBearer(req.headers.authorization);
       const auth = await authentication(token);
-      return { res, user: auth };
+      if (!auth) return { res, user: auth };
+      const origin = {
+        source: 'client',
+        ip: req.ip,
+        user_id: auth.id,
+        applicant_id: req.headers['opencti-applicant-id'],
+      };
+      const authMeta = Object.assign(auth, { origin });
+      return { res, user: authMeta };
     },
     tracing: DEV_MODE,
     plugins: [loggerPlugin],

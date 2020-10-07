@@ -170,6 +170,7 @@ class RootIntrusionSet extends Component {
                         <FileManager
                           {...routeProps}
                           id={intrusionSetId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.intrusionSet}
                         />

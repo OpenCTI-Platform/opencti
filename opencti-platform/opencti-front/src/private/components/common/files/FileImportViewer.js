@@ -35,6 +35,7 @@ const FileImportViewerBase = ({
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
+  const isContainer = (entity && entity.entity_type !== 'Report');
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -68,13 +69,8 @@ const FileImportViewerBase = ({
                 {edges.map((file) => (
                   <FileLine
                     key={file.node.id}
-                    context={
-                      entity && entity.entity_type === 'report'
-                        ? entity.id
-                        : null
-                    }
                     dense={true}
-                    disableImport={disableImport}
+                    disableImport={isContainer || disableImport}
                     file={file.node}
                     connectors={
                       connectors && connectors[file.node.metaData.mimetype]
@@ -132,7 +128,7 @@ const FileImportViewer = createRefetchContainer(
 FileImportViewer.propTypes = {
   entity: PropTypes.object,
   disableImport: PropTypes.bool,
-  connectors: PropTypes.array,
+  connectors: PropTypes.object,
 };
 
 export default FileImportViewer;

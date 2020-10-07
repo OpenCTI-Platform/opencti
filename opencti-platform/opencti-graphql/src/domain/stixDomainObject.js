@@ -1,6 +1,6 @@
-import { assoc, dissoc, invertObj, map, pipe, propOr, filter } from 'ramda';
-import { BUS_TOPICS } from '../config/conf';
-import { delEditContext, notify, setEditContext } from '../database/redis';
+import {assoc, dissoc, filter, map, pipe} from 'ramda';
+import {BUS_TOPICS} from '../config/conf';
+import {delEditContext, notify, setEditContext} from '../database/redis';
 import {
   createEntity,
   createRelation,
@@ -10,22 +10,21 @@ import {
   distributionEntities,
   distributionEntitiesThroughRelations,
   escape,
+  internalLoadById,
   listEntities,
   loadById,
   timeSeriesEntities,
   updateAttribute,
 } from '../database/grakn';
-import { findById as findMarkingDefinitionById } from './markingDefinition';
-import { elCount } from '../database/elasticSearch';
-import { generateFileExportName, upload } from '../database/minio';
-import { connectorsForExport } from './connector';
-import { createWork, workToExportFile } from './work';
-import { pushToConnector } from '../database/rabbitmq';
-import { FunctionalError } from '../config/errors';
-import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
-import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import {elCount} from '../database/elasticSearch';
+import {upload} from '../database/minio';
+import {workToExportFile} from './work';
+import {FunctionalError} from '../config/errors';
+import {INDEX_STIX_DOMAIN_OBJECTS} from '../database/utils';
+import {isStixDomainObject, stixDomainObjectOptions} from '../schema/stixDomainObject';
+import {ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP} from '../schema/general';
+import {isStixMetaRelationship, RELATION_OBJECT} from '../schema/stixMetaRelationship';
+import {askEntityExport, askListExport, exportTransformFilters} from './stixCoreObject';
 
 export const findAll = async (args) => {
   let types = [];
@@ -79,108 +78,37 @@ export const stixDomainObjectsDistributionByEntity = async (args) => {
 // endregion
 
 // region export
-const askJobExports = async (
-  format,
-  entity = null,
-  type = null,
-  exportType = null,
-  maxMarkingDef = null,
-  context = null,
-  listArgs = null
-) => {
-  const connectors = await connectorsForExport(format, true);
-  // Create job for every connectors
-  const haveMarking = maxMarkingDef && maxMarkingDef.length > 0;
-  const maxMarking = haveMarking ? await findMarkingDefinitionById(maxMarkingDef) : null;
-  const finalEntityType = entity ? entity.entity_type : type;
-  const workList = await Promise.all(
-    map((connector) => {
-      const fileName = generateFileExportName(format, connector, entity, finalEntityType, exportType, maxMarking);
-      const workJob = createWork(connector, finalEntityType, entity ? entity.id : null, context, fileName);
-      return workJob.then(({ work, job }) => ({ connector, job, work }));
-    }, connectors)
-  );
-  let finalListArgs = listArgs;
-  if (listArgs !== null) {
-    const stixDomainObjectsFiltersInversed = invertObj(stixDomainObjectOptions.StixDomainObjectsFilter);
-    const stixDomainObjectsOrderingInversed = invertObj(stixDomainObjectOptions.StixDomainObjectsOrdering);
-    finalListArgs = pipe(
-      assoc(
-        'filters',
-        map(
-          (n) => ({
-            key: n.key in stixDomainObjectsFiltersInversed ? stixDomainObjectsFiltersInversed[n.key] : n.key,
-            values: n.values,
-          }),
-          propOr([], 'filters', listArgs)
-        )
-      ),
-      assoc(
-        'orderBy',
-        listArgs.orderBy in stixDomainObjectsOrderingInversed
-          ? stixDomainObjectsOrderingInversed[listArgs.orderBy]
-          : listArgs.orderBy
-      )
-    )(listArgs);
-  }
-  // Send message to all correct connectors queues
-  await Promise.all(
-    map((data) => {
-      const { connector, job, work } = data;
-      const message = {
-        work_id: work.internal_id, // work(id)
-        job_id: job.internal_id, // job(id)
-        max_marking_definition: maxMarkingDef && maxMarkingDef.length > 0 ? maxMarkingDef : null, // markingDefinition(id)
-        export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
-        entity_type: entity ? entity.entity_type : type, // report, threat, ...
-        entity_id: entity ? entity.id : null, // report(id), thread(id), ...
-        list_args: finalListArgs,
-        file_context: work.work_context,
-        file_name: work.work_file, // Base path for the upload
-      };
-      return pushToConnector(connector, message);
-    }, workList)
-  );
-  return workList;
+export const stixDomainObjectsExportAsk = async (user, args) => {
+  const { format, type, exportType, maxMarkingDefinition } = args;
+  const { search, orderBy, orderMode, filters, filterMode } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const filtersOpts = stixDomainObjectOptions.StixDomainObjectsFilter;
+  const ordersOpts = stixDomainObjectOptions.StixDomainObjectsOrdering;
+  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const works = await askListExport(user, format, type, listParams, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
+export const stixDomainObjectExportAsk = async (user, args) => {
+  const { format, stixDomainObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
+  const entity = stixDomainObjectId ? await loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT) : null;
+  const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
+export const stixDomainObjectsExportPush = async (user, type, file, listFilters) => {
+  await upload(user, `export/${type}`, file, { list_filters: listFilters });
+  return true;
+};
+export const stixDomainObjectExportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(entityId);
+  await upload(user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  return true;
 };
 // endregion
 
 // region mutation
-/**
- * Create export element waiting for completion
- * @param args
- * @returns {*}
- */
-export const stixDomainObjectExportAsk = async (args) => {
-  const {
-    format,
-    type = null,
-    stixDomainObjectId = null,
-    exportType = null,
-    maxMarkingDefinition = null,
-    context = null,
-  } = args;
-  const entity = stixDomainObjectId ? await loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT) : null;
-  const workList = await askJobExports(format, entity, type, exportType, maxMarkingDefinition, context, args);
-  // Return the work list to do
-  return map((w) => workToExportFile(w.work), workList);
-};
-
-export const stixDomainObjectImportPush = (user, entityType = null, entityId = null, file) => {
-  return upload(user, 'import', file, entityType, entityId);
-};
-
-export const stixDomainObjectExportPush = async (
-  user,
-  entityType = null,
-  entityId = null,
-  file,
-  context = null,
-  listArgs = null
-) => {
-  // Upload the document in minio
-  await upload(user, 'export', file, entityType, entityId, context, listArgs);
-  return true;
+export const stixDomainObjectImportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(entityId);
+  return upload(user, `import/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
 };
 
 export const addStixDomainObject = async (user, stixDomainObject) => {

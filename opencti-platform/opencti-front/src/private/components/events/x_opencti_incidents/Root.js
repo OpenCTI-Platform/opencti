@@ -140,6 +140,7 @@ class RootXOpenCTIIncident extends Component {
                         <FileManager
                           {...routeProps}
                           id={incidentId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.xOpenCTIIncident}
                         />

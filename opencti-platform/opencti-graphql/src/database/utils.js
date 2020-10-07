@@ -1,10 +1,10 @@
 import * as R from 'ramda';
-import { offsetToCursor } from 'graphql-relay';
+import {offsetToCursor} from 'graphql-relay';
 import moment from 'moment';
-import { DatabaseError, FunctionalError } from '../config/errors';
-import { isInternalObject } from '../schema/internalObject';
-import { isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixDomainObject } from '../schema/stixDomainObject';
+import {DatabaseError, FunctionalError} from '../config/errors';
+import {isInternalObject} from '../schema/internalObject';
+import {isStixMetaObject} from '../schema/stixMetaObject';
+import {isStixDomainObject} from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -20,10 +20,10 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   isStixCyberObservable,
 } from '../schema/stixCyberObservableObject';
-import { isInternalRelationship } from '../schema/internalRelationship';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import {isInternalRelationship} from '../schema/internalRelationship';
+import {isStixCoreRelationship} from '../schema/stixCoreRelationship';
+import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
+import {isStixCyberObservableRelationship} from '../schema/stixCyberObservableRelationship';
 import {
   isStixInternalMetaRelationship,
   isStixMetaRelationship,
@@ -36,7 +36,7 @@ import {
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
 } from './rabbitmq';
-import { isStixObject } from '../schema/stixCoreObject';
+import {isStixObject} from '../schema/stixCoreObject';
 
 // Entities
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
@@ -221,35 +221,36 @@ export const relationTypeToInputName = (type) => {
   return inputName + (isMeta ? 's' : '');
 };
 
-export const generateLogMessage = (type, user, instance, input = null) => {
+const valToMessage = (val) => {
+  if (Array.isArray(val)) {
+    const values = R.filter((v) => isNotEmptyField(v), val);
+    return values.length > 0 ? values.map((item) => valToMessage(item)) : null;
+  }
+  if (val && typeof val === 'object') {
+    const valEntries = R.filter(([, v]) => isNotEmptyField(v), Object.entries(val));
+    return valEntries.map(([k, v]) => `${k}: ${v}`).join(', ');
+  }
+  return isNotEmptyField(val) ? val.toString() : null;
+};
+export const generateLogMessage = (type, instance, input = null) => {
   const name = extractEntityMainValue(instance);
   if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE) {
     if (isStixObject(instance.entity_type)) {
-      return `\`${user.name}\` ${type}s a ${instance.entity_type} \`${name}\``;
+      return `${type}s a ${instance.entity_type} \`${name}\``;
     }
     // Relation
     const from = extractEntityMainValue(instance.from);
     const fromType = instance.from.entity_type;
     const to = extractEntityMainValue(instance.to);
     const toType = instance.to.entity_type;
-    return `\`${user.name}\` ${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
+    return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
   }
   if (type === UPDATE_OPERATION_REPLACE || type === UPDATE_OPERATION_ADD || type === UPDATE_OPERATION_REMOVE) {
     const joiner = type === UPDATE_OPERATION_REPLACE ? 'by' : 'value';
     const fieldMessage = R.map(([key, val]) => {
-      let translatedVal;
-      if (Array.isArray(val)) {
-        const values = R.filter((v) => isNotEmptyField(v), val);
-        translatedVal = values.length > 0 ? values.join(', ') : null;
-      } else if (typeof val === 'object') {
-        const valEntries = R.filter(([, v]) => isNotEmptyField(v), Object.entries(val));
-        translatedVal = valEntries.map(([k, v]) => `${k}: ${v}`).join(', ');
-      } else {
-        translatedVal = isNotEmptyField(val) ? val.toString() : null;
-      }
-      return `\`${key}\` ${joiner} \`${translatedVal || 'nothing'}\``;
+      return `\`${key}\` ${joiner} \`${valToMessage(val) || 'nothing'}\``;
     }, Object.entries(input)).join(', ');
-    return `\`${user.name}\` ${type}s the ${fieldMessage}`;
+    return `${type}s the ${fieldMessage}`;
   }
   throw FunctionalError(`Cant generated message for event type ${type}`);
 };

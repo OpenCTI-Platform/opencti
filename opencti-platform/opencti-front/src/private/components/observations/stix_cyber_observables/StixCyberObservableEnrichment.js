@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
 import {
-  pipe, propOr, compose, filter, last, join,
+  pipe, propOr, compose, filter,
 } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -40,7 +40,9 @@ const StixCyberObservableEnrichmentQuery = graphql`
 
 const StixCyberObservableEnrichmentDeleteMutation = graphql`
   mutation StixCyberObservableEnrichmentDeleteMutation($workId: ID!) {
-    deleteWork(id: $workId)
+    workEdit(id: $workId) {
+      delete
+    }
   }
 `;
 
@@ -112,6 +114,7 @@ const StixCyberObservableEnrichment = (props) => {
               propOr([], 'jobs'),
               filter((n) => n.connector && n.connector.id === connector.id),
             )(stixCyberObservable);
+            // eslint-disable-next-line max-len
             const isRefreshing = filter((node) => node.status !== 'complete', jobs).length > 0;
             return (
               <div key={connector.id}>
@@ -153,10 +156,7 @@ const StixCyberObservableEnrichment = (props) => {
                 </ListItem>
                 <List component="div" disablePadding={true}>
                   {jobs.map((work) => {
-                    const message = join(
-                      ' | ',
-                      propOr([], 'messages', last(propOr([], 'jobs', work))),
-                    );
+                    const message = 'todo';
                     return (
                       <Tooltip title={message} key={uuid()}>
                         <ListItem
@@ -191,7 +191,7 @@ const StixCyberObservableEnrichment = (props) => {
                               />
                             )}
                           </ListItemIcon>
-                          <ListItemText primary={nsdt(work.created_at)} />
+                          <ListItemText primary={nsdt(work.timestamp)} />
                           <ListItemSecondaryAction style={{ right: 0 }}>
                             <IconButton onClick={() => deleteWork(work.id)}>
                               <Delete />
@@ -222,13 +222,10 @@ const StixCyberObservableEnrichmentFragment = createRefetchContainer(
         entity_type
         jobs(first: 100) {
           id
-          created_at
+          timestamp
           connector {
             id
             name
-          }
-          jobs {
-            messages
           }
           status
         }

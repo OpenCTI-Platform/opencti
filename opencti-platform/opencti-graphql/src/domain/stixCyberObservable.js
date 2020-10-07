@@ -9,7 +9,7 @@ import {
   deleteEntityById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  escape,
+  escape, internalLoadById,
   listEntities,
   listToEntitiesThroughRelation,
   loadById,
@@ -50,8 +50,9 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from 
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import {ENTITY_TYPE_INDICATOR, stixDomainObjectOptions} from '../schema/stixDomainObject';
 import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
+import {askEntityExport, askListExport, exportTransformFilters} from "./stixCoreObject";
 
 export const findById = (stixCyberObservableId) => {
   return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -87,13 +88,17 @@ export const stixCyberObservablesTimeSeries = (args) => {
 // endregion
 
 // region mutations
-export const stixCyberObservableAskEnrichment = async (id, connectorId) => {
+export const stixCyberObservableAskEnrichment = async (user, observableId, connectorId) => {
   const connector = await loadById(connectorId, ENTITY_TYPE_CONNECTOR);
-  const { job, work } = await createWork(connector, ABSTRACT_STIX_CYBER_OBSERVABLE, id);
+  const work = await createWork(user, connector, 'Manual enrichment', observableId);
   const message = {
-    work_id: work.internal_id,
-    job_id: job.internal_id,
-    entity_id: id,
+    internal: {
+      work_id: work.id, // Related action for history
+      applicant_id: user.id, // User asking for the import
+    },
+    event: {
+      entity_id: observableId,
+    },
   };
   await pushToConnector(connector, message);
   return work;
@@ -217,7 +222,7 @@ export const addStixCyberObservable = async (user, input) => {
   // If everything ok, create adapt/create the observable and notify for enrichment
   const created = await createEntity(user, observableInput, input.type);
   if (!created.i_upserted) {
-    await askEnrich(created.id, input.type);
+    await askEnrich(user, created.id, input.type);
   }
   // create the linked indicator if needed
   if (input.createIndicator) {
@@ -300,7 +305,6 @@ export const stixCyberObservableCleanContext = (user, stixCyberObservableId) => 
     notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user)
   );
 };
-
 export const stixCyberObservableEditContext = (user, stixCyberObservableId, input) => {
   setEditContext(user, stixCyberObservableId, input);
   return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) =>
@@ -310,95 +314,34 @@ export const stixCyberObservableEditContext = (user, stixCyberObservableId, inpu
 // endregion
 
 // region export
-const askJobExports = async (
-  format,
-  entity = null,
-  exportType = null,
-  maxMarkingDefinition = null,
-  context = null,
-  listArgs = null
-) => {
-  const connectors = await connectorsForExport(format, true);
-  // Create job for every connectors
-  const haveMarking = maxMarkingDefinition && maxMarkingDefinition.length > 0;
-  const maxMarking = haveMarking ? await findMarkingDefinitionById(maxMarkingDefinition) : null;
-  const entityId = entity ? entity.id : null;
-  const workList = await Promise.all(
-    map((connector) => {
-      const fileName = generateFileExportName(format, connector, entity, 'stix-observable', exportType, maxMarking);
-      const workJob = createWork(connector, 'stix-observable', entityId, context, fileName);
-      return workJob.then(({ work, job }) => ({ connector, job, work }));
-    }, connectors)
-  );
-  let finalListArgs = listArgs;
-  if (listArgs !== null) {
-    const stixCyberObservablesFiltersInversed = invertObj(stixCyberObservableOptions.StixCyberObservablesFilter);
-    const stixCyberObservablesOrderingInversed = invertObj(stixCyberObservableOptions.StixCyberObservablesOrdering);
-    finalListArgs = pipe(
-      assoc(
-        'filters',
-        map((n) => {
-          const haveKey = n.key in stixCyberObservablesFiltersInversed;
-          return {
-            key: haveKey ? stixCyberObservablesFiltersInversed[n.key] : n.key,
-            values: n.values,
-          };
-        }, propOr([], 'filters', listArgs))
-      ),
-      assoc(
-        'orderBy',
-        listArgs.orderBy in stixCyberObservablesOrderingInversed
-          ? stixCyberObservablesOrderingInversed[listArgs.orderBy]
-          : listArgs.orderBy
-      )
-    )(listArgs);
-  }
-  // Send message to all correct connectors queues
-  await Promise.all(
-    map((data) => {
-      const { connector, job, work } = data;
-      const message = {
-        work_id: work.internal_id, // work(id)
-        job_id: job.internal_id, // job(id)
-        max_marking_definition: maxMarkingDefinition && maxMarkingDefinition.length > 0 ? maxMarkingDefinition : null, // markingDefinition(id)
-        export_type: exportType, // for entity, simple or full / for list, withArgs / withoutArgs
-        entity_type: 'stix-observable',
-        entity_id: entityId, // report(id), thread(id), ...
-        list_args: finalListArgs,
-        file_context: work.work_context,
-        file_name: work.work_file, // Base path for the upload
-      };
-      return pushToConnector(connector, message);
-    }, workList)
-  );
-  return workList;
+export const stixCyberObservablesExportAsk = async (user, args) => {
+  const { format, exportType, maxMarkingDefinition } = args;
+  const { search, orderBy, orderMode, filters, filterMode } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const filtersOpts = stixCyberObservableOptions.StixCyberObservablesFilter;
+  const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
+  const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
+  const works = await askListExport(user, format, 'stix-observable', listParams, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w), works);
+};
+export const stixCyberObservableExportAsk = async (user, args) => {
+  const { format, exportType, stixCyberObservableId = null, maxMarkingDefinition = null } = args;
+  const entity = stixCyberObservableId ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE) : null;
+  const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
+  return map((w) => workToExportFile(w.work), works);
+};
+export const stixCyberObservablesExportPush = async (user, file, listArgs) => {
+  await upload(user, `export/stix-observable`, file, { list_filters: listArgs });
+  return true;
+};
+export const stixCyberObservableExportPush = async (user, entityId, file) => {
+  const entity = await internalLoadById(entityId);
+  await upload(user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  return true;
 };
 // endregion
 
 // region mutation
-/**
- * Create export element waiting for completion
- * @param args
- * @returns {*}
- */
-export const stixCyberObservableExportAsk = async (args) => {
-  const { format, exportType, stixCyberObservableId = null, maxMarkingDefinition = null, context = null } = args;
-  const entity = stixCyberObservableId ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE) : null;
-  const workList = await askJobExports(format, entity, exportType, maxMarkingDefinition, context, args);
-  // Return the work list to do
-  return map((w) => workToExportFile(w.work), workList);
-};
-
-export const stixCyberObservableImportPush = (user, entityType = null, entityId = null, file) => {
-  return upload(user, 'import', file, entityType, entityId);
-};
-
-export const stixCyberObservableExportPush = async (user, entityId = null, file, context = null, listArgs = null) => {
-  // Upload the document in minio
-  await upload(user, 'export', file, 'stix-observable', entityId, context, listArgs);
-  return true;
-};
-
 export const stixCyberObservableDistribution = async (args) =>
   distributionEntities(ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
 
