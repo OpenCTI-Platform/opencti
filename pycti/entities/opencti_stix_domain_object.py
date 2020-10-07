@@ -639,10 +639,10 @@ class StixDomainObject:
             )
             return None
 
-    def push_list_export(self, entity_type, file_name, data, context="", list_args=""):
+    def push_list_export(self, entity_type, file_name, data, list_filters=""):
         query = """
-            mutation StixDomainObjectsExportPush($type: String!, $file: Upload!, $context: String, $listArgs: String) {
-                stixDomainObjectsExportPush(type: $type, file: $file, context: $context, listArgs: $listArgs)
+            mutation StixDomainObjectsExportPush($type: String!, $file: Upload!, $listFilters: String) {
+                stixDomainObjectsExportPush(type: $type, file: $file, listFilters: $listFilters)
             } 
         """
         self.opencti.query(
@@ -650,8 +650,7 @@ class StixDomainObject:
             {
                 "type": entity_type,
                 "file": (self.file(file_name, data)),
-                "context": context,
-                "listArgs": list_args,
+                "listFilters": list_filters,
             },
         )
 

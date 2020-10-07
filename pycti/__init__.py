@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from .api.opencti_api_client import OpenCTIApiClient
 from .api.opencti_api_connector import OpenCTIApiConnector
-from .api.opencti_api_job import OpenCTIApiJob
+from .api.opencti_api_work import OpenCTIApiWork
 
 from .connector.opencti_connector import ConnectorType
 from .connector.opencti_connector import OpenCTIConnector
@@ -49,7 +49,7 @@ from .utils.constants import StixCyberObservableTypes
 __all__ = [
     "OpenCTIApiClient",
     "OpenCTIApiConnector",
-    "OpenCTIApiJob",
+    "OpenCTIApiWork",
     "ConnectorType",
     "OpenCTIConnector",
     "OpenCTIConnectorHelper",

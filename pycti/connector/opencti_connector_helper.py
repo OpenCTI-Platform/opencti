@@ -11,7 +11,7 @@ import time
 import base64
 import os
 
-from typing import Callable, Dict, List, Optional, Union
+from typing import Callable, Dict, Optional, Union
 from sseclient import SSEClient
 from pika.exceptions import UnroutableError, NackError
 from pycti.api.opencti_api_client import OpenCTIApiClient
@@ -103,17 +103,24 @@ class ListenQueue(threading.Thread):
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def _data_handler(self, json_data):
-        job_id = json_data["job_id"] if "job_id" in json_data else None
+        # Set the API headers
+        work_id = json_data["internal"]["work_id"]
+        applicant_id = json_data["internal"]["applicant_id"]
+        self.helper.work_id = work_id
+        self.helper.applicant_id = applicant_id
+        self.helper.api.set_applicant_id_header(applicant_id)
+        # Execute the callback
         try:
-            work_id = json_data["work_id"]
-            self.helper.current_work_id = work_id
-            self.helper.api.job.update_job(job_id, "progress", ["Starting process"])
-            messages = self.callback(json_data)
-            self.helper.api.job.update_job(job_id, "complete", messages)
+            self.helper.api.work.to_received(
+                work_id, "Connector ready to process the operation"
+            )
+            message = self.callback(json_data["event"])
+            self.helper.api.work.to_processed(work_id, message)
+
         except Exception as e:
             logging.exception("Error in message processing, reporting error to API")
             try:
-                self.helper.api.job.update_job(job_id, "error", [str(e)])
+                self.helper.api.work.to_processed(work_id, str(e))
             except:
                 logging.error("Failing reporting the processing")
 
@@ -288,8 +295,6 @@ class OpenCTIConnectorHelper:
         self.api = OpenCTIApiClient(
             self.opencti_url, self.opencti_token, self.log_level
         )
-        self.current_work_id = None
-
         # Register the connector in OpenCTI
         self.connector = OpenCTIConnector(
             self.connect_id,
@@ -300,6 +305,8 @@ class OpenCTIConnectorHelper:
         )
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_id = connector_configuration["id"]
+        self.work_id = None
+        self.applicant_id = None
         self.connector_state = connector_configuration["connector_state"]
         self.config = connector_configuration["config"]
 
@@ -337,7 +344,7 @@ class OpenCTIConnectorHelper:
         except:
             return None
 
-    def listen(self, message_callback: Callable[[Dict], List[str]]) -> None:
+    def listen(self, message_callback: Callable[[str, Dict], str]) -> None:
         """listen for messages and register callback function
 
         :param message_callback: callback function to process messages
@@ -414,6 +421,7 @@ class OpenCTIConnectorHelper:
             else:
                 # If receiving the last message, launch processor
                 if msg.id == last_event_id:
+                    message_callback(msg)
                     processor_thread.start()
                 elif "catchup" not in data:
                     EVENTS_QUEUE.put(msg)
@@ -453,11 +461,10 @@ class OpenCTIConnectorHelper:
         )
 
     # Push Stix2 helper
-    def send_stix2_bundle(
-        self, bundle, entities_types=None, update=False, split=True
-    ) -> list:
+    def send_stix2_bundle(self, bundle, **kwargs) -> list:
         """send a stix2 bundle to the API
 
+        :param work_id: a valid work id
         :param bundle: valid stix2 bundle
         :type bundle:
         :param entities_types: list of entities, defaults to None
@@ -470,6 +477,10 @@ class OpenCTIConnectorHelper:
         :return: list of bundles
         :rtype: list
         """
+        work_id = kwargs.get("work_id", self.work_id)
+        entities_types = kwargs.get("entities_types", None)
+        update = kwargs.get("update", False)
+        split = kwargs.get("split", True)
 
         if entities_types is None:
             entities_types = []
@@ -478,12 +489,21 @@ class OpenCTIConnectorHelper:
             bundles = stix2_splitter.split_bundle(bundle)
             if len(bundles) == 0:
                 raise ValueError("Nothing to import")
+            if work_id is not None:
+                self.api.work.add_expectations(work_id, len(bundles))
             pika_connection = pika.BlockingConnection(
                 pika.URLParameters(self.config["uri"])
             )
             channel = pika_connection.channel()
-            for bundle in bundles:
-                self._send_bundle(channel, bundle, entities_types, update)
+            for sequence, bundle in enumerate(bundles, start=1):
+                self._send_bundle(
+                    channel,
+                    bundle,
+                    work_id=work_id,
+                    entities_types=entities_types,
+                    sequence=sequence,
+                    update=update,
+                )
             channel.close()
             return bundles
         else:
@@ -491,11 +511,13 @@ class OpenCTIConnectorHelper:
                 pika.URLParameters(self.config["uri"])
             )
             channel = pika_connection.channel()
-            self._send_bundle(channel, bundle, entities_types, update)
+            self._send_bundle(
+                channel, bundle, entities_types=entities_types, update=update
+            )
             channel.close()
             return [bundle]
 
-    def _send_bundle(self, channel, bundle, entities_types=None, update=False) -> None:
+    def _send_bundle(self, channel, bundle, **kwargs) -> None:
         """send a STIX2 bundle to RabbitMQ to be consumed by workers
 
         :param channel: RabbitMQ channel
@@ -507,15 +529,13 @@ class OpenCTIConnectorHelper:
         :param update: whether to update data in the database, defaults to False
         :type update: bool, optional
         """
+        work_id = kwargs.get("work_id", None)
+        sequence = kwargs.get("sequence", 0)
+        update = kwargs.get("update", False)
+        entities_types = kwargs.get("entities_types", None)
 
         if entities_types is None:
             entities_types = []
-
-        # Create a job log expectation
-        if self.current_work_id is not None:
-            job_id = self.api.job.initiate_job(self.current_work_id)
-        else:
-            job_id = None
 
         # Validate the STIX 2 bundle
         # validation = validate_string(bundle)
@@ -526,12 +546,14 @@ class OpenCTIConnectorHelper:
         # if self.current_work_id is None:
         #    raise ValueError('The job id must be specified')
         message = {
-            "job_id": job_id,
+            "applicant_id": self.applicant_id,
+            "action_sequence": sequence,
             "entities_types": entities_types,
-            "update": update,
-            "token": self.opencti_token,
             "content": base64.b64encode(bundle.encode("utf-8")).decode("utf-8"),
+            "update": update,
         }
+        if work_id is not None:
+            message["work_id"] = work_id
 
         # Send the message
         try:
@@ -547,7 +569,7 @@ class OpenCTIConnectorHelper:
             logging.info("Bundle has been sent")
         except (UnroutableError, NackError) as e:
             logging.error("Unable to send bundle, retry...", e)
-            self._send_bundle(bundle, entities_types)
+            self._send_bundle(channel, bundle, **kwargs)
 
     def split_stix2_bundle(self, bundle) -> list:
         """splits a valid stix2 bundle into a list of bundles
