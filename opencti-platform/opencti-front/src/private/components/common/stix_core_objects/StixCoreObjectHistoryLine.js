@@ -193,14 +193,14 @@ class StixCoreObjectHistoryLineComponent extends Component {
               title={
                 <Markdown
                   className="markdown"
-                  source={node.context_data.message}
+                  source={`\`${node.user.name}\` ${node.context_data.message}`}
                 />
               }
             >
               <div className={classes.description}>
                 <Markdown
                   className="markdown"
-                  source={node.context_data.message}
+                  source={`\`${node.user.name}\` ${node.context_data.message}`}
                 />
               </div>
             </Tooltip>

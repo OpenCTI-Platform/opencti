@@ -91,7 +91,7 @@ class Users extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
-        secondaryAction={true}
+        secondaryAction={false}
         keyword={searchTerm}
       >
         <QueryRenderer
