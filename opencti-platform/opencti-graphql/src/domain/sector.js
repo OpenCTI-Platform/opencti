@@ -44,6 +44,7 @@ export const isSubSector = async (sectorId) => {
 export const targetedOrganizations = async (sectorId) =>
   find(
     `match $sector has internal_id "${escapeString(sectorId)}";
+    $organization isa Organization;
     ($organization, $sector) isa ${RELATION_PART_OF}; 
   $rel($threat, $organization) isa ${RELATION_TARGETS}, has start_time $order;
   get; sort $order desc;`,
