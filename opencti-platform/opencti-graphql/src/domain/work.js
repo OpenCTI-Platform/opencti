@@ -5,8 +5,8 @@ import { el, elDeleteInstanceIds, elIndex, elLoadByIds, elPaginate, INDEX_HISTOR
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
 import { isNotEmptyField } from '../database/utils';
-import { CONNECTOR_INTERNAL_ENRICHMENT } from './enrichment';
 
+export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const ENTITY_TYPE_WORK = 'work';
 
 export const workToExportFile = (work) => {
@@ -93,7 +93,7 @@ const deleteOldCompletedWorks = async (sourceId, connectorType) => {
     body: {
       query,
       from: numberToKeep - 1,
-      sort: [{ completed_time: 'desc' }],
+      sort: [{ completed_time: { order: 'desc', unmapped_type: 'date' } }],
     },
   });
   const { hits } = worksToDelete.body.hits;
@@ -162,7 +162,7 @@ export const updateActionExpectation = (user, workId, expectation) => {
   source +=
     "if (ctx._source['import_expected_number'] == ctx._source['import_processed_number']) { " +
     /*--*/ 'ctx._source[\'status\'] = "complete";' +
-    /*--*/ "ctx._source['completed_time'] = params.processed_time;" +
+    /*--*/ "ctx._source['completed_time'] = params.now;" +
     '} else {' +
     /*--*/ 'ctx._source[\'status\'] = "progress";' +
     /*--*/ "ctx._source['completed_time'] = null;" +
@@ -177,7 +177,7 @@ export const updateReceivedTime = (user, workId, message) => {
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
   if (isNotEmptyField(message)) {
-    source += `ctx._source.messages.add(["timestamp": params.now, "message": params.message]); `;
+    source += `ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); `;
   }
   const script = { source, lang: 'painless', params };
   const update = {
@@ -202,7 +202,7 @@ export const updateProcessedTime = (user, workId, message) => {
     /*--*/ "ctx._source['completed_time'] = null;" +
     '}';
   if (isNotEmptyField(message)) {
-    source += `ctx._source.messages.add(["timestamp": params.now, "message": params.message]); `;
+    source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
   }
   const script = { source, lang: 'painless', params };
   const update = {

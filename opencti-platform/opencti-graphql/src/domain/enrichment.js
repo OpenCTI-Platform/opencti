@@ -1,10 +1,8 @@
 import { Promise } from 'bluebird';
 import { map } from 'ramda';
 import { connectorsFor } from './connector';
-import { createWork } from './work';
+import { CONNECTOR_INTERNAL_ENRICHMENT, createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-
-export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 
 export const connectorsForEnrichment = async (scope, onlyAlive = false, onlyAuto = false) =>
   connectorsFor(CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
