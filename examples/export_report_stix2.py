@@ -12,7 +12,7 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Create the bundle
 bundle = opencti_api_client.stix2.export_entity(
-    "Report", "e7c349a7-9809-4e98-87a2-ad39f32aef19", "full"
+    "Report", "report--2dc2b918-a0a3-569e-a305-f784486003c2", "full"
 )
 json_bundle = json.dumps(bundle, indent=4)
 
