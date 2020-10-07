@@ -172,6 +172,7 @@ class Opinion:
                             spec_version
                             created_at
                             updated_at
+                            relationship_type
                         }
                     }
                 }

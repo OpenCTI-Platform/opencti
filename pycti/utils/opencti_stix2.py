@@ -1127,7 +1127,6 @@ class OpenCTIStix2:
             objects_to_get = entity["objects"]
             for entity_object in entity["objects"]:
                 entity["object_refs"].append(entity_object["standard_id"])
-                objects_to_get.append(entity_object["standard_id"])
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
@@ -1208,6 +1207,7 @@ class OpenCTIStix2:
                 "Vulnerability": self.opencti.vulnerability.read,
                 "X-OpenCTI-Incident": self.opencti.x_opencti_incident.read,
                 "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
+                "stix_core_relationship": self.opencti.stix_core_relationship.read,
             }
             # Get extra objects
             for entity_object in objects_to_get:
@@ -1220,6 +1220,8 @@ class OpenCTIStix2:
                     entity_object["entity_type"] = "Location"
                 if StixCyberObservableTypes.has_value(entity_object["entity_type"]):
                     entity_object["entity_type"] = "Stix-Cyber-Observable"
+                if "relationship_type" in entity_object:
+                    entity_object["entity_type"] = "stix_core_relationship"
                 do_read = reader.get(
                     entity_object["entity_type"],
                     lambda **kwargs: self.unknown_type(
