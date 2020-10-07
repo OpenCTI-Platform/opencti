@@ -11,7 +11,7 @@ import datetime
 from typing import Union
 
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
-from pycti.api.opencti_api_job import OpenCTIApiWork
+from pycti.api.opencti_api_work import OpenCTIApiWork
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 from pycti.entities.opencti_label import Label
