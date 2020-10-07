@@ -11,7 +11,7 @@ import datetime
 from typing import Union
 
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
-from pycti.api.opencti_api_job import OpenCTIApiJob
+from pycti.api.opencti_api_job import OpenCTIApiWork
 from pycti.utils.opencti_stix2 import OpenCTIStix2
 
 from pycti.entities.opencti_label import Label
@@ -103,7 +103,7 @@ class OpenCTIApiClient:
         self.request_headers = {"Authorization": "Bearer " + token}
 
         # Define the dependencies
-        self.job = OpenCTIApiJob(self)
+        self.work = OpenCTIApiWork(self)
         self.connector = OpenCTIApiConnector(self)
         self.stix2 = OpenCTIStix2(self)
 
@@ -144,23 +144,13 @@ class OpenCTIApiClient:
                 "OpenCTI API is not reachable. Waiting for OpenCTI API to start or check your configuration..."
             )
 
-    def get_token(self):
-        """Get the API token
-
-        :return: returns the configured API token
-        :rtype: str
-        """
-
-        return self.api_token
-
-    def set_token(self, token):
+    def set_applicant_id_header(self, applicant_id):
         """set the request header with the specified token
 
-        :param token: OpenCTI API token
-        :type token: str
+        :param applicant_id: OpenCTI caller id
+        :type applicant_id: str
         """
-
-        self.request_headers = {"Authorization": "Bearer " + token}
+        self.request_headers["opencti-applicant-id"] = applicant_id
 
     def query(self, query, variables={}):
         """submit a query to the OpenCTI GraphQL API
