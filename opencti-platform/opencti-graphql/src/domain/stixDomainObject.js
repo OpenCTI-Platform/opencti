@@ -1,6 +1,6 @@
-import {assoc, dissoc, filter, map, pipe} from 'ramda';
-import {BUS_TOPICS} from '../config/conf';
-import {delEditContext, notify, setEditContext} from '../database/redis';
+import { assoc, dissoc, filter, map, pipe } from 'ramda';
+import { BUS_TOPICS } from '../config/conf';
+import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
@@ -16,15 +16,15 @@ import {
   timeSeriesEntities,
   updateAttribute,
 } from '../database/grakn';
-import {elCount} from '../database/elasticSearch';
-import {upload} from '../database/minio';
-import {workToExportFile} from './work';
-import {FunctionalError} from '../config/errors';
-import {INDEX_STIX_DOMAIN_OBJECTS} from '../database/utils';
-import {isStixDomainObject, stixDomainObjectOptions} from '../schema/stixDomainObject';
-import {ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP} from '../schema/general';
-import {isStixMetaRelationship, RELATION_OBJECT} from '../schema/stixMetaRelationship';
-import {askEntityExport, askListExport, exportTransformFilters} from './stixCoreObject';
+import { elCount } from '../database/elasticSearch';
+import { upload } from '../database/minio';
+import { workToExportFile } from './work';
+import { FunctionalError } from '../config/errors';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 
 export const findAll = async (args) => {
   let types = [];

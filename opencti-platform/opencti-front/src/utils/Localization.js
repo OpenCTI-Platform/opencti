@@ -617,8 +617,8 @@ const i18n = {
       'Publication date': 'Date de publication',
       'Top 10 threats targeting this entity':
         'Top 10 des menaces ciblant cette entité',
-      'Top 10 active threats (3 last months)':
-        'Top 10 des menaces actives (3 derniers mois)',
+      'Top 10 active entities (3 last months)':
+        'Top 10 des entités actives (3 derniers mois)',
       'Targeted countries (3 last months)': 'Pays ciblés (3 derniers mois)',
       Publication: 'Publication',
       'Entity type': "Type d'entité",
