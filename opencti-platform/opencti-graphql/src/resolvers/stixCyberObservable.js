@@ -47,7 +47,7 @@ const stixCyberObservableResolvers = {
       }
       return stixCyberObservableDistribution(args);
     },
-    stixCyberObservablesExportFiles: (_, { first }) => filesListing(first, 'export/stix-observable/'),
+    stixCyberObservablesExportFiles: (_, { first }) => filesListing(first, 'export/Stix-Cyber-Observable/'),
   },
   StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
   StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
@@ -86,8 +86,8 @@ const stixCyberObservableResolvers = {
     }),
     stixCyberObservableAdd: (_, args, { user }) => addStixCyberObservable(user, args),
     stixCyberObservablesExportAsk: (_, args, { user }) => stixCyberObservablesExportAsk(user, args),
-    stixCyberObservablesExportPush: (_, { file, listArgs }, { user }) =>
-      stixCyberObservablesExportPush(user, file, listArgs),
+    stixCyberObservablesExportPush: (_, { file, listFilters }, { user }) =>
+      stixCyberObservablesExportPush(user, file, listFilters),
   },
   Subscription: {
     stixCyberObservable: {

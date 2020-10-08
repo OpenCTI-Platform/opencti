@@ -315,12 +315,19 @@ export const stixCyberObservableEditContext = (user, stixCyberObservableId, inpu
 // region export
 export const stixCyberObservablesExportAsk = async (user, args) => {
   const { format, exportType, maxMarkingDefinition } = args;
-  const { search, orderBy, orderMode, filters, filterMode } = args;
-  const argsFilters = { search, orderBy, orderMode, filters, filterMode };
+  const { search, orderBy, orderMode, filters, filterMode, types } = args;
+  const argsFilters = { search, orderBy, orderMode, filters, filterMode, types };
   const filtersOpts = stixCyberObservableOptions.StixCyberObservablesFilter;
   const ordersOpts = stixCyberObservableOptions.StixCyberObservablesOrdering;
   const listParams = exportTransformFilters(argsFilters, filtersOpts, ordersOpts);
-  const works = await askListExport(user, format, 'stix-observable', listParams, exportType, maxMarkingDefinition);
+  const works = await askListExport(
+    user,
+    format,
+    'Stix-Cyber-Observable',
+    listParams,
+    exportType,
+    maxMarkingDefinition
+  );
   return map((w) => workToExportFile(w), works);
 };
 export const stixCyberObservableExportAsk = async (user, args) => {
@@ -329,13 +336,12 @@ export const stixCyberObservableExportAsk = async (user, args) => {
   const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w.work), works);
 };
-export const stixCyberObservablesExportPush = async (user, file, listArgs) => {
-  await upload(user, `export/stix-observable`, file, { list_filters: listArgs });
+export const stixCyberObservablesExportPush = async (user, file, listFilters) => {
+  await upload(user, `export/Stix-Cyber-Observable`, file, { list_filters: listFilters });
   return true;
 };
 export const stixCyberObservableExportPush = async (user, entityId, file) => {
-  const entity = await internalLoadById(entityId);
-  await upload(user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  await upload(user, `export/Stix-Cyber-Observable/${entityId}`, file, { entity_id: entityId });
   return true;
 };
 // endregion

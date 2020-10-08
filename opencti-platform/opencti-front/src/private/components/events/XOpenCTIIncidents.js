@@ -117,7 +117,7 @@ class XOpenCTIXOpenCTIIncidents extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="XOpenCTIXOpenCTIIncident"
+        exportEntityType="X-OpenCTI-Incident"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}

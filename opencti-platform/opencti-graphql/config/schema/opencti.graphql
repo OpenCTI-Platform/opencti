@@ -8610,7 +8610,7 @@ type Mutation {
     filters: [StixCyberObservablesFiltering]
     filterMode: FilterMode
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
-  stixCyberObservablesExportPush(file: Upload!, context: String, listArgs: String): Boolean @auth(for: [CONNECTORAPI])
+  stixCyberObservablesExportPush(file: Upload!, listFilters: String): Boolean
 
   ######## STIX RELATIONSHIPS
 
