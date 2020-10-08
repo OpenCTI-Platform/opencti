@@ -107,8 +107,9 @@ class ListenQueue(threading.Thread):
         work_id = json_data["internal"]["work_id"]
         applicant_id = json_data["internal"]["applicant_id"]
         self.helper.work_id = work_id
-        self.helper.applicant_id = applicant_id
-        self.helper.api.set_applicant_id_header(applicant_id)
+        if applicant_id is not None:
+            self.helper.applicant_id = applicant_id
+            self.helper.api.set_applicant_id_header(applicant_id)
         # Execute the callback
         try:
             self.helper.api.work.to_received(
