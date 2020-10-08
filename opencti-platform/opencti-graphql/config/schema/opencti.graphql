@@ -180,6 +180,7 @@ enum LogsFilter {
   entity_id
   connection_id
   user_id
+  applicant_id
 }
 type LogConnection {
   pageInfo: PageInfo!

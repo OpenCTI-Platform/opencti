@@ -13,6 +13,7 @@ const logResolvers = {
   LogsFilter: {
     entity_id: 'context_data.id',
     connection_id: 'context_data.*_id',
+    user_id: '*_id',
   },
 };
 

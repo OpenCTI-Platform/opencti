@@ -25,7 +25,7 @@ export const creator = async (entityId) => {
 export const logsTimeSeries = (args) => {
   let filters = [];
   if (args.userId) {
-    filters = [{ isRelation: false, type: 'user_id', value: args.userId }];
+    filters = [{ isRelation: false, type: '*_id', value: args.userId }];
   }
   return timeSeriesEntities(null, filters, args);
 };

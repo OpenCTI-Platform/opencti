@@ -514,7 +514,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
   // Filter: { type: 'relation/attribute/nested' }
   const histogramFilters = R.map((f) => {
     // isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId
-    const { isRelation = false, isNested = false, type: filterType, value } = f;
+    const { isRelation = false, isNested = false, type: filterType, value, operator = 'eq' } = f;
     if (isNested) {
       const [path] = filterType.split('.');
       return {
@@ -529,6 +529,9 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
       };
     }
     let key = `${filterType}.keyword`;
+    if (operator === 'wilcard') {
+      key = `${filterType}`;
+    }
     if (isRelation) {
       key = filterType ? `${REL_INDEX_PREFIX}${f.type}.internal_id` : `${REL_INDEX_PREFIX}*.internal_id`;
     }
