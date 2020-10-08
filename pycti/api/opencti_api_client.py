@@ -116,7 +116,7 @@ class OpenCTIApiClient:
             self
         )
         self.stix_domain_object = StixDomainObject(self, File)
-        self.stix_cyber_observable = StixCyberObservable(self)
+        self.stix_cyber_observable = StixCyberObservable(self, File)
         self.stix_core_relationship = StixCoreRelationship(self)
         self.stix_sighting_relationship = StixSightingRelationship(self)
         self.stix_observable_relation = StixCyberObservableRelation(self)

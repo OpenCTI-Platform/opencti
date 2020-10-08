@@ -4,8 +4,9 @@ import json
 
 
 class StixCyberObservable:
-    def __init__(self, opencti):
+    def __init__(self, opencti, file):
         self.opencti = opencti
+        self.file = file
         self.properties = """
             id
             standard_id
@@ -1535,3 +1536,17 @@ class StixCyberObservable:
         else:
             self.opencti.log("error", "Missing parameters: id and label_id")
             return False
+
+    def push_list_export(self, file_name, data, list_filters=""):
+        query = """
+            mutation StixCyberObservablesExportPush($file: Upload!, $listFilters: String) {
+                stixCyberObservablesExportPush(file: $file, listFilters: $listFilters)
+            } 
+        """
+        self.opencti.query(
+            query,
+            {
+                "file": (self.file(file_name, data)),
+                "listFilters": list_filters,
+            },
+        )
