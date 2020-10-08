@@ -217,6 +217,9 @@ const dashboardStixCoreRelationshipsDistributionQuery = graphql`
         ... on BasicObject {
           entity_type
         }
+        ... on BasicRelationship {
+          entity_type
+        }
         ... on Country {
           name
           x_opencti_aliases

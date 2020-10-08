@@ -1,13 +1,5 @@
 import { head } from 'ramda';
-import { internalLoadById } from '../../../src/database/grakn';
-import {
-  deleteFile,
-  downloadFile,
-  filesListing,
-  generateFileExportName,
-  getMinIOVersion,
-  loadFile,
-} from '../../../src/database/minio';
+import { deleteFile, downloadFile, filesListing, getMinIOVersion, loadFile } from '../../../src/database/minio';
 import { listenServer, stopServer } from '../../../src/httpServer';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
@@ -27,32 +19,6 @@ describe('Minio basic and utils', () => {
   it('should minio in correct version', async () => {
     const minioVersion = await getMinIOVersion();
     expect(minioVersion).toEqual(expect.stringContaining('RELEASE.20'));
-  });
-  it('should simple name correctly generated', async () => {
-    let fileName = generateFileExportName('application/json', { name: 'ExportFileStix' });
-    expect(fileName).toEqual(expect.stringContaining('_(ExportFileStix)_null.json'));
-    fileName = generateFileExportName('application/json', { name: 'ExportFileStix' }, null, 'full');
-    expect(fileName).toEqual(expect.stringContaining('_(ExportFileStix)_full.json'));
-  });
-  it('should entity export name correctly generated', async () => {
-    const type = 'Malware';
-    const exportType = 'all';
-    const connector = { name: 'ExportFileStix' };
-    const maxMarking = { definition: 'TLP:RED' };
-    const entity = await internalLoadById('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
-    const expectedName = '_TLP:RED_(ExportFileStix)_Malware-Paradise Ransomware_all.json';
-    expect(fileExportName).toEqual(expect.stringContaining(expectedName));
-  });
-  it('should list export name correctly generated', async () => {
-    const type = 'Attack-Pattern';
-    const exportType = 'all';
-    const connector = { name: 'ExportFileStix' };
-    const maxMarking = { definition: 'TLP:RED' };
-    const entity = null;
-    const fileExportName = generateFileExportName('application/json', connector, entity, type, exportType, maxMarking);
-    const expectedName = '_TLP:RED_(ExportFileStix)_Attack-Pattern.json';
-    expect(fileExportName).toEqual(expect.stringContaining(expectedName));
   });
 });
 

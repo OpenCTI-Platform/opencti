@@ -154,6 +154,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+        if (this.props.onExportAsk) this.props.onExportAsk();
         this.handleClose();
         MESSAGING$.notifySuccess('Export successfully started');
       },
@@ -167,6 +168,7 @@ class StixCyberObservablesExportCreationComponent extends Component {
       flatten(map((c) => c.connector_scope, connectorsExport)),
     );
     const exportConnsPerFormat = scopesConn(connectorsExport);
+    // eslint-disable-next-line max-len
     const isExportActive = (format) => filter((x) => x.data.active, exportConnsPerFormat[format]).length > 0;
     const isExportPossible = filter((x) => isExportActive(x), exportScopes).length > 0;
 
@@ -311,6 +313,7 @@ StixCyberObservablesExportCreations.propTypes = {
   data: PropTypes.object,
   paginationOptions: PropTypes.object,
   context: PropTypes.string,
+  onExportAsk: PropTypes.func,
 };
 
 export default compose(

@@ -155,6 +155,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
+        if (this.props.onExportAsk) this.props.onExportAsk();
         this.handleClose();
         MESSAGING$.notifySuccess('Export successfully started');
       },
@@ -313,6 +314,7 @@ StixDomainObjectsExportCreations.propTypes = {
   exportEntityType: PropTypes.string.isRequired,
   paginationOptions: PropTypes.object,
   context: PropTypes.string,
+  onExportAsk: PropTypes.func,
 };
 
 export default compose(

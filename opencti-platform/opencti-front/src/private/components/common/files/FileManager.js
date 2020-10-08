@@ -68,6 +68,16 @@ export const FileManagerExportMutation = graphql`
         name
         uploadStatus
         lastModifiedSinceMin
+        metaData {
+          messages {
+            timestamp
+            message
+          }
+          errors {
+            timestamp
+            message
+          }
+        }
       }
     }
   }

@@ -89,6 +89,9 @@ class StixCyberObservablesExportsContentComponent extends Component {
                 data={data}
                 paginationOptions={paginationOptions}
                 context={context}
+                onExportAsk={ () => this.props.relay.refetch({
+                  count: 25,
+                })}
               />
             </Security>
             <IconButton
