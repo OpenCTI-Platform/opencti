@@ -13,7 +13,7 @@ export const askEnrich = async (user, observableId, scope) => {
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(user, connector, 'Manual enrichment', observableId).then((work) => {
+      return createWork(user, connector, 'Automatic enrichment', observableId).then((work) => {
         return { connector, work };
       });
     }, targetConnectors)
@@ -25,7 +25,7 @@ export const askEnrich = async (user, observableId, scope) => {
       const message = {
         internal: {
           work_id: work.id, // Related action for history
-          applicant_id: user.id, // User asking for the import
+          applicant_id: null, // User asking for the import
         },
         event: {
           entity_id: observableId,
