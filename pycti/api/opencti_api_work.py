@@ -20,18 +20,18 @@ class OpenCTIApiWork:
            """
         self.api.query(query, {"id": work_id, "message": message})
 
-    def to_processed(self, work_id: str, message: str):
+    def to_processed(self, work_id: str, message: str, in_error: bool = False):
         logging.info("Reporting work update_received " + work_id)
         query = """
-            mutation workToProcessed($id: ID!, $message: String) {
+            mutation workToProcessed($id: ID!, $message: String, $inError: Boolean) {
                 workEdit(id: $id) {
-                    toProcessed (message: $message) {
+                    toProcessed (message: $message, inError: $inError) {
                       id
                     }
                 }
             }
            """
-        self.api.query(query, {"id": work_id, "message": message})
+        self.api.query(query, {"id": work_id, "message": message, "inError": in_error})
 
     def report_expectation(self, work_id: str, error):
         logging.info("Report expectation for " + work_id)
