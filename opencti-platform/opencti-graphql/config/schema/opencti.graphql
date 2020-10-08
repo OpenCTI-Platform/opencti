@@ -563,6 +563,7 @@ type Connector implements BasicObject & InternalObject {
   created_at: DateTime
   config: ConnectorConfig
   works: [Work]
+  user: User
 }
 
 ############## Workspaces

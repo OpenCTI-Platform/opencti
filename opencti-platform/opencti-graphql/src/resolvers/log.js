@@ -8,7 +8,7 @@ const logResolvers = {
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    user: (log) => findById(log.user_id),
+    user: (log) => findById(log.applicant_id || log.user_id),
   },
   LogsFilter: {
     entity_id: 'context_data.id',
