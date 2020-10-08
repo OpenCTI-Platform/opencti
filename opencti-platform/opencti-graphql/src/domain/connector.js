@@ -26,7 +26,8 @@ const completeConnector = (connector, user) => {
 // endregion
 
 // region grakn fetch
-export const loadConnectorById = (id) => loadById(id, ENTITY_TYPE_CONNECTOR);
+export const loadConnectorById = (id) =>
+  loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 export const connectors = () => {
   const query = `match $c isa ${ENTITY_TYPE_CONNECTOR}; get;`;
   return find(query, ['c']).then((elements) => map((conn) => completeConnector(conn.c, null), elements));
@@ -39,7 +40,13 @@ export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = f
     filter((c) => (onlyAlive ? c.active === true : true)),
     filter((c) => (onlyAuto ? c.auto === true : true)),
     // eslint-disable-next-line prettier/prettier
-    filter((c) => scope ? includes(scope.toLowerCase(), map((s) => s.toLowerCase(), c.connector_scope)) : true
+    filter((c) =>
+      scope
+        ? includes(
+            scope.toLowerCase(),
+            map((s) => s.toLowerCase(), c.connector_scope)
+          )
+        : true
     )
   )(connects);
 };

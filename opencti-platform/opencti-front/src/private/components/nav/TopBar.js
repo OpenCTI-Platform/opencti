@@ -312,12 +312,7 @@ const TopBar = ({
           ) : (
             ''
           )}
-          {location.pathname === '/dashboard/data'
-          || location.pathname.match('/dashboard/data/[a-z_]+$') ? (
-            <TopMenuData />
-            ) : (
-              ''
-            )}
+          {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
           {location.pathname.includes('/dashboard/settings') ? (
             <TopMenuSettings />
           ) : (

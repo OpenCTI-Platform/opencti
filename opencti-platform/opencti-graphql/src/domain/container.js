@@ -13,8 +13,8 @@ export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
-export const findById = async (identityId) => {
-  return loadById(identityId, ENTITY_TYPE_CONTAINER);
+export const findById = async (containerId) => {
+  return loadById(containerId, ENTITY_TYPE_CONTAINER);
 };
 
 export const findAll = async (args) => {

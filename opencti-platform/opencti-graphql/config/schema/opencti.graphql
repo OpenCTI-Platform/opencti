@@ -272,7 +272,7 @@ type SubType {
 ############## Files
 type WorkMessage {
   timestamp: DateTime
-  message: String,
+  message: String
   sequence: Int
   source: String
 }
@@ -7333,6 +7333,7 @@ type Query {
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
+  connector(id: String!): Connector @auth(for: [MODULES])
   connectors: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])

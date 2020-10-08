@@ -18,11 +18,12 @@ import {
   updateReceivedTime,
   worksForConnector,
 } from '../domain/work';
-import { findById } from '../domain/user';
 import { now } from '../database/grakn';
+import { findById as findUserById } from '../domain/user';
 
 const connectorResolvers = {
   Query: {
+    connector: (_, { id }) => loadConnectorById(id),
     connectors: () => connectors(),
     connectorsForExport: () => connectorsForExport(),
     connectorsForImport: () => connectorsForImport(),
@@ -32,7 +33,7 @@ const connectorResolvers = {
   },
   Work: {
     connector: (work) => connectorForWork(work.id),
-    user: (work) => findById(work.user_id),
+    user: (work) => findUserById(work.user_id),
   },
   Mutation: {
     deleteConnector: (_, { id }, { user }) => connectorDelete(user, id),

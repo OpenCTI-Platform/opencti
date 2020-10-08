@@ -16,10 +16,10 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import List from '@material-ui/core/List';
-import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import { RotateLeft, Delete } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
+import { Link } from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -39,7 +39,6 @@ const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   bodyItem: {
     height: '100%',
@@ -62,12 +61,6 @@ const styles = (theme) => ({
   icon: {
     color: theme.palette.primary.main,
   },
-  chip: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    marginRight: 7,
-  },
 });
 
 const inlineStylesHeaders = {
@@ -79,19 +72,13 @@ const inlineStylesHeaders = {
   },
   name: {
     float: 'left',
-    width: '20%',
+    width: '40%',
     fontSize: 12,
     fontWeight: '700',
   },
   connector_type: {
     float: 'left',
-    width: '20%',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  connector_scope: {
-    float: 'left',
-    width: '40%',
+    width: '30%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -105,7 +92,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '20%',
+    width: '40%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -113,15 +100,7 @@ const inlineStyles = {
   },
   connector_type: {
     float: 'left',
-    width: '20%',
-    height: 20,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  connector_scope: {
-    float: 'left',
-    width: '40%',
+    width: '30%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -259,7 +238,6 @@ class ConnectorsStatusComponent extends Component {
                   <div>
                     {this.SortHeader('name', 'Name', true)}
                     {this.SortHeader('connector_type', 'Type', true)}
-                    {this.SortHeader('connector_scope', 'Scope', true)}
                     {this.SortHeader('updated_at', 'Modified', true)}
                   </div>
                 }
@@ -267,77 +245,71 @@ class ConnectorsStatusComponent extends Component {
               <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
             </ListItem>
             {sortedConnectors.map((connector) => (
-                <ListItem key={connector.id}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  button={true}>
-                  <ListItemIcon style={{ color: connector.active ? '#4caf50' : '#f44336' }}>
-                    <Extension />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.name}
-                        >
-                          {connector.name}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.connector_type}
-                        >
-                          {connector.connector_type === 'INTERNAL_ENRICHMENT'
-                            ? `${t(connector.connector_type)} (${t('auto:')} ${t(
-                              connector.auto.toString(),
-                            )})`
-                            : t(connector.connector_type)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.connector_scope}
-                        >
-                          {connector.connector_scope.map((scope) => (
-                            <Chip
-                              key={scope}
-                              classes={{ root: classes.chip }}
-                              label={scope}
-                            />
-                          ))}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={inlineStyles.updated_at}
-                        >
-                          {nsdt(connector.updated_at)}
-                        </div>
+              <ListItem
+                key={connector.id}
+                classes={{ root: classes.item }}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/data/connectors/${connector.id}`}
+              >
+                <ListItemIcon
+                  style={{ color: connector.active ? '#4caf50' : '#f44336' }}
+                >
+                  <Extension />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.name}
+                      >
+                        {connector.name}
                       </div>
-                    }
-                  />
-                  <ListItemSecondaryAction>
-                    <Security needs={[MODULES_MODMANAGE]}>
-                      <Tooltip title={t('Reset the connector state')}>
-                        <IconButton
-                          onClick={this.handleResetState.bind(this, connector.id)}
-                          aria-haspopup="true"
-                          color="primary"
-                        >
-                          <RotateLeft />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title={t('Clear this connector')}>
-                        <IconButton
-                          onClick={this.handleDelete.bind(this, connector.id)}
-                          aria-haspopup="true"
-                          color="primary"
-                          disabled={connector.active}
-                        >
-                          <Delete />
-                        </IconButton>
-                      </Tooltip>
-                    </Security>
-                  </ListItemSecondaryAction>
-                </ListItem>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.connector_type}
+                      >
+                        {connector.connector_type === 'INTERNAL_ENRICHMENT'
+                          ? `${t(connector.connector_type)} (${t('auto:')} ${t(
+                            connector.auto.toString(),
+                          )})`
+                          : t(connector.connector_type)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.updated_at}
+                      >
+                        {nsdt(connector.updated_at)}
+                      </div>
+                    </div>
+                  }
+                />
+                <ListItemSecondaryAction>
+                  <Security needs={[MODULES_MODMANAGE]}>
+                    <Tooltip title={t('Reset the connector state')}>
+                      <IconButton
+                        onClick={this.handleResetState.bind(this, connector.id)}
+                        aria-haspopup="true"
+                        color="primary"
+                      >
+                        <RotateLeft />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title={t('Clear this connector')}>
+                      <IconButton
+                        onClick={this.handleDelete.bind(this, connector.id)}
+                        aria-haspopup="true"
+                        color="primary"
+                        disabled={connector.active}
+                      >
+                        <Delete />
+                      </IconButton>
+                    </Tooltip>
+                  </Security>
+                </ListItemSecondaryAction>
+              </ListItem>
             ))}
           </List>
         </CardContent>
