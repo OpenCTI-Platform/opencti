@@ -50,7 +50,7 @@ const connectorResolvers = {
       reportExpectation: ({ error }) => reportActionImport(user, id, error),
       addExpectations: ({ expectations }) => updateActionExpectation(user, id, expectations),
       toReceived: ({ message }) => updateReceivedTime(user, id, message),
-      toProcessed: ({ message }) => updateProcessedTime(user, id, message),
+      toProcessed: ({ message, inError }) => updateProcessedTime(user, id, message, inError),
     }),
   },
 };

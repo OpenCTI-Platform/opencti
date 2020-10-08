@@ -53,8 +53,7 @@ const FileExportViewerBase = ({
           <Typography
             variant="h4"
             gutterBottom={true}
-            style={{ float: 'left' }}
-          >
+            style={{ float: 'left' }}>
             {t('Exported files')}
           </Typography>
           <div style={{ float: 'left', marginTop: -17 }}>
@@ -64,15 +63,13 @@ const FileExportViewerBase = ({
                   ? t('Generate an export')
                   : t('No export connector available to generate an export')
               }
-              aria-label="generate-export"
-            >
+              aria-label="generate-export">
               <span>
                 <IconButton
                   onClick={handleOpenExport}
                   disabled={!isExportPossible}
                   aria-haspopup="true"
-                  color="primary"
-                >
+                  color="primary">
                   <FileExportOutline />
                 </IconButton>
               </span>

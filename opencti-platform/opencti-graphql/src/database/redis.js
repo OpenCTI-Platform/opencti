@@ -16,7 +16,7 @@ import {
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
 import { DatabaseError } from '../config/errors';
-import {isStixSightingRelationship} from "../schema/stixSightingRelationship";
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
@@ -192,6 +192,11 @@ const buildEvent = (eventType, user, markings, message, data) => {
 export const storeUpdateEvent = async (user, operation, instance, input) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     const convertedInput = stixDataConverter(input);
+    // Some update are only internal and so are not dispatch to the stream.
+    // If no information left, just return without modifying the stream.
+    if (R.isEmpty(convertedInput)) {
+      return true;
+    }
     // else just continue as usual
     const data = {
       id: instance.standard_id,

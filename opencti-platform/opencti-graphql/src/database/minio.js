@@ -1,9 +1,8 @@
 import * as Minio from 'minio';
 import { assoc, concat, map, sort } from 'ramda';
 import querystring from 'querystring';
-import mime from 'mime-types';
 import conf, { logger } from '../config/conf';
-import { now, sinceNowInMinutes } from './grakn';
+import { sinceNowInMinutes } from './grakn';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWork } from '../domain/work';
 
@@ -33,34 +32,6 @@ export const isStorageAlive = () => {
   });
 };
 
-/**
- * Generate a filename for the export
- * @param format mime type like application/json*
- * @param connector the connector for the export
- * @param entity the target entity of the export (for entity)
- * @param type entity type to export (for list)
- * @param exportType the export type simple or full
- * @param maxMarkingDefinitionEntity the marking definition entity
-
- * @returns {string}
- */
-export const generateFileExportName = (
-  format,
-  connector,
-  entity = null,
-  type = null,
-  exportType = null,
-  maxMarkingDefinitionEntity = null
-) => {
-  const creation = now();
-  const fileExt = mime.extension(format);
-  // entity and export type required when exporting a specific entity
-  // type is required when exporting list
-  const fileNamePart = entity && exportType ? `${entity.entity_type}-${entity.name}_${exportType}` : type;
-  const maxMarking = maxMarkingDefinitionEntity ? `_${maxMarkingDefinitionEntity.definition}` : '';
-  return `${creation}${maxMarking}_(${connector.name})_${fileNamePart}.${fileExt}`;
-};
-
 export const deleteFile = async (user, id) => {
   logger.debug(`[MINIO] delete file ${id} by ${user.user_email}`);
   await minioClient.removeObject(bucketName, id);
@@ -79,7 +50,7 @@ export const loadFile = async (filename) => {
     information: '',
     lastModified: stat.lastModified,
     lastModifiedSinceMin: sinceNowInMinutes(stat.lastModified),
-    metaData: stat.metaData,
+    metaData: Object.assign(stat.metaData, { messages: [], errors: [] }),
     uploadStatus: 'complete',
   };
 };
@@ -107,7 +78,8 @@ const rawFilesListing = (directory) => {
 export const upload = async (user, path, file, metadata = {}) => {
   const { createReadStream, filename, mimetype, encoding } = await file;
   const escapeName = querystring.escape(filename);
-  const fileMeta = Object.assign(metadata, { filename: escapeName, mimetype, encoding });
+  const internalMeta = { filename: escapeName, mimetype, encoding };
+  const fileMeta = Object.assign(metadata, internalMeta);
   const fileDirName = `${path}/${filename}`;
   logger.debug(`[MINIO] Upload file ${fileDirName} by ${user.user_email}`);
   // Upload the file in the storage

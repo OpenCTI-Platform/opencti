@@ -7,7 +7,6 @@ import {
   split,
   drop,
   join,
-  pathOr,
   propOr,
 } from 'ramda';
 import moment from 'moment';
@@ -16,7 +15,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { DeleteOutlined, GetAppOutlined } from '@material-ui/icons';
+import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -113,15 +112,16 @@ class FileLineComponent extends Component {
       disableImport,
       directDownload,
     } = this.props;
-    const { lastModifiedSinceMin, uploadStatus } = file;
-    const isFail = uploadStatus === 'error' || uploadStatus === 'partial';
-    const isProgress = uploadStatus === 'progress';
+    const { lastModifiedSinceMin, uploadStatus, metaData } = file;
+    const { messages, errors } = metaData;
+    const isFail = errors.length > 0;
+    const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
     const isOutdated = isProgress && lastModifiedSinceMin > 1;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
     const fileName = propOr('', 'name', file).includes('_')
       ? pipe(split('_'), drop(1), join('_'))(file.name)
       : file.name;
-    const toolTip = pathOr('', ['metaData', 'list_filters'], file);
+    const toolTip = [...messages, ...errors].map((s) => s.message).join(', ');
     return (
       <div>
         <ListItem
@@ -140,7 +140,9 @@ class FileLineComponent extends Component {
           rel="noopener noreferrer"
         >
           <ListItemIcon>
-            {isProgress ? <CircularProgress size={20} /> : <FileOutline />}
+            {isProgress && <CircularProgress size={20} />}
+            {!isProgress && isFail && <WarningOutlined style={{ fontSize: 15, color: '#f44336' }}/>}
+            {!isProgress && !isFail && <FileOutline />}
           </ListItemIcon>
           <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
             <ListItemText
@@ -165,7 +167,7 @@ class FileLineComponent extends Component {
             ) : (
               ''
             )}
-            {!directDownload ? (
+            {(!directDownload && !isFail) ? (
               <Tooltip title={t('Download this file')}>
                 <span>
                   <IconButton
@@ -185,8 +187,7 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     color="secondary"
-                    onClick={this.handleRemoveJob.bind(this, file.id)}
-                  >
+                    onClick={this.handleRemoveJob.bind(this, file.id)}>
                     <DeleteOutlined />
                   </IconButton>
                 </span>
@@ -233,6 +234,14 @@ const FileLine = createFragmentContainer(FileLineComponent, {
       metaData {
         mimetype
         list_filters
+        messages {
+          timestamp
+          message
+        }
+        errors {
+          timestamp
+          message
+        }
       }
       ...FileWork_file
     }

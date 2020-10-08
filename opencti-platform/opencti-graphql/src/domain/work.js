@@ -16,7 +16,11 @@ export const workToExportFile = (work) => {
     size: 0,
     lastModified: moment(work.updated_at).toDate(),
     lastModifiedSinceMin: sinceNowInMinutes(work.updated_at),
-    uploadStatus: 'progress',
+    uploadStatus: work.status,
+    metaData: {
+      messages: work.messages,
+      errors: work.errors,
+    },
   };
 };
 
@@ -55,8 +59,8 @@ export const worksForSource = async (sourceId, args = {}) => {
 
 export const loadExportWorksAsProgressFiles = async (sourceId) => {
   const works = await worksForSource(sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
-  const onlyProgressWorks = R.filter((w) => w.status === 'progress', works);
-  return R.map((item) => workToExportFile(item), onlyProgressWorks);
+  const filterSuccessCompleted = R.filter((w) => w.status !== 'complete' || w.errors.length > 0, works);
+  return R.map((item) => workToExportFile(item), filterSuccessCompleted);
 };
 
 export const deleteWork = async (workId) => {
@@ -77,7 +81,7 @@ const loadWorkById = async (workId) => {
 
 const deleteOldCompletedWorks = async (sourceId, connectorType) => {
   let numberToKeep = 50;
-  if (connectorType === CONNECTOR_INTERNAL_EXPORT_FILE) numberToKeep = 1;
+  if (connectorType === CONNECTOR_INTERNAL_EXPORT_FILE) numberToKeep = 5;
   if (connectorType === CONNECTOR_INTERNAL_IMPORT_FILE) numberToKeep = 5;
   if (connectorType === CONNECTOR_INTERNAL_ENRICHMENT) numberToKeep = 5;
   const query = {
@@ -190,7 +194,7 @@ export const updateReceivedTime = (user, workId, message) => {
   return el.update(update).then(() => loadWorkById(workId));
 };
 
-export const updateProcessedTime = (user, workId, message) => {
+export const updateProcessedTime = (user, workId, message, inError = false) => {
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
   source +=
@@ -202,7 +206,11 @@ export const updateProcessedTime = (user, workId, message) => {
     /*--*/ "ctx._source['completed_time'] = null;" +
     '}';
   if (isNotEmptyField(message)) {
-    source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
+    if (inError) {
+      source += `ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); `;
+    } else {
+      source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
+    }
   }
   const script = { source, lang: 'painless', params };
   const update = {

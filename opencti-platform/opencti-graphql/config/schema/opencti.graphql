@@ -303,6 +303,8 @@ type WorkConnection {
 type FileMetadata {
   encoding: String
   mimetype: String
+  messages: [WorkMessage]
+  errors: [WorkMessage]
   list_filters: String
 }
 type File {
@@ -8080,7 +8082,7 @@ type WorkEditMutations {
   reportExpectation(error: WorkErrorInput): Work!
   addExpectations(expectations: Int): Work!
   toReceived(message: String): Work!
-  toProcessed(message: String): Work!
+  toProcessed(message: String, inError: Boolean): Work!
 }
 
 ######## INTERNAL OBJECT ENTITIES

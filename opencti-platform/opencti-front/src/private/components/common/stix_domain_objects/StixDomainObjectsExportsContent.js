@@ -92,6 +92,10 @@ class StixDomainObjectsExportsContentComponent extends Component {
                 exportEntityType={exportEntityType}
                 paginationOptions={paginationOptions}
                 context={context}
+                onExportAsk={ () => this.props.relay.refetch({
+                  type: this.props.exportEntityType,
+                  count: 25,
+                })}
               />
             </Security>
             <IconButton

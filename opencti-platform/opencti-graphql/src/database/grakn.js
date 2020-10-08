@@ -51,16 +51,16 @@ import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeUpdateEv
 import { buildStixData, mergeStixIds, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
-  IDS_ALIASES,
   ID_INTERNAL,
   ID_STANDARD,
+  IDS_ALIASES,
   IDS_STIX,
   isAbstract,
   REL_INDEX_PREFIX,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_OBJECT,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
@@ -78,10 +78,10 @@ import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   dictAttributes,
-  multipleAttributes,
-  statsDateAttributes,
   isDictionaryAttribute,
   isMultipleAttribute,
+  multipleAttributes,
+  statsDateAttributes,
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
