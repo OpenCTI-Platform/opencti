@@ -27,7 +27,7 @@ import List from '@material-ui/core/List';
 import Tooltip from '@material-ui/core/Tooltip';
 import { RotateLeft, Delete } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
-import {Link, withRouter} from 'react-router-dom';
+import { Link, withRouter } from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -217,15 +217,23 @@ class ConnectorsStatusComponent extends Component {
     } = this.props;
     const { queues } = data.rabbitMQMetrics;
     const connectors = pipe(
-      map((n) => assoc(
+      map((i) => assoc(
         'messages',
         filter(
           (o) => o.name
               === (n.connector_type === 'INTERNAL_ENRICHMENT'
-                ? `listen_${n.id}`
-                : `push_${n.id}`),
+                ? `listen_${i.id}`
+                : `push_${i.id}`),
           queues,
-        )[0].messages,
+        ).length > 0
+          ? filter(
+            (o) => o.name
+                  === (n.connector_type === 'INTERNAL_ENRICHMENT'
+                    ? `listen_${i.id}`
+                    : `push_${i.id}`),
+            queues,
+          )[0].messages
+          : 0,
         n,
       )),
     )(data.connectors);
@@ -411,4 +419,8 @@ const ConnectorsStatus = createRefetchContainer(
   connectorsStatusQuery,
 );
 
-export default compose(inject18n, withRouter, withStyles(styles))(ConnectorsStatus);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(ConnectorsStatus);
