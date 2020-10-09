@@ -84,7 +84,7 @@ export const registerConnector = async (user, connectorData) => {
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
-    const patch = { name, updated_at: now(), connector_scope: scope.join(','), auto };
+    const patch = { name, updated_at: now(), connector_user_id: user.id, connector_scope: scope.join(','), auto };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
     return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }

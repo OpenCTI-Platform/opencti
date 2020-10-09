@@ -2166,7 +2166,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
       const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
       const key = resolveAliasesField(type);
       const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
-      const filteredAliases = R.filter((i) => !concurrentAliases.includes(i), input[key]);
+      const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
       const inputAliases = Object.assign(input, { [key]: filteredAliases });
       return upsertEntity(user, existingByStandard.id, type, inputAliases);
     }

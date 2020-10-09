@@ -103,6 +103,14 @@ export const connectorDeletionMutation = graphql`
   }
 `;
 
+export const connectorWorkDeletionMutation = graphql`
+  mutation ConnectorWorkDeletionMutation($id: ID!) {
+    workEdit(id: $id) {
+      delete
+    }
+  }
+`;
+
 class ConnectorComponent extends Component {
   constructor(props) {
     super(props);
@@ -157,6 +165,18 @@ class ConnectorComponent extends Component {
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector state has been reset');
+      },
+    });
+  }
+
+  handleDeleteWork(workId) {
+    commitMutation({
+      mutation: connectorWorkDeletionMutation,
+      variables: {
+        id: workId,
+      },
+      onCompleted: () => {
+        MESSAGING$.notifySuccess('The work has been deleted');
       },
     });
   }
@@ -319,7 +339,7 @@ class ConnectorComponent extends Component {
                     <Typography variant="h3" gutterBottom={true}>
                       {t('Name')}
                     </Typography>
-                    {truncate(work.name, 50)}
+                    {truncate(work.name, 40)}
                     <Typography
                       variant="h3"
                       gutterBottom={true}
@@ -381,6 +401,14 @@ class ConnectorComponent extends Component {
               </Grid>
               <Grid item={true} xs={2}>
                 <Button
+                  style={{ float: 'right', marginLeft: 20 }}
+                  variant="outlined"
+                  color="secondary"
+                  onClick={this.handleOpenErrors.bind(this, work.errors)}
+                >
+                  {work.errors.length} {t('errors')}
+                </Button>
+                <Button
                   style={{ float: 'right' }}
                   variant="outlined"
                   color="primary"
@@ -391,11 +419,9 @@ class ConnectorComponent extends Component {
                 <div className="clearfix" style={{ height: 30 }} />
                 <Button
                   style={{ float: 'right' }}
-                  variant="outlined"
-                  color="secondary"
-                  onClick={this.handleOpenErrors.bind(this, work.errors)}
+                  onClick={this.handleDeleteWork.bind(this, work.id)}
                 >
-                  {work.errors.length} {t('errors')}
+                  {t('Delete')}
                 </Button>
               </Grid>
             </Grid>
