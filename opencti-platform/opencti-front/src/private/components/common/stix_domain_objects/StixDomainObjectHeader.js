@@ -10,9 +10,8 @@ import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import Slide from '@material-ui/core/Slide';
-import {
-  Add, Close, Delete, More,
-} from '@material-ui/icons';
+import { Add, Close, Delete } from '@material-ui/icons';
+import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Dialog from '@material-ui/core/Dialog';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -252,13 +251,14 @@ class StixDomainObjectHeader extends Component {
             )))}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               {aliases.length > 5 ? (
-                <IconButton
+                <Button
                   color="primary"
                   aria-label="More"
                   onClick={this.handleToggleOpenAliases.bind(this)}
+                  style={{ fontSize: 14}}
                 >
-                  <More fontSize="small" />
-                </IconButton>
+                  <DotsHorizontalCircleOutline />&nbsp;&nbsp;{t('More')}
+                </Button>
               ) : (
                 <IconButton
                   style={{ float: 'left', marginTop: -5 }}

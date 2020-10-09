@@ -529,6 +529,7 @@ const i18n = {
       'Exported files': 'Fichiers exportés',
       'Inference explanation': "Explication de l'inférence",
       Explanation: 'Explication',
+      More: 'Plus',
       'Too many objects': "Nombre trop important d'objets",
       'This report contains too many objects to be displayed as a graph. We are working on a new visualization which will allow large graph to be displayed in the future.':
         "Ce rapport contient trop d'objets pour être affiché comme un graphe. Nous travaillons sur une nouvelle visualisation qui permettra d'afficher de grands graphes à l'avenir.",
