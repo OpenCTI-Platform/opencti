@@ -1,21 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
 import { QueryRenderer } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import Connector from './Connector';
+import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';
-
-const connectorQuery = graphql`
-  query RootConnectorQuery($id: String!) {
-    connector(id: $id) {
-      id
-      name
-      ...Connector_connector
-    }
-  }
-`;
 
 class RootConnector extends Component {
   render() {

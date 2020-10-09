@@ -29,6 +29,7 @@ const connectorResolvers = {
     connectorsForImport: () => connectorsForImport(),
   },
   Connector: {
+    connector_user: (connector) => findUserById(connector.connector_user_id),
     works: (connector) => worksForConnector(connector.id),
   },
   Work: {

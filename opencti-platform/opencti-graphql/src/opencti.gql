@@ -76,6 +76,7 @@ define
   connector_type sub attribute, value string;
   connector_scope sub attribute, value string;
   connector_state sub attribute, value string;
+  connector_user_id sub attribute, value string;
   connector_state_reset sub attribute, value boolean;
   workspace_type sub attribute, value string;
   workspace_data sub attribute, value string;
@@ -897,6 +898,7 @@ define
     has connector_scope,
     has connector_state,
     has connector_state_reset,
+    has connector_user_id,
     has created_at,
     has i_created_at_day,
     has i_created_at_month,

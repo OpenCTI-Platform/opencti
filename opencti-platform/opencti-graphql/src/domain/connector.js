@@ -15,12 +15,11 @@ export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files m
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 
 // region utils
-const completeConnector = (connector, user) => {
+const completeConnector = (connector) => {
   return pipe(
     assoc('connector_scope', connector.connector_scope.split(',')),
     assoc('config', connectorConfig(connector.id)),
-    assoc('active', sinceNowInMinutes(connector.updated_at) < 2),
-    assoc('user', user)
+    assoc('active', sinceNowInMinutes(connector.updated_at) < 2)
   )(connector);
 };
 // endregion
@@ -30,7 +29,7 @@ export const loadConnectorById = (id) =>
   loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 export const connectors = () => {
   const query = `match $c isa ${ENTITY_TYPE_CONNECTOR}; get;`;
-  return find(query, ['c']).then((elements) => map((conn) => completeConnector(conn.c, null), elements));
+  return find(query, ['c']).then((elements) => map((conn) => completeConnector(conn.c), elements));
 };
 
 export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = false) => {
@@ -69,13 +68,13 @@ export const pingConnector = async (user, id, state) => {
     const updatePatch = { updated_at: creation, connector_state: state };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatePatch, { noLog: true });
   }
-  return loadById(id, 'Connector').then((data) => completeConnector(data, user));
+  return loadById(id, 'Connector').then((data) => completeConnector(data));
 };
 
 export const resetStateConnector = async (user, id) => {
   const patch = { connector_state: '', connector_state_reset: true };
   await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
-  return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data, user));
+  return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 
 export const registerConnector = async (user, connectorData) => {
@@ -87,15 +86,22 @@ export const registerConnector = async (user, connectorData) => {
     // Simple connector update
     const patch = { name, updated_at: now(), connector_scope: scope.join(','), auto };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
-    return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data, user));
+    return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
-  const connectorToCreate = { internal_id: id, name, connector_type: type, connector_scope: scope.join(','), auto };
+  const connectorToCreate = {
+    internal_id: id,
+    name,
+    connector_type: type,
+    connector_scope: scope.join(','),
+    auto,
+    connector_user_id: user.id,
+  };
   const createdConnector = await createEntity(user, connectorToCreate, ENTITY_TYPE_CONNECTOR, {
     noLog: true,
   });
   // Return the connector
-  return completeConnector(createdConnector, user);
+  return completeConnector(createdConnector);
 };
 
 export const connectorDelete = async (user, connectorId) => {

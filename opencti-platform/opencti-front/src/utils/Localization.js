@@ -554,6 +554,12 @@ const i18n = {
       'End date': 'Date de fin',
       'Knowledge entity': 'Entité de connaissance',
       'Based on': 'Basé sur',
+      complete: 'terminé',
+      wait: 'en attente',
+      Works: 'Exécutions',
+      'in progress': 'en cours',
+      'Received time': 'Délenchement',
+      'Processed time': 'Envoi des données',
       // Properties
       Entity: 'Entité',
       Widget: 'Widget',
@@ -1189,6 +1195,8 @@ const i18n = {
       pcre: 'PCRE',
       suricata: 'Suricata',
       'tanium-signal': 'Tanium Signal',
+      'Received time': 'Triggered',
+      'Processed time': 'Data sent',
     },
   },
 };

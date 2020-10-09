@@ -24,6 +24,10 @@ import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security, { MODULES_MODMANAGE } from '../../../../utils/Security';
+import {
+  connectorDeletionMutation,
+  connectorResetStateMutation,
+} from './Connector';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -115,20 +119,6 @@ const inlineStyles = {
   },
 };
 
-const connectorsStatusResetStateMutation = graphql`
-  mutation ConnectorsStatusResetStateMutation($id: ID!) {
-    resetStateConnector(id: $id) {
-      id
-    }
-  }
-`;
-
-const connectorsStatusDeletionMutation = graphql`
-  mutation ConnectorsStatusDeletionMutation($id: ID!) {
-    deleteConnector(id: $id)
-  }
-`;
-
 class ConnectorsStatusComponent extends Component {
   constructor(props) {
     super(props);
@@ -147,7 +137,7 @@ class ConnectorsStatusComponent extends Component {
 
   handleResetState(connectorId) {
     commitMutation({
-      mutation: connectorsStatusResetStateMutation,
+      mutation: connectorResetStateMutation,
       variables: {
         id: connectorId,
       },
@@ -159,7 +149,7 @@ class ConnectorsStatusComponent extends Component {
 
   handleDelete(connectorId) {
     commitMutation({
-      mutation: connectorsStatusDeletionMutation,
+      mutation: connectorDeletionMutation,
       variables: {
         id: connectorId,
       },
