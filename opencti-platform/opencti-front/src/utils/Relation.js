@@ -41,6 +41,7 @@ const relationsTypesMapping = {
   Organization_Country: ['located-at'],
   Organization_City: ['located-at'],
   Organization_Position: ['located-at'],
+  Organization_Organization: ['part-of'],
   Individual_Individual: ['part-of'],
   Individual_Region: ['located-at'],
   Individual_Country: ['located-at'],
