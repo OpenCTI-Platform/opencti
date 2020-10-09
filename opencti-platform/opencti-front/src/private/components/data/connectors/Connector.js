@@ -261,18 +261,6 @@ class ConnectorComponent extends Component {
                   </Typography>
                   {nsdt(connector.updated_at)}
                 </Grid>
-                <Grid item={true} xs={12}>
-                  <Typography variant="h3" gutterBottom={true}>
-                    {t('Scope')}
-                  </Typography>
-                  {connector.connector_scope.map((scope) => (
-                    <Chip
-                      key={scope}
-                      classes={{ root: classes.chip }}
-                      label={scope}
-                    />
-                  ))}
-                </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Active')}
@@ -290,6 +278,18 @@ class ConnectorComponent extends Component {
                     status={connector.auto}
                     label={connector.auto ? t('TRUE') : t('FALSE')}
                   />
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {t('Scope')}
+                  </Typography>
+                  {connector.connector_scope.map((scope) => (
+                    <Chip
+                      key={scope}
+                      classes={{ root: classes.chip }}
+                      label={scope}
+                    />
+                  ))}
                 </Grid>
               </Grid>
             </Paper>

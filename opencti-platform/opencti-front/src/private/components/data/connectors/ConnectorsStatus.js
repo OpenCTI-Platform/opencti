@@ -1,7 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  ascend, compose, descend, prop, sortWith,
+  ascend,
+  compose,
+  descend,
+  prop,
+  sortWith,
+  pipe,
+  map,
+  assoc,
+  filter,
 } from 'ramda';
 import { interval } from 'rxjs';
 import graphql from 'babel-plugin-relay/macro';
@@ -19,7 +27,7 @@ import List from '@material-ui/core/List';
 import Tooltip from '@material-ui/core/Tooltip';
 import { RotateLeft, Delete } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
-import { Link } from 'react-router-dom';
+import {Link, withRouter} from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -76,13 +84,19 @@ const inlineStylesHeaders = {
   },
   name: {
     float: 'left',
-    width: '40%',
+    width: '35%',
     fontSize: 12,
     fontWeight: '700',
   },
   connector_type: {
     float: 'left',
-    width: '30%',
+    width: '25%',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  messages: {
+    float: 'left',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -96,7 +110,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '40%',
+    width: '35%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -104,7 +118,15 @@ const inlineStyles = {
   },
   connector_type: {
     float: 'left',
-    width: '30%',
+    width: '25%',
+    height: 20,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+  },
+  messages: {
+    float: 'left',
+    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -155,6 +177,7 @@ class ConnectorsStatusComponent extends Component {
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector has been cleared');
+        this.props.history.push('/dashboard/data/connectors');
       },
     });
   }
@@ -190,14 +213,28 @@ class ConnectorsStatusComponent extends Component {
 
   render() {
     const {
-      classes, t, nsdt, data,
+      classes, t, n, nsdt, data,
     } = this.props;
+    const { queues } = data.rabbitMQMetrics;
+    const connectors = pipe(
+      map((n) => assoc(
+        'messages',
+        filter(
+          (o) => o.name
+              === (n.connector_type === 'INTERNAL_ENRICHMENT'
+                ? `listen_${n.id}`
+                : `push_${n.id}`),
+          queues,
+        )[0].messages,
+        n,
+      )),
+    )(data.connectors);
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
         : [descend(prop(this.state.sortBy))],
     );
-    const sortedConnectors = sort(data.connectors);
+    const sortedConnectors = sort(connectors);
     return (
       <Card>
         <CardHeader
@@ -228,6 +265,7 @@ class ConnectorsStatusComponent extends Component {
                   <div>
                     {this.SortHeader('name', 'Name', true)}
                     {this.SortHeader('connector_type', 'Type', true)}
+                    {this.SortHeader('messages', 'Messages', true)}
                     {this.SortHeader('updated_at', 'Modified', true)}
                   </div>
                 }
@@ -266,6 +304,12 @@ class ConnectorsStatusComponent extends Component {
                             connector.auto.toString(),
                           )})`
                           : t(connector.connector_type)}
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={inlineStyles.messages}
+                      >
+                        {n(connector.messages)}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -311,8 +355,10 @@ class ConnectorsStatusComponent extends Component {
 ConnectorsStatusComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
+  n: PropTypes.func,
   nsdt: PropTypes.func,
   data: PropTypes.object,
+  history: PropTypes.object,
 };
 
 export const connectorsStatusQuery = graphql`
@@ -325,7 +371,8 @@ const ConnectorsStatus = createRefetchContainer(
   ConnectorsStatusComponent,
   {
     data: graphql`
-      fragment ConnectorsStatus_data on Query {
+      fragment ConnectorsStatus_data on Query
+      @argumentDefinitions(prefix: { type: "String" }) {
         connectors {
           id
           name
@@ -334,6 +381,29 @@ const ConnectorsStatus = createRefetchContainer(
           connector_type
           connector_scope
           updated_at
+          config {
+            uri
+            listen
+            listen_exchange
+            push
+            push_exchange
+          }
+        }
+        rabbitMQMetrics(prefix: $prefix) {
+          queues {
+            name
+            messages
+            messages_ready
+            messages_unacknowledged
+            consumers
+            idle_since
+            message_stats {
+              ack
+              ack_details {
+                rate
+              }
+            }
+          }
         }
       }
     `,
@@ -341,4 +411,4 @@ const ConnectorsStatus = createRefetchContainer(
   connectorsStatusQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(ConnectorsStatus);
+export default compose(inject18n, withRouter, withStyles(styles))(ConnectorsStatus);

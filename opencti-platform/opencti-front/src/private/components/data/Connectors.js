@@ -33,6 +33,7 @@ class Connectors extends Component {
         />
         <QueryRenderer
           query={connectorsStatusQuery}
+          variables={{ prefix: 'import-connectors' }}
           render={({ props }) => {
             if (props) {
               return <ConnectorsStatus data={props} />;
