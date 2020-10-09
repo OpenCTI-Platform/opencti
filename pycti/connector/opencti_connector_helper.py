@@ -307,7 +307,7 @@ class OpenCTIConnectorHelper:
         connector_configuration = self.api.connector.register(self.connector)
         self.connector_id = connector_configuration["id"]
         self.work_id = None
-        self.applicant_id = connector_configuration["user"]["id"]
+        self.applicant_id = connector_configuration["connector_user"]["id"]
         self.connector_state = connector_configuration["connector_state"]
         self.config = connector_configuration["config"]
 
