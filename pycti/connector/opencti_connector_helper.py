@@ -121,7 +121,7 @@ class ListenQueue(threading.Thread):
         except Exception as e:
             logging.exception("Error in message processing, reporting error to API")
             try:
-                self.helper.api.work.to_processed(work_id, str(e))
+                self.helper.api.work.to_processed(work_id, str(e), True)
             except:
                 logging.error("Failing reporting the processing")
 
