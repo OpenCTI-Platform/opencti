@@ -231,7 +231,7 @@ class ConnectorsStatusComponent extends Component {
             queues,
           )[0],
         ),
-        n,
+        i,
       )),
     )(data.connectors);
     const sort = sortWith(
