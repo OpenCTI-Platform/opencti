@@ -10,6 +10,7 @@ import {
   map,
   assoc,
   filter,
+  propOr,
 } from 'ramda';
 import { interval } from 'rxjs';
 import graphql from 'babel-plugin-relay/macro';
@@ -219,21 +220,17 @@ class ConnectorsStatusComponent extends Component {
     const connectors = pipe(
       map((i) => assoc(
         'messages',
-        filter(
-          (o) => o.name
-              === (n.connector_type === 'INTERNAL_ENRICHMENT'
-                ? `listen_${i.id}`
-                : `push_${i.id}`),
-          queues,
-        ).length > 0
-          ? filter(
+        propOr(
+          0,
+          'messages',
+          filter(
             (o) => o.name
-                  === (n.connector_type === 'INTERNAL_ENRICHMENT'
-                    ? `listen_${i.id}`
-                    : `push_${i.id}`),
+                === (n.connector_type === 'INTERNAL_ENRICHMENT'
+                  ? `listen_${i.id}`
+                  : `push_${i.id}`),
             queues,
-          )[0].messages
-          : 0,
+          )[0],
+        ),
         n,
       )),
     )(data.connectors);
