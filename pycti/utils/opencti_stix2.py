@@ -454,16 +454,16 @@ class OpenCTIStix2:
                     except:
                         matches = None
                     published = None
-                    today = datetime.datetime.today()
+                    yesterday = datetime.date.today() - datetime.timedelta(days=1)
                     default_date = datetime.datetime.fromtimestamp(1)
                     if matches is not None:
                         try:
                             for match in matches:
-                                if match < today:
+                                if match < yesterday:
                                     published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                     break
                         except:
-                            published = None
+                            pass
                     if published is None:
                         published = default_date.strftime("%Y-%m-%dT%H:%M:%SZ")
 
