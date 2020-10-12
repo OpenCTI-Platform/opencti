@@ -151,7 +151,7 @@ class Consumer(threading.Thread):
                 else None
             )
             update = data["update"] if "update" in data else False
-            self.api.stix2.import_bundle_from_json(content, update, types)
+            self.api.stix2.import_bundle_from_json(content, update, types, False)
             # Ack the message
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
