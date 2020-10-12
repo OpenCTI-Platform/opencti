@@ -64,7 +64,7 @@ export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, A
 
 export const createdBy = async (stixCoreObjectId) => {
   const batchCreators = await batchToEntitiesThrough(stixCoreObjectId, null, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
-  return batchCreators.map((b) => R.head(b.edges).node);
+  return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
 export const reports = async (stixCoreObjectId) => {

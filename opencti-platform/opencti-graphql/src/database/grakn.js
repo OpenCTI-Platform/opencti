@@ -136,7 +136,8 @@ let session = null;
 
 // region basic commands
 export const initBatchLoader = (loader) => {
-  return new DataLoader((ids) => loader(ids), { maxBatchSize: MAX_BATCH_SIZE });
+  const opts = { cache: false, maxBatchSize: MAX_BATCH_SIZE };
+  return new DataLoader((ids) => loader(ids), opts);
 };
 const closeTx = async (gTx) => {
   if (gTx.isOpen()) {
