@@ -385,7 +385,7 @@ class ConnectorComponent extends Component {
             ],
           }}
           render={({ props }) => {
-            if (props && props.works) {
+            if (props && props.works && props.works.length > 0) {
               return (
                 <div>
                   {props.works.edges.map((workEge) => {
@@ -541,7 +541,7 @@ class ConnectorComponent extends Component {
             ],
           }}
           render={({ props }) => {
-            if (props && props.works) {
+            if (props && props.works && props.works.length > 0) {
               return (
                 <div>
                   {props.works.edges.map((workEge) => {
