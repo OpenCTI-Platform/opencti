@@ -14,8 +14,6 @@ import { Launch } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
-import ItemCreator from '../../../../components/ItemCreator';
 
 const styles = () => ({
   paper: {
