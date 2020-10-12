@@ -14,6 +14,7 @@ import { Launch } from '@material-ui/icons';
 import Grid from '@material-ui/core/Grid';
 import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -46,6 +47,20 @@ class ToolDetailsComponent extends Component {
           <Grid container={true} spacing={3}>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown source={tool.description} limit={400} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Tool version')}
+              </Typography>
+              {tool.tool_version}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
                 {t('Tool types')}
               </Typography>
               {propOr(['-'], 'tool_types', tool).map((toolType) => (
@@ -55,15 +70,11 @@ class ToolDetailsComponent extends Component {
                   label={toolType}
                 />
               ))}
-            </Grid>
-            <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Tool version')}
-              </Typography>
-              {tool.tool_version}
-            </Grid>
-            <Grid item={true} xs={12}>
-              <Typography variant="h3" gutterBottom={true}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Kill chain phases')}
               </Typography>
               <List>
@@ -102,6 +113,7 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
   tool: graphql`
     fragment ToolDetails_tool on Tool {
       id
+      description
       tool_version
       tool_types
       killChainPhases {

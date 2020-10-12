@@ -7,9 +7,9 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Markdown from 'react-markdown';
-import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
+import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import ItemCreator from '../../../../components/ItemCreator';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -37,29 +37,23 @@ class IndividualDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixCoreObjectLabelsView
-            labels={individual.objectLabel}
-            id={individual.id}
-          />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          <ItemCreator creator={individual.creator} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Contact information')}
-          </Typography>
-          <Markdown
-            className="markdown"
-            source={individual.contact_information}
-          />
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown source={individual.description} limit={400} />
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Contact information')}
+              </Typography>
+              <Markdown
+                className="markdown"
+                source={individual.contact_information}
+              />
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
@@ -78,19 +72,7 @@ const IndividualDetails = createFragmentContainer(IndividualDetailsComponent, {
     fragment IndividualDetails_individual on Individual {
       id
       contact_information
-      creator {
-        id
-        name
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
+      description
     }
   `,
 });
