@@ -88,7 +88,12 @@ export const markingDefinitions = (stixCoreObjectIds) => {
 };
 
 export const killChainPhases = (stixDomainObjectId) => {
-  return batchToEntitiesThrough(stixDomainObjectId, null, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return listToEntitiesThroughRelation(
+    stixDomainObjectId,
+    null,
+    RELATION_KILL_CHAIN_PHASE,
+    ENTITY_TYPE_KILL_CHAIN_PHASE
+  );
 };
 
 export const externalReferences = (stixDomainObjectId) => {
