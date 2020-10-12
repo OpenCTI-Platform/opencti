@@ -3,6 +3,7 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import Grakn from 'grakn-client';
 import * as R from 'ramda';
 import { __ } from 'ramda';
+import DataLoader from 'dataloader';
 import {
   DatabaseError,
   DuplicateEntryError,
@@ -98,6 +99,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
 
 // region global variables
+export const MAX_BATCH_SIZE = 50;
 export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
 export const UNTIL_END = 100000000000000; // "5138-11-16T09:46:40.000Z"
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
@@ -133,6 +135,9 @@ let session = null;
 // endregion
 
 // region basic commands
+export const initBatchLoader = (loader) => {
+  return new DataLoader((ids) => loader(ids), { maxBatchSize: MAX_BATCH_SIZE });
+};
 const closeTx = async (gTx) => {
   if (gTx.isOpen()) {
     return gTx.close().catch(
@@ -648,6 +653,23 @@ const getSingleValue = (query, infer = false) => {
 export const getSingleValueNumber = (query, infer = false) => {
   return getSingleValue(query, infer).then((data) => data.number());
 };
+// Bulk loading method
+export const batchToEntitiesThrough = async (fromIds, fromType, relationType, toEntityType) => {
+  const ids = Array.isArray(fromIds) ? fromIds : [fromIds];
+  const idsQuery = ids.map((s) => `{ $from has internal_id "${s}"; }`).join(' or ');
+  const query = `match $to isa ${toEntityType}; 
+  $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};
+  ${fromType ? `$from isa ${fromType};` : ''} ${idsQuery}; get;`;
+  const test = await find(query, ['from', 'to']);
+  const grouped = R.groupBy((e) => e.from.internal_id, test);
+  return ids.map((id) => {
+    const values = grouped[id];
+    let edges = [];
+    if (values) edges = values.map((i) => ({ node: i.to }));
+    return buildPagination(0, 0, edges, edges.length);
+  });
+};
+// Standard loading
 export const listToEntitiesThroughRelation = (fromId, fromType, relationType, toEntityType) => {
   return find(
     `match $to isa ${toEntityType}; 

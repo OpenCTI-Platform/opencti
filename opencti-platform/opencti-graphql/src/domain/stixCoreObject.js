@@ -2,16 +2,15 @@ import * as R from 'ramda';
 import mime from 'mime-types';
 import { assoc, invertObj, map, pipe, propOr } from 'ramda';
 import {
+  batchToEntitiesThrough,
   createRelation,
   createRelations,
   deleteEntityById,
   deleteRelationsByFromAndTo,
-  escapeString,
   internalLoadById,
   listEntities,
   listFromEntitiesThroughRelation,
   listToEntitiesThroughRelation,
-  load,
   loadById,
   loadByIdFullyResolved,
   mergeEntitiesRaw,
@@ -64,13 +63,8 @@ export const findAll = async (args) => {
 export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
 export const createdBy = async (stixCoreObjectId) => {
-  const element = await load(
-    `match $to isa ${ENTITY_TYPE_IDENTITY};
-    $rel(${RELATION_CREATED_BY}_from:$from, ${RELATION_CREATED_BY}_to: $to) isa ${RELATION_CREATED_BY};
-    $from has internal_id "${escapeString(stixCoreObjectId)}"; get;`,
-    ['to']
-  );
-  return element && element.to;
+  const batchCreators = await batchToEntitiesThrough(stixCoreObjectId, null, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+  return batchCreators.map((b) => R.head(b.edges).node);
 };
 
 export const reports = async (stixCoreObjectId) => {
@@ -85,21 +79,16 @@ export const opinions = (stixCoreObjectId) => {
   return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
-export const labels = async (stixCoreObjectId) => {
-  return listToEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+export const labels = (stixCoreObjectIds) => {
+  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const markingDefinitions = (stixCoreObjectId) => {
-  return listToEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
+export const markingDefinitions = (stixCoreObjectIds) => {
+  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const killChainPhases = (stixDomainObjectId) => {
-  return listToEntitiesThroughRelation(
-    stixDomainObjectId,
-    null,
-    RELATION_KILL_CHAIN_PHASE,
-    ENTITY_TYPE_KILL_CHAIN_PHASE
-  );
+  return batchToEntitiesThrough(stixDomainObjectId, null, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const externalReferences = (stixDomainObjectId) => {

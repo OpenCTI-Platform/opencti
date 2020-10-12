@@ -17,7 +17,11 @@ import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 import { convertDataToStix } from '../database/stix';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
-import { stixElementLoader } from '../database/grakn';
+import { initBatchLoader, stixElementLoader } from '../database/grakn';
+
+const createdByLoader = initBatchLoader(createdBy);
+const markingLoader = initBatchLoader(markingDefinitions);
+const labelLoader = initBatchLoader(labels);
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -38,14 +42,15 @@ const stixCoreObjectResolvers = {
     },
     toStix: (stixCoreObject) => JSON.stringify(convertDataToStix(stixCoreObject)),
     creator: (stixCoreObject) => creator(stixCoreObject.id),
-    createdBy: (stixCoreObject) => createdBy(stixCoreObject.id),
-    objectMarking: (stixCoreObject) => markingDefinitions(stixCoreObject.id),
-    objectLabel: (stixCoreObject) => labels(stixCoreObject.id),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     externalReferences: (stixCoreObject) => externalReferences(stixCoreObject.id),
     reports: (stixCoreObject) => reports(stixCoreObject.id),
     notes: (stixCoreObject) => notes(stixCoreObject.id),
     stixCoreRelationships: (stixCoreObject, args) => stixCoreRelationships(stixCoreObject.id, args),
+    // Bulk loaders
+    createdBy: (stixCoreObject) => createdByLoader.load(stixCoreObject.id),
+    objectMarking: (stixCoreObject) => markingLoader.load(stixCoreObject.id),
+    objectLabel: (stixCoreObject) => labelLoader.load(stixCoreObject.id),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({
