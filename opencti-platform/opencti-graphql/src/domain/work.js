@@ -30,9 +30,18 @@ export const connectorForWork = async (id) => {
   return null;
 };
 
+export const findAll = (args = {}) => {
+  const finalArgs = R.pipe(
+    R.assoc('type', ENTITY_TYPE_WORK),
+    R.assoc('orderBy', args.orderBy || 'timestamp'),
+    R.assoc('orderMode', args.orderMode || 'desc')
+  )(args);
+  return elPaginate(INDEX_HISTORY, finalArgs);
+};
+
 export const worksForConnector = async (connectorId, args = {}) => {
-  const { first = 10 } = args;
-  const filters = [{ key: 'connector_id', values: [connectorId] }];
+  const { first = 10, filters = [] } = args;
+  filters.push({ key: 'connector_id', values: [connectorId] });
   return elPaginate(INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,

@@ -45,7 +45,7 @@ const stixCoreObjectResolvers = {
     externalReferences: (stixCoreObject) => externalReferences(stixCoreObject.id),
     reports: (stixCoreObject) => reports(stixCoreObject.id),
     notes: (stixCoreObject) => notes(stixCoreObject.id),
-    stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
+    stixCoreRelationships: (stixCoreObject, args) => stixCoreRelationships(stixCoreObject.id, args),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({

@@ -11,6 +11,7 @@ import {
   dissoc,
   includes,
   map,
+  filter,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -232,12 +233,18 @@ class StixDomainObjectCreation extends Component {
     } else if (includes(finalValues.type, typesWithOpenCTIAliases)) {
       finalValues = pipe(
         dissoc('aliases'),
-        assoc('x_opencti_aliases', split(',', finalValues.x_opencti_aliases)),
+        assoc(
+          'x_opencti_aliases',
+          filter((n) => n.length > 0, split(',', finalValues.x_opencti_aliases)),
+        ),
       )(finalValues);
     } else {
       finalValues = pipe(
         dissoc('x_opencti_aliases'),
-        assoc('aliases', split(',', finalValues.aliases)),
+        assoc(
+          'aliases',
+          filter((n) => n.length > 0, split(',', finalValues.aliases)),
+        ),
       )(finalValues);
     }
     commitMutation({

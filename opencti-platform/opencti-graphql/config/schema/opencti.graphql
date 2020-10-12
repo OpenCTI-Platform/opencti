@@ -270,6 +270,19 @@ type SubType {
 }
 
 ############## Files
+enum WorksOrdering {
+  status
+  timestamp
+}
+enum WorksFilter {
+  status
+  connector_id
+}
+input WorksFiltering {
+  key: WorksFilter!
+  values: [String]
+  operator: String
+}
 type WorkMessage {
   timestamp: DateTime
   message: String
@@ -566,7 +579,7 @@ type Connector implements BasicObject & InternalObject {
   updated_at: DateTime
   created_at: DateTime
   config: ConnectorConfig
-  works: [Work]
+  works(status: String): [Work]
 }
 
 ############## Workspaces
@@ -7339,6 +7352,15 @@ type Query {
   connectors: [Connector] @auth(for: [MODULES])
   connectorsForExport: [Connector] @auth(for: [KNOWLEDGE])
   connectorsForImport: [Connector] @auth(for: [KNOWLEDGE])
+  works(
+    first: Int
+    after: ID
+    orderBy: WorksOrdering
+    orderMode: OrderingMode
+    search: String
+    filters: [WorksFiltering]
+    filterMode: FilterMode
+  ): WorkConnection @auth(for: [MODULES])
   workspace(id: String!): Workspace @auth(for: [EXPLORE])
   workspaces(
     first: Int

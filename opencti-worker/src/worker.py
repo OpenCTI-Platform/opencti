@@ -170,7 +170,7 @@ class Consumer(threading.Thread):
         except Exception as ex:
             error = str(ex)
             if "UnsupportedError" not in error and self.processing_count <= 5:
-                time.sleep(2)
+                time.sleep(1)
                 logging.info(
                     "Message (delivery_tag="
                     + str(delivery_tag)

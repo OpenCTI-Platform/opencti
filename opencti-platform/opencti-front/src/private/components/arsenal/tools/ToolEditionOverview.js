@@ -191,10 +191,8 @@ class ToolEditionOverviewComponent extends Component {
         variables: {
           id: this.props.tool.id,
           input: {
-            fromRole: 'phase_belonging',
             toId: head(added).value,
-            toRole: 'kill_chain_phase',
-            through: 'kill_chain_phases',
+            relationship_type: 'kill-chain-phase',
           },
         },
       });
@@ -206,7 +204,7 @@ class ToolEditionOverviewComponent extends Component {
         variables: {
           id: this.props.tool.id,
           toId: head(removed).value,
-          relationship_type: 'object-marking',
+          relationship_type: 'kill-chain-phase',
         },
       });
     }

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -11,6 +11,8 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { Launch } from '@material-ui/icons';
+import Grid from '@material-ui/core/Grid';
+import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemCreator from '../../../../components/ItemCreator';
@@ -23,6 +25,15 @@ const styles = () => ({
     padding: '15px',
     borderRadius: 6,
   },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    color: '#ffffff',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    margin: '0 5px 5px 0',
+  },
 });
 
 class ToolDetailsComponent extends Component {
@@ -34,39 +45,48 @@ class ToolDetailsComponent extends Component {
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixCoreObjectLabelsView labels={tool.objectLabel} id={tool.id} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Creator')}
-          </Typography>
-          <ItemCreator creator={tool.creator} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Kill chain phases')}
-          </Typography>
-          <List>
-            {tool.killChainPhases.edges.map((killChainPhaseEdge) => {
-              const killChainPhase = killChainPhaseEdge.node;
-              return (
-                <ListItem
-                  key={killChainPhase.phase_name}
-                  dense={true}
-                  divider={true}
-                >
-                  <ListItemIcon>
-                    <Launch />
-                  </ListItemIcon>
-                  <ListItemText primary={killChainPhase.phase_name} />
-                </ListItem>
-              );
-            })}
-          </List>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Tool types')}
+              </Typography>
+              {propOr(['-'], 'tool_types', tool).map((toolType) => (
+                <Chip
+                  key={toolType}
+                  classes={{ root: classes.chip }}
+                  label={toolType}
+                />
+              ))}
+            </Grid>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Tool version')}
+              </Typography>
+              {tool.tool_version}
+            </Grid>
+            <Grid item={true} xs={12}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Kill chain phases')}
+              </Typography>
+              <List>
+                {tool.killChainPhases.edges.map((killChainPhaseEdge) => {
+                  const killChainPhase = killChainPhaseEdge.node;
+                  return (
+                    <ListItem
+                      key={killChainPhase.phase_name}
+                      dense={true}
+                      divider={true}
+                    >
+                      <ListItemIcon>
+                        <Launch />
+                      </ListItemIcon>
+                      <ListItemText primary={killChainPhase.phase_name} />
+                    </ListItem>
+                  );
+                })}
+              </List>
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
@@ -84,19 +104,8 @@ const ToolDetails = createFragmentContainer(ToolDetailsComponent, {
   tool: graphql`
     fragment ToolDetails_tool on Tool {
       id
-      creator {
-        id
-        name
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
-          }
-        }
-      }
+      tool_version
+      tool_types
       killChainPhases {
         edges {
           node {
