@@ -1,16 +1,22 @@
 import json
 import uuid
+import logging
+
+from pycti.utils.constants import OrphanException
 
 
 class OpenCTIStix2Splitter:
-    def __init__(self):
+    def __init__(self, remove_orphan=True):
         self.cache_index = {}
         self.elements = []
+        self.remove_orphan = remove_orphan
 
     def enlist_element(self, item_id, raw_data):
         nb_deps = 1
         if item_id not in raw_data:
             # element not in raw_data
+            if self.remove_orphan:
+                raise OrphanException(item_id)
             return 0
         existing_item = self.cache_index.get(item_id)
         if existing_item is not None:
@@ -57,11 +63,21 @@ class OpenCTIStix2Splitter:
                 raise Exception("File data is not a valid bundle")
 
         raw_data = {}
+        orphans = []
         # Build flat list of elements
         for item in bundle_data["objects"]:
             raw_data[item["id"]] = item
         for item in bundle_data["objects"]:
-            self.enlist_element(item["id"], raw_data)
+            try:
+                self.enlist_element(item["id"], raw_data)
+            except OrphanException as orphanEx:
+                orphan = raw_data[item["id"]]
+                orphan["orphan_source"] = orphanEx.args[0]
+                orphans.append(orphan)
+
+        if len(orphans) > 0:
+            logging.warning("Inconsistent bundle, removing %s orphans." % len(orphans))
+
         # Build the bundles
         bundles = []
 
