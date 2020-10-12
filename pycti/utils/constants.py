@@ -6,6 +6,7 @@ from enum import Enum
 
 class OrphanException(Exception):
     """Raised when an orphan is found in the stix splitter"""
+
     pass
 
 
