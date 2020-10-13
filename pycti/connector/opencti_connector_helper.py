@@ -389,7 +389,7 @@ class OpenCTIConnectorHelper:
                 logging.error("Failed to load JSON: " + msg.data)
                 continue
             if msg.event == "heartbeat":
-                logging.info("Heartbeat...")
+                print(msg.event)
                 continue
             elif msg.event == "connected":
                 last_event_id = data["lastEventId"]
