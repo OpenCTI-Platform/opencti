@@ -99,7 +99,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
 
 // region global variables
-export const MAX_BATCH_SIZE = 50;
+export const MAX_BATCH_SIZE = 25;
 export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
 export const UNTIL_END = 100000000000000; // "5138-11-16T09:46:40.000Z"
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
@@ -656,7 +656,44 @@ export const getSingleValueNumber = (query, infer = false) => {
 };
 // Bulk loading method
 export const batchToEntitiesThrough = async (fromIds, fromType, relationType, toEntityType) => {
+  // USING ELASTIC
   const ids = Array.isArray(fromIds) ? fromIds : [fromIds];
+  if (useCache()) {
+    // Filter on connection to get only relation coming from ids.
+    const fromInternalIdFilter = {
+      key: 'connections',
+      nested: [
+        { key: 'internal_id', values: ids },
+        { key: 'role', values: ['*_from'], operator: 'wildcard' },
+      ],
+    };
+    // Filter the other side of the relation to have expected toEntityType
+    const toTypeFilter = {
+      key: 'connections',
+      nested: [
+        { key: 'types', values: [toEntityType] },
+        { key: 'role', values: ['*_to'], operator: 'wildcard' },
+      ],
+    };
+    const filters = [fromInternalIdFilter, toTypeFilter];
+    // Resolve all relations
+    const relations = await elPaginate(RELATIONSHIPS_INDICES, {
+      connectionFormat: false,
+      filters,
+      types: [relationType],
+    });
+    // For each relation resolved the target entity
+    const targets = await elFindByIds(R.uniq(relations.map((s) => s.toId)));
+    // Group and rebuild the result
+    const elGrouped = R.groupBy((e) => e.fromId, relations);
+    return ids.map((id) => {
+      const values = elGrouped[id];
+      let edges = [];
+      if (values) edges = values.map((i) => ({ node: R.find((s) => s.internal_id === i.toId, targets) }));
+      return buildPagination(0, 0, edges, edges.length);
+    });
+  }
+  // USING GRAKN
   const idsQuery = ids.map((s) => `{ $from has internal_id "${s}"; }`).join(' or ');
   const query = `match $to isa ${toEntityType}; 
   $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};

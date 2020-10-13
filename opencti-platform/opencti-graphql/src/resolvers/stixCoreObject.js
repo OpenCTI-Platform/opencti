@@ -1,17 +1,17 @@
 import {
-  createdBy,
   findById,
   findAll,
-  markingDefinitions,
   reports,
   notes,
-  labels,
   externalReferences,
   stixCoreObjectAddRelation,
   stixCoreObjectAddRelations,
   stixCoreObjectDeleteRelation,
   stixCoreRelationships,
   stixCoreObjectMerge,
+  batchMarkingDefinitions,
+  batchLabels,
+  batchCreatedBy,
 } from '../domain/stixCoreObject';
 import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
@@ -19,9 +19,9 @@ import { convertDataToStix } from '../database/stix';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { initBatchLoader, stixElementLoader } from '../database/grakn';
 
-const createdByLoader = initBatchLoader(createdBy);
-const markingLoader = initBatchLoader(markingDefinitions);
-const labelLoader = initBatchLoader(labels);
+const createdByLoader = initBatchLoader(batchCreatedBy);
+const markingLoader = initBatchLoader(batchMarkingDefinitions);
+const labelLoader = initBatchLoader(batchLabels);
 
 const stixCoreObjectResolvers = {
   Query: {
