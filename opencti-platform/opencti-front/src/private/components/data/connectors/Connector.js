@@ -6,36 +6,24 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
-import LinearProgress from '@material-ui/core/LinearProgress';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Chip from '@material-ui/core/Chip';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogContentText from '@material-ui/core/DialogContentText';
-import DialogActions from '@material-ui/core/DialogActions';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
 import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
 import { Delete, RotateLeft } from 'mdi-material-ui';
-import ItemStatus from '../../../../components/ItemStatus';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
-import { truncate } from '../../../../utils/String';
 import Security, { MODULES_MODMANAGE } from '../../../../utils/Security';
 import {
   commitMutation,
   MESSAGING$,
   QueryRenderer,
 } from '../../../../relay/environment';
+import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -107,69 +95,11 @@ export const connectorDeletionMutation = graphql`
   }
 `;
 
-export const connectorWorkDeletionMutation = graphql`
-  mutation ConnectorWorkDeletionMutation($id: ID!) {
-    workEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-const connectorWorksQuery = graphql`
-  query ConnectorWorksQuery(
-    $count: Int
-    $orderBy: WorksOrdering
-    $orderMode: OrderingMode
-    $filters: [WorksFiltering]
-  ) {
-    works(
-      first: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    ) {
-      edges {
-        node {
-          id
-          name
-          user {
-            name
-          }
-          timestamp
-          status
-          event_source_id
-          received_time
-          processed_time
-          import_expected_number
-          import_last_processed
-          import_processed_number
-          messages {
-            timestamp
-            message
-            sequence
-            source
-          }
-          errors {
-            timestamp
-            message
-            sequence
-            source
-          }
-        }
-      }
-    }
-  }
-`;
-
 class ConnectorComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
       displayUpdate: false,
-      displayMessages: false,
-      displayErrors: false,
-      messages: [],
-      errors: [],
     };
   }
 
@@ -191,22 +121,6 @@ class ConnectorComponent extends Component {
     this.setState({ displayUpdate: false });
   }
 
-  handleOpenMessages(messages) {
-    this.setState({ displayMessages: true, messages });
-  }
-
-  handleCloseMessages() {
-    this.setState({ displayMessages: false, messages: [] });
-  }
-
-  handleOpenErrors(errors) {
-    this.setState({ displayErrors: true, errors });
-  }
-
-  handleCloseErrors() {
-    this.setState({ displayErrors: false, errors: [] });
-  }
-
   handleResetState(connectorId) {
     commitMutation({
       mutation: connectorResetStateMutation,
@@ -215,18 +129,6 @@ class ConnectorComponent extends Component {
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector state has been reset');
-      },
-    });
-  }
-
-  handleDeleteWork(workId) {
-    commitMutation({
-      mutation: connectorWorkDeletionMutation,
-      variables: {
-        id: workId,
-      },
-      onCompleted: () => {
-        MESSAGING$.notifySuccess('The work has been deleted');
       },
     });
   }
@@ -247,6 +149,20 @@ class ConnectorComponent extends Component {
     const {
       classes, connector, t, nsdt,
     } = this.props;
+    const optionsInProgress = {
+      count: 50,
+      filters: [
+        { key: 'connector_id', values: [connector.id] },
+        { key: 'status', values: ['wait', 'progress'] },
+      ],
+    };
+    const optionsFinished = {
+      count: 50,
+      filters: [
+        { key: 'connector_id', values: [connector.id] },
+        { key: 'status', values: ['complete'] },
+      ],
+    };
     return (
       <div className={classes.container}>
         <div>
@@ -377,155 +293,14 @@ class ConnectorComponent extends Component {
         </Typography>
         <QueryRenderer
           query={connectorWorksQuery}
-          variables={{
-            count: 50,
-            filters: [
-              { key: 'connector_id', values: [connector.id] },
-              { key: 'status', values: ['wait', 'progress'] },
-            ],
-          }}
+          variables={optionsInProgress}
           render={({ props }) => {
-            if (props && props.works && props.works.length > 0) {
+            if (props) {
               return (
-                <div>
-                  {props.works.edges.map((workEge) => {
-                    const work = workEge.node;
-                    return (
-                      <Paper
-                        key={work.id}
-                        classes={{ root: classes.paper }}
-                        elevation={2}
-                        style={{ marginBottom: 20 }}
-                      >
-                        <Grid container={true} spacing={3}>
-                          <Grid item={true} xs={5}>
-                            <Grid container={true} spacing={3}>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Name')}
-                                </Typography>
-                                {truncate(work.name, 40)}
-                                <Typography
-                                  variant="h3"
-                                  gutterBottom={true}
-                                  style={{ marginTop: 20 }}
-                                >
-                                  {t('Received time')}
-                                </Typography>
-                                {nsdt(work.received_time)}
-                              </Grid>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Status')}
-                                </Typography>
-                                <ItemStatus
-                                  status={work.status}
-                                  label={t(work.status)}
-                                />
-                                <Typography
-                                  variant="h3"
-                                  gutterBottom={true}
-                                  style={{ marginTop: 20 }}
-                                >
-                                  {t('Processed time')}
-                                </Typography>
-                                {nsdt(work.processed_time)}
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                          <Grid item={true} xs={5}>
-                            <Grid container={true} spacing={3}>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Operations completed')}
-                                </Typography>
-                                <span className={classes.number}>
-                                  {work.import_processed_number}
-                                </span>
-                              </Grid>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Total number of operations')}
-                                </Typography>
-                                <span className={classes.number}>
-                                  {work.import_expected_number}
-                                </span>
-                              </Grid>
-                              <Grid item={true} xs={12}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Progress')}
-                                </Typography>
-                                <LinearProgress
-                                  classes={{ root: classes.progress }}
-                                  variant="determinate"
-                                  value={Math.round(
-                                    (work.import_processed_number
-                                      / work.import_expected_number)
-                                      * 100,
-                                  )}
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                          <Grid item={true} xs={2}>
-                            <Button
-                              style={{
-                                float: 'right',
-                                margin: '0 0 20px 20px',
-                              }}
-                              variant="outlined"
-                              color="secondary"
-                              onClick={this.handleOpenErrors.bind(
-                                this,
-                                work.errors,
-                              )}
-                              size="small"
-                            >
-                              {work.errors.length} {t('errors')}
-                            </Button>
-                            <Button
-                              style={{ float: 'right' }}
-                              variant="outlined"
-                              color="primary"
-                              onClick={this.handleOpenMessages.bind(
-                                this,
-                                work.messages,
-                              )}
-                              size="small"
-                            >
-                              {work.messages.length} {t('messages')}
-                            </Button>
-                            <div className="clearfix" style={{ height: 30 }} />
-                            <Button
-                              style={{ float: 'right' }}
-                              onClick={this.handleDeleteWork.bind(
-                                this,
-                                work.id,
-                              )}
-                              size="small"
-                            >
-                              <Delete fontSize="small" />
-                              &nbsp;&nbsp;{t('Delete')}
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      </Paper>
-                    );
-                  })}
-                </div>
+                <ConnectorWorks data={props} options={optionsInProgress} />
               );
             }
-            return (
-              <div
-                style={{
-                  width: '100%',
-                  margin: '30px 0 30px 0',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No works for the moment')}
-              </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
         <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
@@ -533,232 +308,14 @@ class ConnectorComponent extends Component {
         </Typography>
         <QueryRenderer
           query={connectorWorksQuery}
-          variables={{
-            count: 50,
-            filters: [
-              { key: 'connector_id', values: [connector.id] },
-              { key: 'status', values: ['complete'] },
-            ],
-          }}
+          variables={optionsFinished}
           render={({ props }) => {
-            if (props && props.works && props.works.length > 0) {
-              return (
-                <div>
-                  {props.works.edges.map((workEge) => {
-                    const work = workEge.node;
-                    return (
-                      <Paper
-                        key={work.id}
-                        classes={{ root: classes.paper }}
-                        elevation={2}
-                        style={{ marginBottom: 20 }}
-                      >
-                        <Grid container={true} spacing={3}>
-                          <Grid item={true} xs={5}>
-                            <Grid container={true} spacing={3}>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Name')}
-                                </Typography>
-                                {truncate(work.name, 40)}
-                                <Typography
-                                  variant="h3"
-                                  gutterBottom={true}
-                                  style={{ marginTop: 20 }}
-                                >
-                                  {t('Received time')}
-                                </Typography>
-                                {nsdt(work.received_time)}
-                              </Grid>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Status')}
-                                </Typography>
-                                <ItemStatus
-                                  status={work.status}
-                                  label={t(work.status)}
-                                />
-                                <Typography
-                                  variant="h3"
-                                  gutterBottom={true}
-                                  style={{ marginTop: 20 }}
-                                >
-                                  {t('Processed time')}
-                                </Typography>
-                                {nsdt(work.processed_time)}
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                          <Grid item={true} xs={5}>
-                            <Grid container={true} spacing={3}>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Operations completed')}
-                                </Typography>
-                                <span className={classes.number}>
-                                  {work.import_processed_number}
-                                </span>
-                              </Grid>
-                              <Grid item={true} xs={6}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Total number of operations')}
-                                </Typography>
-                                <span className={classes.number}>
-                                  {work.import_expected_number}
-                                </span>
-                              </Grid>
-                              <Grid item={true} xs={12}>
-                                <Typography variant="h3" gutterBottom={true}>
-                                  {t('Progress')}
-                                </Typography>
-                                <LinearProgress
-                                  classes={{ root: classes.progress }}
-                                  variant="determinate"
-                                  value={Math.round(
-                                    (work.import_processed_number
-                                      / work.import_expected_number)
-                                      * 100,
-                                  )}
-                                />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                          <Grid item={true} xs={2}>
-                            <Button
-                              style={{
-                                float: 'right',
-                                margin: '0 0 20px 20px',
-                              }}
-                              variant="outlined"
-                              color="secondary"
-                              onClick={this.handleOpenErrors.bind(
-                                this,
-                                work.errors,
-                              )}
-                              size="small"
-                            >
-                              {work.errors.length} {t('errors')}
-                            </Button>
-                            <Button
-                              style={{ float: 'right' }}
-                              variant="outlined"
-                              color="primary"
-                              onClick={this.handleOpenMessages.bind(
-                                this,
-                                work.messages,
-                              )}
-                              size="small"
-                            >
-                              {work.messages.length} {t('messages')}
-                            </Button>
-                            <div className="clearfix" style={{ height: 30 }} />
-                            <Button
-                              style={{ float: 'right' }}
-                              onClick={this.handleDeleteWork.bind(
-                                this,
-                                work.id,
-                              )}
-                              size="small"
-                            >
-                              <Delete fontSize="small" />
-                              &nbsp;&nbsp;{t('Delete')}
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      </Paper>
-                    );
-                  })}
-                </div>
-              );
+            if (props) {
+              return <ConnectorWorks data={props} options={optionsFinished} />;
             }
-            return (
-              <div
-                style={{
-                  width: '100%',
-                  margin: '30px 0 30px 0',
-                  textAlign: 'center',
-                }}
-              >
-                {t('No works for the moment')}
-              </div>
-            );
+            return <div> &nbsp; </div>;
           }}
         />
-        <Dialog
-          open={this.state.displayMessages}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseMessages.bind(this)}
-          fullWidth={true}
-          maxWidth="lg"
-        >
-          <DialogContent>
-            <DialogContentText>
-              <TableContainer component={Paper}>
-                <Table className={classes.table} aria-label="simple table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{t('Timestamp')}</TableCell>
-                      <TableCell>{t('Message')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {this.state.messages.map((message) => (
-                      <TableRow key={message.timestamp}>
-                        <TableCell>{nsdt(message.timestamp)}</TableCell>
-                        <TableCell>{message.message}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseMessages.bind(this)}
-              color="primary"
-            >
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Dialog
-          open={this.state.displayErrors}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseErrors.bind(this)}
-          fullWidth={true}
-          maxWidth="lg"
-        >
-          <DialogContent>
-            <DialogContentText>
-              <TableContainer component={Paper}>
-                <Table className={classes.table} aria-label="simple table">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>{t('Timestamp')}</TableCell>
-                      <TableCell>{t('Message')}</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {this.state.errors.map((error) => (
-                      <TableRow key={error.timestamp}>
-                        <TableCell>{nsdt(error.timestamp)}</TableCell>
-                        <TableCell>{error.message}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={this.handleCloseErrors.bind(this)} color="primary">
-              {t('Close')}
-            </Button>
-          </DialogActions>
-        </Dialog>
       </div>
     );
   }

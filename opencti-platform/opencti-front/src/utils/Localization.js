@@ -565,6 +565,10 @@ const i18n = {
       'in progress': 'en cours',
       'Received time': 'Délenchement',
       'Processed time': 'Envoi des données',
+      'Work start time': "Début de l'exécution",
+      'Work end time': "Fin de l'éxécution",
+      'Operations completed': 'Opérations terminées',
+      'Total number of operations': "Nombre total d'opérations",
       // Properties
       Entity: 'Entité',
       Widget: 'Widget',

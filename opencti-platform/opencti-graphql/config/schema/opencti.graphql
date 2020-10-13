@@ -299,6 +299,7 @@ type Work {
   event_source_id: String
   received_time: DateTime
   processed_time: DateTime
+  completed_time: DateTime
   import_expected_number: Int
   import_last_processed: DateTime
   import_processed_number: Int
