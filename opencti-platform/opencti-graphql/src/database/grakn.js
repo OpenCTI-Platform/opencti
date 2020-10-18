@@ -46,10 +46,11 @@ import {
   generateInternalId,
   generateStandardId,
   isFieldContributingToStandardId,
+  NAME_FIELD,
   normalizeName,
 } from '../schema/identifier';
 import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeUpdateEvent } from './redis';
-import { buildStixData, mergeStixIds, STIX_SPEC_VERSION } from './stix';
+import { buildStixData, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -58,7 +59,7 @@ import {
   BASE_TYPE_RELATION,
   ID_INTERNAL,
   ID_STANDARD,
-  IDS_ALIASES,
+  INTERNAL_IDS_ALIASES,
   IDS_STIX,
   isAbstract,
   REL_INDEX_PREFIX,
@@ -90,7 +91,7 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_REPORT,
   isStixDomainObject,
-  isStixDomainObjectNamed,
+  isStixObjectAliased,
   resolveAliasesField,
   stixDomainObjectFieldsToBeUpdated,
 } from '../schema/stixDomainObject';
@@ -1076,7 +1077,9 @@ export const listRelations = async (relationshipType, args) => {
 const findElementById = async (ids, type, args = {}) => {
   const qType = type || 'thing';
   const keys = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-  if (isStixDomainObjectNamed(type)) keys.push(IDS_ALIASES);
+  if (isStixObjectAliased(type)) {
+    keys.push(INTERNAL_IDS_ALIASES);
+  }
   const workingIds = Array.isArray(ids) ? ids : [ids];
   const searchIds = R.map((id) => {
     const eid = escapeString(id);
@@ -1522,15 +1525,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
   } else if (isMultiple) {
     const currentValues = instance[key] || [];
     if (operation === UPDATE_OPERATION_ADD) {
-      // Specific case of x_opencti_stix_ids
-      if (key === IDS_STIX && !R.isNil(value)) {
-        // In this case we only want to keep the last 5 fake ids
-        // Fake ids come from connectors enable to generate stable ids.
-        // This values are only useful to resolve creation
-        finalVal = mergeStixIds(value, currentValues);
-      } else {
-        finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
-      }
+      finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
     } else if (operation === UPDATE_OPERATION_REMOVE) {
       finalVal = R.filter((n) => !R.includes(n, value), currentValues);
     } else {
@@ -1632,6 +1627,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
   const updatedInputs = [];
   const impactedInputs = [];
   await executeWrite(async (wTx) => {
+    const instanceType = instance.entity_type;
     // Update all needed attributes
     for (let index = 0; index < elements.length; index += 1) {
       const input = elements[index];
@@ -1641,19 +1637,28 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
         updatedInputs.push(input);
       }
       impactedInputs.push(...ins);
-      // If input impact aliases (aliases or x_opencti_aliases)
+      // If named entity name updated, modify the aliases ids
+      if (isStixObjectAliased(instanceType) && input.key === NAME_FIELD) {
+        const name = R.head(input.value);
+        const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+        const aliasesId = generateAliasesId(aliases);
+        const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+        // eslint-disable-next-line no-await-in-loop
+        const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, wTx, options);
+        impactedInputs.push(...aliasIns);
+      }
+      // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
       const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
       const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
       if (isAliasesImpacted) {
-        const aliasesId = generateAliasesId(input.value);
-        const aliasInput = { key: IDS_ALIASES, value: aliasesId };
+        const aliasesId = generateAliasesId([instance.name, ...input.value]);
+        const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
         // eslint-disable-next-line no-await-in-loop
         const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, wTx, options);
         impactedInputs.push(...aliasIns);
       }
     }
     // If update is part of the key, update the standard_id
-    const instanceType = instance.entity_type;
     const keys = R.map((t) => t.key, impactedInputs);
     if (isFieldContributingToStandardId(instance, keys)) {
       const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
@@ -1735,7 +1740,7 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
     });
   }
   const updateAttributes = [];
-  // 1. Update required attributes
+  // 1. Update all possible attributes
   const attributes = await queryAttributes(targetType);
   const sourceFields = R.map((a) => a.node.value, attributes.edges);
   for (let fieldIndex = 0; fieldIndex < sourceFields.length; fieldIndex += 1) {
@@ -1747,14 +1752,15 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
       : R.head(sourceEntities); // If not specified, take the first one.
     const sourceFieldValue = takenFrom[sourceFieldKey];
     // Check if we need to do something
-    // Special case of dictionary
     if (isDictionaryAttribute(sourceFieldKey)) {
+      // Special case of dictionary
       const dictInputs = Object.entries(sourceFieldValue).map(([k, v]) => ({
         key: `${sourceFieldKey}.${k}`,
         value: [v],
       }));
       updateAttributes.push(...dictInputs);
     } else if (isMultipleAttribute(sourceFieldKey)) {
+      // If multiple attributes, concat all values
       if (mergedEntityCurrentFieldValue && sourceFieldValue) {
         const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
         if (mergedEntityCurrentFieldValue.length !== sourceFieldValue.length) {
@@ -1762,9 +1768,11 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
         }
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
+      // Single value. Put the data in the merged field only if empty.
       updateAttributes.push({ key: sourceFieldKey, value: [sourceFieldValue] });
     }
   }
+  // 2. standard_id must also be kept.
   await updateAttributeRaw(user, targetEntity, updateAttributes);
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY + REINDEX RELATION
@@ -1815,9 +1823,9 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
   // 4. Reindex all relations
   const reindexRelations = [];
   // eslint-disable-next-line no-restricted-syntax
-  for (const test of [...relationsToRedirectFrom, ...relationsFromRedirectTo]) {
+  for (const relation of [...relationsToRedirectFrom, ...relationsFromRedirectTo]) {
     reindexRelations.push(
-      internalLoadById(test.internal_id, { noCache: true }) //
+      internalLoadById(relation.internal_id, { noCache: true }) //
         .then((rel) => elIndexElements([rel]))
     );
   }
@@ -1847,24 +1855,41 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
   const participantIds = [instance.standard_id];
-  let mergingEntity = null;
-  // 01. Check if this update is not resulting to an entity merging
+  // 01. Check if updating alias lead to entity conflict
   const keys = R.map((t) => t.key, elements);
+  if (isStixObjectAliased(instance.entity_type)) {
+    // If user ask for aliases modification, we need to check if it not already belong to another entity.
+    const isInputAliases = (input) => input.key === ATTRIBUTE_ALIASES || input.key === ATTRIBUTE_ALIASES_OPENCTI;
+    const aliasedInputs = R.filter((input) => isInputAliases(input), elements);
+    if (aliasedInputs.length > 0) {
+      const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
+      const aliasesIds = generateAliasesId(aliases);
+      const existingEntities = await internalFindByIds(aliasesIds, { type: instance.entity_type });
+      const differentEntities = R.filter((e) => e.internal_id !== id, existingEntities);
+      if (differentEntities.length > 0) {
+        throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+      }
+    }
+  }
+  // 02. Check if this update is not resulting to an entity merging
+  let stixObservableTargetMerge = null;
   if (isFieldContributingToStandardId(instance, keys)) {
     // In this case we need to reconstruct the data like if an update already appears
-    const resolvedInputs = R.filter(
-      (f) => !R.isEmpty(f),
-      R.map((i) => rebuildAndMergeInputFromExistingData(i, instance, options), elements)
-    );
+    const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance, options);
+    const remappedInputs = R.map((i) => mergeInput(i), elements);
+    const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);
     const updatedInstance = mergeInstanceWithInputs(instance, resolvedInputs);
     const targetStandardId = generateStandardId(instance.entity_type, updatedInstance);
     if (targetStandardId !== instance.standard_id) {
       const existingEntity = await loadByIdFullyResolved(targetStandardId);
-      if (existingEntity && isStixCyberObservable(existingEntity.entity_type)) {
-        mergingEntity = existingEntity;
-        participantIds.push(targetStandardId);
-      } else if (existingEntity) {
-        throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+      if (existingEntity) {
+        // If stix observable, we can merge. If not throw an error.
+        if (isStixCyberObservable(existingEntity.entity_type)) {
+          stixObservableTargetMerge = existingEntity;
+          participantIds.push(targetStandardId);
+        } else {
+          throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+        }
       }
     }
   }
@@ -1873,9 +1898,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
-    if (mergingEntity) {
+    // Only for StixCyberObservable
+    if (stixObservableTargetMerge) {
       // noinspection UnnecessaryLocalVariableJS
-      const merged = await mergeEntitiesRaw(user, mergingEntity, [instance]);
+      const merged = await mergeEntitiesRaw(user, stixObservableTargetMerge, [instance]);
       // Return merged element after waiting for it.
       return merged;
       // eslint-disable-next-line
@@ -2121,14 +2147,16 @@ export const createRelation = async (user, input, opts = {}) => {
   const { fromId, toId, relationship_type: relationshipType } = input;
   if (fromId === toId) {
     /* istanbul ignore next */
-    throw UnsupportedError(`You cant create a relation with the same source and target`, {
-      from: input.fromId,
-      relationshipType,
-    });
+    const errorData = { from: input.fromId, relationshipType };
+    throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
   }
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
   const { from, to } = resolvedInput;
+  if (isEmptyField(from) || isEmptyField(to)) {
+    const errorData = { fromId, from, toId, to };
+    throw UnsupportedError('Relation cant be created with missing from or to', errorData);
+  }
   // Build lock ids
   const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
   const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
@@ -2180,7 +2208,7 @@ const upsertEntity = async (user, entityId, type, data) => {
     updatedEntity = await patchAttributeRaw(user, updatedEntity, patch, { operation: UPDATE_OPERATION_ADD });
   }
   // Upsert the aliases
-  if (isStixDomainObjectNamed(type)) {
+  if (isStixObjectAliased(type)) {
     const { name } = data;
     const key = resolveAliasesField(type);
     const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
@@ -2256,7 +2284,7 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   // Stix-Object
   if (isStixObject(type)) {
     data = R.pipe(
-      R.assoc(IDS_STIX, isNotEmptyField(input.stix_id) ? [input.stix_id] : []),
+      R.assoc(IDS_STIX, isNotEmptyField(input.stix_id) ? [input.stix_id.toLowerCase()] : []),
       R.dissoc('stix_id'),
       R.assoc('spec_version', STIX_SPEC_VERSION),
       R.assoc('created_at', today),
@@ -2281,10 +2309,10 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
     )(data);
   }
-  // -- Named
-  if (isStixDomainObjectNamed(type)) {
-    const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    data = R.assoc(IDS_ALIASES, generateAliasesId(aliases), data);
+  // -- Aliased entities
+  if (isStixObjectAliased(type)) {
+    const aliases = [input.name, ...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesId(aliases), data);
   }
   // Add the additional fields for dates (day, month, year)
   const dataKeys = Object.keys(data);
@@ -2356,7 +2384,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
   // For marking def, we need to force the standard_id
   const standardId = input.standard_id || generateStandardId(type, resolvedInput);
   const participantIds = [standardId];
-  if (isStixDomainObjectNamed(type)) {
+  if (isStixObjectAliased(type)) {
     const aliases = [resolvedInput.name, ...(resolvedInput.aliases || []), ...(resolvedInput.x_opencti_aliases || [])];
     participantIds.push(...generateAliasesId(aliases));
   }

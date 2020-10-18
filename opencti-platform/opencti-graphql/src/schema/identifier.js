@@ -19,6 +19,7 @@ import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
 
+export const NAME_FIELD = 'name';
 export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
@@ -33,7 +34,7 @@ const stixCyberObservableContribution = {
   definition: {
     // Observables
     [C.ENTITY_AUTONOMOUS_SYSTEM]: [{ src: 'number' }],
-    [C.ENTITY_DIRECTORY]: [{ src: 'name' }],
+    [C.ENTITY_DIRECTORY]: [{ src: NAME_FIELD }],
     [C.ENTITY_DOMAIN_NAME]: [{ src: 'value' }],
     [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }],
     [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }],
@@ -43,7 +44,7 @@ const stixCyberObservableContribution = {
     [C.ENTITY_IPV4_ADDR]: [{ src: 'value' }],
     [C.ENTITY_IPV6_ADDR]: [{ src: 'value' }],
     [C.ENTITY_MAC_ADDR]: [{ src: 'value' }],
-    [C.ENTITY_MUTEX]: [{ src: 'name' }],
+    [C.ENTITY_MUTEX]: [{ src: NAME_FIELD }],
     [C.ENTITY_NETWORK_TRAFFIC]: [
       { src: 'start' },
       { src: 'src', dest: 'src_ref' },
@@ -53,8 +54,8 @@ const stixCyberObservableContribution = {
       { src: 'protocols' },
     ],
     [C.ENTITY_PROCESS]: [{ src: 'stix_id' }],
-    [C.ENTITY_SOFTWARE]: [{ src: 'name' }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
-    [C.ENTITY_URL]: [{ src: 'name' }],
+    [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
+    [C.ENTITY_URL]: [{ src: NAME_FIELD }],
     [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }],
     [C.ENTITY_WINDOWS_REGISTRY_KEY]: [{ src: 'key' }, { src: 'values' }],
     [C.ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY]: [{ src: 'value' }],
@@ -93,15 +94,15 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_MIGRATION_STATUS]: [], // ALL
     [I.ENTITY_TYPE_MIGRATION_REFERENCE]: [], // ALL
     [I.ENTITY_TYPE_TOKEN]: [{ src: 'uuid' }],
-    [I.ENTITY_TYPE_GROUP]: [{ src: 'name' }],
+    [I.ENTITY_TYPE_GROUP]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_USER]: [{ src: 'user_email' }],
-    [I.ENTITY_TYPE_ROLE]: [{ src: 'name' }],
-    [I.ENTITY_TYPE_CAPABILITY]: [{ src: 'name' }],
-    [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'name' }],
-    [I.ENTITY_TYPE_WORKSPACE]: [{ src: 'name' }, { src: 'workspace_type' }],
+    [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
+    [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
+    [I.ENTITY_TYPE_CONNECTOR]: [{ src: NAME_FIELD }],
+    [I.ENTITY_TYPE_WORKSPACE]: [{ src: NAME_FIELD }, { src: 'workspace_type' }],
     // Stix Domain
-    [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: 'name' }, { src: 'x_mitre_id' }],
-    [D.ENTITY_TYPE_CAMPAIGN]: [{ src: 'name' }],
+    [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: NAME_FIELD }, { src: 'x_mitre_id' }],
+    [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'stix_id' }],
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
       { src: 'first_observed' },
@@ -109,23 +110,23 @@ const stixEntityContribution = {
       { src: 'number_observed' },
     ],
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'stix_id' }],
-    [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: 'name' }, { src: 'published' }],
-    [D.ENTITY_TYPE_COURSE_OF_ACTION]: [{ src: 'name' }, { src: 'x_mitre_id' }],
-    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: 'name' }],
+    [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
+    [D.ENTITY_TYPE_COURSE_OF_ACTION]: [{ src: NAME_FIELD }, { src: 'x_mitre_id' }],
+    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }],
-    [D.ENTITY_TYPE_INFRASTRUCTURE]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_INTRUSION_SET]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: 'name' }],
+    [D.ENTITY_TYPE_INFRASTRUCTURE]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_INTRUSION_SET]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_LOCATION_POSITION]: [{ src: 'latitude' }, { src: 'longitude' }],
-    [D.ENTITY_TYPE_MALWARE]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_TOOL]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_VULNERABILITY]: [{ src: 'name' }],
-    [D.ENTITY_TYPE_X_OPENCTI_INCIDENT]: [{ src: 'name' }],
+    [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_VULNERABILITY]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_X_OPENCTI_INCIDENT]: [{ src: NAME_FIELD }],
     // Stix Meta
     [M.ENTITY_TYPE_MARKING_DEFINITION]: [{ src: 'definition' }, { src: 'definition_type' }],
     [M.ENTITY_TYPE_LABEL]: [{ src: 'value' }],

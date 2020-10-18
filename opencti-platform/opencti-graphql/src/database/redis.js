@@ -182,6 +182,7 @@ const mapJSToStream = (event) => {
 };
 const buildEvent = (eventType, user, markings, message, data) => {
   return {
+    version: '1', // Event version.
     type: eventType,
     origin: user.origin,
     markings,

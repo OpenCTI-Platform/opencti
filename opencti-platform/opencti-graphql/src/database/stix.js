@@ -1,6 +1,4 @@
 import * as R from 'ramda';
-import { version as uuidVersion } from 'uuid';
-import uuidTime from 'uuid-time';
 import { FunctionalError } from '../config/errors';
 import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';
@@ -215,34 +213,4 @@ export const convertDataToStix = (data, type) => {
     throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
   }
   return finalData;
-};
-
-export const mergeStixIds = (ids, existingIds) => {
-  const wIds = Array.isArray(ids) ? ids : [ids];
-  const data = R.map((stixId) => {
-    const segments = stixId.split('--');
-    const [, uuid] = segments;
-    const isTransient = uuidVersion(uuid) === 1;
-    const timestamp = isTransient ? uuidTime.v1(uuid) : null;
-    return { id: stixId, uuid, timestamp };
-  }, existingIds);
-  const standardIds = R.filter((d) => !d.timestamp, data);
-  const transientIds = R.filter((d) => d.timestamp, data);
-  const orderedTransient = R.sort((a, b) => b.timestamp - a.timestamp, transientIds);
-  for (let index = 0; index < wIds.length; index += 1) {
-    const id = wIds[index];
-    if (!existingIds.includes(id)) {
-      // If classic uuid, just add it.
-      const [, newUuid] = id.split('--');
-      if (uuidVersion(newUuid) !== 1) {
-        standardIds.push({ id });
-      } else {
-        orderedTransient.unshift({ id }); // Add the new element in first
-      }
-    }
-  }
-  // Ensure max length
-  const keptTimedUUID = orderedTransient.length > 5 ? orderedTransient.slice(0, 5) : orderedTransient;
-  // Return the new list
-  return R.map((s) => s.id, [...standardIds, ...keptTimedUUID]);
 };

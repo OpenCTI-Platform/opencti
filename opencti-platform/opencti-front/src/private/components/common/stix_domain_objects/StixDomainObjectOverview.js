@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, map, propOr, filter, split,
-} from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import { version as uuidVersion } from 'uuid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
@@ -48,12 +45,7 @@ class StixDomainObjectOverview extends Component {
       withoutMarking,
       withPattern,
     } = this.props;
-    const stixIds = stixDomainObject.x_opencti_stix_ids.length > 0
-      ? filter(
-        (n) => uuidVersion(split('--', n)[1]) !== 1,
-        stixDomainObject.x_opencti_stix_ids,
-      )
-      : [];
+    const stixIds = stixDomainObject.x_opencti_stix_ids || [];
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>

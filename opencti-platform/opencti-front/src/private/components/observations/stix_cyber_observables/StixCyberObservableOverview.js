@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, filter, propOr, split,
-} from 'ramda';
+import { compose, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -10,7 +8,6 @@ import Grid from '@material-ui/core/Grid';
 import { InformationOutline } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import Button from '@material-ui/core/Button';
-import { version as uuidVersion } from 'uuid';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemCreator from '../../../../components/ItemCreator';
@@ -40,6 +37,7 @@ class StixCyberObservableOverview extends Component {
     const {
       t, fldt, classes, stixCyberObservable,
     } = this.props;
+    const stixIds = stixCyberObservable.x_opencti_stix_ids || [];
     return (
       <div style={{ height: '100%' }} className="break">
         <Typography variant="h4" gutterBottom={true}>
@@ -82,11 +80,8 @@ class StixCyberObservableOverview extends Component {
               </div>
               <div className="clearfix" />
               <pre style={{ margin: 0 }}>
-                {filter(
-                  (n) => uuidVersion(split('--', n)[1]) !== 1,
-                  stixCyberObservable.x_opencti_stix_ids,
-                ).length > 0
-                  ? stixCyberObservable.x_opencti_stix_ids.map((stixId) => `${stixId}\n`)
+                {stixIds.length > 0
+                  ? stixIds.map((stixId) => `${stixId}\n`)
                   : '-'}
               </pre>
             </Grid>

@@ -1,11 +1,11 @@
 import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
-import { IDS_ALIASES, IDS_STIX } from './general';
+import { INTERNAL_IDS_ALIASES, IDS_STIX } from './general';
 
 export const multipleAttributes = [
   IDS_STIX,
   'aliases',
-  IDS_ALIASES,
+  INTERNAL_IDS_ALIASES,
   'grant',
   'indicator_types',
   'infrastructure_types',
@@ -29,7 +29,7 @@ export const multipleAttributes = [
   'x_opencti_aliases',
   'labels',
   'external_references',
-  'kill_chain_phases'
+  'kill_chain_phases',
 ];
 export const statsDateAttributes = [
   'created_at',

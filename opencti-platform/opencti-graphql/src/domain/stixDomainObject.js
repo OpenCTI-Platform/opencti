@@ -37,14 +37,6 @@ export const findAll = async (args) => {
   return listEntities(types, ['standard_id'], args);
 };
 
-// eslint-disable-next-line no-unused-vars
-export const findAllDuplicates = (args) => {
-  // TODO @Sam, implement findAllDuplicates
-  // const noTypes = !args.types || args.types.length === 0;
-  // const entityTypes = noTypes ? [ABSTRACT_STIX_DOMAIN_OBJECT] : args.types;
-  return [];
-};
-
 export const findById = async (stixDomainObjectId) => loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
 
 // region time series

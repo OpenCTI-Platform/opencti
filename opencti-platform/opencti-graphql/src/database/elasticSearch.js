@@ -28,14 +28,14 @@ import {
   BASE_TYPE_RELATION,
   ID_INTERNAL,
   ID_STANDARD,
-  IDS_ALIASES,
+  INTERNAL_IDS_ALIASES,
   IDS_STIX,
   isAbstract,
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
-import { isStixDomainObjectNamed } from '../schema/stixDomainObject';
+import { isStixObjectAliased } from '../schema/stixDomainObject';
 
 export const dateFields = [
   'created',
@@ -831,8 +831,8 @@ export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const workingIds = Array.isArray(ids) ? ids : [ids];
   const idsTermsPerType = [];
   const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-  if (isStixDomainObjectNamed(type)) {
-    elementTypes.push(IDS_ALIASES);
+  if (isStixObjectAliased(type)) {
+    elementTypes.push(INTERNAL_IDS_ALIASES);
   }
   for (let index = 0; index < workingIds.length; index += 1) {
     const id = workingIds[index];

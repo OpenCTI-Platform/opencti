@@ -97,20 +97,19 @@ export const isStixDomainObject = (type) =>
   isStixDomainObjectContainer(type) ||
   type === ABSTRACT_STIX_DOMAIN_OBJECT;
 
-const STIX_DOMAIN_OBJECT_NAMED = [
-  // ENTITY_TYPE_ATTACK_PATTERN, Because of x-mitre-id
-  ENTITY_TYPE_CAMPAIGN,
+const STIX_DOMAIN_OBJECT_ALIASED = [
   ENTITY_TYPE_COURSE_OF_ACTION,
+  ENTITY_TYPE_ATTACK_PATTERN,
+  ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_INFRASTRUCTURE,
   ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
   ENTITY_TYPE_TOOL,
-  ENTITY_TYPE_VULNERABILITY,
   ENTITY_TYPE_X_OPENCTI_INCIDENT,
 ];
-export const isStixDomainObjectNamed = (type) =>
-  R.includes(type, STIX_DOMAIN_OBJECT_NAMED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
+export const isStixObjectAliased = (type) =>
+  R.includes(type, STIX_DOMAIN_OBJECT_ALIASED) || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type);
 export const resolveAliasesField = (type) => {
   if (type === ENTITY_TYPE_COURSE_OF_ACTION || isStixDomainObjectIdentity(type) || isStixDomainObjectLocation(type)) {
     return ATTRIBUTE_ALIASES_OPENCTI;
