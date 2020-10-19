@@ -48,6 +48,7 @@ import {
   isFieldContributingToStandardId,
   NAME_FIELD,
   normalizeName,
+  X_MITRE_ID_FIELD,
 } from '../schema/identifier';
 import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeUpdateEvent } from './redis';
 import { buildStixData, STIX_SPEC_VERSION } from './stix';
@@ -89,6 +90,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
+  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_REPORT,
   isStixDomainObject,
   isStixObjectAliased,
@@ -1638,7 +1640,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       }
       impactedInputs.push(...ins);
       // If named entity name updated, modify the aliases ids
-      if (isStixObjectAliased(instanceType) && input.key === NAME_FIELD) {
+      if (isStixObjectAliased(instanceType) && (input.key === NAME_FIELD || input.key === X_MITRE_ID_FIELD)) {
         const name = R.head(input.value);
         const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
         const aliasesId = generateAliasesId(aliases);
@@ -2312,6 +2314,9 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
     const aliases = [input.name, ...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id) {
+      aliases.push(input.x_mitre_id);
+    }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesId(aliases), data);
   }
   // Add the additional fields for dates (day, month, year)
