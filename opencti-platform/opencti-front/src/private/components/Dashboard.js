@@ -661,7 +661,14 @@ class Dashboard extends Component {
               <StixCoreRelationshipsBars
                 height={400}
                 relationshipType="stix-core-relationship"
-                toTypes={['Stix-Domain-Object']}
+                toTypes={[
+                  'Threat-Actor',
+                  'Intrusion-Set',
+                  'Campaign',
+                  'Malware',
+                  'Tool',
+                  'Vulnerability',
+                ]}
                 title={t('Top 10 active entities (3 last months)')}
                 field="internal_id"
                 startDate={monthsAgo(3)}

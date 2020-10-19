@@ -1765,9 +1765,7 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
       // If multiple attributes, concat all values
       if (mergedEntityCurrentFieldValue && sourceFieldValue) {
         const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
-        if (mergedEntityCurrentFieldValue.length !== sourceFieldValue.length) {
-          updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
-        }
+        updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
       // Single value. Put the data in the merged field only if empty.
