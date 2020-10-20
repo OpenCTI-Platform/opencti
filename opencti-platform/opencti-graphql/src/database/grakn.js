@@ -2124,9 +2124,14 @@ const createRelationRaw = async (user, input, opts = {}) => {
     R.assoc('parent_types', getParentTypes(relationshipType)),
     R.assoc('base_type', BASE_TYPE_RELATION)
   )(relationAttributes);
-  const postOperations = [];
   // 07. Index the relation and the modification in the base entity
-  postOperations.push(elIndexElements([created]));
+  // Transaction succeed, index the result
+  try {
+    await elIndexElements([created]);
+  } catch (err) {
+    throw DatabaseError('Cannot index input', { error: err, data: created });
+  }
+  const postOperations = [];
   // Complete with eventual relations (will eventually update the index)
   if (isStixCoreRelationship(relationshipType)) {
     postOperations.push(
@@ -2161,10 +2166,6 @@ export const createRelation = async (user, input, opts = {}) => {
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
   const { from, to } = resolvedInput;
-  if (isEmptyField(from) || isEmptyField(to)) {
-    const errorData = { fromId, from, toId, to };
-    throw UnsupportedError('Relation cant be created with missing from or to', errorData);
-  }
   // Build lock ids
   const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
   const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;

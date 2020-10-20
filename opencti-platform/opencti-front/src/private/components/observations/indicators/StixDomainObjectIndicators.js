@@ -201,7 +201,7 @@ class StixDomainObjectIndicators extends Component {
       </ListLines>
     );
   }
-  created_at
+
   render() {
     const { stixDomainObjectId, relationshipType } = this.props;
     const {
@@ -238,7 +238,7 @@ class StixDomainObjectIndicators extends Component {
     const paginationOptions = {
       inferred,
       search: searchTerm,
-      toTypes: ["Indicator"],
+      toTypes: ['Indicator'],
       fromId: stixDomainObjectId,
       relationship_type: relationshipType || 'indicates',
       lastSeenStart: null,
