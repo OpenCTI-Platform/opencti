@@ -157,6 +157,7 @@ class Consumer(threading.Thread):
             connection.add_callback_threadsafe(cb)
             if work_id is not None:
                 self.report_success(work_id)
+            self.processing_count = 0
             return True
         except RequestException as re:
             logging.error("A connection error occurred: { " + str(re) + " }")
@@ -166,6 +167,7 @@ class Consumer(threading.Thread):
             )
             cb = functools.partial(self.nack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
+            self.processing_count = 0
             return False
         except Exception as ex:
             error = str(ex)

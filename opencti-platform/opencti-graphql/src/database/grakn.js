@@ -1437,15 +1437,20 @@ const depsKeys = [
 ];
 const inputResolveRefs = async (input) => {
   const deps = [];
-  let expectedSize = 0;
+  const expectedIds = [];
   for (let index = 0; index < depsKeys.length; index += 1) {
     const { src, dst } = depsKeys[index];
     const destKey = dst || src;
     let id = input[src];
     if (!R.isNil(id) && !R.isEmpty(id)) {
       const isListing = Array.isArray(id);
-      if (isListing) id = R.uniq(id); // We can have duplicate due to id generation (external ref for example)
-      expectedSize += isListing ? id.length : 1;
+      if (isListing) {
+        // We can have duplicate due to id generation (external ref for example)
+        id = R.uniq(id);
+        expectedIds.push(...id);
+      } else {
+        expectedIds.push(id);
+      }
       // Handle specific case of object label that can be directly the value instead of the key.
       let keyPromise;
       if (src === 'objectLabel') {
@@ -1464,17 +1469,21 @@ const inputResolveRefs = async (input) => {
     }
   }
   const resolved = await Promise.all(deps);
-  const resolvedCount = R.sum(
+  const resolvedIds = R.flatten(
     R.map((r) => {
       const [, val] = R.head(Object.entries(r));
-      if (!val || val.length === 0) return 0;
-      return Array.isArray(val) ? R.uniq(val).length : 1;
+      if (isNotEmptyField(val)) {
+        const values = Array.isArray(val) ? val : [val];
+        return R.map((v) => [v.internal_id, v.standard_id, ...(v.x_opencti_stix_ids || [])], values);
+      }
+      return [];
     }, resolved)
   );
-  const patch = R.mergeAll(resolved);
-  if (expectedSize !== resolvedCount) {
-    throw MissingReferenceError({ input, resolved });
+  const unresolvedIds = R.filter((n) => !R.includes(n, resolvedIds), expectedIds);
+  if (unresolvedIds.length > 0) {
+    throw MissingReferenceError({ input, unresolvedIds });
   }
+  const patch = R.mergeAll(resolved);
   return R.mergeRight(input, patch);
 };
 // endregion

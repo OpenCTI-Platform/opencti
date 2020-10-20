@@ -164,7 +164,7 @@ class StixCoreRelationshipContainer extends Component {
 
   render() {
     const {
-      t, fld, classes, stixCoreRelationship, paddingRight,
+      t, nsdt, classes, stixCoreRelationship, paddingRight,
     } = this.props;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
@@ -336,7 +336,7 @@ class StixCoreRelationshipContainer extends Component {
               </Typography>
               {stixCoreRelationship.inferred
                 ? '-'
-                : fld(stixCoreRelationship.created_at)}
+                : nsdt(stixCoreRelationship.created_at)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -346,7 +346,7 @@ class StixCoreRelationshipContainer extends Component {
               </Typography>
               {stixCoreRelationship.inferred
                 ? '-'
-                : fld(stixCoreRelationship.updated_at)}
+                : nsdt(stixCoreRelationship.updated_at)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -383,7 +383,7 @@ class StixCoreRelationshipContainer extends Component {
               </Typography>
               {stixCoreRelationship.inferred
                 ? '-'
-                : fld(stixCoreRelationship.start_time)}
+                : nsdt(stixCoreRelationship.start_time)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -393,7 +393,7 @@ class StixCoreRelationshipContainer extends Component {
               </Typography>
               {stixCoreRelationship.inferred
                 ? '-'
-                : fld(stixCoreRelationship.stop_time)}
+                : nsdt(stixCoreRelationship.stop_time)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -486,8 +486,7 @@ StixCoreRelationshipContainer.propTypes = {
   paddingRight: PropTypes.bool,
   classes: PropTypes.object,
   t: PropTypes.func,
-  nsd: PropTypes.func,
-  fld: PropTypes.func,
+  nsdt: PropTypes.func,
   match: PropTypes.object,
   history: PropTypes.object,
   location: PropTypes.object,
