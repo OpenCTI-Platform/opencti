@@ -1444,13 +1444,6 @@ const inputResolveRefs = async (input) => {
     let id = input[src];
     if (!R.isNil(id) && !R.isEmpty(id)) {
       const isListing = Array.isArray(id);
-      if (isListing) {
-        // We can have duplicate due to id generation (external ref for example)
-        id = R.uniq(id);
-        expectedIds.push(...id);
-      } else {
-        expectedIds.push(id);
-      }
       // Handle specific case of object label that can be directly the value instead of the key.
       let keyPromise;
       if (src === 'objectLabel') {
@@ -1458,11 +1451,17 @@ const inputResolveRefs = async (input) => {
           return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
         };
         id = R.map((label) => idLabel(label), id);
+        expectedIds.push(...id);
         keyPromise = internalFindByIds(id);
       } else if (src === 'fromId' || src === 'toId') {
         keyPromise = loadByIdFullyResolved(id, null, { onlyMarking: true });
+        expectedIds.push(id);
+      } else if (isListing) {
+        keyPromise = internalFindByIds(id);
+        expectedIds.push(...id);
       } else {
-        keyPromise = isListing ? internalFindByIds(id) : internalLoadById(id);
+        keyPromise = internalLoadById(id);
+        expectedIds.push(id);
       }
       const dataPromise = keyPromise.then((data) => ({ [destKey]: data }));
       deps.push(dataPromise);
