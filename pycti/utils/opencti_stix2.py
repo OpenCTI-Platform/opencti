@@ -262,10 +262,11 @@ class OpenCTIStix2:
         elif "x_opencti_created_by_ref" in stix_object:
             created_by_id = stix_object["x_opencti_created_by_ref"]
         # Object Marking Refs
-        object_marking_ids = []
-        if "object_marking_refs" in stix_object:
-            for object_marking_ref in stix_object["object_marking_refs"]:
-                object_marking_ids.append(object_marking_ref)
+        object_marking_ids = (
+            stix_object["object_marking_ids"]
+            if "object_marking_refs" in stix_object
+            else []
+        )
         # Object Tags
         object_label_ids = []
         if "labels" in stix_object:
@@ -294,7 +295,6 @@ class OpenCTIStix2:
                     label_id = self.opencti.label.create(value=label, color=color)["id"]
                 if label_id is not None:
                     object_label_ids.append(label_id)
-
         # Kill Chain Phases
         kill_chain_phases_ids = []
         if "kill_chain_phases" in stix_object:
@@ -326,13 +326,10 @@ class OpenCTIStix2:
                         "type": kill_chain_phase["entity_type"],
                     }
                 kill_chain_phases_ids.append(kill_chain_phase["id"])
-
         # Object refs
-        object_refs_ids = []
-        if "object_refs" in stix_object:
-            for object_ref in stix_object["object_refs"]:
-                object_refs_ids.append(object_ref)
-
+        object_refs_ids = (
+            stix_object["object_refs"] if "object_refs" in stix_object else []
+        )
         # External References
         reports = {}
         external_references_ids = []
