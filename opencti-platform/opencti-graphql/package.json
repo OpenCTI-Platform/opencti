@@ -33,7 +33,7 @@
     "@elastic/elasticsearch": "^7.9.1",
     "amqplib": "^0.6.0",
     "apollo-errors": "^1.9.0",
-    "apollo-server-express": "^2.16.1",
+    "apollo-server-express": "^2.18.2",
     "await": "^0.2.6",
     "axios": "^0.19.2",
     "bcryptjs": "^2.4.3",
