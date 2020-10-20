@@ -258,61 +258,14 @@ class OpenCTIStix2:
         # Created By Ref
         created_by_id = None
         if "created_by_ref" in stix_object:
-            created_by_ref = stix_object["created_by_ref"]
-            if created_by_ref in self.mapping_cache:
-                created_by_result = self.mapping_cache[created_by_ref]
-            else:
-                custom_attributes = """
-                    id
-                    entity_type
-                """
-                created_by_result = self.opencti.stix_domain_object.read(
-                    id=created_by_ref, customAttributes=custom_attributes
-                )
-                if created_by_result is not None:
-                    self.mapping_cache[created_by_ref] = {
-                        "id": created_by_result["id"],
-                        "type": created_by_result["entity_type"],
-                    }
-            if created_by_result is not None:
-                created_by_id = created_by_result["id"]
+            created_by_id = stix_object["created_by_ref"]
         elif "x_opencti_created_by_ref" in stix_object:
             created_by_ref = stix_object["x_opencti_created_by_ref"]
-            if created_by_ref in self.mapping_cache:
-                created_by_result = self.mapping_cache[created_by_ref]
-            else:
-                custom_attributes = """
-                    id
-                    entity_type
-                """
-                created_by_result = self.opencti.stix_domain_object.read(
-                    id=created_by_ref, customAttributes=custom_attributes
-                )
-                if created_by_result is not None:
-                    self.mapping_cache[created_by_ref] = {
-                        "id": created_by_result["id"],
-                        "type": created_by_result["entity_type"],
-                    }
-            if created_by_result is not None:
-                created_by_id = created_by_result["id"]
         # Object Marking Refs
         object_marking_ids = []
         if "object_marking_refs" in stix_object:
             for object_marking_ref in stix_object["object_marking_refs"]:
-                if object_marking_ref in self.mapping_cache:
-                    object_marking_ref_result = self.mapping_cache[object_marking_ref]
-                else:
-                    object_marking_ref_result = self.opencti.marking_definition.read(
-                        id=object_marking_ref
-                    )
-                    if object_marking_ref_result is not None:
-                        self.mapping_cache[object_marking_ref] = {
-                            "id": object_marking_ref_result["id"],
-                            "type": object_marking_ref_result["entity_type"],
-                        }
-                if object_marking_ref_result is not None:
-                    object_marking_ids.append(object_marking_ref_result["id"])
-
+                object_marking_ids.append(object_marking_ref)
         # Object Tags
         object_label_ids = []
         if "labels" in stix_object:
@@ -378,34 +331,7 @@ class OpenCTIStix2:
         object_refs_ids = []
         if "object_refs" in stix_object:
             for object_ref in stix_object["object_refs"]:
-                object_ref_result = None
-                if object_ref in self.mapping_cache:
-                    object_ref_result = self.mapping_cache[object_ref]
-                elif "relationship" in object_ref:
-                    object_ref_result = self.opencti.stix_core_relationship.read(
-                        id=object_ref
-                    )
-                    if object_ref_result is not None:
-                        self.mapping_cache[object_ref] = {
-                            "id": object_ref_result["id"],
-                            "type": object_ref_result["entity_type"],
-                        }
-                elif "observed-data" not in object_ref:
-                    object_ref_result = (
-                        self.opencti.opencti_stix_object_or_stix_relationship.read(
-                            id=object_ref
-                        )
-                    )
-                    if object_ref_result is not None:
-                        self.mapping_cache[object_ref] = {
-                            "id": object_ref_result["id"],
-                            "type": object_ref_result["entity_type"],
-                        }
-                if "observed-data" not in object_ref:
-                    if object_ref_result is not None:
-                        object_refs_ids.append(object_ref_result["id"])
-                else:
-                    object_refs_ids.append(object_ref)
+                object_refs_ids.append(object_ref)
 
         # External References
         reports = {}
@@ -672,7 +598,7 @@ class OpenCTIStix2:
                                 id=stix_object_result["id"],
                                 stixObjectOrStixRelationshipId=observable_ref["id"],
                             )
-                        elif stix_object_result["entity_type"] == "?ote":
+                        elif stix_object_result["entity_type"] == "Note":
                             self.opencti.note.add_stix_object_or_stix_relationship(
                                 id=stix_object_result["id"],
                                 stixObjectOrStixRelationshipId=observable_ref["id"],
