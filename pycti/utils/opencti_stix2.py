@@ -263,7 +263,7 @@ class OpenCTIStix2:
             created_by_id = stix_object["x_opencti_created_by_ref"]
         # Object Marking Refs
         object_marking_ids = (
-            stix_object["object_marking_ids"]
+            stix_object["object_marking_refs"]
             if "object_marking_refs" in stix_object
             else []
         )
