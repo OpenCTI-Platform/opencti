@@ -7950,6 +7950,7 @@ type Query {
     inferred: Boolean
     toTypes: [String]
     isTo: Boolean
+    noDirection: Boolean
     startDate: DateTime
     endDate: DateTime
     dateAttribute: String

@@ -383,8 +383,101 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
   });
 };
+// region relation reconstruction
+const elBuildRelation = (type, connection) => {
+  return {
+    [type]: null,
+    [`${type}Id`]: connection.internal_id,
+    [`${type}Role`]: connection.role,
+    [`${type}Type`]: R.head(connection.types),
+  };
+};
+const elMergeRelation = (concept, fromConnection, toConnection) => {
+  if (!fromConnection || !toConnection) {
+    throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.internal_id);
+  }
+  const from = elBuildRelation('from', fromConnection);
+  const to = elBuildRelation('to', toConnection);
+  return R.mergeAll([concept, from, to]);
+};
+export const elReconstructRelation = (concept) => {
+  const { connections } = concept;
+  const entityType = concept.entity_type;
+  const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
+  const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
+  return elMergeRelation(concept, fromConnection, toConnection);
+};
+// endregion
+export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
+  const mustTerms = [];
+  const workingIds = Array.isArray(ids) ? ids : [ids];
+  const idsTermsPerType = [];
+  const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
+  if (isStixObjectAliased(type)) {
+    elementTypes.push(INTERNAL_IDS_ALIASES);
+  }
+  for (let index = 0; index < workingIds.length; index += 1) {
+    const id = workingIds[index];
+    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+      const elementType = elementTypes[indexType];
+      const term = { [`${elementType}.keyword`]: id };
+      idsTermsPerType.push({ term });
+    }
+  }
+  // const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
+  const should = {
+    bool: {
+      should: idsTermsPerType,
+      minimum_should_match: 1,
+    },
+  };
+  mustTerms.push(should);
+  if (type) {
+    const shouldType = {
+      bool: {
+        should: [{ match_phrase: { 'entity_type.keyword': type } }, { match_phrase: { 'parent_types.keyword': type } }],
+        minimum_should_match: 1,
+      },
+    };
+    mustTerms.push(shouldType);
+  }
+  const query = {
+    index: indices,
+    size: 1000,
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    body: {
+      query: {
+        bool: {
+          must: mustTerms,
+        },
+      },
+    },
+  };
+  logger.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
+  const data = await el.search(query);
+  const hits = [];
+  for (let index = 0; index < data.body.hits.hits.length; index += 1) {
+    const hit = data.body.hits.hits[index];
+    let loadedElement = R.assoc('_index', hit._index, hit._source);
+    // And a specific processing for a relation
+    if (loadedElement.base_type === BASE_TYPE_RELATION) {
+      loadedElement = elReconstructRelation(loadedElement);
+    }
+    hits.push(loadedElement);
+  }
+  return hits;
+};
+export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
+  const hits = await elFindByIds(ids, type, indices);
+  /* istanbul ignore if */
+  if (hits.length > 1) {
+    const errorMeta = { ids, type, hits: hits.length };
+    throw DatabaseError('Expect only one response', errorMeta);
+  }
+  return R.head(hits);
+};
 // field can be "entity_type" or "internal_id"
-export const elAggregationRelationsCount = (
+export const elAggregationRelationsCount = async (
   type,
   start,
   end,
@@ -392,7 +485,8 @@ export const elAggregationRelationsCount = (
   fromId = null,
   field = null,
   dateAttribute = 'start_time',
-  isTo = false
+  isTo = false,
+  noDirection = false
 ) => {
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
@@ -409,10 +503,7 @@ export const elAggregationRelationsCount = (
         path: 'connections',
         query: {
           bool: {
-            must: [
-              { match_phrase: { [`connections.internal_id`]: fromId } },
-              // { query_string: { query: `*_from`, fields: [`connections.role`] } },
-            ],
+            must: [{ match_phrase: { [`connections.internal_id`]: fromId } }],
           },
         },
       },
@@ -469,7 +560,7 @@ export const elAggregationRelationsCount = (
             filtered: {
               filter: {
                 bool: {
-                  must: typesFilters.length > 0 && !isAbstract(toTypes[0]) ? roleFilter : [],
+                  must: typesFilters.length > 0 && !noDirection ? roleFilter : [],
                 },
               },
               aggs: {
@@ -487,16 +578,21 @@ export const elAggregationRelationsCount = (
     },
   };
   logger.debug(`[ELASTICSEARCH] aggregationRelationsCount`, { query });
-  return el.search(query).then((data) => {
+  return el.search(query).then(async (data) => {
     if (field === 'internal_id') {
       const { buckets } = data.body.aggregations.connections.filtered.genres;
       const filteredBuckets = R.filter((b) => b.key !== fromId, buckets);
       return R.map((b) => ({ label: b.key, value: b.doc_count }), filteredBuckets);
     }
+    let fromType = null;
+    if (fromId) {
+      const fromEntity = await elLoadByIds(fromId);
+      fromType = fromEntity.entity_type;
+    }
     const types = R.pipe(
       R.map((h) => h._source.connections),
       R.flatten(),
-      R.filter((c) => c.internal_id !== fromId),
+      R.filter((c) => c.internal_id !== fromId && !R.includes(fromType, c.types)),
       R.filter((c) => toTypes.length === 0 || R.includes(R.head(toTypes), c.types)),
       R.map((e) => e.types),
       R.flatten(),
@@ -610,32 +706,6 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
     return R.map((b) => ({ date: R.head(b), value: R.last(b).doc_count }), dataToPairs);
   });
 };
-
-// region relation reconstruction
-const elBuildRelation = (type, connection) => {
-  return {
-    [type]: null,
-    [`${type}Id`]: connection.internal_id,
-    [`${type}Role`]: connection.role,
-    [`${type}Type`]: R.head(connection.types),
-  };
-};
-const elMergeRelation = (concept, fromConnection, toConnection) => {
-  if (!fromConnection || !toConnection) {
-    throw DatabaseError(`[ELASTIC] Something fail in reconstruction of the relation`, concept.internal_id);
-  }
-  const from = elBuildRelation('from', fromConnection);
-  const to = elBuildRelation('to', toConnection);
-  return R.mergeAll([concept, from, to]);
-};
-export const elReconstructRelation = (concept) => {
-  const { connections } = concept;
-  const entityType = concept.entity_type;
-  const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
-  const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
-  return elMergeRelation(concept, fromConnection, toConnection);
-};
-// endregion
 
 // region elastic common loader.
 export const specialElasticCharsEscape = (query) => {
@@ -824,76 +894,6 @@ export const elPaginate = async (indexName, options = {}) => {
         }
       }
     );
-};
-
-export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
-  const mustTerms = [];
-  const workingIds = Array.isArray(ids) ? ids : [ids];
-  const idsTermsPerType = [];
-  const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-  if (isStixObjectAliased(type)) {
-    elementTypes.push(INTERNAL_IDS_ALIASES);
-  }
-  for (let index = 0; index < workingIds.length; index += 1) {
-    const id = workingIds[index];
-    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-      const elementType = elementTypes[indexType];
-      const term = { [`${elementType}.keyword`]: id };
-      idsTermsPerType.push({ term });
-    }
-  }
-  // const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
-  const should = {
-    bool: {
-      should: idsTermsPerType,
-      minimum_should_match: 1,
-    },
-  };
-  mustTerms.push(should);
-  if (type) {
-    const shouldType = {
-      bool: {
-        should: [{ match_phrase: { 'entity_type.keyword': type } }, { match_phrase: { 'parent_types.keyword': type } }],
-        minimum_should_match: 1,
-      },
-    };
-    mustTerms.push(shouldType);
-  }
-  const query = {
-    index: indices,
-    size: 1000,
-    _source_excludes: `${REL_INDEX_PREFIX}*`,
-    body: {
-      query: {
-        bool: {
-          must: mustTerms,
-        },
-      },
-    },
-  };
-  logger.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
-  const data = await el.search(query);
-  const hits = [];
-  for (let index = 0; index < data.body.hits.hits.length; index += 1) {
-    const hit = data.body.hits.hits[index];
-    let loadedElement = R.assoc('_index', hit._index, hit._source);
-    // And a specific processing for a relation
-    if (loadedElement.base_type === BASE_TYPE_RELATION) {
-      loadedElement = elReconstructRelation(loadedElement);
-    }
-    hits.push(loadedElement);
-  }
-  return hits;
-};
-
-export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
-  const hits = await elFindByIds(ids, type, indices);
-  /* istanbul ignore if */
-  if (hits.length > 1) {
-    const errorMeta = { ids, type, hits: hits.length };
-    throw DatabaseError('Expect only one response', errorMeta);
-  }
-  return R.head(hits);
 };
 // endregion
 

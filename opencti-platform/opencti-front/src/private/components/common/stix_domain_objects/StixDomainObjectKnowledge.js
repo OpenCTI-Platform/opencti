@@ -257,6 +257,7 @@ class StixDomainObjectKnowledge extends Component {
               relationshipType="stix-core-relationship"
               title={t('Distribution of relations')}
               field="entity_type"
+              noDirection={true}
             />
           </Grid>
         </Grid>

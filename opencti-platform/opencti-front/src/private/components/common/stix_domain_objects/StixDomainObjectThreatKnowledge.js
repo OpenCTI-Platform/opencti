@@ -359,6 +359,7 @@ class StixDomainObjectThreatKnowledge extends Component {
               title={t('Distribution of relations')}
               field="entity_type"
               inferred={inferred}
+              noDirection={true}
             />
           </Grid>
         </Grid>

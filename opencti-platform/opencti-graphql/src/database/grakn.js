@@ -1334,6 +1334,7 @@ export const distributionRelations = async (options) => {
     dateAttribute = 'start_time',
     toTypes = [],
     isTo = false,
+    noDirection = false,
   } = options;
   let distributionData;
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
@@ -1348,7 +1349,8 @@ export const distributionRelations = async (options) => {
       fromId,
       field,
       finalDateAttribute,
-      isTo
+      isTo,
+      noDirection
     );
   } else {
     const query = `match $rel($from, $to) isa ${entityType}; ${

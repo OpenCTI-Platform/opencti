@@ -52,6 +52,8 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
     $field: String!
     $operation: StatsOperation!
     $limit: Int
+    $isTo: Boolean
+    $noDirection: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -63,6 +65,8 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
       field: $field
       operation: $operation
       limit: $limit
+      isTo: $isTo
+      noDirection: $noDirection
     ) {
       label
       value
@@ -90,6 +94,8 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
       startDate,
       endDate,
       classes,
+      isTo,
+      noDirection,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: stixCoreObjectId,
@@ -101,6 +107,8 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
       field,
       operation: 'count',
       limit: 9,
+      isTo: isTo || true,
+      noDirection: noDirection || false,
     };
     return (
       <QueryRenderer
@@ -237,6 +245,8 @@ StixCoreObjectStixCoreRelationshipsCloud.propTypes = {
   fld: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
+  isTo: PropTypes.bool,
+  noDirection: PropTypes.bool,
 };
 
 export default compose(

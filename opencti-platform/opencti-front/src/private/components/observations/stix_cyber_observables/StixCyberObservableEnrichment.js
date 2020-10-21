@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { interval } from 'rxjs';
 import {
-  pipe, propOr, compose, filter,
+  pipe, propOr, compose, filter, map,
 } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -72,6 +72,9 @@ const styles = (theme) => ({
   },
   nested: {
     paddingLeft: theme.spacing(4),
+  },
+  tooltip: {
+    maxWidth: 600,
   },
 });
 
@@ -156,9 +159,24 @@ const StixCyberObservableEnrichment = (props) => {
                 </ListItem>
                 <List component="div" disablePadding={true}>
                   {jobs.map((work) => {
-                    const message = 'todo';
+                    const messageToDisplay = (
+                      <div>
+                        {map(
+                          (message) => (
+                            <div>
+                              [${nsdt(message.timestamp)}] {message.message}
+                            </div>
+                          ),
+                          work.messages,
+                        )}
+                      </div>
+                    );
                     return (
-                      <Tooltip title={message} key={uuid()}>
+                      <Tooltip
+                        title={messageToDisplay}
+                        key={uuid()}
+                        classes={{ tooltip: classes.tooltip }}
+                      >
                         <ListItem
                           dense={true}
                           button={true}
@@ -183,7 +201,7 @@ const StixCyberObservableEnrichment = (props) => {
                                 }}
                               />
                             )}
-                            {work.status === 'progress' && (
+                            {work.status === 'wait' && (
                               <CircularProgress
                                 size={20}
                                 thickness={2}
@@ -226,6 +244,10 @@ const StixCyberObservableEnrichmentFragment = createRefetchContainer(
           connector {
             id
             name
+          }
+          messages {
+            timestamp
+            message
           }
           status
         }

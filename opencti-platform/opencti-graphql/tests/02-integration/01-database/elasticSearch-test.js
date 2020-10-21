@@ -181,7 +181,11 @@ describe('Elasticsearch computation', () => {
       '2020-02-29T00:00:00Z',
       new Date().getTime(),
       ['Stix-Domain-Object'],
-      intrusionSet.internal_id
+      intrusionSet.internal_id,
+      undefined,
+      undefined,
+      false,
+      true
     );
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('City')).toEqual(1);
