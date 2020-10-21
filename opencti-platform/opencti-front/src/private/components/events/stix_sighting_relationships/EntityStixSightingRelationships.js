@@ -252,20 +252,29 @@ class EntityStixSightingRelationships extends Component {
         )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixSightingRelationshipCreationFromEntity
-            entityId={entityId}
-            isTo={isTo}
-            targetStixDomainObjectTypes={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-              'Tool',
-            ]}
-            targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
-            paddingRight={noPadding ? null : 220}
-            paginationOptions={paginationOptions}
-          />
+          {isTo ? (
+            <StixSightingRelationshipCreationFromEntity
+              entityId={entityId}
+              isTo={true}
+              targetStixDomainObjectTypes={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Malware',
+                'Tool',
+              ]}
+              targetStixCyberObservableTypes={['Stix-Cyber-Observable']}
+              paddingRight={noPadding ? null : 220}
+              paginationOptions={paginationOptions}
+            />
+          ) : (
+            <StixSightingRelationshipCreationFromEntity
+              entityId={entityId}
+              targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+              paddingRight={noPadding ? null : 220}
+              paginationOptions={paginationOptions}
+            />
+          )}
         </Security>
       </div>
     );
