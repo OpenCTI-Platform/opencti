@@ -51,7 +51,7 @@ import {
   X_MITRE_ID_FIELD,
 } from '../schema/identifier';
 import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeUpdateEvent } from './redis';
-import { buildStixData, STIX_SPEC_VERSION } from './stix';
+import { buildStixData, cleanStixIds, STIX_SPEC_VERSION } from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
@@ -1511,6 +1511,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
   if (dictAttributes[key]) {
     throw UnsupportedError('Dictionary attribute cant be updated directly', { rawInput });
   }
+  // region rebuild input values consistency
   if (key.includes('.')) {
     // In case of dict attributes, patching the content is possible through first level path
     const splitKey = key.split('.');
@@ -1552,6 +1553,13 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
       return {}; // No need to update the attribute
     }
   }
+  // endregion
+  // region cleanup cases
+  if (finalKey === IDS_STIX) {
+    // Special stixIds uuid v1 cleanup.
+    finalVal = cleanStixIds(finalVal);
+  }
+  // endregion
   return { key: finalKey, value: finalVal };
 };
 const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
@@ -1885,6 +1893,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   let stixObservableTargetMerge = null;
   if (isFieldContributingToStandardId(instance, keys)) {
     // In this case we need to reconstruct the data like if an update already appears
+    // Based on that we will be able to generate the correct standard id
     const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance, options);
     const remappedInputs = R.map((i) => mergeInput(i), elements);
     const resolvedInputs = R.filter((f) => !R.isEmpty(f), remappedInputs);

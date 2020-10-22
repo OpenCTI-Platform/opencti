@@ -1,4 +1,6 @@
 import * as R from 'ramda';
+import { version as uuidVersion } from 'uuid';
+import uuidTime from 'uuid-time';
 import { FunctionalError } from '../config/errors';
 import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';
@@ -13,6 +15,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import { isMultipleAttribute } from '../schema/fieldDataAdapter';
 
+const MAX_TRANSIENT_STIX_IDS = 50;
 export const STIX_SPEC_VERSION = '2.1';
 
 export const convertTypeToStixType = (type) => {
@@ -213,4 +216,28 @@ export const convertDataToStix = (data, type) => {
     throw FunctionalError(`The converter is not able to convert this type of entity: ${entityType}`);
   }
   return finalData;
+};
+
+export const onlyStableStixIds = (ids = []) => R.filter((n) => uuidVersion(R.split('--', n)[1]) !== 1, ids);
+
+export const cleanStixIds = (ids, maxStixIds = MAX_TRANSIENT_STIX_IDS) => {
+  const keptIds = [];
+  const transientIds = [];
+  const wIds = Array.isArray(ids) ? ids : [ids];
+  for (let index = 0; index < wIds.length; index += 1) {
+    const stixId = wIds[index];
+    const segments = stixId.split('--');
+    const [, uuid] = segments;
+    const isTransient = uuidVersion(uuid) === 1;
+    if (isTransient) {
+      const timestamp = uuidTime.v1(uuid);
+      transientIds.push({ id: stixId, uuid, timestamp });
+    } else {
+      keptIds.push({ id: stixId, uuid });
+    }
+  }
+  const orderedTransient = R.sort((a, b) => b.timestamp - a.timestamp, transientIds);
+  const keptTimedIds = orderedTransient.length > maxStixIds ? orderedTransient.slice(0, maxStixIds) : orderedTransient;
+  // Return the new list
+  return R.map((s) => s.id, [...keptIds, ...keptTimedIds]);
 };
