@@ -607,6 +607,15 @@ class StixCyberObservable:
                         standard_id
                         entity_type
                         parent_types
+                        indicators {
+                            edges {
+                                node {
+                                    id
+                                    pattern
+                                    pattern_type
+                                }
+                            }
+                        }
                     }
                 }
             """
