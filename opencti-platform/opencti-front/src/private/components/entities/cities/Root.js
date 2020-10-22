@@ -149,7 +149,7 @@ class RootCity extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={cityId}
+                          stixCoreObjectId={cityId}
                         />
                       </React.Fragment>
                     )}
