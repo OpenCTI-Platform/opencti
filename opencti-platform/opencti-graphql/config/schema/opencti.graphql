@@ -2098,6 +2098,7 @@ enum IdentitiesOrdering {
 }
 enum IdentitiesFilter {
   entity_type
+  identity_class
   name
   aliases
   confidence
@@ -2613,6 +2614,8 @@ enum IndicatorsFilter {
   pattern_version
   pattern
   x_opencti_main_observable_type
+  x_opencti_score
+  x_opencti_detection
   valid_from
   valid_until
   created
@@ -4221,9 +4224,11 @@ enum StixCyberObservablesOrdering {
 enum StixCyberObservablesFilter {
   entity_type
   observable_value
+  x_opencti_score
   created
   modified
   created_at
+  updated_at
   createdBy
   markedBy
   labelledBy
