@@ -1051,7 +1051,21 @@ class OpenCTIStix2:
             entity["object_refs"] = []
             objects_to_get = entity["objects"]
             for entity_object in entity["objects"]:
-                entity["object_refs"].append(entity_object["standard_id"])
+                if entity["type"] == "report" and entity_object["entity_type"] not in [
+                    "Note",
+                    "Report",
+                    "Opinion",
+                ]:
+                    entity["object_refs"].append(entity_object["standard_id"])
+                elif entity["type"] == "note" and entity_object["entity_type"] not in [
+                    "Note",
+                    "Opinion",
+                ]:
+                    entity["object_refs"].append(entity_object["standard_id"])
+                elif entity["type"] == "opinion" and entity_object[
+                    "entity_type"
+                ] not in ["Opinion"]:
+                    entity["object_refs"].append(entity_object["standard_id"])
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
