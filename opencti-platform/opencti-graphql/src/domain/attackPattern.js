@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   createEntity,
   escapeString,

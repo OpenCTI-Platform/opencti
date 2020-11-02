@@ -1982,7 +1982,7 @@ const upsertRelation = async (user, relationId, type, data) => {
   const relation = R.assoc('i_upserted', true, updatedRelation);
   return { relation, relations: [] };
 };
-const buildRelationInsertQuery = (user, input) => {
+const buildRelationInsertQuery = (input) => {
   const { from, to, relationship_type: relationshipType } = input;
   // 03. Generate the ID
   const internalId = generateInternalId();
@@ -2080,7 +2080,7 @@ const buildRelationInsertQuery = (user, input) => {
   }
   return { relation: relationAttributes, query };
 };
-const appendInnerRelation = (user, from, to, type) => {
+const appendInnerRelation = (from, to, type) => {
   const targets = Array.isArray(to) ? to : [to];
   if (!to || R.isEmpty(targets)) return [];
   const relations = [];
@@ -2088,7 +2088,7 @@ const appendInnerRelation = (user, from, to, type) => {
   for (let i = 0; i < targets.length; i += 1) {
     const target = targets[i];
     const input = { from, to: target, relationship_type: type };
-    const { relation, query } = buildRelationInsertQuery(user, input);
+    const { relation, query } = buildRelationInsertQuery(input);
     const basicRelation = {
       fromId: from.internal_id,
       fromRole: `${type}_from`,
@@ -2239,9 +2239,9 @@ const createRelationRaw = async (wTx, user, input, opts = {}) => {
   }
   const relToCreate = [];
   if (isStixCoreRelationship(relationshipType)) {
-    relToCreate.push(...appendInnerRelation(user, data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...appendInnerRelation(user, data, input.objectMarking, RELATION_OBJECT_MARKING));
-    relToCreate.push(...appendInnerRelation(user, data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
+    relToCreate.push(...appendInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
+    relToCreate.push(...appendInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
+    relToCreate.push(...appendInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
   }
   if (relToCreate.length > 0) {
     await Promise.all(
@@ -2486,12 +2486,12 @@ const createRawEntity = async (wTx, user, standardId, participantIds, input, typ
   // Create the input
   const relToCreate = [];
   if (isStixCoreObject(type)) {
-    relToCreate.push(...appendInnerRelation(user, data, input.createdBy, RELATION_CREATED_BY));
-    relToCreate.push(...appendInnerRelation(user, data, input.objectMarking, RELATION_OBJECT_MARKING));
-    relToCreate.push(...appendInnerRelation(user, data, input.objectLabel, RELATION_OBJECT_LABEL));
-    relToCreate.push(...appendInnerRelation(user, data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
-    relToCreate.push(...appendInnerRelation(user, data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
-    relToCreate.push(...appendInnerRelation(user, data, input.objects, RELATION_OBJECT));
+    relToCreate.push(...appendInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
+    relToCreate.push(...appendInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
+    relToCreate.push(...appendInnerRelation(data, input.objectLabel, RELATION_OBJECT_LABEL));
+    relToCreate.push(...appendInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
+    relToCreate.push(...appendInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
+    relToCreate.push(...appendInnerRelation(data, input.objects, RELATION_OBJECT));
   }
   logger.debug(`[GRAKN - infer: false] createEntity`, { query });
   await wTx.query(query);
@@ -2534,7 +2534,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     const data = await executeWrite(async (wTx) => {
-      return createRawEntity(wTx, user, standardId, participantIds, resolvedInput, type, opts);
+      return createRawEntity(wTx, user, standardId, participantIds, resolvedInput, type);
     });
     // Index the created element
     if (!data.entity.i_upserted) {
