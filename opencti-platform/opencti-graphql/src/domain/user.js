@@ -268,7 +268,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   const input = {
     fromId: userCreated.id,
     toId: defaultToken.id,
-    relationship_type: 'authorized-by',
+    relationship_type: RELATION_AUTHORIZED_BY,
   };
   await createRelation(user, input, { noLog: true });
   // Link to the roles

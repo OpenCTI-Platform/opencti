@@ -1,10 +1,10 @@
 import * as R from 'ramda';
-import {offsetToCursor} from 'graphql-relay';
+import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
-import {DatabaseError, FunctionalError} from '../config/errors';
-import {isInternalObject} from '../schema/internalObject';
-import {isStixMetaObject} from '../schema/stixMetaObject';
-import {isStixDomainObject} from '../schema/stixDomainObject';
+import { DatabaseError, FunctionalError } from '../config/errors';
+import { isInternalObject } from '../schema/internalObject';
+import { isStixMetaObject } from '../schema/stixMetaObject';
+import { isStixDomainObject } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -20,10 +20,10 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   isStixCyberObservable,
 } from '../schema/stixCyberObservableObject';
-import {isInternalRelationship} from '../schema/internalRelationship';
-import {isStixCoreRelationship} from '../schema/stixCoreRelationship';
-import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
-import {isStixCyberObservableRelationship} from '../schema/stixCyberObservableRelationship';
+import { isInternalRelationship } from '../schema/internalRelationship';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
   isStixInternalMetaRelationship,
   isStixMetaRelationship,
@@ -36,7 +36,7 @@ import {
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
 } from './rabbitmq';
-import {isStixObject} from '../schema/stixCoreObject';
+import { isStixObject } from '../schema/stixCoreObject';
 
 // Entities
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';

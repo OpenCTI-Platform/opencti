@@ -732,7 +732,7 @@ export const listFromEntitiesThroughRelation = (toId, toType, relationType, from
   );
 };
 export const listElements = async (baseQuery, elementKey, first, offset, args) => {
-  const { orderBy = null, orderMode = 'asc', inferred = false, noCache = false } = args;
+  const { orderBy = null, orderMode = 'asc', inferred = false, noCache = false, connectionFormat = true } = args;
   const countQuery = `${baseQuery} count;`;
   const paginateQuery = `offset ${offset}; limit ${first};`;
   const orderQuery = orderBy ? `sort $order ${orderMode};` : '';
@@ -741,6 +741,7 @@ export const listElements = async (baseQuery, elementKey, first, offset, args) =
   const findOpts = { infer: inferred, noCache };
   const instancesPromise = find(query, [elementKey], findOpts);
   return Promise.all([instancesPromise, countPromise]).then(([instances, globalCount]) => {
+    if (!connectionFormat) return R.map((t) => t[elementKey], instances);
     const edges = R.map((t) => ({ node: t[elementKey] }), instances);
     return buildPagination(first, offset, edges, globalCount);
   });
@@ -1141,23 +1142,28 @@ export const loadByIdFullyResolved = async (id, type, args = {}) => {
   return R.mergeRight(element, deps);
 };
 const findElementDependencies = async (instance, args = {}) => {
-  const { onlyMarking = false, orientation = 'from' } = args;
+  const { onlyMarking = false, orientation = 'from', noCache = false } = args;
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
   const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
-  const relations = await listRelations(relType, { elementId: instance.id });
+  const relations = await listRelations(relType, { elementId: instance.id, noCache });
   const targetsToResolve = R.map((e) => e.node.toId, relations.edges);
-  const rawDataPromise = internalFindByIds(targetsToResolve).then((ids) => {
-    return R.map((e) => {
-      const to = R.find((s) => s.id === e.node.toId, ids);
-      return { rel: e.node, to: { id: to.id, standard_id: to.standard_id } };
-    }, relations.edges);
-  });
+  let rawDataPromise;
+  if (targetsToResolve.length === 0) {
+    rawDataPromise = Promise.resolve([]);
+  } else {
+    rawDataPromise = internalFindByIds(targetsToResolve, args).then((ids) => {
+      return R.map((e) => {
+        const to = R.find((s) => s.id === e.node.toId, ids);
+        return { rel: e.node, to: { id: to.id, standard_id: to.standard_id } };
+      }, relations.edges);
+    });
+  }
   let rawData;
   const data = {};
   if (isRelation && !onlyMarking) {
     const [rFrom, rTo, rData] = await Promise.all([
-      loadByIdFullyResolved(instance.fromId, null, { onlyMarking: true }),
-      loadByIdFullyResolved(instance.toId, null, { onlyMarking: true }),
+      loadByIdFullyResolved(instance.fromId, null, { onlyMarking: true, noCache }),
+      loadByIdFullyResolved(instance.toId, null, { onlyMarking: true, noCache }),
       rawDataPromise,
     ]);
     data.from = rFrom;
@@ -1486,6 +1492,13 @@ const inputResolveRefs = async (input) => {
   }
   const patch = R.mergeAll(resolved);
   return R.mergeRight(input, patch);
+};
+const indexCreatedElement = async (element, relations) => {
+  await elIndexElements([element]);
+  if (relations.length > 0) {
+    const relationsToIndex = R.map((i) => i.relation, relations);
+    await elIndexElements(relationsToIndex);
+  }
 };
 // endregion
 
@@ -1966,59 +1979,14 @@ const upsertRelation = async (user, relationId, type, data) => {
       updatedRelation = await patchAttributeRaw(user, updatedRelation, patch);
     }
   }
-  return R.assoc('i_upserted', true, updatedRelation);
+  const relation = R.assoc('i_upserted', true, updatedRelation);
+  return { relation, relations: [] };
 };
-const addInnerRelation = async (user, from, to, type, opts) => {
-  const targets = Array.isArray(to) ? to : [to];
-  if (!to || R.isEmpty(targets)) return undefined;
-  const relations = [];
-  // Relations cannot be created in parallel.
-  for (let i = 0; i < targets.length; i += 1) {
-    const target = targets[i];
-    const input = { from, to: target, relationship_type: type };
-    const internalOpts = R.assoc('isInternalEvent', true, opts);
-    // eslint-disable-next-line no-await-in-loop,no-use-before-define
-    const rel = await createRelationRaw(user, input, internalOpts);
-    relations.push(rel);
-  }
-  return relations;
-};
-const createRelationRaw = async (user, input, opts = {}) => {
+const buildRelationInsertQuery = (user, input) => {
   const { from, to, relationship_type: relationshipType } = input;
-  const { isInternalEvent = false } = opts;
   // 03. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
-  // region 04. Check existing relationship
-  const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
-  if (isStixCoreRelationship(relationshipType)) {
-    if (!R.isNil(input.start_time)) {
-      listingArgs.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
-      listingArgs.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
-    }
-    if (!R.isNil(input.stop_time)) {
-      listingArgs.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months'));
-      listingArgs.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months'));
-    }
-  } else if (isStixSightingRelationship(relationshipType)) {
-    if (!R.isNil(input.first_seen)) {
-      listingArgs.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
-      listingArgs.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
-    }
-    if (!R.isNil(input.last_seen)) {
-      listingArgs.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months'));
-      listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months'));
-    }
-  }
-  const existingRelationships = await listRelations(relationshipType, listingArgs);
-  // endregion
-  let existingRelationship = null;
-  if (existingRelationships.edges.length > 0) {
-    existingRelationship = R.head(existingRelationships.edges).node;
-  }
-  if (existingRelationship) {
-    return upsertRelation(user, existingRelationship.id, relationshipType, input);
-  }
   // 05. Prepare the relation to be created
   const today = now();
   let relationAttributes = {};
@@ -2099,26 +2067,190 @@ const createRelationRaw = async (user, input, opts = {}) => {
   // 04. Create the relation
   const fromRole = `${relationshipType}_from`;
   const toRole = `${relationshipType}_to`;
-  await executeWrite(async (wTx) => {
-    // Build final query
-    let query = `match $from isa ${input.fromType ? input.fromType : 'thing'}; 
+  let query = `match $from isa ${input.fromType ? input.fromType : 'thing'}; 
       $from has internal_id "${from.internal_id}"; $to has internal_id "${to.internal_id}";
       insert $rel(${fromRole}: $from, ${toRole}: $to) isa ${relationshipType},`;
-    const queryElements = flatAttributesForObject(relationAttributes);
-    const nbElements = queryElements.length;
-    for (let index = 0; index < nbElements; index += 1) {
-      const { key, value } = queryElements[index];
-      const insert = prepareAttribute(key, value);
-      const separator = index + 1 === nbElements ? ';' : ',';
-      query += `has ${key} ${insert}${separator} `;
+  const queryElements = flatAttributesForObject(relationAttributes);
+  const nbElements = queryElements.length;
+  for (let index = 0; index < nbElements; index += 1) {
+    const { key, value } = queryElements[index];
+    const insert = prepareAttribute(key, value);
+    const separator = index + 1 === nbElements ? ';' : ',';
+    query += `has ${key} ${insert}${separator} `;
+  }
+  return { relation: relationAttributes, query };
+};
+const appendInnerRelation = (user, from, to, type) => {
+  const targets = Array.isArray(to) ? to : [to];
+  if (!to || R.isEmpty(targets)) return [];
+  const relations = [];
+  // Relations cannot be created in parallel.
+  for (let i = 0; i < targets.length; i += 1) {
+    const target = targets[i];
+    const input = { from, to: target, relationship_type: type };
+    const { relation, query } = buildRelationInsertQuery(user, input);
+    const basicRelation = {
+      fromId: from.internal_id,
+      fromRole: `${type}_from`,
+      fromType: from.entity_type,
+      toId: target.internal_id,
+      toRole: `${type}_to`,
+      toType: to.entity_type,
+      base_type: BASE_TYPE_RELATION,
+      parent_types: getParentTypes(relation.entity_type),
+      ...relation,
+    };
+    relations.push({ relation: basicRelation, query });
+  }
+  return relations;
+};
+const createRelationRaw = async (wTx, user, input, opts = {}) => {
+  const { from, to, relationship_type: relationshipType } = input;
+  // 03. Generate the ID
+  const internalId = generateInternalId();
+  const standardId = generateStandardId(relationshipType, input);
+  // region 04. Check existing relationship
+  const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
+  if (isStixCoreRelationship(relationshipType)) {
+    if (!R.isNil(input.start_time)) {
+      listingArgs.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
+      listingArgs.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
     }
-    logger.debug(`[GRAKN - infer: false] createRelation`, { query });
-    const iterator = await wTx.query(query);
-    const txRelation = await iterator.next();
-    if (txRelation === null) {
-      throw MissingReferenceError({ input });
+    if (!R.isNil(input.stop_time)) {
+      listingArgs.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months'));
+      listingArgs.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months'));
     }
-  });
+  } else if (isStixSightingRelationship(relationshipType)) {
+    if (!R.isNil(input.first_seen)) {
+      listingArgs.firstSeenStart = prepareDate(moment(input.first_seen).subtract(1, 'months').utc());
+      listingArgs.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
+    }
+    if (!R.isNil(input.last_seen)) {
+      listingArgs.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months'));
+      listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months'));
+    }
+  }
+  const existingRelationships = await listRelations(relationshipType, listingArgs);
+  // endregion
+  let existingRelationship = null;
+  if (existingRelationships.edges.length > 0) {
+    existingRelationship = R.head(existingRelationships.edges).node;
+  }
+  if (existingRelationship) {
+    return upsertRelation(user, existingRelationship.id, relationshipType, input);
+  }
+  // 05. Prepare the relation to be created
+  const today = now();
+  let data = {};
+  // Default attributes
+  // basic-relationship
+  data.internal_id = internalId;
+  data.standard_id = standardId;
+  data.entity_type = relationshipType;
+  data.created_at = today;
+  data.updated_at = today;
+  // stix-relationship
+  if (isStixRelationShipExceptMeta(relationshipType)) {
+    data.x_opencti_stix_ids = isNotEmptyField(input.stix_id) ? [input.stix_id] : [];
+    data.spec_version = STIX_SPEC_VERSION;
+    data.revoked = R.isNil(input.revoked) ? false : input.revoked;
+    data.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
+    data.lang = R.isNil(input.lang) ? 'en' : input.lang;
+    data.created = R.isNil(input.created) ? today : input.created;
+    data.modified = R.isNil(input.modified) ? today : input.modified;
+  }
+  // stix-core-relationship
+  if (isStixCoreRelationship(relationshipType)) {
+    data.relationship_type = relationshipType;
+    data.description = input.description ? input.description : '';
+    data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
+    data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+    /* istanbul ignore if */
+    if (data.start_time > data.stop_time) {
+      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
+        from: input.fromId,
+        input,
+      });
+    }
+  }
+  // stix-observable-relationship
+  if (isStixCyberObservableRelationship(relationshipType)) {
+    data.relationship_type = relationshipType;
+    data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
+    data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+    /* istanbul ignore if */
+    if (data.start_time > data.stop_time) {
+      throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
+        from: input.fromId,
+        input,
+      });
+    }
+  }
+  // stix-sighting-relationship
+  if (isStixSightingRelationship(relationshipType)) {
+    data.description = R.isNil(input.description) ? '' : input.description;
+    data.attribute_count = R.isNil(input.attribute_count) ? 1 : input.attribute_count;
+    data.x_opencti_negative = R.isNil(input.x_opencti_negative) ? false : input.x_opencti_negative;
+    data.first_seen = R.isNil(input.first_seen) ? new Date(FROM_START) : input.first_seen;
+    data.last_seen = R.isNil(input.last_seen) ? new Date(UNTIL_END) : input.last_seen;
+    /* istanbul ignore if */
+    if (data.first_seen > data.last_seen) {
+      throw DatabaseError('You cant create a relation with a first_seen less than the last_seen', {
+        from: input.fromId,
+        input,
+      });
+    }
+  }
+  // Add the additional fields for dates (day, month, year)
+  const dataKeys = Object.keys(data);
+  for (let index = 0; index < dataKeys.length; index += 1) {
+    // Adding dates elements
+    if (R.includes(dataKeys[index], statsDateAttributes)) {
+      const dayValue = dayFormat(data[dataKeys[index]]);
+      const monthValue = monthFormat(data[dataKeys[index]]);
+      const yearValue = yearFormat(data[dataKeys[index]]);
+      data = R.pipe(
+        R.assoc(`i_${dataKeys[index]}_day`, dayValue),
+        R.assoc(`i_${dataKeys[index]}_month`, monthValue),
+        R.assoc(`i_${dataKeys[index]}_year`, yearValue)
+      )(data);
+    }
+  }
+  // 04. Create the relation
+  const fromRole = `${relationshipType}_from`;
+  const toRole = `${relationshipType}_to`;
+  // Build final query
+  let query = `match $from isa ${input.fromType ? input.fromType : 'thing'}; 
+      $from has internal_id "${from.internal_id}"; $to has internal_id "${to.internal_id}";
+      insert $rel(${fromRole}: $from, ${toRole}: $to) isa ${relationshipType},`;
+  const queryElements = flatAttributesForObject(data);
+  const nbElements = queryElements.length;
+  for (let index = 0; index < nbElements; index += 1) {
+    const { key, value } = queryElements[index];
+    const insert = prepareAttribute(key, value);
+    const separator = index + 1 === nbElements ? ';' : ',';
+    query += `has ${key} ${insert}${separator} `;
+  }
+  logger.debug(`[GRAKN - infer: false] createRelation`, { query });
+  const iterator = await wTx.query(query);
+  const txRelation = await iterator.next();
+  if (txRelation === null) {
+    throw MissingReferenceError({ input });
+  }
+  const relToCreate = [];
+  if (isStixCoreRelationship(relationshipType)) {
+    relToCreate.push(...appendInnerRelation(user, data, input.createdBy, RELATION_CREATED_BY));
+    relToCreate.push(...appendInnerRelation(user, data, input.objectMarking, RELATION_OBJECT_MARKING));
+    relToCreate.push(...appendInnerRelation(user, data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
+  }
+  if (relToCreate.length > 0) {
+    await Promise.all(
+      R.map((r) => {
+        logger.debug(`[GRAKN - infer: false] create relation InnerRelation`, { r });
+        return wTx.query(r.query);
+      }, relToCreate)
+    );
+  }
   // 06. Prepare the final data with Grakn IDs
   const created = R.pipe(
     R.assoc('id', internalId),
@@ -2134,37 +2266,18 @@ const createRelationRaw = async (user, input, opts = {}) => {
     R.assoc('entity_type', relationshipType),
     R.assoc('parent_types', getParentTypes(relationshipType)),
     R.assoc('base_type', BASE_TYPE_RELATION)
-  )(relationAttributes);
-  // 07. Index the relation and the modification in the base entity
-  // Transaction succeed, index the result
-  try {
-    await elIndexElements([created]);
-  } catch (err) {
-    throw DatabaseError('Cannot index input', { error: err, data: created });
-  }
-  const postOperations = [];
-  // Complete with eventual relations (will eventually update the index)
-  if (isStixCoreRelationship(relationshipType)) {
-    postOperations.push(
-      addInnerRelation(user, created, input.createdBy, RELATION_CREATED_BY, opts),
-      addInnerRelation(user, created, input.objectMarking, RELATION_OBJECT_MARKING, opts),
-      addInnerRelation(user, created, input.killChainPhases, RELATION_KILL_CHAIN_PHASE, opts)
-    );
-  }
-  await Promise.all(postOperations);
+  )(data);
   // Send the event if everything fine
-  if (isInternalEvent === false) {
-    if (input.relationship_type === RELATION_OBJECT_MARKING) {
-      // We need to full reload the from entity to redispatch it.
-      const upFrom = await loadByIdFullyResolved(from.id, from.entity_type, opts);
-      await storeCreateEvent(user, upFrom, upFrom);
-    } else {
-      const relWithConnections = Object.assign(created, { from, to });
-      await storeCreateEvent(user, relWithConnections, input);
-    }
+  if (input.relationship_type === RELATION_OBJECT_MARKING) {
+    // We need to full reload the from entity to redispatch it.
+    const upFrom = await loadByIdFullyResolved(from.id, from.entity_type, opts);
+    await storeCreateEvent(user, upFrom, upFrom);
+  } else {
+    const relWithConnections = Object.assign(created, { from, to });
+    await storeCreateEvent(user, relWithConnections, input);
   }
   // 09. Return result if no need to reverse the relations from and to
-  return created;
+  return { relation: created, relations: relToCreate };
 };
 export const createRelation = async (user, input, opts = {}) => {
   let lock;
@@ -2188,9 +2301,14 @@ export const createRelation = async (user, input, opts = {}) => {
     // Try to get the lock in redis
     lock = await lockResource(lockIds);
     // noinspection UnnecessaryLocalVariableJS
-    const creation = await createRelationRaw(user, resolvedInput, opts);
-    // Return created element after waiting for it.
-    return creation;
+    const data = await executeWrite(async (wTx) => {
+      return createRelationRaw(wTx, user, resolvedInput, opts);
+    });
+    // Index the created element
+    if (!data.relation.i_upserted) {
+      await indexCreatedElement(data.relation, data.relations);
+    }
+    return data.relation;
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
@@ -2253,9 +2371,10 @@ const upsertEntity = async (user, entityId, type, data) => {
       }
     }
   }
-  return R.assoc('i_upserted', true, updatedEntity);
+  const entity = R.assoc('i_upserted', true, updatedEntity);
+  return { entity, relations: [] };
 };
-const createRawEntity = async (user, standardId, participantIds, input, type, opts = {}) => {
+const createRawEntity = async (wTx, user, standardId, participantIds, input, type) => {
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
@@ -2365,39 +2484,35 @@ const createRawEntity = async (user, standardId, participantIds, input, type, op
     }
   }
   // Create the input
-  await executeWrite(async (wTx) => {
-    logger.debug(`[GRAKN - infer: false] createEntity`, { query });
-    await wTx.query(query);
-  });
+  const relToCreate = [];
+  if (isStixCoreObject(type)) {
+    relToCreate.push(...appendInnerRelation(user, data, input.createdBy, RELATION_CREATED_BY));
+    relToCreate.push(...appendInnerRelation(user, data, input.objectMarking, RELATION_OBJECT_MARKING));
+    relToCreate.push(...appendInnerRelation(user, data, input.objectLabel, RELATION_OBJECT_LABEL));
+    relToCreate.push(...appendInnerRelation(user, data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
+    relToCreate.push(...appendInnerRelation(user, data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
+    relToCreate.push(...appendInnerRelation(user, data, input.objects, RELATION_OBJECT));
+  }
+  logger.debug(`[GRAKN - infer: false] createEntity`, { query });
+  await wTx.query(query);
+  if (relToCreate.length > 0) {
+    await Promise.all(
+      R.map((r) => {
+        logger.debug(`[GRAKN - infer: false] create entity InnerRelation`, { r });
+        return wTx.query(r.query);
+      }, relToCreate)
+    );
+  }
   // Transaction succeed, complete the result to send it back
   const created = R.pipe(
     R.assoc('id', internalId),
     R.assoc('base_type', BASE_TYPE_ENTITY),
     R.assoc('parent_types', getParentTypes(type))
   )(data);
-  // Transaction succeed, index the result
-  try {
-    await elIndexElements([created]);
-  } catch (err) {
-    throw DatabaseError('Cannot index input', { error: err, data: created });
-  }
-  const postOperations = [];
-  // Complete with eventual relations (will eventually update the index)
-  if (isStixCoreObject(type)) {
-    postOperations.push(
-      addInnerRelation(user, created, input.createdBy, RELATION_CREATED_BY, opts),
-      addInnerRelation(user, created, input.objectMarking, RELATION_OBJECT_MARKING, opts),
-      addInnerRelation(user, created, input.objectLabel, RELATION_OBJECT_LABEL, opts),
-      addInnerRelation(user, created, input.killChainPhases, RELATION_KILL_CHAIN_PHASE, opts),
-      addInnerRelation(user, created, input.externalReferences, RELATION_EXTERNAL_REFERENCE, opts),
-      addInnerRelation(user, created, input.objects, RELATION_OBJECT, opts)
-    );
-  }
-  await Promise.all(postOperations);
-  // Send the event if everything fine
+  // Push the input in the stream
   await storeCreateEvent(user, created, input);
   // Simply return the data
-  return created;
+  return { entity: created, relations: relToCreate };
 };
 export const createEntity = async (user, input, type, opts = {}) => {
   let lock;
@@ -2418,10 +2533,15 @@ export const createEntity = async (user, input, type, opts = {}) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
-    // noinspection UnnecessaryLocalVariableJS
-    const creation = await createRawEntity(user, standardId, participantIds, resolvedInput, type, opts);
+    const data = await executeWrite(async (wTx) => {
+      return createRawEntity(wTx, user, standardId, participantIds, resolvedInput, type, opts);
+    });
+    // Index the created element
+    if (!data.entity.i_upserted) {
+      await indexCreatedElement(data.entity, data.relations);
+    }
     // Return created element after waiting for it.
-    return creation;
+    return data.entity;
   } catch (err) {
     if (err.name === TYPE_DUPLICATE_ENTRY) {
       logger.warn(err.message, { input, ...err.data });
@@ -2443,8 +2563,8 @@ const getElementsRelated = async (targetId, elements = [], options = {}) => {
   const read = `match $from has internal_id "${eid}"; $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}; get;`;
   const connectedRelations = await find(read, ['rel'], options);
   const connectedRelationsIds = R.map((r) => {
-    const { id, entity_type: entityType } = r.rel;
-    return { id, type: entityType, relDependency: true };
+    const { internal_id: internalId, entity_type: entityType } = r.rel;
+    return { id: internalId, type: entityType, relDependency: true };
   }, connectedRelations);
   elements.push(...connectedRelationsIds);
   await Promise.all(connectedRelationsIds.map(({ id }) => getElementsRelated(id, elements, options)));
@@ -2463,6 +2583,8 @@ const deleteElementById = async (user, element, isRelation, options = {}) => {
       const query = `match $x has internal_id "${id}"; delete $x isa ${type};`;
       logger.debug(`[GRAKN - infer: false] delete element ${id}`, { query });
       await wTx.query(query, { infer: false });
+      // Create event in stream
+      await storeDeleteEvent(user, element);
     }).then(async () => {
       // Update elastic index.
       // 01. If element is a relation, modify the impacted from and to.
@@ -2474,7 +2596,6 @@ const deleteElementById = async (user, element, isRelation, options = {}) => {
     });
   }
   // Send the event if everything fine
-  await storeDeleteEvent(user, element);
 };
 export const deleteEntityById = async (user, entityId, type, options = {}) => {
   if (R.isNil(type)) {

@@ -40,6 +40,8 @@ export default {
         const elapsed = stop - start;
         const size = Buffer.byteLength(JSON.stringify(context.request.variables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
+        const contextUser = context.context.user;
+        const user = { id: contextUser.id, email: contextUser.user_email };
         const [variables] = await tryResolveKeyPromises(context.request.variables);
         const isCallError = context.errors && context.errors.length > 0;
         // Compute inner relations
@@ -58,6 +60,7 @@ export default {
         }
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
         const callMetaData = {
+          user,
           type: operationType + (isCallError ? '_ERROR' : ''),
           operation_query: stripIgnoredCharacters(context.request.query),
           inner_relation_creation: innerRelationCount,

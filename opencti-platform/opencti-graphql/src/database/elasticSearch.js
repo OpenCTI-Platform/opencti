@@ -1046,12 +1046,12 @@ const prepareIndexing = async (elements) => {
         const [from, to] = await Promise.all([elLoadByIds(thing.fromId), elLoadByIds(thing.toId)]);
         connections.push({
           internal_id: from.internal_id,
-          types: [thing.fromType, ...getParentTypes(thing.fromType)],
+          types: [from.entity_type, ...getParentTypes(from.entity_type)],
           role: thing.fromRole,
         });
         connections.push({
           internal_id: to.internal_id,
-          types: [thing.toType, ...getParentTypes(thing.toType)],
+          types: [to.entity_type, ...getParentTypes(to.entity_type)],
           role: thing.toRole,
         });
         return R.pipe(
