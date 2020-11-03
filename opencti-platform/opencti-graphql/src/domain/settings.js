@@ -40,7 +40,7 @@ export const getSettings = async () => {
 };
 
 export const addSettings = async (user, settings) => {
-  const created = await createEntity(user, settings, ENTITY_TYPE_SETTINGS, { noLog: true });
+  const created = await createEntity(user, settings, ENTITY_TYPE_SETTINGS);
   return notify(BUS_TOPICS.Settings.ADDED_TOPIC, created, user);
 };
 
@@ -59,6 +59,6 @@ export const settingsEditContext = (user, settingsId, input) => {
 };
 
 export const settingsEditField = async (user, settingsId, input) => {
-  const settings = await updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input, { noLog: true });
+  const settings = await updateAttribute(user, settingsId, ENTITY_TYPE_SETTINGS, input);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user);
 };

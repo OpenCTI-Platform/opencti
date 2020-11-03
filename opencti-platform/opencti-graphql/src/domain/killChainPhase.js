@@ -24,14 +24,12 @@ export const findAll = (args) => {
 export const addKillChainPhase = async (user, killChainPhase) => {
   const phaseOrder = killChainPhase.x_opencti_order ? killChainPhase.x_opencti_order : 0;
   const killChainPhaseToCreate = assoc('x_opencti_order', phaseOrder, killChainPhase);
-  const created = await createEntity(user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE, {
-    noLog: true,
-  });
+  const created = await createEntity(user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].ADDED_TOPIC, created, user);
 };
 
 export const killChainPhaseDelete = (user, killChainPhaseId) => {
-  return deleteEntityById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, { noLog: true });
+  return deleteEntityById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
@@ -52,9 +50,7 @@ export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relat
 };
 
 export const killChainPhaseEditField = async (user, killChainPhaseId, input) => {
-  const killChainPhase = await updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input, {
-    noLog: true,
-  });
+  const killChainPhase = await updateAttribute(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user);
 };
 

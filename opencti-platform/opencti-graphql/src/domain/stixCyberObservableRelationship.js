@@ -35,9 +35,7 @@ export const addStixCyberObservableRelationship = async (user, stixCyberObservab
 };
 
 export const stixCyberObservableRelationshipDelete = async (user, stixCyberObservableRelationshipId) => {
-  return deleteRelationById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, {
-    noLog: true,
-  });
+  return deleteRelationById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
 };
 
 export const stixCyberObservableRelationshipCleanContext = (user, stixCyberObservableRelationshipId) =>
@@ -51,10 +49,7 @@ export const stixCyberObservableRelationshipEditField = async (user, relationshi
     user,
     relationshipId,
     ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-    input,
-    {
-      noLog: true,
-    }
+    input
   );
   return notify(BUS_TOPICS.StixCyberObservableRelationship.EDIT_TOPIC, stixRelationship, user);
 };

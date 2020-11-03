@@ -219,7 +219,7 @@ export const roleDelete = async (user, roleId) => {
     filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(R.map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE, { noLog: true });
+  return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE);
 };
 
 export const roleCleanContext = async (user, roleId) => {
@@ -240,7 +240,7 @@ export const assignRoleToUser = async (user, userId, roleName) => {
     toId: generateToId,
     relationship_type: RELATION_HAS_ROLE,
   };
-  return createRelation(user, assignInput, { noLog: true });
+  return createRelation(user, assignInput);
 };
 
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
@@ -260,24 +260,22 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     R.assoc('external', newUser.external ? newUser.external : false),
     R.dissoc('roles')
   )(newUser);
-  const userOptions = { noLog: true };
-  const userCreated = await createEntity(user, userToCreate, ENTITY_TYPE_USER, userOptions);
+  const userCreated = await createEntity(user, userToCreate, ENTITY_TYPE_USER);
   // Create token and link it to the user
-  const tokenOptions = { noLog: true };
-  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN, tokenOptions);
+  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
   const input = {
     fromId: userCreated.id,
     toId: defaultToken.id,
     relationship_type: RELATION_AUTHORIZED_BY,
   };
-  await createRelation(user, input, { noLog: true });
+  await createRelation(user, input);
   // Link to the roles
   await Promise.all(R.map((role) => assignRoleToUser(user, userCreated.id, role), userRoles));
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
 export const roleEditField = async (user, roleId, input) => {
-  const role = await updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input, { noLog: true });
+  const role = await updateAttribute(user, roleId, ENTITY_TYPE_ROLE, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
@@ -290,7 +288,7 @@ export const roleAddRelation = async (user, roleId, input) => {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = R.assoc('fromId', roleId, input);
-  return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
+  return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -304,9 +302,7 @@ export const roleDeleteRelation = async (user, roleId, toId, relationshipType) =
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP, {
-    noLog: true,
-  });
+  await deleteRelationsByFromAndTo(user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
 
@@ -315,7 +311,7 @@ export const userEditField = async (user, userId, input) => {
   const { key } = input;
   const value = key === 'password' ? [bcrypt.hashSync(R.head(input.value).toString(), 10)] : input.value;
   const patch = { [key]: value };
-  const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch, { noLog: true });
+  const userToEdit = await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userToEdit, user);
 };
 
@@ -326,7 +322,7 @@ export const meEditField = (user, userId, input) => {
 export const userDelete = async (user, userId) => {
   const userToken = await internalGetToken(userId);
   if (userToken) {
-    await deleteEntityById(user, userToken.id, ENTITY_TYPE_TOKEN, { noLog: true });
+    await deleteEntityById(user, userToken.id, ENTITY_TYPE_TOKEN);
     await clearUserAccessCache(userToken.uuid);
   }
   await deleteEntityById(user, userId, ENTITY_TYPE_USER);
@@ -342,7 +338,7 @@ export const userAddRelation = async (user, userId, input) => {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
   }
   const finalInput = R.assoc('fromId', userId, input);
-  return createRelation(user, finalInput, { noLog: true }).then((relationData) => {
+  return createRelation(user, finalInput).then((relationData) => {
     notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
     return relationData;
   });
@@ -356,9 +352,7 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP, {
-    noLog: true,
-  });
+  await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   await clearUserTokenCache(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
@@ -410,23 +404,23 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   const currentToken = await internalGetToken(userId);
   // 02. Remove the token
   if (currentToken) {
-    await deleteEntityById(user, currentToken.id, ENTITY_TYPE_TOKEN, { noLog: true });
+    await deleteEntityById(user, currentToken.id, ENTITY_TYPE_TOKEN);
   } else {
     logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
     const detachedToken = await internalGetTokenByUUID(newToken.uuid);
     if (detachedToken) {
-      await deleteEntityById(user, detachedToken.id, ENTITY_TYPE_TOKEN, { noLog: true });
+      await deleteEntityById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
     }
   }
   // 03. Create a new one
-  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN, { noLog: true });
+  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
   // 04. Associate new token to user.
   const input = {
     fromId: userId,
     toId: defaultToken.id,
     relationship_type: RELATION_AUTHORIZED_BY,
   };
-  await createRelation(user, input, { noLog: true });
+  await createRelation(user, input);
   return loadById(userId, ENTITY_TYPE_USER);
 };
 
@@ -486,7 +480,7 @@ export const initAdmin = async (email, password, tokenValue) => {
   if (admin) {
     // Update admin fields
     const patch = { user_email: email, password: bcrypt.hashSync(password, 10), external: true };
-    await patchAttribute(admin, admin.id, ENTITY_TYPE_USER, patch, { noLog: true });
+    await patchAttribute(admin, admin.id, ENTITY_TYPE_USER, patch);
     // Renew the token
     await userRenewToken(admin, admin.id, tokenAdmin);
   } else {

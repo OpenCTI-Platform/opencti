@@ -25,14 +25,12 @@ export const findAll = (args) => {
 };
 
 export const addExternalReference = async (user, externalReference) => {
-  const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE, {
-    noLog: true,
-  });
+  const created = await createEntity(user, externalReference, ENTITY_TYPE_EXTERNAL_REFERENCE);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].ADDED_TOPIC, created, user);
 };
 
 export const externalReferenceDelete = async (user, externalReferenceId) => {
-  return deleteEntityById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, { noLog: true });
+  return deleteEntityById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 export const externalReferenceAddRelation = async (user, externalReferenceId, input) => {
@@ -72,9 +70,7 @@ export const externalReferenceDeleteRelation = async (user, externalReferenceId,
 };
 
 export const externalReferenceEditField = async (user, externalReferenceId, input) => {
-  const externalReference = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input, {
-    noLog: true,
-  });
+  const externalReference = await updateAttribute(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };
 

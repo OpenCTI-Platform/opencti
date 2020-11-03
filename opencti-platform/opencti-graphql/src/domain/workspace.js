@@ -63,14 +63,11 @@ export const workspacesNumber = (args) => {
 
 // region mutations
 export const addWorkspace = async (user, workspace) => {
-  const created = await createEntity(user, workspace, ENTITY_TYPE_WORKSPACE, {
-    noLog: true,
-  });
+  const created = await createEntity(user, workspace, ENTITY_TYPE_WORKSPACE);
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
 
-export const workspaceDelete = (user, workspaceId) =>
-  deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE, { noLog: true });
+export const workspaceDelete = (user, workspaceId) => deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
 
 export const workspaceAddRelation = async (user, workspaceId, input) => {
   const workspace = await loadById(workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -118,7 +115,7 @@ export const workspaceDeleteRelation = async (user, workspaceId, toId, relations
 };
 
 export const workspaceEditField = async (user, workspaceId, input) => {
-  const workspace = await updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input, { noLog: true });
+  const workspace = await updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 // endregion

@@ -5,7 +5,7 @@ import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
 
 export const addCapability = async (user, capability) => {
-  return createEntity(user, capability, ENTITY_TYPE_CAPABILITY, { noLog: true });
+  return createEntity(user, capability, ENTITY_TYPE_CAPABILITY);
 };
 
 export const addRole = async (user, role) => {
@@ -15,21 +15,17 @@ export const addRole = async (user, role) => {
     assoc('default_assignation', role.default_assignation ? role.default_assignation : false),
     dissoc('capabilities')
   )(role);
-  const roleEntity = await createEntity(user, roleToCreate, ENTITY_TYPE_ROLE, { noLog: true });
+  const roleEntity = await createEntity(user, roleToCreate, ENTITY_TYPE_ROLE);
   const relationPromises = map(async (capabilityName) => {
     const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
-    return createRelation(
-      user,
-      {
-        fromId: roleEntity.id,
-        toId: generateToId,
-        relationship_type: RELATION_HAS_CAPABILITY,
-      },
-      { noLog: true }
-    );
+    return createRelation(user, {
+      fromId: roleEntity.id,
+      toId: generateToId,
+      relationship_type: RELATION_HAS_CAPABILITY,
+    });
   }, capabilities);
   await Promise.all(relationPromises);
   return roleEntity;
 };
 
-export const roleDelete = (user, roleId) => deleteEntityById(user, roleId, ENTITY_TYPE_ROLE, { noLog: true });
+export const roleDelete = (user, roleId) => deleteEntityById(user, roleId, ENTITY_TYPE_ROLE);

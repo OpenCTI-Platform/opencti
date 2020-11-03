@@ -26,6 +26,6 @@ export const addIdentity = async (user, identity) => {
     identityClass = 'class';
   }
   const identityToCreate = pipe(assoc('identity_class', identityClass), dissoc('type'))(identity);
-  const created = await createEntity(user, identityToCreate, identity.type, { fieldsToUpdate: ['description'] });
+  const created = await createEntity(user, identityToCreate, identity.type);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

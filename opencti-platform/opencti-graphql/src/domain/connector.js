@@ -66,17 +66,17 @@ export const pingConnector = async (user, id, state) => {
   const connector = await loadById(id, ENTITY_TYPE_CONNECTOR);
   if (connector.connector_state_reset === true) {
     const statePatch = { connector_state_reset: false };
-    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, statePatch, { noLog: true });
+    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, statePatch);
   } else {
     const updatePatch = { updated_at: creation, connector_state: state };
-    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatePatch, { noLog: true });
+    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatePatch);
   }
   return loadById(id, 'Connector').then((data) => completeConnector(data));
 };
 
 export const resetStateConnector = async (user, id) => {
   const patch = { connector_state: '', connector_state_reset: true };
-  await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
+  await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
   return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 
@@ -88,7 +88,7 @@ export const registerConnector = async (user, connectorData) => {
   if (connector) {
     // Simple connector update
     const patch = { name, updated_at: now(), connector_user_id: user.id, connector_scope: scope.join(','), auto };
-    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch, { noLog: true });
+    await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
     return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
@@ -100,15 +100,13 @@ export const registerConnector = async (user, connectorData) => {
     auto,
     connector_user_id: user.id,
   };
-  const createdConnector = await createEntity(user, connectorToCreate, ENTITY_TYPE_CONNECTOR, {
-    noLog: true,
-  });
+  const createdConnector = await createEntity(user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
   // Return the connector
   return completeConnector(createdConnector);
 };
 
 export const connectorDelete = async (user, connectorId) => {
   await unregisterConnector(connectorId);
-  return deleteEntityById(user, connectorId, ENTITY_TYPE_CONNECTOR, { noLog: true });
+  return deleteEntityById(user, connectorId, ENTITY_TYPE_CONNECTOR);
 };
 // endregion

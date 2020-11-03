@@ -31,14 +31,14 @@ export const addLabel = async (user, label) => {
     assoc('value', normalizeName(label.value).toLowerCase()),
     assoc('color', label.color ? label.color : stringToColour(normalizeName(label.value)))
   )(label);
-  const created = await createEntity(user, finalLabel, ENTITY_TYPE_LABEL, { noLog: true });
+  const created = await createEntity(user, finalLabel, ENTITY_TYPE_LABEL);
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, created, user);
 };
 
-export const labelDelete = (user, labelId) => deleteEntityById(user, labelId, ENTITY_TYPE_LABEL, { noLog: true });
+export const labelDelete = (user, labelId) => deleteEntityById(user, labelId, ENTITY_TYPE_LABEL);
 
 export const labelEditField = async (user, labelId, input) => {
-  const label = await updateAttribute(user, labelId, ENTITY_TYPE_LABEL, input, { noLog: true });
+  const label = await updateAttribute(user, labelId, ENTITY_TYPE_LABEL, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user);
 };
 

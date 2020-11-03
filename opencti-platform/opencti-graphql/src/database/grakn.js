@@ -2104,7 +2104,7 @@ const appendInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const createRelationRaw = async (wTx, user, input, opts = {}) => {
+const createRelationRaw = async (wTx, user, input) => {
   const { from, to, relationship_type: relationshipType } = input;
   // 03. Generate the ID
   const internalId = generateInternalId();
@@ -2270,7 +2270,7 @@ const createRelationRaw = async (wTx, user, input, opts = {}) => {
   // Send the event if everything fine
   if (input.relationship_type === RELATION_OBJECT_MARKING) {
     // We need to full reload the from entity to redispatch it.
-    const upFrom = await loadByIdFullyResolved(from.id, from.entity_type, opts);
+    const upFrom = await loadByIdFullyResolved(from.id, from.entity_type);
     await storeCreateEvent(user, upFrom, upFrom);
   } else {
     const relWithConnections = Object.assign(created, { from, to });
@@ -2279,7 +2279,7 @@ const createRelationRaw = async (wTx, user, input, opts = {}) => {
   // 09. Return result if no need to reverse the relations from and to
   return { relation: created, relations: relToCreate };
 };
-export const createRelation = async (user, input, opts = {}) => {
+export const createRelation = async (user, input) => {
   let lock;
   const { fromId, toId, relationship_type: relationshipType } = input;
   if (fromId === toId) {
@@ -2302,7 +2302,7 @@ export const createRelation = async (user, input, opts = {}) => {
     lock = await lockResource(lockIds);
     // noinspection UnnecessaryLocalVariableJS
     const data = await executeWrite(async (wTx) => {
-      return createRelationRaw(wTx, user, resolvedInput, opts);
+      return createRelationRaw(wTx, user, resolvedInput);
     });
     // Index the created element
     if (!data.relation.i_upserted) {
