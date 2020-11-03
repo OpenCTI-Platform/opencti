@@ -2315,7 +2315,7 @@ export const createRelation = async (user, input, opts = {}) => {
       return upsertRelation(user, err.data.id, input.relationship_type, input);
     }
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Operation still in progress (redis lock)', { lockIds });
+      throw DatabaseError('Transaction fail, execution timeout. (Check your grakn sizing)', { lockIds });
     }
     throw err;
   } finally {
@@ -2514,7 +2514,7 @@ const createRawEntity = async (wTx, user, standardId, participantIds, input, typ
   // Simply return the data
   return { entity: created, relations: relToCreate };
 };
-export const createEntity = async (user, input, type, opts = {}) => {
+export const createEntity = async (user, input, type) => {
   let lock;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
@@ -2548,7 +2548,7 @@ export const createEntity = async (user, input, type, opts = {}) => {
       return upsertEntity(user, err.data.id, type, resolvedInput);
     }
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Operation still in progress (redis lock)', { participantIds });
+      throw DatabaseError('Transaction fail, execution timeout. (Check your grakn sizing)', { participantIds });
     }
     throw err;
   } finally {

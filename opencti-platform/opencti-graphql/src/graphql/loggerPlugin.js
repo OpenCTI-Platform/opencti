@@ -41,7 +41,7 @@ export default {
         const size = Buffer.byteLength(JSON.stringify(context.request.variables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.context.user;
-        const user = { id: contextUser.id, email: contextUser.user_email };
+        const user = contextUser ? { id: contextUser.id, email: contextUser.user_email } : undefined;
         const [variables] = await tryResolveKeyPromises(context.request.variables);
         const isCallError = context.errors && context.errors.length > 0;
         // Compute inner relations
