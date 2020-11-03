@@ -10,6 +10,8 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
+// TODO @Sam fix dependency cycle
+// eslint-disable-next-line import/no-cycle
 import ListLines from '../../../components/list_lines/ListLines';
 import LabelsAttributesMenu from './LabelsAttributesMenu';
 import AttributesLines, {

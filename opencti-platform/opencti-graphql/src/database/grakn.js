@@ -2323,13 +2323,13 @@ export const createRelation = async (user, input) => {
   }
 };
 /* istanbul ignore next */
-export const createRelations = async (user, inputs, opts = {}) => {
+export const createRelations = async (user, inputs) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improve by grouping and indexing in one shot.
   for (let i = 0; i < inputs.length; i += 1) {
     // eslint-disable-next-line no-await-in-loop
-    const relation = await createRelation(user, inputs[i], opts);
+    const relation = await createRelation(user, inputs[i]);
     createdRelations.push(relation);
   }
   return createdRelations;

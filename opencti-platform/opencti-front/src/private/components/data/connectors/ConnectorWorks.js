@@ -129,6 +129,7 @@ class ConnectorWorksComponent extends Component {
     this.setState({ displayErrors: false, errors: [] });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   handleDeleteWork(workId) {
     commitMutation({
       mutation: connectorWorksWorkDeletionMutation,

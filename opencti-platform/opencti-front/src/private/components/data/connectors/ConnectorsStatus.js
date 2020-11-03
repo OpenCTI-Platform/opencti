@@ -158,6 +158,7 @@ class ConnectorsStatusComponent extends Component {
     this.subscription.unsubscribe();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   handleResetState(connectorId) {
     commitMutation({
       mutation: connectorResetStateMutation,

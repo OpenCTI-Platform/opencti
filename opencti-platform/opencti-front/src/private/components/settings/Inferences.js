@@ -73,6 +73,7 @@ const inferencesDisableMutation = graphql`
 `;
 
 class Inferences extends Component {
+  // eslint-disable-next-line class-methods-use-this
   handleToggle(id, enabled) {
     commitMutation({
       mutation: enabled ? inferencesDisableMutation : inferencesEnableMutation,

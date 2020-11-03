@@ -15,6 +15,8 @@ import { Add, Close } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
+// TODO @SAM Fix cyclic redundancies
+// eslint-disable-next-line import/no-cycle
 import ContainerAddStixCoreObjectsLines, {
   containerAddStixCoreObjectsLinesQuery,
 } from './ContainerAddStixCoreObjectsLines';

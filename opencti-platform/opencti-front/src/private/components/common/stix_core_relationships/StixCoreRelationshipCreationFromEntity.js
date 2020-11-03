@@ -798,6 +798,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
     const { open, step } = this.state;
     return (
       <div>
+        {/* eslint-disable-next-line no-nested-ternary */}
         {variant === 'inLine' ? (
           <IconButton
             color="secondary"

@@ -121,6 +121,7 @@ class ConnectorComponent extends Component {
     this.setState({ displayUpdate: false });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   handleResetState(connectorId) {
     commitMutation({
       mutation: connectorResetStateMutation,
@@ -133,6 +134,7 @@ class ConnectorComponent extends Component {
     });
   }
 
+  // eslint-disable-next-line class-methods-use-this
   handleDelete(connectorId) {
     commitMutation({
       mutation: connectorDeletionMutation,

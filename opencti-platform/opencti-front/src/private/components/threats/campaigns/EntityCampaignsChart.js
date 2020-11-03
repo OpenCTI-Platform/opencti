@@ -102,6 +102,7 @@ class EntityCampaignsChart extends Component {
       t,
       md,
       entityId,
+      // eslint-disable-next-line camelcase
       relationship_type,
       variant,
       inferred,
@@ -113,6 +114,7 @@ class EntityCampaignsChart extends Component {
       startDate: monthsAgo(this.state.period),
       endDate: now(),
       interval: 'month',
+      // eslint-disable-next-line camelcase
       relationship_type: relationship_type || 'targets',
       inferred: inferred || false,
     };

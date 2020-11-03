@@ -11,7 +11,7 @@ import Tools from './Tools';
 import RootTool from './tools/Root';
 import Vulnerabilities from './Vulnerabilities';
 import RootVulnerabilities from './vulnerabilities/Root';
-import CoursesOfAction from "./CoursesOfAction";
+import CoursesOfAction from './CoursesOfAction';
 
 class Root extends Component {
   render() {

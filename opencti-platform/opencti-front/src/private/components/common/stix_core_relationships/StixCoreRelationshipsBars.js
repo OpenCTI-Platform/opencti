@@ -135,11 +135,9 @@ const stixCoreRelationshipsBarsDistributionQuery = graphql`
   }
 `;
 
-class StixCoreRelationshipsBars extends Component {
-  tickFormatter(title) {
-    return truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
-  }
+const tickFormatter = (title) => truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
 
+class StixCoreRelationshipsBars extends Component {
   render() {
     const {
       t,
@@ -218,7 +216,7 @@ class StixCoreRelationshipsBars extends Component {
                         type="category"
                         angle={-30}
                         textAnchor="end"
-                        tickFormatter={this.tickFormatter.bind(this)}
+                        tickFormatter={tickFormatter}
                       />
                       <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
                       <Tooltip

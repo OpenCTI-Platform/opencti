@@ -43,7 +43,7 @@ import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
-import { itemColor } from '../../utils/Colors';
+import { hexToRGB, itemColor } from '../../utils/Colors';
 import { truncate } from '../../utils/String';
 import StixCoreRelationshipsBars from './common/stix_core_relationships/StixCoreRelationshipsBars';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
@@ -354,13 +354,6 @@ class Dashboard extends Component {
     return truncate(this.props.t(`entity_${title}`), 10);
   }
 
-  hexToRGB(hex, transp = 0.1) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgb(${r}, ${g}, ${b}, ${transp})`;
-  }
-
   render() {
     const {
       t, n, nsd, mtd, classes,
@@ -535,7 +528,7 @@ class Dashboard extends Component {
                                     style={{
                                       color: line.entity.color,
                                       borderColor: line.entity.color,
-                                      backgroundColor: this.hexToRGB(
+                                      backgroundColor: hexToRGB(
                                         line.entity.color,
                                       ),
                                     }}

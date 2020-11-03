@@ -76,6 +76,7 @@ const styles = (theme) => ({
 });
 
 class UserHistoryLineComponent extends Component {
+  // eslint-disable-next-line class-methods-use-this
   renderIcon(eventType, eventMesage) {
     if (eventType === 'create') {
       return (

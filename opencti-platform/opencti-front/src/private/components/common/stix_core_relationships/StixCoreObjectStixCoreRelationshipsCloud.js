@@ -12,7 +12,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 import Loader from '../../../../components/Loader';
-import { itemColor } from '../../../../utils/Colors';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const styles = () => ({
   paper: {
@@ -75,13 +75,6 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
 `;
 
 class StixCoreObjectStixCoreRelationshipsCloud extends Component {
-  hexToRGB(hex, transp = 0.1) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgb(${r}, ${g}, ${b}, ${transp})`;
-  }
-
   renderContent() {
     const {
       t,
@@ -137,7 +130,7 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
                           style={{
                             color,
                             borderColor: color,
-                            backgroundColor: this.hexToRGB(color),
+                            backgroundColor: hexToRGB(color),
                           }}
                         >
                           <div className={classes.labelNumber}>

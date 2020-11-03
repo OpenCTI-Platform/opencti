@@ -98,6 +98,7 @@ class EntityStixCoreRelationshipsChart extends Component {
     const {
       t,
       entityId,
+      // eslint-disable-next-line camelcase
       relationship_type,
       variant,
       md,

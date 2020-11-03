@@ -32,6 +32,7 @@ import { labelsSearchQuery } from '../../settings/Labels';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import { hexToRGB } from '../../../../utils/Colors';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -199,13 +200,6 @@ class StixCoreObjectLabelsView extends Component {
     this.handleCloseAdd();
   }
 
-  hexToRGB(hex, transp = 0.1) {
-    const r = parseInt(hex.slice(1, 3), 16);
-    const g = parseInt(hex.slice(3, 5), 16);
-    const b = parseInt(hex.slice(5, 7), 16);
-    return `rgb(${r}, ${g}, ${b}, ${transp})`;
-  }
-
   render() {
     const { classes, labels, t } = this.props;
     const labelsNodes = pipe(
@@ -239,7 +233,7 @@ class StixCoreObjectLabelsView extends Component {
                 style={{
                   color: label.color,
                   borderColor: label.color,
-                  backgroundColor: this.hexToRGB(label.color),
+                  backgroundColor: hexToRGB(label.color),
                 }}
                 onDelete={this.handleRemoveLabel.bind(this, label.id)}
                 deleteIcon={

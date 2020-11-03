@@ -49,6 +49,7 @@ const styles = (theme) => ({
   },
 });
 
+// eslint-disable-next-line max-len
 class StixSightingRelationshipCreationFromRelationStixCyberObservablesLinesContainer extends Component {
   constructor(props) {
     super(props);
@@ -164,6 +165,7 @@ export const stixSightingRelationshipCreationFromRelationStixCyberObservablesLin
   }
 `;
 
+// eslint-disable-next-line max-len
 const StixSightingRelationshipCreationFromRelationStixCyberObservablesLines = createPaginationContainer(
   StixSightingRelationshipCreationFromRelationStixCyberObservablesLinesContainer,
   {
