@@ -201,13 +201,14 @@ const StixCyberObservableEnrichment = (props) => {
                                 }}
                               />
                             )}
-                            {work.status === 'wait' && (
-                              <CircularProgress
-                                size={20}
-                                thickness={2}
-                                style={{ marginRight: 10 }}
-                              />
-                            )}
+                            {work.status === 'wait'
+                              || (work.status === 'progress' && (
+                                <CircularProgress
+                                  size={20}
+                                  thickness={2}
+                                  style={{ marginRight: 10 }}
+                                />
+                              ))}
                           </ListItemIcon>
                           <ListItemText primary={nsdt(work.timestamp)} />
                           <ListItemSecondaryAction style={{ right: 0 }}>
