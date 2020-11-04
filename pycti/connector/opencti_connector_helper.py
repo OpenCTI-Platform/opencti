@@ -474,6 +474,7 @@ class OpenCTIConnectorHelper:
         :type update: bool, optional
         :param split: whether to split the stix bundle before processing, defaults to True
         :type split: bool, optional
+        :type remove_orphan: bool, optional
         :raises ValueError: if the bundle is empty
         :return: list of bundles
         :rtype: list
@@ -482,11 +483,12 @@ class OpenCTIConnectorHelper:
         entities_types = kwargs.get("entities_types", None)
         update = kwargs.get("update", False)
         split = kwargs.get("split", True)
+        remove_orphan = kwargs.get("remove_orphan", True)
 
         if entities_types is None:
             entities_types = []
         if split:
-            stix2_splitter = OpenCTIStix2Splitter()
+            stix2_splitter = OpenCTIStix2Splitter(remove_orphan)
             bundles = stix2_splitter.split_bundle(bundle)
             if len(bundles) == 0:
                 raise ValueError("Nothing to import")
