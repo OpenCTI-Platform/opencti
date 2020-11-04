@@ -14,8 +14,10 @@ const styles = () => ({
     fontSize: 12,
   },
   diffDescription: {
-    margin: '0 0 0 10px',
+    margin: '2px 0 0 10px',
     float: 'left',
+    fontSize: 9,
+    color: '#ffffff',
   },
   diffIcon: {
     float: 'left',

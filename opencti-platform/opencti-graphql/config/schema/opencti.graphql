@@ -7966,6 +7966,7 @@ type Query {
     type: String
     fromId: String
     toTypes: [String]
+    noDirection: Boolean
     endDate: DateTime
     inferred: Boolean
   ): Number @auth(for: [KNOWLEDGE])

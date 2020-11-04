@@ -307,9 +307,14 @@ export const elCount = (indexName, options = {}) => {
     }
     must = R.append(
       {
-        bool: {
-          should: filters,
-          minimum_should_match: 1,
+        nested: {
+          path: 'connections',
+          query: {
+            bool: {
+              should: filters,
+              minimum_should_match: 1,
+            },
+          },
         },
       },
       must

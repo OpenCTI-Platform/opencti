@@ -389,7 +389,7 @@ class Dashboard extends Component {
                             {t('Total entities')}
                           </div>
                           <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference difference={difference} />
+                          <ItemNumberDifference difference={difference} description={t('24 hours')} />
                           <div className={classes.icon}>
                             <Database color="inherit" fontSize="large" />
                           </div>
@@ -419,7 +419,7 @@ class Dashboard extends Component {
                             {t('Total relationships')}
                           </div>
                           <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference difference={difference} />
+                          <ItemNumberDifference difference={difference} description={t('24 hours')} />
                           <div className={classes.icon}>
                             <GraphOutline color="inherit" fontSize="large" />
                           </div>
@@ -446,7 +446,7 @@ class Dashboard extends Component {
                             {t('Total reports')}
                           </div>
                           <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference difference={difference} />
+                          <ItemNumberDifference difference={difference} description={t('24 hours')} />
                           <div className={classes.icon}>
                             <DescriptionOutlined
                               color="inherit"
@@ -476,7 +476,7 @@ class Dashboard extends Component {
                             {t('Total observables')}
                           </div>
                           <div className={classes.number}>{n(total)}</div>
-                          <ItemNumberDifference difference={difference} />
+                          <ItemNumberDifference difference={difference} description={t('24 hours')} />
                           <div className={classes.icon}>
                             <HexagonMultipleOutline
                               color="inherit"

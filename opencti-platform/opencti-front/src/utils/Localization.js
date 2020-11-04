@@ -780,8 +780,8 @@ const i18n = {
       'Last targeted organizations in this sector':
         'Dernières organisations ciblées dans ce secteur',
       'Ingested entities': 'Entités stockées',
-      'last 24h': 'dernières 24h',
-      'last month': 'dernier mois',
+      '24 hours': '24 heures',
+      '30 days': '30 jours',
       'No entities were found for this search.':
         "Aucune entité n'a été trouvée pour cette recherche.",
       'API access': "Accès à l'API",
