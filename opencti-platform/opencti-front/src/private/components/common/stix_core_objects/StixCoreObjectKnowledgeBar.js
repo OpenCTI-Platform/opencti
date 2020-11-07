@@ -58,6 +58,7 @@ class StixCoreObjectKnowledgeBar extends Component {
       stixCoreObjectLink,
       availableSections,
     } = this.props;
+    // eslint-disable-next-line max-len
     const isInAvailableSection = (sections) => any((filter) => includes(filter, sections), availableSections);
     return (
       <Drawer

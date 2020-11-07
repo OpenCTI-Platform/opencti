@@ -47,6 +47,7 @@ const TextField = (props) => {
       onFocus={internalOnFocus}
       onBlur={internalOnBlur}
       helperText={
+        // eslint-disable-next-line no-nested-ternary
         detectDuplicate && (isNil(meta.error) || !meta.touched) ? (
           <StixDomainObjectDetectDuplicate
             types={detectDuplicate}

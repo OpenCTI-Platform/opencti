@@ -79,6 +79,7 @@ class EntityStixCoreRelationshipsTable extends Component {
       classes,
       entityId,
       entityType,
+      // eslint-disable-next-line camelcase
       relationship_type,
       field,
       inferred,

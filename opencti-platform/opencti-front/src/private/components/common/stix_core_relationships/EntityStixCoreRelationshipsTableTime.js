@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, reverse } from 'ramda';
@@ -141,9 +142,7 @@ class EntityStixCoreRelationshipsTableTime extends Component {
                           + this.state.interval.slice(1),
                       )}
                     </TableCell>
-                    <TableCell align="right">{`${t('Number of')} ${t(
-                      `relationship_${relationship_type}`,
-                    )}s`}</TableCell>
+                    <TableCell align="right">{`${t('Number of')} ${t(`relationship_${relationship_type}`)}s`}</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>

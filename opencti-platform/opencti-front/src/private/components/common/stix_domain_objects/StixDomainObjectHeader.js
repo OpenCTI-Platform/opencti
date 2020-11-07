@@ -255,7 +255,7 @@ class StixDomainObjectHeader extends Component {
                   color="primary"
                   aria-label="More"
                   onClick={this.handleToggleOpenAliases.bind(this)}
-                  style={{ fontSize: 14}}
+                  style={{ fontSize: 14 }}
                 >
                   <DotsHorizontalCircleOutline />&nbsp;&nbsp;{t('More')}
                 </Button>

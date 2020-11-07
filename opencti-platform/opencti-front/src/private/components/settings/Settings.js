@@ -106,7 +106,7 @@ const settingsValidation = (t) => Yup.object().shape({
 });
 
 class Settings extends Component {
-  // eslint-disable-next-line
+  // eslint-disable-next-line class-methods-use-this
   handleChangeFocus(id, name) {
     commitMutation({
       mutation: settingsFocus,
@@ -131,6 +131,7 @@ class Settings extends Component {
       .catch(() => false);
   }
 
+  // eslint-disable-next-line class-methods-use-this
   getProviderConfig(provider) {
     switch (provider.strategy) {
       case 'LocalStrategy':
@@ -314,9 +315,9 @@ class Settings extends Component {
                       <Paper classes={{ root: classes.paper }} elevation={2}>
                         <QueryRenderer
                           query={settingsAboutQuery}
-                          render={({ props }) => {
-                            if (props) {
-                              const { version, dependencies } = props.about;
+                          render={({ props: aboutProps }) => {
+                            if (aboutProps) {
+                              const { version, dependencies } = aboutProps.about;
                               return (
                                 <div>
                                   <Typography variant="h1" gutterBottom={true}>

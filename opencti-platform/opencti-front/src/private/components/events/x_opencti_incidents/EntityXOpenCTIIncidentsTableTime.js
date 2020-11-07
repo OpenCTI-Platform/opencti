@@ -95,6 +95,7 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
       md,
       yd,
       entityId,
+      // eslint-disable-next-line camelcase
       relationship_type,
       variant,
       classes,
@@ -110,6 +111,7 @@ class EntityXOpenCTIXOpenCTIIncidentsTableTime extends Component {
       startDate: finalStartDate,
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: this.state.interval,
+      // eslint-disable-next-line camelcase
       relationship_type: relationship_type || 'targets',
     };
     return (

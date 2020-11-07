@@ -198,6 +198,7 @@ export const stixSightingRelationshipCreationFromRelationStixDomainObjectsLinesQ
   }
 `;
 
+// eslint-disable-next-line max-len
 const StixSightingRelationshipCreationFromRelationStixDomainObjectsLines = createPaginationContainer(
   StixSightingRelationshipCreationFromRelationLinesContainer,
   {

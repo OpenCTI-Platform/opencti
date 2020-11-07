@@ -50,11 +50,9 @@ const stixCoreObjectReportsBarsDistributionQuery = graphql`
   }
 `;
 
-class StixCoreObjectReportsBars extends Component {
-  tickFormatter(title) {
-    return truncate(title, 10);
-  }
+const tickFormatter = (title) => truncate(title, 10);
 
+class StixCoreObjectReportsBars extends Component {
   render() {
     const {
       t, classes, stixCoreObjectId, field, title,
@@ -104,7 +102,7 @@ class StixCoreObjectReportsBars extends Component {
                         type="category"
                         angle={-30}
                         textAnchor="end"
-                        tickFormatter={this.tickFormatter.bind(this)}
+                        tickFormatter={tickFormatter}
                       />
                       <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
                       <Tooltip

@@ -9,7 +9,7 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
-import {Edit, Group, Security} from '@material-ui/icons';
+import { Edit, Group, Security } from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import AreaChart from 'recharts/lib/chart/AreaChart';
@@ -30,7 +30,7 @@ import Loader from '../../../../components/Loader';
 import { truncate } from '../../../../utils/String';
 import { now, yearsAgo } from '../../../../utils/Time';
 import Theme from '../../../../components/ThemeDark';
-import UserHistory from "./UserHistory";
+import UserHistory from './UserHistory';
 
 const styles = (theme) => ({
   container: {

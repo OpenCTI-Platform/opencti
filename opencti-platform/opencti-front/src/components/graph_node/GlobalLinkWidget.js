@@ -92,6 +92,7 @@ export default class GlobalLinkWidget extends BaseWidget {
         width={canvas.offsetWidth}
         height={canvas.offsetHeight}
       >
+        {/* eslint-disable-next-line no-return-assign */}
         <div ref={(ref) => (this.refLabels[label.id] = ref)}>
           {this.props.diagramEngine
             .getFactoryForLabel(label)
@@ -141,7 +142,8 @@ export default class GlobalLinkWidget extends BaseWidget {
   }
 
   findPathAndRelativePositionToRenderLabel(index) {
-    // an array to hold all path lengths, making sure we hit the DOM only once to fetch this information
+    // an array to hold all path lengths
+    // making sure we hit the DOM only once to fetch this information
     const lengths = this.refPaths.map((path) => path.getTotalLength());
 
     // calculate the point where we want to display the label
@@ -163,8 +165,9 @@ export default class GlobalLinkWidget extends BaseWidget {
 
       // keep searching
       labelPosition -= lengths[pathIndex];
-      pathIndex++;
+      pathIndex += 1;
     }
+    return null;
   }
 
   calculateLabelPosition(label, index) {
@@ -257,7 +260,8 @@ export default class GlobalLinkWidget extends BaseWidget {
         );
 
         paths.push(
-          // smooth: boolean, extraProps: any, id: string | number, firstPoint: PointModel, lastPoint: PointModel
+          // smooth: boolean, extraProps: any, id: string | number,
+          // firstPoint: PointModel, lastPoint: PointModel
           this.generateLink(
             Toolkit.generateDynamicPath(simplifiedPath),
             {
@@ -285,7 +289,9 @@ export default class GlobalLinkWidget extends BaseWidget {
         // some defensive programming to make sure the smoothing is
         // always in the right direction
         if (pointLeft[xOrY] > pointRight[xOrY]) {
+          // eslint-disable-next-line prefer-destructuring
           pointLeft = points[1];
+          // eslint-disable-next-line prefer-destructuring
           pointRight = points[0];
         }
         paths.push(
@@ -310,7 +316,7 @@ export default class GlobalLinkWidget extends BaseWidget {
         }
       } else {
         // draw the multiple anchors and complex line instead
-        for (let j = 0; j < points.length - 1; j++) {
+        for (let j = 0; j < points.length - 1; j += 1) {
           paths.push(
             this.generateLink(
               Toolkit.generateLinePath(points[j], points[j + 1]),
@@ -327,7 +333,7 @@ export default class GlobalLinkWidget extends BaseWidget {
         }
 
         // render the circles
-        for (let i = 1; i < points.length - 1; i++) {
+        for (let i = 1; i < points.length - 1; i += 1) {
           paths.push(this.generatePoint(i));
         }
 

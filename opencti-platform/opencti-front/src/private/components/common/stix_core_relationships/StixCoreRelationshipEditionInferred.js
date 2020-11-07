@@ -14,6 +14,7 @@ import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
 import { resolveLink } from '../../../../utils/Entity';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {

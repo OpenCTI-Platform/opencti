@@ -77,6 +77,7 @@ const styles = (theme) => ({
 });
 
 class StixCoreObjectHistoryLineComponent extends Component {
+  // eslint-disable-next-line class-methods-use-this
   renderIcon(eventType, isRelation, eventMesage) {
     if (isRelation) {
       if (eventType === 'create') {

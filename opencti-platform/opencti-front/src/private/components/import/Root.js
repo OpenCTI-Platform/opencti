@@ -1,12 +1,10 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
 import { QueryRenderer } from '../../../relay/environment';
 import Import, { ImportQuery } from './Import';
 import Loader from '../../../components/Loader';
 
-class RootImport extends Component {
-  render() {
-    return (
+const RootImport = () => (
       <QueryRenderer
         query={ImportQuery}
         variables={{}}
@@ -22,9 +20,7 @@ class RootImport extends Component {
           return <Loader />;
         }}
       />
-    );
-  }
-}
+);
 
 RootImport.propTypes = {
   children: PropTypes.node,

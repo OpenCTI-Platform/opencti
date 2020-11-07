@@ -14,7 +14,10 @@ import * as PropTypes from 'prop-types';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { identityCreationIdentitiesSearchQuery } from '../identities/IdentityCreation';
+// TODO @SAM Fix cyclic redundancies
+// eslint-disable-next-line import/no-cycle
 import { labelsSearchQuery } from '../../settings/Labels';
+// eslint-disable-next-line import/no-cycle
 import { attributesSearchQuery } from '../../settings/Attributes';
 import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 import ItemIcon from '../../../../components/ItemIcon';

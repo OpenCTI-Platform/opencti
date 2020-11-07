@@ -40,6 +40,8 @@ import distributeElements from '../../../../utils/DagreHelper';
 import { serializeGraph } from '../../../../utils/GraphHelper';
 import { dateFormat } from '../../../../utils/Time';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
+// TODO @SAM Fix cyclic redundancies
+// eslint-disable-next-line import/no-cycle
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';

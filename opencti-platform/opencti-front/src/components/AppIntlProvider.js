@@ -19,6 +19,7 @@ const AppIntlProvider = (props) => {
     const matchingLocale = /for locale: "([a-z]+)"/gm;
     const regMatch = matchingLocale.exec(error);
     const currentLocale = regMatch !== null ? regMatch[1] : null;
+    // eslint-disable-next-line no-console
     if (currentLocale && currentLocale !== 'en') console.error(error);
   };
   const platformLanguage = pathOr(
