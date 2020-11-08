@@ -70,6 +70,7 @@ const attackPatternValidation = () => Yup.object().shape({
   x_mitre_id: Yup.string(),
   x_mitre_platforms: Yup.array(),
   x_mitre_permissions_required: Yup.array(),
+  x_mitre_detection: Yup.string(),
 });
 
 class AttackPatternEditionDetailsComponent extends Component {
@@ -188,6 +189,9 @@ class AttackPatternEditionDetailsComponent extends Component {
               name="x_mitre_detection"
               label={t('Detection')}
               fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
               onFocus={this.handleChangeFocus.bind(this)}
               onSubmit={this.handleSubmitField.bind(this)}
               helperText={
@@ -221,6 +225,7 @@ const AttackPatternEditionDetails = createFragmentContainer(
         x_mitre_platforms
         x_mitre_permissions_required
         x_mitre_id
+        x_mitre_detection
       }
     `,
   },
