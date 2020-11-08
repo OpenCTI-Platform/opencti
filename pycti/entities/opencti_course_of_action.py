@@ -126,8 +126,8 @@ class CourseOfAction:
         )
         query = (
             """
-            query CourseOfActions($filters: [CourseOfActionsFiltering], $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {
-                courseOfActions(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query CoursesOfAction($filters: [CoursesOfActionFiltering], $search: String, $first: Int, $after: ID, $orderBy: CoursesOfActionOrdering, $orderMode: OrderingMode) {
+                coursesOfAction(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -158,7 +158,7 @@ class CourseOfAction:
             },
         )
         return self.opencti.process_multiple(
-            result["data"]["courseOfActions"], with_pagination
+            result["data"]["coursesOfAction"], with_pagination
         )
 
     """
