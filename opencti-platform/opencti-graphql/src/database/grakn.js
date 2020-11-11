@@ -2090,6 +2090,7 @@ const appendInnerRelation = (from, to, type) => {
     const input = { from, to: target, relationship_type: type };
     const { relation, query } = buildRelationInsertQuery(input);
     const basicRelation = {
+      id: relation.internal_id,
       fromId: from.internal_id,
       fromRole: `${type}_from`,
       fromType: from.entity_type,
@@ -2572,8 +2573,8 @@ const getElementsRelated = async (targetId, elements = [], options = {}) => {
 };
 const deleteElementById = async (user, element, isRelation, options = {}) => {
   // 00. Load everything we need to remove
-  const dependencies = [{ id: element.id, type: element.entity_type, relDependency: isRelation }];
-  await getElementsRelated(element.id, dependencies, options);
+  const dependencies = [{ id: element.internal_id, type: element.entity_type, relDependency: isRelation }];
+  await getElementsRelated(element.internal_id, dependencies, options);
   // 01. Delete dependencies.
   // Remove all dep in reverse order to handle correctly relations
   for (let i = dependencies.length - 1; i >= 0; i -= 1) {
@@ -2637,7 +2638,7 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   for (let i = 0; i < relationsToDelete.length; i += 1) {
     const r = relationsToDelete[i];
     // eslint-disable-next-line no-await-in-loop
-    await deleteRelationById(user, r.rel.id, r.rel.entity_type, opts);
+    await deleteRelationById(user, r.rel.internal_id, r.rel.entity_type, opts);
   }
 };
 export const deleteAttributeById = async (id) => {
