@@ -228,7 +228,7 @@ class StixDomainObjectIndicators extends Component {
           key: 'toMainObservableType',
           operator: 'match',
           values: map(
-            (type) => type.toLowerCase().replace('*', ''),
+            (type) => type.toLowerCase().replace(/\*/g, ''),
             observableTypes,
           ),
         },

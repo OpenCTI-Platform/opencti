@@ -1,4 +1,5 @@
 import express from 'express';
+import * as R from 'ramda';
 // noinspection NodeCoreCodingAssistance
 import { readFileSync } from 'fs';
 // noinspection NodeCoreCodingAssistance
@@ -10,6 +11,8 @@ import compression from 'compression';
 import helmet from 'helmet';
 import { isEmpty } from 'ramda';
 import nconf from 'nconf';
+import RateLimit from 'express-rate-limit';
+import sanitize from 'sanitize-filename';
 import { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
@@ -21,6 +24,13 @@ import createSeeMiddleware from './graphql/sseMiddleware';
 const createApp = async (apolloServer, broadcaster) => {
   // Init the http server
   const app = express();
+  const limiter = new RateLimit({
+    windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
+    max: nconf.get('app:rate_protection:max_requests'),
+    handler: (req, res /* , next */) => {
+      res.status(429).send({ message: 'Too many requests, please try again later.' });
+    },
+  });
   const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
   const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/'];
   if (DEV_MODE) scriptSrc.push("'unsafe-eval'");
@@ -50,6 +60,7 @@ const createApp = async (apolloServer, broadcaster) => {
     })
   );
   app.use(bodyParser.json({ limit: '100mb' }));
+  app.use(limiter);
 
   const seeMiddleware = createSeeMiddleware(broadcaster);
   seeMiddleware.applyMiddleware({ app });
@@ -60,7 +71,8 @@ const createApp = async (apolloServer, broadcaster) => {
 
   // -- Generated CSS with correct base path
   app.get('/static/css/*', (req, res) => {
-    const data = readFileSync(path.join(__dirname, `../public${req.url}`), 'utf8');
+    const cssFileName = R.last(req.url.split('/'));
+    const data = readFileSync(path.join(__dirname, `../public/static/css/${sanitize(cssFileName)}`), 'utf8');
     const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Content-Type', 'text/css');
     res.send(withBasePath);
