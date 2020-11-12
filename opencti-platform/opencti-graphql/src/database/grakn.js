@@ -1100,6 +1100,7 @@ const loadElementById = async (ids, type, args = {}) => {
   }
   return R.head(elements);
 };
+// TODO: If ids is empty then it seems to return all the entities of given type.
 const internalFindByIds = (ids, args = {}) => {
   const { type } = args;
   if (useCache(args)) return elFindByIds(ids, type);
@@ -1752,6 +1753,7 @@ const filterTargetByExisting = (sources, targets) => {
     return !R.find((t) => t.entity_type === f.entity_type && t.connect === f.connect, targets);
   }, sources);
 };
+// TODO: It does not seem to add the names of the source entities as a target's aliases.
 export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
   // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
   const { chosenFields = {} } = opts;
@@ -1895,6 +1897,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (aliasedInputs.length > 0) {
       const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
       const aliasesIds = generateAliasesId(aliases);
+      // TODO: existingEntities: seems to return all entities if the aliasesIds is empty.
       const existingEntities = await internalFindByIds(aliasesIds, { type: instance.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== id, existingEntities);
       if (differentEntities.length > 0) {
