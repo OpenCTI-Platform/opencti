@@ -141,10 +141,17 @@ class StixDomainObjectHeader extends Component {
     this.setState({ openAlias: !this.state.openAlias });
   }
 
+  getCurrentAliases() {
+    return this.props.isOpenctiAlias
+      ? this.props.stixDomainObject.x_opencti_aliases
+      : this.props.stixDomainObject.aliases;
+  }
+
   onSubmitCreateAlias(element, data, { resetForm }) {
+    const currentAliases = this.getCurrentAliases();
     if (
-      (this.props.stixDomainObject.aliases === null
-        || !this.props.stixDomainObject.aliases.includes(data.new_alias))
+      (currentAliases === null
+        || !currentAliases.includes(data.new_alias))
       && data.new_alias !== ''
     ) {
       commitMutation({
@@ -153,7 +160,7 @@ class StixDomainObjectHeader extends Component {
           id: this.props.stixDomainObject.id,
           input: {
             key: this.props.isOpenctiAlias ? 'x_opencti_aliases' : 'aliases',
-            value: append(data.new_alias, this.props.stixDomainObject.aliases),
+            value: append(data.new_alias, currentAliases),
           },
         },
         onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The alias has been added')),
@@ -164,9 +171,10 @@ class StixDomainObjectHeader extends Component {
   }
 
   deleteAlias(alias) {
+    const currentAliases = this.getCurrentAliases();
     const aliases = filter(
       (a) => a !== alias,
-      this.props.stixDomainObject.aliases,
+      currentAliases,
     );
     commitMutation({
       mutation: stixDomainObjectMutation,
@@ -177,6 +185,7 @@ class StixDomainObjectHeader extends Component {
           value: aliases,
         },
       },
+      onCompleted: () => MESSAGING$.notifySuccess(this.props.t('The alias has been removed')),
     });
   }
 
