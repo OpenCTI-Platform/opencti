@@ -65,22 +65,23 @@ const createApp = async (apolloServer, broadcaster) => {
   const seeMiddleware = createSeeMiddleware(broadcaster);
   seeMiddleware.applyMiddleware({ app });
   const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
-  const AppBasePath = nconf.get('app:base_path');
-  const basePath = isEmpty(AppBasePath) || AppBasePath.startsWith('/') ? AppBasePath : `/${AppBasePath}`;
+  const AppBasePath = nconf.get('app:base_path').trim();
+  const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;
+  const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
 
   // -- Generated CSS with correct base path
-  app.get('/static/css/*', (req, res) => {
+  app.get(`${basePath}/static/css/*`, (req, res) => {
     const cssFileName = R.last(req.url.split('/'));
     const data = readFileSync(path.join(__dirname, `../public/static/css/${sanitize(cssFileName)}`), 'utf8');
     const withBasePath = data.replace(/%BASE_PATH%/g, basePath);
     res.header('Content-Type', 'text/css');
     res.send(withBasePath);
   });
-  app.use('/static', express.static(path.join(__dirname, '../public/static')));
+  app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
 
   // -- File download
-  app.get('/storage/get/:file(*)', async (req, res) => {
+  app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
     let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
     token = token || extractTokenFromBearer(req.headers.authorization);
     const auth = await authentication(token);
@@ -92,7 +93,7 @@ const createApp = async (apolloServer, broadcaster) => {
   });
 
   // -- File view
-  app.get('/storage/view/:file(*)', async (req, res) => {
+  app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
     let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
     token = token || extractTokenFromBearer(req.headers.authorization);
     const auth = await authentication(token);
@@ -106,13 +107,13 @@ const createApp = async (apolloServer, broadcaster) => {
   });
 
   // -- Passport login
-  app.get('/auth/:provider', (req, res, next) => {
+  app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     const { provider } = req.params;
     passport.authenticate(provider)(req, res, next);
   });
 
   // -- Passport callback
-  app.get('/auth/:provider/callback', urlencodedParser, passport.initialize(), (req, res, next) => {
+  app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize(), (req, res, next) => {
     const { provider } = req.params;
     passport.authenticate(provider, (err, token) => {
       if (err || !token) {
@@ -124,7 +125,7 @@ const createApp = async (apolloServer, broadcaster) => {
   });
 
   const serverHealthCheck = () => checkSystemDependencies().then(() => getSettings());
-  apolloServer.applyMiddleware({ app, onHealthCheck: serverHealthCheck });
+  apolloServer.applyMiddleware({ app, onHealthCheck: serverHealthCheck, path: `${basePath}/graphql` });
 
   // Other routes
   app.get('*', (req, res) => {
