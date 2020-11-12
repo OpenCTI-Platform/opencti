@@ -4,7 +4,6 @@ import { Form, Formik, Field } from 'formik';
 import { TextField } from 'formik-material-ui';
 import Button from '@material-ui/core/Button';
 import graphql from 'babel-plugin-relay/macro';
-import queryString from 'query-string';
 import { withRouter } from 'react-router-dom';
 import { compose, head } from 'ramda';
 import * as Yup from 'yup';
@@ -31,9 +30,7 @@ const loginValidation = (t) => Yup.object().shape({
 
 const LoginForm = (props) => {
   const { classes, t, demo } = props;
-  const params = queryString.parse(props.location.search);
-  const { redirectLogin } = params;
-  const onSubmit = (values, { setSubmitting, resetForm, setErrors }) => {
+  const onSubmit = (values, { setSubmitting, setErrors }) => {
     commitMutation({
       mutation: loginMutation,
       variables: {
@@ -42,20 +39,11 @@ const LoginForm = (props) => {
       onError: (error) => {
         const errorMessage = props.t(head(error.res.errors).message);
         setErrors({ email: errorMessage });
+        setSubmitting(false);
       },
       setSubmitting,
       onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        let redirectUrl = '/';
-        if (redirectLogin) {
-          try {
-            redirectUrl = atob(redirectLogin);
-          } catch (e) {
-            // Encoding problem, seems a user trying some weird stuff.
-          }
-        }
-        props.history.push(redirectUrl);
+        window.location.reload();
       },
     });
   };
