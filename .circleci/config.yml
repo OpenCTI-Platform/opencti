@@ -25,6 +25,7 @@ jobs:
           root: ~/
           paths:
             - opencti
+
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
@@ -49,6 +50,7 @@ jobs:
           root: ~/
           paths:
             - opencti_musl         
+            
   package_rolling:
     working_directory: ~/opencti
     docker:
