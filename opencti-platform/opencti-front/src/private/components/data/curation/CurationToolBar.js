@@ -40,7 +40,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Radio from '@material-ui/core/Radio';
 import Alert from '@material-ui/lab/Alert/Alert';
 import Chip from '@material-ui/core/Chip';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
@@ -169,6 +169,8 @@ class CurationToolBar extends Component {
         this.setState({ deleting: false });
         this.props.handleResetSelectedElements();
         this.handleCloseDelete();
+
+        MESSAGING$.notifySuccess(this.props.t('Successfully deleted selected entities'));
       },
     });
   }
@@ -209,6 +211,8 @@ class CurationToolBar extends Component {
         this.setState({ merging: false });
         this.props.handleResetSelectedElements();
         this.handleCloseMerge();
+
+        MESSAGING$.notifySuccess(this.props.t('Successfully merged selected entities'));
       },
     });
   }
@@ -231,7 +235,10 @@ class CurationToolBar extends Component {
         ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
         : head(selectedElementsList);
       if (keptElement) {
-        const names = pluck('name', selectedElementsList);
+        const names = filter(
+          (n) => n !== keptElement.name,
+          pluck('name', selectedElementsList),
+        );
         const aliases = !isNil(keptElement.aliases)
           ? filter(
             (n) => !isNil(n),

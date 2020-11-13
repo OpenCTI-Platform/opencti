@@ -1083,7 +1083,9 @@ const findElementById = async (ids, type, args = {}) => {
   if (isStixObjectAliased(type)) {
     keys.push(INTERNAL_IDS_ALIASES);
   }
-  const workingIds = Array.isArray(ids) ? ids : [ids];
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  const workingIds = R.filter((id) => isNotEmptyField(id), idsArray);
+  if (workingIds.length === 0) return [];
   const searchIds = R.map((id) => {
     const eid = escapeString(id);
     return R.map((key) => `{ $x has ${key} "${eid}";}`, keys).join(' or ');
@@ -1752,6 +1754,7 @@ const filterTargetByExisting = (sources, targets) => {
     return !R.find((t) => t.entity_type === f.entity_type && t.connect === f.connect, targets);
   }, sources);
 };
+
 export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
   // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
   const { chosenFields = {} } = opts;
@@ -1793,9 +1796,14 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
       }));
       updateAttributes.push(...dictInputs);
     } else if (isMultipleAttribute(sourceFieldKey)) {
+      const sourceValues = sourceFieldValue || [];
+      // For aliased entities, get name of the source to add it as alias of the target
+      if (sourceFieldKey === ATTRIBUTE_ALIASES || sourceFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
+        sourceValues.push(takenFrom.name);
+      }
       // If multiple attributes, concat all values
-      if (mergedEntityCurrentFieldValue && sourceFieldValue) {
-        const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
+      if (sourceValues.length > 0) {
+        const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue || [], sourceValues));
         updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
