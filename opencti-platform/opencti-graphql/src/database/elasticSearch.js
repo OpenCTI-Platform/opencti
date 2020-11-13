@@ -15,6 +15,7 @@ import {
   INDEX_STIX_META_RELATIONSHIPS,
   inferIndexFromConceptType,
   pascalize,
+  isNotEmptyField,
 } from './utils';
 import conf, { logger } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -415,7 +416,9 @@ export const elReconstructRelation = (concept) => {
 // endregion
 export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
-  const workingIds = Array.isArray(ids) ? ids : [ids];
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  const workingIds = R.filter((id) => isNotEmptyField(id), idsArray);
+  if (workingIds.length === 0) return [];
   const idsTermsPerType = [];
   const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
   if (isStixObjectAliased(type)) {

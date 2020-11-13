@@ -1083,7 +1083,9 @@ const findElementById = async (ids, type, args = {}) => {
   if (isStixObjectAliased(type)) {
     keys.push(INTERNAL_IDS_ALIASES);
   }
-  const workingIds = Array.isArray(ids) ? ids : [ids];
+  const idsArray = Array.isArray(ids) ? ids : [ids];
+  const workingIds = R.filter((id) => isNotEmptyField(id), idsArray);
+  if (workingIds.length === 0) return [];
   const searchIds = R.map((id) => {
     const eid = escapeString(id);
     return R.map((key) => `{ $x has ${key} "${eid}";}`, keys).join(' or ');
@@ -1100,7 +1102,6 @@ const loadElementById = async (ids, type, args = {}) => {
   }
   return R.head(elements);
 };
-// TODO: If ids is empty then it seems to return all the entities of given type.
 const internalFindByIds = (ids, args = {}) => {
   const { type } = args;
   if (useCache(args)) return elFindByIds(ids, type);
@@ -1753,7 +1754,7 @@ const filterTargetByExisting = (sources, targets) => {
     return !R.find((t) => t.entity_type === f.entity_type && t.connect === f.connect, targets);
   }, sources);
 };
-// TODO: It does not seem to add the names of the source entities as a target's aliases.
+
 export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
   // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
   const { chosenFields = {} } = opts;
@@ -1795,9 +1796,14 @@ export const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts 
       }));
       updateAttributes.push(...dictInputs);
     } else if (isMultipleAttribute(sourceFieldKey)) {
+      const sourceValues = sourceFieldValue || [];
+      // For aliased entities, get name of the source to add it as alias of the target
+      if (sourceFieldKey === ATTRIBUTE_ALIASES || sourceFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
+        sourceValues.push(takenFrom.name);
+      }
       // If multiple attributes, concat all values
-      if (mergedEntityCurrentFieldValue && sourceFieldValue) {
-        const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue, sourceFieldValue));
+      if (sourceValues.length > 0) {
+        const multipleValues = R.uniq(R.concat(mergedEntityCurrentFieldValue || [], sourceValues));
         updateAttributes.push({ key: sourceFieldKey, value: multipleValues });
       }
     } else if (isEmptyField(mergedEntityCurrentFieldValue) && isNotEmptyField(sourceFieldValue)) {
@@ -1897,7 +1903,6 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (aliasedInputs.length > 0) {
       const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
       const aliasesIds = generateAliasesId(aliases);
-      // TODO: existingEntities: seems to return all entities if the aliasesIds is empty.
       const existingEntities = await internalFindByIds(aliasesIds, { type: instance.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== id, existingEntities);
       if (differentEntities.length > 0) {
