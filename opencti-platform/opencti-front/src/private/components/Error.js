@@ -1,11 +1,12 @@
 import React from 'react';
 import { compose, includes, map } from 'ramda';
 import * as PropTypes from 'prop-types';
-import { Redirect, Route, withRouter } from 'react-router-dom';
+import { Route, withRouter } from 'react-router-dom';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
 import { ApplicationError, IN_DEV_MODE } from '../../relay/environment';
 import ErrorNotFound from '../../components/ErrorNotFound';
+import Login from '../../public/components/Login';
 
 class ErrorBoundaryComponent extends React.Component {
   constructor(props) {
@@ -25,10 +26,7 @@ class ErrorBoundaryComponent extends React.Component {
         if (includes('ForbiddenAccess', types)) window.location.href = '/';
         // If user not authenticated, redirect to login with encoded path
         if (includes('AuthRequired', types)) {
-          const redirectUrl = `/login?redirectLogin=${btoa(
-            window.location.pathname + window.location.search,
-          )}`;
-          return <Redirect to={redirectUrl} />;
+          return <Login />;
         }
         // Return the error display element.
         return this.props.display;

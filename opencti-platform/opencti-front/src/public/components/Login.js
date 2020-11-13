@@ -13,7 +13,7 @@ import {
   Google, Key, Facebook, Github,
 } from 'mdi-material-ui';
 import { Close } from '@material-ui/icons';
-import { QueryRenderer } from '../../relay/environment';
+import { APP_BASE_PATH, QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
@@ -163,7 +163,7 @@ const Login = ({ location, classes }) => {
           variant="contained"
           size="small"
           component="a"
-          href={`/auth/${value.provider}`}
+          href={`${APP_BASE_PATH}/auth/${value.provider}`}
           className={renderExternalAuthClassName(value.provider)}
         >
           {renderExternalAuthButton(value.provider)}

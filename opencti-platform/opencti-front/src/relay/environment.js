@@ -45,11 +45,9 @@ export class ApplicationError extends Error {
 }
 
 // Network
-const noBasePath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
-const envBasePath = noBasePath || window.BASE_PATH.startsWith('/')
-  ? window.BASE_PATH
-  : `/${window.BASE_PATH}`;
-export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
+const isEmptyPath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
+const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
+export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
 // Subscription
 const loc = window.location;
