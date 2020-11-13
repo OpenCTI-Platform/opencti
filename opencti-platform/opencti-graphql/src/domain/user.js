@@ -255,6 +255,7 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
     )(defaultRoles.edges);
   }
   const userToCreate = R.pipe(
+    R.assoc('user_email', newUser.user_email.toLowerCase()),
     R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
     R.assoc('external', newUser.external ? newUser.external : false),
@@ -364,7 +365,7 @@ export const loginFromProvider = async (email, name) => {
     ['client', 'token']
   );
   if (R.isNil(result)) {
-    const newUser = { name, user_email: email, external: true };
+    const newUser = { name, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
   // update the name
@@ -377,7 +378,7 @@ export const loginFromProvider = async (email, name) => {
 };
 
 export const login = async (email, password) => {
-  const query = `match $client isa User, has user_email "${escapeString(email)}";
+  const query = `match $client isa User, has user_email "${escapeString(email).toLowerCase()}";
    $client has internal_id $client_id;
    (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; 
    $token has internal_id $token_id;

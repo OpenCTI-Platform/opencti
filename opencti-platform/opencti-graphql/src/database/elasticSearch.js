@@ -81,6 +81,7 @@ const numericOrBooleanFields = [
   'default_assignation',
   'x_opencti_detection',
   'x_opencti_order',
+  'x_opencti_report_status',
 ];
 
 export const INDEX_HISTORY = 'opencti_history';

@@ -1004,7 +1004,7 @@ enum StixDomainObjectsOrdering {
   published
   object_status
   valid_from
-  valid_to
+  valid_until
   indicator_pattern
   objectMarking
   objectLabel
@@ -1023,6 +1023,9 @@ enum StixDomainObjectsFilter {
   objectContains
   indicates
   confidence
+  valid_from
+  valid_until
+  pattern_type
 }
 input StixDomainObjectsFiltering {
   key: StixDomainObjectsFilter!

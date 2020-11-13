@@ -262,6 +262,7 @@ export const exportTransformFilters = (listFilters, filterOptions, orderOptions)
         (n) => ({
           key: n.key in stixDomainObjectsFiltersInversed ? stixDomainObjectsFiltersInversed[n.key] : n.key,
           values: n.values,
+          operator: n.operator ? n.operator : 'eq',
         }),
         propOr([], 'filters', listFilters)
       )

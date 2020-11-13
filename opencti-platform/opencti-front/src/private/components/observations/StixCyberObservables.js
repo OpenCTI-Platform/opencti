@@ -157,8 +157,8 @@ class StixCyberObservables extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labels',
-          'markingDefinitions',
+          'labelledBy',
+          'markedBy',
           'created_at_start_date',
           'created_at_end_date',
           'createdBy',

@@ -14,7 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
-import { ConnectionHandler } from 'relay-runtime';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
@@ -103,20 +103,10 @@ class UserPopover extends Component {
       variables: {
         id: this.props.userId,
       },
-      updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('userEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_users',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
-      },
       onCompleted: () => {
         this.setState({ deleting: false });
-        this.handleCloseDelete();
+        this.handleClose();
+        this.props.history.push('/dashboard/settings/accesses/users');
       },
     });
   }
@@ -213,4 +203,4 @@ UserPopover.propTypes = {
   disabled: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(UserPopover);
+export default compose(inject18n, withRouter, withStyles(styles))(UserPopover);
