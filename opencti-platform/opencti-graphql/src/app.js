@@ -117,7 +117,7 @@ const createApp = async (apolloServer, broadcaster) => {
     const { provider } = req.params;
     passport.authenticate(provider, (err, token) => {
       if (err || !token) {
-        return res.redirect(`/login?message=${err.message}`);
+        return res.redirect(`/dashboard?message=${err.message}`);
       }
       setAuthenticationCookie(token, res);
       return res.redirect('/dashboard');
