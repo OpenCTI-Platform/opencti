@@ -32,6 +32,7 @@ import {
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
   UPDATE_OPERATION_REPLACE,
@@ -234,7 +235,7 @@ const valToMessage = (val) => {
 };
 export const generateLogMessage = (type, instance, input = null) => {
   const name = extractEntityMainValue(instance);
-  if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE) {
+  if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE || type === EVENT_TYPE_MERGE) {
     if (isStixObject(instance.entity_type)) {
       return `${type}s a ${instance.entity_type} \`${name}\``;
     }

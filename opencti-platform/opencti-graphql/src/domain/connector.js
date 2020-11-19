@@ -1,7 +1,7 @@
 import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
   createEntity,
-  deleteEntityById,
+  deleteElementById,
   find,
   loadById,
   now,
@@ -107,6 +107,6 @@ export const registerConnector = async (user, connectorData) => {
 
 export const connectorDelete = async (user, connectorId) => {
   await unregisterConnector(connectorId);
-  return deleteEntityById(user, connectorId, ENTITY_TYPE_CONNECTOR);
+  return deleteElementById(user, connectorId, ENTITY_TYPE_CONNECTOR);
 };
 // endregion

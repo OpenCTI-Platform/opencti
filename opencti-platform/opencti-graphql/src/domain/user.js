@@ -23,7 +23,7 @@ import conf, {
 import {
   createEntity,
   createRelation,
-  deleteEntityById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
   find,
@@ -219,7 +219,7 @@ export const roleDelete = async (user, roleId) => {
     filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
   });
   await Promise.all(R.map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
-  return deleteEntityById(user, roleId, ENTITY_TYPE_ROLE);
+  return deleteElementById(user, roleId, ENTITY_TYPE_ROLE);
 };
 
 export const roleCleanContext = async (user, roleId) => {
@@ -323,10 +323,10 @@ export const meEditField = (user, userId, input) => {
 export const userDelete = async (user, userId) => {
   const userToken = await internalGetToken(userId);
   if (userToken) {
-    await deleteEntityById(user, userToken.id, ENTITY_TYPE_TOKEN);
+    await deleteElementById(user, userToken.id, ENTITY_TYPE_TOKEN);
     await clearUserAccessCache(userToken.uuid);
   }
-  await deleteEntityById(user, userId, ENTITY_TYPE_USER);
+  await deleteElementById(user, userId, ENTITY_TYPE_USER);
   return userId;
 };
 
@@ -405,12 +405,12 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   const currentToken = await internalGetToken(userId);
   // 02. Remove the token
   if (currentToken) {
-    await deleteEntityById(user, currentToken.id, ENTITY_TYPE_TOKEN);
+    await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
   } else {
     logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
     const detachedToken = await internalGetTokenByUUID(newToken.uuid);
     if (detachedToken) {
-      await deleteEntityById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
+      await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
     }
   }
   // 03. Create a new one

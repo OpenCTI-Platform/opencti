@@ -9,6 +9,7 @@ export const WORKER_EXCHANGE = 'amqp.worker.exchange';
 
 export const EVENT_TYPE_CREATE = 'create';
 export const EVENT_TYPE_UPDATE = 'update';
+export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
 export const UPDATE_OPERATION_ADD = 'add';

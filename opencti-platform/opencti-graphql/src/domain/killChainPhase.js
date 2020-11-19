@@ -3,8 +3,7 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
-  deleteEntityById,
-  deleteRelationById,
+  deleteElementById,
   listEntities,
   loadById,
   updateAttribute,
@@ -29,7 +28,7 @@ export const addKillChainPhase = async (user, killChainPhase) => {
 };
 
 export const killChainPhaseDelete = (user, killChainPhaseId) => {
-  return deleteEntityById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return deleteElementById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
@@ -44,7 +43,7 @@ export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
 };
 
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
-  await deleteRelationById(user, relationId, RELATION_KILL_CHAIN_PHASE);
+  await deleteElementById(user, relationId, RELATION_KILL_CHAIN_PHASE);
   const data = await loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, data, user);
 };

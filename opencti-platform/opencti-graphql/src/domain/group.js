@@ -2,7 +2,7 @@ import { assoc, map } from 'ramda';
 import {
   createEntity,
   createRelation,
-  deleteEntityById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
   find,
@@ -44,7 +44,7 @@ export const addGroup = async (user, group) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].ADDED_TOPIC, created, user);
 };
 
-export const groupDelete = (user, groupId) => deleteEntityById(user, groupId, ENTITY_TYPE_GROUP);
+export const groupDelete = (user, groupId) => deleteElementById(user, groupId, ENTITY_TYPE_GROUP);
 
 export const groupEditField = async (user, groupId, input) => {
   const group = await updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input);

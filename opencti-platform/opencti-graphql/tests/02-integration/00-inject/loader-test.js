@@ -6,7 +6,6 @@ import { execPython3 } from '../../../src/python/pythonBridge';
 
 describe('Database provision', () => {
   const importOpts = [API_URI, API_TOKEN, '/tests/data/DATA-TEST-STIX2_v2.json'];
-  const workerOpts = [API_URI, API_TOKEN];
 
   it('should platform init', () => {
       return expect(platformInit(true)).resolves.toBe(true);

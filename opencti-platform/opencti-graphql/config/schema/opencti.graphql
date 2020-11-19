@@ -91,12 +91,21 @@ type EditUserContext {
 
 ### INFO
 
+"""
+Dependency information containing the name and the deployed version.
+"""
 type DependencyVersion {
   name: String!
   version: String!
 }
+
+"""
+Retrieve the application information version add dependencies
+"""
 type AppInfo {
+  """The OpenCTI aplication version"""
   version: String!
+  """The list of OpenCTI software dependencies"""
   dependencies: [DependencyVersion!]!
 }
 

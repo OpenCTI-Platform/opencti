@@ -9,6 +9,7 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
+  EVENT_TYPE_MERGE,
   EVENT_TYPE_UPDATE,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
@@ -189,6 +190,19 @@ const buildEvent = (eventType, user, markings, message, data) => {
     message,
     data,
   };
+};
+export const storeMergeEvent = async (user, instance, sourceEntities) => {
+  const message = generateLogMessage(EVENT_TYPE_MERGE, instance);
+  const data = {
+    id: instance.standard_id,
+    x_opencti_id: instance.internal_id,
+    type: convertTypeToStixType(instance.entity_type),
+    source_ids: R.map((s) => s.standard_id, sourceEntities),
+  };
+  const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
+  const event = buildEvent(EVENT_TYPE_MERGE, user, markings, message, data);
+  const client = await getClient();
+  return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
 };
 export const storeUpdateEvent = async (user, operation, instance, input) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {

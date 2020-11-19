@@ -2,7 +2,7 @@ import { propOr } from 'ramda';
 import { stixCoreRelationshipCleanContext, stixCoreRelationshipEditContext } from './stixCoreRelationship';
 import {
   createRelation,
-  deleteRelationById,
+  deleteElementById,
   getRelationInferredById,
   listRelations,
   loadById,
@@ -35,7 +35,7 @@ export const addStixCyberObservableRelationship = async (user, stixCyberObservab
 };
 
 export const stixCyberObservableRelationshipDelete = async (user, stixCyberObservableRelationshipId) => {
-  return deleteRelationById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
+  return deleteElementById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
 };
 
 export const stixCyberObservableRelationshipCleanContext = (user, stixCyberObservableRelationshipId) =>
