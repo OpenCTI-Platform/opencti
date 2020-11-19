@@ -33,6 +33,7 @@ class ContainerStixCyberObservablesLines extends Component {
       container,
       paginationOptions,
     } = this.props;
+
     return (
       <div>
         <ListLinesContent
@@ -59,10 +60,11 @@ class ContainerStixCyberObservablesLines extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
             containerId={propOr(null, 'id', container)}
-            containerObjects={pathOr([], ['objects', 'edges'], container)}
+            containerStixCoreObjects={pathOr([], ['objects', 'edges'], container)}
             paginationOptions={paginationOptions}
             withPadding={true}
             targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
+            onTypesChange={this.props.onTypesChange}
           />
         </Security>
       </div>
@@ -79,6 +81,7 @@ ContainerStixCyberObservablesLines.propTypes = {
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
   setNumberOfElements: PropTypes.func,
+  onTypesChange: PropTypes.func,
 };
 
 export const containerStixCyberObservablesLinesQuery = graphql`
