@@ -2629,7 +2629,7 @@ const getElementsRelated = async (targetId, elements = [], options = {}) => {
   await Promise.all(connectedRelationsIds.map(({ id }) => getElementsRelated(id, elements, options)));
   return elements;
 };
-const deleteElementRaw = async (wTx, user, element, isRelation, options = {}) => {
+const deleteElementRaw = async (wTx, element, isRelation, options = {}) => {
   // 00. Load everything we need to remove
   const dependencies = [{ internal_id: element.internal_id, type: element.entity_type, relDependency: isRelation }];
   await getElementsRelated(element.internal_id, dependencies, options);
@@ -2657,7 +2657,7 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
   }
   // Delete entity and all dependencies
   const deps = await executeWrite(async (wTx) => {
-    const delDependencies = await deleteElementRaw(wTx, user, element, false, options);
+    const delDependencies = await deleteElementRaw(wTx, element, false, options);
     await storeDeleteEvent(user, element);
     return delDependencies;
   });
