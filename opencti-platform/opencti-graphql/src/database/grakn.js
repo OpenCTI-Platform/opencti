@@ -102,8 +102,10 @@ import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
 
 // region global variables
 export const MAX_BATCH_SIZE = 25;
-export const FROM_START = 0; // "1970-01-01T00:00:00.000Z"
-export const UNTIL_END = 100000000000000; // "5138-11-16T09:46:40.000Z"
+export const FROM_START = 0;
+export const FROM_START_STR = '1970-01-01T00:00:00.000Z';
+export const UNTIL_END = 100000000000000;
+export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
 const GraknString = 'String';
 const GraknDate = 'Datetime';
@@ -1033,12 +1035,12 @@ export const listRelations = async (relationshipType, args) => {
   }
   if (filters.length > 0) {
     // eslint-disable-next-line
-        for (const f of filters) {
+    for (const f of filters) {
       if (!R.includes(REL_CONNECTED_SUFFIX, f.key)) {
         throw FunctionalError('Filters only support connected target filtering');
       }
       // eslint-disable-next-line prettier/prettier
-            const filterKey = f.key.replace(REL_INDEX_PREFIX, '').replace(REL_CONNECTED_SUFFIX, '').split('.');
+      const filterKey = f.key.replace(REL_INDEX_PREFIX, '').replace(REL_CONNECTED_SUFFIX, '').split('.');
       const [key, val] = filterKey;
       let operator = '';
       if (f.operator === 'match') {
@@ -1122,13 +1124,12 @@ const transformRawRelationsToAttributes = (data, orientation) => {
   return R.mergeAll(
     Object.entries(
       R.groupBy(
-        (a) => a.entity_type,
+        (a) => a.rel.entity_type,
         R.filter((f) => f.direction === orientation, data)
       )
     ).map(([k, v]) => ({
       [k]: R.map((i) => {
-        const info = { i_rel_internal_id: i.internal_id, i_rel_standard_id: i.standard_id };
-        return Object.assign(i.target, info);
+        return Object.assign(i.target, { i_connected_rel: i.rel });
       }, v),
     }))
   );
@@ -1147,14 +1148,17 @@ const findElementDependencies = async (instance, args = {}) => {
   const isRelation = instance.base_type === BASE_TYPE_RELATION;
   const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
   const relations = await listRelations(relType, { elementId: instance.id, noCache });
-  const targetsToResolve = R.map((e) => e.node.toId, relations.edges);
+  const targetsToResolve = R.map((e) => {
+    return e.node.fromId === instance.id ? e.node.toId : e.node.fromId;
+  }, relations.edges);
   let rawDataPromise;
   if (targetsToResolve.length === 0) {
     rawDataPromise = Promise.resolve([]);
   } else {
     rawDataPromise = internalFindByIds(targetsToResolve, args).then((ids) => {
       return R.map((e) => {
-        const to = R.find((s) => s.id === e.node.toId, ids);
+        const matchId = e.node.fromId === instance.id ? e.node.toId : e.node.fromId;
+        const to = R.find((s) => s.id === matchId, ids);
         return { rel: e.node, to: { id: to.id, standard_id: to.standard_id } };
       }, relations.edges);
     });
@@ -1173,24 +1177,18 @@ const findElementDependencies = async (instance, args = {}) => {
   } else {
     rawData = await rawDataPromise;
   }
-  const simplified = R.map((r) => {
+  const withDirection = R.map((r) => {
     const direction = r.rel.fromId === instance.id ? 'from' : 'to';
-    return {
-      internal_id: r.rel.internal_id,
-      standard_id: r.rel.standard_id,
-      entity_type: r.rel.entity_type,
-      target: r.to,
-      direction,
-    };
+    return { rel: r.rel, target: r.to, direction };
   }, rawData);
-  data.i_relations_from = transformRawRelationsToAttributes(simplified, 'from');
-  data.i_relations_to = transformRawRelationsToAttributes(simplified, 'to');
+  data.i_relations_from = transformRawRelationsToAttributes(withDirection, 'from');
+  data.i_relations_to = transformRawRelationsToAttributes(withDirection, 'to');
   // Filter if needed
-  let filtered = simplified;
+  let filtered = withDirection;
   if (orientation !== 'all') {
-    filtered = R.filter((s) => s.direction === orientation, simplified);
+    filtered = R.filter((s) => s.direction === orientation, withDirection);
   }
-  const grouped = R.groupBy((a) => relationTypeToInputName(a.entity_type), filtered);
+  const grouped = R.groupBy((a) => relationTypeToInputName(a.rel.entity_type), filtered);
   const entries = Object.entries(grouped);
   for (let index = 0; index < entries.length; index += 1) {
     const [key, values] = entries[index];
@@ -1720,10 +1718,11 @@ const targetedRelations = (entities, direction) => {
           relations.push(
             ...R.map((val) => {
               return {
-                internal_id: val.i_rel_internal_id,
-                standard_id: val.i_rel_standard_id,
+                internal_id: val.i_connected_rel.internal_id,
+                standard_id: val.i_connected_rel.standard_id,
                 entity_type: key,
                 connect: val.standard_id,
+                relation: val.i_connected_rel,
               };
             }, values)
           );
@@ -1734,8 +1733,14 @@ const targetedRelations = (entities, direction) => {
   );
 };
 const filterTargetByExisting = (sources, targets) => {
+  const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
+  const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
   return R.filter((f) => {
-    return !R.find((t) => t.entity_type === f.entity_type && t.connect === f.connect, targets);
+    const finder = (t) => {
+      // Find the same if type + target + no date specified
+      return t.entity_type === f.entity_type && t.connect === f.connect && noDate(t.relation);
+    };
+    return !R.find(finder, targets);
   }, sources);
 };
 
