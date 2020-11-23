@@ -48,6 +48,7 @@ class StixCyberObservableHeaderComponent extends Component {
                 <ItemMarking
                   key={markingDefinition.node.id}
                   label={markingDefinition.node.definition}
+                  color={markingDefinition.node.x_opencti_color}
                 />
               ),
             )}
@@ -80,6 +81,7 @@ const StixCyberObservableHeader = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_color
             }
           }
         }

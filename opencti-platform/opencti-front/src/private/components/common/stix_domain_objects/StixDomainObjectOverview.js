@@ -127,19 +127,17 @@ class StixDomainObjectOverview extends Component {
                   >
                     {t('Marking')}
                   </Typography>
-                  {stixDomainObject.objectMarking.edges.length > 0 ? (
-                    map(
+                  {stixDomainObject.objectMarking.edges.length > 0
+                    ? map(
                       (markingDefinition) => (
-                        <ItemMarking
-                          key={markingDefinition.node.id}
-                          label={markingDefinition.node.definition}
-                        />
+                          <ItemMarking
+                            key={markingDefinition.node.id}
+                            label={markingDefinition.node.definition}
+                          />
                       ),
                       stixDomainObject.objectMarking.edges,
                     )
-                  ) : (
-                    <ItemMarking label="TLP:WHITE" />
-                  )}
+                    : ''}
                 </div>
               ) : (
                 ''
