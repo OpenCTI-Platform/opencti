@@ -5,7 +5,7 @@ import {
   batchToEntitiesThrough,
   createRelation,
   createRelations,
-  deleteEntityById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
   listEntities,
@@ -13,7 +13,7 @@ import {
   listToEntitiesThroughRelation,
   loadById,
   loadByIdFullyResolved,
-  mergeEntitiesRaw,
+  mergeEntities,
   now,
   updateAttribute,
 } from '../database/grakn';
@@ -181,7 +181,7 @@ export const stixCoreObjectDelete = async (user, stixCoreObjectId) => {
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
   }
-  return deleteEntityById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  return deleteElementById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 };
 
 export const stixCoreObjectsDelete = async (user, stixCoreObjectsIds) => {
@@ -201,16 +201,14 @@ export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
       sourceIds,
     });
   }
-  // 0. Get the object
   const targetEntity = await loadByIdFullyResolved(targetId, ABSTRACT_STIX_CORE_OBJECT);
   if (!targetEntity) {
     throw FunctionalError('Cannot merge the other objects, Stix-Object cannot be found.');
   }
-  // 1. Update aliases & STIX IDs
   const sourceEntities = await Promise.all(
     sourceIds.map(async (id) => loadByIdFullyResolved(id, ABSTRACT_STIX_CORE_OBJECT))
   );
-  return mergeEntitiesRaw(user, targetEntity, sourceEntities);
+  return mergeEntities(user, targetEntity, sourceEntities);
 };
 // endregion
 

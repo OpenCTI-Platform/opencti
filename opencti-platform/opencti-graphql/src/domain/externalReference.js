@@ -3,7 +3,7 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
   createRelation,
-  deleteEntityById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
   listEntities,
@@ -30,7 +30,7 @@ export const addExternalReference = async (user, externalReference) => {
 };
 
 export const externalReferenceDelete = async (user, externalReferenceId) => {
-  return deleteEntityById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  return deleteElementById(user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 export const externalReferenceAddRelation = async (user, externalReferenceId, input) => {

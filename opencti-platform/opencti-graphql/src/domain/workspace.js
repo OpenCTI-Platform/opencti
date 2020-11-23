@@ -4,7 +4,7 @@ import {
   createEntity,
   createRelation,
   createRelations,
-  deleteEntityById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
   getSingleValueNumber,
@@ -67,7 +67,7 @@ export const addWorkspace = async (user, workspace) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
 
-export const workspaceDelete = (user, workspaceId) => deleteEntityById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
+export const workspaceDelete = (user, workspaceId) => deleteElementById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
 
 export const workspaceAddRelation = async (user, workspaceId, input) => {
   const workspace = await loadById(workspaceId, ENTITY_TYPE_WORKSPACE);

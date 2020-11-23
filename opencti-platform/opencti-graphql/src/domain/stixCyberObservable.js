@@ -6,7 +6,7 @@ import {
   createEntity,
   createRelation,
   createRelations,
-  deleteEntityById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
   escape,
@@ -230,7 +230,7 @@ export const addStixCyberObservable = async (user, input) => {
 };
 
 export const stixCyberObservableDelete = async (user, stixCyberObservableId) => {
-  return deleteEntityById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  return deleteElementById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 
 export const stixCyberObservableAddRelation = async (user, stixCyberObservableId, input) => {

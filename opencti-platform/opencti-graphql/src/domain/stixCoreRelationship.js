@@ -2,7 +2,7 @@ import { assoc, dissoc, propOr } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteRelationById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
   getRelationInferredById,
@@ -140,7 +140,7 @@ export const addStixCoreRelationship = async (user, stixCoreRelationship) => {
 };
 
 export const stixCoreRelationshipDelete = async (user, stixCoreRelationshipId) => {
-  return deleteRelationById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  return deleteElementById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
 export const stixCoreRelationshipDeleteByFromAndTo = async (user, fromId, toId, relationshipType) => {

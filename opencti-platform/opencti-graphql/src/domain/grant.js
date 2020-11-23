@@ -1,5 +1,5 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
-import { createEntity, createRelation, deleteEntityById } from '../database/grakn';
+import { createEntity, createRelation, deleteElementById } from '../database/grakn';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
@@ -28,4 +28,4 @@ export const addRole = async (user, role) => {
   return roleEntity;
 };
 
-export const roleDelete = (user, roleId) => deleteEntityById(user, roleId, ENTITY_TYPE_ROLE);
+export const roleDelete = (user, roleId) => deleteElementById(user, roleId, ENTITY_TYPE_ROLE);

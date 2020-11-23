@@ -1003,23 +1003,27 @@ export const elRemoveRelationConnection = async (relationId) => {
   const to = await elLoadByIds(relation.toId);
   const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
   // Update the from entity
-  await elUpdate(from._index, relation.fromId, {
-    script: {
-      source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-      params: {
-        key: relation.toId,
+  if (from) {
+    await elUpdate(from._index, relation.fromId, {
+      script: {
+        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+        params: {
+          key: relation.toId,
+        },
       },
-    },
-  });
+    });
+  }
   // Update to to entity
-  await elUpdate(to._index, relation.toId, {
-    script: {
-      source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-      params: {
-        key: relation.fromId,
+  if (to) {
+    await elUpdate(to._index, relation.toId, {
+      script: {
+        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+        params: {
+          key: relation.fromId,
+        },
       },
-    },
-  });
+    });
+  }
 };
 
 export const prepareElementForIndexing = (element) => {

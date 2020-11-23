@@ -1,6 +1,6 @@
 import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteEntityById, listEntities, loadById, updateAttribute } from '../database/grakn';
+import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { normalizeName } from '../schema/identifier';
@@ -35,7 +35,7 @@ export const addLabel = async (user, label) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, created, user);
 };
 
-export const labelDelete = (user, labelId) => deleteEntityById(user, labelId, ENTITY_TYPE_LABEL);
+export const labelDelete = (user, labelId) => deleteElementById(user, labelId, ENTITY_TYPE_LABEL);
 
 export const labelEditField = async (user, labelId, input) => {
   const label = await updateAttribute(user, labelId, ENTITY_TYPE_LABEL, input);

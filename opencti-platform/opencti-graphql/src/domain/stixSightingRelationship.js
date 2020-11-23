@@ -2,7 +2,7 @@ import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
-  deleteRelationById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
   getRelationInferredById,
@@ -127,7 +127,7 @@ export const addStixSightingRelationship = async (user, stixSightingRelationship
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 export const stixSightingRelationshipDelete = async (user, stixSightingRelationshipId) => {
-  return deleteRelationById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  return deleteElementById(user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 export const stixSightingRelationshipEditField = async (user, relationshipId, input) => {
   const stixSightingRelationship = await updateAttribute(user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input);

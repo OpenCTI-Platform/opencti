@@ -5,7 +5,7 @@ import {
   createEntity,
   createRelation,
   createRelations,
-  deleteEntityById,
+  deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
   distributionEntitiesThroughRelations,
@@ -114,7 +114,7 @@ export const stixDomainObjectDelete = async (user, stixDomainObjectId) => {
   if (!stixDomainObject) {
     throw FunctionalError('Cannot delete the object, Stix-Domain-Object cannot be found.');
   }
-  return deleteEntityById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
+  return deleteElementById(user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
 };
 
 export const stixDomainObjectsDelete = async (user, stixDomainObjectsIds) => {
