@@ -113,20 +113,24 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     this.state = { expandedPanels: {}, addedStixCoreObjects: [] };
   }
 
+  getContainerStixCoreObjectsIds() {
+    const { containerStixCoreObjects } = this.props;
+
+    // eslint-disable-next-line no-underscore-dangle
+    return map((n) => n.node.__id, containerStixCoreObjects || []);
+  }
+
   toggleStixCoreObject(stixCoreObject) {
     const {
       containerId,
       paginationOptions,
       knowledgeGraph,
-      containerStixCoreObjects,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const containerStixCoreObjectsIds = map(
-      (n) => n.node.id,
-      containerStixCoreObjects || [],
-    );
+    const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
       || containerStixCoreObjectsIds.includes(stixCoreObject.id);
+
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
@@ -243,7 +247,10 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
 
   render() {
     const {
-      t, classes, data, containerStixCoreObjects, fd,
+      t,
+      classes,
+      data,
+      fd,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = pipe(
@@ -257,10 +264,8 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
     const stixCoreObjects = byType(stixCoreObjectsNodes);
     const stixCoreObjectsTypes = keys(stixCoreObjects);
-    const containerStixCoreObjectsIds = map(
-      (n) => n.node.id,
-      containerStixCoreObjects || [],
-    );
+    const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
+
     return (
       <div className={classes.container}>
         {stixCoreObjectsTypes.length > 0 ? (
@@ -290,10 +295,13 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                   {stixCoreObjects[type].map((stixCoreObject) => {
                     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
                       || containerStixCoreObjectsIds.includes(stixCoreObject.id);
+                    const description = stixCoreObject.description
+                        || stixCoreObject.x_opencti_description;
+
                     return (
                       <Tooltip
                         classes={{ tooltip: classes.tooltip }}
-                        title={<Markdown source={stixCoreObject.description} />}
+                        title={<Markdown source={description} />}
                         key={stixCoreObject.id}
                       >
                         <ListItem
@@ -496,6 +504,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               }
               ... on StixCyberObservable {
                 observable_value
+                x_opencti_description
               }
             }
           }

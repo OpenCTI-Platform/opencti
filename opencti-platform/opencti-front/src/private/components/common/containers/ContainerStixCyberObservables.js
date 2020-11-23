@@ -89,6 +89,7 @@ class ContainerStixCyberObservablesComponent extends Component {
       openExports,
       numberOfElements,
     } = this.state;
+
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -142,6 +143,7 @@ class ContainerStixCyberObservablesComponent extends Component {
                 dataColumns={dataColumns}
                 initialLoading={props === null}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onTypesChange={this.handleToggle.bind(this)}
               />
             )}
           />

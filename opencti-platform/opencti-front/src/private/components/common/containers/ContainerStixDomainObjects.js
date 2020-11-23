@@ -89,6 +89,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       numberOfElements,
       types,
     } = this.state;
+
     const dataColumns = {
       entity_type: {
         label: 'Type',
@@ -144,6 +145,7 @@ class ContainerStixDomainObjectsComponent extends Component {
                 dataColumns={dataColumns}
                 initialLoading={props === null}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
+                onTypesChange={this.handleToggle.bind(this)}
               />
             )}
           />
