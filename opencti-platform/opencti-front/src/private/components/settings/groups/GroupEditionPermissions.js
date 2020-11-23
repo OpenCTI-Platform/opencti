@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import {
-  compose, map, pathOr, pipe, propEq, find,
+  compose, map, pathOr, pipe, propEq, find, filter,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -88,7 +88,9 @@ class GroupEditionPermissionsComponent extends Component {
     return (
       <div style={{ paddingTop: 15 }}>
         <Alert severity="warning" style={{ marginBottom: 10 }}>
-          {t('Groups marking definitions will filter the stream consumer to only data he can access to.')}
+          {t(
+            'Groups marking definitions will filter the stream consumer to only data he can access to.',
+          )}
         </Alert>
         <QueryRenderer
           query={markingDefinitionsLinesSearchQuery}
@@ -99,6 +101,7 @@ class GroupEditionPermissionsComponent extends Component {
               const markingDefinitions = pipe(
                 pathOr([], ['markingDefinitions', 'edges']),
                 map((n) => n.node),
+                filter((n) => n.definition_type !== 'statement'),
               )(props);
               return (
                 <List dense={true} className={classes.root}>
