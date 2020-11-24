@@ -2141,18 +2141,19 @@ const upsertRelationRaw = async (wTx, user, relationId, type, data) => {
     }
   }
   // Upsert markings
-  let markingToCreate = [];
+  const newMarkings = [];
   if (data.objectMarking && data.objectMarking.length > 0) {
     const markingsIds = R.map((m) => m.standard_id, updatedRelation.objectMarking);
-    markingToCreate = R.filter((m) => !markingsIds.includes(m.standard_id), data.objectMarking);
+    const markingToCreate = R.filter((m) => !markingsIds.includes(m.standard_id), data.objectMarking);
     for (let index = 0; index < markingToCreate.length; index += 1) {
       const markingTo = markingToCreate[index];
       const relation = buildInnerRelation(updatedRelation, markingTo, RELATION_OBJECT_MARKING);
       // eslint-disable-next-line no-await-in-loop
       await wTx.query(R.head(relation).query);
+      newMarkings.push(newMarkings);
     }
   }
-  return { relation: updatedRelation, relations: markingToCreate };
+  return { relation: updatedRelation, relations: newMarkings };
 };
 
 const createRelationRaw = async (wTx, user, input) => {
@@ -2404,15 +2405,16 @@ const upsertEntityRaw = async (wTx, user, entityId, type, data) => {
     updatedEntity = patchedEntity.updatedInstance;
   }
   // Upsert markings
-  let markingToCreate = [];
+  const newMarkings = [];
   if (data.objectMarking && data.objectMarking.length > 0) {
-    const markingsIds = R.map((m) => m.standard_id, updatedEntity.objectMarking);
-    markingToCreate = R.filter((m) => !markingsIds.includes(m.standard_id), data.objectMarking);
+    const markingsIds = R.map((m) => m.standard_id, updatedEntity.objectMarking || []);
+    const markingToCreate = R.filter((m) => !markingsIds.includes(m.standard_id), data.objectMarking);
     for (let index = 0; index < markingToCreate.length; index += 1) {
       const markingTo = markingToCreate[index];
       const relation = buildInnerRelation(updatedEntity, markingTo, RELATION_OBJECT_MARKING);
       // eslint-disable-next-line no-await-in-loop
       await wTx.query(R.head(relation).query);
+      newMarkings.push(relation);
     }
   }
   // Upsert fields
@@ -2433,7 +2435,7 @@ const upsertEntityRaw = async (wTx, user, entityId, type, data) => {
       }
     }
   }
-  return { entity: updatedEntity, relations: markingToCreate };
+  return { entity: updatedEntity, relations: newMarkings };
 };
 const createEntityRaw = async (wTx, user, standardId, participantIds, input, type) => {
   // Generate the internal id if needed
