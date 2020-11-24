@@ -6,7 +6,8 @@ import {
   delUserContext,
   fetchEditContext,
   getAccessCache,
-  getRedisVersion, lockResource,
+  getRedisVersion,
+  lockResource,
   setEditContext,
   storeUserAccessCache,
 } from '../../../src/database/redis';

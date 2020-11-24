@@ -1040,7 +1040,7 @@ export const prepareElementForIndexing = (element) => {
       thing[key] = value;
     }
   });
-  return thing;
+  return R.dissoc('_index', thing);
 };
 const prepareIndexing = async (elements) => {
   return Promise.all(
@@ -1069,6 +1069,8 @@ const prepareIndexing = async (elements) => {
         });
         return R.pipe(
           R.assoc('connections', connections),
+          R.dissoc('i_relations_to'),
+          R.dissoc('i_relations_from'),
           // Dissoc from
           R.dissoc('from'),
           R.dissoc('fromId'),
@@ -1079,7 +1081,7 @@ const prepareIndexing = async (elements) => {
           R.dissoc('toRole')
         )(thing);
       }
-      return thing;
+      return R.pipe(R.dissoc('i_relations_to'), R.dissoc('i_relations_from'))(thing);
     }, elements)
   );
 };
@@ -1157,4 +1159,9 @@ export const elIndexElements = async (elements, retry = 5) => {
     await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });
   }
   return transformedElements.length;
+};
+export const elUpdateElement = async (instance) => {
+  const esData = prepareElementForIndexing(instance);
+  const index = inferIndexFromConceptType(instance.entity_type);
+  await elReplace(index, instance.internal_id, { doc: esData });
 };

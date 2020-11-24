@@ -33,9 +33,8 @@ import {
   elLoadByIds,
   elPaginate,
   elRemoveRelationConnection,
-  elReplace,
+  elUpdateElement,
   ENTITIES_INDICES,
-  prepareElementForIndexing,
   RELATIONSHIPS_INDICES,
   useCache,
 } from './elasticSearch';
@@ -1408,6 +1407,8 @@ export const distributionEntitiesThroughRelations = async (options) => {
 // endregion
 
 // region mutation common
+const TRX_CREATION = 'creation';
+const TRX_UPDATE = 'update';
 const flatAttributesForObject = (data) => {
   const elements = Object.entries(data);
   return R.pipe(
@@ -1492,8 +1493,12 @@ const inputResolveRefs = async (input) => {
   const patch = R.mergeAll(resolved);
   return R.mergeRight(input, patch);
 };
-const indexCreatedElement = async (element, relations) => {
-  await elIndexElements([element]);
+const indexCreatedElement = async (type, element, relations) => {
+  if (type === TRX_CREATION) {
+    await elIndexElements([element]);
+  } else {
+    await elUpdateElement(element);
+  }
   if (relations.length > 0) {
     const relationsToIndex = R.map((i) => i.relation, relations);
     await elIndexElements(relationsToIndex);
@@ -1513,6 +1518,10 @@ const updatedInputsToData = (inputs) => {
 const mergeInstanceWithInputs = (instance, inputs) => {
   const data = updatedInputsToData(inputs);
   return R.mergeRight(instance, data);
+};
+const partialInstanceWithInputs = (instance, inputs) => {
+  const inputData = updatedInputsToData(inputs);
+  return { internal_id: instance.internal_id, entity_type: instance.entity_type, ...inputData };
 };
 const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) => {
   const { forceUpdate = false, operation = UPDATE_OPERATION_REPLACE } = options;
@@ -1574,6 +1583,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
   // endregion
   return { key: finalKey, value: finalVal };
 };
+
 const innerUpdateAttribute = async (user, instance, rawInput, wTx, options = {}) => {
   const { id } = instance;
   const { key } = rawInput;
@@ -1665,8 +1675,8 @@ export const updateAttributeRaw = async (wTx, user, instance, inputs, options = 
     const ins = await innerUpdateAttribute(user, instance, input, wTx, options);
     if (ins.length > 0) {
       updatedInputs.push(input);
+      impactedInputs.push(...ins);
     }
-    impactedInputs.push(...ins);
     // If named entity name updated, modify the aliases ids
     if (isStixObjectAliased(instanceType) && (input.key === NAME_FIELD || input.key === X_MITRE_ID_FIELD)) {
       const name = R.head(input.value);
@@ -1685,7 +1695,9 @@ export const updateAttributeRaw = async (wTx, user, instance, inputs, options = 
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
       // eslint-disable-next-line no-await-in-loop
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, wTx, options);
-      impactedInputs.push(...aliasIns);
+      if (aliasIns.length > 0) {
+        impactedInputs.push(...aliasIns);
+      }
     }
   }
   // If update is part of the key, update the standard_id
@@ -1695,13 +1707,14 @@ export const updateAttributeRaw = async (wTx, user, instance, inputs, options = 
     const standardId = generateStandardId(instanceType, updatedInstance);
     const standardInput = { key: ID_STANDARD, value: [standardId] };
     const ins = await innerUpdateAttribute(user, instance, standardInput, wTx, options);
-    // currentInstanceData = R.assoc(ID_STANDARD, standardId, currentInstanceData);
-    impactedInputs.push(...ins);
+    if (ins.length > 0) {
+      impactedInputs.push(...ins);
+    }
   }
   // Return fully updated instance
   return {
-    updatedInputs,
-    impactedInputs,
+    updatedInputs, // Sourced inputs for event stream
+    impactedInputs, // All inputs with dependencies
     updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
   };
 };
@@ -1960,6 +1973,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     // noinspection UnnecessaryLocalVariableJS
     const { updatedInstance, impactedInputs } = await executeWrite(async (wTx) => {
       const data = await updateAttributeRaw(wTx, user, instance, inputs, options);
+      // Only push event in stream if modifications really happens
       if (data.updatedInputs.length > 0) {
         const updatedData = updatedInputsToData(data.updatedInputs);
         await storeUpdateEvent(user, operation, instance, updatedData);
@@ -1967,13 +1981,10 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       return data;
     });
     // region Update elasticsearch
-    const index = inferIndexFromConceptType(instance.entity_type);
-    const updateAsObject = R.mergeAll(
-      R.map(({ key, value }) => ({ [key]: isMultipleAttribute(key) ? value : R.head(value) }), impactedInputs)
-    );
-    const esData = prepareElementForIndexing(updateAsObject);
-    if (!R.isEmpty(esData)) {
-      await elReplace(index, instance.internal_id, { doc: esData });
+    // Elastic update with partial instance to prevent data override
+    if (impactedInputs.length > 0) {
+      const updateAsInstance = partialInstanceWithInputs(instance, impactedInputs);
+      await elUpdateElement(updateAsInstance);
     }
     // Return updated element after waiting for it.
     return updatedInstance;
@@ -2125,35 +2136,38 @@ const buildInnerRelation = (from, to, type) => {
   return relations;
 };
 const upsertRelationRaw = async (wTx, user, relationId, type, data) => {
-  let updatedRelation = await loadByIdFullyResolved(relationId, type, { onlyMarking: true });
+  const rel = await loadByIdFullyResolved(relationId, type, { onlyMarking: true });
+  const impactedInputs = [];
   if (isNotEmptyField(data.stix_id)) {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
-    const patchedRelation = await patchAttributeRaw(wTx, user, updatedRelation, patch, {
+    const patchedRelation = await patchAttributeRaw(wTx, user, rel, patch, {
       operation: UPDATE_OPERATION_ADD,
     });
-    updatedRelation = patchedRelation.updatedInstance;
+    impactedInputs.push(...patchedRelation.impactedInputs);
   }
   if (isStixSightingRelationship(type)) {
     if (data.attribute_count) {
-      const patch = { attribute_count: updatedRelation.attribute_count + data.attribute_count };
-      const patchedRelation = await patchAttributeRaw(wTx, user, updatedRelation, patch);
-      updatedRelation = patchedRelation.updatedInstance;
+      const patch = { attribute_count: rel.attribute_count + data.attribute_count };
+      const patchedRelation = await patchAttributeRaw(wTx, user, rel, patch);
+      impactedInputs.push(...patchedRelation.impactedInputs);
     }
   }
   // Upsert markings
-  const newMarkings = [];
+  const newRelations = [];
   if (data.objectMarking && data.objectMarking.length > 0) {
-    const markingsIds = R.map((m) => m.standard_id, updatedRelation.objectMarking);
+    const markingsIds = R.map((m) => m.standard_id, rel.objectMarking);
     const markingToCreate = R.filter((m) => !markingsIds.includes(m.standard_id), data.objectMarking);
     for (let index = 0; index < markingToCreate.length; index += 1) {
       const markingTo = markingToCreate[index];
-      const relation = buildInnerRelation(updatedRelation, markingTo, RELATION_OBJECT_MARKING);
+      const relation = buildInnerRelation(rel, markingTo, RELATION_OBJECT_MARKING);
       // eslint-disable-next-line no-await-in-loop
       await wTx.query(R.head(relation).query);
-      newMarkings.push(...relation);
+      newRelations.push(...relation);
     }
   }
-  return { relation: updatedRelation, relations: newMarkings };
+  // Rebuild relation
+  const updatedRelation = mergeInstanceWithInputs(rel, impactedInputs);
+  return { type: TRX_UPDATE, relation: updatedRelation, relations: newRelations };
 };
 
 const createRelationRaw = async (wTx, user, input) => {
@@ -2320,7 +2334,7 @@ const createRelationRaw = async (wTx, user, input) => {
     R.assoc('base_type', BASE_TYPE_RELATION)
   )(data);
   // 09. Return result if no need to reverse the relations from and to
-  return { relation: created, relations: relToCreate };
+  return { type: TRX_CREATION, relation: created, relations: relToCreate };
 };
 export const createRelation = async (user, input) => {
   let lock;
@@ -2351,7 +2365,13 @@ export const createRelation = async (user, input) => {
         // If new marking, redispatch an entity creation
         const markings = [...(from.objectMarking || []), resolvedInput.to];
         const inputEvent = R.assoc('objectMarking', markings, from);
-        await storeCreateEvent(user, from, inputEvent);
+        // In case of relation we need to full reload the from entity to redispatch it.
+        // From and to of the source are required for stream message generation
+        let fromCreation = from;
+        if (from.base_type === BASE_TYPE_RELATION) {
+          fromCreation = await loadByIdFullyResolved(from.id, from.entity_type);
+        }
+        await storeCreateEvent(user, fromCreation, inputEvent);
       } else {
         const relWithConnections = Object.assign(dataRel.relation, { from, to });
         await storeCreateEvent(user, relWithConnections, resolvedInput);
@@ -2359,7 +2379,7 @@ export const createRelation = async (user, input) => {
       return dataRel;
     });
     // Index the created element
-    await indexCreatedElement(data.relation, data.relations);
+    await indexCreatedElement(data.type, data.relation, data.relations);
     return data.relation;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -2385,33 +2405,35 @@ export const createRelations = async (user, inputs) => {
 // endregion
 
 // region mutation entity
+
 const upsertEntityRaw = async (wTx, user, entityId, type, data) => {
   // We need to reload the existing entity with the markings
-  let updatedEntity = await loadByIdFullyResolved(entityId, type, { onlyMarking: true });
+  const entity = await loadByIdFullyResolved(entityId, type, { onlyMarking: true });
+  const impactedInputs = [];
   // Upsert the stix ids
   if (isNotEmptyField(data.stix_id)) {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
-    const patchedData = await patchAttributeRaw(wTx, user, updatedEntity, patch, { operation: UPDATE_OPERATION_ADD });
-    updatedEntity = patchedData.updatedInstance;
+    const patchedEntity = await patchAttributeRaw(wTx, user, entity, patch, { operation: UPDATE_OPERATION_ADD });
+    impactedInputs.push(...patchedEntity.impactedInputs);
   }
   // Upsert the aliases
   if (isStixObjectAliased(type)) {
     const { name } = data;
     const key = resolveAliasesField(type);
     const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (normalizeName(updatedEntity.name) !== normalizeName(name)) aliases.push(name);
+    if (normalizeName(entity.name) !== normalizeName(name)) aliases.push(name);
     const patch = { [key]: aliases };
-    const patchedEntity = await patchAttributeRaw(wTx, user, updatedEntity, patch, { operation: UPDATE_OPERATION_ADD });
-    updatedEntity = patchedEntity.updatedInstance;
+    const patchedEntity = await patchAttributeRaw(wTx, user, entity, patch, { operation: UPDATE_OPERATION_ADD });
+    impactedInputs.push(...patchedEntity.impactedInputs);
   }
   // Upsert markings
   const newMarkings = [];
   if (data.objectMarking && data.objectMarking.length > 0) {
-    const markingsIds = R.map((m) => m.standard_id, updatedEntity.objectMarking || []);
+    const markingsIds = R.map((m) => m.standard_id, entity.objectMarking || []);
     const markingToCreate = R.filter((m) => !markingsIds.includes(m.standard_id), data.objectMarking);
     for (let index = 0; index < markingToCreate.length; index += 1) {
       const markingTo = markingToCreate[index];
-      const relation = buildInnerRelation(updatedEntity, markingTo, RELATION_OBJECT_MARKING);
+      const relation = buildInnerRelation(entity, markingTo, RELATION_OBJECT_MARKING);
       // eslint-disable-next-line no-await-in-loop
       await wTx.query(R.head(relation).query);
       newMarkings.push(...relation);
@@ -2430,12 +2452,14 @@ const upsertEntityRaw = async (wTx, user, entityId, type, data) => {
         }
       }
       if (!R.isEmpty(patch)) {
-        const patchedEntity = await patchAttributeRaw(wTx, user, updatedEntity, patch);
-        updatedEntity = patchedEntity.updatedInstance;
+        const patchedEntity = await patchAttributeRaw(wTx, user, entity, patch);
+        impactedInputs.push(...patchedEntity.impactedInputs);
       }
     }
   }
-  return { entity: updatedEntity, relations: newMarkings };
+  // Rebuild entity
+  const updatedEntity = mergeInstanceWithInputs(entity, impactedInputs);
+  return { type: TRX_UPDATE, entity: updatedEntity, relations: newMarkings };
 };
 const createEntityRaw = async (wTx, user, standardId, participantIds, input, type) => {
   // Generate the internal id if needed
@@ -2573,7 +2597,7 @@ const createEntityRaw = async (wTx, user, standardId, participantIds, input, typ
     R.assoc('parent_types', getParentTypes(type))
   )(data);
   // Simply return the data
-  return { entity: created, relations: relToCreate };
+  return { type: TRX_CREATION, entity: created, relations: relToCreate };
 };
 export const createEntity = async (user, input, type) => {
   let lock;
@@ -2601,7 +2625,7 @@ export const createEntity = async (user, input, type) => {
       return dataEntity;
     });
     // Index the created element
-    await indexCreatedElement(data.entity, data.relations);
+    await indexCreatedElement(data.type, data.entity, data.relations);
     // Return created element after waiting for it.
     return data.entity;
   } catch (err) {
