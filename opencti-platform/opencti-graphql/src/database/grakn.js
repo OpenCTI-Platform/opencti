@@ -2124,7 +2124,7 @@ const buildInnerRelation = (from, to, type) => {
   }
   return relations;
 };
-const upsertRelation = async (wTx, user, relationId, type, data) => {
+const upsertRelationRaw = async (wTx, user, relationId, type, data) => {
   let updatedRelation = await loadByIdFullyResolved(relationId, type, { onlyMarking: true });
   if (isNotEmptyField(data.stix_id)) {
     const patch = { x_opencti_stix_ids: [data.stix_id] };
@@ -2152,8 +2152,7 @@ const upsertRelation = async (wTx, user, relationId, type, data) => {
       await wTx.query(R.head(relation).query);
     }
   }
-  const relation = R.assoc('i_upserted', true, updatedRelation);
-  return { relation, relations: markingToCreate };
+  return { relation: updatedRelation, relations: markingToCreate };
 };
 
 const createRelationRaw = async (wTx, user, input) => {
@@ -2189,7 +2188,7 @@ const createRelationRaw = async (wTx, user, input) => {
     existingRelationship = R.head(existingRelationships.edges).node;
   }
   if (existingRelationship) {
-    return upsertRelation(wTx, user, existingRelationship.id, relationshipType, input);
+    return upsertRelationRaw(wTx, user, existingRelationship.id, relationshipType, input);
   }
   // 05. Prepare the relation to be created
   const today = now();
@@ -2359,9 +2358,7 @@ export const createRelation = async (user, input) => {
       return dataRel;
     });
     // Index the created element
-    if (!data.relation.i_upserted) {
-      await indexCreatedElement(data.relation, data.relations);
-    }
+    await indexCreatedElement(data.relation, data.relations);
     return data.relation;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -2387,7 +2384,7 @@ export const createRelations = async (user, inputs) => {
 // endregion
 
 // region mutation entity
-const upsertEntity = async (wTx, user, entityId, type, data) => {
+const upsertEntityRaw = async (wTx, user, entityId, type, data) => {
   // We need to reload the existing entity with the markings
   let updatedEntity = await loadByIdFullyResolved(entityId, type, { onlyMarking: true });
   // Upsert the stix ids
@@ -2436,8 +2433,7 @@ const upsertEntity = async (wTx, user, entityId, type, data) => {
       }
     }
   }
-  const entity = R.assoc('i_upserted', true, updatedEntity);
-  return { entity, relations: markingToCreate };
+  return { entity: updatedEntity, relations: markingToCreate };
 };
 const createEntityRaw = async (wTx, user, standardId, participantIds, input, type) => {
   // Generate the internal id if needed
@@ -2446,7 +2442,7 @@ const createEntityRaw = async (wTx, user, standardId, participantIds, input, typ
   const existingEntities = await internalFindByIds(participantIds, { type });
   if (existingEntities.length > 0) {
     if (existingEntities.length === 1) {
-      return upsertEntity(wTx, user, R.head(existingEntities).id, type, input);
+      return upsertEntityRaw(wTx, user, R.head(existingEntities).id, type, input);
     }
     // Sometimes multiple entities can match
     // Looking for aliasA, aliasB, find in different entities for example
@@ -2460,7 +2456,7 @@ const createEntityRaw = async (wTx, user, standardId, participantIds, input, typ
       const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
       const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
       const inputAliases = Object.assign(input, { [key]: filteredAliases });
-      return upsertEntity(wTx, user, existingByStandard.id, type, inputAliases);
+      return upsertEntityRaw(wTx, user, existingByStandard.id, type, inputAliases);
     }
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, existingEntities);
@@ -2603,9 +2599,7 @@ export const createEntity = async (user, input, type) => {
       return dataEntity;
     });
     // Index the created element
-    if (!data.entity.i_upserted) {
-      await indexCreatedElement(data.entity, data.relations);
-    }
+    await indexCreatedElement(data.entity, data.relations);
     // Return created element after waiting for it.
     return data.entity;
   } catch (err) {
