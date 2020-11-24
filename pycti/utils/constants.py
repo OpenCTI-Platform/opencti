@@ -4,12 +4,6 @@
 from enum import Enum
 
 
-class OrphanException(Exception):
-    """Raised when an orphan is found in the stix splitter"""
-
-    pass
-
-
 class StixCyberObservableTypes(Enum):
     AUTONOMOUS_SYSTEM = "Autonomous-System"
     DIRECTORY = "Directory"
