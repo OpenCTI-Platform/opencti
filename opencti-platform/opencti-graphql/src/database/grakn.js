@@ -255,7 +255,7 @@ export const graknIsAlive = async () => {
 export const getGraknVersion = () => {
   // It seems that Grakn server does not expose its version yet:
   // https://github.com/graknlabs/client-nodejs/issues/47
-  return '1.8.3';
+  return '1.8.4';
 };
 
 const getAliasInternalIdFilter = (query, alias) => {
