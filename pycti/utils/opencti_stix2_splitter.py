@@ -1,6 +1,5 @@
 import json
 import uuid
-import logging
 
 
 class OpenCTIStix2Splitter:
