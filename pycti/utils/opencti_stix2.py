@@ -174,9 +174,7 @@ class OpenCTIStix2:
             data = json.load(file)
         return self.import_bundle(data, update, types)
 
-    def import_bundle_from_json(
-        self, json_data, update=False, types=None, remove_orphan=True
-    ) -> List:
+    def import_bundle_from_json(self, json_data, update=False, types=None) -> List:
         """import a stix2 bundle from JSON data
 
         :param json_data: JSON data
@@ -189,7 +187,7 @@ class OpenCTIStix2:
         :rtype: List
         """
         data = json.loads(json_data)
-        return self.import_bundle(data, update, types, remove_orphan)
+        return self.import_bundle(data, update, types)
 
     def resolve_author(self, title):
         if "fireeye" in title.lower() or "mandiant" in title.lower():
@@ -1394,16 +1392,14 @@ class OpenCTIStix2:
 
         return bundle
 
-    def import_bundle(
-        self, stix_bundle, update=False, types=None, remove_orphan=True
-    ) -> List:
+    def import_bundle(self, stix_bundle, update=False, types=None) -> List:
         # Check if the bundle is correctly formatted
         if "type" not in stix_bundle or stix_bundle["type"] != "bundle":
             raise ValueError("JSON data type is not a STIX2 bundle")
         if "objects" not in stix_bundle or len(stix_bundle["objects"]) == 0:
             raise ValueError("JSON data objects is empty")
 
-        stix2_splitter = OpenCTIStix2Splitter(remove_orphan=remove_orphan)
+        stix2_splitter = OpenCTIStix2Splitter()
         bundles = stix2_splitter.split_bundle(stix_bundle, False)
         # Import every elements in a specific order
         imported_elements = []
