@@ -2150,7 +2150,7 @@ const upsertRelationRaw = async (wTx, user, relationId, type, data) => {
       const relation = buildInnerRelation(updatedRelation, markingTo, RELATION_OBJECT_MARKING);
       // eslint-disable-next-line no-await-in-loop
       await wTx.query(R.head(relation).query);
-      newMarkings.push(...newMarkings);
+      newMarkings.push(...relation);
     }
   }
   return { relation: updatedRelation, relations: newMarkings };
