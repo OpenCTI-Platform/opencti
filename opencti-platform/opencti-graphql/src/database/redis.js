@@ -18,6 +18,7 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
 import { DatabaseError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
@@ -182,11 +183,13 @@ const mapJSToStream = (event) => {
   return cmdArgs;
 };
 const buildEvent = (eventType, user, markings, message, data) => {
+  const secureMarkings = R.filter((m) => m.definition_type !== MARKING_DEFINITION_STATEMENT, markings || []);
+  const eventMarkingIds = R.map((i) => i.standard_id, secureMarkings);
   return {
     version: '1', // Event version.
     type: eventType,
     origin: user.origin,
-    markings,
+    markings: eventMarkingIds,
     message,
     data,
   };
@@ -199,8 +202,7 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
     type: convertTypeToStixType(instance.entity_type),
     source_ids: R.map((s) => s.standard_id, sourceEntities),
   };
-  const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
-  const event = buildEvent(EVENT_TYPE_MERGE, user, markings, message, data);
+  const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
   const client = await getClient();
   return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
 };
@@ -222,8 +224,7 @@ export const storeUpdateEvent = async (user, operation, instance, input) => {
     // Generate the message
     const message = generateLogMessage(operation, instance, convertedInput);
     // Build and send the event
-    const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
-    const event = buildEvent(EVENT_TYPE_UPDATE, user, markings, message, data);
+    const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
     const client = await getClient();
     await client.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
@@ -249,8 +250,7 @@ export const storeCreateEvent = async (user, instance, input) => {
     // Generate the message
     const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
     // Build and send the event
-    const markings = data.object_marking_refs || [];
-    const event = buildEvent(EVENT_TYPE_CREATE, user, markings, message, data);
+    const event = buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
     const client = await getClient();
     await client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
@@ -264,8 +264,7 @@ export const storeDeleteEvent = async (user, instance) => {
       x_opencti_id: instance.internal_id,
       type: convertTypeToStixType(instance.entity_type),
     };
-    const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
-    const event = buildEvent(EVENT_TYPE_DELETE, user, markings, message, data);
+    const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
     const client = await getClient();
     return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
@@ -287,8 +286,7 @@ export const storeDeleteEvent = async (user, instance) => {
       target_ref: instance.to.standard_id,
       x_opencti_target_ref: instance.to.internal_id,
     };
-    const markings = R.map((i) => i.standard_id, instance.objectMarking || []);
-    const event = buildEvent(EVENT_TYPE_DELETE, user, markings, message, data);
+    const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
     const client = await getClient();
     return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }

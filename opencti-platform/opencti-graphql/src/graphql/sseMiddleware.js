@@ -18,9 +18,14 @@ const createBroadcastClient = (client) => {
       const { data } = event;
       const clientMarkings = R.map((m) => m.standard_id, client.allowed_marking);
       const isMarkingObject = data.type === ENTITY_TYPE_MARKING_DEFINITION.toLowerCase();
-      const isUserHaveMarking = event.markings.length > 0 && event.markings.every((m) => clientMarkings.includes(m));
+      const isUserHaveAccess = event.markings.length === 0 || event.markings.every((m) => clientMarkings.includes(m));
       const isBypass = R.find((s) => s.name === BYPASS, client.capabilities || []) !== undefined;
-      const isGrantedForData = isMarkingObject || isUserHaveMarking;
+      // Granted if:
+      // - Event concern directly a marking definition
+      // - Event has no specified markings
+      // - Use have all event markings
+      // - User have the bypass capabilities
+      const isGrantedForData = isMarkingObject || isUserHaveAccess;
       if (isGrantedForData || isBypass) {
         client.sendEvent(eventId, topic, event);
       }

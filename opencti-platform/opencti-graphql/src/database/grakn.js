@@ -2319,15 +2319,6 @@ const createRelationRaw = async (wTx, user, input) => {
     R.assoc('parent_types', getParentTypes(relationshipType)),
     R.assoc('base_type', BASE_TYPE_RELATION)
   )(data);
-  // Send the event if everything fine
-  if (input.relationship_type === RELATION_OBJECT_MARKING) {
-    // We need to full reload the from entity to redispatch it.
-    const upFrom = await loadByIdFullyResolved(from.id, from.entity_type);
-    await storeCreateEvent(user, upFrom, upFrom);
-  } else {
-    const relWithConnections = Object.assign(created, { from, to });
-    await storeCreateEvent(user, relWithConnections, input);
-  }
   // 09. Return result if no need to reverse the relations from and to
   return { relation: created, relations: relToCreate };
 };
@@ -2354,7 +2345,18 @@ export const createRelation = async (user, input) => {
     lock = await lockResource(lockIds);
     // noinspection UnnecessaryLocalVariableJS
     const data = await executeWrite(async (wTx) => {
-      return createRelationRaw(wTx, user, resolvedInput);
+      const dataRel = await createRelationRaw(wTx, user, resolvedInput);
+      // Send the event in the stream
+      if (input.relationship_type === RELATION_OBJECT_MARKING) {
+        // If new marking, redispatch an entity creation
+        const markings = [...(from.objectMarking || []), resolvedInput.to];
+        const inputEvent = R.assoc('objectMarking', markings, from);
+        await storeCreateEvent(user, from, inputEvent);
+      } else {
+        const relWithConnections = Object.assign(dataRel.relation, { from, to });
+        await storeCreateEvent(user, relWithConnections, resolvedInput);
+      }
+      return dataRel;
     });
     // Index the created element
     if (!data.relation.i_upserted) {
@@ -2572,8 +2574,6 @@ const createEntityRaw = async (wTx, user, standardId, participantIds, input, typ
     R.assoc('base_type', BASE_TYPE_ENTITY),
     R.assoc('parent_types', getParentTypes(type))
   )(data);
-  // Push the input in the stream
-  await storeCreateEvent(user, created, input);
   // Simply return the data
   return { entity: created, relations: relToCreate };
 };
@@ -2597,7 +2597,10 @@ export const createEntity = async (user, input, type) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     const data = await executeWrite(async (wTx) => {
-      return createEntityRaw(wTx, user, standardId, participantIds, resolvedInput, type);
+      const dataEntity = await createEntityRaw(wTx, user, standardId, participantIds, resolvedInput, type);
+      // Push the input in the stream
+      await storeCreateEvent(user, dataEntity.entity, resolvedInput);
+      return dataEntity;
     });
     // Index the created element
     if (!data.entity.i_upserted) {
