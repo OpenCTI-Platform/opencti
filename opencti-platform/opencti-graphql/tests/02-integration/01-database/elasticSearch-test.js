@@ -38,7 +38,7 @@ import {
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
     expect(elIsAlive()).resolves.toBeTruthy();
-    expect(elVersion()).resolves.toContain('7.9');
+    expect(elVersion()).resolves.toContain('7.10');
     expect(elIndexExists(INDEX_INTERNAL_OBJECTS)).toBeTruthy();
     expect(elIndexExists(INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
     expect(elIndexExists(INDEX_STIX_CORE_RELATIONSHIPS)).toBeTruthy();
