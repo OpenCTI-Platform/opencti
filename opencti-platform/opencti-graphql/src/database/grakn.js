@@ -2115,7 +2115,7 @@ const buildInnerRelation = (from, to, type) => {
       fromType: from.entity_type,
       toId: target.internal_id,
       toRole: `${type}_to`,
-      toType: to.entity_type,
+      toType: target.entity_type,
       base_type: BASE_TYPE_RELATION,
       parent_types: getParentTypes(relation.entity_type),
       ...relation,
@@ -2150,7 +2150,7 @@ const upsertRelationRaw = async (wTx, user, relationId, type, data) => {
       const relation = buildInnerRelation(updatedRelation, markingTo, RELATION_OBJECT_MARKING);
       // eslint-disable-next-line no-await-in-loop
       await wTx.query(R.head(relation).query);
-      newMarkings.push(newMarkings);
+      newMarkings.push(...newMarkings);
     }
   }
   return { relation: updatedRelation, relations: newMarkings };
@@ -2414,7 +2414,7 @@ const upsertEntityRaw = async (wTx, user, entityId, type, data) => {
       const relation = buildInnerRelation(updatedEntity, markingTo, RELATION_OBJECT_MARKING);
       // eslint-disable-next-line no-await-in-loop
       await wTx.query(R.head(relation).query);
-      newMarkings.push(relation);
+      newMarkings.push(...relation);
     }
   }
   // Upsert fields
