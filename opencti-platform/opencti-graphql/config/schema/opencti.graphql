@@ -1035,6 +1035,9 @@ enum StixDomainObjectsFilter {
   valid_from
   valid_until
   pattern_type
+  report_types
+  x_opencti_report_status
+  published
 }
 input StixDomainObjectsFiltering {
   key: StixDomainObjectsFilter!
