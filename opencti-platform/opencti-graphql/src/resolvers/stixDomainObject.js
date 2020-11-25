@@ -22,12 +22,12 @@ import {
   stixDomainObjectsExportPush,
   stixDomainObjectsExportAsk,
 } from '../domain/stixDomainObject';
-import { pubsub } from '../database/redis';
+import {pubsub} from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObject';
-import { UPDATE_OPERATION_REPLACE } from '../database/rabbitmq';
+import {UPDATE_OPERATION_REPLACE} from "../database/utils";
 
 const stixDomainObjectResolvers = {
   Query: {

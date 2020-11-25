@@ -3,17 +3,16 @@ import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import conf, { logger } from '../config/conf';
-import { generateLogMessage, relationTypeToInputName } from './utils';
+import {
+  generateLogMessage,
+  relationTypeToInputName,
+  UPDATE_OPERATION_ADD,
+  UPDATE_OPERATION_CHANGE,
+  UPDATE_OPERATION_REMOVE,
+} from './utils';
 import { isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
-import {
-  EVENT_TYPE_CREATE,
-  EVENT_TYPE_DELETE,
-  EVENT_TYPE_MERGE,
-  EVENT_TYPE_UPDATE,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-} from './rabbitmq';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
 import { DatabaseError } from '../config/errors';
@@ -206,23 +205,25 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
   const client = await getClient();
   return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
 };
-export const storeUpdateEvent = async (user, operation, instance, input) => {
+export const storeUpdateEvent = async (user, instance, updateEvents) => {
+  // updateEvents -> [{ operation, input }]
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
-    const convertedInput = stixDataConverter(input);
-    // Some update are only internal and so are not dispatch to the stream.
-    // If no information left, just return without modifying the stream.
-    if (R.isEmpty(convertedInput)) {
-      return true;
-    }
-    // else just continue as usual
+    const convertedInputs = updateEvents.map((i) => {
+      const [k, v] = R.head(Object.entries(i));
+      return { [k]: stixDataConverter(v) };
+    });
+    const dataUpdate = R.mergeAll(convertedInputs);
+    // else just continue as usual1
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
       type: convertTypeToStixType(instance.entity_type),
-      x_data_update: { [operation]: convertedInput },
+      x_data_update: dataUpdate,
     };
     // Generate the message
-    const message = generateLogMessage(operation, instance, convertedInput);
+    const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
+    const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
+    const message = generateLogMessage(operation, instance, messageInput);
     // Build and send the event
     const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
     const client = await getClient();
@@ -235,9 +236,11 @@ export const storeCreateEvent = async (user, instance, input) => {
     // If relationship but not stix core
     const isCore = isStixCoreRelationship(instance.entity_type);
     const isSighting = isStixSightingRelationship(instance.entity_type);
+    // If internal relation, publish an update instead of a creation
     if (isStixRelationship(instance.entity_type) && !isCore && !isSighting) {
       const field = relationTypeToInputName(instance.entity_type);
-      return storeUpdateEvent(user, UPDATE_OPERATION_ADD, instance.from, { [field]: input.to });
+      const inputUpdate = { [field]: input.to };
+      return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
     }
     // Create of an event for
     const identifiers = {
@@ -273,7 +276,8 @@ export const storeDeleteEvent = async (user, instance) => {
     const isSighting = isStixSightingRelationship(instance.entity_type);
     if (!isCore && !isSighting) {
       const field = relationTypeToInputName(instance.entity_type);
-      return storeUpdateEvent(user, UPDATE_OPERATION_REMOVE, instance.from, { [field]: instance.to });
+      const inputUpdate = { [field]: instance.to };
+      return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
     }
     // for other deletion, just produce a delete event
     const message = generateLogMessage(EVENT_TYPE_DELETE, instance);

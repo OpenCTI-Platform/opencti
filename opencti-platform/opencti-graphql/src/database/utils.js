@@ -29,16 +29,13 @@ import {
   isStixMetaRelationship,
   RELATION_OBJECT_LABEL,
 } from '../schema/stixMetaRelationship';
-import {
-  EVENT_TYPE_CREATE,
-  EVENT_TYPE_DELETE,
-  EVENT_TYPE_MERGE,
-  UPDATE_OPERATION_ADD,
-  UPDATE_OPERATION_REMOVE,
-  UPDATE_OPERATION_REPLACE,
-} from './rabbitmq';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE } from './rabbitmq';
 import { isStixObject } from '../schema/stixCoreObject';
 
+export const UPDATE_OPERATION_ADD = 'add';
+export const UPDATE_OPERATION_REPLACE = 'replace';
+export const UPDATE_OPERATION_REMOVE = 'remove';
+export const UPDATE_OPERATION_CHANGE = 'change';
 // Entities
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
 export const INDEX_STIX_META_OBJECTS = 'opencti_stix_meta_objects';
@@ -233,6 +230,7 @@ const valToMessage = (val) => {
   }
   return isNotEmptyField(val) ? val.toString() : null;
 };
+
 export const generateLogMessage = (type, instance, input = null) => {
   const name = extractEntityMainValue(instance);
   if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE || type === EVENT_TYPE_MERGE) {
@@ -246,7 +244,12 @@ export const generateLogMessage = (type, instance, input = null) => {
     const toType = instance.to.entity_type;
     return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
   }
-  if (type === UPDATE_OPERATION_REPLACE || type === UPDATE_OPERATION_ADD || type === UPDATE_OPERATION_REMOVE) {
+  if (
+    type === UPDATE_OPERATION_REPLACE ||
+    type === UPDATE_OPERATION_ADD ||
+    type === UPDATE_OPERATION_REMOVE ||
+    type === UPDATE_OPERATION_CHANGE
+  ) {
     const joiner = type === UPDATE_OPERATION_REPLACE ? 'by' : 'value';
     const fieldMessage = R.map(([key, val]) => {
       return `\`${key}\` ${joiner} \`${valToMessage(val) || 'nothing'}\``;

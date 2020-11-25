@@ -12,10 +12,6 @@ export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
-export const UPDATE_OPERATION_ADD = 'add';
-export const UPDATE_OPERATION_REPLACE = 'replace';
-export const UPDATE_OPERATION_REMOVE = 'remove';
-
 export const amqpUri = () => {
   const user = conf.get('rabbitmq:username');
   const pass = conf.get('rabbitmq:password');
