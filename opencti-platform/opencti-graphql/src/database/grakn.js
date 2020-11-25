@@ -2151,6 +2151,17 @@ const upsertElementRaw = async (wTx, user, id, type, data) => {
     impactedInputs.push(...patched.impactedInputs);
     updatedAddInputs.push(...patched.updatedInputs);
   }
+  // Upsert the aliases
+  if (isStixObjectAliased(type)) {
+    const { name } = data;
+    const key = resolveAliasesField(type);
+    const aliases = [...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+    if (normalizeName(element.name) !== normalizeName(name)) aliases.push(name);
+    const patch = { [key]: aliases };
+    const patched = await patchAttributeRaw(wTx, user, element, patch, { operation: UPDATE_OPERATION_ADD });
+    impactedInputs.push(...patched.impactedInputs);
+    updatedAddInputs.push(...patched.updatedInputs);
+  }
   if (isStixSightingRelationship(type) && data.attribute_count) {
     const patch = { attribute_count: element.attribute_count + data.attribute_count };
     const patched = await patchAttributeRaw(wTx, user, element, patch);
@@ -2180,17 +2191,18 @@ const upsertElementRaw = async (wTx, user, id, type, data) => {
   const targetsPerType = [];
   if (data.objectMarking && data.objectMarking.length > 0) {
     const markings = [];
-    const markingsIds = R.map((m) => m.standard_id, element.objectMarking);
+    const markingsIds = R.map((m) => m.standard_id, element.objectMarking || []);
     const markingToCreate = R.filter((m) => !markingsIds.includes(m.standard_id), data.objectMarking);
     for (let index = 0; index < markingToCreate.length; index += 1) {
       const markingTo = markingToCreate[index];
       const dataRels = buildInnerRelation(element, markingTo, RELATION_OBJECT_MARKING);
+      const builtQuery = R.head(dataRels);
       // eslint-disable-next-line no-await-in-loop
-      await wTx.query(R.head(dataRels).query);
+      await wTx.query(builtQuery.query);
+      rawRelations.push(builtQuery.relation);
       markings.push(markingTo);
     }
     targetsPerType.push({ objectMarking: markings });
-    rawRelations.push(...markings);
   }
   // Build the stream input
   const streamInputs = [];
@@ -2199,7 +2211,9 @@ const upsertElementRaw = async (wTx, user, id, type, data) => {
   }
   if (updatedAddInputs.length > 0 || rawRelations.length > 0) {
     let streamInput = updatedInputsToData(updatedAddInputs);
-    streamInput = Object.assign(streamInput, R.mergeAll(targetsPerType));
+    if (rawRelations.length > 0) {
+      streamInput = Object.assign(streamInput, R.mergeAll(targetsPerType));
+    }
     streamInputs.push({ [UPDATE_OPERATION_ADD]: streamInput });
   }
   let indexInput;
