@@ -1725,7 +1725,8 @@ const targetedRelations = (entities, direction) => {
   return R.flatten(
     R.map((s) => {
       const relations = [];
-      const info = Object.entries(s[`i_relations_${direction}`]);
+      const directedRelations = s[`i_relations_${direction}`];
+      const info = directedRelations ? Object.entries(directedRelations) : [];
       for (let index = 0; index < info.length; index += 1) {
         const [key, values] = info[index];
         if (key !== RELATION_CREATED_BY) {
@@ -1759,7 +1760,7 @@ const filterTargetByExisting = (sources, targets) => {
   }, sources);
 };
 
-export const mergeEntitiesRaw = async (wTx, user, targetEntity, sourceEntities, opts = {}) => {
+const mergeEntitiesRaw = async (wTx, user, targetEntity, sourceEntities, opts = {}) => {
   // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
   const { chosenFields = {} } = opts;
   // Pre-checks

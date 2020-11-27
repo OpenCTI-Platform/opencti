@@ -1,8 +1,10 @@
-import { assoc, head, includes, last, map } from 'ramda';
+import * as R from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import {
   attributeExists,
+  createEntity,
   dayFormat,
+  deleteElementById,
   distributionEntities,
   distributionEntitiesThroughRelations,
   distributionRelations,
@@ -21,6 +23,8 @@ import {
   listRelations,
   load,
   loadById,
+  loadByIdFullyResolved,
+  mergeEntities,
   monthFormat,
   now,
   patchAttribute,
@@ -44,6 +48,8 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_MALWARE,
+  ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../../../src/schema/general';
 import { RELATION_MITIGATES } from '../../../src/schema/stixCoreRelationship';
@@ -85,7 +91,7 @@ describe('Grakn low level commands', () => {
     });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(1);
-    const value = head(data).get('x');
+    const value = R.head(data).get('x');
     expect(value).not.toBeNull();
     expect(value.baseType).toEqual('ATTRIBUTE_TYPE');
   });
@@ -106,7 +112,7 @@ describe('Grakn low level commands', () => {
     });
     expect(creationData).not.toBeNull();
     expect(creationData.length).toEqual(1);
-    const value = head(creationData).get('c');
+    const value = R.head(creationData).get('c');
     expect(value).not.toBeNull();
     expect(value.id).not.toBeNull();
     expect(value.baseType).toEqual('ENTITY');
@@ -118,7 +124,7 @@ describe('Grakn low level commands', () => {
     });
     expect(deleteData).not.toBeNull();
     expect(deleteData.length).toEqual(1);
-    expect(head(deleteData).message()).toEqual('Deleted facts from 1 matched answers.');
+    expect(R.head(deleteData).message()).toEqual('Deleted facts from 1 matched answers.');
   });
   it('should write transaction fail with bad query', async () => {
     const queryPromise = executeWrite((rTx) => {
@@ -131,9 +137,9 @@ describe('Grakn low level commands', () => {
     let vars = extractQueryVars('match $x sub report_types; get;');
     expect(vars).not.toBeNull();
     expect(vars.length).toEqual(1);
-    expect(head(vars).alias).toEqual('x');
-    expect(head(vars).role).toBeUndefined();
-    expect(head(vars).internalIdKey).toBeUndefined();
+    expect(R.head(vars).alias).toEqual('x');
+    expect(R.head(vars).role).toBeUndefined();
+    expect(R.head(vars).internalIdKey).toBeUndefined();
     // Extract vars with relation roles
     vars = extractQueryVars('match $to isa Sector; $rel(xxxx:$from, yyyy:$to) isa part-of; get;');
     expect(vars).not.toBeNull();
@@ -191,17 +197,17 @@ describe('Grakn loaders', () => {
     const stixObservableSubTypes = await querySubTypes('Stix-Cyber-Observable');
     expect(stixObservableSubTypes).not.toBeNull();
     expect(stixObservableSubTypes.edges.length).toEqual(26);
-    const subTypeLabels = map((e) => e.node.label, stixObservableSubTypes.edges);
-    expect(includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
-    expect(includes('IPv6-Addr', subTypeLabels)).toBeTruthy();
+    const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
+    expect(R.includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
+    expect(R.includes('IPv6-Addr', subTypeLabels)).toBeTruthy();
   });
   it('should load attributes values', async () => {
     const attrValues = await queryAttributeValues('report_types');
     expect(attrValues).not.toBeNull();
     expect(attrValues.edges.length).toEqual(2);
-    const valueDefinitions = map((e) => e.node.value, attrValues.edges);
-    expect(includes('threat-report', valueDefinitions)).toBeTruthy();
-    expect(includes('internal-report', valueDefinitions)).toBeTruthy();
+    const valueDefinitions = R.map((e) => e.node.value, attrValues.edges);
+    expect(R.includes('threat-report', valueDefinitions)).toBeTruthy();
+    expect(R.includes('internal-report', valueDefinitions)).toBeTruthy();
   });
   it('should check attributes exist', async () => {
     const reportClassExist = await attributeExists('report_types');
@@ -318,16 +324,16 @@ describe('Grakn entities listing', () => {
     const malwares = await listEntities(['Malware'], ['name', 'aliases'], { noCache });
     expect(malwares).not.toBeNull();
     expect(malwares.edges.length).toEqual(2);
-    const dataMap = new Map(malwares.edges.map((i) => [head(i.node.x_opencti_stix_ids), i.node]));
+    const dataMap = new Map(malwares.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
     const malware = dataMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     expect(malware.grakn_id).not.toBeNull();
     expect(malware.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
     expect(malware.created_at_month).not.toBeNull();
     expect(malware.parent_types.length).toEqual(4);
-    expect(includes('Stix-Domain-Object', malware.parent_types)).toBeTruthy();
-    expect(includes('Stix-Core-Object', malware.parent_types)).toBeTruthy();
-    expect(includes('Stix-Object', malware.parent_types)).toBeTruthy();
-    expect(includes('Basic-Object', malware.parent_types)).toBeTruthy();
+    expect(R.includes('Stix-Domain-Object', malware.parent_types)).toBeTruthy();
+    expect(R.includes('Stix-Core-Object', malware.parent_types)).toBeTruthy();
+    expect(R.includes('Stix-Object', malware.parent_types)).toBeTruthy();
+    expect(R.includes('Basic-Object', malware.parent_types)).toBeTruthy();
     expect(malware.created).toEqual('2019-09-30T16:38:26.000Z');
     expect(malware.name).toEqual('Paradise Ransomware');
     // eslint-disable-next-line
@@ -347,7 +353,7 @@ describe('Grakn entities listing', () => {
     const options = { first: 1, after: offsetToCursor(2), orderBy: 'created', orderMode: 'desc', noCache };
     const indicators = await listEntities(['Indicator'], ['name', 'alias'], options);
     expect(indicators.edges.length).toEqual(1);
-    const indicator = head(indicators.edges).node;
+    const indicator = R.head(indicators.edges).node;
     expect(indicator.name).toEqual('2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957');
   });
   it.each(noCacheCases)('should list entities with search (noCache = %s)', async (noCache) => {
@@ -368,15 +374,15 @@ describe('Grakn entities listing', () => {
     let identities = await listEntities(['Location'], ['name'], options);
     expect(identities.edges.length).toEqual(6);
     const firstDescResult =
-      head(identities.edges).node.name === 'Europe' || head(identities.edges).node.name === 'France';
+      R.head(identities.edges).node.name === 'Europe' || R.head(identities.edges).node.name === 'France';
     expect(firstDescResult).toBeTruthy();
-    expect(last(identities.edges).node.name).toEqual('Western Europe');
+    expect(R.last(identities.edges).node.name).toEqual('Western Europe');
     options = { orderBy: 'rel_located-at.name', orderMode: 'asc', noCache };
     identities = await listEntities(['Location'], ['name'], options);
     expect(identities.edges.length).toEqual(6);
-    expect(head(identities.edges).node.name).toEqual('Western Europe');
+    expect(R.head(identities.edges).node.name).toEqual('Western Europe');
     const lastAscResult =
-      last(identities.edges).node.name === 'Europe' || last(identities.edges).node.name === 'France';
+      R.last(identities.edges).node.name === 'Europe' || R.last(identities.edges).node.name === 'France';
     expect(lastAscResult).toBeTruthy();
   });
   it.each(noCacheCases)('should list entities order by relation id (noCache = %s)', async (noCache) => {
@@ -387,9 +393,9 @@ describe('Grakn entities listing', () => {
     const locations = await listEntities(['Location'], ['name'], options);
     expect(locations.edges.length).toEqual(6);
     const firstResults = ['France'];
-    expect(includes(head(locations.edges).node.name, firstResults)).toBeTruthy();
+    expect(R.includes(R.head(locations.edges).node.name, firstResults)).toBeTruthy();
     const lastResults = ['Western Europe'];
-    expect(includes(last(locations.edges).node.name, lastResults)).toBeTruthy();
+    expect(R.includes(R.last(locations.edges).node.name, lastResults)).toBeTruthy();
   });
   it.each(noCacheCases)('should list entities with attribute filters (noCache = %s)', async (noCache) => {
     const filters = [
@@ -400,8 +406,8 @@ describe('Grakn entities listing', () => {
     const attacks = await listEntities(['Attack-Pattern'], ['name'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
-    expect(head(attacks.edges).node.standard_id).toEqual('attack-pattern--acdfc109-e0fd-5711-839b-a37ee49529b9');
-    expect(head(attacks.edges).node.x_opencti_stix_ids).toEqual([
+    expect(R.head(attacks.edges).node.standard_id).toEqual('attack-pattern--acdfc109-e0fd-5711-839b-a37ee49529b9');
+    expect(R.head(attacks.edges).node.x_opencti_stix_ids).toEqual([
       'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc',
     ]);
   });
@@ -428,7 +434,9 @@ describe('Grakn entities listing', () => {
       const entities = await listEntities(['Stix-Domain-Object'], ['name'], options);
       expect(entities).not.toBeNull();
       expect(entities.edges.length).toEqual(3);
-      const aggregationMap = new Map(entities.edges.map((i) => [head(i.node.x_opencti_stix_ids || ['fake']), i.node]));
+      const aggregationMap = new Map(
+        entities.edges.map((i) => [R.head(i.node.x_opencti_stix_ids || ['fake']), i.node])
+      );
       expect(aggregationMap.get('attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17')).not.toBeUndefined();
       expect(aggregationMap.get('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc')).not.toBeUndefined();
       expect(aggregationMap.get('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7')).not.toBeUndefined();
@@ -445,7 +453,7 @@ describe('Grakn relations listing', () => {
     const data = await find('match $m isa Malware, has internal_id $m_id; get;', ['m'], { noCache });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(2);
-    const aggregationMap = new Map(data.map((i) => [head(i.m.x_opencti_stix_ids), i.m]));
+    const aggregationMap = new Map(data.map((i) => [R.head(i.m.x_opencti_stix_ids), i.m]));
     const malware = aggregationMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     expect(malware).not.toBeUndefined();
     expect(malware.name).toEqual('Paradise Ransomware');
@@ -597,7 +605,7 @@ describe('Grakn relations listing', () => {
       expect(fromRole).toEqual(`${relationshipType}_from`);
       expect(toRole).toEqual(`${relationshipType}_to`);
     }
-    const relation = head(stixRelations.edges).node;
+    const relation = R.head(stixRelations.edges).node;
     expect(relation.created).toEqual('2019-04-25T20:53:08.446Z');
   });
   it.each(noCacheCases)('should list relations ordered by relation (noCache = %s)', async (noCache) => {
@@ -623,8 +631,8 @@ describe('Grakn relations listing', () => {
     const options = { orderBy: 'rel_indicates.standard_id', orderMode: 'asc', noCache };
     const stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
-    const first = head(stixRelations.edges).node;
-    const second = last(stixRelations.edges).node;
+    const first = R.head(stixRelations.edges).node;
+    const second = R.last(stixRelations.edges).node;
     expect(first.x_opencti_stix_ids).toEqual(['relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02']);
     expect(second.x_opencti_stix_ids).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
   });
@@ -653,7 +661,7 @@ describe('Grakn relations listing', () => {
     const options = { noCache, relationFilter };
     stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(1);
-    const relation = head(stixRelations.edges).node;
+    const relation = R.head(stixRelations.edges).node;
     expect(relation.x_opencti_stix_ids).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
     expect(relation.fromRole).toEqual('uses_from');
     expect(relation.toRole).toEqual('uses_to');
@@ -674,7 +682,7 @@ describe('Grakn relations listing', () => {
     const relation = await elLoadByIds('relationship--b703f822-f6f0-4d96-9c9b-3fc0bb61e69c');
     const argsWithRelationId = {
       noCache,
-      relationFilter: assoc('relationId', relation.internal_id, relationFilter),
+      relationFilter: R.assoc('relationId', relation.internal_id, relationFilter),
     };
     const stixRelationsWithInternalId = await listRelations('stix-core-relationship', argsWithRelationId);
     expect(stixRelationsWithInternalId.edges.length).toEqual(1);
@@ -690,7 +698,7 @@ describe('Grakn relations listing', () => {
     const options = { noCache, fromId: malware.internal_id, search: 'Spear phishing' };
     const stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(2);
-    const relTargets = await Promise.all(map((s) => elLoadByIds(s.node.toId), stixRelations.edges));
+    const relTargets = await Promise.all(R.map((s) => elLoadByIds(s.node.toId), stixRelations.edges));
     for (let index = 0; index < relTargets.length; index += 1) {
       const target = relTargets[index];
       expect(target.name).toEqual(expect.stringContaining('Spear phishing'));
@@ -725,7 +733,7 @@ describe('Grakn relations listing', () => {
     let options = { noCache, fromId: malware.internal_id, filters };
     let stixRelations = await listRelations('uses', options);
     expect(stixRelations.edges.length).toEqual(1);
-    const relation = head(stixRelations.edges).node;
+    const relation = R.head(stixRelations.edges).node;
     const target = await elLoadByIds(relation.toId);
     expect(target.name).toEqual(expect.stringContaining('malicious'));
     // Test with exact match
@@ -773,7 +781,7 @@ describe('Grakn relations with inferences', () => {
     expect(relation.toRole).toEqual('targets_to');
     expect(relation.inferences).not.toBeNull();
     expect(relation.inferences.edges.length).toEqual(2);
-    const aggregationMap = new Map(relation.inferences.edges.map((i) => [head(i.node.x_opencti_stix_ids), i.node]));
+    const aggregationMap = new Map(relation.inferences.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
     // relationship--3541149d-1af6-4688-993c-dc32c7ee3880
     // APT41 > intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7
     // Allied Universal > identity--c017f212-546b-4f21-999d-97d3dc558f7b
@@ -1118,5 +1126,102 @@ describe('Grakn entities distribution through relation', () => {
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('ANSSI')).toEqual(1);
+  });
+});
+
+describe('Grakn upsert and merge entities', () => {
+  const noCacheCases = [[true], [false]];
+  it.each(noCacheCases)('should entity upserted (noCache = %s)', async (noCache) => {
+    const markingId = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
+    // Most simple entity
+    const malware = { name: 'MALWARE_TEST', description: 'MALWARE_TEST DESCRIPTION' };
+    const createdMalware = await createEntity(ADMIN_USER, malware, ENTITY_TYPE_MALWARE);
+    expect(createdMalware).not.toBeNull();
+    expect(createdMalware.name).toEqual('MALWARE_TEST');
+    expect(createdMalware.description).toEqual('MALWARE_TEST DESCRIPTION');
+    expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
+    let loadMalware = await loadByIdFullyResolved(createdMalware.id, ENTITY_TYPE_MALWARE, { noCache });
+    expect(loadMalware).not.toBeNull();
+    expect(loadMalware.objectMarking).toEqual(undefined);
+    // Upsert TLP by name
+    let upMalware = { name: 'MALWARE_TEST', objectMarking: [markingId] };
+    let upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
+    expect(upsertedMalware).not.toBeNull();
+    expect(upsertedMalware.id).toEqual(createdMalware.id);
+    expect(upsertedMalware.name).toEqual('MALWARE_TEST');
+    loadMalware = await loadByIdFullyResolved(createdMalware.id, ENTITY_TYPE_MALWARE, { noCache });
+    expect(loadMalware.objectMarking.length).toEqual(1);
+    expect(R.head(loadMalware.objectMarking).standard_id).toEqual(
+      'marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c'
+    );
+    // Upsert definition per alias
+    upMalware = {
+      name: 'NEW NAME',
+      description: 'MALWARE_TEST NEW',
+      stix_id: 'malware--907bb632-e3c2-52fa-b484-cf166a7d377e',
+      update: true,
+      aliases: ['MALWARE_TEST'],
+    };
+    upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
+    expect(upsertedMalware.name).toEqual('MALWARE_TEST');
+    expect(upsertedMalware.description).toEqual('MALWARE_TEST NEW');
+    expect(upsertedMalware.id).toEqual(createdMalware.id);
+    expect(upsertedMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
+    expect(upsertedMalware.aliases.sort()).toEqual(['NEW NAME', 'MALWARE_TEST'].sort());
+    loadMalware = await loadByIdFullyResolved(createdMalware.id, ENTITY_TYPE_MALWARE, { noCache });
+    expect(loadMalware.name).toEqual('MALWARE_TEST');
+    expect(loadMalware.description).toEqual('MALWARE_TEST NEW');
+    expect(loadMalware.id).toEqual(loadMalware.id);
+    expect(loadMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
+    expect(loadMalware.aliases.sort()).toEqual(['NEW NAME', 'MALWARE_TEST'].sort());
+    // Delete the malware
+    await deleteElementById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE, { noCache });
+  });
+  it.each(noCacheCases)('should entity merged (noCache = %s)', async (noCache) => {
+    const testMarking = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
+    const whiteMarking = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
+    const mitreMarking = 'marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168';
+    const threatTarget = {
+      name: 'THREAT_MERGE',
+      description: 'THREAT_MERGE DESCRIPTION',
+      objectMarking: [testMarking],
+      objectLabel: ['identity'],
+    };
+    const createdTarget = await createEntity(ADMIN_USER, threatTarget, ENTITY_TYPE_THREAT_ACTOR);
+    const created = await loadByIdFullyResolved(createdTarget.id, ENTITY_TYPE_THREAT_ACTOR, { noCache });
+    expect(created).not.toBeNull();
+    expect(created.objectMarking.length).toEqual(1);
+    expect(created.objectLabel.length).toEqual(1);
+    const threatToMerge = {
+      name: 'THREAT_TO_MERGE',
+      description: 'THREAT_TO_MERGE DESCRIPTION',
+      goals: ['MY GOAL'],
+      objectMarking: [whiteMarking, mitreMarking],
+      objectLabel: ['report'],
+    };
+    const createdThreatToMerge = await createEntity(ADMIN_USER, threatToMerge, ENTITY_TYPE_THREAT_ACTOR);
+    const source = await loadByIdFullyResolved(createdThreatToMerge.id, ENTITY_TYPE_THREAT_ACTOR, { noCache });
+    expect(source.objectMarking.length).toEqual(2);
+    expect(source.objectLabel.length).toEqual(1);
+    // Merge with fully resolved entities
+    const merged = await mergeEntities(ADMIN_USER, created, [source]);
+    expect(merged).not.toBeNull();
+    expect(merged.aliases).toEqual(['THREAT_TO_MERGE']);
+    expect(merged.goals).toEqual(['MY GOAL']);
+    // Load the merged data
+    const loadedThreat = await loadByIdFullyResolved(merged.id, ENTITY_TYPE_THREAT_ACTOR, { noCache });
+    expect(loadedThreat).not.toBeNull();
+    expect(loadedThreat.aliases).toEqual(['THREAT_TO_MERGE']);
+    expect(loadedThreat.goals).toEqual(['MY GOAL']);
+    expect(loadedThreat.i_aliases_ids.length).toEqual(2);
+    expect(loadedThreat.objectMarking.length).toEqual(3);
+    expect(loadedThreat.objectLabel.length).toEqual(2);
+    // Check deletion
+    let deleted = await loadByIdFullyResolved(source.id, ENTITY_TYPE_THREAT_ACTOR, { noCache });
+    expect(deleted).toBeNull();
+    // Delete the entity
+    await deleteElementById(ADMIN_USER, createdTarget.id, ENTITY_TYPE_THREAT_ACTOR, { noCache });
+    deleted = await loadByIdFullyResolved(createdTarget.id, ENTITY_TYPE_THREAT_ACTOR, { noCache });
+    expect(deleted).toBeNull();
   });
 });
