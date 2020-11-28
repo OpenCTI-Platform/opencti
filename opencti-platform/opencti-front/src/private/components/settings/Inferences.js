@@ -12,6 +12,7 @@ import CardActions from '@material-ui/core/CardActions';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Switch from '@material-ui/core/Switch';
 import { WbIridescent } from '@material-ui/icons';
+import Alert from '@material-ui/lab/Alert/Alert';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import SettingsMenu from './SettingsMenu';
@@ -89,6 +90,11 @@ class Inferences extends Component {
         <Typography variant="h1" gutterBottom={true}>
           {t('Inference rules')}
         </Typography>
+        <Alert severity="info" style={{ marginBottom: 10 }}>
+          {t(
+            'Inference rules are disabled for the moment. They will be available as soon as the Grakn Reasoner is, it should be end of December 2020.',
+          )}
+        </Alert>
         <Grid container={true} spacing={3}>
           <QueryRenderer
             query={inferencesQuery}
@@ -121,6 +127,7 @@ class Inferences extends Component {
                                 inference.enabled,
                               )}
                               checked={inference.enabled}
+                              disabled={true}
                             />
                           }
                           label={t('Enabled')}
