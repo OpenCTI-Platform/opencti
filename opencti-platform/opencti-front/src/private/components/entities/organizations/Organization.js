@@ -28,6 +28,8 @@ const styles = () => ({
   },
 });
 
+const VIEW_AS_KNOWLEDGE = 'knowledge';
+
 class OrganizationComponent extends Component {
   constructor(props) {
     super(props);
@@ -39,7 +41,7 @@ class OrganizationComponent extends Component {
     );
 
     this.state = {
-      viewAs: propOr('knowledge', 'viewAs', params),
+      viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', params),
     };
   }
 
@@ -60,9 +62,9 @@ class OrganizationComponent extends Component {
     const { classes, organization } = this.props;
     const { viewAs } = this.state;
 
-    const lastReportsProps = viewAs === 'author'
-      ? { authorId: organization.id }
-      : { stixCoreObjectOrStixCoreRelationshipId: organization.id };
+    const lastReportsProps = viewAs === VIEW_AS_KNOWLEDGE
+      ? { stixCoreObjectOrStixCoreRelationshipId: organization.id }
+      : { authorId: organization.id };
 
     return (
       <div className={classes.container}>
@@ -71,7 +73,7 @@ class OrganizationComponent extends Component {
           isOpenctiAlias={true}
           PopoverComponent={<OrganizationPopover />}
           onViewAs={this.handleChangeViewAs.bind(this)}
-          viewAs={this.state.viewAs}
+          viewAs={viewAs}
         />
         <Grid
           container={true}
