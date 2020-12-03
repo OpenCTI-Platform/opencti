@@ -26,7 +26,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import List from '@material-ui/core/List';
 import Tooltip from '@material-ui/core/Tooltip';
-import { RotateLeft, Delete } from 'mdi-material-ui';
+import { LayersRemove, Delete } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
 import { Link, withRouter } from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -334,7 +334,7 @@ class ConnectorsStatusComponent extends Component {
                         aria-haspopup="true"
                         color="primary"
                       >
-                        <RotateLeft />
+                        <LayersRemove />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('Clear this connector')}>

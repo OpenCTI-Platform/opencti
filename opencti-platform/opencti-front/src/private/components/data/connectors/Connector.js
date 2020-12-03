@@ -13,7 +13,7 @@ import Slide from '@material-ui/core/Slide';
 import { interval } from 'rxjs';
 import Tooltip from '@material-ui/core/Tooltip';
 import IconButton from '@material-ui/core/IconButton';
-import { Delete, RotateLeft } from 'mdi-material-ui';
+import { Delete, LayersRemove } from 'mdi-material-ui';
 import ItemBoolean from '../../../../components/ItemBoolean';
 import inject18n from '../../../../components/i18n';
 import { FIVE_SECONDS } from '../../../../utils/Time';
@@ -163,6 +163,7 @@ class ConnectorComponent extends Component {
       filters: [
         { key: 'connector_id', values: [connector.id] },
         { key: 'status', values: ['complete'] },
+        { key: 'import_expected_number', values: ['0'], operator: 'gt' },
       ],
     };
     return (
@@ -183,7 +184,7 @@ class ConnectorComponent extends Component {
                   aria-haspopup="true"
                   color="primary"
                 >
-                  <RotateLeft />
+                  <LayersRemove />
                 </IconButton>
               </Tooltip>
               <Tooltip title={t('Clear this connector')}>

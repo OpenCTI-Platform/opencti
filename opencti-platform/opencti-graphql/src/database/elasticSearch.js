@@ -69,6 +69,9 @@ export const dateFields = [
   'observable_date',
   'event_date',
   'timestamp',
+  'received_time',
+  'processed_time',
+  'completed_time',
 ];
 const numericOrBooleanFields = [
   'object_status',
@@ -83,6 +86,8 @@ const numericOrBooleanFields = [
   'x_opencti_detection',
   'x_opencti_order',
   'x_opencti_report_status',
+  'import_expected_number',
+  'import_processed_number',
 ];
 
 export const INDEX_HISTORY = 'opencti_history';

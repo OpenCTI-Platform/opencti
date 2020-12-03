@@ -286,6 +286,10 @@ enum WorksOrdering {
 enum WorksFilter {
   status
   connector_id
+  import_expected_number
+  import_processed_number
+  import_last_processed
+  completed_time
 }
 input WorksFiltering {
   key: WorksFilter!
