@@ -7,11 +7,11 @@ const inferences = {
     id: 'b5c30c61-beb9-4d45-b742-701963ca1f9a',
     name: 'AttributionAttributionRule',
     rule:
-      'rule AttributionAttributionRule:\n' +
+      'AttributionAttributionRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_attributed-to_from_attributed-to_to(attributed-to_from: $subEntity, attributed-to_to: $entity) isa attributed-to;\n' +
       '      $rel2_attributed-to_from_attributed-to_to(attributed-to_from: $entity, attributed-to_to: $parentEntity) isa attributed-to;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (attributed-to_from: $subEntity, attributed-to_to: $parentEntity) isa attributed-to;\n' +
       '    };',
     description:
@@ -21,11 +21,11 @@ const inferences = {
     id: '2da36fdf-775f-48ad-a148-814c0cfec032',
     name: 'AttributionUsesRule',
     rule:
-      'rule AttributionUsesRule:\n' +
+      'AttributionUsesRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_attributed-to_from_attributed-to_to(attributed-to_from: $subEntity, attributed-to_to: $entity) isa attributed-to;\n' +
       '      $rel2_uses_from_uses_to(uses_from: $subEntity, uses_to: $object) isa uses;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (uses_from: $entity, uses_to: $object) isa uses;\n' +
       '    };',
     description:
@@ -35,11 +35,11 @@ const inferences = {
     id: '3e5e7540-6eea-4e5f-b59d-d0c1b341c030',
     name: 'AttributionTargetsRule',
     rule:
-      'rule AttributionTargetsRule:\n' +
+      'AttributionTargetsRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_attributed-to_from_attributed-to_to(attributed-to_from: $subEntity, attributed-to_to: $entity) isa attributed-to;\n' +
       '      $rel2_targets_from_targets_to(targets_from: $subEntity, targets_to: $target) isa targets;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (targets_from: $entity, targets_to: $target) isa targets;\n' +
       '    };\n',
     description:
@@ -49,11 +49,11 @@ const inferences = {
     id: '266b1b3b-0c94-439e-bac0-e14130bb1465',
     name: 'PartOfPartOfRule',
     rule:
-      'rule PartOfPartOfRule:\n' +
+      'PartOfPartOfRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_part-of_from_part-of_to(part-of_from: $subLocation, part-of_to: $location) isa part-of;\n' +
       '      $rel2_part-of_from_part-of_to(part-of_from: $location, part-of_to: $parentLocation) isa part-of;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (part-of_from: $subLocation, part-of_to: $parentLocation) isa part-of;\n' +
       '    };',
     description:
@@ -63,11 +63,11 @@ const inferences = {
     id: 'fcbd7aa7-680c-4796-9572-03463956880b',
     name: 'LocatedAtLocatedAtRule',
     rule:
-      'rule LocatedAtLocatedAtRule:\n' +
+      'LocatedAtLocatedAtRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_located-at_from_located-at_to(located-at_from: $subLocation, located-at_to: $location) isa located-at;\n' +
       '      $rel2_located-at_from_located-at_to(located-at_from: $location, located-at_to: $parentLocation) isa located-at;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (located-at_from: $subLocation, located-at_to: $parentLocation) isa located-at;\n' +
       '    };',
     description:
@@ -77,11 +77,11 @@ const inferences = {
     id: 'e6a6989b-7992-4f7e-9f07-741145423181',
     name: 'LocationOfTargetsRule',
     rule:
-      'rule LocationOfTargetsRule:\n' +
+      '    LocationOfTargetsRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_targets_from_targets_to(targets_from: $entity, targets_to: $target) isa targets;\n' +
       '      $rel2_located-at_from_located-at_to(located-at_from: $rel1_targets_from_targets_to, located-at_to: $location) isa located-at;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (targets_from: $entity, targets_to: $location) isa targets;\n' +
       '    };',
     description:
@@ -91,11 +91,11 @@ const inferences = {
     id: PART_OF_TARGETS_RULE,
     name: 'PartOfTargetsRule',
     rule:
-      'rule PartOfTargetsRule:\n' +
+      '    PartOfTargetsRule sub rule,\n' +
       '    when {\n' +
       '      $rel1_part-of_from_part-of_to(part-of_from: $subEntity, part-of_to: $entity) isa part-of;\n' +
       '      $rel2_source_target(targets_from: $threat, targets_to: $subEntity) isa targets;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (targets_from: $threat, targets_to: $entity) isa targets;\n' +
       '    };\n',
     description:
@@ -105,13 +105,13 @@ const inferences = {
     id: 'ca789b78-775d-4a84-bc3e-ffd88d1c35c5',
     name: 'MalwareUsageTargetsRule',
     rule:
-      'rule MalwareUsageTargetsRule:\n' +
+      '    MalwareUsageTargetsRule sub rule,\n' +
       '    when {\n' +
       '      $malware isa Malware;\n' +
       '      $incident isa X-OpenCTI-Incident;\n' +
       '      $rel1_targets_from_targets_to(targets_from: $incident, targets_to: $target) isa targets;\n' +
       '      $rel2_uses_from_uses_to(uses_from: $incident, uses_to: $malware) isa uses;\n' +
-      '    } then {\n' +
+      '    }, then {\n' +
       '      (targets_from: $malware, targets_to: $target) isa targets;\n' +
       '    };\n',
     description:
@@ -148,7 +148,7 @@ export const inferenceEnable = async (id) => {
 export const inferenceDisable = async (id) => {
   const inference = inferences[id];
   if (inference) {
-    const query = `undefine rule ${inference.name};`;
+    const query = `undefine ${inference.name} sub rule;`;
     await executeWrite(async (wTx) => {
       wTx.query(query);
     });
