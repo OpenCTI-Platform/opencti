@@ -23,6 +23,7 @@ import ContainerAddStixCoreObjectsLines, {
 } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import StixCoreObjectUseSearchMessage from '../stix_core_objects/StixCoreObjectUseSearchMessage';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -81,16 +82,6 @@ const styles = (theme) => ({
     bottom: 30,
     right: 30,
     zIndex: 2000,
-  },
-  useSearchMessageContainer: {
-    display: 'table',
-    height: '100%',
-    width: '100%',
-  },
-  useSearchMessage: {
-    display: 'table-cell',
-    verticalAlign: 'middle',
-    textAlign: 'center',
   },
 });
 
@@ -238,23 +229,11 @@ class ContainerAddStixCoreObjects extends Component {
     );
   }
 
-  renderUseSearchMessage() {
-    const { t, classes } = this.props;
-
-    return (
-      <div className={classes.useSearchMessageContainer}>
-        <span className={classes.useSearchMessage}>
-          {t('Use the search functionality to find the entity you want to associate.')}
-        </span>
-      </div>
-    );
-  }
-
   renderSearch(paginationOptions) {
     const { search } = this.state;
 
     if (search === '') {
-      return this.renderUseSearchMessage();
+      return <StixCoreObjectUseSearchMessage />;
     }
 
     return this.renderSearchResults(paginationOptions);
