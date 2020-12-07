@@ -2366,6 +2366,10 @@ const createRelationRaw = async (wTx, user, input) => {
     relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
     relToCreate.push(...buildInnerRelation(data, input.killChainPhases, RELATION_KILL_CHAIN_PHASE));
   }
+  if (isStixSightingRelationship(relationshipType)) {
+    relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
+    relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
+  }
   if (relToCreate.length > 0) {
     await Promise.all(
       R.map((r) => {
