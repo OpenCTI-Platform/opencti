@@ -1039,6 +1039,7 @@ enum StixDomainObjectsFilter {
   valid_from
   valid_until
   pattern_type
+  x_opencti_main_observable_type
   report_types
   x_opencti_report_status
   published
