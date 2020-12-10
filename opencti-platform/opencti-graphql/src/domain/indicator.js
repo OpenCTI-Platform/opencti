@@ -16,7 +16,7 @@ import { findById as findKillChainPhaseById } from './killChainPhase';
 import { checkIndicatorSyntax } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 

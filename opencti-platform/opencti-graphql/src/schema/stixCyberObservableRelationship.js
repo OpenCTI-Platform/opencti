@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, schemaTypes } from './general';
 
 export const RELATION_OPERATING_SYSTEM = 'operating-system';
 export const RELATION_SAMPLE = 'sample';
@@ -58,4 +59,5 @@ const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_VALUES,
   RELATION_X509_V3_EXTENSIONS,
 ];
+schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 export const isStixCyberObservableRelationship = (type) => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);

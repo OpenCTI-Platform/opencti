@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { ABSTRACT_INTERNAL_OBJECT } from './general';
+import { ABSTRACT_INTERNAL_OBJECT, schemaTypes } from './general';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -33,5 +33,6 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_WORKSPACE,
 ];
+schemaTypes.register(ABSTRACT_INTERNAL_OBJECT, INTERNAL_OBJECTS);
 export const isInternalObject = (type) => R.includes(type, INTERNAL_OBJECTS) || type === ABSTRACT_INTERNAL_OBJECT;
 export const isDatedInternalObject = (type) => R.includes(type, DATED_INTERNAL_OBJECTS);

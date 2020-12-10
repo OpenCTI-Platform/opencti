@@ -53,6 +53,7 @@ import {
   IDS_STIX,
   INTERNAL_IDS_ALIASES,
   REL_INDEX_PREFIX,
+  schemaTypes,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
@@ -87,7 +88,7 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
 
 // region global variables
 export const MAX_BATCH_SIZE = 25;
@@ -188,33 +189,14 @@ const prepareAttribute = (key, value) => {
 // endregion
 
 // region Loader common
-export const querySubTypes = async () => {
-  /*
-  return executeRead(async (rTx) => {
-    const query = `match $x sub ${escape(type)}; get;`;
-    logger.debug(`[GRAKN - infer: false] querySubTypes`, { query });
-    const iterator = await rTx.query(query);
-    const answers = await iterator.collect();
-    const result = await Promise.all(
-      answers.map(async (answer) => {
-        const subType = answer.map().get('x');
-        const subTypeLabel = await subType.label();
-        return {
-          id: subType.id,
-          label: subTypeLabel,
-        };
-      })
-    );
-    const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('label')));
-    const finalResult = R.pipe(
-      R.filter((n) => n.label !== type && (includeParents || !isAbstract(n.label))),
-      sortByLabel,
-      R.map((n) => ({ node: n }))
-    )(result);
-    return buildPagination(5000, 0, finalResult, 5000);
-  });
-  */
-  // TODO JRI MIGRATION
+export const querySubTypes = async ({ type }) => {
+  const sortByLabel = R.sortBy(R.toLower);
+  const types = schemaTypes.get(type);
+  const finalResult = R.pipe(
+    sortByLabel,
+    R.map((n) => ({ node: { id: n, label: n } }))
+  )(types);
+  return buildPagination(0, 0, finalResult, finalResult.length);
 };
 export const queryAttributes = async () => {
   /*

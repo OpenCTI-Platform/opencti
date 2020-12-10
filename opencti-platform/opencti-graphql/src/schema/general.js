@@ -62,3 +62,14 @@ export const ABSTRACT_TYPES = [
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
 ];
 export const isAbstract = (type) => R.includes(type, ABSTRACT_TYPES);
+export const schemaTypes = {
+  types: {},
+  // eslint-disable-next-line object-shorthand
+  register: function (type, children) {
+    this.types[type] = children;
+  },
+  // eslint-disable-next-line object-shorthand
+  get: function (type) {
+    return this.types[type] || [];
+  },
+};

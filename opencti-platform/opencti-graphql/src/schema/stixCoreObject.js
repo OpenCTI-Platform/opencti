@@ -1,4 +1,4 @@
-import { isStixCyberObservable } from './stixCyberObservableObject';
+import { isStixCyberObservable } from './stixCyberObservable';
 import { isStixDomainObject } from './stixDomainObject';
 import { isStixMetaObject } from './stixMetaObject';
 import { isInternalObject } from './internalObject';

@@ -43,7 +43,7 @@ import {
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions,
-} from '../schema/stixCyberObservableObject';
+} from '../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';

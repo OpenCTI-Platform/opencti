@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP } from './general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, schemaTypes } from './general';
 
 export const RELATION_DELIVERS = 'delivers';
 export const RELATION_TARGETS = 'targets';
@@ -74,6 +74,7 @@ const STIX_CORE_RELATIONSHIPS = [
   RELATION_SUBTECHNIQUE_OF,
   RELATION_REVOKED_BY,
 ];
+schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
 export const isStixCoreRelationship = (type) =>
   R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion

@@ -5,6 +5,7 @@ import {
   ENTITY_TYPE_IDENTITY,
   ENTITY_TYPE_LOCATION,
   REL_INDEX_PREFIX,
+  schemaTypes,
 } from './general';
 import {
   RELATION_CREATED_BY,
@@ -46,6 +47,7 @@ const STIX_DOMAIN_OBJECT_CONTAINERS = [
   ENTITY_TYPE_CONTAINER_OPINION,
   ENTITY_TYPE_CONTAINER_REPORT,
 ];
+schemaTypes.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
 export const isStixDomainObjectContainer = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECT_CONTAINERS) || type === ENTITY_TYPE_CONTAINER;
 
@@ -54,6 +56,7 @@ const STIX_DOMAIN_OBJECT_IDENTITIES = [
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
   ENTITY_TYPE_IDENTITY_SECTOR,
 ];
+schemaTypes.register(ENTITY_TYPE_IDENTITY, STIX_DOMAIN_OBJECT_IDENTITIES);
 export const isStixDomainObjectIdentity = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECT_IDENTITIES) || type === ENTITY_TYPE_IDENTITY;
 
@@ -63,6 +66,7 @@ const STIX_DOMAIN_OBJECT_LOCATIONS = [
   ENTITY_TYPE_LOCATION_REGION,
   ENTITY_TYPE_LOCATION_POSITION,
 ];
+schemaTypes.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATIONS);
 export const isStixDomainObjectLocation = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECT_LOCATIONS) || type === ENTITY_TYPE_LOCATION;
 
@@ -90,6 +94,7 @@ const STIX_DOMAIN_OBJECTS = [
   ENTITY_TYPE_VULNERABILITY,
   ENTITY_TYPE_X_OPENCTI_INCIDENT,
 ];
+schemaTypes.register(ABSTRACT_STIX_DOMAIN_OBJECT, STIX_DOMAIN_OBJECTS);
 export const isStixDomainObject = (type) =>
   R.includes(type, STIX_DOMAIN_OBJECTS) ||
   isStixDomainObjectIdentity(type) ||
