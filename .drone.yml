@@ -7,7 +7,6 @@ steps:
   environment:
     APP__ADMIN__PASSWORD: admin
     APP__ADMIN__TOKEN: bfa014e0-e02e-4aa6-a42b-603b19dcf159
-    GRAKN__HOSTNAME: grakn
     REDIS__HOSTNAME: redis
     ELASTICSEARCH__URL: http://elastic:9200
     MINIO__ENDPOINT: minio
@@ -61,9 +60,6 @@ steps:
     event:
       - tag
 
-services:
-- name: grakn
-  image: graknlabs/grakn:1.8.4
 - name: redis
   image: redis:6.0.9
 - name: elastic
