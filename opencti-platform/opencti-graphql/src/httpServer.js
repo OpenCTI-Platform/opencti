@@ -3,16 +3,16 @@ import http from 'http';
 import conf, { logger } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
-import { initBroadcaster } from './graphql/sseMiddleware';
+// import { initBroadcaster } from './graphql/sseMiddleware';
 
 const PORT = conf.get('app:port');
-const broadcaster = initBroadcaster();
+const broadcaster = null; // initBroadcaster();
 const createHttpServer = async () => {
   const apolloServer = createApolloServer();
   const { app, seeMiddleware } = await createApp(apolloServer, broadcaster);
   const httpServer = http.createServer(app);
   apolloServer.installSubscriptionHandlers(httpServer);
-  await broadcaster.start();
+  // await broadcaster.start();
   return { httpServer, seeMiddleware };
 };
 
@@ -22,7 +22,7 @@ export const listenServer = async () => {
       const serverPromise = createHttpServer();
       serverPromise.then(({ httpServer, seeMiddleware }) => {
         httpServer.on('close', () => {
-          seeMiddleware.shutdown();
+          if (seeMiddleware) seeMiddleware.shutdown();
         });
         httpServer.listen(PORT, () => {
           logger.info(`[OPENCTI] Servers ready on port ${PORT}`);
@@ -47,7 +47,7 @@ export const restartServer = async (httpServer) => {
   });
 };
 export const stopServer = async (httpServer) => {
-  await broadcaster.shutdown();
+  // await broadcaster.shutdown();
   return new Promise((resolve) => {
     httpServer.close(() => {
       resolve();

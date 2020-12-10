@@ -5,7 +5,6 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
-  getRelationInferredById,
   getSingleValueNumber,
   listFromEntitiesThroughRelation,
   listRelations,
@@ -18,7 +17,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { isAnId } from '../schema/schemaUtils';
 import { ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   isStixMetaRelationship,
@@ -43,9 +41,6 @@ export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
 };
 export const findById = (stixSightingRelationshipId) => {
-  if (!isAnId(stixSightingRelationshipId)) {
-    return getRelationInferredById(stixSightingRelationshipId);
-  }
   return loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 

@@ -420,6 +420,69 @@ export const elReconstructRelation = (concept) => {
   return elMergeRelation(concept, fromConnection, toConnection);
 };
 // endregion
+export const elFindBy = async (fields, values, type = null, indices = DATA_INDICES) => {
+  const mustTerms = [];
+  const valsArray = Array.isArray(values) ? values : [values];
+  const workingVals = R.filter((id) => isNotEmptyField(id), valsArray);
+  if (workingVals.length === 0) return [];
+  const valsTermsPerType = [];
+  for (let index = 0; index < workingVals.length; index += 1) {
+    const val = workingVals[index];
+    for (let indexType = 0; indexType < fields.length; indexType += 1) {
+      const field = fields[indexType];
+      const term = { [`${field}.keyword`]: val };
+      valsTermsPerType.push({ term });
+    }
+  }
+  // const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
+  const should = {
+    bool: {
+      should: valsTermsPerType,
+      minimum_should_match: 1,
+    },
+  };
+  mustTerms.push(should);
+  if (type) {
+    const shouldType = {
+      bool: {
+        should: [{ match_phrase: { 'entity_type.keyword': type } }, { match_phrase: { 'parent_types.keyword': type } }],
+        minimum_should_match: 1,
+      },
+    };
+    mustTerms.push(shouldType);
+  }
+  const query = {
+    index: indices,
+    size: 1000,
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    body: {
+      query: {
+        bool: {
+          must: mustTerms,
+        },
+      },
+    },
+  };
+  logger.debug(`[ELASTICSEARCH] elFindBy`, { query });
+  const data = await el.search(query);
+  const hits = [];
+  for (let index = 0; index < data.body.hits.hits.length; index += 1) {
+    const hit = data.body.hits.hits[index];
+    let loadedElement = R.assoc('_index', hit._index, hit._source);
+    // And a specific processing for a relation
+    if (loadedElement.base_type === BASE_TYPE_RELATION) {
+      loadedElement = elReconstructRelation(loadedElement);
+    }
+    hits.push(loadedElement);
+  }
+  return hits;
+};
+export const elLoadBy = async (fields, values, type = null, indices = DATA_INDICES) => {
+  const results = await elFindBy(fields, values, type, indices);
+  if (results.length > 1) throw Error('test');
+  return results && results[0];
+};
+
 export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
   const idsArray = Array.isArray(ids) ? ids : [ids];

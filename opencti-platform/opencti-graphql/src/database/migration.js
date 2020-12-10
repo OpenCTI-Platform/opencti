@@ -1,8 +1,7 @@
-import { v4 as uuid } from 'uuid';
-import { filter, head, map } from 'ramda';
+import { filter, map } from 'ramda';
 import { MigrationSet } from 'migrate';
 import Migration from 'migrate/lib/migration';
-import { executeWrite, find, load } from './grakn';
+import { find, load } from './grakn';
 import { logger } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
@@ -50,35 +49,36 @@ const graknStateStorage = {
   },
   async save(set, fn) {
     try {
-      await executeWrite(async (wTx) => {
-        // Get current done migration
-        const mig = head(filter((m) => m.title === set.lastRun, set.migrations));
-        // We have only one instance of migration status.
-        const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $x has lastRun $run;`;
-        logger.debug(`[MIGRATION] step 1`, { query: q1 });
-        await wTx.query(q1);
-        const q2 = `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`;
-        logger.debug(`[MIGRATION] step 2`, { query: q2 });
-        await wTx.query(q2);
-        // Insert the migration reference
-        const q3 = `insert $x isa MigrationReference,
-          has entity_type "MigrationReference",
-          has internal_id "${uuid()}",
-          has standard_id "migration-reference--${uuid()}",
-          has title "${mig.title}",
-          has timestamp ${mig.timestamp};`;
-        logger.debug(`[MIGRATION] step 3`, { query: q3 });
-        // Attach the reference to the migration status.
-        await wTx.query(q3);
-        // Attach the reference to the migration status.
-        const q4 = `match $status isa MigrationStatus; 
-          $ref isa MigrationReference, has title "${mig.title}"; 
-          insert (${RELATION_MIGRATES}_from: $status, ${RELATION_MIGRATES}_to: $ref) isa ${RELATION_MIGRATES}, 
-          has internal_id "${uuid()}", has standard_id "migrates--${uuid()}";`;
-        logger.debug(`[MIGRATION] step 4`, { query: q4 });
-        await wTx.query(q4);
-        logger.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
-      });
+      // TODO JRI MIGRATION
+      // await executeWrite(async (wTx) => {
+      //   // Get current done migration
+      //   const mig = head(filter((m) => m.title === set.lastRun, set.migrations));
+      //   // We have only one instance of migration status.
+      //   const q1 = `match $x isa MigrationStatus, has lastRun $run; delete $x has lastRun $run;`;
+      //   logger.debug(`[MIGRATION] step 1`, { query: q1 });
+      //   await wTx.query(q1);
+      //   const q2 = `match $x isa MigrationStatus; insert $x has lastRun "${set.lastRun}";`;
+      //   logger.debug(`[MIGRATION] step 2`, { query: q2 });
+      //   await wTx.query(q2);
+      //   // Insert the migration reference
+      //   const q3 = `insert $x isa MigrationReference,
+      //     has entity_type "MigrationReference",
+      //     has internal_id "${uuid()}",
+      //     has standard_id "migration-reference--${uuid()}",
+      //     has title "${mig.title}",
+      //     has timestamp ${mig.timestamp};`;
+      //   logger.debug(`[MIGRATION] step 3`, { query: q3 });
+      //   // Attach the reference to the migration status.
+      //   await wTx.query(q3);
+      //   // Attach the reference to the migration status.
+      //   const q4 = `match $status isa MigrationStatus;
+      //     $ref isa MigrationReference, has title "${mig.title}";
+      //     insert (${RELATION_MIGRATES}_from: $status, ${RELATION_MIGRATES}_to: $ref) isa ${RELATION_MIGRATES},
+      //     has internal_id "${uuid()}", has standard_id "migrates--${uuid()}";`;
+      //   logger.debug(`[MIGRATION] step 4`, { query: q4 });
+      //   await wTx.query(q4);
+      //   logger.info(`[MIGRATION] Saving current configuration, ${mig.title}`);
+      // });
       return fn();
     } catch (err) {
       logger.error('[MIGRATION] Error saving the migration state');

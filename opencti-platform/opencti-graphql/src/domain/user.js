@@ -21,6 +21,8 @@ import conf, {
   OPENCTI_WEB_TOKEN,
 } from '../config/conf';
 import {
+  batchFromEntitiesThrough,
+  batchToEntitiesThrough,
   createEntity,
   createRelation,
   deleteElementById,
@@ -58,6 +60,7 @@ import {
 } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { generateStandardId } from '../schema/identifier';
+import { elLoadBy, elLoadByIds } from '../database/elasticSearch';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -378,18 +381,18 @@ export const loginFromProvider = async (email, name) => {
 };
 
 export const login = async (email, password) => {
-  const query = `match $client isa User, has user_email "${escapeString(email).toLowerCase()}";
-   $client has internal_id $client_id;
-   (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; 
-   $token has internal_id $token_id;
-   get;`;
-  const result = await load(query, ['client', 'token']);
-  if (R.isNil(result)) throw AuthenticationFailure();
-  const dbPassword = result.client.password;
+  const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
+  if (!user) throw AuthenticationFailure();
+  const tokens = await batchToEntitiesThrough(user.id, ENTITY_TYPE_USER, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN, {
+    paginate: false,
+  });
+  if (tokens.length === 0 || tokens.length > 1) throw AuthenticationFailure();
+  const userToken = R.head(tokens);
+  const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
-  await clearUserAccessCache(result.token.uuid);
-  return result.token;
+  await clearUserAccessCache(userToken.uuid);
+  return userToken;
 };
 
 export const logout = async (user, res) => {
@@ -426,23 +429,18 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
 };
 
 export const findByTokenUUID = async (tokenValue) => {
-  // This method is call every time a user to a platform action
   let user = await getAccessCache(tokenValue);
   if (!user) {
-    const data = await load(
-      `match $token isa Token;
-            $token has uuid "${escapeString(tokenValue)}", has revoked false;
-            (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; get;`,
-      ['client', 'token']
-    );
-    if (!data) return undefined;
-    // eslint-disable-next-line no-shadow
-    const { client, token } = data;
-    if (!client) return undefined;
-    logger.debug(`[REDIS] Setting cache access for ${tokenValue}`);
+    const userToken = await elLoadBy(['uuid'], tokenValue, ENTITY_TYPE_TOKEN);
+    if (!userToken || userToken.revoked === true) return undefined;
+    const users = await batchFromEntitiesThrough(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER, {
+      paginate: false,
+    });
+    if (users.length === 0 || users.length > 1) return undefined;
+    const client = R.head(users);
     const [capabilities, markings] = await Promise.all([getCapabilities(client.id), getMarkings(client.id)]);
     user = R.pipe(
-      R.assoc('token', token),
+      R.assoc('token', userToken),
       // Assoc extra information
       R.assoc('capabilities', capabilities),
       R.assoc('allowed_marking', markings)

@@ -5,7 +5,6 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
-  getRelationInferredById,
   listFromEntitiesThroughRelation,
   listRelations,
   listToEntitiesThroughRelation,
@@ -17,7 +16,6 @@ import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
-import { isAnId } from '../schema/schemaUtils';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -49,9 +47,6 @@ export const findAll = async (args) =>
   listRelations(propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
 
 export const findById = (stixCoreRelationshipId) => {
-  if (!isAnId(stixCoreRelationshipId)) {
-    return getRelationInferredById(stixCoreRelationshipId);
-  }
   return loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 

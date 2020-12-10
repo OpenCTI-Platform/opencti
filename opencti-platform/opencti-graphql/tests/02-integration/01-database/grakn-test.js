@@ -10,14 +10,9 @@ import {
   distributionRelations,
   escape,
   escapeString,
-  executeRead,
-  executeWrite,
   extractQueryVars,
   find,
-  getGraknVersion,
-  getRelationInferredById,
   getSingleValueNumber,
-  graknIsAlive,
   internalLoadById,
   listEntities,
   listRelations,
@@ -40,7 +35,6 @@ import {
 } from '../../../src/database/grakn';
 import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
-import { PART_OF_TARGETS_RULE, inferenceDisable, inferenceEnable } from '../../../src/domain/inference';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
 import {
@@ -55,10 +49,6 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../../../src/
 import { RELATION_MITIGATES } from '../../../src/schema/stixCoreRelationship';
 
 describe('Grakn basic and utils', () => {
-  it('should database accessible', () => {
-    expect(graknIsAlive()).toBeTruthy();
-    expect(getGraknVersion()).toEqual('1.8.4');
-  });
   it('should escape according to grakn needs', () => {
     expect(escape({ key: 'json' })).toEqual({ key: 'json' });
     expect(escape('simple ident')).toEqual('simple ident');
@@ -81,105 +71,6 @@ describe('Grakn basic and utils', () => {
     expect(yearFormat('2020-02-27T08:45:39.351Z')).toEqual('2020');
     expect(monthFormat('2020-02-27T08:45:39.351Z')).toEqual('2020-02');
     expect(dayFormat('2020-02-27T08:45:39.351Z')).toEqual('2020-02-27');
-  });
-});
-
-describe('Grakn low level commands', () => {
-  it('should read transaction handle correctly', async () => {
-    const data = await executeRead((rTx) => {
-      return rTx.query(`match $x sub report_types; get;`).then((it) => it.collect());
-    });
-    expect(data).not.toBeNull();
-    expect(data.length).toEqual(1);
-    const value = R.head(data).get('x');
-    expect(value).not.toBeNull();
-    expect(value.baseType).toEqual('ATTRIBUTE_TYPE');
-  });
-  it('should read transaction fail with bad query', async () => {
-    const queryPromise = executeRead((rTx) => {
-      return rTx.query(`match $x isa BAD_TYPE; get;`);
-    });
-    // noinspection ES6MissingAwait
-    expect(queryPromise).rejects.toThrow();
-  });
-  it('should write transaction handle correctly', async () => {
-    const connectorId = 'test-instance-connector';
-    // Create a connector
-    const creationData = await executeWrite((wTx) => {
-      return wTx
-        .query(`insert $c isa Connector, has internal_id "${connectorId}", has standard_id "${connectorId}";`) //
-        .then((it) => it.collect());
-    });
-    expect(creationData).not.toBeNull();
-    expect(creationData.length).toEqual(1);
-    const value = R.head(creationData).get('c');
-    expect(value).not.toBeNull();
-    expect(value.id).not.toBeNull();
-    expect(value.baseType).toEqual('ENTITY');
-    // Delete it
-    const deleteData = await executeWrite((wTx) => {
-      return wTx
-        .query(`match $c isa Connector, has internal_id "${connectorId}"; delete $c isa Connector;`) //
-        .then((it) => it.collect());
-    });
-    expect(deleteData).not.toBeNull();
-    expect(deleteData.length).toEqual(1);
-    expect(R.head(deleteData).message()).toEqual('Deleted facts from 1 matched answers.');
-  });
-  it('should write transaction fail with bad query', async () => {
-    const queryPromise = executeWrite((rTx) => {
-      return rTx.query(`insert $c isa Connector, has invalid_attr "invalid";`);
-    });
-    // noinspection ES6MissingAwait
-    expect(queryPromise).rejects.toThrow();
-  });
-  it('should query vars fully extracted', async () => {
-    let vars = extractQueryVars('match $x sub report_types; get;');
-    expect(vars).not.toBeNull();
-    expect(vars.length).toEqual(1);
-    expect(R.head(vars).alias).toEqual('x');
-    expect(R.head(vars).role).toBeUndefined();
-    expect(R.head(vars).internalIdKey).toBeUndefined();
-    // Extract vars with relation roles
-    vars = extractQueryVars('match $to isa Sector; $rel(xxxx:$from, yyyy:$to) isa part-of; get;');
-    expect(vars).not.toBeNull();
-    expect(vars.length).toEqual(3);
-    let aggregationMap = new Map(vars.map((i) => [i.alias, i]));
-    expect(aggregationMap.get('from').role).toEqual('xxxx');
-    expect(aggregationMap.get('to').role).toEqual('yyyy');
-    // Extract var with internal_id specified
-    vars = extractQueryVars(
-      'match $to isa Sector; $rel(part-of_from:$from, part-of_to:$to) isa part-of; $from has internal_id "ID"; get;'
-    );
-    expect(vars).not.toBeNull();
-    expect(vars.length).toEqual(3);
-    aggregationMap = new Map(vars.map((i) => [i.alias, i]));
-    expect(aggregationMap.get('from').internalIdKey).toEqual('ID');
-    // Extract right role reconstruct
-    vars = extractQueryVars('match $to isa Sector; ($from, part-of_to:$to) isa part-of; get;');
-    expect(vars).not.toBeNull();
-    expect(vars.length).toEqual(2);
-    aggregationMap = new Map(vars.map((i) => [i.alias, i]));
-    expect(aggregationMap.get('from').role).toEqual('part-of_from');
-    expect(aggregationMap.get('to').role).toEqual('part-of_to');
-    // Extract left role reconstruct
-    vars = extractQueryVars('match $to isa Sector; (part-of_from:$from, $to) isa part-of; get;');
-    expect(vars.length).toEqual(2);
-    aggregationMap = new Map(vars.map((i) => [i.alias, i]));
-    expect(aggregationMap.get('from').role).toEqual('part-of_from');
-    expect(aggregationMap.get('to').role).toEqual('part-of_to');
-  });
-  it('should throw exception when IDs are not requested', async () => {
-    // rel_id not found
-    let query =
-      'match $rel($from, $to) isa Basic-Relation; $from has internal_id $rel_from_id; $to has internal_id $rel_to_id; get;';
-    expect(find(query, ['rel'])).rejects.toThrow();
-    // from_id not found
-    query = 'match $rel($from, $to) isa Basic-Relation; get;';
-    expect(find(query, ['from'])).rejects.toThrow();
-    // to_id not found
-    query = 'match $rel($from, $to) isa Basic-Relation; get;';
-    expect(find(query, ['to'])).rejects.toThrow();
   });
 });
 
@@ -758,46 +649,6 @@ describe('Grakn relations listing', () => {
       const stixSighting = stixSightings.edges[index].node;
       expect(stixSighting.fromId).toEqual(thing.grakn_id);
     }
-  });
-});
-
-describe('Grakn relations with inferences', () => {
-  it('should inference explanation correctly resolved', async () => {
-    await inferenceEnable(PART_OF_TARGETS_RULE);
-    // Find the Grakn ID of the connections to build the inferred relation
-    // In the data loaded its APT41 (intrusion-set) < target > Southwire (organization)
-    const apt28Id = 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7';
-    const apt28 = await internalLoadById(apt28Id, { noCache: true });
-    const southwireId = 'identity--5a510e41-5cb2-45cc-a191-a4844ea0a141';
-    const southwire = await internalLoadById(southwireId, { noCache: true });
-    // Build the inferred relation for testing
-    const inference = `{ $rel(targets_from: $from, targets_to: $to) isa targets; $from id ${apt28.grakn_id}; $to id ${southwire.grakn_id}; };`;
-    const inferenceId = Buffer.from(inference).toString('base64');
-    const relation = await getRelationInferredById(inferenceId);
-    expect(relation).not.toBeNull();
-    expect(relation.relationship_type).toEqual('targets');
-    expect(relation.inferred).toBeTruthy();
-    expect(relation.fromRole).toEqual('targets_from');
-    expect(relation.toRole).toEqual('targets_to');
-    expect(relation.inferences).not.toBeNull();
-    expect(relation.inferences.edges.length).toEqual(2);
-    const aggregationMap = new Map(relation.inferences.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
-    // relationship--3541149d-1af6-4688-993c-dc32c7ee3880
-    // APT41 > intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7
-    // Allied Universal > identity--c017f212-546b-4f21-999d-97d3dc558f7b
-    const firstSegment = aggregationMap.get('relationship--3541149d-1af6-4688-993c-dc32c7ee3880');
-    expect(firstSegment).not.toBeUndefined();
-    expect(firstSegment.fromRole).toEqual('targets_from');
-    expect(firstSegment.toRole).toEqual('targets_to');
-    // relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7
-    // Allied Universal > identity--c017f212-546b-4f21-999d-97d3dc558f7b
-    // Southwire > identity--5a510e41-5cb2-45cc-a191-a4844ea0a141
-    const secondSegment = aggregationMap.get('relationship--307058e3-84f3-4e9c-8776-2e4fe4d6c6c7');
-    expect(secondSegment).not.toBeUndefined();
-    expect(secondSegment.fromRole).toEqual('part-of_from');
-    expect(secondSegment.toRole).toEqual('part-of_to');
-    // Disable the rule
-    await inferenceDisable(PART_OF_TARGETS_RULE);
   });
 });
 

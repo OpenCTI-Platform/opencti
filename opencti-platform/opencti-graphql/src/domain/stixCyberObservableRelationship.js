@@ -3,7 +3,6 @@ import { stixCoreRelationshipCleanContext, stixCoreRelationshipEditContext } fro
 import {
   createRelation,
   deleteElementById,
-  getRelationInferredById,
   listRelations,
   loadById,
   updateAttribute,
@@ -11,7 +10,6 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
-import { isAnId } from '../schema/schemaUtils';
 import { FunctionalError } from '../config/errors';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 
@@ -19,9 +17,6 @@ export const findAll = async (args) =>
   listRelations(propOr(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, 'relationship_type', args), args);
 
 export const findById = (stixCyberObservableRelationshipId) => {
-  if (!isAnId(stixCyberObservableRelationshipId)) {
-    return getRelationInferredById(stixCyberObservableRelationshipId);
-  }
   return loadById(stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
 };
 

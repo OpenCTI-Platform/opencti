@@ -2,7 +2,6 @@
 import { v4 as uuid } from 'uuid';
 import { logger } from './config/conf';
 import { elCreateIndexes, elDeleteIndexes, elIsAlive, PLATFORM_INDICES } from './database/elasticSearch';
-import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
 import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
@@ -87,9 +86,6 @@ export const CAPABILITIES = [
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
-  // Check if Grakn is available
-  await graknIsAlive();
-  logger.info(`[CHECK] Grakn is alive`);
   // Check if elasticsearch is available
   await elIsAlive();
   logger.info(`[CHECK] ElasticSearch is alive`);
@@ -110,10 +106,6 @@ export const checkSystemDependencies = async () => {
 
 // Initialize
 const initializeSchema = async () => {
-  // Inject grakn schema
-  const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
-  await internalDirectWrite(schema);
-  logger.info(`[INIT] Grakn schema loaded`);
   // New platform so delete all indices to prevent conflict
   await elDeleteIndexes(PLATFORM_INDICES);
   // Create default indexes
@@ -124,15 +116,16 @@ const initializeSchema = async () => {
 
 const initializeMigration = async () => {
   logger.info('[INIT] Creating migration structure');
-  const time = new Date().getTime();
-  const lastRunInit = `${parseInt(time, 10) + 1}-init`;
-  await internalDirectWrite(
-    `insert $x isa MigrationStatus, 
-        has entity_type "MigrationStatus",
-        has lastRun "${lastRunInit}", 
-        has internal_id "${uuid()}", 
-        has standard_id "migration-status--${uuid()}";`
-  );
+  // const time = new Date().getTime();
+  // const lastRunInit = `${parseInt(time, 10) + 1}-init`;
+  // await internalDirectWrite(
+  //   `insert $x isa MigrationStatus,
+  //       has entity_type "MigrationStatus",
+  //       has lastRun "${lastRunInit}",
+  //       has internal_id "${uuid()}",
+  //       has standard_id "migration-status--${uuid()}";`
+  // );
+  // TODO JRI MIGRATION
 };
 
 const createAttributesTypes = async () => {
@@ -238,7 +231,8 @@ const initializeDefaultValues = async () => {
     platform_url: '',
     platform_language: 'auto',
   });
-  await createAttributesTypes();
+  // await createAttributesTypes();
+  // TODO JRI MIGRATION
   await createMarkingDefinitions();
   await createBasicRolesAndCapabilities();
 };
@@ -250,12 +244,14 @@ const initializeData = async () => {
 };
 
 const isEmptyPlatform = async () => {
-  const entityCount = await executeRead(async (rTx) => {
-    const iterator = await rTx.query('match $x sub entity; get;');
-    const answers = await iterator.collect();
-    return answers.length;
-  });
-  return entityCount <= 1; // Only type entity is available on an empty platform.
+  // const entityCount = await executeRead(async (rTx) => {
+  //   const iterator = await rTx.query('match $x sub entity; get;');
+  //   const answers = await iterator.collect();
+  //   return answers.length;
+  // });
+  // return entityCount <= 1; // Only type entity is available on an empty platform.
+  // TODO JRI MIGRATION
+  return true;
 };
 
 const platformInit = async (noMigration = false) => {

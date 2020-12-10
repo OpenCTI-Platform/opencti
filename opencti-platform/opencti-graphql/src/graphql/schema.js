@@ -4,7 +4,6 @@ import { makeExecutableSchema } from 'graphql-tools';
 import { constraintDirective } from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
-import inferenceResolvers from '../resolvers/inference';
 import attributeResolvers from '../resolvers/attribute';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
@@ -66,7 +65,6 @@ const createSchema = () => {
     globalResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
-    inferenceResolvers,
     attributeResolvers,
     subTypeResolvers,
     fileResolvers,
