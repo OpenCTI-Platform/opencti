@@ -28,6 +28,7 @@ const completeConnector = (connector) => {
 // endregion
 
 // region grakn fetch
+// TODO REFACTOR JRI
 export const loadConnectorById = (id) =>
   loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 export const connectors = () => {

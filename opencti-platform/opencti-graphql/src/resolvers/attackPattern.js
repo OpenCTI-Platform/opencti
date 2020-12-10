@@ -3,9 +3,9 @@ import {
   findAll,
   findById,
   batchCoursesOfAction,
-  parentAttackPatterns,
-  subAttackPatterns,
-  isSubAttackPattern,
+  batchParentAttackPatterns,
+  batchSubAttackPatterns,
+  batchIsSubAttackPattern,
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
@@ -25,7 +25,11 @@ import {
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/grakn';
 
-const killChainPhaseLoader = initBatchLoader(batchKillChainPhases);
+const killChainPhasesLoader = initBatchLoader(batchKillChainPhases);
+const coursesOfActionLoader = initBatchLoader(batchCoursesOfAction);
+const parentAttackPatternsLoader = initBatchLoader(batchParentAttackPatterns);
+const subAttackPatternsLoader = initBatchLoader(batchSubAttackPatterns);
+const isSubAttackPatternLoader = initBatchLoader(batchIsSubAttackPattern);
 
 const attackPatternResolvers = {
   Query: {
@@ -33,11 +37,11 @@ const attackPatternResolvers = {
     attackPatterns: (_, args) => findAll(args),
   },
   AttackPattern: {
-    killChainPhases: (attackPattern) => killChainPhaseLoader.load(attackPattern.id),
-    coursesOfAction: (attackPattern) => batchCoursesOfAction(attackPattern.id),
-    parentAttackPatterns: (attackPattern) => parentAttackPatterns(attackPattern.id),
-    subAttackPatterns: (attackPattern) => subAttackPatterns(attackPattern.id),
-    isSubAttackPattern: (sector) => isSubAttackPattern(sector.id),
+    killChainPhases: (attackPattern) => killChainPhasesLoader.load(attackPattern.id),
+    coursesOfAction: (attackPattern) => coursesOfActionLoader.load(attackPattern.id),
+    parentAttackPatterns: (attackPattern) => parentAttackPatternsLoader.load(attackPattern.id),
+    subAttackPatterns: (attackPattern) => subAttackPatternsLoader.load(attackPattern.id),
+    isSubAttackPattern: (attackPattern) => isSubAttackPatternLoader.load(attackPattern.id),
   },
   AttackPatternsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,

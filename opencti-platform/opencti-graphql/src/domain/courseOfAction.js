@@ -18,6 +18,6 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const attackPatterns = async (courseOfActionId) => {
-  return listThroughGetTos(courseOfActionId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+export const batchAttackPatterns = async (courseOfActionIds) => {
+  return listThroughGetTos(courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };

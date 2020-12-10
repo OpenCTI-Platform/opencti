@@ -1,12 +1,4 @@
-import {
-  listThroughGetFroms,
-  createEntity,
-  escapeString,
-  getSingleValueNumber,
-  listEntities,
-  listThroughGetTos,
-  loadById,
-} from '../database/grakn';
+import { listThroughGetFroms, createEntity, listEntities, listThroughGetTos, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
@@ -30,23 +22,15 @@ export const batchCoursesOfAction = (attackPatternIds) => {
   return listThroughGetFroms(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
-export const parentAttackPatterns = (attackPatternId) => {
-  return listThroughGetTos(attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+export const batchParentAttackPatterns = (attackPatternIds) => {
+  return listThroughGetTos(attackPatternIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const batchSubAttackPatterns = (attackPatternIds) => {
-  return batchFromEntitiesThrough(attackPatternIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetFroms(attackPatternIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
-export const subAttackPatterns = (attackPatternId) => {
-  return listThroughGetFroms(attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
-};
-
-export const isSubAttackPattern = async (attackPatternId) => {
-  const numberOfParents = await getSingleValueNumber(
-    `match $parent isa ${ENTITY_TYPE_ATTACK_PATTERN}; 
-    $rel(${RELATION_SUBTECHNIQUE_OF}_from:$subattackpattern, ${RELATION_SUBTECHNIQUE_OF}_to:$parent) isa ${RELATION_SUBTECHNIQUE_OF}; 
-    $subattackpattern has internal_id "${escapeString(attackPatternId)}"; get; count;`
-  );
-  return numberOfParents > 0;
+export const batchIsSubAttackPattern = async (attackPatternIds) => {
+  const batchCreators = await listThroughGetTos(attackPatternIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+  return batchCreators.map((b) => b.edges.length > 0);
 };

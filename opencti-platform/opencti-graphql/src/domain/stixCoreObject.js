@@ -61,21 +61,21 @@ export const findAll = async (args) => {
 
 export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
-export const batchCreatedBy = async (stixCoreObjectId) => {
-  const batchCreators = await listThroughGetTos(stixCoreObjectId, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+export const batchCreatedBy = async (stixCoreObjectIds) => {
+  const batchCreators = await listThroughGetTos(stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
   return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
-export const reports = async (stixCoreObjectId) => {
-  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+export const batchReports = async (stixCoreObjectIds) => {
+  return listThroughGetFroms(stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const notes = (stixCoreObjectId) => {
-  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+export const batchNotes = (stixCoreObjectIds) => {
+  return listThroughGetFroms(stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const opinions = (stixCoreObjectId) => {
-  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+export const batchOpinions = (stixCoreObjectIds) => {
+  return listThroughGetFroms(stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
 export const batchLabels = (stixCoreObjectIds) => {
@@ -86,8 +86,8 @@ export const batchMarkingDefinitions = (stixCoreObjectIds) => {
   return listThroughGetTos(stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const externalReferences = (stixDomainObjectId) => {
-  return listThroughGetTos(stixDomainObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
+export const batchExternalReferences = (stixDomainObjectIds) => {
+  return listThroughGetTos(stixDomainObjectIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 export const batchKillChainPhases = (stixCoreObjectIds) => {

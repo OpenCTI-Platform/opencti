@@ -1,5 +1,6 @@
 import { assoc } from 'ramda';
-import { createEntity, escapeString, load, listEntities, loadById } from '../database/grakn';
+import * as R from 'ramda';
+import { createEntity, listEntities, loadById, listThroughGetTos } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
@@ -14,14 +15,9 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_LOCATION_COUNTRY], ['name', 'description', 'x_opencti_aliases'], args);
 };
 
-export const region = async (countryId) => {
-  const element = await load(
-    `match $to isa ${ENTITY_TYPE_LOCATION_REGION}; 
-    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-    $from has internal_id "${escapeString(countryId)}"; get;`,
-    ['to']
-  );
-  return element && element.to;
+export const batchRegion = async (countryIds) => {
+  const batchCreators = await listThroughGetTos(countryIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
 export const addCountry = async (user, country) => {
