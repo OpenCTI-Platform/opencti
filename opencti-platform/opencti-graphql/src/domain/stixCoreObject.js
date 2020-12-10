@@ -2,15 +2,14 @@ import * as R from 'ramda';
 import mime from 'mime-types';
 import { assoc, invertObj, map, pipe, propOr } from 'ramda';
 import {
-  batchToEntitiesThrough,
+  listThroughGetTos,
   createRelation,
   createRelations,
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  listThroughGetFroms,
   loadById,
   loadByIdFullyResolved,
   mergeEntities,
@@ -63,41 +62,36 @@ export const findAll = async (args) => {
 export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
 export const batchCreatedBy = async (stixCoreObjectId) => {
-  const batchCreators = await batchToEntitiesThrough(stixCoreObjectId, null, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+  const batchCreators = await listThroughGetTos(stixCoreObjectId, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
   return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
 export const reports = async (stixCoreObjectId) => {
-  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
 export const notes = (stixCoreObjectId) => {
-  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
 export const opinions = (stixCoreObjectId) => {
-  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
 export const batchLabels = (stixCoreObjectIds) => {
-  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+  return listThroughGetTos(stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
 export const batchMarkingDefinitions = (stixCoreObjectIds) => {
-  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
+  return listThroughGetTos(stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const externalReferences = (stixDomainObjectId) => {
-  return listToEntitiesThroughRelation(
-    stixDomainObjectId,
-    null,
-    RELATION_EXTERNAL_REFERENCE,
-    ENTITY_TYPE_EXTERNAL_REFERENCE
-  );
+  return listThroughGetTos(stixDomainObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 export const batchKillChainPhases = (stixCoreObjectIds) => {
-  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return listThroughGetTos(stixCoreObjectIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const stixCoreRelationships = (stixCoreObjectId, args) => {

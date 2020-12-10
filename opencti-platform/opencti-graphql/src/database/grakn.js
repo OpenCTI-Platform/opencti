@@ -332,27 +332,28 @@ export const getSingleValueNumber = (query, infer = false) => {
   return getSingleValue(query, infer).then((data) => data.number());
 };
 // Bulk loading method
-export const batchFromEntitiesThrough = async (toIds, relationType, fromEntityType, opts = {}) => {
+export const listThrough = async (sources, sourceSide, relationType, targetEntityType, opts = {}) => {
   const { paginate = true } = opts;
+  const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
-  const ids = Array.isArray(toIds) ? toIds : [toIds];
+  const ids = Array.isArray(sources) ? sources : [sources];
   // Filter on connection to get only relation coming from ids.
-  const toInternalIdFilter = {
+  const directionInternalIdFilter = {
     key: 'connections',
     nested: [
       { key: 'internal_id', values: ids },
-      { key: 'role', values: ['*_to'], operator: 'wildcard' },
+      { key: 'role', values: [`*_${sourceSide}`], operator: 'wildcard' },
     ],
   };
   // Filter the other side of the relation to have expected toEntityType
-  const fromTypeFilter = {
+  const oppositeTypeFilter = {
     key: 'connections',
     nested: [
-      { key: 'types', values: [fromEntityType] },
-      { key: 'role', values: ['*_from'], operator: 'wildcard' },
+      { key: 'types', values: [targetEntityType] },
+      { key: 'role', values: [`*_${opposite}`], operator: 'wildcard' },
     ],
   };
-  const filters = [toInternalIdFilter, fromTypeFilter];
+  const filters = [directionInternalIdFilter, oppositeTypeFilter];
   // Resolve all relations
   const relations = await elPaginate(RELATIONSHIPS_INDICES, {
     connectionFormat: false,
@@ -360,86 +361,41 @@ export const batchFromEntitiesThrough = async (toIds, relationType, fromEntityTy
     types: [relationType],
   });
   // For each relation resolved the target entity
-  const targets = await elFindByIds(R.uniq(relations.map((s) => s.fromId)));
+  const targets = await elFindByIds(R.uniq(relations.map((s) => s[`${opposite}Id`])));
   // Group and rebuild the result
-  const elGrouped = R.groupBy((e) => e.toId, relations);
+  const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
   if (paginate) {
     return ids.map((id) => {
       const values = elGrouped[id];
       let edges = [];
-      if (values) edges = values.map((i) => ({ node: R.find((s) => s.internal_id === i.fromId, targets) }));
+      if (values) edges = values.map((i) => ({ node: R.find((s) => s.internal_id === i[`${opposite}Id`], targets) }));
       return buildPagination(0, 0, edges, edges.length);
     });
   }
   return R.flatten(
     ids.map((id) => {
       const values = elGrouped[id];
-      return values?.map((i) => R.find((s) => s.internal_id === i.fromId, targets)) || [];
+      return values?.map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets)) || [];
     })
   );
 };
-export const batchToEntitiesThrough = async (fromIds, fromType, relationType, toEntityType, opts = {}) => {
-  const { paginate = true } = opts;
-  // USING ELASTIC
-  const ids = Array.isArray(fromIds) ? fromIds : [fromIds];
-  // Filter on connection to get only relation coming from ids.
-  const fromInternalIdFilter = {
-    key: 'connections',
-    nested: [
-      { key: 'internal_id', values: ids },
-      { key: 'role', values: ['*_from'], operator: 'wildcard' },
-    ],
-  };
-  // Filter the other side of the relation to have expected toEntityType
-  const toTypeFilter = {
-    key: 'connections',
-    nested: [
-      { key: 'types', values: [toEntityType] },
-      { key: 'role', values: ['*_to'], operator: 'wildcard' },
-    ],
-  };
-  const filters = [fromInternalIdFilter, toTypeFilter];
-  // Resolve all relations
-  const relations = await elPaginate(RELATIONSHIPS_INDICES, {
-    connectionFormat: false,
-    filters,
-    types: [relationType],
-  });
-  // For each relation resolved the target entity
-  const targets = await elFindByIds(R.uniq(relations.map((s) => s.toId)));
-  // Group and rebuild the result
-  const elGrouped = R.groupBy((e) => e.fromId, relations);
-  if (paginate) {
-    return ids.map((id) => {
-      const values = elGrouped[id];
-      let edges = [];
-      if (values) edges = values.map((i) => ({ node: R.find((s) => s.internal_id === i.toId, targets) }));
-      return buildPagination(0, 0, edges, edges.length);
-    });
-  }
-  return R.flatten(
-    ids.map((id) => {
-      const values = elGrouped[id];
-      return values?.map((i) => R.find((s) => s.internal_id === i.toId, targets)) || [];
-    })
-  );
+export const listThroughGetFroms = async (sources, relationType, targetEntityType, opts = {}) => {
+  return listThrough(sources, 'to', relationType, targetEntityType, opts);
 };
-// Standard loading
-export const listToEntitiesThroughRelation = (fromId, fromType, relationType, toEntityType) => {
-  return batchToEntitiesThrough(fromId, fromType, relationType, toEntityType);
+export const listThroughGetTos = async (sources, relationType, targetEntityType, opts = {}) => {
+  return listThrough(sources, 'from', relationType, targetEntityType, opts);
 };
-export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType, infer = false) => {
-  // TODO JRI MIGRATION
-  return find(
-    `match $from isa ${fromEntityType}; 
-    $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};
-    ${toType ? `$to isa ${toType};` : ''}
-    $to has internal_id "${escapeString(toId)}"; get;`,
-    ['from'],
-    { paginationKey: 'from', infer }
-  );
+export const loadThrough = async (sources, sourceSide, relationType, targetEntityType) => {
+  const elements = await listThrough(sources, sourceSide, relationType, targetEntityType, { paginate: false });
+  if (elements.length > 1) throw Error('Should be one');
+  return elements && elements[0];
 };
-
+export const loadThroughGetFrom = async (sources, relationType, targetEntityType) => {
+  return loadThrough(sources, 'to', relationType, targetEntityType, { paginate: false });
+};
+export const loadThroughGetTo = async (sources, relationType, targetEntityType) => {
+  return loadThrough(sources, 'from', relationType, targetEntityType, { paginate: false });
+};
 export const listEntities = async (entityTypes, searchFields, args = {}) => {
   // filters contains potential relations like, mitigates, tagged ...
   return elPaginate(ENTITIES_INDICES, R.assoc('types', entityTypes, args));
@@ -1968,7 +1924,7 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
   //   return delDependencies;
   // });
   // TODO JRI MIGRATION
-  const deps = [];
+  const deps = [element];
   // Update elastic index.
   for (let index = 0; index < deps.length; index += 1) {
     const { internal_id: id, relDependency } = deps[index];

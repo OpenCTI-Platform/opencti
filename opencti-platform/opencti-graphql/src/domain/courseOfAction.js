@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listToEntitiesThroughRelation, loadById } from '../database/grakn';
+import { createEntity, listEntities, listThroughGetTos, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
@@ -19,5 +19,5 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 };
 
 export const attackPatterns = async (courseOfActionId) => {
-  return listToEntitiesThroughRelation(courseOfActionId, null, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetTos(courseOfActionId, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };

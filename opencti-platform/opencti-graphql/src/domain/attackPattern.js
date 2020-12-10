@@ -1,11 +1,10 @@
 import {
-  batchFromEntitiesThrough,
+  listThroughGetFroms,
   createEntity,
   escapeString,
   getSingleValueNumber,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   loadById,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -28,11 +27,11 @@ export const addAttackPattern = async (user, attackPattern) => {
 };
 
 export const batchCoursesOfAction = (attackPatternIds) => {
-  return batchFromEntitiesThrough(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetFroms(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const parentAttackPatterns = (attackPatternId) => {
-  return listToEntitiesThroughRelation(attackPatternId, null, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetTos(attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const batchSubAttackPatterns = (attackPatternIds) => {
@@ -40,7 +39,7 @@ export const batchSubAttackPatterns = (attackPatternIds) => {
 };
 
 export const subAttackPatterns = (attackPatternId) => {
-  return listFromEntitiesThroughRelation(attackPatternId, null, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetFroms(attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const isSubAttackPattern = async (attackPatternId) => {

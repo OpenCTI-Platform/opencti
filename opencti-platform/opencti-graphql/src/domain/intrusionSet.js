@@ -5,7 +5,7 @@ import {
   loadById,
   FROM_START,
   UNTIL_END,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -31,5 +31,5 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 };
 
 export const locations = (intrusionSetId) => {
-  return listToEntitiesThroughRelation(intrusionSetId, null, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
+  return listThroughGetTos(intrusionSetId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
 };

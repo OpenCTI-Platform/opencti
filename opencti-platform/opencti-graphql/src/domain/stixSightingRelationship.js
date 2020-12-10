@@ -6,9 +6,9 @@ import {
   deleteRelationsByFromAndTo,
   escapeString,
   getSingleValueNumber,
-  listFromEntitiesThroughRelation,
+  listThroughGetFroms,
   listRelations,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   load,
   loadById,
   prepareDate,
@@ -70,47 +70,27 @@ export const createdBy = async (stixSightingRelationshipId) => {
 };
 
 export const reports = (stixSightingRelationshipId) => {
-  return listFromEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_OBJECT,
-    ENTITY_TYPE_CONTAINER_REPORT
-  );
+  return listThroughGetFroms(stixSightingRelationshipId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
 export const notes = (stixSightingRelationshipId) => {
-  return listFromEntitiesThroughRelation(stixSightingRelationshipId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+  return listThroughGetFroms(stixSightingRelationshipId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
 export const opinions = (stixSightingRelationshipId) => {
-  return listFromEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_OBJECT,
-    ENTITY_TYPE_CONTAINER_OPINION
-  );
+  return listThroughGetFroms(stixSightingRelationshipId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
 export const labels = (stixSightingRelationshipId) => {
-  return listToEntitiesThroughRelation(stixSightingRelationshipId, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+  return listThroughGetTos(stixSightingRelationshipId, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
 export const markingDefinitions = (stixSightingRelationshipId) => {
-  return listToEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_OBJECT_MARKING,
-    ENTITY_TYPE_MARKING_DEFINITION
-  );
+  return listThroughGetTos(stixSightingRelationshipId, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const externalReferences = (stixSightingRelationshipId) => {
-  return listToEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_EXTERNAL_REFERENCE,
-    ENTITY_TYPE_EXTERNAL_REFERENCE
-  );
+  return listThroughGetTos(stixSightingRelationshipId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 // region mutations

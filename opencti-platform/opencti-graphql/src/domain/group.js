@@ -7,7 +7,7 @@ import {
   escapeString,
   find,
   listEntities,
-  listFromEntitiesThroughRelation,
+  listThroughGetFroms,
   loadById,
   updateAttribute,
 } from '../database/grakn';
@@ -27,7 +27,7 @@ export const findAll = (args) => {
 };
 
 export const members = async (groupId) => {
-  return listFromEntitiesThroughRelation(groupId, ENTITY_TYPE_GROUP, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+  return listThroughGetFroms(groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
 export const markingDefinitions = async (groupId) => {

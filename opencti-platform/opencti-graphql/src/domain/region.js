@@ -4,8 +4,8 @@ import {
   escapeString,
   getSingleValueNumber,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  listThroughGetFroms,
+  listThroughGetTos,
   loadById,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -23,15 +23,15 @@ export const findAll = (args) => {
 };
 
 export const parentRegions = (regionId) => {
-  return listToEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return listThroughGetTos(regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const subRegions = (regionId) => {
-  return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return listThroughGetFroms(regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const countries = (regionId) => {
-  return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true);
+  return listThroughGetFroms(regionId, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
 export const isSubRegion = async (regionId) => {

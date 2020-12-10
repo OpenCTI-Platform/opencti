@@ -5,8 +5,8 @@ import {
   escapeString,
   getSingleValueNumber,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  listThroughGetFroms,
+  listThroughGetTos,
   loadById,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -25,11 +25,11 @@ export const findAll = (args) => {
 };
 
 export const parentSectors = (sectorId) => {
-  return listToEntitiesThroughRelation(sectorId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return listThroughGetTos(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const subSectors = (sectorId) => {
-  return listFromEntitiesThroughRelation(sectorId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return listThroughGetFroms(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const isSubSector = async (sectorId) => {

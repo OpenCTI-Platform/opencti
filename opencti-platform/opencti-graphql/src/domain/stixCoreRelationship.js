@@ -5,9 +5,9 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   escapeString,
-  listFromEntitiesThroughRelation,
+  listThroughGetFroms,
   listRelations,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   load,
   loadById,
   updateAttribute,
@@ -78,46 +78,31 @@ export const createdBy = async (stixCoreRelationshipId) => {
 };
 
 export const reports = (stixCoreRelationshipId) => {
-  return listFromEntitiesThroughRelation(stixCoreRelationshipId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+  return listThroughGetFroms(stixCoreRelationshipId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
 export const notes = (stixCoreRelationshipId) => {
-  return listFromEntitiesThroughRelation(stixCoreRelationshipId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+  return listThroughGetFroms(stixCoreRelationshipId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
 export const opinions = (stixCoreRelationshipId) => {
-  return listFromEntitiesThroughRelation(stixCoreRelationshipId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+  return listThroughGetFroms(stixCoreRelationshipId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
 export const labels = (stixCoreRelationshipId) => {
-  return listToEntitiesThroughRelation(stixCoreRelationshipId, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+  return listThroughGetTos(stixCoreRelationshipId, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
 export const markingDefinitions = (stixCoreRelationshipId) => {
-  return listToEntitiesThroughRelation(
-    stixCoreRelationshipId,
-    null,
-    RELATION_OBJECT_MARKING,
-    ENTITY_TYPE_MARKING_DEFINITION
-  );
+  return listThroughGetTos(stixCoreRelationshipId, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const killChainPhases = (stixCoreRelationshipId) => {
-  return listToEntitiesThroughRelation(
-    stixCoreRelationshipId,
-    null,
-    RELATION_KILL_CHAIN_PHASE,
-    ENTITY_TYPE_KILL_CHAIN_PHASE
-  );
+  return listThroughGetTos(stixCoreRelationshipId, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const externalReferences = (stixCoreRelationshipId) => {
-  return listToEntitiesThroughRelation(
-    stixCoreRelationshipId,
-    null,
-    RELATION_EXTERNAL_REFERENCE,
-    ENTITY_TYPE_EXTERNAL_REFERENCE
-  );
+  return listThroughGetTos(stixCoreRelationshipId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 export const stixRelations = (stixCoreObjectId, args) => {

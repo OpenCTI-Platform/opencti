@@ -5,7 +5,7 @@ import {
   createEntity,
   createRelation,
   listEntities,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   loadById,
   now,
 } from '../database/grakn';
@@ -152,5 +152,5 @@ export const addIndicator = async (user, indicator) => {
 };
 
 export const observables = (indicatorId) => {
-  return listToEntitiesThroughRelation(indicatorId, null, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  return listThroughGetTos(indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };

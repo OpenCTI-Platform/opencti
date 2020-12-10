@@ -21,8 +21,7 @@ import conf, {
   OPENCTI_WEB_TOKEN,
 } from '../config/conf';
 import {
-  batchFromEntitiesThrough,
-  batchToEntitiesThrough,
+  listThroughGetFroms,
   createEntity,
   createRelation,
   deleteElementById,
@@ -30,12 +29,13 @@ import {
   escapeString,
   find,
   listEntities,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   load,
   loadById,
   now,
   patchAttribute,
   updateAttribute,
+  loadThroughGetTo,
 } from '../database/grakn';
 import {
   ENTITY_TYPE_CAPABILITY,
@@ -60,7 +60,7 @@ import {
 } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { generateStandardId } from '../schema/identifier';
-import { elLoadBy, elLoadByIds } from '../database/elasticSearch';
+import { elLoadBy } from '../database/elasticSearch';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -107,7 +107,7 @@ export const findAll = (args) => {
 };
 
 export const groups = (userId) => {
-  return listToEntitiesThroughRelation(userId, ENTITY_TYPE_USER, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+  return listThroughGetTos(userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
 };
 
 export const token = async (userId, args, context) => {
@@ -125,18 +125,12 @@ export const token = async (userId, args, context) => {
 };
 
 const internalGetToken = async (userId) => {
-  const query = `match $to isa Token;
-  $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY};
-  $from has internal_id "${escapeString(userId)}"; get;`;
-  const element = await load(query, ['to']);
-  return element && element.to;
+  return loadThroughGetTo(userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
 };
 
+// eslint-disable-next-line no-unused-vars
 const internalGetTokenByUUID = async (tokenUUID) => {
-  const query = `match $token isa Token; $token has internal_id $token_id; $token has uuid "${escapeString(
-    tokenUUID
-  )}"; get;`;
-  return load(query, ['token']).then((result) => result && result.token);
+  return elLoadBy(['uuid'], tokenUUID, ENTITY_TYPE_TOKEN);
 };
 
 const clearUserTokenCache = (userId) => {
@@ -383,11 +377,8 @@ export const loginFromProvider = async (email, name) => {
 export const login = async (email, password) => {
   const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
   if (!user) throw AuthenticationFailure();
-  const tokens = await batchToEntitiesThrough(user.id, ENTITY_TYPE_USER, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN, {
-    paginate: false,
-  });
-  if (tokens.length === 0 || tokens.length > 1) throw AuthenticationFailure();
-  const userToken = R.head(tokens);
+  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
+  if (!userToken) throw AuthenticationFailure();
   const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
@@ -403,28 +394,32 @@ export const logout = async (user, res) => {
 };
 
 // Token related
+// eslint-disable-next-line no-unused-vars
 export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
-  // 01. Get current token
-  const currentToken = await internalGetToken(userId);
-  // 02. Remove the token
-  if (currentToken) {
-    await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
-  } else {
-    logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
-    const detachedToken = await internalGetTokenByUUID(newToken.uuid);
-    if (detachedToken) {
-      await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
-    }
-  }
-  // 03. Create a new one
-  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
-  // 04. Associate new token to user.
-  const input = {
-    fromId: userId,
-    toId: defaultToken.id,
-    relationship_type: RELATION_AUTHORIZED_BY,
-  };
-  await createRelation(user, input);
+  // // 01. Get current token
+  // const currentToken = await internalGetToken(userId);
+  // // 02. Remove the token
+  // if (currentToken) {
+  //   await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
+  // } else {
+  //   logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
+  //   const detachedToken = await internalGetTokenByUUID(newToken.uuid);
+  //   if (detachedToken) {
+  //     await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
+  //   }
+  // }
+  // // 03. Create a new one
+  // const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
+  // // 04. Associate new token to user.
+  // const input = {
+  //   fromId: userId,
+  //   toId: defaultToken.id,
+  //   relationship_type: RELATION_AUTHORIZED_BY,
+  // };
+  // await createRelation(user, input);
+  // return loadById(userId, ENTITY_TYPE_USER);
+  // TODO JRI MIGRATE
+  // REACTIVATE AFTER MIGRATION OF deleteElementById
   return loadById(userId, ENTITY_TYPE_USER);
 };
 
@@ -433,7 +428,7 @@ export const findByTokenUUID = async (tokenValue) => {
   if (!user) {
     const userToken = await elLoadBy(['uuid'], tokenValue, ENTITY_TYPE_TOKEN);
     if (!userToken || userToken.revoked === true) return undefined;
-    const users = await batchFromEntitiesThrough(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER, {
+    const users = await listThroughGetFroms(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER, {
       paginate: false,
     });
     if (users.length === 0 || users.length > 1) return undefined;

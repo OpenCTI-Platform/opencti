@@ -2,10 +2,10 @@ import {
   addAttackPattern,
   findAll,
   findById,
+  batchCoursesOfAction,
   parentAttackPatterns,
   subAttackPatterns,
   isSubAttackPattern,
-  batchCoursesOfAction,
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
@@ -26,7 +26,6 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/grakn';
 
 const killChainPhaseLoader = initBatchLoader(batchKillChainPhases);
-const courseOfActionLoader = initBatchLoader(batchCoursesOfAction());
 
 const attackPatternResolvers = {
   Query: {
@@ -35,7 +34,7 @@ const attackPatternResolvers = {
   },
   AttackPattern: {
     killChainPhases: (attackPattern) => killChainPhaseLoader.load(attackPattern.id),
-    coursesOfAction: (attackPattern) => courseOfActionLoader.load(attackPattern.id),
+    coursesOfAction: (attackPattern) => batchCoursesOfAction(attackPattern.id),
     parentAttackPatterns: (attackPattern) => parentAttackPatterns(attackPattern.id),
     subAttackPatterns: (attackPattern) => subAttackPatterns(attackPattern.id),
     isSubAttackPattern: (sector) => isSubAttackPattern(sector.id),

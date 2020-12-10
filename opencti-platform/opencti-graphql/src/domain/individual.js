@@ -1,5 +1,5 @@
 import { assoc } from 'ramda';
-import { createEntity, listEntities, listToEntitiesThroughRelation, loadById } from '../database/grakn';
+import { createEntity, listEntities, listThroughGetTos, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
@@ -24,5 +24,5 @@ export const addIndividual = async (user, individual) => {
 };
 
 export const organizations = (individualId) => {
-  return listToEntitiesThroughRelation(individualId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  return listThroughGetTos(individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
