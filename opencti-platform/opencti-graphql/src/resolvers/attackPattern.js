@@ -2,7 +2,7 @@ import {
   addAttackPattern,
   findAll,
   findById,
-  coursesOfAction,
+  batchCoursesOfAction,
   parentAttackPatterns,
   subAttackPatterns,
   isSubAttackPattern,
@@ -34,7 +34,7 @@ const attackPatternResolvers = {
   },
   AttackPattern: {
     killChainPhases: (attackPattern) => killChainPhaseLoader.load(attackPattern.id),
-    coursesOfAction: (attackPattern) => coursesOfAction(attackPattern.id),
+    coursesOfAction: (attackPattern) => batchCoursesOfAction(attackPattern.id),
     parentAttackPatterns: (attackPattern) => parentAttackPatterns(attackPattern.id),
     subAttackPatterns: (attackPattern) => subAttackPatterns(attackPattern.id),
     isSubAttackPattern: (sector) => isSubAttackPattern(sector.id),

@@ -1,5 +1,5 @@
 import {
-  batchFromEntitiesThrough,
+  listThroughGetFroms,
   createEntity,
   escapeString,
   getSingleValueNumber,
@@ -28,7 +28,7 @@ export const addAttackPattern = async (user, attackPattern) => {
 };
 
 export const batchCoursesOfAction = (attackPatternIds) => {
-  return batchFromEntitiesThrough(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetFroms(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const parentAttackPatterns = (attackPatternId) => {

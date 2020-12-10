@@ -1,21 +1,17 @@
 // Admin user initialization
-import { v4 as uuid } from 'uuid';
 import { logger } from './config/conf';
 import { elCreateIndexes, elDeleteIndexes, elIsAlive, PLATFORM_INDICES } from './database/elasticSearch';
-import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
+import { BYPASS, findById, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { redisIsAlive } from './database/redis';
-
-// noinspection NodeJsCodingAssistanceForCoreModules
-const fs = require('fs');
+import { OPENCTI_ADMIN_UUID } from './schema/general';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -128,6 +124,7 @@ const initializeMigration = async () => {
   // TODO JRI MIGRATION
 };
 
+// eslint-disable-next-line
 const createAttributesTypes = async () => {
   await addAttribute({ type: 'report_types', value: 'threat-report' });
   await addAttribute({ type: 'report_types', value: 'internal-report' });
@@ -243,22 +240,17 @@ const initializeData = async () => {
   return true;
 };
 
-const isEmptyPlatform = async () => {
-  // const entityCount = await executeRead(async (rTx) => {
-  //   const iterator = await rTx.query('match $x sub entity; get;');
-  //   const answers = await iterator.collect();
-  //   return answers.length;
-  // });
-  // return entityCount <= 1; // Only type entity is available on an empty platform.
-  // TODO JRI MIGRATION
-  return true;
+const isExistingPlatform = async () => {
+  const admin = await findById(OPENCTI_ADMIN_UUID);
+  return admin && admin.internal_id === OPENCTI_ADMIN_UUID;
 };
 
+// eslint-disable-next-line
 const platformInit = async (noMigration = false) => {
   await checkSystemDependencies();
   try {
-    const needToBeInitialized = await isEmptyPlatform();
-    if (needToBeInitialized) {
+    const alreadyExists = await isExistingPlatform();
+    if (!alreadyExists) {
       logger.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
       await initializeMigration();
@@ -268,9 +260,10 @@ const platformInit = async (noMigration = false) => {
       logger.info('[INIT] Existing platform detected, initialization...');
       // Always reset the admin user
       await initializeAdminUser();
-      if (!noMigration) {
-        await applyMigration();
-      }
+      // TODO JRI MIGRATE
+      // if (!noMigration) {
+      //   await applyMigration();
+      // }
     }
   } catch (e) {
     logger.error(`[OPENCTI] Platform initialization fail`, { error: e });

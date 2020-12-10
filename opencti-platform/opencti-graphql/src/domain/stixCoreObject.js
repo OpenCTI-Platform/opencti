@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import mime from 'mime-types';
 import { assoc, invertObj, map, pipe, propOr } from 'ramda';
 import {
-  batchToEntitiesThrough,
+  listThroughGetTos,
   createRelation,
   createRelations,
   deleteElementById,
@@ -63,7 +63,7 @@ export const findAll = async (args) => {
 export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
 export const batchCreatedBy = async (stixCoreObjectId) => {
-  const batchCreators = await batchToEntitiesThrough(stixCoreObjectId, null, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+  const batchCreators = await listThroughGetTos(stixCoreObjectId, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
   return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
@@ -80,11 +80,11 @@ export const opinions = (stixCoreObjectId) => {
 };
 
 export const batchLabels = (stixCoreObjectIds) => {
-  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+  return listThroughGetTos(stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
 export const batchMarkingDefinitions = (stixCoreObjectIds) => {
-  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
+  return listThroughGetTos(stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
 export const externalReferences = (stixDomainObjectId) => {
@@ -97,7 +97,7 @@ export const externalReferences = (stixDomainObjectId) => {
 };
 
 export const batchKillChainPhases = (stixCoreObjectIds) => {
-  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return listThroughGetTos(stixCoreObjectIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const stixCoreRelationships = (stixCoreObjectId, args) => {
