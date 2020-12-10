@@ -69,6 +69,7 @@ export const opinionsTimeSeriesByAuthor = async (args) => {
   return timeSeriesEntities(ENTITY_TYPE_CONTAINER_OPINION, filters, args);
 };
 
+// TODO MIGRATE JRI
 export const opinionsNumberByEntity = (args) => ({
   count: getSingleValueNumber(
     `match $x isa ${ENTITY_TYPE_CONTAINER_OPINION};

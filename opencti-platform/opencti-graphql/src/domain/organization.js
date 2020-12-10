@@ -14,8 +14,8 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_IDENTITY_ORGANIZATION], ['name', 'x_opencti_aliases'], args);
 };
 
-export const sectors = (organizationId) => {
-  return listThroughGetTos(organizationId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchSectors = (organizationIds) => {
+  return listThroughGetTos(organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const addOrganization = async (user, organization) => {

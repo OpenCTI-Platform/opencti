@@ -10,8 +10,6 @@ import Select from '@material-ui/core/Select';
 import Input from '@material-ui/core/Input';
 import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
 import inject18n from '../../../../components/i18n';
@@ -111,7 +109,6 @@ class EntityStixCoreRelationships extends Component {
   renderLines(paginationOptions) {
     const { sortBy, orderAsc } = this.state;
     const { entityLink, isRelationReversed } = this.props;
-    // sort only when inferences are disabled or inferences are resolved
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',
@@ -193,7 +190,6 @@ class EntityStixCoreRelationships extends Component {
       relationshipType,
       isRelationReversed,
       noBottomBar,
-      inference,
     } = this.props;
     const {
       view,
@@ -207,7 +203,6 @@ class EntityStixCoreRelationships extends Component {
     const displayTypes = targetStixDomainObjectTypes.length > 1
       || targetStixDomainObjectTypes.includes('Identity');
 
-    // sort only when inferences are disabled or inferences are resolved
     let paginationOptions = {
       relationship_type: relationshipType || 'stix-core-relationship',
       search: searchTerm,

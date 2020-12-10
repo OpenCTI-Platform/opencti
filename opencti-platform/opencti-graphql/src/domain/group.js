@@ -30,6 +30,7 @@ export const members = async (groupId) => {
   return listThroughGetFroms(groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
+// TODO MIGRATE JRI
 export const markingDefinitions = async (groupId) => {
   const data = await find(
     `match $group isa Group, has internal_id "${escapeString(groupId)}";

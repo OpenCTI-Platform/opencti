@@ -23,6 +23,6 @@ export const addIndividual = async (user, individual) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const organizations = (individualId) => {
-  return listThroughGetTos(individualId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const batchOrganizations = (individualIds) => {
+  return listThroughGetTos(individualIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };

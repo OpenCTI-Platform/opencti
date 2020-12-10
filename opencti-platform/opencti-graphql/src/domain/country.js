@@ -16,8 +16,8 @@ export const findAll = (args) => {
 };
 
 export const batchRegion = async (countryIds) => {
-  const batchCreators = await listThroughGetTos(countryIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
-  return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
+  const batchRegions = await listThroughGetTos(countryIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return batchRegions.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
 export const addCountry = async (user, country) => {

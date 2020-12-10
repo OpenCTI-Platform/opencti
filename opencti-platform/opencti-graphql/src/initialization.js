@@ -241,8 +241,12 @@ const initializeData = async () => {
 };
 
 const isExistingPlatform = async () => {
-  const admin = await findById(OPENCTI_ADMIN_UUID);
-  return admin && admin.internal_id === OPENCTI_ADMIN_UUID;
+  try {
+    const admin = await findById(OPENCTI_ADMIN_UUID);
+    return admin && admin.internal_id === OPENCTI_ADMIN_UUID;
+  } catch {
+    return false;
+  }
 };
 
 // eslint-disable-next-line

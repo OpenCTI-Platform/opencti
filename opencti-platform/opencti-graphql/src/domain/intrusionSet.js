@@ -30,6 +30,6 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const locations = (intrusionSetId) => {
-  return listThroughGetTos(intrusionSetId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
+export const batchLocations = (intrusionSetIds) => {
+  return listThroughGetTos(intrusionSetIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
 };

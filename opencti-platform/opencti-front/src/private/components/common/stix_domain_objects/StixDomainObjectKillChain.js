@@ -35,9 +35,7 @@ class StixDomainObjectKillChain extends Component {
 
   render() {
     const { searchTerm } = this.state;
-    const {
-      classes, stixDomainObjectId, entityLink, t,
-    } = this.props;
+    const { classes, stixDomainObjectId, entityLink } = this.props;
     const paginationOptions = {
       fromId: stixDomainObjectId,
       toTypes: ['Attack-Pattern'],
