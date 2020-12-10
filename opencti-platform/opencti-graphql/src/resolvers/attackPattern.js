@@ -15,7 +15,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { killChainPhases } from '../domain/stixCoreObject';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
 import {
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
@@ -23,6 +23,9 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const killChainPhaseLoader = initBatchLoader(batchKillChainPhases);
 
 const attackPatternResolvers = {
   Query: {
@@ -30,7 +33,7 @@ const attackPatternResolvers = {
     attackPatterns: (_, args) => findAll(args),
   },
   AttackPattern: {
-    killChainPhases: (attackPattern) => killChainPhases(attackPattern.id),
+    killChainPhases: (attackPattern) => killChainPhaseLoader.load(attackPattern.id),
     coursesOfAction: (attackPattern) => coursesOfAction(attackPattern.id),
     parentAttackPatterns: (attackPattern) => parentAttackPatterns(attackPattern.id),
     subAttackPatterns: (attackPattern) => subAttackPatterns(attackPattern.id),

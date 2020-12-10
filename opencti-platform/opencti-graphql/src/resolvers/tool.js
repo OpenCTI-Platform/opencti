@@ -7,7 +7,7 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { killChainPhases } from '../domain/stixCoreObject';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
 import {
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
@@ -15,6 +15,9 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const killChainPhaseLoader = initBatchLoader(batchKillChainPhases);
 
 const toolResolvers = {
   Query: {
@@ -32,7 +35,7 @@ const toolResolvers = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Tool: {
-    killChainPhases: (tool) => killChainPhases(tool.id),
+    killChainPhases: (tool) => killChainPhaseLoader.load(tool.id),
   },
   Mutation: {
     toolEdit: (_, { id }, { user }) => ({
