@@ -75,11 +75,11 @@ const stixSightingRelationshipResolvers = {
     createdBy: (rel) => createdByLoader.load(rel.id),
     objectMarking: (rel) => markingDefinitionsLoader.load(rel.id),
     objectLabel: (rel) => labelsLoader.load(rel.id),
-    editContext: (rel) => fetchEditContext(rel.id),
     externalReferences: (rel) => externalReferencesLoader.load(rel.id),
     reports: (rel) => reportsLoader.load(rel.id),
     notes: (rel) => notesLoader.load(rel.id),
     opinions: (rel) => opinionsLoader.load(rel.id),
+    editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, { user }) => ({

@@ -60,6 +60,7 @@ steps:
     event:
       - tag
 
+services:
 - name: redis
   image: redis:6.0.9
 - name: elastic
