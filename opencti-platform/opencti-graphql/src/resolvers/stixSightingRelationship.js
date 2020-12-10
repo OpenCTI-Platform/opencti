@@ -11,21 +11,37 @@ import {
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
   stixSightingRelationshipsNumber,
-  createdBy,
-  externalReferences,
-  labels,
-  markingDefinitions,
-  notes,
-  reports,
+  batchCreatedBy,
+  batchExternalReferences,
+  batchLabels,
+  batchMarkingDefinitions,
+  batchNotes,
+  batchOpinions,
+  batchReports,
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
+import {
+  distributionRelations,
+  loadById,
+  timeSeriesRelations,
+  REL_CONNECTED_SUFFIX,
+  initBatchLoader,
+} from '../database/grakn';
 import { convertDataToStix } from '../database/stix';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { creator } from '../domain/log';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import {} from '../domain/stixCoreRelationship';
+
+const createdByLoader = initBatchLoader(batchCreatedBy);
+const markingDefinitionsLoader = initBatchLoader(batchMarkingDefinitions);
+const labelsLoader = initBatchLoader(batchLabels);
+const externalReferencesLoader = initBatchLoader(batchExternalReferences);
+const notesLoader = initBatchLoader(batchNotes);
+const opinionsLoader = initBatchLoader(batchOpinions);
+const reportsLoader = initBatchLoader(batchReports);
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -56,13 +72,14 @@ const stixSightingRelationshipResolvers = {
     to: (rel) => loadById(rel.toId, rel.toType),
     toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
     creator: (rel) => creator(rel.id),
-    createdBy: (rel) => createdBy(rel.id),
-    objectMarking: (rel) => markingDefinitions(rel.id),
-    objectLabel: (rel) => labels(rel.id),
+    createdBy: (rel) => createdByLoader.load(rel.id),
+    objectMarking: (rel) => markingDefinitionsLoader.load(rel.id),
+    objectLabel: (rel) => labelsLoader.load(rel.id),
     editContext: (rel) => fetchEditContext(rel.id),
-    externalReferences: (rel) => externalReferences(rel.id),
-    reports: (rel) => reports(rel.id),
-    notes: (rel) => notes(rel.id),
+    externalReferences: (rel) => externalReferencesLoader.load(rel.id),
+    reports: (rel) => reportsLoader.load(rel.id),
+    notes: (rel) => notesLoader.load(rel.id),
+    opinions: (rel) => opinionsLoader.load(rel.id),
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, { user }) => ({

@@ -2,7 +2,6 @@ import { assoc, filter, includes, map, pipe } from 'ramda';
 import {
   createEntity,
   deleteElementById,
-  find,
   listEntities,
   loadById,
   now,
