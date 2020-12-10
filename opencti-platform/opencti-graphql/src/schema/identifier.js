@@ -100,7 +100,6 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_WORKSPACE]: [{ src: NAME_FIELD }, { src: 'workspace_type' }],
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: NAME_FIELD }, { src: X_MITRE_ID_FIELD }],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],

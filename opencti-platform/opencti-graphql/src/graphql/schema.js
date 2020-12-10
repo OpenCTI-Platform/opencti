@@ -18,7 +18,6 @@ import stixMetaRelationshipResolvers from '../resolvers/stixMetaRelationship';
 import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
 import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelationship';
 import stixCyberObservableRelationResolvers from '../resolvers/stixCyberObservableRelationship';
-import workspaceResolvers from '../resolvers/workspace';
 import identityResolvers from '../resolvers/identity';
 import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
@@ -75,7 +74,6 @@ const createSchema = () => {
     groupResolvers,
     userResolvers,
     connectorResolvers,
-    workspaceResolvers,
     // STIX OBJECT ENTITIES
     // STIX META OBJECT ENTITIES
     markingDefinitionResolvers,
