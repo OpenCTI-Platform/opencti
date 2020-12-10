@@ -5,7 +5,7 @@ import {
   addStixCyberObservable,
   findAll,
   findById,
-  indicators,
+  batchIndicators,
   observableValue,
   stixCyberObservableAddRelation,
   stixCyberObservableAddRelations,
@@ -34,6 +34,9 @@ import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservableObject';
+import { initBatchLoader } from '../database/grakn';
+
+const indicatorsLoader = initBatchLoader(batchIndicators);
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -63,7 +66,7 @@ const stixCyberObservableResolvers = {
       return 'Unknown';
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
-    indicators: (stixCyberObservable) => indicators(stixCyberObservable.id),
+    indicators: (stixCyberObservable) => indicatorsLoader.load(stixCyberObservable.id),
     jobs: (stixCyberObservable, args) => worksForSource(stixCyberObservable.id, args),
     connectors: (stixCyberObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixCyberObservable.entity_type, onlyAlive),

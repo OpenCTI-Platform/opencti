@@ -1,4 +1,4 @@
-import { addThreatActor, findAll, findById, locations } from '../domain/threatActor';
+import { addThreatActor, findAll, findById, batchLocations } from '../domain/threatActor';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -9,6 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const locationsLoader = initBatchLoader(batchLocations);
 
 const threatActorResolvers = {
   Query: {
@@ -16,7 +19,7 @@ const threatActorResolvers = {
     threatActors: (_, args) => findAll(args),
   },
   ThreatActor: {
-    locations: (threatActor) => locations(threatActor.id),
+    locations: (threatActor) => locationsLoader.load(threatActor.id),
   },
   ThreatActorsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,

@@ -3,7 +3,6 @@ import {
   find,
   createEntity,
   escapeString,
-  getSingleValueNumber,
   listEntities,
   listThroughGetFroms,
   listThroughGetTos,
@@ -24,23 +23,20 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], ['name', 'x_opencti_aliases'], args);
 };
 
-export const parentSectors = (sectorId) => {
-  return listThroughGetTos(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchParentSectors = (sectorIds) => {
+  return listThroughGetTos(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const subSectors = (sectorId) => {
-  return listThroughGetFroms(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchSubSectors = (sectorIds) => {
+  return listThroughGetFroms(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const isSubSector = async (sectorId) => {
-  const numberOfParents = await getSingleValueNumber(
-    `match $parent isa ${ENTITY_TYPE_IDENTITY_SECTOR}; 
-    $rel(${RELATION_PART_OF}_from:$subsector, ${RELATION_PART_OF}_to:$parent) isa ${RELATION_PART_OF}; 
-    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`
-  );
-  return numberOfParents > 0;
+export const batchIsSubSector = async (sectorIds) => {
+  const batchSubsectors = await listThroughGetTos(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return batchSubsectors.map((b) => b.edges.length > 0);
 };
 
+// TODO MIGRATE
 export const targetedOrganizations = async (sectorId) =>
   find(
     `match $sector has internal_id "${escapeString(sectorId)}";

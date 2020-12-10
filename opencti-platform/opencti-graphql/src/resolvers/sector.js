@@ -2,9 +2,9 @@ import {
   addSector,
   findAll,
   findById,
-  isSubSector,
-  subSectors,
-  parentSectors,
+  batchIsSubSector,
+  batchParentSectors,
+  batchSubSectors,
   targetedOrganizations,
 } from '../domain/sector';
 import {
@@ -18,6 +18,11 @@ import {
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const parentSectorsLoader = initBatchLoader(batchParentSectors);
+const subSectorsLoader = initBatchLoader(batchSubSectors);
+const isSubSectorLoader = initBatchLoader(batchIsSubSector);
 
 const sectorResolvers = {
   Query: {
@@ -25,9 +30,9 @@ const sectorResolvers = {
     sectors: (_, args) => findAll(args),
   },
   Sector: {
-    parentSectors: (sector) => parentSectors(sector.id),
-    subSectors: (sector) => subSectors(sector.id),
-    isSubSector: (sector) => isSubSector(sector.id),
+    parentSectors: (sector) => parentSectorsLoader.load(sector.id),
+    subSectors: (sector) => subSectorsLoader.load(sector.id),
+    isSubSector: (sector) => isSubSectorLoader.load(sector.id),
     targetedOrganizations: (sector) => targetedOrganizations(sector.id),
   },
   SectorsFilter: {

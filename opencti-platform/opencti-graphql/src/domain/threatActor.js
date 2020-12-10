@@ -18,6 +18,6 @@ export const addThreatActor = async (user, threatActor) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const locations = (threatActorId) => {
-  return listThroughGetFroms(threatActorId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
+export const batchLocations = (threatActorIds) => {
+  return listThroughGetFroms(threatActorIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
 };

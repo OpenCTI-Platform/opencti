@@ -102,8 +102,8 @@ export const stixCyberObservableAskEnrichment = async (user, observableId, conne
   return work;
 };
 
-export const indicators = (stixCyberObservableId) => {
-  return listThroughGetTos(stixCyberObservableId, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+export const batchIndicators = (stixCyberObservableIds) => {
+  return listThroughGetTos(stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
 export const observableValue = (stixCyberObservable) => {
