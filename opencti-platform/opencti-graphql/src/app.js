@@ -40,7 +40,7 @@ const createApp = async (apolloServer, broadcaster) => {
   app.use(helmet());
   app.use(helmet.frameguard());
   app.use(helmet.expectCt({ enforce: true, maxAge: 30 }));
-  app.use(helmet.referrerPolicy());
+  app.use(helmet.referrerPolicy({ policy: 'unsafe-url' }));
   app.use(
     helmet.contentSecurityPolicy({
       directives: {
