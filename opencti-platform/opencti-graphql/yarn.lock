@@ -7468,7 +7468,7 @@ minimist@^1.1.1, minimist@^1.2.0, minimist@^1.2.5:
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.5.tgz#67d66014b66a6a8aaa0c083c5fd58df4e4e97602"
   integrity sha512-FM9nNUYrRBAELZQT3xeZQ7fmMOBg6nWNmJKTcgsJeaLstP/UODVpGsr5OhXhhXg6f+qtJ8uiZ+PUxkDWcgIXLw==
 
-minio@^7.0.16:
+minio@^7.0.17:
   version "7.0.17"
   resolved "https://registry.yarnpkg.com/minio/-/minio-7.0.17.tgz#5cdd75f9580ce38b1a7d54fb60bc9e1961546033"
   integrity sha512-57Zg+evjZikR5QoUh0JwC0RPb/Q3BamR28ozJ1Aui3ry8qy6Ycj8Uc91Mfh+By+2AzKo4I7eyR/85EESmcJZfg==
