@@ -11,7 +11,7 @@ import {
   distributionEntities,
   escape,
   listEntities,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   loadById,
   timeSeriesEntities,
   updateAttribute,
@@ -103,7 +103,7 @@ export const stixCyberObservableAskEnrichment = async (user, observableId, conne
 };
 
 export const indicators = (stixCyberObservableId) => {
-  return listToEntitiesThroughRelation(stixCyberObservableId, null, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+  return listThroughGetTos(stixCyberObservableId, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
 export const observableValue = (stixCyberObservable) => {

@@ -9,8 +9,7 @@ import {
   deleteRelationsByFromAndTo,
   internalLoadById,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  listThroughGetFroms,
   loadById,
   loadByIdFullyResolved,
   mergeEntities,
@@ -68,15 +67,15 @@ export const batchCreatedBy = async (stixCoreObjectId) => {
 };
 
 export const reports = async (stixCoreObjectId) => {
-  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
 export const notes = (stixCoreObjectId) => {
-  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
 export const opinions = (stixCoreObjectId) => {
-  return listFromEntitiesThroughRelation(stixCoreObjectId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+  return listThroughGetFroms(stixCoreObjectId, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
 export const batchLabels = (stixCoreObjectIds) => {
@@ -88,12 +87,7 @@ export const batchMarkingDefinitions = (stixCoreObjectIds) => {
 };
 
 export const externalReferences = (stixDomainObjectId) => {
-  return listToEntitiesThroughRelation(
-    stixDomainObjectId,
-    null,
-    RELATION_EXTERNAL_REFERENCE,
-    ENTITY_TYPE_EXTERNAL_REFERENCE
-  );
+  return listThroughGetTos(stixDomainObjectId, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 export const batchKillChainPhases = (stixCoreObjectIds) => {

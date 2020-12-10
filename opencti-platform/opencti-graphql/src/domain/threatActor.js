@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listFromEntitiesThroughRelation, loadById } from '../database/grakn';
+import { createEntity, listEntities, listThroughGetFroms, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/stixDomainObject';
@@ -19,5 +19,5 @@ export const addThreatActor = async (user, threatActor) => {
 };
 
 export const locations = (threatActorId) => {
-  return listFromEntitiesThroughRelation(threatActorId, null, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
+  return listThroughGetFroms(threatActorId, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
 };

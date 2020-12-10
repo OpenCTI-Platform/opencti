@@ -4,8 +4,7 @@ import {
   escapeString,
   getSingleValueNumber,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   loadById,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -32,11 +31,11 @@ export const batchCoursesOfAction = (attackPatternIds) => {
 };
 
 export const parentAttackPatterns = (attackPatternId) => {
-  return listToEntitiesThroughRelation(attackPatternId, null, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetTos(attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const subAttackPatterns = (attackPatternId) => {
-  return listFromEntitiesThroughRelation(attackPatternId, null, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetFroms(attackPatternId, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const isSubAttackPattern = async (attackPatternId) => {

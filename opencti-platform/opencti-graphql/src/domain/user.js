@@ -29,7 +29,7 @@ import {
   escapeString,
   find,
   listEntities,
-  listToEntitiesThroughRelation,
+  listThroughGetTos,
   load,
   loadById,
   now,
@@ -107,7 +107,7 @@ export const findAll = (args) => {
 };
 
 export const groups = (userId) => {
-  return listToEntitiesThroughRelation(userId, ENTITY_TYPE_USER, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+  return listThroughGetTos(userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
 };
 
 export const token = async (userId, args, context) => {

@@ -396,23 +396,6 @@ export const loadThroughGetFrom = async (sources, relationType, targetEntityType
 export const loadThroughGetTo = async (sources, relationType, targetEntityType) => {
   return loadThrough(sources, 'from', relationType, targetEntityType, { paginate: false });
 };
-
-// Standard loading
-export const listToEntitiesThroughRelation = (fromId, fromType, relationType, toEntityType) => {
-  return listThroughGetTos(fromId, relationType, toEntityType);
-};
-export const listFromEntitiesThroughRelation = (toId, toType, relationType, fromEntityType, infer = false) => {
-  // TODO JRI MIGRATION
-  return find(
-    `match $from isa ${fromEntityType}; 
-    $rel(${relationType}_from:$from, ${relationType}_to:$to) isa ${relationType};
-    ${toType ? `$to isa ${toType};` : ''}
-    $to has internal_id "${escapeString(toId)}"; get;`,
-    ['from'],
-    { paginationKey: 'from', infer }
-  );
-};
-
 export const listEntities = async (entityTypes, searchFields, args = {}) => {
   // filters contains potential relations like, mitigates, tagged ...
   return elPaginate(ENTITIES_INDICES, R.assoc('types', entityTypes, args));
