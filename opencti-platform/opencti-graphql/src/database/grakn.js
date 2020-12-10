@@ -23,6 +23,8 @@ import {
   elAggregationCount,
   elAggregationRelationsCount,
   elDeleteInstanceIds,
+  elFindBy,
+  elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
@@ -42,9 +44,10 @@ import {
   normalizeName,
   X_MITRE_ID_FIELD,
 } from '../schema/identifier';
-import { lockResource, storeCreateEvent, storeUpdateEvent } from './redis';
+import { lockResource, storeCreateEvent, storeDeleteEvent, storeUpdateEvent } from './redis';
 import { buildStixData, cleanStixIds, STIX_SPEC_VERSION } from './stix';
 import {
+  ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
@@ -1817,36 +1820,24 @@ export const createEntity = async (user, input, type) => {
 // endregion
 
 // region mutation deletion
-/*
-const getElementsRelated = async (targetId, elements = [], options = {}) => {
-  const eid = escapeString(targetId);
-  const read = `match $from has internal_id "${eid}"; $rel($from, $to) isa ${ABSTRACT_BASIC_RELATIONSHIP}; get;`;
-  const connectedRelations = await find(read, ['rel'], options);
+const getRelatedRelations = async (targetId, elements = [], options = {}) => {
+  const connectedRelations = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
   const connectedRelationsIds = R.map((r) => {
-    const { internal_id: internalId, entity_type: entityType } = r.rel;
+    const { internal_id: internalId, entity_type: entityType } = r;
     return { internal_id: internalId, type: entityType, relDependency: true };
   }, connectedRelations);
   elements.push(...connectedRelationsIds);
-  await Promise.all(connectedRelationsIds.map(({ id }) => getElementsRelated(id, elements, options)));
+  // eslint-disable-next-line no-unused-vars
+  await Promise.all(connectedRelationsIds.map(({ id }) => getRelatedRelations(id, elements, options)));
   return elements;
 };
-
-const deleteElementRaw = async (wTx, element, isRelation, options = {}) => {
+const getElementsToRemove = async (element, isRelation, options = {}) => {
   // 00. Load everything we need to remove
   const dependencies = [{ internal_id: element.internal_id, type: element.entity_type, relDependency: isRelation }];
-  await getElementsRelated(element.internal_id, dependencies, options);
-  // 01. Delete dependencies.
-  // Remove all dep in reverse order to handle correctly relations
-  for (let i = dependencies.length - 1; i >= 0; i -= 1) {
-    const { internal_id: id, type } = dependencies[i];
-    const query = `match $x has internal_id "${id}"; delete $x isa ${type};`;
-    logger.debug(`[GRAKN - infer: false] delete element ${id}`, { query });
-    // eslint-disable-next-line no-await-in-loop
-    await wTx.query(query, { infer: false });
-  }
+  await getRelatedRelations(element.internal_id, dependencies, options);
   // Return list of deleted ids
   return dependencies;
-}; */
+};
 export const deleteElementById = async (user, elementId, type, options = {}) => {
   if (R.isNil(type)) {
     /* istanbul ignore next */
@@ -1858,16 +1849,10 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
     throw DatabaseError(`Cant find entity to delete ${elementId}`);
   }
   // Delete entity and all dependencies
-  // const deps = await executeWrite(async (wTx) => {
-  //   const delDependencies = await deleteElementRaw(wTx, element, false, options);
-  //   await storeDeleteEvent(user, element);
-  //   return delDependencies;
-  // });
-  // TODO JRI MIGRATION
-  const deps = [element];
+  const elements = await getElementsToRemove(element, false, options);
   // Update elastic index.
-  for (let index = 0; index < deps.length; index += 1) {
-    const { internal_id: id, relDependency } = deps[index];
+  for (let index = 0; index < elements.length; index += 1) {
+    const { internal_id: id, relDependency } = elements[index];
     if (relDependency) {
       // eslint-disable-next-line
       await elRemoveRelationConnection(id);
@@ -1876,25 +1861,25 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
     // eslint-disable-next-line
     await elDeleteInstanceIds([id]);
   }
+  await storeDeleteEvent(user, element);
+  // Return id
   return elementId;
 };
-export const deleteRelationsByFromAndTo = async () => {
-  // /* istanbul ignore if */
-  // if (R.isNil(scopeType)) {
-  //   throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
-  // }
-  // const fromThing = await internalLoadById(fromId, opts);
-  // const toThing = await internalLoadById(toId, opts);
-  // const read = `match $from has internal_id "${fromThing.internal_id}";
-  //   $to has internal_id "${toThing.internal_id}";
-  //   $rel($from, $to) isa ${relationshipType}; get;`;
-  // const relationsToDelete = await find(read, ['rel'], opts);
-  // for (let i = 0; i < relationsToDelete.length; i += 1) {
-  //   const r = relationsToDelete[i];
-  //   // eslint-disable-next-line no-await-in-loop
-  //   await deleteElementById(user, r.rel.internal_id, r.rel.entity_type, opts);
-  // }
-  // TODO JRI MIGRATION
+export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshipType, scopeType, opts = {}) => {
+  /* istanbul ignore if */
+  if (R.isNil(scopeType)) {
+    throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
+  }
+  const fromThing = await internalLoadById(fromId, opts);
+  const toThing = await internalLoadById(toId, opts);
+  // TODO SAM Currently it doesnt force the direction.
+  // Looks like the caller doesnt give the correct from, to currently
+  const relationsToDelete = await elFindByFromAndTo(fromThing.internal_id, toThing.internal_id, relationshipType);
+  for (let i = 0; i < relationsToDelete.length; i += 1) {
+    const r = relationsToDelete[i];
+    // eslint-disable-next-line no-await-in-loop
+    await deleteElementById(user, r.rel.internal_id, r.rel.entity_type, opts);
+  }
   return true;
 };
 export const deleteAttributeById = async (id) => {

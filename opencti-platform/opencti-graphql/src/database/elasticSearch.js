@@ -5,17 +5,17 @@ import * as R from 'ramda';
 import {
   buildPagination,
   INDEX_INTERNAL_OBJECTS,
-  INDEX_STIX_META_OBJECTS,
-  INDEX_STIX_DOMAIN_OBJECTS,
-  INDEX_STIX_CYBER_OBSERVABLES,
   INDEX_INTERNAL_RELATIONSHIPS,
   INDEX_STIX_CORE_RELATIONSHIPS,
-  INDEX_STIX_SIGHTING_RELATIONSHIPS,
   INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  INDEX_STIX_CYBER_OBSERVABLES,
+  INDEX_STIX_DOMAIN_OBJECTS,
+  INDEX_STIX_META_OBJECTS,
   INDEX_STIX_META_RELATIONSHIPS,
+  INDEX_STIX_SIGHTING_RELATIONSHIPS,
   inferIndexFromConceptType,
-  pascalize,
   isNotEmptyField,
+  pascalize,
 } from './utils';
 import conf, { logger } from '../config/conf';
 import { ConfigurationError, DatabaseError, FunctionalError } from '../config/errors';
@@ -29,8 +29,8 @@ import {
   BASE_TYPE_RELATION,
   ID_INTERNAL,
   ID_STANDARD,
-  INTERNAL_IDS_ALIASES,
   IDS_STIX,
+  INTERNAL_IDS_ALIASES,
   isAbstract,
   REL_INDEX_PREFIX,
 } from '../schema/general';
@@ -420,18 +420,93 @@ export const elReconstructRelation = (concept) => {
   return elMergeRelation(concept, fromConnection, toConnection);
 };
 // endregion
+export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
+  const mustTerms = [];
+  mustTerms.push({
+    nested: {
+      path: 'connections',
+      query: {
+        bool: {
+          must: [
+            { match_phrase: { 'connections.internal_id': fromId } },
+            // { query_string: { query: `*_from`, fields: [`connections.role`] } },
+          ],
+        },
+      },
+    },
+  });
+  mustTerms.push({
+    nested: {
+      path: 'connections',
+      query: {
+        bool: {
+          must: [
+            { match_phrase: { 'connections.internal_id': toId } },
+            // { query_string: { query: `*_to`, fields: [`connections.role`] } },
+          ],
+        },
+      },
+    },
+  });
+  mustTerms.push({
+    bool: {
+      should: [
+        { match_phrase: { 'entity_type.keyword': relationshipType } },
+        { match_phrase: { 'parent_types.keyword': relationshipType } },
+      ],
+      minimum_should_match: 1,
+    },
+  });
+  const query = {
+    index: RELATIONSHIPS_INDICES,
+    size: 1000,
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    body: {
+      query: {
+        bool: {
+          must: mustTerms,
+        },
+      },
+    },
+  };
+  const data = await el.search(query).catch((e) => {
+    console.log(e);
+  });
+  const hits = [];
+  for (let index = 0; index < data.body.hits.hits.length; index += 1) {
+    const hit = data.body.hits.hits[index];
+    const loadedElement = R.assoc('_index', hit._index, hit._source);
+    hits.push(elReconstructRelation(loadedElement));
+  }
+  return hits;
+};
+
 export const elFindBy = async (fields, values, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
   const valsArray = Array.isArray(values) ? values : [values];
+  const fieldsArray = Array.isArray(fields) ? fields : [fields];
   const workingVals = R.filter((id) => isNotEmptyField(id), valsArray);
   if (workingVals.length === 0) return [];
   const valsTermsPerType = [];
   for (let index = 0; index < workingVals.length; index += 1) {
     const val = workingVals[index];
-    for (let indexType = 0; indexType < fields.length; indexType += 1) {
-      const field = fields[indexType];
-      const term = { [`${field}.keyword`]: val };
-      valsTermsPerType.push({ term });
+    for (let indexType = 0; indexType < fieldsArray.length; indexType += 1) {
+      const field = fieldsArray[indexType];
+      if (R.includes('connections.', field)) {
+        valsTermsPerType.push({
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [{ match_phrase: { [field]: val } }],
+              },
+            },
+          },
+        });
+      } else {
+        const term = { [`${field}.keyword`]: val };
+        valsTermsPerType.push({ term });
+      }
     }
   }
   // const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
