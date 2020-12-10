@@ -17,7 +17,7 @@ export const findById = (killChainPhaseId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_KILL_CHAIN_PHASE], ['kill_chain_name', 'phase_name'], args);
+  return listEntities([ENTITY_TYPE_KILL_CHAIN_PHASE], args);
 };
 
 export const addKillChainPhase = async (user, killChainPhase) => {

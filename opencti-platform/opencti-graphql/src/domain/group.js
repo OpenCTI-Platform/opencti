@@ -23,7 +23,7 @@ export const findById = (groupId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_GROUP], ['name'], args);
+  return listEntities([ENTITY_TYPE_GROUP], args);
 };
 
 export const members = async (groupId) => {

@@ -64,7 +64,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
   }
-  return listEntities(types, ['standard_id'], args);
+  return listEntities(types, args);
 };
 
 // region by elastic

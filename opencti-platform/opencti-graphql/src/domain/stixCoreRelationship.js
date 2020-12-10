@@ -1,14 +1,13 @@
 import { assoc, dissoc, propOr } from 'ramda';
+import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  escapeString,
   listThroughGetFroms,
   listRelations,
   listThroughGetTos,
-  load,
   loadById,
   updateAttribute,
 } from '../database/grakn';
@@ -42,7 +41,6 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import * as R from "ramda";
 
 export const findAll = async (args) =>
   listRelations(propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);

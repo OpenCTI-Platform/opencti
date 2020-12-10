@@ -9,7 +9,7 @@ export const findById = (infrastructureId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_INFRASTRUCTURE], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_INFRASTRUCTURE], args);
 };
 
 export const addInfrastructure = async (user, infrastructure) => {

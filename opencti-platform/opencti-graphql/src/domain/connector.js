@@ -3,6 +3,7 @@ import {
   createEntity,
   deleteElementById,
   find,
+  listEntities,
   loadById,
   now,
   patchAttribute,
@@ -28,12 +29,13 @@ const completeConnector = (connector) => {
 // endregion
 
 // region grakn fetch
-// TODO REFACTOR JRI
 export const loadConnectorById = (id) =>
   loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
+
 export const connectors = () => {
-  const query = `match $c isa ${ENTITY_TYPE_CONNECTOR}; get;`;
-  return find(query, ['c']).then((elements) => map((conn) => completeConnector(conn.c), elements));
+  return listEntities([ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) =>
+    map((conn) => completeConnector(conn), elements)
+  );
 };
 
 export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = false) => {

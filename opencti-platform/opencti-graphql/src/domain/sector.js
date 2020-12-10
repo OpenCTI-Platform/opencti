@@ -20,7 +20,7 @@ export const findById = (sectorId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], ['name', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], args);
 };
 
 export const batchParentSectors = (sectorIds) => {

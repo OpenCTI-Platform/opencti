@@ -29,7 +29,7 @@ export const findById = (reportId) => {
 };
 
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_REPORT], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
 // Entities tab

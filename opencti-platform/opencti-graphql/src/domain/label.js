@@ -10,7 +10,7 @@ export const findById = (labelId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LABEL], ['value'], args);
+  return listEntities([ENTITY_TYPE_LABEL], args);
 };
 
 export const stringToColour = (str) => {

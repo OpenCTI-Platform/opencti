@@ -383,7 +383,7 @@ export const loadThroughGetFrom = async (sources, relationType, targetEntityType
 export const loadThroughGetTo = async (sources, relationType, targetEntityType) => {
   return loadThrough(sources, 'from', relationType, targetEntityType);
 };
-export const listEntities = async (entityTypes, searchFields, args = {}) => {
+export const listEntities = async (entityTypes, args = {}) => {
   // filters contains potential relations like, mitigates, tagged ...
   return elPaginate(ENTITIES_INDICES, R.assoc('types', entityTypes, args));
 };

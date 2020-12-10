@@ -19,7 +19,7 @@ export const findById = (regionId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_REGION], ['name', 'description', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_LOCATION_REGION], args);
 };
 
 export const parentRegions = (regionId) => {

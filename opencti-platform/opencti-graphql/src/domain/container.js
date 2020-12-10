@@ -25,7 +25,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_CONTAINER);
   }
-  return listEntities(types, ['name', 'description'], args);
+  return listEntities(types, args);
 };
 
 // Entities tab

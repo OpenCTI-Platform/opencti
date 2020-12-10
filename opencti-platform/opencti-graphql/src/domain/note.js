@@ -21,7 +21,7 @@ export const findById = (noteId) => {
 };
 
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_NOTE], ['name', 'attribute_abstract', 'content'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
 export const noteContainsStixObjectOrStixRelationship = async (noteId, thingId) => {

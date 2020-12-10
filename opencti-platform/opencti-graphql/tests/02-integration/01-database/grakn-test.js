@@ -211,7 +211,7 @@ describe('Grakn entities listing', () => {
   // filters part. Definition -> { key, values, fromRole, toRole }
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should list entities (noCache = %s)', async (noCache) => {
-    const malwares = await listEntities(['Malware'], ['name', 'aliases'], { noCache });
+    const malwares = await listEntities(["Malware"], { noCache });
     expect(malwares).not.toBeNull();
     expect(malwares.edges.length).toEqual(2);
     const dataMap = new Map(malwares.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
@@ -230,7 +230,7 @@ describe('Grakn entities listing', () => {
     expect(malware._index).toEqual(INDEX_STIX_DOMAIN_OBJECTS);
   });
   it.each(noCacheCases)('should list multiple entities (noCache = %s)', async (noCache) => {
-    const entities = await listEntities(['Malware', 'Organization'], ['name'], { noCache });
+    const entities = await listEntities(["Malware", "Organization"], { noCache });
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(7); // 2 malwares + 8 organizations
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
@@ -241,34 +241,34 @@ describe('Grakn entities listing', () => {
   });
   it.each(noCacheCases)('should list entities with basic filtering (noCache = %s)', async (noCache) => {
     const options = { first: 1, after: offsetToCursor(2), orderBy: 'created', orderMode: 'desc', noCache };
-    const indicators = await listEntities(['Indicator'], ['name', 'alias'], options);
+    const indicators = await listEntities(["Indicator"], options);
     expect(indicators.edges.length).toEqual(1);
     const indicator = R.head(indicators.edges).node;
     expect(indicator.name).toEqual('2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957');
   });
   it.each(noCacheCases)('should list entities with search (noCache = %s)', async (noCache) => {
     let options = { search: 'xolod', noCache };
-    let indicators = await listEntities(['Indicator'], ['name'], options);
+    let indicators = await listEntities(["Indicator"], options);
     expect(indicators.edges.length).toEqual(1);
     options = { search: 'location', noCache };
-    indicators = await listEntities(['Indicator'], ['description'], options);
+    indicators = await listEntities(["Indicator"], options);
     expect(indicators.edges.length).toEqual(2);
     options = { search: 'i want a location', noCache };
-    indicators = await listEntities(['Indicator'], ['description'], options);
+    indicators = await listEntities(["Indicator"], options);
     expect(indicators.edges.length).toEqual(noCache ? 0 : 3); // Grakn is not a full text search engine :)
   });
   it.each(noCacheCases)('should list entities order by relation (noCache = %s)', async (noCache) => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
     let options = { orderBy: 'rel_located-at.name', orderMode: 'desc', noCache };
-    let identities = await listEntities(['Location'], ['name'], options);
+    let identities = await listEntities(["Location"], options);
     expect(identities.edges.length).toEqual(6);
     const firstDescResult =
       R.head(identities.edges).node.name === 'Europe' || R.head(identities.edges).node.name === 'France';
     expect(firstDescResult).toBeTruthy();
     expect(R.last(identities.edges).node.name).toEqual('Western Europe');
     options = { orderBy: 'rel_located-at.name', orderMode: 'asc', noCache };
-    identities = await listEntities(['Location'], ['name'], options);
+    identities = await listEntities(["Location"], options);
     expect(identities.edges.length).toEqual(6);
     expect(R.head(identities.edges).node.name).toEqual('Western Europe');
     const lastAscResult =
@@ -280,7 +280,7 @@ describe('Grakn entities listing', () => {
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
     // We accept that ElasticSearch is not able to have both direction of the relations
     const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
-    const locations = await listEntities(['Location'], ['name'], options);
+    const locations = await listEntities(["Location"], options);
     expect(locations.edges.length).toEqual(6);
     const firstResults = ['France'];
     expect(R.includes(R.head(locations.edges).node.name, firstResults)).toBeTruthy();
@@ -293,7 +293,7 @@ describe('Grakn entities listing', () => {
       { key: 'name', values: ['Spear phishing messages with malicious links'] },
     ];
     const options = { filters, noCache };
-    const attacks = await listEntities(['Attack-Pattern'], ['name'], options);
+    const attacks = await listEntities(["Attack-Pattern"], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
     expect(R.head(attacks.edges).node.standard_id).toEqual('attack-pattern--acdfc109-e0fd-5711-839b-a37ee49529b9');
@@ -305,7 +305,7 @@ describe('Grakn entities listing', () => {
     const identity = await elLoadByIds('identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5');
     const filters = [{ key: `rel_created-by.internal_id`, values: [identity.internal_id] }];
     const options = { filters, noCache };
-    const entities = await listEntities(['Attack-Pattern', 'Intrusion-Set'], ['name'], options);
+    const entities = await listEntities(["Attack-Pattern", "Intrusion-Set"], options);
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(3);
   });
@@ -321,7 +321,7 @@ describe('Grakn entities listing', () => {
     async (field, val, noCache) => {
       const filters = [{ key: `rel_created-by.${field}`, values: [val], toRole: 'created-by_to' }];
       const options = { filters, noCache };
-      const entities = await listEntities(['Stix-Domain-Object'], ['name'], options);
+      const entities = await listEntities(["Stix-Domain-Object"], options);
       expect(entities).not.toBeNull();
       expect(entities.edges.length).toEqual(3);
       const aggregationMap = new Map(

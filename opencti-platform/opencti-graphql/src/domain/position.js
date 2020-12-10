@@ -1,8 +1,12 @@
 import { assoc } from 'ramda';
-import { createEntity, escapeString, listEntities, loadById, load } from '../database/grakn';
+import * as R from 'ramda';
+import { createEntity, listEntities, loadById, listThroughGetTos } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_POSITION } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_LOCATION_CITY,
+  ENTITY_TYPE_LOCATION_POSITION,
+} from '../schema/stixDomainObject';
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
@@ -11,17 +15,12 @@ export const findById = (positionId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_POSITION], ['name', 'description', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_LOCATION_POSITION], args);
 };
 
-export const city = async (positionId) => {
-  const element = await load(
-    `match $to isa ${ENTITY_TYPE_LOCATION_CITY}; 
-    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-    $from has internal_id "${escapeString(positionId)}"; get;`,
-    ['to']
-  );
-  return element && element.to;
+export const batchCity = async (positionIds) => {
+  const batchCities = await listThroughGetTos(positionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_CITY);
+  return batchCities.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
 export const addPosition = async (user, position) => {

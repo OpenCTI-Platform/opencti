@@ -1,4 +1,4 @@
-import { addPosition, findAll, findById, city } from '../domain/position';
+import { addPosition, findAll, findById, batchCity } from '../domain/position';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -9,6 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const batchCityLoader = initBatchLoader(batchCity);
 
 const positionResolvers = {
   Query: {
@@ -16,7 +19,7 @@ const positionResolvers = {
     positions: (_, args) => findAll(args),
   },
   Position: {
-    city: (position) => city(position.id),
+    city: (position) => batchCityLoader.load(position.id),
   },
   PositionsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

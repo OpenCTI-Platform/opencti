@@ -21,7 +21,7 @@ export const findById = (observedDataId) => {
 };
 
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_OBSERVED_DATA], ['standard_id'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
 };
 
 // All entities

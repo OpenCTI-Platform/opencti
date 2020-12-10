@@ -21,7 +21,7 @@ export const findById = (externalReferenceId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_EXTERNAL_REFERENCE], ['source_name', 'description'], args);
+  return listEntities([ENTITY_TYPE_EXTERNAL_REFERENCE], args);
 };
 
 export const addExternalReference = async (user, externalReference) => {

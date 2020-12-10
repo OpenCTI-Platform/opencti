@@ -56,7 +56,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  return listEntities(types, ['standard_id'], args);
+  return listEntities(types, args);
 };
 
 export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);

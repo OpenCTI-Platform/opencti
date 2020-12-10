@@ -110,7 +110,7 @@ export const findById = (indicatorId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_INDICATOR], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_INDICATOR], args);
 };
 
 export const addIndicator = async (user, indicator) => {

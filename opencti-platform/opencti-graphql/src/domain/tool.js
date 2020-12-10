@@ -9,7 +9,7 @@ export const findById = (toolId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_TOOL], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_TOOL], args);
 };
 
 export const addTool = async (user, tool) => {

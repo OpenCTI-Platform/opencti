@@ -12,7 +12,7 @@ export const findById = (countryId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_COUNTRY], ['name', 'description', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_LOCATION_COUNTRY], args);
 };
 
 export const batchRegion = async (countryIds) => {

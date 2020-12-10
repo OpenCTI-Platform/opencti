@@ -10,7 +10,7 @@ export const findById = (threatActorId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_THREAT_ACTOR], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_THREAT_ACTOR], args);
 };
 
 export const addThreatActor = async (user, threatActor) => {

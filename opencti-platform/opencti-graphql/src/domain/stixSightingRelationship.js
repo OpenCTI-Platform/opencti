@@ -40,6 +40,7 @@ import {
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
 };
+
 export const findById = (stixSightingRelationshipId) => {
   return loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };

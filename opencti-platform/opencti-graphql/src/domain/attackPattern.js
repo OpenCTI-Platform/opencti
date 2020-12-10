@@ -10,7 +10,7 @@ export const findById = (attackPatternId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_ATTACK_PATTERN], ['name', 'description', 'x_mitre_id', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_ATTACK_PATTERN], args);
 };
 
 export const addAttackPattern = async (user, attackPattern) => {

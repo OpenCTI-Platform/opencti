@@ -18,7 +18,7 @@ export const findById = (intrusionSetId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_INTRUSION_SET], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_INTRUSION_SET], args);
 };
 
 export const addIntrusionSet = async (user, intrusionSet) => {

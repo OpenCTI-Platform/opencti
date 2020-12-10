@@ -101,7 +101,7 @@ export const findById = async (userId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_USER], ['name', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_USER], args);
 };
 
 export const batchGroups = async (userIds) => {
@@ -174,12 +174,12 @@ export const findRoleById = (roleId) => {
 };
 
 export const findRoles = (args) => {
-  return listEntities([ENTITY_TYPE_ROLE], ['name'], args);
+  return listEntities([ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = (args) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);
-  return listEntities([ENTITY_TYPE_CAPABILITY], ['description'], finalArgs);
+  return listEntities([ENTITY_TYPE_CAPABILITY], finalArgs);
 };
 
 export const roleDelete = async (user, roleId) => {

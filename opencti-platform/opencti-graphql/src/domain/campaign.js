@@ -10,7 +10,7 @@ export const findById = (campaignId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_CAMPAIGN], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_CAMPAIGN], args);
 };
 
 // region time series

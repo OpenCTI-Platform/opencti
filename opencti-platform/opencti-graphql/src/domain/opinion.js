@@ -20,7 +20,7 @@ export const findById = (opinionId) => {
   return loadById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_OPINION], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_OPINION], args);
 };
 
 // Entities tab

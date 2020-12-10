@@ -17,7 +17,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_LOCATION);
   }
-  return listEntities(types, ['name', 'description', 'aliases'], args);
+  return listEntities(types, args);
 };
 
 export const addLocation = async (user, location) => {

@@ -590,51 +590,6 @@ type Connector implements BasicObject & InternalObject {
   works(status: String): [Work]
 }
 
-############## Workspaces
-enum WorkspacesOrdering {
-  name
-  created_at
-  updated_at
-}
-enum WorkspacesFilter {
-  workspace_type
-}
-input WorkspacesFiltering {
-  key: WorkspacesFilter!
-  values: [String]
-  operator: String
-}
-type WorkspaceConnection {
-  pageInfo: PageInfo!
-  edges: [WorkspaceEdge]
-}
-type WorkspaceEdge {
-  cursor: String!
-  node: Workspace!
-}
-type Workspace implements BasicObject & InternalObject {
-  id: ID! # internal_id
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  # Workspace
-  workspace_type: String!
-  name: String!
-  description: String
-  x_opencti_graph_data: String
-  workspace_data: String
-  created_at: DateTime!
-  updated_at: DateTime!
-  # Technical
-  editContext: [EditUserContext]
-}
-input WorkspaceAddInput {
-  workspace_type: String!
-  name: String!
-  description: String
-  clientMutationId: String
-}
-
 ######## STIX OBJECT ENTITIES
 
 interface StixObject {
@@ -7289,17 +7244,6 @@ type Query {
     filters: [WorksFiltering]
     filterMode: FilterMode
   ): WorkConnection @auth(for: [MODULES])
-  workspace(id: String!): Workspace @auth(for: [EXPLORE])
-  workspaces(
-    first: Int
-    after: ID
-    orderBy: WorkspacesOrdering
-    orderMode: OrderingMode
-    search: String
-    filters: [WorkspacesFiltering]
-    filterMode: FilterMode
-  ): WorkspaceConnection @auth(for: [EXPLORE])
-  workspacesNumber(endDate: DateTime): Number @auth(for: [EXPLORE])
 
   ######## STIX OBJECT ENTITIES
 
@@ -8001,7 +7945,6 @@ type Subscription {
   stixSightingRelationship(id: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE])
   stixCyberObservableRelationship(id: ID!): StixCyberObservableRelationship @auth(for: [KNOWLEDGE])
   externalReference(id: ID!): ExternalReference @auth(for: [KNOWLEDGE])
-  workspace(id: ID!): Workspace @auth(for: [EXPLORE])
 }
 
 ### MUTATIONS
@@ -8052,14 +7995,6 @@ type RoleEditMutations {
   contextClean: Role
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
   relationDelete(toId: String!, relationship_type: String!): Role
-}
-type WorkspaceEditMutations {
-  delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
-  fieldPatch(input: EditInput, operation: EditOperation): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  contextPatch(input: EditContext): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  contextClean: Workspace @auth(for: [EXPLORE_EXUPDATE])
-  relationAdd(input: InternalRelationshipAddInput): StixMetaRelationship @auth(for: [EXPLORE_EXUPDATE])
-  relationDelete(toId: String!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
 }
 
 ######## STIX OBJECT ENTITIES
@@ -8400,8 +8335,6 @@ type Mutation {
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
-  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  workspaceEdit(id: ID!): WorkspaceEditMutations
 
   ######## STIX OBJECT ENTITIES
 

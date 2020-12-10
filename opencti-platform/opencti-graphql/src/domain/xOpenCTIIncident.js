@@ -10,7 +10,7 @@ export const findById = (incidentId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_X_OPENCTI_INCIDENT], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_X_OPENCTI_INCIDENT], args);
 };
 
 // region time series

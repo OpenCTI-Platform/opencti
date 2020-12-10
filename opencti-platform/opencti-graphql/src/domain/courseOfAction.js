@@ -10,7 +10,7 @@ export const findById = (courseOfActionId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_COURSE_OF_ACTION], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_COURSE_OF_ACTION], args);
 };
 
 export const addCourseOfAction = async (user, courseOfAction) => {

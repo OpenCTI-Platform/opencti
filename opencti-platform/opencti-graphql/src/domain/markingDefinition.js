@@ -9,7 +9,7 @@ export const findById = (markingDefinitionId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_MARKING_DEFINITION], ['definition_type', 'definition'], args);
+  return listEntities([ENTITY_TYPE_MARKING_DEFINITION], args);
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
