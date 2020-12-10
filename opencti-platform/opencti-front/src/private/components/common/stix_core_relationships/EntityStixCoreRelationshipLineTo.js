@@ -102,7 +102,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                 style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
-                  confidence={node.inferred ? 1000 : node.confidence}
+                  confidence={node.confidence}
                   variant="inList"
                 />
               </div>
@@ -113,7 +113,6 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -144,7 +143,6 @@ const EntityStixCoreRelationshipLineToFragment = createFragmentContainer(
         start_time
         stop_time
         description
-        inferred
         from {
           ... on StixDomainObject {
             id

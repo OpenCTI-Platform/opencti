@@ -35,6 +35,10 @@ export const parentAttackPatterns = (attackPatternId) => {
   return listToEntitiesThroughRelation(attackPatternId, null, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
+export const batchSubAttackPatterns = (attackPatternIds) => {
+  return batchFromEntitiesThrough(attackPatternIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
+};
+
 export const subAttackPatterns = (attackPatternId) => {
   return listFromEntitiesThroughRelation(attackPatternId, null, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
 };

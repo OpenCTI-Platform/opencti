@@ -69,7 +69,7 @@ class WorkspaceExploreSpaceComponent extends Component {
 
   decodeWorkspaceData() {
     const { workspace } = this.props;
-    let workspaceData = { widgets: {}, config: { inferred: true } };
+    let workspaceData = { widgets: {} };
     if (workspace.workspace_data && workspace.workspace_data.length > 0) {
       workspaceData = JSON.parse(
         Buffer.from(workspace.workspace_data, 'base64').toString('ascii'),
@@ -149,16 +149,6 @@ class WorkspaceExploreSpaceComponent extends Component {
     this.saveWorkspace(finalWorkspaceData);
   }
 
-  handleChangeInferred() {
-    const workspaceData = this.decodeWorkspaceData();
-    const finalWorkspaceData = assoc(
-      'config',
-      assoc('inferred', !workspaceData.config.inferred, workspaceData.config),
-      workspaceData,
-    );
-    this.saveWorkspace(finalWorkspaceData);
-  }
-
   handleOpenConfig(config) {
     this.setState({ openConfig: true, currentWidget: config });
   }
@@ -202,19 +192,6 @@ class WorkspaceExploreSpaceComponent extends Component {
                 onChange={this.handleDateChange.bind(this, 'endDate')}
               />
             </Grid>
-            <Grid item={true} xs="auto">
-              <FormControlLabel
-                style={{ paddingTop: 5, marginRight: 15 }}
-                control={
-                  <Switch
-                    checked={propOr(false, 'inferred', workspaceData.config)}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color="primary"
-                  />
-                }
-                label={t('Inferences')}
-              />
-            </Grid>
           </Grid>
         </Drawer>
         <ResponsiveReactGridLayout
@@ -239,7 +216,6 @@ class WorkspaceExploreSpaceComponent extends Component {
                     <VictimologyDistribution
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
-                      inferred={workspaceData.config.inferred}
                       startDate={workspaceData.config.startDate}
                       endDate={workspaceData.config.endDate}
                     />
@@ -251,7 +227,6 @@ class WorkspaceExploreSpaceComponent extends Component {
                     <VictimologyTimeseries
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
-                      inferred={workspaceData.config.inferred}
                       startDate={workspaceData.config.startDate}
                       endDate={workspaceData.config.endDate}
                     />
@@ -263,7 +238,6 @@ class WorkspaceExploreSpaceComponent extends Component {
                     <CampaignsTimeseries
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
-                      inferred={workspaceData.config.inferred}
                       startDate={workspaceData.config.startDate}
                       endDate={workspaceData.config.endDate}
                     />
@@ -275,7 +249,6 @@ class WorkspaceExploreSpaceComponent extends Component {
                     <XOpenCTIIncidentsTimeseries
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
-                      inferred={workspaceData.config.inferred}
                       startDate={workspaceData.config.startDate}
                       endDate={workspaceData.config.endDate}
                     />
@@ -287,7 +260,6 @@ class WorkspaceExploreSpaceComponent extends Component {
                     <AttackPatternsDistribution
                       configuration={widget}
                       handleOpenConfig={this.handleOpenConfig.bind(this)}
-                      inferred={workspaceData.config.inferred}
                       startDate={workspaceData.config.startDate}
                       endDate={workspaceData.config.endDate}
                     />

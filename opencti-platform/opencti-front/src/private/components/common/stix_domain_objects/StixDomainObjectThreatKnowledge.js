@@ -93,14 +93,12 @@ const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
     $fromId: String
     $toTypes: [String]
     $endDate: DateTime
-    $inferred: Boolean
   ) {
     stixCoreRelationshipsNumber(
       type: $type
       fromId: $fromId
       toTypes: $toTypes
       endDate: $endDate
-      inferred: $inferred
     ) {
       total
       count
@@ -114,7 +112,6 @@ export const stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery = graphql
     $fromRole: String
     $toTypes: [String]
     $relationship_type: String
-    $inferred: Boolean
     $first: Int
   ) {
     ...StixDomainObjectGlobalKillChain_data
@@ -126,15 +123,8 @@ class StixDomainObjectThreatKnowledge extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      inferred: false,
       viewType: 'killchain',
     };
-  }
-
-  handleChangeInferred() {
-    this.setState({
-      inferred: !this.state.inferred,
-    });
   }
 
   handleChangeViewType(event, type) {
@@ -144,7 +134,7 @@ class StixDomainObjectThreatKnowledge extends Component {
   }
 
   render() {
-    const { inferred, viewType } = this.state;
+    const { viewType } = this.state;
     const {
       t,
       n,
@@ -178,7 +168,6 @@ class StixDomainObjectThreatKnowledge extends Component {
       fromId: stixDomainObjectId,
       toTypes: filter((x) => x.toLowerCase() !== stixDomainObjectType, toTypes),
       relationship_type: 'stix-core-relationship',
-      inferred,
     };
     if (viewType === 'timeline') {
       paginationOptions.orderBy = 'start_time';
@@ -188,27 +177,6 @@ class StixDomainObjectThreatKnowledge extends Component {
     }
     return (
       <div>
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            <Grid item={true} xs="auto">
-              <FormControlLabel
-                style={{ paddingTop: 5, marginRight: 15 }}
-                control={
-                  <Switch
-                    checked={inferred}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color="primary"
-                  />
-                }
-                label={t('Inferences')}
-              />
-            </Grid>
-          </Grid>
-        </Drawer>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={4}>
             <Card
@@ -267,7 +235,6 @@ class StixDomainObjectThreatKnowledge extends Component {
                     ? ['Stix-Cyber-Observable']
                     : 'Indicator',
                   endDate: monthsAgo(1),
-                  inferred,
                 }}
                 render={({ props }) => {
                   if (props && props.stixCoreRelationshipsNumber) {
@@ -317,7 +284,6 @@ class StixDomainObjectThreatKnowledge extends Component {
                 variables={{
                   fromId: stixDomainObjectId,
                   endDate: monthsAgo(1),
-                  inferred: false,
                 }}
                 render={({ props }) => {
                   if (props && props.stixCoreRelationshipsNumber) {
@@ -361,7 +327,6 @@ class StixDomainObjectThreatKnowledge extends Component {
               relationshipType="stix-core-relationship"
               title={t('Distribution of relations')}
               field="entity_type"
-              inferred={inferred}
               noDirection={true}
             />
           </Grid>

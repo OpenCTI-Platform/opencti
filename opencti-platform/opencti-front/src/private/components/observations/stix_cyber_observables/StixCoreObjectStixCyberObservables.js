@@ -143,7 +143,6 @@ class StixCoreObjectStixCyberObservables extends Component {
       orderAsc,
     } = this.state;
     const paginationOptions = {
-      inferred: false,
       toTypes: targetStixCyberObservableTypes,
       fromId: stixCoreObjectId,
       relationship_type: relationshipType || 'stix-core-relationship',

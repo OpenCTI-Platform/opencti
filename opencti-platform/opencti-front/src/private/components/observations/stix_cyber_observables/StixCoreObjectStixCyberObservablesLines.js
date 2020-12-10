@@ -60,7 +60,6 @@ StixCoreObjectStixCyberObservablesLines.propTypes = {
 
 export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
   query StixCoreObjectStixCyberObservablesLinesPaginationQuery(
-    $inferred: Boolean
     $fromId: String
     $toTypes: [String]
     $relationship_type: String
@@ -76,7 +75,6 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
   ) {
     ...StixCoreObjectStixCyberObservablesLines_data
     @arguments(
-      inferred: $inferred
       fromId: $fromId
       toTypes: $toTypes
       relationship_type: $relationship_type
@@ -99,7 +97,6 @@ export default createPaginationContainer(
     data: graphql`
       fragment StixCoreObjectStixCyberObservablesLines_data on Query
       @argumentDefinitions(
-        inferred: { type: "Boolean" }
         fromId: { type: "String" }
         toTypes: { type: "[String]" }
         relationship_type: { type: "String" }
@@ -117,7 +114,6 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         stixCoreRelationships(
-          inferred: $inferred
           fromId: $fromId
           toTypes: $toTypes
           relationship_type: $relationship_type
@@ -158,7 +154,6 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        inferred: fragmentVariables.inferred,
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
         relationship_type: fragmentVariables.relationship_type,

@@ -125,7 +125,6 @@ class StixDomainObjectIndicatorLineComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -153,7 +152,6 @@ const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
         stop_time
         description
         confidence
-        inferred
         created_at
         from {
           ... on Indicator {

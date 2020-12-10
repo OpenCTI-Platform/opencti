@@ -17,7 +17,6 @@ class VictimologyDistribution extends Component {
     const {
       configuration,
       handleOpenConfig,
-      inferred,
       startDate,
       endDate,
     } = this.props;
@@ -32,7 +31,6 @@ class VictimologyDistribution extends Component {
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             relationshipType="targets"
             field="name"
-            inferred={inferred}
             startDate={startDate}
             endDate={endDate}
           />
@@ -46,7 +44,6 @@ class VictimologyDistribution extends Component {
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             relationshipType="targets"
-            inferred={inferred}
             startDate={startDate}
             endDate={endDate}
           />
@@ -60,7 +57,6 @@ class VictimologyDistribution extends Component {
             title={propOr('Widget', 'title', configuration)}
             entityId={pathOr(null, ['entity', 'id'], configuration)}
             relationshipType="targets"
-            inferred={inferred}
             startDate={startDate}
             endDate={endDate}
           />
@@ -72,7 +68,6 @@ class VictimologyDistribution extends Component {
 VictimologyDistribution.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
-  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   classes: PropTypes.object,

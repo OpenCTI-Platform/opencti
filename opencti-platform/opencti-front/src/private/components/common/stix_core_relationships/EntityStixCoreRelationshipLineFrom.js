@@ -143,7 +143,6 @@ const EntityStixCoreRelationshipLineFromFragment = createFragmentContainer(
         start_time
         stop_time
         description
-        inferred
         to {
           ... on StixDomainObject {
             id

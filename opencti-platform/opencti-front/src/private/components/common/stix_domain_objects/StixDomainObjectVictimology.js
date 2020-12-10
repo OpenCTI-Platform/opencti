@@ -45,7 +45,6 @@ class StixDomainObjectVictimology extends Component {
       `view-victimology-${props.stixDomainObjectId}`,
     );
     this.state = {
-      inferred: propOr(false, 'inferred', params),
       searchTerm: propOr('', 'searchTerm', params),
       type: propOr('sectors', 'type', params),
     };
@@ -64,21 +63,12 @@ class StixDomainObjectVictimology extends Component {
     this.setState({ type }, () => this.saveView());
   }
 
-  handleChangeInferred() {
-    this.setState(
-      {
-        inferred: !this.state.inferred,
-      },
-      () => this.saveView(),
-    );
-  }
-
   handleSearch(value) {
     this.setState({ searchTerm: value }, () => this.saveView());
   }
 
   render() {
-    const { inferred, searchTerm, type } = this.state;
+    const { searchTerm, type } = this.state;
     const {
       classes, stixDomainObjectId, entityLink, t,
     } = this.props;
@@ -92,7 +82,6 @@ class StixDomainObjectVictimology extends Component {
       fromId: stixDomainObjectId,
       toTypes: types,
       relationship_type: 'targets',
-      inferred,
       search: searchTerm,
     };
     return (
@@ -132,19 +121,6 @@ class StixDomainObjectVictimology extends Component {
                   <GroupOutlined />
                 </IconButton>
               </Tooltip>
-            </Grid>
-            <Grid item={true} xs="auto">
-              <FormControlLabel
-                style={{ paddingTop: 5, marginLeft: 0 }}
-                control={
-                  <Switch
-                    checked={inferred}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color="primary"
-                  />
-                }
-                label={t('Inferences')}
-              />
             </Grid>
           </Grid>
         </Drawer>
@@ -200,7 +176,6 @@ class StixDomainObjectVictimology extends Component {
             relationshipType="targets"
             noBottomBar={true}
             isRelationReversed={false}
-            inference={inferred}
             noState={true}
           />
         ) : (

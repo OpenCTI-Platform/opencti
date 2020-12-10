@@ -30,8 +30,6 @@ class ExploreBottomBar extends Component {
       t,
       classes,
       handleClear,
-      inferred,
-      handleChangeInferred,
       entityId,
     } = this.props;
     return (
@@ -40,20 +38,6 @@ class ExploreBottomBar extends Component {
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
       >
-        <Grid item={true} xs="auto">
-          <FormControlLabel
-            style={{ paddingTop: 5, marginRight: 15 }}
-            control={
-              <Switch
-                disabled={!entityId}
-                checked={inferred}
-                onChange={handleChangeInferred.bind(this)}
-                color="primary"
-              />
-            }
-            label={t('Inferences')}
-          />
-        </Grid>
         <div
           style={{
             position: 'absolute',
@@ -81,8 +65,6 @@ class ExploreBottomBar extends Component {
 ExploreBottomBar.propTypes = {
   entityId: PropTypes.string,
   handleClear: PropTypes.func,
-  inferred: PropTypes.bool,
-  handleChangeInferred: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

@@ -72,7 +72,6 @@ StixDomainObjectIndicatorsLines.propTypes = {
 export const stixDomainObjectIndicatorsLinesQuery = graphql`
   query StixDomainObjectIndicatorsLinesQuery(
     $search: String
-    $inferred: Boolean
     $fromId: String
     $toTypes: [String]
     $relationship_type: String
@@ -90,7 +89,6 @@ export const stixDomainObjectIndicatorsLinesQuery = graphql`
     ...StixDomainObjectIndicatorsLines_data
     @arguments(
       search: $search
-      inferred: $inferred
       fromId: $fromId
       toTypes: $toTypes
       relationship_type: $relationship_type
@@ -115,7 +113,6 @@ export default createPaginationContainer(
       fragment StixDomainObjectIndicatorsLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        inferred: { type: "Boolean" }
         fromId: { type: "String" }
         toTypes: { type: "[String]" }
         relationship_type: { type: "String" }
@@ -135,7 +132,6 @@ export default createPaginationContainer(
       ) {
         stixCoreRelationships(
           search: $search
-          inferred: $inferred
           fromId: $fromId
           toTypes: $toTypes
           relationship_type: $relationship_type
@@ -178,7 +174,6 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
-        inferred: fragmentVariables.inferred,
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
         relationship_type: fragmentVariables.relationship_type,

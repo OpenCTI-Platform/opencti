@@ -34,7 +34,6 @@ class StixDomainObjectIndicators extends Component {
       indicatorTypes: [],
       observableTypes: [],
       openExports: false,
-      inferred: false,
       numberOfElements: { number: 0, symbol: '' },
     };
   }
@@ -208,7 +207,6 @@ class StixDomainObjectIndicators extends Component {
       view,
       sortBy,
       orderAsc,
-      inferred,
       searchTerm,
       filters,
       indicatorTypes,
@@ -236,7 +234,6 @@ class StixDomainObjectIndicators extends Component {
       );
     }
     const paginationOptions = {
-      inferred,
       search: searchTerm,
       toTypes: ['Indicator'],
       fromId: stixDomainObjectId,

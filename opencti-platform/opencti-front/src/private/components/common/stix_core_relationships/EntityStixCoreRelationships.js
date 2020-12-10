@@ -64,7 +64,6 @@ class EntityStixCoreRelationships extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      inferred: propOr(false, 'inferred', params),
       toType: propOr('All', 'toType', params),
       numberOfElements: { number: 0, symbol: '' },
       openToType: false,
@@ -107,16 +106,6 @@ class EntityStixCoreRelationships extends Component {
       });
     }
     return this.setState({ openToType: false, toType: [value] }, () => this.saveView());
-  }
-
-  handleChangeInferred() {
-    this.setState(
-      {
-        inferred: !this.state.inferred,
-        sortBy: !this.state.inferred ? null : this.state.sortBy,
-      },
-      () => this.saveView(),
-    );
   }
 
   renderLines(paginationOptions) {
@@ -213,7 +202,6 @@ class EntityStixCoreRelationships extends Component {
       openToType,
       sortBy,
       orderAsc,
-      inferred,
     } = this.state;
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
@@ -221,7 +209,6 @@ class EntityStixCoreRelationships extends Component {
 
     // sort only when inferences are disabled or inferences are resolved
     let paginationOptions = {
-      inferred: !!(inferred || inference),
       relationship_type: relationshipType || 'stix-core-relationship',
       search: searchTerm,
       orderBy: sortBy,
@@ -424,19 +411,6 @@ class EntityStixCoreRelationships extends Component {
               ) : (
                 ''
               )}
-              <Grid item={true} xs="auto">
-                <FormControlLabel
-                  style={{ paddingTop: 5, marginRight: 15 }}
-                  control={
-                    <Switch
-                      checked={inferred}
-                      onChange={this.handleChangeInferred.bind(this)}
-                      color="primary"
-                    />
-                  }
-                  label={t('Inferences')}
-                />
-              </Grid>
             </Grid>
           </Drawer>
         ) : (

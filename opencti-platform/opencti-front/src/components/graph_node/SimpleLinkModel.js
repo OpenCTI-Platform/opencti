@@ -8,7 +8,6 @@ export default class SimpleLinkModel extends LinkModel {
     this.color = '#00bcd4';
     this.width = 3;
     this.curvyness = 50;
-    this.inferred = false;
   }
 
   serialize() {
@@ -16,7 +15,6 @@ export default class SimpleLinkModel extends LinkModel {
       width: this.width,
       color: this.color,
       curvyness: this.curvyness,
-      inferred: this.inferred,
     });
   }
 
@@ -25,7 +23,6 @@ export default class SimpleLinkModel extends LinkModel {
     this.color = ob.color;
     this.width = ob.width;
     this.curvyness = ob.curvyness;
-    this.inferred = ob.inferred;
   }
 
   addLabel(label) {
@@ -67,9 +64,5 @@ export default class SimpleLinkModel extends LinkModel {
     const labelOb = new SimpleLabelModel();
     labelOb.setLabel(label);
     return super.addLabel(labelOb);
-  }
-
-  setInferred(inferred) {
-    this.inferred = inferred;
   }
 }

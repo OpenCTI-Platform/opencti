@@ -146,17 +146,13 @@ class StixCyberObservableLinksComponent extends Component {
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {stixCyberObservableRelation.inferred
-                                ? '-'
-                                : nsd(stixCyberObservableRelation.start_time)}
+                              {nsd(stixCyberObservableRelation.start_time)}
                             </div>
                             <div
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {stixCyberObservableRelation.inferred
-                                ? '-'
-                                : nsd(stixCyberObservableRelation.stop_time)}
+                              {nsd(stixCyberObservableRelation.stop_time)}
                             </div>
                           </div>
                         }
@@ -167,7 +163,6 @@ class StixCyberObservableLinksComponent extends Component {
                             stixCyberObservableRelation.id
                           }
                           paginationOptions={paginationOptions}
-                          disabled={stixCyberObservableRelation.inferred}
                         />
                       </ListItemSecondaryAction>
                     </ListItem>

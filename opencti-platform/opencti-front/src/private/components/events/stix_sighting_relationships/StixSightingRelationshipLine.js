@@ -130,20 +130,20 @@ class StixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.first_seen.width }}
               >
-                {node.inferred ? '-' : nsd(node.first_seen)}
+                {nsd(node.first_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.last_seen.width }}
               >
-                {node.inferred ? '-' : nsd(node.last_seen)}
+                {nsd(node.last_seen)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
-                  confidence={node.inferred ? 1000 : node.confidence}
+                  confidence={node.confidence}
                   variant="inList"
                 />
               </div>
@@ -154,7 +154,6 @@ class StixSightingRelationshipLineComponent extends Component {
           <StixSightingRelationshipPopover
             stixSightingRelationshipId={node.id}
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -185,7 +184,6 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
         first_seen
         last_seen
         description
-        inferred
         from {
           ... on StixDomainObject {
             id

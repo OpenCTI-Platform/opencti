@@ -503,7 +503,6 @@ const i18n = {
       'Contact information': 'Informations de contact',
       Inferences: 'Inférences',
       'Inference rules': "Règles d'inférence",
-      Inferred: 'Inféré',
       'CSV file': 'Fichier CSV',
       'Export data in CSV': 'Exporter les données en CSV',
       'The CSV file has been generated with the parameters of the view and is ready for download.':

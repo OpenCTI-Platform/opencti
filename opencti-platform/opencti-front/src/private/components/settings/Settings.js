@@ -20,7 +20,6 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import SettingsMenu from './SettingsMenu';
 import Loader from '../../../components/Loader';
 
 const styles = () => ({

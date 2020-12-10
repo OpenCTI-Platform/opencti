@@ -30,7 +30,6 @@ import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFacto
 import GlobalPortFactory from '../../../../components/graph_node/GlobalPortFactory';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import ItemMarking from '../../../../components/ItemMarking';
-import StixCoreRelationshipInferences from './StixCoreRelationshipInferences';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
 import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
@@ -334,9 +333,7 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Creation date')}
               </Typography>
-              {stixCoreRelationship.inferred
-                ? '-'
-                : nsdt(stixCoreRelationship.created_at)}
+              {nsdt(stixCoreRelationship.created_at)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -344,9 +341,7 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Modification date')}
               </Typography>
-              {stixCoreRelationship.inferred
-                ? '-'
-                : nsdt(stixCoreRelationship.updated_at)}
+              {nsdt(stixCoreRelationship.updated_at)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -367,13 +362,7 @@ class StixCoreRelationshipContainer extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Confidence level')}
               </Typography>
-              <ItemConfidence
-                confidence={
-                  stixCoreRelationship.inferred
-                    ? 1000
-                    : stixCoreRelationship.confidence
-                }
-              />
+              <ItemConfidence confidence={stixCoreRelationship.confidence} />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -381,9 +370,7 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Start time')}
               </Typography>
-              {stixCoreRelationship.inferred
-                ? '-'
-                : nsdt(stixCoreRelationship.start_time)}
+              {nsdt(stixCoreRelationship.start_time)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -391,9 +378,7 @@ class StixCoreRelationshipContainer extends Component {
               >
                 {t('Stop time')}
               </Typography>
-              {stixCoreRelationship.inferred
-                ? '-'
-                : nsdt(stixCoreRelationship.stop_time)}
+              {nsdt(stixCoreRelationship.stop_time)}
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -409,72 +394,46 @@ class StixCoreRelationshipContainer extends Component {
           </Grid>
         </Grid>
         <div>
-          {stixCoreRelationship.inferred ? (
-            <div style={{ margin: '50px 0 60px 0' }}>
-              <Typography variant="h4" gutterBottom={true}>
-                {t('Inference explanation')}
-              </Typography>
-              <Paper
-                classes={{ root: classes.paper }}
-                elevation={2}
-                style={{ height: 400 }}
-              >
-                <StixCoreRelationshipInferences
-                  engine={this.state.engine}
-                  stixCoreRelationship={stixCoreRelationship}
-                  from={from}
-                  to={to}
+          <div style={{ margin: '40px 0 0px 0' }}>
+            <Grid container={true} spacing={3}>
+              <Grid item={true} xs={6}>
+                <StixCoreRelationshipStixCoreRelationships
+                  entityId={stixCoreRelationship.id}
                 />
-              </Paper>
-            </div>
-          ) : (
-            <div style={{ margin: '40px 0 0px 0' }}>
-              <Grid container={true} spacing={3}>
-                <Grid item={true} xs={6}>
-                  <StixCoreRelationshipStixCoreRelationships
-                    entityId={stixCoreRelationship.id}
-                  />
-                </Grid>
-                <Grid item={true} xs={6}>
-                  <StixCoreObjectOrStixCoreRelationshipLastReports
-                    stixCoreObjectOrStixCoreRelationshipId={
-                      stixCoreRelationship.id
-                    }
-                  />
-                </Grid>
               </Grid>
-              <StixCoreObjectOrStixCoreRelationshipNotes
-                marginTop={55}
-                stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
-                isRelationship={true}
-              />
-            </div>
-          )}
-        </div>
-        {stixCoreRelationship.inferred ? (
-          ''
-        ) : (
-          <div>
-            <Fab
-              onClick={this.handleOpenEdition.bind(this)}
-              color="secondary"
-              aria-label="Edit"
-              className={
-                paddingRight
-                  ? classes.editButtonWithPadding
-                  : classes.editButton
-              }
-            >
-              <Edit />
-            </Fab>
-            <StixCoreRelationshipEdition
-              open={this.state.openEdit}
-              stixCoreRelationshipId={stixCoreRelationship.id}
-              handleClose={this.handleCloseEdition.bind(this)}
-              handleDelete={this.handleDelete.bind(this)}
+              <Grid item={true} xs={6}>
+                <StixCoreObjectOrStixCoreRelationshipLastReports
+                  stixCoreObjectOrStixCoreRelationshipId={
+                    stixCoreRelationship.id
+                  }
+                />
+              </Grid>
+            </Grid>
+            <StixCoreObjectOrStixCoreRelationshipNotes
+              marginTop={55}
+              stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
+              isRelationship={true}
             />
           </div>
-        )}
+        </div>
+        <div>
+          <Fab
+            onClick={this.handleOpenEdition.bind(this)}
+            color="secondary"
+            aria-label="Edit"
+            className={
+              paddingRight ? classes.editButtonWithPadding : classes.editButton
+            }
+          >
+            <Edit />
+          </Fab>
+          <StixCoreRelationshipEdition
+            open={this.state.openEdit}
+            stixCoreRelationshipId={stixCoreRelationship.id}
+            handleClose={this.handleCloseEdition.bind(this)}
+            handleDelete={this.handleDelete.bind(this)}
+          />
+        </div>
       </div>
     );
   }
@@ -503,7 +462,6 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         start_time
         stop_time
         description
-        inferred
         fromRole
         toRole
         created_at
@@ -520,691 +478,6 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             node {
               id
               definition
-            }
-          }
-        }
-        inferences {
-          edges {
-            node {
-              id
-              relationship_type
-              inferred
-              from {
-                ... on BasicObject {
-                  id
-                  entity_type
-                  parent_types
-                }
-                ... on BasicRelationship {
-                  id
-                  entity_type
-                  parent_types
-                }
-                ... on AttackPattern {
-                  name
-                }
-                ... on Campaign {
-                  name
-                }
-                ... on CourseOfAction {
-                  name
-                }
-                ... on Individual {
-                  name
-                }
-                ... on Organization {
-                  name
-                }
-                ... on Sector {
-                  name
-                }
-                ... on Indicator {
-                  name
-                }
-                ... on Infrastructure {
-                  name
-                }
-                ... on IntrusionSet {
-                  name
-                }
-                ... on Position {
-                  name
-                }
-                ... on City {
-                  name
-                }
-                ... on Country {
-                  name
-                }
-                ... on Region {
-                  name
-                }
-                ... on Malware {
-                  name
-                }
-                ... on ThreatActor {
-                  name
-                }
-                ... on Tool {
-                  name
-                }
-                ... on Vulnerability {
-                  name
-                }
-                ... on XOpenCTIIncident {
-                  name
-                }
-                ... on StixCyberObservable {
-                  observable_value
-                }
-              }
-              to {
-                ... on BasicObject {
-                  id
-                  entity_type
-                  parent_types
-                }
-                ... on BasicRelationship {
-                  id
-                  entity_type
-                  parent_types
-                }
-                ... on AttackPattern {
-                  name
-                }
-                ... on Campaign {
-                  name
-                }
-                ... on CourseOfAction {
-                  name
-                }
-                ... on Individual {
-                  name
-                }
-                ... on Organization {
-                  name
-                }
-                ... on Sector {
-                  name
-                }
-                ... on Indicator {
-                  name
-                }
-                ... on Infrastructure {
-                  name
-                }
-                ... on IntrusionSet {
-                  name
-                }
-                ... on Position {
-                  name
-                }
-                ... on City {
-                  name
-                }
-                ... on Country {
-                  name
-                }
-                ... on Region {
-                  name
-                }
-                ... on Malware {
-                  name
-                }
-                ... on ThreatActor {
-                  name
-                }
-                ... on Tool {
-                  name
-                }
-                ... on Vulnerability {
-                  name
-                }
-                ... on XOpenCTIIncident {
-                  name
-                }
-                ... on StixCyberObservable {
-                  observable_value
-                }
-                ... on StixCoreRelationship {
-                  from {
-                    ... on BasicObject {
-                      id
-                      entity_type
-                    }
-                    ... on BasicRelationship {
-                      id
-                      entity_type
-                    }
-                    ... on AttackPattern {
-                      name
-                    }
-                    ... on Campaign {
-                      name
-                    }
-                    ... on CourseOfAction {
-                      name
-                    }
-                    ... on Individual {
-                      name
-                    }
-                    ... on Organization {
-                      name
-                    }
-                    ... on Sector {
-                      name
-                    }
-                    ... on Indicator {
-                      name
-                    }
-                    ... on Infrastructure {
-                      name
-                    }
-                    ... on IntrusionSet {
-                      name
-                    }
-                    ... on Position {
-                      name
-                    }
-                    ... on City {
-                      name
-                    }
-                    ... on Country {
-                      name
-                    }
-                    ... on Region {
-                      name
-                    }
-                    ... on Malware {
-                      name
-                    }
-                    ... on ThreatActor {
-                      name
-                    }
-                    ... on Tool {
-                      name
-                    }
-                    ... on Vulnerability {
-                      name
-                    }
-                    ... on XOpenCTIIncident {
-                      name
-                    }
-                  }
-                  to {
-                    ... on BasicObject {
-                      id
-                      entity_type
-                    }
-                    ... on BasicRelationship {
-                      id
-                      entity_type
-                    }
-                    ... on AttackPattern {
-                      name
-                    }
-                    ... on Campaign {
-                      name
-                    }
-                    ... on CourseOfAction {
-                      name
-                    }
-                    ... on Individual {
-                      name
-                    }
-                    ... on Organization {
-                      name
-                    }
-                    ... on Sector {
-                      name
-                    }
-                    ... on Indicator {
-                      name
-                    }
-                    ... on Infrastructure {
-                      name
-                    }
-                    ... on IntrusionSet {
-                      name
-                    }
-                    ... on Position {
-                      name
-                    }
-                    ... on City {
-                      name
-                    }
-                    ... on Country {
-                      name
-                    }
-                    ... on Region {
-                      name
-                    }
-                    ... on Malware {
-                      name
-                    }
-                    ... on ThreatActor {
-                      name
-                    }
-                    ... on Tool {
-                      name
-                    }
-                    ... on Vulnerability {
-                      name
-                    }
-                    ... on XOpenCTIIncident {
-                      name
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on AttackPattern {
-            name
-          }
-          ... on Campaign {
-            name
-          }
-          ... on CourseOfAction {
-            name
-          }
-          ... on Individual {
-            name
-          }
-          ... on Organization {
-            name
-          }
-          ... on Sector {
-            name
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-          }
-          ... on Position {
-            name
-          }
-          ... on City {
-            name
-          }
-          ... on Country {
-            name
-          }
-          ... on Region {
-            name
-          }
-          ... on Malware {
-            name
-          }
-          ... on ThreatActor {
-            name
-          }
-          ... on Tool {
-            name
-          }
-          ... on Vulnerability {
-            name
-          }
-          ... on XOpenCTIIncident {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on StixCoreRelationship {
-            from {
-              ... on BasicObject {
-                id
-                entity_type
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-              }
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on XOpenCTIIncident {
-                name
-              }
-            }
-            to {
-              ... on BasicObject {
-                id
-                entity_type
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-              }
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on XOpenCTIIncident {
-                name
-              }
-            }
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on AttackPattern {
-            name
-          }
-          ... on Campaign {
-            name
-          }
-          ... on CourseOfAction {
-            name
-          }
-          ... on Individual {
-            name
-          }
-          ... on Organization {
-            name
-          }
-          ... on Sector {
-            name
-          }
-          ... on Indicator {
-            name
-          }
-          ... on Infrastructure {
-            name
-          }
-          ... on IntrusionSet {
-            name
-          }
-          ... on Position {
-            name
-          }
-          ... on City {
-            name
-          }
-          ... on Country {
-            name
-          }
-          ... on Region {
-            name
-          }
-          ... on Malware {
-            name
-          }
-          ... on ThreatActor {
-            name
-          }
-          ... on Tool {
-            name
-          }
-          ... on Vulnerability {
-            name
-          }
-          ... on XOpenCTIIncident {
-            name
-          }
-          ... on StixCyberObservable {
-            observable_value
-          }
-          ... on StixCoreRelationship {
-            from {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on XOpenCTIIncident {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-            }
-            to {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on AttackPattern {
-                name
-              }
-              ... on Campaign {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on Indicator {
-                name
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-              }
-              ... on ThreatActor {
-                name
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on XOpenCTIIncident {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
             }
           }
         }

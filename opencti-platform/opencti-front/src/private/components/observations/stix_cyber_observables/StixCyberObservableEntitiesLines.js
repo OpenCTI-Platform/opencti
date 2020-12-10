@@ -89,7 +89,6 @@ StixCyberObservableEntitiesLines.propTypes = {
 export const stixCyberObservableEntitiesLinesQuery = graphql`
   query StixCyberObservableEntitiesLinesPaginationQuery(
     $fromId: String
-    $inferred: Boolean
     $relationship_type: String
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -105,7 +104,6 @@ export const stixCyberObservableEntitiesLinesQuery = graphql`
     ...StixCyberObservableEntitiesLines_data
     @arguments(
       fromId: $fromId
-      inferred: $inferred
       relationship_type: $relationship_type
       startTimeStart: $startTimeStart
       startTimeStop: $startTimeStop
@@ -128,7 +126,6 @@ export default createPaginationContainer(
       fragment StixCyberObservableEntitiesLines_data on Query
       @argumentDefinitions(
         fromId: { type: "String" }
-        inferred: { type: "Boolean" }
         relationship_type: { type: "String" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }
@@ -146,7 +143,6 @@ export default createPaginationContainer(
       ) {
         stixCoreRelationships(
           fromId: $fromId
-          inferred: $inferred
           relationship_type: $relationship_type
           startTimeStart: $startTimeStart
           startTimeStop: $startTimeStop
@@ -188,7 +184,6 @@ export default createPaginationContainer(
       return {
         fromId: fragmentVariables.fromId,
         toTypes: fragmentVariables.toTypes,
-        inferred: fragmentVariables.inferred,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,
         startTimeStop: fragmentVariables.startTimeStop,

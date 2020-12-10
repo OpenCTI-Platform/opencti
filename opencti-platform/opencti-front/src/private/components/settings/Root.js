@@ -1,7 +1,6 @@
 import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import Settings from './Settings';
-import Inferences from './Inferences';
 import Users from './Users';
 import RootUser from './users/Root';
 import Groups from './Groups';
@@ -15,11 +14,6 @@ import { BoundaryRoute } from '../Error';
 const Root = () => (
   <Switch>
     <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
-    <BoundaryRoute
-      exact
-      path="/dashboard/settings/inferences"
-      component={Inferences}
-    />
     <BoundaryRoute
       exact
       path="/dashboard/settings/accesses"
