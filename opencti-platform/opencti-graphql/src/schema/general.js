@@ -64,11 +64,11 @@ export const ABSTRACT_TYPES = [
 export const isAbstract = (type) => R.includes(type, ABSTRACT_TYPES);
 export const schemaTypes = {
   types: {},
-  // eslint-disable-next-line object-shorthand
+  // eslint-disable-next-line object-shorthand,func-names
   register: function (type, children) {
     this.types[type] = children;
   },
-  // eslint-disable-next-line object-shorthand
+  // eslint-disable-next-line object-shorthand,func-names
   get: function (type) {
     return this.types[type] || [];
   },

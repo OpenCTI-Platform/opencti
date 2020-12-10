@@ -10,12 +10,10 @@ import {
   distributionRelations,
   escape,
   escapeString,
-  find,
   getSingleValueNumber,
   internalLoadById,
   listEntities,
   listRelations,
-  load,
   loadById,
   loadByIdFullyResolved,
   mergeEntities,
@@ -74,17 +72,8 @@ describe('Grakn basic and utils', () => {
 });
 
 describe('Grakn loaders', () => {
-  const noCacheCases = [[true], [false]];
-  it.each(noCacheCases)('should load simple query (noCache = %s)', async (noCache) => {
-    const query =
-      'match $m isa Malware; $m has x_opencti_stix_ids "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88", has internal_id $m_id; get;';
-    const malware = await load(query, ['m'], { noCache });
-    expect(malware.m).not.toBeNull();
-    expect(malware.m.x_opencti_stix_ids).toEqual(['malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88']);
-    expect(malware.m.standard_id).toEqual('malware--8a4b5aef-e4a7-524c-92f9-a61c08d1cd85');
-  });
   it('should load subTypes values', async () => {
-    const stixObservableSubTypes = await querySubTypes('Stix-Cyber-Observable');
+    const stixObservableSubTypes = await querySubTypes({ type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
     expect(stixObservableSubTypes.edges.length).toEqual(26);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
@@ -137,7 +126,8 @@ describe('Grakn loaders', () => {
 
 describe('Grakn attribute updater', () => {
   const noCacheCases = [[true], [false]];
-  it('should update fail for unknown attributes', async () => {
+  // TODO JRI HOW TO CHECK THE ES SCHEMA
+  it.skip('should update fail for unknown attributes', async () => {
     const campaign = await elLoadByIds('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const campaignId = campaign.internal_id;
     const input = { observable_value: 'test' };
@@ -211,7 +201,7 @@ describe('Grakn entities listing', () => {
   // filters part. Definition -> { key, values, fromRole, toRole }
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should list entities (noCache = %s)', async (noCache) => {
-    const malwares = await listEntities(["Malware"], { noCache });
+    const malwares = await listEntities(['Malware'], { noCache });
     expect(malwares).not.toBeNull();
     expect(malwares.edges.length).toEqual(2);
     const dataMap = new Map(malwares.edges.map((i) => [R.head(i.node.x_opencti_stix_ids), i.node]));
@@ -230,7 +220,7 @@ describe('Grakn entities listing', () => {
     expect(malware._index).toEqual(INDEX_STIX_DOMAIN_OBJECTS);
   });
   it.each(noCacheCases)('should list multiple entities (noCache = %s)', async (noCache) => {
-    const entities = await listEntities(["Malware", "Organization"], { noCache });
+    const entities = await listEntities(['Malware', 'Organization'], { noCache });
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(7); // 2 malwares + 8 organizations
     const aggregationMap = new Map(entities.edges.map((i) => [i.node.name, i.node]));
@@ -241,34 +231,34 @@ describe('Grakn entities listing', () => {
   });
   it.each(noCacheCases)('should list entities with basic filtering (noCache = %s)', async (noCache) => {
     const options = { first: 1, after: offsetToCursor(2), orderBy: 'created', orderMode: 'desc', noCache };
-    const indicators = await listEntities(["Indicator"], options);
+    const indicators = await listEntities(['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     const indicator = R.head(indicators.edges).node;
     expect(indicator.name).toEqual('2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957');
   });
   it.each(noCacheCases)('should list entities with search (noCache = %s)', async (noCache) => {
     let options = { search: 'xolod', noCache };
-    let indicators = await listEntities(["Indicator"], options);
+    let indicators = await listEntities(['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     options = { search: 'location', noCache };
-    indicators = await listEntities(["Indicator"], options);
+    indicators = await listEntities(['Indicator'], options);
     expect(indicators.edges.length).toEqual(2);
     options = { search: 'i want a location', noCache };
-    indicators = await listEntities(["Indicator"], options);
-    expect(indicators.edges.length).toEqual(noCache ? 0 : 3); // Grakn is not a full text search engine :)
+    indicators = await listEntities(['Indicator'], options);
+    expect(indicators.edges.length).toEqual(3);
   });
   it.each(noCacheCases)('should list entities order by relation (noCache = %s)', async (noCache) => {
     // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
     let options = { orderBy: 'rel_located-at.name', orderMode: 'desc', noCache };
-    let identities = await listEntities(["Location"], options);
+    let identities = await listEntities(['Location'], options);
     expect(identities.edges.length).toEqual(6);
     const firstDescResult =
       R.head(identities.edges).node.name === 'Europe' || R.head(identities.edges).node.name === 'France';
     expect(firstDescResult).toBeTruthy();
     expect(R.last(identities.edges).node.name).toEqual('Western Europe');
     options = { orderBy: 'rel_located-at.name', orderMode: 'asc', noCache };
-    identities = await listEntities(["Location"], options);
+    identities = await listEntities(['Location'], options);
     expect(identities.edges.length).toEqual(6);
     expect(R.head(identities.edges).node.name).toEqual('Western Europe');
     const lastAscResult =
@@ -280,7 +270,7 @@ describe('Grakn entities listing', () => {
     // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
     // We accept that ElasticSearch is not able to have both direction of the relations
     const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
-    const locations = await listEntities(["Location"], options);
+    const locations = await listEntities(['Location'], options);
     expect(locations.edges.length).toEqual(6);
     const firstResults = ['France'];
     expect(R.includes(R.head(locations.edges).node.name, firstResults)).toBeTruthy();
@@ -293,7 +283,7 @@ describe('Grakn entities listing', () => {
       { key: 'name', values: ['Spear phishing messages with malicious links'] },
     ];
     const options = { filters, noCache };
-    const attacks = await listEntities(["Attack-Pattern"], options);
+    const attacks = await listEntities(['Attack-Pattern'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
     expect(R.head(attacks.edges).node.standard_id).toEqual('attack-pattern--acdfc109-e0fd-5711-839b-a37ee49529b9');
@@ -305,7 +295,7 @@ describe('Grakn entities listing', () => {
     const identity = await elLoadByIds('identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5');
     const filters = [{ key: `rel_created-by.internal_id`, values: [identity.internal_id] }];
     const options = { filters, noCache };
-    const entities = await listEntities(["Attack-Pattern", "Intrusion-Set"], options);
+    const entities = await listEntities(['Attack-Pattern', 'Intrusion-Set'], options);
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(3);
   });
@@ -321,7 +311,7 @@ describe('Grakn entities listing', () => {
     async (field, val, noCache) => {
       const filters = [{ key: `rel_created-by.${field}`, values: [val], toRole: 'created-by_to' }];
       const options = { filters, noCache };
-      const entities = await listEntities(["Stix-Domain-Object"], options);
+      const entities = await listEntities(['Stix-Domain-Object'], options);
       expect(entities).not.toBeNull();
       expect(entities.edges.length).toEqual(3);
       const aggregationMap = new Map(
@@ -339,92 +329,7 @@ describe('Grakn relations listing', () => {
   // const { filters = [], search, fromRole, fromId, toRole, toId, fromTypes = [], toTypes = [] }
   // const { firstSeenStart, firstSeenStop, lastSeenStart, lastSeenStop, confidences = [] }
   const noCacheCases = [[true], [false]];
-  it.each(noCacheCases)('should find entities in grakn (noCache = %s)', async (noCache) => {
-    const data = await find('match $m isa Malware, has internal_id $m_id; get;', ['m'], { noCache });
-    expect(data).not.toBeNull();
-    expect(data.length).toEqual(2);
-    const aggregationMap = new Map(data.map((i) => [R.head(i.m.x_opencti_stix_ids), i.m]));
-    const malware = aggregationMap.get('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    expect(malware).not.toBeUndefined();
-    expect(malware.name).toEqual('Paradise Ransomware');
-  });
   // uses: { user: ROLE_FROM, usage: ROLE_TO }
-  const checkRoles = (relations, from, to) => {
-    // Roles with be set according to query specification
-    for (let index = 0; index < relations.length; index += 1) {
-      const { fromRole, toRole } = relations[index];
-      expect(fromRole).toEqual(from);
-      expect(toRole).toEqual(to);
-    }
-  };
-  it.each(noCacheCases)('should find relations no roles in grakn (noCache = %s)', async (noCache) => {
-    // Getting everything if only relations lead to default roles ordering
-    const relations = await find('match $rel isa uses; get;', ['rel'], { noCache });
-    expect(relations).not.toBeNull();
-    expect(relations.length).toEqual(3);
-    // eslint-disable-next-line prettier/prettier
-    checkRoles(
-      relations.map((r) => r.rel),
-      'uses_from',
-      'uses_to'
-    ); // Roles with be set according to query specification
-  });
-  it.each(noCacheCases)('should find relations with role in Grakn (noCache = %s)', async (noCache) => {
-    // Getting everything specifying all roles respect the roles of the query
-    const relations = await find(
-      'match $rel(uses_from:$from, uses_to:$to) isa uses, has internal_id $rel_id; ' +
-        '$from has internal_id $rel_from_id; ' +
-        '$to has internal_id $rel_to_id; ' +
-        'get;',
-      ['rel'],
-      { noCache }
-    );
-    expect(relations).not.toBeNull();
-    expect(relations.length).toEqual(3);
-    // eslint-disable-next-line prettier/prettier
-    checkRoles(
-      relations.map((r) => r.rel),
-      'uses_from',
-      'uses_to'
-    );
-  });
-  it.each(noCacheCases)('should find relations partial right roles in grakn (noCache = %s)', async (noCache) => {
-    // Getting everything with partial roles respect the roles of the query
-    const relations = await find(
-      'match $rel($from, uses_to:$to) isa uses, has internal_id $rel_id; ' +
-        '$from has internal_id $rel_from_id; ' +
-        '$to has internal_id $rel_to_id; get;',
-      ['rel'],
-      { noCache }
-    );
-    expect(relations).not.toBeNull();
-    expect(relations.length).toEqual(3);
-    // eslint-disable-next-line prettier/prettier
-    checkRoles(
-      relations.map((r) => r.rel),
-      'uses_from',
-      'uses_to'
-    );
-  });
-  it.each(noCacheCases)('should find relations partial left roles in grakn (noCache = %s)', async (noCache) => {
-    // Getting everything with partial roles respect the roles of the query
-    const relations = await find(
-      'match $rel(uses_from:$from, $to) isa uses, has internal_id $rel_id; ' +
-        '$from has internal_id $rel_from_id; ' +
-        '$to has internal_id $rel_to_id; ' +
-        'get;',
-      ['rel'],
-      { noCache }
-    );
-    expect(relations).not.toBeNull();
-    expect(relations.length).toEqual(3);
-    // eslint-disable-next-line prettier/prettier
-    checkRoles(
-      relations.map((r) => r.rel),
-      'uses_from',
-      'uses_to'
-    );
-  });
   it.each(noCacheCases)('should list relations (noCache = %s)', async (noCache) => {
     const stixCoreRelationships = await listRelations('stix-core-relationship', { noCache });
     expect(stixCoreRelationships).not.toBeNull();

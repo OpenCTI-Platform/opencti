@@ -126,53 +126,6 @@ export const initBatchLoader = (loader) => {
   return new DataLoader((ids) => loader(ids), opts);
 };
 
-const getAliasInternalIdFilter = (query, alias) => {
-  const reg = new RegExp(`\\$${alias}[\\s]*has[\\s]*internal_id[\\s]*"([0-9a-z-_]+)"`, 'gi');
-  const keyVars = Array.from(query.matchAll(reg));
-  return keyVars.length > 0 ? R.last(R.head(keyVars)) : undefined;
-};
-/**
- * Extract all vars from a grakn query
- * @param query
- */
-export const extractQueryVars = (query) => {
-  const vars = R.uniq(R.map((m) => ({ alias: m.replace('$', '') }), query.match(/\$[a-z_]+/gi)));
-  const varWithKey = R.map((v) => ({ alias: v.alias, internalIdKey: getAliasInternalIdFilter(query, v.alias) }), vars);
-  const relationsVars = Array.from(query.matchAll(/\(([a-z_\-\s:$]+),([a-z_\-\s:$]+)\)[\s]*isa[\s]*([a-z_-]+)/g));
-  const roles = R.flatten(
-    R.map((r) => {
-      const [, left, right, relationshipType] = r;
-      const [leftRole, leftAlias] = R.includes(':', left) ? left.trim().split(':') : [null, left];
-      const [rightRole, rightAlias] = R.includes(':', right) ? right.trim().split(':') : [null, right];
-      const roleForLeft =
-        leftRole || (rightRole && rightRole.includes('_from') ? `${relationshipType}_to` : `${relationshipType}_from`);
-      const roleForRight =
-        rightRole || (leftRole && leftRole.includes('_to') ? `${relationshipType}_from` : `${relationshipType}_to`);
-      const lAlias = leftAlias.trim().replace('$', '');
-      const lKeyFilter = getAliasInternalIdFilter(query, lAlias);
-      const rAlias = rightAlias.trim().replace('$', '');
-      const rKeyFilter = getAliasInternalIdFilter(query, rAlias);
-      // If one filtering key is specified, just return the duo with no roles
-      if (lKeyFilter || rKeyFilter) {
-        return [
-          { alias: lAlias, internalIdKey: lKeyFilter },
-          { alias: rAlias, internalIdKey: rKeyFilter },
-        ];
-      }
-      return [
-        { role: roleForLeft.trim(), alias: lAlias },
-        { role: roleForRight.trim(), alias: rAlias },
-      ];
-    }, relationsVars)
-  );
-  return R.map((v) => {
-    const associatedRole = R.find((r) => r.alias === v.alias, roles);
-    return R.pipe(
-      R.assoc('internalIdKey', associatedRole ? associatedRole.internalIdKey : v.internalIdKey),
-      R.assoc('role', associatedRole ? associatedRole.role : undefined)
-    )(v);
-  }, varWithKey);
-};
 const prepareAttribute = (key, value) => {
   if (isDictionaryAttribute(key)) return `"${escapeString(JSON.stringify(value))}"`;
   // Attribute is coming from GraphQL
