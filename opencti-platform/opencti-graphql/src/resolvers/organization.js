@@ -1,4 +1,4 @@
-import { addOrganization, findAll, findById, sectors } from '../domain/organization';
+import { addOrganization, findAll, findById, batchSectors } from '../domain/organization';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -9,6 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const sectorsLoader = initBatchLoader(batchSectors);
 
 const organizationResolvers = {
   Query: {
@@ -16,7 +19,7 @@ const organizationResolvers = {
     organizations: (_, args) => findAll(args),
   },
   Organization: {
-    sectors: (organization) => sectors(organization.id),
+    sectors: (organization) => sectorsLoader.load(organization.id),
   },
   OrganizationsOrdering: {
     objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
