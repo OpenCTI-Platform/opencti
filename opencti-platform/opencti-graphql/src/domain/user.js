@@ -26,11 +26,8 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  escapeString,
-  find,
   listEntities,
   listThroughGetTos,
-  load,
   loadById,
   now,
   patchAttribute,
@@ -61,6 +58,7 @@ import {
 import { findAll as allMarkings } from './markingDefinition';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/elasticSearch';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -106,8 +104,8 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_USER], ['name', 'aliases'], args);
 };
 
-export const groups = (userId) => {
-  return listThroughGetTos(userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+export const batchGroups = async (userIds) => {
+  return listThroughGetTos(userIds, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
 };
 
 export const token = async (userId, args, context) => {
@@ -115,22 +113,12 @@ export const token = async (userId, args, context) => {
   if (userId !== context.user.id && !R.includes('SETACCESSES', capabilities) && !R.includes('BYPASS', capabilities)) {
     throw ForbiddenAccess();
   }
-  const element = await load(
-    `match $to isa Token;
-    $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY};
-    $from has internal_id "${escapeString(userId)}"; get;`,
-    ['to']
-  );
-  return element && element.to.uuid;
+  const userToken = await loadThroughGetTo(userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
+  return userToken && userToken.uuid;
 };
 
 const internalGetToken = async (userId) => {
   return loadThroughGetTo(userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
-};
-
-// eslint-disable-next-line no-unused-vars
-const internalGetTokenByUUID = async (tokenUUID) => {
-  return elLoadBy(['uuid'], tokenUUID, ENTITY_TYPE_TOKEN);
 };
 
 const clearUserTokenCache = (userId) => {
@@ -138,22 +126,14 @@ const clearUserTokenCache = (userId) => {
 };
 
 export const getRoles = async (userId) => {
-  const data = await find(
-    `match $client isa User, has internal_id "${escapeString(userId)}";
-            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE};
-            $role has internal_id $role_id; get;`,
-    ['role']
-  );
-  return R.map((r) => r.role, data);
+  return listThroughGetTos(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
 export const getMarkings = async (userId) => {
-  const userMarkingsPromise = find(
-    `match $client isa User, has internal_id "${escapeString(userId)}";
-            (${RELATION_MEMBER_OF}_from: $client, ${RELATION_MEMBER_OF}_to: $group) isa ${RELATION_MEMBER_OF}; 
-            (${RELATION_ACCESSES_TO}_from: $group, ${RELATION_ACCESSES_TO}_to: $marking) isa ${RELATION_ACCESSES_TO}; get;`,
-    ['marking']
-  ).then((data) => R.map((r) => r.marking, data));
+  const opts = { paginate: false, batched: false };
+  const userGroups = await listThroughGetTos(userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
+  const groupIds = userGroups.map((r) => r.id);
+  const userMarkingsPromise = listThroughGetTos(groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
   const allMarkingsPromise = allMarkings().then((data) => R.map((i) => i.node, data.edges));
   const [userMarkings, markings] = await Promise.all([userMarkingsPromise, allMarkingsPromise]);
   const computedMarkings = [];
@@ -167,34 +147,26 @@ export const getMarkings = async (userId) => {
     }, markings);
     computedMarkings.push(...matchingMarkings);
   }
-  return computedMarkings;
+  return R.uniqBy((m) => m.id, computedMarkings);
 };
 
 export const getCapabilities = async (userId) => {
-  const data = await find(
-    `match $client isa User, has internal_id "${escapeString(userId)}";
-            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE}; 
-            (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
-            $capability has internal_id $capability_id; get;`,
-    ['capability']
-  );
-  const capabilities = R.map((r) => r.capability, data);
+  const opts = { paginate: false, batched: false };
+  const roles = await listThroughGetTos(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
+  const roleIds = roles.map((r) => r.id);
+  const capabilities = await listThroughGetTos(roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, opts);
   if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
-    capabilities.push({ id, internal_id: id, name: BYPASS });
+    capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
   }
   return capabilities;
 };
 
 export const getRoleCapabilities = async (roleId) => {
-  const data = await find(
-    `match $role isa Role, has internal_id "${escapeString(roleId)}";
-            (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
-            $role has internal_id $role_id;
-            $capability has internal_id $capability_id; get;`,
-    ['capability']
-  );
-  return R.map((r) => r.capability, data);
+  return listThroughGetTos(roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, {
+    paginate: false,
+    batched: false,
+  });
 };
 
 export const findRoleById = (roleId) => {
@@ -356,28 +328,25 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
 };
 
 export const loginFromProvider = async (email, name) => {
-  const result = await load(
-    `match $client isa User, has user_email "${escapeString(email)}"; 
-    (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token); get;`,
-    ['client', 'token']
-  );
-  if (R.isNil(result)) {
+  const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
+  if (!user) {
     const newUser = { name, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
   // update the name
+  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN, { batched: false });
   const inputName = { key: 'name', value: [name] };
-  await userEditField(SYSTEM_USER, result.client.id, inputName);
+  await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
-  await userEditField(SYSTEM_USER, result.client.id, inputExternal);
-  await clearUserAccessCache(result.token.id);
-  return result.token;
+  await userEditField(SYSTEM_USER, user.id, inputExternal);
+  await clearUserAccessCache(userToken.id);
+  return userToken;
 };
 
 export const login = async (email, password) => {
   const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
   if (!user) throw AuthenticationFailure();
-  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
+  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN, { batched: false });
   if (!userToken) throw AuthenticationFailure();
   const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);
@@ -394,6 +363,10 @@ export const logout = async (user, res) => {
 };
 
 // Token related
+// eslint-disable-next-line no-unused-vars
+const internalGetTokenByUUID = async (tokenUUID) => {
+  return elLoadBy(['uuid'], tokenUUID, ENTITY_TYPE_TOKEN);
+};
 // eslint-disable-next-line no-unused-vars
 export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
   // // 01. Get current token
@@ -430,6 +403,7 @@ export const findByTokenUUID = async (tokenValue) => {
     if (!userToken || userToken.revoked === true) return undefined;
     const users = await listThroughGetFroms(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER, {
       paginate: false,
+      batched: false,
     });
     if (users.length === 0 || users.length > 1) return undefined;
     const client = R.head(users);

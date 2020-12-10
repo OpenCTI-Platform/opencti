@@ -1,13 +1,12 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import {
   createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  escapeString,
-  find,
   listEntities,
   listThroughGetFroms,
+  listThroughGetTos,
   loadById,
   updateAttribute,
 } from '../database/grakn';
@@ -17,6 +16,7 @@ import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const findById = (groupId) => {
   return loadById(groupId, ENTITY_TYPE_GROUP);
@@ -30,14 +30,9 @@ export const members = async (groupId) => {
   return listThroughGetFroms(groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
-// TODO MIGRATE JRI
 export const markingDefinitions = async (groupId) => {
-  const data = await find(
-    `match $group isa Group, has internal_id "${escapeString(groupId)}";
-            (${RELATION_ACCESSES_TO}_from: $group, ${RELATION_ACCESSES_TO}_to: $marking) isa ${RELATION_ACCESSES_TO}; get;`,
-    ['marking']
-  );
-  return map((r) => r.marking, data);
+  const opts = { paginate: false };
+  return listThroughGetTos(groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
 };
 
 export const addGroup = async (user, group) => {

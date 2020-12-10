@@ -326,14 +326,14 @@ const getSingleValue = () => {
   //   const iterator = await rTx.query(query, { infer });
   //   return iterator.next();
   // });
-  return 0;
+  return Promise.resolve({ number: () => 0 });
 };
 export const getSingleValueNumber = (query, infer = false) => {
   return getSingleValue(query, infer).then((data) => data.number());
 };
 // Bulk loading method
 export const listThrough = async (sources, sourceSide, relationType, targetEntityType, opts = {}) => {
-  const { paginate = true } = opts;
+  const { paginate = true, batched = true } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
   const ids = Array.isArray(sources) ? sources : [sources];
@@ -372,12 +372,14 @@ export const listThrough = async (sources, sourceSide, relationType, targetEntit
       return buildPagination(0, 0, edges, edges.length);
     });
   }
-  return R.flatten(
-    ids.map((id) => {
-      const values = elGrouped[id];
-      return values?.map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets)) || [];
-    })
-  );
+  const elements = ids.map((id) => {
+    const values = elGrouped[id];
+    return values?.map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets)) || [];
+  });
+  if (batched) {
+    return elements;
+  }
+  return R.flatten(elements);
 };
 export const listThroughGetFroms = async (sources, relationType, targetEntityType, opts = {}) => {
   return listThrough(sources, 'to', relationType, targetEntityType, opts);
@@ -385,16 +387,19 @@ export const listThroughGetFroms = async (sources, relationType, targetEntityTyp
 export const listThroughGetTos = async (sources, relationType, targetEntityType, opts = {}) => {
   return listThrough(sources, 'from', relationType, targetEntityType, opts);
 };
-export const loadThrough = async (sources, sourceSide, relationType, targetEntityType) => {
-  const elements = await listThrough(sources, sourceSide, relationType, targetEntityType, { paginate: false });
+const loadThrough = async (sources, sourceSide, relationType, targetEntityType) => {
+  const elements = await listThrough(sources, sourceSide, relationType, targetEntityType, {
+    paginate: false,
+    batched: false,
+  });
   if (elements.length > 1) throw Error('Should be one');
   return elements && elements[0];
 };
 export const loadThroughGetFrom = async (sources, relationType, targetEntityType) => {
-  return loadThrough(sources, 'to', relationType, targetEntityType, { paginate: false });
+  return loadThrough(sources, 'to', relationType, targetEntityType);
 };
 export const loadThroughGetTo = async (sources, relationType, targetEntityType) => {
-  return loadThrough(sources, 'from', relationType, targetEntityType, { paginate: false });
+  return loadThrough(sources, 'from', relationType, targetEntityType);
 };
 export const listEntities = async (entityTypes, searchFields, args = {}) => {
   // filters contains potential relations like, mitigates, tagged ...

@@ -16,6 +16,9 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
+import { initBatchLoader } from '../database/grakn';
+
+const markingsLoader = initBatchLoader(markingDefinitions);
 
 const groupResolvers = {
   Query: {
@@ -23,7 +26,7 @@ const groupResolvers = {
     groups: (_, args) => findAll(args),
   },
   Group: {
-    allowed_marking: (stixCoreObject) => markingDefinitions(stixCoreObject.id),
+    allowed_marking: (stixCoreObject) => markingsLoader.load(stixCoreObject.id),
     members: (group) => members(group.id),
     editContext: (group) => fetchEditContext(group.id),
   },

@@ -23,7 +23,7 @@ import {
   userAddRelation,
   userDeleteRelation,
   userRenewToken,
-  groups,
+  batchGroups,
   roleEditContext,
   roleCleanContext,
   userEditContext,
@@ -37,6 +37,10 @@ import { addRole } from '../domain/grant';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { initBatchLoader } from '../database/grakn';
+
+const groupsLoader = initBatchLoader(batchGroups);
+const rolesLoader = initBatchLoader(getRoles);
 
 const userResolvers = {
   Query: {
@@ -48,8 +52,8 @@ const userResolvers = {
     me: (_, args, { user }) => findById(user.id),
   },
   User: {
-    groups: (user) => groups(user.id),
-    roles: (user) => getRoles(user.id),
+    groups: (user) => groupsLoader.load(user.id),
+    roles: (user) => rolesLoader.load(user.id),
     allowed_marking: (user) => getMarkings(user.id),
     capabilities: (user) => getCapabilities(user.id),
     token: (user, args, context) => token(user.id, args, context),
