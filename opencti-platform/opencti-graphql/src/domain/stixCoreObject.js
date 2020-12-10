@@ -87,10 +87,6 @@ export const batchMarkingDefinitions = (stixCoreObjectIds) => {
   return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const batchKillChainPhases = (stixCoreObjectIds) => {
-  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
-};
-
 export const externalReferences = (stixDomainObjectId) => {
   return listToEntitiesThroughRelation(
     stixDomainObjectId,
@@ -98,6 +94,10 @@ export const externalReferences = (stixDomainObjectId) => {
     RELATION_EXTERNAL_REFERENCE,
     ENTITY_TYPE_EXTERNAL_REFERENCE
   );
+};
+
+export const batchKillChainPhases = (stixCoreObjectIds) => {
+  return batchToEntitiesThrough(stixCoreObjectIds, null, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
 export const stixCoreRelationships = (stixCoreObjectId, args) => {

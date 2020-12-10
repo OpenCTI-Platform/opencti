@@ -46,7 +46,6 @@ enum Capabilities {
   MODULES
   MODULES_MODMANAGE
   SETTINGS
-  SETTINGS_SETINFERENCES
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
 }
@@ -103,9 +102,13 @@ type DependencyVersion {
 Retrieve the application information version add dependencies
 """
 type AppInfo {
-  """The OpenCTI aplication version"""
+  """
+  The OpenCTI aplication version
+  """
   version: String!
-  """The list of OpenCTI software dependencies"""
+  """
+  The list of OpenCTI software dependencies
+  """
   dependencies: [DependencyVersion!]!
 }
 
@@ -218,15 +221,6 @@ type Log {
   user_id: String!
   user: User
   context_data: ContextData
-}
-
-############## Inferences
-type Inference {
-  id: ID!
-  name: String!
-  description: String!
-  rule: String!
-  enabled: Boolean
 }
 
 ############## Attributes
@@ -981,7 +975,6 @@ interface StixCoreObject {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1080,7 +1073,6 @@ interface StixDomainObject {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1193,7 +1185,6 @@ type AttackPattern implements BasicObject & StixObject & StixCoreObject & StixDo
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1321,7 +1312,6 @@ type Campaign implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1440,7 +1430,6 @@ interface Container {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1537,7 +1526,6 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1665,7 +1653,6 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1790,7 +1777,6 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -1920,7 +1906,6 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2049,7 +2034,6 @@ type CourseOfAction implements BasicObject & StixObject & StixCoreObject & StixD
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2171,7 +2155,6 @@ interface Identity {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2289,7 +2272,6 @@ type Individual implements BasicObject & StixObject & StixCoreObject & StixDomai
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2420,7 +2402,6 @@ type Organization implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2545,7 +2526,6 @@ type Sector implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2684,7 +2664,6 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2822,7 +2801,6 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -2941,7 +2919,6 @@ type IntrusionSet implements BasicObject & StixObject & StixCoreObject & StixDom
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3075,7 +3052,6 @@ interface Location {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3186,7 +3162,6 @@ type Position implements BasicObject & StixObject & StixCoreObject & StixDomainO
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3310,7 +3285,6 @@ type City implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3427,7 +3401,6 @@ type Country implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3544,7 +3517,6 @@ type Region implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3673,7 +3645,6 @@ type Malware implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3800,7 +3771,6 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -3931,7 +3901,6 @@ type Tool implements StixDomainObject & StixCoreObject & StixObject & BasicObjec
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4052,7 +4021,6 @@ type Vulnerability implements StixDomainObject & StixCoreObject & StixObject & B
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4172,7 +4140,6 @@ type XOpenCTIIncident implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4292,7 +4259,6 @@ interface StixCyberObservable {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4321,7 +4287,6 @@ interface StixCyberObservable {
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4370,7 +4335,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4399,7 +4363,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4457,7 +4420,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4486,7 +4448,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4548,7 +4509,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4577,7 +4537,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4631,7 +4590,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4660,7 +4618,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4716,7 +4673,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4745,7 +4701,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4811,7 +4766,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4840,7 +4794,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4907,7 +4860,6 @@ interface HashedObservable {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4936,7 +4888,6 @@ interface HashedObservable {
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -4987,7 +4938,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5016,7 +4966,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5081,7 +5030,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5110,7 +5058,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5183,7 +5130,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5212,7 +5158,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5281,7 +5226,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5310,7 +5254,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5364,7 +5307,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5393,7 +5335,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5447,7 +5388,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5476,7 +5416,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5530,7 +5469,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5559,7 +5497,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5613,7 +5550,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5642,7 +5578,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5716,7 +5651,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5745,7 +5679,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5811,7 +5744,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5840,7 +5772,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5904,7 +5835,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5933,7 +5863,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -5987,7 +5916,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6016,7 +5944,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6098,7 +6025,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6127,7 +6053,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6185,7 +6110,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6214,7 +6138,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6272,7 +6195,6 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6301,7 +6223,6 @@ type X509V3ExtensionsType implements BasicObject & StixObject & StixCoreObject &
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6385,7 +6306,6 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6414,7 +6334,6 @@ type XOpenCTICryptographicKey implements BasicObject & StixObject & StixCoreObje
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6468,7 +6387,6 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6497,7 +6415,6 @@ type XOpenCTICryptocurrencyWallet implements BasicObject & StixObject & StixCore
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6551,7 +6468,6 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6580,7 +6496,6 @@ type XOpenCTIHostname implements BasicObject & StixObject & StixCoreObject & Sti
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6634,7 +6549,6 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6663,7 +6577,6 @@ type XOpenCTIText implements BasicObject & StixObject & StixCoreObject & StixCyb
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6717,7 +6630,6 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6746,7 +6658,6 @@ type XOpenCTIUserAgent implements BasicObject & StixObject & StixCoreObject & St
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -6965,7 +6876,6 @@ interface StixRelationship {
   x_opencti_stix_ids: [String]
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
-  inferred: Boolean
 }
 
 ############## StixCoreRelationships
@@ -7026,7 +6936,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   x_opencti_stix_ids: [String]
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
-  inferred: Boolean
   spec_version: String!
   # StixCoreRelationship
   relationship_type: String!
@@ -7051,7 +6960,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -7069,7 +6977,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
   ): StixCoreRelationshipConnection
-  inferences: StixCoreRelationshipConnection
   killChainPhases: KillChainPhaseConnection
   # Technical
   creator: User
@@ -7157,7 +7064,6 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
-  inferred: Boolean
   # StixSightingRelationship
   description: String
   first_seen: DateTime
@@ -7246,7 +7152,6 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
-  inferred: Boolean
   # StixCyberObservableRelationship
   relationship_type: String!
   start_time: DateTime
@@ -7287,7 +7192,6 @@ type StixMetaRelationship implements BasicRelationship & StixRelationship {
   spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
-  inferred: Boolean
 }
 input StixMetaRelationshipAddInput {
   relationship_type: String!
@@ -7327,7 +7231,6 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  inferences: [Inference] @auth(for: [SETTINGS])
   attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
   attributes(
     first: Int
@@ -7356,9 +7259,9 @@ type Query {
   settings: Settings
   group(id: String!): Group @auth(for: [SETTINGS_SETACCESSES])
   groups(first: Int, after: ID, orderBy: GroupsOrdering, orderMode: OrderingMode, search: String): GroupConnection
-  @auth(for: [SETTINGS_SETACCESSES])
+    @auth(for: [SETTINGS_SETACCESSES])
   roles(first: Int, after: ID, orderBy: RolesOrdering, orderMode: OrderingMode, search: String): RoleConnection
-  @auth(for: [SETTINGS_SETACCESSES])
+    @auth(for: [SETTINGS_SETACCESSES])
   me: User @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   users(
@@ -7472,8 +7375,7 @@ type Query {
     filterMode: FilterMode
     search: String
   ): StixDomainObjectConnection @auth(for: [KNOWLEDGE])
-  stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection
-  @auth(for: [KNOWLEDGE_KNGETEXPORT])
+  stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     type: String
     field: String!
@@ -7522,7 +7424,6 @@ type Query {
     endDate: DateTime!
     interval: String!
     relationship_type: String
-    inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
   # Containers
   container(id: String): Container @auth(for: [KNOWLEDGE])
@@ -7565,7 +7466,7 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   noteContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  @auth(for: [KNOWLEDGE])
+    @auth(for: [KNOWLEDGE])
   observedData(id: String): ObservedData @auth(for: [KNOWLEDGE])
   observedDatas(
     first: Int
@@ -7595,7 +7496,7 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   observedDataContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  @auth(for: [KNOWLEDGE])
+    @auth(for: [KNOWLEDGE])
   opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
   opinions(
     first: Int
@@ -7625,7 +7526,7 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  @auth(for: [KNOWLEDGE])
+    @auth(for: [KNOWLEDGE])
   report(id: String): Report @auth(for: [KNOWLEDGE])
   reports(
     first: Int
@@ -7656,7 +7557,7 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  @auth(for: [KNOWLEDGE])
+    @auth(for: [KNOWLEDGE])
   courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
   coursesOfAction(
     first: Int
@@ -7865,7 +7766,6 @@ type Query {
     endDate: DateTime!
     interval: String!
     relationship_type: String
-    inferred: Boolean
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
 
   ######## STIX CYBER OBSERVABLE ENTITIES
@@ -7886,7 +7786,7 @@ type Query {
   stixCyberObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
-  @auth(for: [KNOWLEDGE])
+    @auth(for: [KNOWLEDGE])
 
   ######## STIX META RELATIONSHIPS
   stixMetaRelationshipsDistribution(
@@ -7894,14 +7794,13 @@ type Query {
     operation: StatsOperation!
     relationship_type: String
     toTypes: [String]
-    inferred: Boolean
     startDate: DateTime
     endDate: DateTime
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime, inferred: Boolean): Number
-  @auth(for: [KNOWLEDGE])
+  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number
+    @auth(for: [KNOWLEDGE])
 
   ######## STIX CORE RELATIONSHIPS
 
@@ -7917,7 +7816,6 @@ type Query {
     toId: String
     toRole: String
     toTypes: [String]
-    inferred: Boolean
     relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
@@ -7939,7 +7837,6 @@ type Query {
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
     elementId: String!
-    inferred: Boolean
     relationship_type: String
     startTimeStart: DateTime
     startTimeStop: DateTime
@@ -7959,7 +7856,6 @@ type Query {
   stixCoreRelationshipsTimeSeries(
     fromId: String
     relationship_type: String
-    inferred: Boolean
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
@@ -7971,7 +7867,6 @@ type Query {
     field: String!
     operation: StatsOperation!
     relationship_type: String
-    inferred: Boolean
     toTypes: [String]
     isTo: Boolean
     noDirection: Boolean
@@ -7987,7 +7882,6 @@ type Query {
     toTypes: [String]
     noDirection: Boolean
     endDate: DateTime
-    inferred: Boolean
   ): Number @auth(for: [KNOWLEDGE])
 
   ######## STIX SIGHTING RELATIONSHIPS
@@ -7999,7 +7893,6 @@ type Query {
     orderBy: StixSightingRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -8014,7 +7907,6 @@ type Query {
   ): StixSightingRelationshipConnection @auth(for: [KNOWLEDGE])
   stixSightingRelationshipsTimeSeries(
     fromId: String
-    inferred: Boolean
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
@@ -8025,14 +7917,13 @@ type Query {
     fromId: String!
     field: String!
     operation: StatsOperation!
-    inferred: Boolean
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  stixSightingRelationshipsNumber(fromId: String, endDate: DateTime, inferred: Boolean): Number
+  stixSightingRelationshipsNumber(fromId: String, endDate: DateTime): Number
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
 
@@ -8043,7 +7934,6 @@ type Query {
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     fromId: String
-    inferred: Boolean
     toId: String
     fromTypes: [String]
     toTypes: [String]
@@ -8062,7 +7952,6 @@ type Query {
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
     elementId: String
-    inferred: Boolean
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -8074,7 +7963,6 @@ type Query {
   ): StixCyberObservableRelationshipConnection @auth(for: [KNOWLEDGE])
   stixCyberObservableRelationshipsTimeSeries(
     fromId: String
-    inferred: Boolean
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
@@ -8085,14 +7973,13 @@ type Query {
     fromId: String!
     field: String!
     operation: StatsOperation!
-    inferred: Boolean
     toTypes: [String]
     startDate: DateTime
     endDate: DateTime
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime, inferred: Boolean): Number
+  stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number
 
   ####### ALL
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
@@ -8230,7 +8117,7 @@ type StixDomainObjectEditMutations {
   relationDelete(toId: String!, relationship_type: String): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   importPush(file: Upload!): File @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
-  @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+    @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])
 }
 type AttackPatternEditMutations {
@@ -8487,8 +8374,6 @@ type StixCyberObservableRelationshipEditMutations {
 
 type Mutation {
   ###### INTERNAL
-  inferenceEnable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
-  inferenceDisable(id: ID!): Inference @auth(for: [SETTINGS_SETINFERENCES])
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
@@ -8496,7 +8381,8 @@ type Mutation {
   askJobImport(fileName: ID!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
 
   ### WORK
-  workAdd(connectorId: String!, friendlyName: String): Work! @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+  workAdd(connectorId: String!, friendlyName: String): Work!
+    @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
 
   ######## INTERNAL OBJECT ENTITIES
@@ -8554,8 +8440,7 @@ type Mutation {
     mergeAliases: Boolean
   ): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
-  stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
-  @auth(for: [CONNECTORAPI])
+  stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
   attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   attackPatternEdit(id: ID!): AttackPatternEditMutations
   campaignAdd(input: CampaignAddInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
@@ -8668,19 +8553,19 @@ type Mutation {
 
   ######## STIX CORE RELATIONSHIPS
   stixCoreRelationshipAdd(input: StixCoreRelationshipAddInput, reversedReturn: Boolean): StixCoreRelationship
-  @auth(for: [KNOWLEDGE_KNUPDATE])
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipEdit(id: ID!): StixCoreRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCoreRelationshipDelete(fromId: String!, toId: String!, relationship_type: String!): Boolean!
-  @auth(for: [KNOWLEDGE_KNUPDATE])
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
   stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship
-  @auth(for: [KNOWLEDGE_KNUPDATE])
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   stixCyberObservableRelationshipEdit(id: ID!): StixCyberObservableRelationshipEditMutations
-  @auth(for: [KNOWLEDGE_KNUPDATE])
+    @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX SIGHTING RELATIONSHIPS
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
-  @auth(for: [KNOWLEDGE_KNUPDATE])
+    @auth(for: [KNOWLEDGE_KNUPDATE])
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 }

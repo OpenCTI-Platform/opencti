@@ -89,20 +89,20 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.start_time)}
+                {nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.stop_time)}
+                {nsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
                 <ItemConfidence
-                  confidence={node.inferred ? 1000 : node.confidence}
+                  confidence={node.confidence}
                   variant="inList"
                 />
               </div>
@@ -113,7 +113,6 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
           />
         </ListItemSecondaryAction>
       </ListItem>

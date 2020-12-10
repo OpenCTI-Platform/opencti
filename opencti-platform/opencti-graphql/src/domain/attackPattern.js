@@ -1,4 +1,5 @@
 import {
+  batchFromEntitiesThrough,
   createEntity,
   escapeString,
   getSingleValueNumber,
@@ -9,7 +10,7 @@ import {
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
 
@@ -26,13 +27,8 @@ export const addAttackPattern = async (user, attackPattern) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const coursesOfAction = async (attackPatternId) => {
-  return listFromEntitiesThroughRelation(
-    attackPatternId,
-    ENTITY_TYPE_ATTACK_PATTERN,
-    RELATION_MITIGATES,
-    ENTITY_TYPE_COURSE_OF_ACTION
-  );
+export const batchCoursesOfAction = (attackPatternIds) => {
+  return batchFromEntitiesThrough(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
 export const parentAttackPatterns = (attackPatternId) => {
