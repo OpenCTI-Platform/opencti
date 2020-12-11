@@ -136,7 +136,7 @@ class RootThreatActor extends Component {
                         <StixDomainObjectHeader
                           stixDomainObject={props.threatActor}
                           PopoverComponent={<ThreatActorPopover />}
-                          variant='noaliases'
+                          variant="noaliases"
                         />
                         <StixDomainObjectIndicators
                           {...routeProps}

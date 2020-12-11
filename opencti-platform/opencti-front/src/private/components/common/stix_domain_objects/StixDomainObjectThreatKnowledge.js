@@ -197,7 +197,10 @@ class StixDomainObjectThreatKnowledge extends Component {
                           {t('Total reports')}
                         </div>
                         <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} description={t('30 days')} />
+                        <ItemNumberDifference
+                          difference={difference}
+                          description={t('30 days')}
+                        />
                         <div className={classes.icon}>
                           <DescriptionOutlined
                             color="inherit"
@@ -245,7 +248,10 @@ class StixDomainObjectThreatKnowledge extends Component {
                             : t('Total indicators')}
                         </div>
                         <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} description={t('30 days')} />
+                        <ItemNumberDifference
+                          difference={difference}
+                          description={t('30 days')}
+                        />
                         <div className={classes.icon}>
                           {displayObservablesStats ? (
                             <HexagonMultipleOutline
@@ -292,7 +298,10 @@ class StixDomainObjectThreatKnowledge extends Component {
                           {t('Total relations')}
                         </div>
                         <div className={classes.number}>{n(total)}</div>
-                        <ItemNumberDifference difference={difference} description={t('30 days')} />
+                        <ItemNumberDifference
+                          difference={difference}
+                          description={t('30 days')}
+                        />
                         <div className={classes.icon}>
                           <DeviceHubOutlined color="inherit" fontSize="large" />
                         </div>

@@ -63,7 +63,10 @@ describe('stixSightingRelationship resolver standard behavior', () => {
     expect(queryResult.data.stixSightingRelationship.toStix.length).toBeGreaterThan(5);
   });
   it('should stixSightingRelationship loaded by stix id', async () => {
-    const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: stixSightingRelationshipStandardId } });
+    const queryResult = await queryAsAdmin({
+      query: READ_QUERY,
+      variables: { id: stixSightingRelationshipStandardId },
+    });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.stixSightingRelationship).not.toBeNull();
     expect(queryResult.data.stixSightingRelationship.id).toEqual(stixSightingRelationshipInternalId);
@@ -97,7 +100,9 @@ describe('stixSightingRelationship resolver standard behavior', () => {
         input: { key: 'description', value: ['stixSightingRelationship - test'] },
       },
     });
-    expect(queryResult.data.stixSightingRelationshipEdit.fieldPatch.description).toEqual('stixSightingRelationship - test');
+    expect(queryResult.data.stixSightingRelationshipEdit.fieldPatch.description).toEqual(
+      'stixSightingRelationship - test'
+    );
   });
   it('should context patch stixSightingRelationship', async () => {
     const CONTEXT_PATCH_QUERY = gql`

@@ -121,33 +121,12 @@ class ContainerAddStixCoreObjects extends Component {
   }
 
   renderDomainObjectCreation(paginationOptions) {
-    const {
-      defaultCreatedBy,
-      defaultMarkingDefinitions,
-    } = this.props;
+    const { defaultCreatedBy, defaultMarkingDefinitions } = this.props;
 
     const { open, search } = this.state;
 
-    return <StixDomainObjectCreation
-        display={open}
-        contextual={true}
-        inputValue={search}
-        paginationKey='Pagination_stixCoreObjects'
-        paginationOptions={paginationOptions}
-        defaultCreatedBy={defaultCreatedBy}
-        defaultMarkingDefinitions={defaultMarkingDefinitions}
-    />;
-  }
-
-  renderObservableCreation(paginationOptions) {
-    const {
-      defaultCreatedBy,
-      defaultMarkingDefinitions,
-    } = this.props;
-
-    const { open, search } = this.state;
-
-    return <StixCyberObservableCreation
+    return (
+      <StixDomainObjectCreation
         display={open}
         contextual={true}
         inputValue={search}
@@ -155,27 +134,58 @@ class ContainerAddStixCoreObjects extends Component {
         paginationOptions={paginationOptions}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
-    />;
+      />
+    );
+  }
+
+  renderObservableCreation(paginationOptions) {
+    const { defaultCreatedBy, defaultMarkingDefinitions } = this.props;
+
+    const { open, search } = this.state;
+
+    return (
+      <StixCyberObservableCreation
+        display={open}
+        contextual={true}
+        inputValue={search}
+        paginationKey="Pagination_stixCoreObjects"
+        paginationOptions={paginationOptions}
+        defaultCreatedBy={defaultCreatedBy}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
+      />
+    );
   }
 
   renderEntityCreation(paginationOptions) {
     const { targetStixCoreObjectTypes } = this.props;
 
-    if (targetStixCoreObjectTypes
-        && ContainerAddStixCoreObjects.isTypeDomainObject(targetStixCoreObjectTypes)
-        && !ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)) {
+    if (
+      targetStixCoreObjectTypes
+      && ContainerAddStixCoreObjects.isTypeDomainObject(
+        targetStixCoreObjectTypes,
+      )
+      && !ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
+    ) {
       return this.renderDomainObjectCreation(paginationOptions);
     }
 
-    if (targetStixCoreObjectTypes
-        && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
-        && !ContainerAddStixCoreObjects.isTypeDomainObject(targetStixCoreObjectTypes)) {
+    if (
+      targetStixCoreObjectTypes
+      && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
+      && !ContainerAddStixCoreObjects.isTypeDomainObject(targetStixCoreObjectTypes)
+    ) {
       return this.renderObservableCreation(paginationOptions);
     }
 
-    if (!targetStixCoreObjectTypes
-        || (ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
-            && ContainerAddStixCoreObjects.isTypeDomainObject(targetStixCoreObjectTypes))) {
+    if (
+      !targetStixCoreObjectTypes
+      || (ContainerAddStixCoreObjects.isTypeObservable(
+        targetStixCoreObjectTypes,
+      )
+        && ContainerAddStixCoreObjects.isTypeDomainObject(
+          targetStixCoreObjectTypes,
+        ))
+    ) {
       return this.renderDomainObjectCreation(paginationOptions);
     }
 
@@ -197,13 +207,13 @@ class ContainerAddStixCoreObjects extends Component {
         render={({ props }) => {
           if (props) {
             return (
-                <ContainerAddStixCoreObjectsLines
-                    containerId={containerId}
-                    data={props}
-                    paginationOptions={this.props.paginationOptions}
-                    knowledgeGraph={knowledgeGraph}
-                    containerStixCoreObjects={containerStixCoreObjects}
-                />
+              <ContainerAddStixCoreObjectsLines
+                containerId={containerId}
+                data={props}
+                paginationOptions={this.props.paginationOptions}
+                knowledgeGraph={knowledgeGraph}
+                containerStixCoreObjects={containerStixCoreObjects}
+              />
             );
           }
           return (
@@ -211,22 +221,14 @@ class ContainerAddStixCoreObjects extends Component {
               {Array.from(Array(20), (e, i) => (
                 <ListItem key={i} divider={true} button={false}>
                   <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>
-                      {i}
-                    </Avatar>
+                    <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
                   </ListItemIcon>
                   <ListItemText
                     primary={
-                      <span
-                          className="fakeItem"
-                          style={{ width: '80%' }}
-                      />
+                      <span className="fakeItem" style={{ width: '80%' }} />
                     }
                     secondary={
-                      <span
-                          className="fakeItem"
-                          style={{ width: '90%' }}
-                      />
+                      <span className="fakeItem" style={{ width: '90%' }} />
                     }
                   />
                 </ListItem>
@@ -244,7 +246,9 @@ class ContainerAddStixCoreObjects extends Component {
     return (
       <div className={classes.useSearchMessageContainer}>
         <span className={classes.useSearchMessage}>
-          {t('Use the search functionality to find the entity you want to associate.')}
+          {t(
+            'Use the search functionality to find the entity you want to associate.',
+          )}
         </span>
       </div>
     );
@@ -261,10 +265,7 @@ class ContainerAddStixCoreObjects extends Component {
   }
 
   getSearchTypes() {
-    const {
-      paginationOptions,
-      targetStixCoreObjectTypes,
-    } = this.props;
+    const { paginationOptions, targetStixCoreObjectTypes } = this.props;
 
     let searchTypes;
 
@@ -286,8 +287,10 @@ class ContainerAddStixCoreObjects extends Component {
 
     let orderMode = 'desc';
     let orderBy = 'name';
-    if (targetStixCoreObjectTypes
-        && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)) {
+    if (
+      targetStixCoreObjectTypes
+      && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
+    ) {
       orderBy = 'created_at';
     }
 
@@ -321,37 +324,38 @@ class ContainerAddStixCoreObjects extends Component {
       return null;
     }
 
-    if (types.length === 1
-        && (ContainerAddStixCoreObjects.isTypeDomainObject(types)
-            || ContainerAddStixCoreObjects.isTypeObservable(types))) {
+    if (
+      types.length === 1
+      && (ContainerAddStixCoreObjects.isTypeDomainObject(types)
+        || ContainerAddStixCoreObjects.isTypeObservable(types))
+    ) {
       return null;
     }
 
     const { t } = this.props;
 
     const renderedTypes = types.map((type) => (
-        <Chip
-            key={type}
-            style={{ marginLeft: '5px' }}
-            label={t(`entity_${type}`)}
-            onDelete={this.onSearchTypeFilterDelete.bind(this, type)}
-        />
+      <Chip
+        key={type}
+        style={{ marginLeft: '5px' }}
+        label={t(`entity_${type}`)}
+        onDelete={this.onSearchTypeFilterDelete.bind(this, type)}
+      />
     ));
 
     return (
-        <div style={{ margin: '20px 20px 0 20px' }}>
-          <span style={{ marginRight: '5px' }}>{t('Applied type filter(s):')}</span>
-          <span>{renderedTypes}</span>
-        </div>
+      <div style={{ margin: '20px 20px 0 20px' }}>
+        <span style={{ marginRight: '5px' }}>
+          {t('Applied type filter(s):')}
+        </span>
+        <span>{renderedTypes}</span>
+      </div>
     );
   }
 
   render() {
     const {
-      t,
-      classes,
-      withPadding,
-      simple,
+      t, classes, withPadding, simple,
     } = this.props;
     const paginationOptions = this.getPaginationOptions();
 

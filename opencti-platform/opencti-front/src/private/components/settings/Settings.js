@@ -314,7 +314,10 @@ class Settings extends Component {
                           query={settingsAboutQuery}
                           render={({ props: aboutProps }) => {
                             if (aboutProps) {
-                              const { version, dependencies } = aboutProps.about;
+                              const {
+                                version,
+                                dependencies,
+                              } = aboutProps.about;
                               return (
                                 <div>
                                   <Typography variant="h1" gutterBottom={true}>

@@ -7684,8 +7684,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE])
-  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number
-    @auth(for: [KNOWLEDGE])
+  stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
 
   ######## STIX CORE RELATIONSHIPS
 

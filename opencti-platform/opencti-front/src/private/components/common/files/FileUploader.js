@@ -27,9 +27,7 @@ const FileUploaderEntityMutation = graphql`
 `;
 
 const FileUploader = (props) => {
-  const {
-    entityId, onUploadSuccess, t,
-  } = props;
+  const { entityId, onUploadSuccess, t } = props;
   const uploadRef = useRef(null);
   const [upload, setUpload] = useState(null);
   const handleOpenUpload = () => uploadRef.current.click();

@@ -102,7 +102,7 @@ const SectorsLinesFragment = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         sectors(first: $count, after: $cursor)
-        @connection(key: "Pagination_sectors") {
+          @connection(key: "Pagination_sectors") {
           edges {
             node {
               id

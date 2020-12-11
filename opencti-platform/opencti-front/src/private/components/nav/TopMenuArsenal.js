@@ -6,7 +6,10 @@ import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { BugReportOutlined } from '@material-ui/icons';
 import {
-  LockPattern, ProgressWrench, Application, Biohazard,
+  LockPattern,
+  ProgressWrench,
+  Application,
+  Biohazard,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 

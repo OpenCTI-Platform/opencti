@@ -63,13 +63,13 @@ export const stixCyberObservableLinksQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCyberObservableLinks_data
-    @arguments(
-      elementId: $elementId
-      search: $search
-      count: $count
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        elementId: $elementId
+        search: $search
+        count: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -205,9 +205,9 @@ const StixCyberObservableLinks = createFragmentContainer(
           orderBy: $orderBy
           orderMode: $orderMode
         )
-        @connection(
-          key: "Pagination_stixCyberObservableRelationshipsOfElement"
-        ) {
+          @connection(
+            key: "Pagination_stixCyberObservableRelationshipsOfElement"
+          ) {
           edges {
             node {
               id

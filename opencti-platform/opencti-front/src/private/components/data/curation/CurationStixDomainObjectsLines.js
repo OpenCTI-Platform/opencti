@@ -80,15 +80,15 @@ export const curationStixDomainObjectsLinesQuery = graphql`
     $filters: [StixDomainObjectsFiltering]
   ) {
     ...CurationStixDomainObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 

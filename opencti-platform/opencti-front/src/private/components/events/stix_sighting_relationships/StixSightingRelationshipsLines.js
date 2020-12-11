@@ -69,15 +69,15 @@ export const stixSightingRelationshipsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixSightingRelationshipsLines_data
-    @arguments(
-      fromId: $fromId
-      toTypes: $toTypes
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromId: $fromId
+        toTypes: $toTypes
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

@@ -74,20 +74,20 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCoreObjectStixCyberObservablesLines_data
-    @arguments(
-      fromId: $fromId
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      startTimeStart: $startTimeStart
-      startTimeStop: $startTimeStop
-      stopTimeStart: $stopTimeStart
-      stopTimeStop: $stopTimeStop
-      confidences: $confidences
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromId: $fromId
+        toTypes: $toTypes
+        relationship_type: $relationship_type
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
+        confidences: $confidences
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

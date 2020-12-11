@@ -25,6 +25,7 @@ import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomai
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
+import { addAttribute, find as findAttribute } from './attribute';
 
 export const findAll = async (args) => {
   let types = [];
@@ -175,6 +176,17 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input,
   const stixDomainObject = await loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
+  }
+  if (input.key === 'report_types') {
+    await Promise.all(
+      input.value.map(async (reportType) => {
+        const currentAttribute = await findAttribute('report_types', reportType);
+        if (!currentAttribute) {
+          await addAttribute(user, { key: 'report_types', value: reportType });
+        }
+        return true;
+      })
+    );
   }
   const updatedStixDomainObject = await updateAttribute(
     user,

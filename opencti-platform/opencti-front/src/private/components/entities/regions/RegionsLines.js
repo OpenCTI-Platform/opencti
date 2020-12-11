@@ -102,7 +102,7 @@ const RegionsLinesFragment = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         regions(first: $count, after: $cursor)
-        @connection(key: "Pagination_regions") {
+          @connection(key: "Pagination_regions") {
           edges {
             node {
               id

@@ -99,12 +99,12 @@ export const attackPatternsLinesQuery = graphql`
     $cursor: ID
   ) {
     ...AttackPatternsLines_data
-    @arguments(
-      orderBy: $orderBy
-      orderMode: $orderMode
-      count: $count
-      cursor: $cursor
-    )
+      @arguments(
+        orderBy: $orderBy
+        orderMode: $orderMode
+        count: $count
+        cursor: $cursor
+      )
   }
 `;
 

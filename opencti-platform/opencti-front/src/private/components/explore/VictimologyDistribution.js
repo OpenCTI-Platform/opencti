@@ -17,10 +17,7 @@ const styles = () => ({
 class VictimologyDistribution extends Component {
   render() {
     const {
-      configuration,
-      handleOpenConfig,
-      startDate,
-      endDate,
+      configuration, handleOpenConfig, startDate, endDate,
     } = this.props;
     switch (configuration.graph_type) {
       case 'table':

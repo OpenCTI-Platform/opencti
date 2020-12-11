@@ -89,9 +89,10 @@ class StixCyberObservablesExportsContentComponent extends Component {
                 data={data}
                 paginationOptions={paginationOptions}
                 context={context}
-                onExportAsk={ () => this.props.relay.refetch({
+                onExportAsk={() => this.props.relay.refetch({
                   count: 25,
-                })}
+                })
+                }
               />
             </Security>
             <IconButton
@@ -129,7 +130,7 @@ export const stixCyberObservablesExportsContentQuery = graphql`
     $context: String
   ) {
     ...StixCyberObservablesExportsContent_data
-    @arguments(count: $count, context: $context)
+      @arguments(count: $count, context: $context)
   }
 `;
 
@@ -143,7 +144,7 @@ const StixCyberObservablesExportsContent = createRefetchContainer(
         context: { type: "String!" }
       ) {
         stixCyberObservablesExportFiles(first: $count, context: $context)
-        @connection(key: "Pagination_stixCyberObservablesExportFiles") {
+          @connection(key: "Pagination_stixCyberObservablesExportFiles") {
           edges {
             node {
               id

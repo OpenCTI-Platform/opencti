@@ -51,11 +51,7 @@ class ItemBoolean extends Component {
       );
     }
     return (
-      <Chip
-        classes={{ root: style }}
-        style={inlineStyles.red}
-        label={label}
-      />
+      <Chip classes={{ root: style }} style={inlineStyles.red} label={label} />
     );
   }
 }

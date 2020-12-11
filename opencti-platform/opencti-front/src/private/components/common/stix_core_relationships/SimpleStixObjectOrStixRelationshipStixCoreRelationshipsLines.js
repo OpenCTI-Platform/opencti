@@ -104,19 +104,19 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
     $cursor: ID
   ) {
     ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data
-    @arguments(
-      elementId: $elementId
-      relationship_type: $relationship_type
-      startTimeStart: $startTimeStart
-      startTimeStop: $startTimeStop
-      stopTimeStart: $stopTimeStart
-      stopTimeStop: $stopTimeStop
-      confidences: $confidences
-      orderBy: $orderBy
-      orderMode: $orderMode
-      count: $count
-      cursor: $cursor
-    )
+      @arguments(
+        elementId: $elementId
+        relationship_type: $relationship_type
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
+        confidences: $confidences
+        orderBy: $orderBy
+        orderMode: $orderMode
+        count: $count
+        cursor: $cursor
+      )
   }
 `;
 
