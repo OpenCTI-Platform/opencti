@@ -8,7 +8,6 @@ import {
   TYPE_LOCK_ERROR,
   UnsupportedError,
 } from '../config/errors';
-import { logger } from '../config/conf';
 import {
   buildPagination,
   fillTimeSeries,
@@ -72,12 +71,7 @@ import {
 import { isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
-import {
-  dictAttributes,
-  isDictionaryAttribute,
-  multipleAttributes,
-  statsDateAttributes,
-} from '../schema/fieldDataAdapter';
+import { dictAttributes, multipleAttributes, statsDateAttributes } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
@@ -128,16 +122,6 @@ export const initBatchLoader = (loader) => {
   const opts = { cache: false, maxBatchSize: MAX_BATCH_SIZE };
   return new DataLoader((ids) => loader(ids), opts);
 };
-
-const prepareAttribute = (key, value) => {
-  if (isDictionaryAttribute(key)) return `"${escapeString(JSON.stringify(value))}"`;
-  // Attribute is coming from GraphQL
-  if (value instanceof Date) return prepareDate(value);
-  // Attribute is coming from internal
-  if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
-  if (typeof value === 'string') return `"${escapeString(value)}"`;
-  return escape(value);
-};
 // endregion
 
 // region Loader common
@@ -161,7 +145,7 @@ export const queryAttributes = async (type) => {
 };
 // endregion
 
-// Bulk loading method
+// region bulk loading method
 export const listThrough = async (sources, sourceSide, relationType, targetEntityType, opts = {}) => {
   const { paginate = true, batched = true } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
@@ -348,7 +332,6 @@ const transformRawRelationsToAttributes = (data, orientation) => {
     }))
   );
 };
-
 export const loadByIdFullyResolved = async (id, type, args = {}) => {
   const typeOpts = type ? args : R.assoc('type', type, args);
   const element = await internalLoadById(id, typeOpts);
@@ -416,33 +399,6 @@ export const stixElementLoader = async (id, type) => {
 };
 // endregion
 
-// region Indexer
-export const reindexAttributeValue = async () => {
-  /*
-  const index = inferIndexFromConceptType(queryType);
-  const readQuery = `match $x isa ${queryType}, has ${escape(type)} $a, has internal_id $x_id; $a "${escapeString(
-    value
-  )}"; get;`;
-  logger.debug(`[GRAKN - infer: false] attributeUpdate`, { query: readQuery });
-  const elementIds = await executeRead(async (rTx) => {
-    const iterator = await rTx.query(readQuery, { infer: false });
-    const answer = await iterator.collect();
-    return answer.map((n) => n.get('x_id').value());
-  });
-  let body;
-  if (R.includes(type, multipleAttributes)) {
-    body = elementIds.flatMap((id) => [{ update: { _index: index, _id: id } }, { doc: { [type]: [value] } }]);
-  } else {
-    body = elementIds.flatMap((id) => [{ update: { _index: index, _id: id } }, { doc: { [type]: value } }]);
-  }
-  if (body.length > 0) {
-    await elBulk({ refresh: true, body });
-  }
-  */
-  // TODO JRI MIGRATION
-};
-// endregion
-
 // region Graphics
 export const timeSeriesEntities = async (entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
@@ -461,7 +417,6 @@ export const timeSeriesRelations = async (options) => {
   const entityType = relationshipType ? escape(relationshipType) : 'stix-relationship';
   const filters = fromId ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }] : [];
   const histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
-
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const distributionEntities = async (entityType, filters = [], options) => {
@@ -517,7 +472,7 @@ export const distributionRelations = async (options) => {
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 export const distributionEntitiesThroughRelations = async () => {
-  // TODO JRI MIGRATION
+  // TODO SAM MIGRATION
   return [];
   // const { limit = 10, order, inferred = false } = options;
   // const { relationshipType, remoteRelationshipType, toTypes, fromId, field, operation } = options;
@@ -546,30 +501,6 @@ export const distributionEntitiesThroughRelations = async () => {
 // region mutation common
 const TRX_CREATION = 'creation';
 const TRX_UPDATE = 'update';
-const flatAttributesForObject = (data) => {
-  const elements = Object.entries(data);
-  return R.pipe(
-    R.map((elem) => {
-      const key = R.head(elem);
-      const value = R.last(elem);
-      if (Array.isArray(value)) {
-        return R.map((iter) => ({ key, value: iter }), value);
-      }
-      // Some dates needs to detailed for search
-      if (value && R.includes(key, statsDateAttributes)) {
-        return [
-          { key, value },
-          { key: `i_${key}_day`, value: dayFormat(value) },
-          { key: `i_${key}_month`, value: monthFormat(value) },
-          { key: `i_${key}_year`, value: yearFormat(value) },
-        ];
-      }
-      return { key, value };
-    }),
-    R.flatten,
-    R.filter((f) => f.value !== undefined)
-  )(elements);
-};
 const depsKeys = [
   { src: 'fromId', dst: 'from' },
   { src: 'toId', dst: 'to' },
@@ -1115,8 +1046,8 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 // endregion
 
 // region mutation relation
-const buildRelationInsertQuery = (input) => {
-  const { from, to, relationship_type: relationshipType } = input;
+const buildRelationInput = (input) => {
+  const { relationship_type: relationshipType } = input;
   // 03. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
@@ -1197,21 +1128,7 @@ const buildRelationInsertQuery = (input) => {
       )(relationAttributes);
     }
   }
-  // 04. Create the relation
-  const fromRole = `${relationshipType}_from`;
-  const toRole = `${relationshipType}_to`;
-  let query = `match $from isa ${input.fromType ? input.fromType : 'thing'}; 
-      $from has internal_id "${from.internal_id}"; $to has internal_id "${to.internal_id}";
-      insert $rel(${fromRole}: $from, ${toRole}: $to) isa ${relationshipType},`;
-  const queryElements = flatAttributesForObject(relationAttributes);
-  const nbElements = queryElements.length;
-  for (let index = 0; index < nbElements; index += 1) {
-    const { key, value } = queryElements[index];
-    const insert = prepareAttribute(key, value);
-    const separator = index + 1 === nbElements ? ';' : ',';
-    query += `has ${key} ${insert}${separator} `;
-  }
-  return { relation: relationAttributes, query };
+  return { relation: relationAttributes };
 };
 const buildInnerRelation = (from, to, type) => {
   const targets = Array.isArray(to) ? to : [to];
@@ -1221,7 +1138,7 @@ const buildInnerRelation = (from, to, type) => {
   for (let i = 0; i < targets.length; i += 1) {
     const target = targets[i];
     const input = { from, to: target, relationship_type: type };
-    const { relation, query } = buildRelationInsertQuery(input);
+    const { relation } = buildRelationInput(input);
     const basicRelation = {
       id: relation.internal_id,
       fromId: from.internal_id,
@@ -1234,7 +1151,7 @@ const buildInnerRelation = (from, to, type) => {
       parent_types: getParentTypes(relation.entity_type),
       ...relation,
     };
-    relations.push({ relation: basicRelation, query });
+    relations.push({ relation: basicRelation });
   }
   return relations;
 };
@@ -1636,18 +1553,6 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       )(data);
     }
   }
-  // Generate fields for query and build the query
-  const queryElements = flatAttributesForObject(data);
-  const nbElements = queryElements.length;
-  let query = `insert $entity isa ${type}, `;
-  for (let index = 0; index < nbElements; index += 1) {
-    const { key, value } = queryElements[index];
-    const insert = prepareAttribute(key, value);
-    const separator = index + 1 === nbElements ? ';' : ',';
-    if (!R.isNil(insert) && insert.length !== 0) {
-      query += `has ${key} ${insert}${separator} `;
-    }
-  }
   // Create the input
   const relToCreate = [];
   if (isStixCoreObject(type)) {
@@ -1658,7 +1563,6 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     relToCreate.push(...buildInnerRelation(data, input.externalReferences, RELATION_EXTERNAL_REFERENCE));
     relToCreate.push(...buildInnerRelation(data, input.objects, RELATION_OBJECT));
   }
-  logger.debug(`[GRAKN - infer: false] createEntity`, { query });
   // Transaction succeed, complete the result to send it back
   const created = R.pipe(
     R.assoc('id', internalId),
