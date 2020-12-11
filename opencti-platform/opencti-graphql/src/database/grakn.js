@@ -71,7 +71,7 @@ import {
 } from '../schema/stixMetaRelationship';
 import { isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   dictAttributes,
   isDictionaryAttribute,
@@ -155,7 +155,7 @@ export const queryAttributes = async (type) => {
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
-    R.map((n) => ({ node: { id: n, key: n, value: n, } }))
+    R.map((n) => ({ node: { id: n, key: n, value: n } }))
   )(attributes);
   return buildPagination(0, 0, finalResult, finalResult.length);
 };
@@ -1741,7 +1741,8 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
     throw DatabaseError(`Cant find entity to delete ${elementId}`);
   }
   // Delete entity and all dependencies
-  const elements = await getElementsToRemove(element, false, options);
+  const isRelation = isBasicRelationship(element.entity_type);
+  const elements = await getElementsToRemove(element, isRelation, options);
   // Update elastic index.
   for (let index = 0; index < elements.length; index += 1) {
     const { internal_id: id, relDependency } = elements[index];
