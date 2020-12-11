@@ -70,7 +70,12 @@ import {
 } from '../schema/stixMetaRelationship';
 import { isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import {
+  isBasicRelationship,
+  isStixRelationship,
+  isStixRelationShipExceptMeta,
+  stixRelationshipsMapping,
+} from '../schema/stixRelationship';
 import { dictAttributes, multipleAttributes, statsDateAttributes } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
@@ -1376,6 +1381,15 @@ export const createRelation = async (user, input) => {
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
   const { from, to } = resolvedInput;
+  // TODO ALL RELATIONSHIPS
+  if (
+    isStixRelationship(relationshipType) &&
+    !R.includes(relationshipType, stixRelationshipsMapping[`${from.entity_type}_${to.entity_type}`])
+  ) {
+    throw FunctionalError(
+      `The relationship type ${relationshipType} is not allowed between ${from.entity_type} and ${to.entity_type}`
+    );
+  }
   // Build lock ids
   const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
   const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
