@@ -248,6 +248,7 @@ class StixDomainObjectIndicators extends Component {
             paginationOptions={paginationOptions}
             openExports={openExports}
             paddingRight={270}
+            connectionKey="Pagination_indicators"
           />
         </Security>
         <IndicatorsRightBar

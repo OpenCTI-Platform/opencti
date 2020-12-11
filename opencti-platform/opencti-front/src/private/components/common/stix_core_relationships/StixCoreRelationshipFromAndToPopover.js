@@ -102,9 +102,6 @@ class StixCoreRelationshipFromAndToPopover extends Component {
       },
       updater: (store) => {
         if (typeof this.props.onDelete !== 'function') {
-          console.log(nodeId);
-          console.log(paginationOptions);
-          console.log(connectionKey);
           const container = store.getRoot();
           const userProxy = store.get(container.getDataID());
           const conn = ConnectionHandler.getConnection(

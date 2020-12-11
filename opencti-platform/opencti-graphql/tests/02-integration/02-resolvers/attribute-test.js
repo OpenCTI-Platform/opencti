@@ -68,7 +68,7 @@ describe('Attribute resolver standard behavior', () => {
   });
   it('should update attribute', async () => {
     const UPDATE_QUERY = gql`
-      mutation AttributeEdit($id: ID!, $input: AttributeEditInput!) {
+      mutation AttributeEdit($id: ID!, $input: EditInput!) {
         attributeEdit(id: $id) {
           fieldPatch(input: $input) {
             id
