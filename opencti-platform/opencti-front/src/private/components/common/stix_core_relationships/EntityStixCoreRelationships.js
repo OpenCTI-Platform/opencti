@@ -100,13 +100,8 @@ class EntityStixCoreRelationships extends Component {
 
   handleChangeEntities(event) {
     const { value } = event.target;
-    if (value === 'All' && this.props.targetStixDomainObjectTypes.length > 1) {
-      return this.setState({
-        openToType: false,
-        toType: ['All'],
-      });
-    }
-    return this.setState({ openToType: false, toType: [value] }, () => this.saveView());
+
+    return this.setState({ openToType: false, toType: value }, () => this.saveView());
   }
 
   handleChangeInferred() {
@@ -206,6 +201,7 @@ class EntityStixCoreRelationships extends Component {
       noBottomBar,
       inference,
     } = this.props;
+
     const {
       view,
       searchTerm,
@@ -215,11 +211,14 @@ class EntityStixCoreRelationships extends Component {
       orderAsc,
       inferred,
     } = this.state;
+
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
       || targetStixDomainObjectTypes.includes('Identity');
 
     // sort only when inferences are disabled or inferences are resolved
+    const selectedTypes = toType === 'All' ? targetStixDomainObjectTypes : [toType];
+
     let paginationOptions = {
       inferred: !!(inferred || inference),
       relationship_type: relationshipType || 'stix-core-relationship',
@@ -227,12 +226,10 @@ class EntityStixCoreRelationships extends Component {
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
+
     if (isRelationReversed) {
       paginationOptions = pipe(
-        assoc(
-          'fromTypes',
-          toType.includes('All') ? targetStixDomainObjectTypes : [toType],
-        ),
+        assoc('fromTypes', selectedTypes),
         assoc('toId', entityId),
         assoc('toRole', role || null),
       )(paginationOptions);
@@ -240,10 +237,7 @@ class EntityStixCoreRelationships extends Component {
       paginationOptions = pipe(
         assoc('fromId', entityId),
         assoc('fromRole', role || null),
-        assoc(
-          'toTypes',
-          toType.includes('All') ? targetStixDomainObjectTypes : [toType],
-        ),
+        assoc('toTypes', selectedTypes),
       )(paginationOptions);
     }
     return (
@@ -269,7 +263,7 @@ class EntityStixCoreRelationships extends Component {
                       <div className={classes.chips}>
                         <Chip
                           key={selected}
-                          label={t(`entity_${selected.toLowerCase()}`)}
+                          label={t(`entity_${selected}`)}
                           className={classes.chip}
                         />
                       </div>

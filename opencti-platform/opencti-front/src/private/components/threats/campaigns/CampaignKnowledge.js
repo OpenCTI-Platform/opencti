@@ -38,6 +38,7 @@ class CampaignKnowledgeComponent extends Component {
           stixCoreObjectLink={link}
           availableSections={[
             'attribution',
+            'victimology',
             'incidents',
             'malwares',
             'tools',
@@ -76,7 +77,7 @@ class CampaignKnowledgeComponent extends Component {
             <EntityStixCoreRelationships
               entityId={campaign.id}
               relationshipType="attributed-to"
-              targetStixDomainObjectTypes={['Identity', 'Intrusion-Set']}
+              targetStixDomainObjectTypes={['Threat-Actor', 'Intrusion-Set']}
               entityLink={link}
               isRelationReversed={false}
               {...routeProps}
