@@ -23,3 +23,32 @@ export const isStixMetaRelationship = (type) =>
   type === ABSTRACT_STIX_META_RELATIONSHIP;
 export const isStixInternalMetaRelationship = (type) =>
   R.includes(type, STIX_INTERNAL_META_RELATIONSHIPS) || type === ABSTRACT_STIX_META_RELATIONSHIP;
+
+export const stixMetaRelationshipsAttributes = [
+  'internal_id',
+  'standard_id',
+  'entity_type',
+  'created_at',
+  'i_created_at_day',
+  'i_created_at_month',
+  'i_created_at_year',
+  'updated_at',
+  'x_opencti_stix_ids',
+  'spec_version',
+  'revoked',
+  'confidence',
+  'lang',
+  'created',
+  'modified',
+  'relationship_type',
+];
+R.map(
+  (stixMetaRelationshipType) =>
+    schemaTypes.registerAttributes(stixMetaRelationshipType, stixMetaRelationshipsAttributes),
+  STIX_META_RELATIONSHIPS
+);
+R.map(
+  (stixInternalMetaRelationshipType) =>
+    schemaTypes.registerAttributes(stixInternalMetaRelationshipType, stixMetaRelationshipsAttributes),
+  STIX_INTERNAL_META_RELATIONSHIPS
+);

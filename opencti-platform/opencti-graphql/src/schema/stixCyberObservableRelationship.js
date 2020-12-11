@@ -61,3 +61,35 @@ const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
 ];
 schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 export const isStixCyberObservableRelationship = (type) => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
+
+export const stixCyberObservableRelationshipsAttributes = [
+  'internal_id',
+  'standard_id',
+  'entity_type',
+  'created_at',
+  'i_created_at_day',
+  'i_created_at_month',
+  'i_created_at_year',
+  'updated_at',
+  'x_opencti_stix_ids',
+  'spec_version',
+  'revoked',
+  'confidence',
+  'lang',
+  'created',
+  'modified',
+  'relationship_type',
+  'start_time',
+  'i_start_time_day',
+  'i_start_time_month',
+  'i_start_time_month',
+  'stop_time',
+  'i_stop_time_day',
+  'i_stop_time_month',
+  'i_stop_time_year',
+];
+R.map(
+  (stixCyberObservableRelationshipType) =>
+    schemaTypes.registerAttributes(stixCyberObservableRelationshipType, stixCyberObservableRelationshipsAttributes),
+  STIX_CYBER_OBSERVABLE_RELATIONSHIPS
+);

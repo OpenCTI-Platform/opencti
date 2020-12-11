@@ -78,3 +78,36 @@ schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
 export const isStixCoreRelationship = (type) =>
   R.includes(type, STIX_CORE_RELATIONSHIPS) || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 // endregion
+
+export const stixCoreRelationshipsAttributes = [
+  'internal_id',
+  'standard_id',
+  'entity_type',
+  'created_at',
+  'i_created_at_day',
+  'i_created_at_month',
+  'i_created_at_year',
+  'updated_at',
+  'x_opencti_stix_ids',
+  'spec_version',
+  'revoked',
+  'confidence',
+  'lang',
+  'created',
+  'modified',
+  'relationship_type',
+  'description',
+  'start_time',
+  'i_start_time_day',
+  'i_start_time_month',
+  'i_start_time_year',
+  'stop_time',
+  'i_stop_time_day',
+  'i_stop_time_month',
+  'i_stop_time_year',
+];
+R.map(
+  (stixCoreRelationshipType) =>
+    schemaTypes.registerAttributes(stixCoreRelationshipType, stixCoreRelationshipsAttributes),
+  STIX_CORE_RELATIONSHIPS
+);
