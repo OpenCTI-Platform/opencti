@@ -64,6 +64,7 @@ export const ABSTRACT_TYPES = [
 export const isAbstract = (type) => R.includes(type, ABSTRACT_TYPES);
 export const schemaTypes = {
   types: {},
+  attributes: {},
   // eslint-disable-next-line object-shorthand,func-names
   register: function (type, children) {
     this.types[type] = children;
@@ -71,5 +72,13 @@ export const schemaTypes = {
   // eslint-disable-next-line object-shorthand,func-names
   get: function (type) {
     return this.types[type] || [];
+  },
+  // eslint-disable-next-line object-shorthand,func-names
+  registerAttributes: function (type, children) {
+    this.attributes[type] = children;
+  },
+  // eslint-disable-next-line object-shorthand,func-names
+  getAttributes: function (type) {
+    return this.attributes[type] || [];
   },
 };

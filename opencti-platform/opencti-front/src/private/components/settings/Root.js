@@ -60,7 +60,7 @@ const Root = () => (
     />
     <BoundaryRoute
       exact
-      path="/dashboard/settings/attributes/:attributeLabel"
+      path="/dashboard/settings/attributes/:attributeKey"
       component={Attributes}
     />
   </Switch>

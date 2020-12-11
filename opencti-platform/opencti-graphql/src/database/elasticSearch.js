@@ -241,7 +241,14 @@ export const elDeleteIndexes = async (indexesToDelete) => {
 };
 
 export const elCount = (indexName, options = {}) => {
-  const { endDate = null, types = null, relationshipType = null, fromId = null, toTypes = null } = options;
+  const {
+    endDate = null,
+    types = null,
+    relationshipType = null,
+    fromId = null,
+    toTypes = null,
+    isMetaRelationship = false,
+  } = options;
   let must = [];
   if (endDate !== null) {
     must = R.append(
@@ -278,7 +285,7 @@ export const elCount = (indexName, options = {}) => {
       must
     );
   }
-  if (relationshipType !== null) {
+  if (relationshipType !== null && !isMetaRelationship) {
     must = R.append(
       {
         bool: {
@@ -291,19 +298,32 @@ export const elCount = (indexName, options = {}) => {
     );
   }
   if (fromId !== null) {
-    must = R.append(
-      {
-        nested: {
-          path: 'connections',
-          query: {
-            bool: {
-              must: [{ match_phrase: { [`connections.internal_id`]: fromId } }],
+    if (isMetaRelationship) {
+      must = R.append(
+        {
+          bool: {
+            should: {
+              match_phrase: { [`${REL_INDEX_PREFIX}${relationshipType}.internal_id.keyword`]: fromId },
             },
           },
         },
-      },
-      must
-    );
+        must
+      );
+    } else {
+      must = R.append(
+        {
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [{ match_phrase: { [`connections.internal_id`]: fromId } }],
+              },
+            },
+          },
+        },
+        must
+      );
+    }
   }
   if (toTypes !== null) {
     const filters = [];

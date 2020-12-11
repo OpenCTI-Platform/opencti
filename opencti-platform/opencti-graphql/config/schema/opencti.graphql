@@ -237,22 +237,17 @@ type AttributeEdge {
 }
 type Attribute {
   id: ID!
-  type: String!
+  key: String!
   value: String!
 }
 input AttributeAddInput {
-  type: String!
+  key: String!
   value: String!
   clientMutationId: String
 }
 input WorkErrorInput {
   error: String
   source: String
-}
-input AttributeEditInput {
-  type: String!
-  value: String!
-  newValue: String!
 }
 
 ############## SubTypes
@@ -7186,16 +7181,6 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
-  attributes(
-    first: Int
-    after: ID
-    orderBy: AttributesOrdering
-    orderMode: OrderingMode
-    type: String
-    elementType: String
-    search: String
-  ): AttributeConnection @auth(for: [KNOWLEDGE])
   subTypes(
     first: Int
     after: ID
@@ -7244,6 +7229,16 @@ type Query {
     filters: [WorksFiltering]
     filterMode: FilterMode
   ): WorkConnection @auth(for: [MODULES])
+  attribute(id: String): Attribute @auth(for: [KNOWLEDGE])
+  attributes(
+    first: Int
+    after: ID
+    orderBy: AttributesOrdering
+    orderMode: OrderingMode
+    key: String
+    elementType: String
+    search: String
+  ): AttributeConnection @auth(for: [KNOWLEDGE])
 
   ######## STIX OBJECT ENTITIES
 
@@ -7951,11 +7946,6 @@ type Subscription {
 
 ###### INTERNAL
 
-type AttributeEditMutations {
-  delete: ID
-  update(input: AttributeEditInput): Attribute
-}
-
 type WorkEditMutations {
   delete: ID!
   reportExpectation(error: WorkErrorInput): Work!
@@ -7995,6 +7985,10 @@ type RoleEditMutations {
   contextClean: Role
   relationAdd(input: InternalRelationshipAddInput): InternalRelationship
   relationDelete(toId: String!, relationship_type: String!): Role
+}
+type AttributeEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput, operation: EditOperation): Attribute
 }
 
 ######## STIX OBJECT ENTITIES
@@ -8309,8 +8303,6 @@ type StixCyberObservableRelationshipEditMutations {
 
 type Mutation {
   ###### INTERNAL
-  attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
-  attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
   deleteImport(fileName: String): Boolean @auth(for: [KNOWLEDGE_KNASKIMPORT])
   uploadImport(file: Upload!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
   askJobImport(fileName: ID!): File @auth(for: [KNOWLEDGE_KNASKIMPORT])
@@ -8335,6 +8327,8 @@ type Mutation {
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
+  attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
+  attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
 
   ######## STIX OBJECT ENTITIES
 

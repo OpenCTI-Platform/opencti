@@ -1,4 +1,4 @@
-import { addIndicator, findAll, findById, observables } from '../domain/indicator';
+import { addIndicator, findAll, findById, batchObservables } from '../domain/indicator';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -10,6 +10,9 @@ import {
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const batchObservablesLoader = initBatchLoader(batchObservables);
 
 const indicatorResolvers = {
   Query: {
@@ -28,7 +31,7 @@ const indicatorResolvers = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
-    observables: (indicator) => observables(indicator.id),
+    observables: (indicator) => batchObservablesLoader.load(indicator.id),
     indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {

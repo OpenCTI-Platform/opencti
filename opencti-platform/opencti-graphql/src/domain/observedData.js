@@ -1,13 +1,10 @@
-import { assoc, pipe } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
   distributionEntitiesThroughRelations,
-  escapeString,
-  getSingleValueNumber,
   listEntities,
   loadById,
-  prepareDate,
   timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -15,6 +12,8 @@ import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { elCount } from '../database/elasticSearch';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 export const findById = (observedDataId) => {
   return loadById(observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
@@ -42,12 +41,11 @@ export const observedDatasTimeSeries = (args) => {
 };
 
 export const observedDatasNumber = (args) => ({
-  count: getSingleValueNumber(
-    `match $x isa ObservedData; ${
-      args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    } get; count;`
+  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args)),
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]), dissoc('endDate')(args))
   ),
-  total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}; get; count;`),
 });
 
 export const observedDatasTimeSeriesByEntity = (args) => {
@@ -70,21 +68,24 @@ export const observedDatasTimeSeriesByAuthor = async (args) => {
 };
 
 export const observedDatasNumberByEntity = (args) => ({
-  count: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_OBSERVED_DATA};
-    $rel(${RELATION_OBJECT}_from:$x, ${RELATION_OBJECT}_to:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
-      args.endDate ? `; $x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    }
-    get;
-    count;`
+  count: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId)
+    )(args)
   ),
-  total: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_OBSERVED_DATA};
-    $rel(${RELATION_OBJECT}_from:$x, ${RELATION_OBJECT}_to:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}";
-    get;
-    count;`
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId),
+      dissoc('endDate')
+    )(args)
   ),
 });
 

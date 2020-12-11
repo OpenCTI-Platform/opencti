@@ -135,10 +135,6 @@ const prepareAttribute = (key, value) => {
   if (value instanceof Date) return prepareDate(value);
   // Attribute is coming from internal
   if (Date.parse(value) > 0 && new Date(value).toISOString() === value) return prepareDate(value);
-  // TODO @Sam Delete that
-  if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/.test(value))
-    return prepareDate(value);
-  if (/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\dZ$/.test(value)) return prepareDate(value);
   if (typeof value === 'string') return `"${escapeString(value)}"`;
   return escape(value);
 };
@@ -154,121 +150,17 @@ export const querySubTypes = async ({ type }) => {
   )(types);
   return buildPagination(0, 0, finalResult, finalResult.length);
 };
-export const queryAttributes = async () => {
-  /*
-return executeRead(async (rTx) => {
-  const query = `match $x type ${escape(type)}; get;`;
-  logger.debug(`[GRAKN - infer: false] querySubTypes`, { query });
-  const iterator = await rTx.query(query);
-  const answer = await iterator.next();
-  const typeResult = await answer.map().get('x');
-  const attributesIterator = await typeResult.asRemote(rTx).attributes();
-  const attributes = await attributesIterator.collect();
-  const result = await Promise.all(
-    attributes.map(async (attribute) => {
-      const attributeLabel = await attribute.label();
-      return { id: attribute.id, value: attributeLabel, type: 'attribute' };
-    })
-  );
-  const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('value')));
+export const queryAttributes = async (type) => {
+  const attributes = schemaTypes.getAttributes(type);
+  const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,
-    R.filter((f) => !f.value.startsWith('i_')), // Filter all internal fields
-    R.uniqBy((n) => n.value),
-    R.map((n) => ({ node: n }))
-  )(result);
-  return buildPagination(5000, 0, finalResult, 5000);
-});
-*/
-  // TODO JRI MIGRATION
-};
-export const queryAttributeValues = async () => {
-  /*
-return executeRead(async (rTx) => {
-  const query = `match $x isa ${escape(type)}; get;`;
-  logger.debug(`[GRAKN - infer: false] queryAttributeValues`, { query });
-  const iterator = await rTx.query(query);
-  const answers = await iterator.collect();
-  const result = await Promise.all(
-    answers.map(async (answer) => {
-      const attribute = answer.map().get('x');
-      const attributeType = await attribute.type();
-      const value = await attribute.value();
-      const attributeTypeLabel = await attributeType.label();
-      const replacedValue = typeof value === 'string' ? value.replace(/\\"/g, '"').replace(/\\\\/g, '\\') : value;
-      return {
-        node: {
-          id: attribute.id,
-          type: attributeTypeLabel,
-          value: replacedValue,
-        },
-      };
-    })
-  );
-  return buildPagination(5000, 0, result, 5000);
-});
-*/
-  // TODO JRI MIGRATION
-};
-export const attributeExists = async () => {
-  /*
-return executeRead(async (rTx) => {
-  const checkQuery = `match $x sub ${attributeLabel}; get;`;
-  logger.debug(`[GRAKN - infer: false] attributeExists`, { query: checkQuery });
-  await rTx.query(checkQuery);
-  return true;
-}).catch(() => false);
-*/
-  // TODO JRI MIGRATION
-};
-export const queryAttributeValueByGraknId = async () => {
-  /*
-return executeRead(async (rTx) => {
-  const query = `match $x id ${escape(id)}; get;`;
-  logger.debug(`[GRAKN - infer: false] queryAttributeValueById`, { query });
-  const iterator = await rTx.query(query);
-  const answer = await iterator.next();
-  const attribute = answer.map().get('x');
-  const attributeType = await attribute.type();
-  const value = await attribute.value();
-  const attributeTypeLabel = await attributeType.label();
-  const replacedValue = value.replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-  return {
-    id: attribute.id,
-    type: attributeTypeLabel,
-    value: replacedValue,
-  };
-});
-*/
-  // TODO JRI MIGRATION
-};
-
-export const find = async () => {
-  // TODO JRI MIGRATION
-  return [];
-};
-export const load = async (query, entities, options) => {
-  const data = await find(query, entities, options);
-  if (data.length > 1) {
-    logger.debug('[GRAKN] Maybe you should use list instead for multiple results', { query });
-  }
-  return R.head(data);
+    R.map((n) => ({ node: { id: n, key: n, value: n, } }))
+  )(attributes);
+  return buildPagination(0, 0, finalResult, finalResult.length);
 };
 // endregion
 
-// region Loader list
-const getSingleValue = () => {
-  // TODO JRI MIGRATION
-  // return executeRead(async (rTx) => {
-  //   logger.debug(`[GRAKN - infer: ${infer}] getSingleValue`, { query });
-  //   const iterator = await rTx.query(query, { infer });
-  //   return iterator.next();
-  // });
-  return Promise.resolve({ number: () => 0 });
-};
-export const getSingleValueNumber = (query, infer = false) => {
-  return getSingleValue(query, infer).then((data) => data.number());
-};
 // Bulk loading method
 export const listThrough = async (sources, sourceSide, relationType, targetEntityType, opts = {}) => {
   const { paginate = true, batched = true } = opts;
@@ -1881,15 +1773,5 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
     await deleteElementById(user, r.rel.internal_id, r.rel.entity_type, opts);
   }
   return true;
-};
-export const deleteAttributeById = async (id) => {
-  // TODO JRI MIGRATION
-  return id;
-  // return executeWrite(async (wTx) => {
-  //   const query = `match $x id ${escape(id)}; delete $x isa thing;`;
-  //   logger.debug(`[GRAKN - infer: false] deleteAttributeById`, { query });
-  //   await wTx.query(query, { infer: false });
-  //   return id;
-  // });
 };
 // endregion

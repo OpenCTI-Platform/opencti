@@ -3,11 +3,8 @@ import {
   createEntity,
   distributionEntities,
   distributionEntitiesThroughRelations,
-  escapeString,
-  getSingleValueNumber,
   listEntities,
   loadById,
-  prepareDate,
   timeSeriesEntities,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -72,22 +69,24 @@ export const reportsTimeSeriesByAuthor = async (args) => {
 };
 
 export const reportsNumberByEntity = (args) => ({
-  count: getSingleValueNumber(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
-    $to has internal_id "${escapeString(args.objectId)}"; 
-    ${args.reportType ? `$to has report_types "${escapeString(args.reportType)};"` : ''}
-    ${args.endDate ? `$to has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
-    get;
-    count;`
+  count: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId)
+    )(args)
   ),
-  total: getSingleValueNumber(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
-    $to has internal_id "${escapeString(args.objectId)}";
-    ${args.reportType ? `$x has report_class "${escapeString(args.reportType)};"` : ''}
-    get;
-    count;`
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId),
+      dissoc('endDate')
+    )(args)
   ),
 });
 

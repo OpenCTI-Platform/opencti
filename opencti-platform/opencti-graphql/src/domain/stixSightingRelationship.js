@@ -1,17 +1,14 @@
-import { assoc } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import * as R from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  escapeString,
-  getSingleValueNumber,
   listThroughGetFroms,
   listRelations,
   listThroughGetTos,
   loadById,
-  prepareDate,
   updateAttribute,
 } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
@@ -36,6 +33,8 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
+import { elCount } from '../database/elasticSearch';
+import { INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
@@ -46,17 +45,10 @@ export const findById = (stixSightingRelationshipId) => {
 };
 
 export const stixSightingRelationshipsNumber = (args) => ({
-  count: getSingleValueNumber(
-    `match $x($y, $z) isa ${STIX_SIGHTING_RELATIONSHIP}; ${
-      args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    } ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''} get; count;`,
-    args.inferred ? args.inferred : false
-  ),
-  total: getSingleValueNumber(
-    `match $x($y, $z) isa ${STIX_SIGHTING_RELATIONSHIP}; ${
-      args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''
-    } get; count;`,
-    args.inferred ? args.inferred : false
+  count: elCount(INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
+  total: elCount(
+    INDEX_STIX_SIGHTING_RELATIONSHIPS,
+    pipe(assoc('types', [STIX_SIGHTING_RELATIONSHIP]), dissoc('endDate')(args))
   ),
 });
 

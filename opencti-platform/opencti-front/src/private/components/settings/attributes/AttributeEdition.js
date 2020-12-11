@@ -50,10 +50,10 @@ const styles = (theme) => ({
 const attributeMutationUpdate = graphql`
   mutation AttributeEditionUpdateMutation(
     $id: ID!
-    $input: AttributeEditInput!
+    $input: EditInput!
   ) {
     attributeEdit(id: $id) {
-      update(input: $input) {
+      fieldPatch(input: $input) {
         ...AttributeEdition_attribute
       }
     }
@@ -67,9 +67,7 @@ const attributeValidation = (t) => Yup.object().shape({
 class AttributeEditionContainer extends Component {
   onSubmit(values, { setSubmitting }) {
     const input = {
-      type: this.props.attribute.type,
-      value: this.props.attribute.value,
-      newValue: values.value,
+      value: values.value,
     };
     commitMutation({
       mutation: attributeMutationUpdate,
@@ -188,7 +186,7 @@ const AttributeEditionFragment = createFragmentContainer(
     attribute: graphql`
       fragment AttributeEdition_attribute on Attribute {
         id
-        type
+        key
         value
       }
     `,

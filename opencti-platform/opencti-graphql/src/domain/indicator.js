@@ -1,14 +1,7 @@
 import moment from 'moment';
 import { assoc, descend, dissoc, head, includes, isNil, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
-import {
-  createEntity,
-  createRelation,
-  listEntities,
-  listThroughGetTos,
-  loadById,
-  now,
-} from '../database/grakn';
+import { createEntity, createRelation, listEntities, listThroughGetTos, loadById, now } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
@@ -151,6 +144,6 @@ export const addIndicator = async (user, indicator) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const observables = (indicatorId) => {
-  return listThroughGetTos(indicatorId, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+export const batchObservables = (indicatorIds) => {
+  return listThroughGetTos(indicatorIds, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };

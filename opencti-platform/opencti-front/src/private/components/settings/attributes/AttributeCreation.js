@@ -96,7 +96,7 @@ class AttributeCreation extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = assoc('type', this.props.attributeType, values);
+    const finalValues = assoc('key', this.props.attributeKey, values);
     commitMutation({
       mutation: attributeMutation,
       variables: {
@@ -200,7 +200,7 @@ class AttributeCreation extends Component {
 
 AttributeCreation.propTypes = {
   paginationOptions: PropTypes.object,
-  attributeType: PropTypes.string,
+  attributeKey: PropTypes.string,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

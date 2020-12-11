@@ -88,7 +88,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.stix}
-            label={t(label)}
+            label={label}
           />
         );
       case 'pcre':
@@ -96,7 +96,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.pcre}
-            label={t(label)}
+            label={label}
           />
         );
       case 'sigma':
@@ -104,7 +104,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.sigma}
-            label={t(label)}
+            label={label}
           />
         );
       case 'snort':
@@ -112,7 +112,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.snort}
-            label={t(label)}
+            label={label}
           />
         );
       case 'suricata':
@@ -120,7 +120,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.suricata}
-            label={t(label)}
+            label={label}
           />
         );
       case 'yara':
@@ -128,7 +128,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.yara}
-            label={t(label)}
+            label={label}
           />
         );
       case 'tanium-signal':
@@ -136,7 +136,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles['tanium-signal']}
-            label={t(label)}
+            label={label}
           />
         );
       default:
@@ -144,7 +144,7 @@ class ItemPatternType extends Component {
           <Chip
             classes={{ root: style }}
             style={inlineStyles.stix}
-            label={t(label)}
+            label={t('Unknown')}
           />
         );
     }
