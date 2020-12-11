@@ -9,6 +9,7 @@ import {
 import { ENTITY_TYPE_ATTRIBUTE } from '../schema/internalObject';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import { elUpdateAttributeValue } from '../database/elasticSearch';
 
 export const findById = (attributeId) => {
   return loadById(attributeId, ENTITY_TYPE_ATTRIBUTE);
@@ -37,9 +38,9 @@ export const addAttribute = async (user, attribute) => {
 export const attributeDelete = (user, attributeId) => deleteElementById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);
 
 export const attributeEditField = async (user, attributeId, input) => {
+  const previous = await loadById(attributeId, ENTITY_TYPE_ATTRIBUTE);
   const attribute = await updateAttribute(user, attributeId, ENTITY_TYPE_ATTRIBUTE, input);
-  // TODO JRI
-  // Impact all entities using this attribute
-  // New attribute is { key: KEY, value: VALUE }
+  const { key, value } = attribute;
+  await elUpdateAttributeValue(key, previous.value, value);
   return notify(BUS_TOPICS[ENTITY_TYPE_ATTRIBUTE].EDIT_TOPIC, attribute, user);
 };

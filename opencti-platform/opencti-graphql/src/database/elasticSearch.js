@@ -34,7 +34,7 @@ import {
   isAbstract,
   REL_INDEX_PREFIX,
 } from '../schema/general';
-import { isBooleanAttribute } from '../schema/fieldDataAdapter';
+import { isBooleanAttribute, isMultipleAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
@@ -1350,6 +1350,37 @@ export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
     })
     .catch((err) => {
       throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+    });
+};
+
+export const elUpdateAttributeValue = (key, previousValue, value) => {
+  const isMultiple = isMultipleAttribute(key);
+  const source = !isMultiple
+    ? 'ctx._source[params.key] = params.value'
+    : `def index = 0; 
+       if (ctx._source.containsKey(params.key)) {
+         for (att in ctx._source[params.key]) { 
+          if(att == params.previousValue) { 
+            ctx._source[params.key][index] = params.value; 
+          } 
+          index++; 
+         }
+      }`;
+  return el
+    .updateByQuery({
+      index: DATA_INDICES,
+      refresh: false,
+      body: {
+        script: { source, params: { key, value, previousValue } },
+        query: {
+          exists: {
+            field: key,
+          },
+        },
+      },
+    })
+    .catch((err) => {
+      throw DatabaseError('Error updating elastic', { error: err, key, value });
     });
 };
 
