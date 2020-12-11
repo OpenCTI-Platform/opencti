@@ -1371,7 +1371,7 @@ export const createRelation = async (user, input) => {
   const { from, to } = resolvedInput;
   // TODO ALL RELATIONSHIPS
   if (
-    isStixRelationship(relationshipType) &&
+    isStixCoreRelationship(relationshipType) &&
     !R.includes(relationshipType, stixRelationshipsMapping[`${from.entity_type}_${to.entity_type}`])
   ) {
     throw FunctionalError(
