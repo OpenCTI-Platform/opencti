@@ -424,13 +424,17 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   const { limit = 10, order = 'desc' } = options;
   const { startDate, endDate, field } = options;
   // Unsupported in cache: const { isRelation, value, from, to, start, end, type };
-  if (field.includes('.')) {
+  if (field.includes('.') && !field.endsWith('internal_id')) {
     throw FunctionalError('Distribution entities does not support relation aggregation field');
   }
-  const distributionData = await elAggregationCount(entityType, field, startDate, endDate, filters);
+  let finalField = field;
+  if (field.includes('.')) {
+    finalField = REL_INDEX_PREFIX + field;
+  }
+  const distributionData = await elAggregationCount(entityType, finalField, startDate, endDate, filters);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  if (field === ID_INTERNAL) {
+  if (field.includes(ID_INTERNAL)) {
     const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
     return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
   }
@@ -448,7 +452,6 @@ export const distributionRelations = async (options) => {
     isTo = false,
     noDirection = false,
   } = options;
-
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
   const finalDateAttribute = isStixMetaRelationship(entityType) ? 'created_at' : dateAttribute;
   // Using elastic can only be done if the distribution is a count on types
@@ -470,31 +473,6 @@ export const distributionRelations = async (options) => {
     return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
-};
-export const distributionEntitiesThroughRelations = async () => {
-  // TODO SAM MIGRATION
-  return [];
-  // const { limit = 10, order, inferred = false } = options;
-  // const { relationshipType, remoteRelationshipType, toTypes, fromId, field, operation } = options;
-  // const queryToTypes = toTypes
-  //   ? R.pipe(
-  //       R.map((e) => `{ $to isa ${e}; }`),
-  //       R.join(' or '),
-  //       R.concat(__, ';')
-  //     )(toTypes)
-  //   : '';
-  // let query = `match $rel($from, $to) isa ${relationshipType}; ${queryToTypes}`;
-  // query += `$from has internal_id "${escapeString(fromId)}";`;
-  // query += `$rel2($to, $to2) isa ${remoteRelationshipType};`;
-  // query += `$to2 has ${escape(field)} $g; get; group $g; ${escape(operation)};`;
-  // const distributionData = await graknTimeSeries(query, 'label', 'value', inferred);
-  // // Take a maximum amount of distribution depending on the ordering.
-  // const orderingFunction = order === 'asc' ? R.ascend : R.descend;
-  // if (field === ID_INTERNAL) {
-  //   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
-  //   return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
-  // }
-  // return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
 // endregion
 

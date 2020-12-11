@@ -5,7 +5,6 @@ import {
   dayFormat,
   deleteElementById,
   distributionEntities,
-  distributionEntitiesThroughRelations,
   distributionRelations,
   escape,
   escapeString,
@@ -733,27 +732,6 @@ describe('Grakn relations distribution', () => {
     expect(distribution.length).toEqual(1);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Attack-Pattern')).toEqual(2);
-  });
-});
-
-describe('Grakn entities distribution through relation', () => {
-  // const { limit = 10, order, inferred = false } = options;
-  // const { relationship_type, remoterelationship_type, toType, fromId, field, operation } = options;
-  // campaign--92d46985-17a6-4610-8be8-cc70c82ed214
-  it('should relation distribution filtered by to (noCache = %s)', async () => {
-    const campaign = await elLoadByIds('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
-    const options = {
-      fromId: campaign.internal_id,
-      field: 'name',
-      operation: 'count',
-      relationshipType: 'object',
-      toTypes: ['Report'],
-      remoteRelationshipType: 'created-by',
-    };
-    const distribution = await distributionEntitiesThroughRelations(options);
-    expect(distribution.length).toEqual(1);
-    const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('ANSSI')).toEqual(1);
   });
 });
 

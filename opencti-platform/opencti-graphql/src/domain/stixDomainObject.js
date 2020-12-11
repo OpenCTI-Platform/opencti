@@ -1,4 +1,4 @@
-import { assoc, dissoc, filter, map, pipe } from 'ramda';
+import { assoc, dissoc, filter, map } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -8,7 +8,6 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  distributionEntitiesThroughRelations,
   escape,
   internalLoadById,
   listEntities,
@@ -55,16 +54,7 @@ export const stixDomainObjectsNumber = (args) => ({
 });
 
 export const stixDomainObjectsDistributionByEntity = async (args) => {
-  const { objectId, field, relationship_type: relationshipType } = args;
-  if (field.includes('.')) {
-    const options = pipe(
-      assoc('field', field.split('.')[1]),
-      assoc('relationshipType', relationshipType),
-      assoc('remoteRelationshipType', field.split('.')[0]),
-      assoc('fromId', objectId)
-    )(args);
-    return distributionEntitiesThroughRelations(options);
-  }
+  const { objectId, relationship_type: relationshipType } = args;
   const filters = [{ isRelation: true, type: relationshipType, value: objectId }];
   return distributionEntities(ABSTRACT_STIX_DOMAIN_OBJECT, filters, args);
 };

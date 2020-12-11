@@ -1,12 +1,5 @@
 import { assoc, dissoc, pipe } from 'ramda';
-import {
-  createEntity,
-  distributionEntities,
-  distributionEntitiesThroughRelations,
-  listEntities,
-  loadById,
-  timeSeriesEntities,
-} from '../database/grakn';
+import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA } from '../schema/stixDomainObject';
@@ -90,17 +83,7 @@ export const observedDatasNumberByEntity = (args) => ({
 });
 
 export const observedDatasDistributionByEntity = async (args) => {
-  const { objectId, field } = args;
-  if (field.includes('.')) {
-    const options = pipe(
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('toTypes', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]),
-      assoc('field', field.split('.')[1]),
-      assoc('remoteRelationshipType', field.split('.')[0]),
-      assoc('fromId', objectId)
-    )(args);
-    return distributionEntitiesThroughRelations(options);
-  }
+  const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
   return distributionEntities(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
 };

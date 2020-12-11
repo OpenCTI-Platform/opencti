@@ -2,7 +2,6 @@ import { assoc, dissoc, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
-  distributionEntitiesThroughRelations,
   listEntities,
   loadById,
   timeSeriesEntities,
@@ -89,17 +88,7 @@ export const notesNumberByEntity = (args) => ({
 });
 
 export const notesDistributionByEntity = async (args) => {
-  const { objectId, field } = args;
-  if (field.includes('.')) {
-    const options = pipe(
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('toTypes', [ENTITY_TYPE_CONTAINER_NOTE]),
-      assoc('field', field.split('.')[1]),
-      assoc('remoteRelationshipType', field.split('.')[0]),
-      assoc('fromId', objectId)
-    )(args);
-    return distributionEntitiesThroughRelations(options);
-  }
+  const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
   return distributionEntities(ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };
