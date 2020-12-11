@@ -126,30 +126,30 @@ const initializeMigration = async () => {
 
 // eslint-disable-next-line
 const createAttributesTypes = async () => {
-  await addAttribute({ type: 'report_types', value: 'threat-report' });
-  await addAttribute({ type: 'report_types', value: 'internal-report' });
-  await addAttribute({ type: 'malware_types', value: 'adware' });
-  await addAttribute({ type: 'malware_types', value: 'backdoor' });
-  await addAttribute({ type: 'malware_types', value: 'bot' });
-  await addAttribute({ type: 'malware_types', value: 'bootkit' });
-  await addAttribute({ type: 'malware_types', value: 'ddos' });
-  await addAttribute({ type: 'malware_types', value: 'downloader' });
-  await addAttribute({ type: 'malware_types', value: 'dropper' });
-  await addAttribute({ type: 'malware_types', value: 'exploit-kit' });
-  await addAttribute({ type: 'malware_types', value: 'keylogger' });
-  await addAttribute({ type: 'malware_types', value: 'ransomware' });
-  await addAttribute({ type: 'malware_types', value: 'remote-access-trojan' });
-  await addAttribute({ type: 'malware_types', value: 'resource-exploitation' });
-  await addAttribute({ type: 'malware_types', value: 'rogue-security-software' });
-  await addAttribute({ type: 'malware_types', value: 'rootkit' });
-  await addAttribute({ type: 'malware_types', value: 'screen-capture' });
-  await addAttribute({ type: 'malware_types', value: 'spyware' });
-  await addAttribute({ type: 'malware_types', value: 'trojan' });
-  await addAttribute({ type: 'malware_types', value: 'unknown' });
-  await addAttribute({ type: 'malware_types', value: 'virus' });
-  await addAttribute({ type: 'malware_types', value: 'webshell' });
-  await addAttribute({ type: 'malware_types', value: 'wiper' });
-  await addAttribute({ type: 'malware_types', value: 'worm' });
+  await addAttribute(SYSTEM_USER, { key: 'report_types', value: 'threat-report' });
+  await addAttribute(SYSTEM_USER, { key: 'report_types', value: 'internal-report' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'adware' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'backdoor' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'bot' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'bootkit' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'ddos' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'downloader' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'dropper' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'exploit-kit' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'keylogger' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'ransomware' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'remote-access-trojan' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'resource-exploitation' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'rogue-security-software' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'rootkit' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'screen-capture' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'spyware' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'trojan' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'unknown' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'virus' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'webshell' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'wiper' });
+  await addAttribute(SYSTEM_USER, { key: 'malware_types', value: 'worm' });
 };
 
 const createMarkingDefinitions = async () => {
