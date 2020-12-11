@@ -1327,32 +1327,6 @@ export const elIndexElements = async (elements, retry = 5) => {
   return transformedElements.length;
 };
 
-export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
-  const source =
-    'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
-  return el
-    .updateByQuery({
-      index: RELATIONSHIPS_INDICES,
-      refresh: false,
-      body: {
-        script: { source, params: { id: documentId, changes: documentBody } },
-        query: {
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [{ match_phrase: { [`connections.internal_id`]: documentId } }],
-              },
-            },
-          },
-        },
-      },
-    })
-    .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
-    });
-};
-
 export const elUpdateAttributeValue = (key, previousValue, value) => {
   const isMultiple = isMultipleAttribute(key);
   const source = !isMultiple
@@ -1384,6 +1358,32 @@ export const elUpdateAttributeValue = (key, previousValue, value) => {
     });
 };
 
+const elUpdateConnectionsOfElement = (documentId, documentBody) => {
+  const source =
+    'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
+    'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+  return el
+    .updateByQuery({
+      index: RELATIONSHIPS_INDICES,
+      refresh: false,
+      body: {
+        script: { source, params: { id: documentId, changes: documentBody } },
+        query: {
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [{ match_phrase: { [`connections.internal_id`]: documentId } }],
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch((err) => {
+      throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+    });
+};
 export const elUpdateElement = async (instance) => {
   // Update the element it self
   const esData = prepareElementForIndexing(instance);
