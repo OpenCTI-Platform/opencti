@@ -52,7 +52,6 @@ const stixCyberObservableResolvers = {
     },
     stixCyberObservablesExportFiles: (_, { first }) => filesListing(first, 'export/Stix-Cyber-Observable/'),
   },
-  StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
   StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
   HashedObservable: {
     hashes: (stixCyberObservable) => complexAttributeToApiFormat('hashes', stixCyberObservable),

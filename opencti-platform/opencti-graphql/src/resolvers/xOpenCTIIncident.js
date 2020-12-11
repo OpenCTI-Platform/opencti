@@ -27,10 +27,6 @@ const xOpenCTIIncidentResolvers = {
       return xOpenCTIIncidentsTimeSeries(args);
     },
   },
-  XOpenCTIIncidentsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-  },
   XOpenCTIIncidentsFilter: {
     // eslint-disable-next-line no-undef
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -21,10 +21,6 @@ const intrusionSetResolvers = {
   IntrusionSet: {
     locations: (intrusionSet) => locationsLoader.load(intrusionSet.id),
   },
-  IntrusionSetsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-  },
   IntrusionSetsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,

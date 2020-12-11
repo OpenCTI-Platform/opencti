@@ -43,11 +43,6 @@ const attackPatternResolvers = {
     subAttackPatterns: (attackPattern) => subAttackPatternsLoader.load(attackPattern.id),
     isSubAttackPattern: (attackPattern) => isSubAttackPatternLoader.load(attackPattern.id),
   },
-  AttackPatternsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-    killChainPhase: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
-  },
   AttackPatternsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,

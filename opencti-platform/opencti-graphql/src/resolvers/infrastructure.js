@@ -19,10 +19,6 @@ const infrastructureResolvers = {
     infrastructure: (_, { id }) => findById(id),
     infrastructures: (_, args) => findAll(args),
   },
-  InfrastructuresOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-  },
   InfrastructuresFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
     markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,

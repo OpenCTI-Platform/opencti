@@ -21,11 +21,6 @@ const countryResolvers = {
   Country: {
     region: (country) => batchRegionLoader.load(country.id),
   },
-  CountriesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-  },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({
       delete: () => stixDomainObjectDelete(user, id),

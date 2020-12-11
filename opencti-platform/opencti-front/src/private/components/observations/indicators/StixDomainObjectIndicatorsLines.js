@@ -17,7 +17,7 @@ class StixDomainObjectIndicatorsLines extends Component {
     setNumberOfElements(
       prevProps,
       this.props,
-      'stixCoreRelationships',
+      'indicators',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -28,6 +28,7 @@ class StixDomainObjectIndicatorsLines extends Component {
       dataColumns,
       relay,
       entityLink,
+      entityId,
       paginationOptions,
     } = this.props;
     return (
@@ -36,14 +37,10 @@ class StixDomainObjectIndicatorsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr(
-          [],
-          ['stixCoreRelationships', 'edges'],
-          this.props.data,
-        )}
+        dataList={pathOr([], ['indicators', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
+          ['indicators', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<StixDomainObjectIndicatorLine />}
@@ -52,6 +49,7 @@ class StixDomainObjectIndicatorsLines extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
         entityLink={entityLink}
+        entityId={entityId}
       />
     );
   }
@@ -66,43 +64,28 @@ StixDomainObjectIndicatorsLines.propTypes = {
   stixCoreRelationships: PropTypes.object,
   initialLoading: PropTypes.bool,
   entityLink: PropTypes.string,
+  entityId: PropTypes.string,
   setNumberOfElements: PropTypes.func,
 };
 
 export const stixDomainObjectIndicatorsLinesQuery = graphql`
   query StixDomainObjectIndicatorsLinesQuery(
     $search: String
-    $fromId: String
-    $toTypes: [String]
-    $relationship_type: String
-    $startTimeStart: DateTime
-    $startTimeStop: DateTime
-    $stopTimeStart: DateTime
-    $stopTimeStop: DateTime
-    $confidences: [Int]
     $count: Int!
     $cursor: ID
-    $orderBy: StixCoreRelationshipsOrdering
+    $orderBy: IndicatorsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreRelationshipsFiltering]
+    $filters: [IndicatorsFiltering]
   ) {
     ...StixDomainObjectIndicatorsLines_data
-    @arguments(
-      search: $search
-      fromId: $fromId
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      startTimeStart: $startTimeStart
-      startTimeStop: $startTimeStop
-      stopTimeStart: $stopTimeStart
-      stopTimeStop: $stopTimeStop
-      confidences: $confidences
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        filters: $filters
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -113,39 +96,20 @@ export default createPaginationContainer(
       fragment StixDomainObjectIndicatorsLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
-        fromId: { type: "String" }
-        toTypes: { type: "[String]" }
-        relationship_type: { type: "String" }
-        startTimeStart: { type: "DateTime" }
-        startTimeStop: { type: "DateTime" }
-        stopTimeStart: { type: "DateTime" }
-        stopTimeStop: { type: "DateTime" }
-        confidences: { type: "[Int]" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: {
-          type: "StixCoreRelationshipsOrdering"
-          defaultValue: start_time
-        }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[StixCoreRelationshipsFiltering]" }
+        filters: { type: "[IndicatorsFiltering]" }
+        orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
+        orderMode: { type: "OrderingMode", defaultValue: desc }
       ) {
-        stixCoreRelationships(
+        indicators(
           search: $search
-          fromId: $fromId
-          toTypes: $toTypes
-          relationship_type: $relationship_type
-          startTimeStart: $startTimeStart
-          startTimeStop: $startTimeStop
-          stopTimeStart: $stopTimeStart
-          stopTimeStop: $stopTimeStop
-          confidences: $confidences
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_stixCoreRelationships") {
+        ) @connection(key: "Pagination_indicators") {
           edges {
             node {
               ...StixDomainObjectIndicatorLine_node
@@ -174,14 +138,6 @@ export default createPaginationContainer(
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         search: fragmentVariables.search,
-        fromId: fragmentVariables.fromId,
-        toTypes: fragmentVariables.toTypes,
-        relationship_type: fragmentVariables.relationship_type,
-        startTimeStart: fragmentVariables.startTimeStart,
-        startTimeStop: fragmentVariables.startTimeStop,
-        stopTimeStart: fragmentVariables.stopTimeStart,
-        stopTimeStop: fragmentVariables.stopTimeStop,
-        confidences: fragmentVariables.confidences,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

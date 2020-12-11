@@ -871,8 +871,6 @@ enum StixCoreObjectsOrdering {
   valid_from
   valid_to
   indicator_pattern
-  objectMarking
-  objectLabel
 }
 enum StixCoreObjectsFilter {
   name
@@ -962,8 +960,6 @@ enum StixDomainObjectsOrdering {
   valid_from
   valid_until
   indicator_pattern
-  objectMarking
-  objectLabel
 }
 enum StixDomainObjectsFilter {
   name
@@ -1081,9 +1077,6 @@ enum AttackPatternsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
-  killChainPhase
 }
 enum AttackPatternsFilter {
   name
@@ -1211,8 +1204,6 @@ enum CampaignsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum CampaignsFilter {
   name
@@ -1327,8 +1318,6 @@ enum ContainersOrdering {
   created_at
   updated_at
   createdBy
-  objectMarking
-  objectLabel
 }
 enum ContainersFilter {
   attribute_abstract
@@ -1423,8 +1412,6 @@ enum NotesOrdering {
   created_at
   updated_at
   createdBy
-  objectMarking
-  objectLabel
 }
 enum NotesFilter {
   attribute_abstract
@@ -1550,8 +1537,6 @@ enum ObservedDatasOrdering {
   created_at
   updated_at
   createdBy
-  objectMarking
-  objectLabel
 }
 enum ObservedDatasFilter {
   first_observed
@@ -1674,8 +1659,6 @@ enum OpinionsOrdering {
   created_at
   updated_at
   createdBy
-  objectMarking
-  objectLabel
 }
 enum OpinionsFilter {
   explanation
@@ -1801,8 +1784,6 @@ enum ReportsOrdering {
   created_at
   updated_at
   createdBy
-  objectMarking
-  objectLabel
 }
 enum ReportsFilter {
   name
@@ -1933,8 +1914,6 @@ enum CoursesOfActionOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum CoursesOfActionFilter {
   name
@@ -2046,8 +2025,6 @@ enum IdentitiesOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum IdentitiesFilter {
   entity_type
@@ -2171,8 +2148,6 @@ enum IndividualsOrdering {
   lastname
   created
   modified
-  objectMarking
-  objectLabel
 }
 enum IndividualsFilter {
   name
@@ -2291,8 +2266,6 @@ enum OrganizationsOrdering {
   confidence
   created
   modified
-  objectMarking
-  objectLabel
 }
 enum OrganizationsFilter {
   name
@@ -2424,8 +2397,6 @@ enum SectorsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum SectorsFilter {
   name
@@ -2554,8 +2525,6 @@ enum IndicatorsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum IndicatorsFilter {
   name
@@ -2697,8 +2666,6 @@ enum InfrastructuresOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum InfrastructuresFilter {
   name
@@ -2818,8 +2785,6 @@ enum IntrusionSetsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum IntrusionSetsFilter {
   name
@@ -2943,8 +2908,6 @@ enum LocationsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum LocationsFilter {
   entity_type
@@ -3063,8 +3026,6 @@ enum PositionsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum PositionsFilter {
   created
@@ -3303,8 +3264,6 @@ enum CountriesOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum CountriesFilter {
   created
@@ -3419,8 +3378,6 @@ enum RegionsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum RegionsFilter {
   created
@@ -3670,8 +3627,6 @@ enum ThreatActorsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum ThreatActorsFilter {
   name
@@ -3800,9 +3755,6 @@ enum ToolsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
-  killChainPhase
 }
 enum ToolsFilter {
   name
@@ -3919,8 +3871,6 @@ enum VulnerabilitiesOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum VulnerabilitiesFilter {
   name
@@ -4040,8 +3990,6 @@ enum XOpenCTIIncidentsOrdering {
   modified
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum XOpenCTIIncidentsFilter {
   name
@@ -4154,8 +4102,6 @@ enum StixCyberObservablesOrdering {
   entity_type
   created_at
   updated_at
-  objectMarking
-  objectLabel
 }
 enum StixCyberObservablesFilter {
   entity_type

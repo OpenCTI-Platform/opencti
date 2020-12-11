@@ -43,7 +43,6 @@ const stixDomainObjectResolvers = {
     },
     stixDomainObjectsExportFiles: (_, { type, first }) => filesListing(first, `export/${type}/`),
   },
-  StixDomainObjectsOrdering: stixDomainObjectOptions.StixDomainObjectsOrdering,
   StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
   StixDomainObject: {
     // eslint-disable-next-line no-underscore-dangle

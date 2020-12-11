@@ -119,12 +119,12 @@ class StixDomainObjectIndicators extends Component {
     } = this.state;
     const { stixDomainObjectId, stixDomainObjectLink } = this.props;
     const dataColumns = {
-      toPatternType: {
+      pattern_type: {
         label: 'Type',
         width: '10%',
         isSortable: true,
       },
-      toName: {
+      name: {
         label: 'Name',
         width: '30%',
         isSortable: true,
@@ -139,7 +139,7 @@ class StixDomainObjectIndicators extends Component {
         width: '15%',
         isSortable: true,
       },
-      toValidUntil: {
+      valid_until: {
         label: 'Valid until',
         width: '15%',
         isSortable: true,
@@ -149,16 +149,9 @@ class StixDomainObjectIndicators extends Component {
         isSortable: false,
       },
     };
-    const orderByMapping = {
-      toPatternType: 'pattern_type',
-      toName: 'name',
-      toValidFrom: 'valid_from',
-      toValidUntil: 'valid_until',
-      toCreatedAt: 'created_at',
-    };
     const exportPaginationOptions = {
       filters: [{ key: 'indicates', values: [stixDomainObjectId] }],
-      orderBy: orderByMapping[sortBy === 'start_time' ? 'toCreatedAt' : sortBy],
+      orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       search: searchTerm,
     };
@@ -191,6 +184,7 @@ class StixDomainObjectIndicators extends Component {
               data={props}
               paginationOptions={paginationOptions}
               entityLink={stixDomainObjectLink}
+              entityId={stixDomainObjectId}
               dataColumns={dataColumns}
               initialLoading={props === null}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
@@ -202,7 +196,7 @@ class StixDomainObjectIndicators extends Component {
   }
 
   render() {
-    const { stixDomainObjectId, relationshipType } = this.props;
+    const { stixDomainObjectId } = this.props;
     const {
       view,
       sortBy,
@@ -214,16 +208,20 @@ class StixDomainObjectIndicators extends Component {
       openExports,
     } = this.state;
     let finalFilters = convertFilters(filters);
+    finalFilters = append(
+      { key: 'indicates', values: [stixDomainObjectId] },
+      finalFilters,
+    );
     if (indicatorTypes.length > 0) {
       finalFilters = append(
-        { key: 'toPatternType', values: indicatorTypes },
+        { key: 'pattern_type', values: indicatorTypes },
         finalFilters,
       );
     }
     if (observableTypes.length > 0) {
       finalFilters = append(
         {
-          key: 'toMainObservableType',
+          key: 'x_opencti_main_observable_type',
           operator: 'match',
           values: map(
             (type) => type.toLowerCase().replace(/\*/g, ''),
@@ -235,11 +233,6 @@ class StixDomainObjectIndicators extends Component {
     }
     const paginationOptions = {
       search: searchTerm,
-      toTypes: ['Indicator'],
-      fromId: stixDomainObjectId,
-      relationship_type: relationshipType || 'indicates',
-      lastSeenStart: null,
-      lastSeenStop: null,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
       filters: finalFilters,
@@ -274,7 +267,6 @@ class StixDomainObjectIndicators extends Component {
 StixDomainObjectIndicators.propTypes = {
   stixDomainObjectId: PropTypes.string,
   stixDomainObjectLink: PropTypes.string,
-  relationshipType: PropTypes.string,
   history: PropTypes.object,
   onChangeOpenExports: PropTypes.func,
 };
