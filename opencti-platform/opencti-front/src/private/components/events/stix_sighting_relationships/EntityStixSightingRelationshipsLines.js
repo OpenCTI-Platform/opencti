@@ -73,16 +73,16 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixSightingRelationshipsLines_data
-    @arguments(
-      fromId: $fromId
-      toId: $toId
-      toTypes: $toTypes
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromId: $fromId
+        toId: $toId
+        toTypes: $toTypes
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

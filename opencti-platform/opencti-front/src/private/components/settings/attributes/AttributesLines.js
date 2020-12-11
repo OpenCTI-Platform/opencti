@@ -72,14 +72,14 @@ export const attributesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...AttributesLines_data
-    @arguments(
-      key: $key
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        key: $key
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

@@ -68,14 +68,14 @@ export const citiesLinesQuery = graphql`
     $filters: [CitiesFiltering]
   ) {
     ...CitiesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 

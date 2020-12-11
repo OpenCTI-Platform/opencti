@@ -71,17 +71,17 @@ export const entityStixCoreRelationshipsLinesToQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixCoreRelationshipsLinesTo_data
-    @arguments(
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      relationship_type: $relationship_type
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromTypes: $fromTypes
+        toId: $toId
+        toRole: $toRole
+        relationship_type: $relationship_type
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

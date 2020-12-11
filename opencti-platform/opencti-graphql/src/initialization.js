@@ -228,8 +228,7 @@ const initializeDefaultValues = async () => {
     platform_url: '',
     platform_language: 'auto',
   });
-  // await createAttributesTypes();
-  // TODO JRI MIGRATION
+  await createAttributesTypes();
   await createMarkingDefinitions();
   await createBasicRolesAndCapabilities();
 };

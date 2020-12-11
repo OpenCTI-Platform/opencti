@@ -57,13 +57,13 @@ export const usersLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...UsersLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

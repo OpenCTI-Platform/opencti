@@ -188,7 +188,7 @@ AddObservedDataLinesContainer.propTypes = {
 export const addObservedDataLinesQuery = graphql`
   query AddObservedDataLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddObservedDataLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -203,7 +203,7 @@ const AddObservedDataLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         observedDatas(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_observedDatas") {
+          @connection(key: "Pagination_observedDatas") {
           edges {
             node {
               id

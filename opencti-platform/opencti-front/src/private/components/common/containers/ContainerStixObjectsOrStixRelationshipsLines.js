@@ -71,7 +71,7 @@ export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`
     container(id: $id) {
       id
       ...ContainerStixObjectsOrStixRelationshipsLines_container
-      @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode)
+        @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode)
     }
   }
 `;
@@ -91,7 +91,7 @@ export default createPaginationContainer(
       ) {
         id
         objects(first: $count, orderBy: $orderBy, orderMode: $orderMode)
-        @connection(key: "Pagination_objects") {
+          @connection(key: "Pagination_objects") {
           edges {
             node {
               ... on BasicObject {

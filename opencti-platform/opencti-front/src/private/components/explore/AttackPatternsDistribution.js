@@ -14,10 +14,7 @@ const styles = () => ({
 class AttackPatternsDistribution extends Component {
   render() {
     const {
-      configuration,
-      handleOpenConfig,
-      startDate,
-      endDate,
+      configuration, handleOpenConfig, startDate, endDate,
     } = this.props;
     switch (configuration.graph_type) {
       case 'table':

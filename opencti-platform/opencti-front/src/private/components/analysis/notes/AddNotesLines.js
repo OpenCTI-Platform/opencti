@@ -198,7 +198,7 @@ AddNotesLinesContainer.propTypes = {
 export const addNotesLinesQuery = graphql`
   query AddNotesLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddNotesLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -213,7 +213,7 @@ const AddNotesLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         notes(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_notes") {
+          @connection(key: "Pagination_notes") {
           edges {
             node {
               id

@@ -1,3 +1,4 @@
+import { head } from 'ramda';
 import {
   loadById,
   listEntities,
@@ -14,12 +15,14 @@ export const findById = (attributeId) => {
   return loadById(attributeId, ENTITY_TYPE_ATTRIBUTE);
 };
 
-export const find = (attributeKey, attributeValue = null) => {
-  const filters = [{ key: [attributeKey] }];
-  if (attributeValue) {
-    filters.push({ value: [attributeValue] });
-  }
-  return listEntities([ENTITY_TYPE_ATTRIBUTE], { filters });
+export const find = (attributeKey, attributeValue) => {
+  const filters = [
+    { key: 'key', values: [attributeKey] },
+    { key: 'value', values: [attributeValue] },
+  ];
+  return listEntities([ENTITY_TYPE_ATTRIBUTE], { filters, connectionFormat: false }).then((attributes) =>
+    head(attributes)
+  );
 };
 
 export const findAll = (args) => {

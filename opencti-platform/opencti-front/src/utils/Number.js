@@ -47,6 +47,12 @@ export const setNumberOfElements = (
   }
 };
 
-export const computeLevel = (value, min, max, minAllowed = 1, maxAllowed = 10) => Math.trunc(
+export const computeLevel = (
+  value,
+  min,
+  max,
+  minAllowed = 1,
+  maxAllowed = 10,
+) => Math.trunc(
   ((maxAllowed - minAllowed) * (value - min)) / (max - min) + minAllowed,
 );

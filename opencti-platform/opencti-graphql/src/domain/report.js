@@ -10,6 +10,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findIdentityById } from './identity';
+import { find as findAttribute, addAttribute } from './attribute';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
@@ -128,6 +129,17 @@ export const addReport = async (user, report) => {
           confidence = 15;
       }
     }
+  }
+  if (report.report_types) {
+    await Promise.all(
+      report.report_types.map(async (reportType) => {
+        const currentAttribute = await findAttribute('report_types', reportType);
+        if (!currentAttribute) {
+          await addAttribute(user, { key: 'report_types', value: reportType });
+        }
+        return true;
+      })
+    );
   }
   const finalReport = pipe(
     assoc('created', report.published),

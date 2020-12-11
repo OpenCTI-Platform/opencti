@@ -228,13 +228,13 @@ export const indicatorAddObservablesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...IndicatorAddObservablesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

@@ -27,10 +27,7 @@ const styles = (theme) => ({
 class ExploreBottomBar extends Component {
   render() {
     const {
-      t,
-      classes,
-      handleClear,
-      entityId,
+      t, classes, handleClear, entityId,
     } = this.props;
     return (
       <Drawer

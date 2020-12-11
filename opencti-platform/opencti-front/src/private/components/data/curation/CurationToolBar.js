@@ -170,7 +170,9 @@ class CurationToolBar extends Component {
         this.props.handleResetSelectedElements();
         this.handleCloseDelete();
 
-        MESSAGING$.notifySuccess(this.props.t('Successfully deleted selected entities'));
+        MESSAGING$.notifySuccess(
+          this.props.t('Successfully deleted selected entities'),
+        );
       },
     });
   }
@@ -212,7 +214,9 @@ class CurationToolBar extends Component {
         this.props.handleResetSelectedElements();
         this.handleCloseMerge();
 
-        MESSAGING$.notifySuccess(this.props.t('Successfully merged selected entities'));
+        MESSAGING$.notifySuccess(
+          this.props.t('Successfully merged selected entities'),
+        );
       },
     });
   }

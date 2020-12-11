@@ -8,7 +8,7 @@
       "max_requests": 100
     },
     "cookie_secure": false,
-    "base_path" : "",
+    "base_path": "",
     "platform_demo": false,
     "performance_logger": false,
     "map_tile_server": "https://map.opencti.io/styles/1fdd936a-084b-46ac-a948-22ce1686aadf/{z}/{x}/{y}.png",
