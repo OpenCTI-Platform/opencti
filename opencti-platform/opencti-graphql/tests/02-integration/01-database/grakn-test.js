@@ -1,7 +1,6 @@
 import * as R from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import {
-  attributeExists,
   createEntity,
   dayFormat,
   deleteElementById,
@@ -10,7 +9,6 @@ import {
   distributionRelations,
   escape,
   escapeString,
-  getSingleValueNumber,
   internalLoadById,
   listEntities,
   listRelations,
@@ -21,8 +19,6 @@ import {
   now,
   patchAttribute,
   prepareDate,
-  queryAttributeValueByGraknId,
-  queryAttributeValues,
   querySubTypes,
   REL_CONNECTED_SUFFIX,
   sinceNowInMinutes,
@@ -30,7 +26,7 @@ import {
   timeSeriesRelations,
   yearFormat,
 } from '../../../src/database/grakn';
-import { attributeUpdate, findAll as findAllAttributes } from '../../../src/domain/attribute';
+import { findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
@@ -79,48 +75,6 @@ describe('Grakn loaders', () => {
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);
     expect(R.includes('IPv4-Addr', subTypeLabels)).toBeTruthy();
     expect(R.includes('IPv6-Addr', subTypeLabels)).toBeTruthy();
-  });
-  it('should load attributes values', async () => {
-    const attrValues = await queryAttributeValues('report_types');
-    expect(attrValues).not.toBeNull();
-    expect(attrValues.edges.length).toEqual(2);
-    const valueDefinitions = R.map((e) => e.node.value, attrValues.edges);
-    expect(R.includes('threat-report', valueDefinitions)).toBeTruthy();
-    expect(R.includes('internal-report', valueDefinitions)).toBeTruthy();
-  });
-  it('should check attributes exist', async () => {
-    const reportClassExist = await attributeExists('report_types');
-    expect(reportClassExist).toBeTruthy();
-    const notExist = await attributeExists('not_an_attribute');
-    expect(notExist).not.toBeTruthy();
-  });
-  it('should check attributes resolve by id', async () => {
-    const attrValues = await queryAttributeValues('report_types');
-    const aggregationMap = new Map(attrValues.edges.map((i) => [i.node.value, i.node]));
-    const attributeId = aggregationMap.get('threat-report').id;
-    const attrValue = await queryAttributeValueByGraknId(attributeId);
-    expect(attrValue).not.toBeNull();
-    expect(attrValue.id).toEqual(attributeId);
-    expect(attrValue.type).toEqual('report_types');
-    expect(attrValue.value).toEqual('threat-report');
-  });
-  it('should count accurate', async () => {
-    const countObjects = (type) => getSingleValueNumber(`match $c isa ${type}; get; count;`);
-    // Entities
-    expect(await countObjects('Settings')).toEqual(1);
-    expect(await countObjects('Label')).toEqual(13);
-    expect(await countObjects('Connector')).toEqual(0);
-    expect(await countObjects('Group')).toEqual(0);
-    expect(await countObjects('Workspace')).toEqual(0);
-    expect(await countObjects('Token')).toEqual(1);
-    expect(await countObjects('Marking-Definition')).toEqual(6);
-    expect(await countObjects('Stix-Domain-Object')).toEqual(28);
-    expect(await countObjects('Role')).toEqual(2);
-    expect(await countObjects('Capability')).toEqual(20);
-    expect(await countObjects('Stix-Cyber-Observable')).toEqual(1);
-    expect(await countObjects('Basic-Object')).toEqual(83);
-
-    // Relations
   });
 });
 
@@ -247,36 +201,6 @@ describe('Grakn entities listing', () => {
     indicators = await listEntities(['Indicator'], options);
     expect(indicators.edges.length).toEqual(3);
   });
-  it.each(noCacheCases)('should list entities order by relation (noCache = %s)', async (noCache) => {
-    // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
-    // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
-    let options = { orderBy: 'rel_located-at.name', orderMode: 'desc', noCache };
-    let identities = await listEntities(['Location'], options);
-    expect(identities.edges.length).toEqual(6);
-    const firstDescResult =
-      R.head(identities.edges).node.name === 'Europe' || R.head(identities.edges).node.name === 'France';
-    expect(firstDescResult).toBeTruthy();
-    expect(R.last(identities.edges).node.name).toEqual('Western Europe');
-    options = { orderBy: 'rel_located-at.name', orderMode: 'asc', noCache };
-    identities = await listEntities(['Location'], options);
-    expect(identities.edges.length).toEqual(6);
-    expect(R.head(identities.edges).node.name).toEqual('Western Europe');
-    const lastAscResult =
-      R.last(identities.edges).node.name === 'Europe' || R.last(identities.edges).node.name === 'France';
-    expect(lastAscResult).toBeTruthy();
-  });
-  it.each(noCacheCases)('should list entities order by relation id (noCache = %s)', async (noCache) => {
-    // France (f2ea7d37-996d-4313-8f73-42a8782d39a0) < localization > Hietzing (d1881166-f431-4335-bfed-b1c647e59f89)
-    // Hietzing (d1881166-f431-4335-bfed-b1c647e59f89) < localization > France (f2ea7d37-996d-4313-8f73-42a8782d39a0)
-    // We accept that ElasticSearch is not able to have both direction of the relations
-    const options = { orderBy: 'rel_located-at.standard_id', orderMode: 'desc', noCache };
-    const locations = await listEntities(['Location'], options);
-    expect(locations.edges.length).toEqual(6);
-    const firstResults = ['France'];
-    expect(R.includes(R.head(locations.edges).node.name, firstResults)).toBeTruthy();
-    const lastResults = ['Western Europe'];
-    expect(R.includes(R.last(locations.edges).node.name, lastResults)).toBeTruthy();
-  });
   it.each(noCacheCases)('should list entities with attribute filters (noCache = %s)', async (noCache) => {
     const filters = [
       { key: 'x_mitre_id', values: ['T1369'] },
@@ -299,29 +223,6 @@ describe('Grakn entities listing', () => {
     expect(entities).not.toBeNull();
     expect(entities.edges.length).toEqual(3);
   });
-
-  const relationFilterUseCases = [
-    ['name', 'The MITRE Corporation', true],
-    ['name', 'The MITRE Corporation', false],
-    ['x_opencti_stix_ids', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5', true],
-    ['x_opencti_stix_ids', 'identity--c78cb6e5-0c4b-4611-8297-d1b8b55e40b5', false],
-  ];
-  it.each(relationFilterUseCases)(
-    'should list entities with ref relation %s=%s filters (noCache = %s)',
-    async (field, val, noCache) => {
-      const filters = [{ key: `rel_created-by.${field}`, values: [val], toRole: 'created-by_to' }];
-      const options = { filters, noCache };
-      const entities = await listEntities(['Stix-Domain-Object'], options);
-      expect(entities).not.toBeNull();
-      expect(entities.edges.length).toEqual(3);
-      const aggregationMap = new Map(
-        entities.edges.map((i) => [R.head(i.node.x_opencti_stix_ids || ['fake']), i.node])
-      );
-      expect(aggregationMap.get('attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17')).not.toBeUndefined();
-      expect(aggregationMap.get('attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc')).not.toBeUndefined();
-      expect(aggregationMap.get('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7')).not.toBeUndefined();
-    }
-  );
 });
 
 describe('Grakn relations listing', () => {
@@ -402,34 +303,6 @@ describe('Grakn relations listing', () => {
     }
     const relation = R.head(stixRelations.edges).node;
     expect(relation.created).toEqual('2019-04-25T20:53:08.446Z');
-  });
-  it.each(noCacheCases)('should list relations ordered by relation (noCache = %s)', async (noCache) => {
-    // "relationship_type": "uses",
-    // "id": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02" > 209cbdf0-fc5e-47c9-8023-dd724993ae55
-    //  "relationship_type": "indicates",
-    //  "source_ref": "indicator--a2f7504a-ea0d-48ed-a18d-cbf352fae6cf", > 1c47970a-a23b-4b6c-85cd-ab73ddb506c6 [2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957]
-    //  "target_ref": "relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02",
-
-    // "relationship_type": "uses",
-    // "id": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de" > 50a205fa-92ec-4ec9-bf62-e065dd85f5d4
-    //  "relationship_type": "indicates",
-    //  "source_ref": "indicator--51640662-9c78-4402-932f-1d4531624723" > c8739116-e1d9-4c4f-b091-590147b3d7b9 [www.one-clap.jp]
-    //  "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
-    //  "relationship_type": "indicates",
-    //  "source_ref": "indicator--10e9a46e-7edb-496b-a167-e27ea3ed0079" > e7652cb6-777a-4220-9b64-0543ef36d467 [www.xolod-teplo.ru]
-    //  "target_ref": "relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de",
-
-    // "relationship_type": "uses",
-    // "id": "relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3",
-    // No relation on it
-
-    const options = { orderBy: 'rel_indicates.standard_id', orderMode: 'asc', noCache };
-    const stixRelations = await listRelations('uses', options);
-    expect(stixRelations.edges.length).toEqual(2);
-    const first = R.head(stixRelations.edges).node;
-    const second = R.last(stixRelations.edges).node;
-    expect(first.x_opencti_stix_ids).toEqual(['relationship--e35b3fc1-47f3-4ccb-a8fe-65a0864edd02']);
-    expect(second.x_opencti_stix_ids).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
   });
   it.each(noCacheCases)('should list relations with relation filtering (noCache = %s)', async (noCache) => {
     let stixRelations = await listRelations('uses', { noCache });

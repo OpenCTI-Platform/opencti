@@ -37,6 +37,7 @@ import {
 import { isBooleanAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isStixObjectAliased } from '../schema/stixDomainObject';
+import { isStixObject } from '../schema/stixCoreObject';
 
 export const dateFields = [
   'created',
@@ -1222,11 +1223,13 @@ const prepareIndexing = async (elements) => {
         const [from, to] = await Promise.all([elLoadByIds(thing.fromId), elLoadByIds(thing.toId)]);
         connections.push({
           internal_id: from.internal_id,
+          name: from.name,
           types: [from.entity_type, ...getParentTypes(from.entity_type)],
           role: thing.fromRole,
         });
         connections.push({
           internal_id: to.internal_id,
+          name: to.name,
           types: [to.entity_type, ...getParentTypes(to.entity_type)],
           role: thing.toRole,
         });
@@ -1323,8 +1326,40 @@ export const elIndexElements = async (elements, retry = 5) => {
   }
   return transformedElements.length;
 };
+
+export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
+  const source =
+    'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+  return el
+    .updateByQuery({
+      index: RELATIONSHIPS_INDICES,
+      refresh: false,
+      body: {
+        script: { source, params: { id: documentId, changes: documentBody } },
+        query: {
+          nested: {
+            path: 'connections',
+            query: {
+              bool: {
+                must: [{ match_phrase: { [`connections.internal_id`]: documentId } }],
+              },
+            },
+          },
+        },
+      },
+    })
+    .catch((err) => {
+      throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
+    });
+};
+
 export const elUpdateElement = async (instance) => {
+  // Update the element it self
   const esData = prepareElementForIndexing(instance);
   const index = inferIndexFromConceptType(instance.entity_type);
   await elReplace(index, instance.internal_id, { doc: esData });
+  // If entity with a name, must update connections
+  if (esData.name && isStixObject(instance.entity_type)) {
+    await elUpdateConnectionsOfElement(instance.internal_id, { name: esData.name });
+  }
 };
