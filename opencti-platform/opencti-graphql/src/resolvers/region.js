@@ -1,4 +1,12 @@
-import { addRegion, findAll, findById, parentRegions, subRegions, isSubRegion, countries } from '../domain/region';
+import {
+  addRegion,
+  findAll,
+  findById,
+  batchCountries,
+  batchIsSubRegion,
+  batchParentRegions,
+  batchSubRegions,
+} from '../domain/region';
 import {
   stixDomainObjectEditContext,
   stixDomainObjectCleanContext,
@@ -9,6 +17,12 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/grakn';
+
+const countriesLoader = initBatchLoader(batchCountries);
+const parentRegionsLoader = initBatchLoader(batchParentRegions);
+const subRegionsLoader = initBatchLoader(batchSubRegions);
+const isSubRegionLoader = initBatchLoader(batchIsSubRegion);
 
 const regionResolvers = {
   Query: {
@@ -16,10 +30,10 @@ const regionResolvers = {
     regions: (_, args) => findAll(args),
   },
   Region: {
-    parentRegions: (region) => parentRegions(region.id),
-    subRegions: (region) => subRegions(region.id),
-    isSubRegion: (region) => isSubRegion(region.id),
-    countries: (region) => countries(region.id),
+    parentRegions: (region) => parentRegionsLoader.load(region.id),
+    subRegions: (region) => subRegionsLoader.load(region.id),
+    isSubRegion: (region) => isSubRegionLoader.load(region.id),
+    countries: (region) => countriesLoader.load(region.id),
   },
   RegionsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

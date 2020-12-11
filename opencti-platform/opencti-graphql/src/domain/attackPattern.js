@@ -31,6 +31,10 @@ export const batchSubAttackPatterns = (attackPatternIds) => {
 };
 
 export const batchIsSubAttackPattern = async (attackPatternIds) => {
-  const batchCreators = await listThroughGetTos(attackPatternIds, RELATION_SUBTECHNIQUE_OF, ENTITY_TYPE_ATTACK_PATTERN);
-  return batchCreators.map((b) => b.edges.length > 0);
+  const batchAttackPatterns = await listThroughGetTos(
+    attackPatternIds,
+    RELATION_SUBTECHNIQUE_OF,
+    ENTITY_TYPE_ATTACK_PATTERN
+  );
+  return batchAttackPatterns.map((b) => b.edges.length > 0);
 };
