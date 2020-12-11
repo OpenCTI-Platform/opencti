@@ -1,4 +1,4 @@
-import { head } from 'ramda';
+import * as R from 'ramda';
 import {
   loadById,
   listEntities,
@@ -22,7 +22,7 @@ export const find = (attributeKey, attributeValue) => {
     { key: 'value', values: [attributeValue] },
   ];
   return listEntities([ENTITY_TYPE_ATTRIBUTE], { filters, connectionFormat: false }).then((attributes) =>
-    head(attributes)
+    R.head(attributes)
   );
 };
 
@@ -30,7 +30,11 @@ export const findAll = (args) => {
   if (args.elementType) {
     return queryAttributes(args.elementType);
   }
-  return listEntities([ENTITY_TYPE_ATTRIBUTE], args);
+  const filters = [];
+  if (args.key) {
+    filters.push({ key: 'key', values: [args.key] });
+  }
+  return listEntities([ENTITY_TYPE_ATTRIBUTE], R.pipe(R.assoc('filters', filters), R.dissoc('key'))(args));
 };
 
 export const addAttribute = async (user, attribute) => {
