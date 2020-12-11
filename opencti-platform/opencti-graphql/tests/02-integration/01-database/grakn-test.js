@@ -25,7 +25,7 @@ import {
   timeSeriesRelations,
   yearFormat,
 } from '../../../src/database/grakn';
-import { findAll as findAllAttributes } from '../../../src/domain/attribute';
+import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 import { ADMIN_USER } from '../../utils/testQuery';
@@ -39,6 +39,7 @@ import {
 } from '../../../src/schema/stixDomainObject';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../../../src/schema/general';
 import { RELATION_MITIGATES } from '../../../src/schema/stixCoreRelationship';
+import { SYSTEM_USER } from '../../../src/domain/user';
 
 describe('Grakn basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -501,23 +502,22 @@ describe('Grakn element loader', () => {
 describe('Grakn attribute updated and indexed correctly', () => {
   const noCacheCases = [[true], [false]];
   it.each(noCacheCases)('should entity report attribute updated (noCache = %s)', async (noCache) => {
-    let entityTypes = await findAllAttributes({ type: 'report_types' });
+    const entityTypes = await findAllAttributes({ type: 'report_types' });
     expect(entityTypes).not.toBeNull();
     expect(entityTypes.edges.length).toEqual(2);
-    let typeMap = new Map(entityTypes.edges.map((i) => [i.node.value, i]));
+    const typeMap = new Map(entityTypes.edges.map((i) => [i.node.value, i]));
     const threatReportAttribute = typeMap.get('threat-report');
     expect(threatReportAttribute).not.toBeUndefined();
-    const attributeGraknId = threatReportAttribute.node.id;
+    const attributeId = threatReportAttribute.node.id;
     // 01. Get the report directly and test if type is "Threat report".
     const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
     let report = await loadById(stixId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
     // 02. Update attribute "Threat report" to "Threat test"
-    let updatedAttribute = await attributeUpdate(attributeGraknId, {
-      type: 'report_types',
-      value: 'threat-report',
-      newValue: 'threat-test',
+    let updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, {
+      key: 'value',
+      value: 'threat-test',
     });
     expect(updatedAttribute).not.toBeNull();
     // 03. Get the report directly and test if type is Threat test
@@ -525,12 +525,9 @@ describe('Grakn attribute updated and indexed correctly', () => {
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-test']);
     // 04. Back to original configuration
-    entityTypes = await findAllAttributes({ type: 'report_types' });
-    typeMap = new Map(entityTypes.edges.map((i) => [i.node.value, i]));
-    updatedAttribute = await attributeUpdate(typeMap.get('threat-test').node.id, {
-      type: 'report_types',
-      value: 'threat-test',
-      newValue: 'threat-report',
+    updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, {
+      key: 'value',
+      value: 'threat-report',
     });
     expect(updatedAttribute).not.toBeNull();
     report = await loadById(stixId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
