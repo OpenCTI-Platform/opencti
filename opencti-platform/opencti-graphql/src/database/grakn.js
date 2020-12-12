@@ -647,8 +647,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
 const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
   const { key } = rawInput;
   if (!R.includes(key, schemaTypes.getAttributes(instance.entity_type))) {
-    // TODO SAM REACTIVATE
-    // throw FunctionalError(`This attribute key ${key} is not allowed on the type ${instance.entity_type}`);
+    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${instance.entity_type}`);
   }
   const input = rebuildAndMergeInputFromExistingData(rawInput, instance, options);
   if (R.isEmpty(input)) return [];
