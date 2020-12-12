@@ -14,7 +14,8 @@ import {
   loadByIdFullyResolved,
   mergeEntities,
   now,
-  updateAttribute, listThroughGetTo, batchLoadThroughGetTo,
+  updateAttribute,
+  batchLoadThroughGetTo,
 } from '../database/middleware';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { notify } from '../database/redis';
