@@ -16,7 +16,7 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
-import { initBatchLoader } from '../database/grakn';
+import { initBatchLoader } from '../database/middleware';
 
 const markingsLoader = initBatchLoader(batchMarkingDefinitions);
 const membersLoader = initBatchLoader(batchMembers);

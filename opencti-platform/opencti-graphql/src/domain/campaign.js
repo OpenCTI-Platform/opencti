@@ -1,5 +1,5 @@
 import { assoc, pipe, isNil } from 'ramda';
-import { createEntity, listEntities, loadById, timeSeriesEntities, FROM_START, UNTIL_END } from '../database/grakn';
+import { createEntity, listEntities, loadById, timeSeriesEntities, FROM_START, UNTIL_END } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CAMPAIGN } from '../schema/stixDomainObject';

@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listThroughGetFroms, loadById } from '../database/grakn';
+import { createEntity, listEntities, listThroughGetFroms, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/stixDomainObject';

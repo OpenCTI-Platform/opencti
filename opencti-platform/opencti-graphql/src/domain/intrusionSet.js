@@ -1,5 +1,5 @@
 import { assoc, pipe, isNil } from 'ramda';
-import { createEntity, listEntities, loadById, FROM_START, UNTIL_END, listThroughGetTos } from '../database/grakn';
+import { createEntity, listEntities, loadById, FROM_START, UNTIL_END, listThroughGetTos } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../schema/stixDomainObject';

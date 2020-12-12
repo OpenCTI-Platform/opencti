@@ -6,7 +6,7 @@ import {
   deleteElementById,
   updateAttribute,
   queryAttributes,
-} from '../database/grakn';
+} from '../database/middleware';
 import { ENTITY_TYPE_ATTRIBUTE } from '../schema/internalObject';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';

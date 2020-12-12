@@ -33,7 +33,7 @@ import {
   patchAttribute,
   updateAttribute,
   loadThroughGetTo,
-} from '../database/grakn';
+} from '../database/middleware';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,

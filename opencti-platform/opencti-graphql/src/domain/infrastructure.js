@@ -1,4 +1,4 @@
-import { createEntity, listEntities, loadById } from '../database/grakn';
+import { createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INFRASTRUCTURE } from '../schema/stixDomainObject';

@@ -4,7 +4,7 @@ import conf from '../config/conf';
 import { amqpUri, EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById, SYSTEM_USER } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
-import { loadById, timeSeriesEntities } from '../database/grakn';
+import { loadById, timeSeriesEntities } from '../database/middleware';
 
 export const findAll = (args) => elPaginate(INDEX_HISTORY, assoc('types', ['history'], args));
 

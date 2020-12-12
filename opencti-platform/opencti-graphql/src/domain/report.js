@@ -1,5 +1,5 @@
 import { assoc, propOr, pipe, dissoc } from 'ramda';
-import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/grakn';
+import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findIdentityById } from './identity';

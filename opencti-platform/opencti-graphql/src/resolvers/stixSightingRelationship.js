@@ -27,7 +27,7 @@ import {
   timeSeriesRelations,
   REL_CONNECTED_SUFFIX,
   initBatchLoader,
-} from '../database/grakn';
+} from '../database/middleware';
 import { convertDataToStix } from '../database/stix';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';

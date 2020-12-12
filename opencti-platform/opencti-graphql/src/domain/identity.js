@@ -1,5 +1,5 @@
 import { pipe, assoc, dissoc, filter } from 'ramda';
-import { createEntity, listEntities, loadById } from '../database/grakn';
+import { createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';

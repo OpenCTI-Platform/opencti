@@ -15,7 +15,7 @@ import {
   loadById,
   timeSeriesEntities,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';

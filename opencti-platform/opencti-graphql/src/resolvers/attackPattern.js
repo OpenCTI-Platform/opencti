@@ -23,7 +23,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/grakn';
+import { initBatchLoader } from '../database/middleware';
 
 const killChainPhasesLoader = initBatchLoader(batchKillChainPhases);
 const coursesOfActionLoader = initBatchLoader(batchCoursesOfAction);

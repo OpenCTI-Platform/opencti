@@ -24,7 +24,7 @@ import {
   timeSeriesEntities,
   timeSeriesRelations,
   yearFormat,
-} from '../../../src/database/grakn';
+} from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
 import { elLoadByIds } from '../../../src/database/elasticSearch';

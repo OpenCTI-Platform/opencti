@@ -14,7 +14,7 @@ import {
   loadById,
   timeSeriesEntities,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { elCount } from '../database/elasticSearch';
 import { upload } from '../database/minio';
 import { workToExportFile } from './work';

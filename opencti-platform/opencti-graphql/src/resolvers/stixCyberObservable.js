@@ -34,7 +34,7 @@ import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
-import { initBatchLoader } from '../database/grakn';
+import { initBatchLoader } from '../database/middleware';
 
 const indicatorsLoader = initBatchLoader(batchIndicators);
 

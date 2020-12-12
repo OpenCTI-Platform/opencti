@@ -29,7 +29,7 @@ import {
   timeSeriesRelations,
   REL_CONNECTED_SUFFIX,
   initBatchLoader,
-} from '../database/grakn';
+} from '../database/middleware';
 import { convertDataToStix } from '../database/stix';
 import { creator } from '../domain/log';
 import {

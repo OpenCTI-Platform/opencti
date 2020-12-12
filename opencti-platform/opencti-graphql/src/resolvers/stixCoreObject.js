@@ -18,7 +18,7 @@ import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 import { convertDataToStix } from '../database/stix';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
-import { initBatchLoader, stixElementLoader } from '../database/grakn';
+import { initBatchLoader, stixElementLoader } from '../database/middleware';
 
 const createdByLoader = initBatchLoader(batchCreatedBy);
 const markingDefinitionsLoader = initBatchLoader(batchMarkingDefinitions);

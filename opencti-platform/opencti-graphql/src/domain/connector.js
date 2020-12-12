@@ -7,7 +7,7 @@ import {
   now,
   patchAttribute,
   sinceNowInMinutes,
-} from '../database/grakn';
+} from '../database/middleware';
 import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 

@@ -15,7 +15,7 @@ import {
   mergeEntities,
   now,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { findAll as relationFindAll } from './stixCoreRelationship';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';

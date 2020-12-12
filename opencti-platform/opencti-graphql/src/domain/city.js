@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
 import * as R from 'ramda';
-import { createEntity, listEntities, listThroughGetTos, loadById } from '../database/grakn';
+import { createEntity, listEntities, listThroughGetTos, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY } from '../schema/stixDomainObject';

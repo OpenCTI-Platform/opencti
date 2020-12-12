@@ -1,5 +1,5 @@
 import { assoc, pipe } from 'ramda';
-import { createEntity, listEntities, loadById, now, timeSeriesEntities } from '../database/grakn';
+import { createEntity, listEntities, loadById, now, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_X_OPENCTI_INCIDENT } from '../schema/stixDomainObject';

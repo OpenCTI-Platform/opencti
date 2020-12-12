@@ -37,7 +37,7 @@ import { addRole } from '../domain/grant';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { initBatchLoader } from '../database/grakn';
+import { initBatchLoader } from '../database/middleware';
 
 const groupsLoader = initBatchLoader(batchGroups);
 const rolesLoader = initBatchLoader(getRoles);

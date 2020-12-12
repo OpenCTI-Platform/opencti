@@ -1,7 +1,7 @@
 import moment from 'moment';
 import { assoc, descend, dissoc, head, includes, isNil, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
-import { createEntity, createRelation, listEntities, listThroughGetTos, loadById, now } from '../database/grakn';
+import { createEntity, createRelation, listEntities, listThroughGetTos, loadById, now } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';

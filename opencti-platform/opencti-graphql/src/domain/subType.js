@@ -1,4 +1,4 @@
-import { querySubTypes, queryAttributes } from '../database/grakn';
+import { querySubTypes, queryAttributes } from '../database/middleware';
 
 export const findAll = (args) => querySubTypes(args);
 

@@ -9,7 +9,7 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/grakn';
+import { initBatchLoader } from '../database/middleware';
 
 const attackPatternsLoader = initBatchLoader(batchAttackPatterns);
 
