@@ -579,7 +579,7 @@ export const elFindBy = async (fields, values, type = null, indices = DATA_INDIC
 export const elLoadBy = async (fields, values, type = null, indices = DATA_INDICES) => {
   const results = await elFindBy(fields, values, type, indices);
   if (results.length > 1) throw Error('test');
-  return results && results[0];
+  return R.head(results);
 };
 
 export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {

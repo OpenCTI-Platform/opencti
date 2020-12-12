@@ -334,7 +334,7 @@ export const loginFromProvider = async (email, name) => {
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
   // update the name
-  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN, { batched: false });
+  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
   const inputName = { key: 'name', value: [name] };
   await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
@@ -346,7 +346,7 @@ export const loginFromProvider = async (email, name) => {
 export const login = async (email, password) => {
   const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
   if (!user) throw AuthenticationFailure();
-  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN, { batched: false });
+  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
   if (!userToken) throw AuthenticationFailure();
   const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);

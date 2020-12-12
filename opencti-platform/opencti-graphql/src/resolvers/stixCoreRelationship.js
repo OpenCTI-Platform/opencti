@@ -32,12 +32,7 @@ import {
 } from '../database/middleware';
 import { convertDataToStix } from '../database/stix';
 import { creator } from '../domain/log';
-import {
-  RELATION_CREATED_BY,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
 
 const createdByLoader = initBatchLoader(batchCreatedBy);

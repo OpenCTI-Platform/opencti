@@ -12,8 +12,6 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { convertDataToStix } from '../database/stix';
-import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-import { REL_INDEX_PREFIX } from '../schema/general';
 
 const markingDefinitionResolvers = {
   Query: {

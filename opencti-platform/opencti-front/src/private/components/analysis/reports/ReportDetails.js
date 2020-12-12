@@ -52,7 +52,7 @@ class ReportDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Report types')}
               </Typography>
-              {report?.report_types?.map((reportType) => (
+              {report.report_types?.map((reportType) => (
                 <Chip
                   key={reportType}
                   classes={{ root: classes.chip }}

@@ -218,8 +218,10 @@ const loadThrough = async (sources, sourceSide, relationType, targetEntityType) 
     paginate: false,
     batched: false,
   });
-  if (elements.length > 1) throw Error('Should be one');
-  return elements && elements[0];
+  if (elements.length > 1) {
+    throw DatabaseError('Expected one element only through relation', { sources, relationType, targetEntityType });
+  }
+  return R.head(elements);
 };
 export const loadThroughGetFrom = async (sources, relationType, targetEntityType) => {
   return loadThrough(sources, 'to', relationType, targetEntityType);

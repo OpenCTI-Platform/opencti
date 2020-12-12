@@ -8,12 +8,7 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
