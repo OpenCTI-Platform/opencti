@@ -73,6 +73,7 @@ export const stixRelationshipsMapping = {
   Sector_Country: ['located-at'],
   Sector_City: ['located-at'],
   Sector_Position: ['located-at'],
+  Sector_Sector: ['part-of'],
   Organization_Sector: ['part-of'],
   Organization_Region: ['located-at'],
   Organization_Country: ['located-at'],
