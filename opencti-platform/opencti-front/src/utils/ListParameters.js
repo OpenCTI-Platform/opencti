@@ -72,11 +72,6 @@ export const buildViewParamsFromUrlAndStorage = (
       ? split(',', finalParams.observableTypes)
       : '';
   }
-  if (typeof finalParams.toType === 'string') {
-    finalParams.toType = finalParams.toType
-      ? split(',', finalParams.toType)
-      : '';
-  }
   if (typeof finalParams.filters === 'string') {
     finalParams.filters = finalParams.filters
       ? JSON.parse(finalParams.filters)

@@ -840,7 +840,7 @@ const i18n = {
       // Time
       '24h': '24h',
       // Types
-      entity_all: 'Toutes les entités',
+      entity_All: 'Toutes les entités',
       'entity_Stix-Domain-Object': 'Entité',
       'entity_Stix-Domain-Objects': 'Entités',
       'entity_Stix-Core-Objects': 'Entités et observables',
@@ -1026,7 +1026,7 @@ const i18n = {
       progress: 'In progress',
       Nonee: 'None',
       // Types
-      entity_all: 'All entities',
+      entity_All: 'All entities',
       'entity_Stix-Domain-Object': 'Entity',
       'entity_Stix-Domain-Objects': 'Entities',
       'entity_Stix-Core-Objects': 'Entities and observables',
