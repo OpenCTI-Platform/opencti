@@ -65,6 +65,7 @@ export const isAbstract = (type) => R.includes(type, ABSTRACT_TYPES);
 export const schemaTypes = {
   types: {},
   attributes: {},
+  relationshipsMapping: {},
   // eslint-disable-next-line object-shorthand,func-names
   register: function (type, children) {
     this.types[type] = children;

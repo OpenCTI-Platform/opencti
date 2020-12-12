@@ -60,7 +60,10 @@ import {
   schemaTypes,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import {
+  checkStixCyberObservableRelationshipMapping,
+  isStixCyberObservableRelationship,
+} from '../schema/stixCyberObservableRelationship';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -72,12 +75,7 @@ import {
 } from '../schema/stixMetaRelationship';
 import { isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import {
-  isBasicRelationship,
-  isStixRelationship,
-  isStixRelationShipExceptMeta,
-  stixRelationshipsMapping,
-} from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   dictAttributes,
   isDictionaryAttribute,
@@ -85,7 +83,7 @@ import {
   multipleAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { checkStixCoreRelationshipMapping, isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
@@ -1367,15 +1365,22 @@ export const createRelation = async (user, input) => {
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
   const { from, to } = resolvedInput;
-  /* // TODO ALL RELATIONSHIPS
-  if (
-    isStixCoreRelationship(relationshipType) &&
-    !R.includes(relationshipType, stixRelationshipsMapping[`${from.entity_type}_${to.entity_type}`] || [])
-  ) {
-    throw FunctionalError(
-      `The relationship type ${relationshipType} is not allowed between ${from.entity_type} and ${to.entity_type}`
-    );
-  } */
+  // Check if StixCoreRelationship is allowed
+  if (isStixCoreRelationship(relationshipType)) {
+    if (!checkStixCoreRelationshipMapping(from.entity_type, to.entity_type, relationshipType)) {
+      throw FunctionalError(
+        `The relationship type ${relationshipType} is not allowed between ${from.entity_type} and ${to.entity_type}`
+      );
+    }
+  }
+  // Check if StixCyberObservableRelationship is allowed
+  if (isStixCyberObservableRelationship(relationshipType)) {
+    if (!checkStixCyberObservableRelationshipMapping(from.entity_type, to.entity_type, relationshipType)) {
+      throw FunctionalError(
+        `The relationship type ${relationshipType} is not allowed between ${from.entity_type} and ${to.entity_type}`
+      );
+    }
+  }
   // Build lock ids
   const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
   const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
@@ -1650,7 +1655,6 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   }
   const fromThing = await internalLoadById(fromId, opts);
   const toThing = await internalLoadById(toId, opts);
-  // TODO SAM Currently it doesnt force the direction.
   // Looks like the caller doesnt give the correct from, to currently
   const relationsToDelete = await elFindByFromAndTo(fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {
