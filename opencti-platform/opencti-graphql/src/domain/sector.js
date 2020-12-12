@@ -2,10 +2,12 @@ import { assoc, flatten } from 'ramda';
 import {
   createEntity,
   listEntities,
-  listThroughGetFroms,
-  listThroughGetTos,
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
   loadById,
   listRelations,
+  listThroughGetFrom,
+  batchLoadThroughGetTo,
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
@@ -22,21 +24,20 @@ export const findAll = (args) => {
 };
 
 export const batchParentSectors = (sectorIds) => {
-  return listThroughGetTos(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return batchListThroughGetTo(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const batchSubSectors = (sectorIds) => {
-  return listThroughGetFroms(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return batchListThroughGetFrom(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const batchIsSubSector = async (sectorIds) => {
-  const batchSubsectors = await listThroughGetTos(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
-  return batchSubsectors.map((b) => b.edges.length > 0);
+  const batchSubsectors = await batchLoadThroughGetTo(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return batchSubsectors.map((b) => b !== undefined);
 };
 
 export const targetedOrganizations = async (sectorId) => {
-  const opts = { paginate: false, batched: false };
-  const organizations = await listThroughGetFroms(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
+  const organizations = await listThroughGetFrom(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   const targets = await Promise.all(
     organizations.map((organization) => listRelations(RELATION_TARGETS, { fromId: organization.id }))
   );

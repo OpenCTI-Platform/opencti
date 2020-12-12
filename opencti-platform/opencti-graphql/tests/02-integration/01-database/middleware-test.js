@@ -7,7 +7,6 @@ import {
   distributionEntities,
   distributionRelations,
   escape,
-  escapeString,
   internalLoadById,
   listEntities,
   listRelations,
@@ -48,7 +47,6 @@ describe('Grakn basic and utils', () => {
     expect(escape('grakn\\special')).toEqual('grakn\\\\special');
     expect(escape('grakn;injection')).toEqual('grakn\\;injection');
     expect(escape('grakn,injection')).toEqual('grakn\\,injection');
-    expect(escapeString('"\\test\\"')).toEqual('\\"\\\\test\\\\\\"');
   });
   it('should date utils correct', () => {
     expect(utcDate().isValid()).toBeTruthy();

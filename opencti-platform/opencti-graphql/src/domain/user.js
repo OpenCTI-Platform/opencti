@@ -21,18 +21,19 @@ import conf, {
   OPENCTI_WEB_TOKEN,
 } from '../config/conf';
 import {
-  listThroughGetFroms,
   createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
   listEntities,
-  listThroughGetTos,
+  batchListThroughGetTo,
   loadById,
   now,
   patchAttribute,
   updateAttribute,
   loadThroughGetTo,
+  listThroughGetTo,
+  listThroughGetFrom,
 } from '../database/middleware';
 import {
   ENTITY_TYPE_CAPABILITY,
@@ -105,7 +106,7 @@ export const findAll = (args) => {
 };
 
 export const batchGroups = async (userIds) => {
-  return listThroughGetTos(userIds, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+  return batchListThroughGetTo(userIds, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
 };
 
 export const token = async (userId, args, context) => {
@@ -125,15 +126,14 @@ const clearUserTokenCache = (userId) => {
   return internalGetToken(userId).then((tokenValue) => clearUserAccessCache(tokenValue.uuid));
 };
 
-export const getRoles = async (userId) => {
-  return listThroughGetTos(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
+export const batchRoles = async (userId) => {
+  return batchListThroughGetTo(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
 export const getMarkings = async (userId) => {
-  const opts = { paginate: false, batched: false };
-  const userGroups = await listThroughGetTos(userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
+  const userGroups = await listThroughGetTo(userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const groupIds = userGroups.map((r) => r.id);
-  const userMarkingsPromise = listThroughGetTos(groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+  const userMarkingsPromise = listThroughGetTo(groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
   const allMarkingsPromise = allMarkings().then((data) => R.map((i) => i.node, data.edges));
   const [userMarkings, markings] = await Promise.all([userMarkingsPromise, allMarkingsPromise]);
   const computedMarkings = [];
@@ -151,10 +151,9 @@ export const getMarkings = async (userId) => {
 };
 
 export const getCapabilities = async (userId) => {
-  const opts = { paginate: false, batched: false };
-  const roles = await listThroughGetTos(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
+  const roles = await listThroughGetTo(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
   const roleIds = roles.map((r) => r.id);
-  const capabilities = await listThroughGetTos(roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, opts);
+  const capabilities = await listThroughGetTo(roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
   if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
@@ -162,11 +161,8 @@ export const getCapabilities = async (userId) => {
   return capabilities;
 };
 
-export const getRoleCapabilities = async (roleId) => {
-  return listThroughGetTos(roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, {
-    paginate: false,
-    batched: false,
-  });
+export const batchRoleCapabilities = async (roleId) => {
+  return batchListThroughGetTo(roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, { paginate: false });
 };
 
 export const findRoleById = (roleId) => {
@@ -397,10 +393,7 @@ export const findByTokenUUID = async (tokenValue) => {
   if (!user) {
     const userToken = await elLoadBy(['uuid'], tokenValue, ENTITY_TYPE_TOKEN);
     if (!userToken || userToken.revoked === true) return undefined;
-    const users = await listThroughGetFroms(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER, {
-      paginate: false,
-      batched: false,
-    });
+    const users = await listThroughGetFrom(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
     if (users.length === 0 || users.length > 1) return undefined;
     const client = R.head(users);
     const [capabilities, markings] = await Promise.all([getCapabilities(client.id), getMarkings(client.id)]);

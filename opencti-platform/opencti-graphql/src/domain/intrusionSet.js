@@ -1,5 +1,5 @@
 import { assoc, pipe, isNil } from 'ramda';
-import { createEntity, listEntities, loadById, FROM_START, UNTIL_END, listThroughGetTos } from '../database/middleware';
+import { createEntity, listEntities, loadById, FROM_START, UNTIL_END, batchListThroughGetTo } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../schema/stixDomainObject';
@@ -24,5 +24,5 @@ export const addIntrusionSet = async (user, intrusionSet) => {
 };
 
 export const batchLocations = (intrusionSetIds) => {
-  return listThroughGetTos(intrusionSetIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
+  return batchListThroughGetTo(intrusionSetIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
 };

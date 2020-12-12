@@ -1,6 +1,5 @@
 import { assoc } from 'ramda';
-import * as R from 'ramda';
-import { createEntity, listEntities, loadById, listThroughGetTos } from '../database/middleware';
+import { createEntity, listEntities, loadById, batchLoadThroughGetTo } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
@@ -16,8 +15,7 @@ export const findAll = (args) => {
 };
 
 export const batchRegion = async (countryIds) => {
-  const batchRegions = await listThroughGetTos(countryIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
-  return batchRegions.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
+  return batchLoadThroughGetTo(countryIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const addCountry = async (user, country) => {

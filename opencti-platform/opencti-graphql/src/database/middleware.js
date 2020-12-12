@@ -106,7 +106,6 @@ export const FROM_START_STR = '1970-01-01T00:00:00.000Z';
 export const UNTIL_END = 100000000000000;
 export const UNTIL_END_STR = '5138-11-16T09:46:40.000Z';
 const dateFormat = 'YYYY-MM-DDTHH:mm:ss.SSS';
-
 export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 
 export const now = () => utcDate().toISOString();
@@ -126,17 +125,13 @@ export const escape = (chars) => {
   }
   return chars;
 };
-export const escapeString = (s) => (s ? s.replace(/\\/g, '\\\\').replace(/"/g, '\\"') : '').trim();
 // endregion
 
-// region basic commands
+// region Loader common
 export const initBatchLoader = (loader) => {
   const opts = { cache: false, maxBatchSize: MAX_BATCH_SIZE };
   return new DataLoader((ids) => loader(ids), opts);
 };
-// endregion
-
-// region Loader common
 export const querySubTypes = async ({ type }) => {
   const sortByLabel = R.sortBy(R.toLower);
   const types = schemaTypes.get(type);
@@ -158,7 +153,8 @@ export const queryAttributes = async (type) => {
 // endregion
 
 // region bulk loading method
-export const listThrough = async (sources, sourceSide, relationType, targetEntityType, opts = {}) => {
+// Listing handle
+const batchListThrough = async (sources, sourceSide, relationType, targetEntityType, opts = {}) => {
   const { paginate = true, batched = true } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
@@ -207,14 +203,23 @@ export const listThrough = async (sources, sourceSide, relationType, targetEntit
   }
   return R.flatten(elements);
 };
-export const listThroughGetFroms = async (sources, relationType, targetEntityType, opts = {}) => {
-  return listThrough(sources, 'to', relationType, targetEntityType, opts);
+export const batchListThroughGetFrom = async (sources, relationType, targetEntityType, opts = {}) => {
+  return batchListThrough(sources, 'to', relationType, targetEntityType, opts);
 };
-export const listThroughGetTos = async (sources, relationType, targetEntityType, opts = {}) => {
-  return listThrough(sources, 'from', relationType, targetEntityType, opts);
+export const listThroughGetFrom = async (sources, relationType, targetEntityType, opts = { paginate: false }) => {
+  const options = Object.assign(opts, { batched: false });
+  return batchListThrough(sources, 'to', relationType, targetEntityType, options);
 };
+export const batchListThroughGetTo = async (sources, relationType, targetEntityType, opts = {}) => {
+  return batchListThrough(sources, 'from', relationType, targetEntityType, opts);
+};
+export const listThroughGetTo = async (sources, relationType, targetEntityType, opts = { paginate: false }) => {
+  const options = Object.assign(opts, { batched: false });
+  return batchListThrough(sources, 'from', relationType, targetEntityType, options);
+};
+// Unary handle
 const loadThrough = async (sources, sourceSide, relationType, targetEntityType) => {
-  const elements = await listThrough(sources, sourceSide, relationType, targetEntityType, {
+  const elements = await batchListThrough(sources, sourceSide, relationType, targetEntityType, {
     paginate: false,
     batched: false,
   });
@@ -223,22 +228,23 @@ const loadThrough = async (sources, sourceSide, relationType, targetEntityType) 
   }
   return R.head(elements);
 };
+export const batchLoadThroughGetFrom = async (sources, relationType, targetEntityType) => {
+  const data = await batchListThroughGetFrom(sources, relationType, targetEntityType, { paginate: false });
+  return data.map((b) => b && R.head(b));
+};
 export const loadThroughGetFrom = async (sources, relationType, targetEntityType) => {
   return loadThrough(sources, 'to', relationType, targetEntityType);
+};
+export const batchLoadThroughGetTo = async (sources, relationType, targetEntityType) => {
+  const data = await batchListThroughGetTo(sources, relationType, targetEntityType, { paginate: false });
+  return data.map((b) => b && R.head(b));
 };
 export const loadThroughGetTo = async (sources, relationType, targetEntityType) => {
   return loadThrough(sources, 'from', relationType, targetEntityType);
 };
+// Standard listing
 export const listEntities = async (entityTypes, args = {}) => {
   return elPaginate(ENTITIES_INDICES, R.assoc('types', entityTypes, args));
-};
-export const loadEntity = async (entityTypes, args = {}) => {
-  const opts = Object.assign(args, { connectionFormat: false });
-  const entities = await listEntities(entityTypes, opts);
-  if (entities.length > 1) {
-    throw DatabaseError('Expect only one response', { entityTypes, args });
-  }
-  return entities && R.head(entities);
 };
 export const listRelations = async (relationshipType, args) => {
   const { relationFilter = false } = args;
@@ -320,6 +326,14 @@ export const listRelations = async (relationshipType, args) => {
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
   const paginateArgs = R.pipe(R.assoc('types', [relationToGet]), R.assoc('filters', finalFilters))(args);
   return elPaginate(RELATIONSHIPS_INDICES, paginateArgs);
+};
+export const loadEntity = async (entityTypes, args = {}) => {
+  const opts = Object.assign(args, { connectionFormat: false });
+  const entities = await listEntities(entityTypes, opts);
+  if (entities.length > 1) {
+    throw DatabaseError('Expect only one response', { entityTypes, args });
+  }
+  return entities && R.head(entities);
 };
 // endregion
 
@@ -651,106 +665,6 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
   return { key: finalKey, value: finalVal };
 };
 
-const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
-  const { key } = rawInput;
-  if (!R.includes(key, schemaTypes.getAttributes(instance.entity_type))) {
-    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${instance.entity_type}`);
-  }
-  const input = rebuildAndMergeInputFromExistingData(rawInput, instance, options);
-  if (R.isEmpty(input)) return [];
-  const updatedInputs = [input];
-  // --- 01 Get the current attribute types
-  // Adding dates elements
-  const updateOperations = [];
-  if (R.includes(key, statsDateAttributes)) {
-    const dayValue = dayFormat(R.head(input.value));
-    const monthValue = monthFormat(R.head(input.value));
-    const yearValue = yearFormat(R.head(input.value));
-    const dayInput = { key: `i_${key}_day`, value: [dayValue] };
-    updatedInputs.push(dayInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, dayInput));
-    const monthInput = { key: `i_${key}_month`, value: [monthValue] };
-    updatedInputs.push(monthInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, monthInput));
-    const yearInput = { key: `i_${key}_year`, value: [yearValue] };
-    updatedInputs.push(yearInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, yearInput));
-  }
-  // Update modified / updated_at
-  if (isStixDomainObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
-    const today = now();
-    const updatedAtInput = { key: 'updated_at', value: [today] };
-    updatedInputs.push(updatedAtInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput));
-    const modifiedAtInput = { key: 'modified', value: [today] };
-    updatedInputs.push(modifiedAtInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput));
-  }
-  // Update created
-  if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
-    const createdInput = { key: 'created', value: input.value };
-    updatedInputs.push(createdInput);
-    updateOperations.push(innerUpdateAttribute(user, instance, createdInput));
-  }
-  await Promise.all(updateOperations);
-  return updatedInputs;
-};
-export const updateAttributeRaw = async (user, instance, inputs, options = {}) => {
-  const elements = Array.isArray(inputs) ? inputs : [inputs];
-  const updatedInputs = [];
-  const impactedInputs = [];
-  const instanceType = instance.entity_type;
-  // Update all needed attributes
-  for (let index = 0; index < elements.length; index += 1) {
-    const input = elements[index];
-    // eslint-disable-next-line no-await-in-loop
-    const ins = await innerUpdateAttribute(user, instance, input, options);
-    if (ins.length > 0) {
-      updatedInputs.push(input);
-      impactedInputs.push(...ins);
-    }
-    // If named entity name updated, modify the aliases ids
-    if (isStixObjectAliased(instanceType) && (input.key === NAME_FIELD || input.key === X_MITRE_ID_FIELD)) {
-      const name = R.head(input.value);
-      const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-      const aliasesId = generateAliasesId(aliases);
-      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      // eslint-disable-next-line no-await-in-loop
-      const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
-      impactedInputs.push(...aliasIns);
-    }
-    // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
-    const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
-    const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
-    if (isAliasesImpacted) {
-      const aliasesId = generateAliasesId([instance.name, ...input.value]);
-      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      // eslint-disable-next-line no-await-in-loop
-      const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
-      if (aliasIns.length > 0) {
-        impactedInputs.push(...aliasIns);
-      }
-    }
-  }
-  // If update is part of the key, update the standard_id
-  const keys = R.map((t) => t.key, impactedInputs);
-  if (isFieldContributingToStandardId(instance, keys)) {
-    const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
-    const standardId = generateStandardId(instanceType, updatedInstance);
-    const standardInput = { key: ID_STANDARD, value: [standardId] };
-    const ins = await innerUpdateAttribute(user, instance, standardInput, options);
-    if (ins.length > 0) {
-      impactedInputs.push(...ins);
-    }
-  }
-  // Return fully updated instance
-  return {
-    updatedInputs, // Sourced inputs for event stream
-    impactedInputs, // All inputs with dependencies
-    updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
-  };
-};
-
 const targetedRelations = (entities, direction) => {
   return R.flatten(
     R.map((s) => {
@@ -914,17 +828,125 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     await deleteElementById(user, element.internal_id, element.entity_type);
   }
 };
-
 export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {}) => {
-  // 01. Execute merge
+  // - TRANSACTION PART
   await mergeEntitiesRaw(user, targetEntity, sourceEntities, opts);
   await storeMergeEvent(user, targetEntity, sourceEntities);
-  // 04. Return entity
+  // - END TRANSACTION
   return loadById(targetEntity.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
   );
 };
 
+const transformPathToInput = (patch) => {
+  return R.pipe(
+    R.toPairs,
+    R.map((t) => {
+      const val = R.last(t);
+      return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
+    })
+  )(patch);
+};
+const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
+  const { key } = rawInput;
+  if (!R.includes(key, schemaTypes.getAttributes(instance.entity_type))) {
+    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${instance.entity_type}`);
+  }
+  const input = rebuildAndMergeInputFromExistingData(rawInput, instance, options);
+  if (R.isEmpty(input)) return [];
+  const updatedInputs = [input];
+  // --- 01 Get the current attribute types
+  // Adding dates elements
+  const updateOperations = [];
+  if (R.includes(key, statsDateAttributes)) {
+    const dayValue = dayFormat(R.head(input.value));
+    const monthValue = monthFormat(R.head(input.value));
+    const yearValue = yearFormat(R.head(input.value));
+    const dayInput = { key: `i_${key}_day`, value: [dayValue] };
+    updatedInputs.push(dayInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, dayInput));
+    const monthInput = { key: `i_${key}_month`, value: [monthValue] };
+    updatedInputs.push(monthInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, monthInput));
+    const yearInput = { key: `i_${key}_year`, value: [yearValue] };
+    updatedInputs.push(yearInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, yearInput));
+  }
+  // Update modified / updated_at
+  if (isStixDomainObject(instance.entity_type) && key !== 'modified' && key !== 'updated_at') {
+    const today = now();
+    const updatedAtInput = { key: 'updated_at', value: [today] };
+    updatedInputs.push(updatedAtInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, updatedAtInput));
+    const modifiedAtInput = { key: 'modified', value: [today] };
+    updatedInputs.push(modifiedAtInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, modifiedAtInput));
+  }
+  // Update created
+  if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
+    const createdInput = { key: 'created', value: input.value };
+    updatedInputs.push(createdInput);
+    updateOperations.push(innerUpdateAttribute(user, instance, createdInput));
+  }
+  await Promise.all(updateOperations);
+  return updatedInputs;
+};
+
+export const updateAttributeRaw = async (user, instance, inputs, options = {}) => {
+  const elements = Array.isArray(inputs) ? inputs : [inputs];
+  const updatedInputs = [];
+  const impactedInputs = [];
+  const instanceType = instance.entity_type;
+  // Update all needed attributes
+  for (let index = 0; index < elements.length; index += 1) {
+    const input = elements[index];
+    // eslint-disable-next-line no-await-in-loop
+    const ins = await innerUpdateAttribute(user, instance, input, options);
+    if (ins.length > 0) {
+      updatedInputs.push(input);
+      impactedInputs.push(...ins);
+    }
+    // If named entity name updated, modify the aliases ids
+    if (isStixObjectAliased(instanceType) && (input.key === NAME_FIELD || input.key === X_MITRE_ID_FIELD)) {
+      const name = R.head(input.value);
+      const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
+      const aliasesId = generateAliasesId(aliases);
+      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+      // eslint-disable-next-line no-await-in-loop
+      const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
+      impactedInputs.push(...aliasIns);
+    }
+    // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
+    const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
+    const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
+    if (isAliasesImpacted) {
+      const aliasesId = generateAliasesId([instance.name, ...input.value]);
+      const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
+      // eslint-disable-next-line no-await-in-loop
+      const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
+      if (aliasIns.length > 0) {
+        impactedInputs.push(...aliasIns);
+      }
+    }
+  }
+  // If update is part of the key, update the standard_id
+  const keys = R.map((t) => t.key, impactedInputs);
+  if (isFieldContributingToStandardId(instance, keys)) {
+    const updatedInstance = mergeInstanceWithInputs(instance, impactedInputs);
+    const standardId = generateStandardId(instanceType, updatedInstance);
+    const standardInput = { key: ID_STANDARD, value: [standardId] };
+    const ins = await innerUpdateAttribute(user, instance, standardInput, options);
+    if (ins.length > 0) {
+      impactedInputs.push(...ins);
+    }
+  }
+  // Return fully updated instance
+  return {
+    updatedInputs, // Sourced inputs for event stream
+    impactedInputs, // All inputs with dependencies
+    updatedInstance: mergeInstanceWithInputs(instance, impactedInputs),
+  };
+};
 export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const { operation = UPDATE_OPERATION_REPLACE } = options;
@@ -989,17 +1011,15 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     }
     // noinspection UnnecessaryLocalVariableJS
     const data = await updateAttributeRaw(user, instance, inputs, options);
+    const { updatedInstance, impactedInputs } = data;
+    if (impactedInputs.length > 0) {
+      const updateAsInstance = partialInstanceWithInputs(instance, impactedInputs);
+      await elUpdateElement(updateAsInstance);
+    }
     // Only push event in stream if modifications really happens
     if (data.updatedInputs.length > 0) {
       const updatedData = updatedInputsToData(data.updatedInputs);
       await storeUpdateEvent(user, instance, [{ [operation]: updatedData }]);
-    }
-    const { updatedInstance, impactedInputs } = data;
-    // region Update elasticsearch
-    // Elastic update with partial instance to prevent data override
-    if (impactedInputs.length > 0) {
-      const updateAsInstance = partialInstanceWithInputs(instance, impactedInputs);
-      await elUpdateElement(updateAsInstance);
     }
     // Return updated element after waiting for it.
     return updatedInstance;
@@ -1007,15 +1027,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (lock) await lock.unlock();
   }
 };
-const transformPathToInput = (patch) => {
-  return R.pipe(
-    R.toPairs,
-    R.map((t) => {
-      const val = R.last(t);
-      return { key: R.head(t), value: Array.isArray(val) ? val : [val] };
-    })
-  )(patch);
-};
+
 export const patchAttributeRaw = async (user, instance, patch, options = {}) => {
   const inputs = transformPathToInput(patch);
   return updateAttributeRaw(user, instance, inputs, options);
@@ -1400,8 +1412,10 @@ export const createRelation = async (user, input) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(lockIds);
-    // noinspection UnnecessaryLocalVariableJS
+    // - TRANSACTION PART
     const dataRel = await createRelationRaw(user, resolvedInput);
+    // Index the created element
+    await indexCreatedElement(dataRel);
     // Push the input in the stream
     if (dataRel.type === TRX_CREATION) {
       // If new marking, redispatch an entity creation
@@ -1424,8 +1438,7 @@ export const createRelation = async (user, input) => {
       // If upsert with new data
       await storeUpdateEvent(user, dataRel.element, dataRel.streamInputs);
     }
-    // Index the created element
-    await indexCreatedElement(dataRel);
+    // - TRANSACTION END
     return dataRel.element;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
@@ -1587,7 +1600,10 @@ export const createEntity = async (user, input, type) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
+    // - TRANSACTION PART
     const dataEntity = await createEntityRaw(user, standardId, participantIds, resolvedInput, type);
+    // Index the created element
+    await indexCreatedElement(dataEntity);
     // Push the input in the stream
     if (dataEntity.type === TRX_CREATION) {
       await storeCreateEvent(user, dataEntity.element, resolvedInput);
@@ -1595,8 +1611,7 @@ export const createEntity = async (user, input, type) => {
       // If upsert with new data
       await storeUpdateEvent(user, dataEntity.element, dataEntity.streamInputs);
     }
-    // Index the created element
-    await indexCreatedElement(dataEntity);
+    // - TRANSACTION END
     // Return created element after waiting for it.
     return dataEntity.element;
   } catch (err) {

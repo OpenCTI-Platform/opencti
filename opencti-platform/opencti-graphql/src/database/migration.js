@@ -5,7 +5,7 @@ import { logger } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
-import { createEntity, createRelation, loadEntity, listThroughGetTos, patchAttribute } from './middleware';
+import { createEntity, createRelation, loadEntity, patchAttribute, listThroughGetTo } from './middleware';
 import { SYSTEM_USER } from '../domain/user';
 
 const normalizeMigrationName = (rawName) => {
@@ -31,12 +31,8 @@ const migrationStorage = {
   async load(fn) {
     // Get current status of migrations in Grakn
     const migration = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
-    const migrations = await listThroughGetTos(
-      migration.internal_id,
-      RELATION_MIGRATES,
-      ENTITY_TYPE_MIGRATION_REFERENCE,
-      { paginate: false, batched: false }
-    );
+    const migrationId = migration.internal_id;
+    const migrations = await listThroughGetTo(migrationId, RELATION_MIGRATES, ENTITY_TYPE_MIGRATION_REFERENCE);
     logger.info(`[MIGRATION] Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.lastRun,

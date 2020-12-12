@@ -11,7 +11,7 @@ import {
   distributionEntities,
   escape,
   listEntities,
-  listThroughGetTos,
+  batchListThroughGetTo,
   loadById,
   timeSeriesEntities,
   updateAttribute,
@@ -103,7 +103,7 @@ export const stixCyberObservableAskEnrichment = async (user, observableId, conne
 };
 
 export const batchIndicators = (stixCyberObservableIds) => {
-  return listThroughGetTos(stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+  return batchListThroughGetTo(stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
 export const observableValue = (stixCyberObservable) => {

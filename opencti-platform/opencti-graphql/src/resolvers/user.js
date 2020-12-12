@@ -8,8 +8,8 @@ import {
   findRoles,
   findRoleById,
   getCapabilities,
-  getRoleCapabilities,
-  getRoles,
+  batchRoleCapabilities,
+  batchRoles,
   logout,
   meEditField,
   setAuthenticationCookie,
@@ -40,7 +40,8 @@ import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { initBatchLoader } from '../database/middleware';
 
 const groupsLoader = initBatchLoader(batchGroups);
-const rolesLoader = initBatchLoader(getRoles);
+const rolesLoader = initBatchLoader(batchRoles);
+const rolesCapabilitiesLoader = initBatchLoader(batchRoleCapabilities);
 
 const userResolvers = {
   Query: {
@@ -61,7 +62,7 @@ const userResolvers = {
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
-    capabilities: (role) => getRoleCapabilities(role.id),
+    capabilities: (role) => rolesCapabilitiesLoader.load(role.id),
   },
   Mutation: {
     token: async (_, { input }, context) => {

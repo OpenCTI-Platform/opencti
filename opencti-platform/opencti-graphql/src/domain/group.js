@@ -5,8 +5,8 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listEntities,
-  listThroughGetFroms,
-  listThroughGetTos,
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
   loadById,
   updateAttribute,
 } from '../database/middleware';
@@ -27,12 +27,12 @@ export const findAll = (args) => {
 };
 
 export const batchMembers = async (groupIds) => {
-  return listThroughGetFroms(groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+  return batchListThroughGetFrom(groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
 export const batchMarkingDefinitions = async (groupIds) => {
   const opts = { paginate: false };
-  return listThroughGetTos(groupIsd, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+  return batchListThroughGetTo(groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
 };
 
 export const addGroup = async (user, group) => {

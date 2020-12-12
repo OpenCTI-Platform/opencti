@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listThroughGetTos, loadById } from '../database/middleware';
+import { createEntity, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
@@ -19,5 +19,5 @@ export const addCourseOfAction = async (user, courseOfAction) => {
 };
 
 export const batchAttackPatterns = async (courseOfActionIds) => {
-  return listThroughGetTos(courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+  return batchListThroughGetTo(courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };

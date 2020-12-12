@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listThroughGetFroms, loadById } from '../database/middleware';
+import { createEntity, listEntities, batchListThroughGetFrom, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/stixDomainObject';
@@ -19,5 +19,5 @@ export const addThreatActor = async (user, threatActor) => {
 };
 
 export const batchLocations = (threatActorIds) => {
-  return listThroughGetFroms(threatActorIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
+  return batchListThroughGetFrom(threatActorIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
 };

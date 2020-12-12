@@ -1,5 +1,12 @@
 import { assoc } from 'ramda';
-import { createEntity, listEntities, listThroughGetFroms, listThroughGetTos, loadById } from '../database/middleware';
+import {
+  createEntity,
+  listEntities,
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
+  loadById,
+  batchLoadThroughGetTo,
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
@@ -15,20 +22,20 @@ export const findAll = (args) => {
 };
 
 export const batchParentRegions = (regionIds) => {
-  return listThroughGetTos(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return batchListThroughGetTo(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const batchSubRegions = (regionIds) => {
-  return listThroughGetFroms(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return batchListThroughGetFrom(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const batchCountries = (regionIds) => {
-  return listThroughGetFroms(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
+  return batchListThroughGetFrom(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
 export const batchIsSubRegion = async (regionIds) => {
-  const batchRegions = await listThroughGetTos(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
-  return batchRegions.map((b) => b.edges.length > 0);
+  const batchRegions = await batchLoadThroughGetTo(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return batchRegions.map((b) => b !== undefined);
 };
 
 export const addRegion = async (user, region) => {

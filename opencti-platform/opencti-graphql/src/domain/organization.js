@@ -1,5 +1,5 @@
 import { assoc } from 'ramda';
-import { createEntity, listEntities, listThroughGetTos, loadById } from '../database/middleware';
+import { createEntity, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
@@ -15,7 +15,7 @@ export const findAll = (args) => {
 };
 
 export const batchSectors = (organizationIds) => {
-  return listThroughGetTos(organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return batchListThroughGetTo(organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const addOrganization = async (user, organization) => {
