@@ -265,7 +265,6 @@ class StixSightingRelationship:
         :param firstSeenStop: the first_seen date stop filter
         :param lastSeenStart: the last_seen date start filter
         :param lastSeenStop: the last_seen date stop filter
-        :param inferred: includes inferred relations
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
         :return List of stix_sighting objects
@@ -281,7 +280,6 @@ class StixSightingRelationship:
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
         filters = kwargs.get("filters", [])
-        inferred = kwargs.get("inferred", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
@@ -301,8 +299,8 @@ class StixSightingRelationship:
         )
         query = (
             """
-                query StixSightingRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $filters: [StixSightingRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode) {
-                    stixSightingRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixSightingRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $filters: [StixSightingRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode) {
+                    stixSightingRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -333,7 +331,6 @@ class StixSightingRelationship:
                 "lastSeenStart": last_seen_start,
                 "lastSeenStop": last_seen_stop,
                 "filters": filters,
-                "inferred": inferred,
                 "first": first,
                 "after": after,
                 "orderBy": order_by,
@@ -354,7 +351,6 @@ class StixSightingRelationship:
         :param firstSeenStop: the first_seen date stop filter
         :param lastSeenStart: the last_seen date start filter
         :param lastSeenStop: the last_seen date stop filter
-        :param inferred: includes inferred relations
         :return stix_sighting object
     """
 
@@ -366,7 +362,6 @@ class StixSightingRelationship:
         first_seen_stop = kwargs.get("firstSeenStop", None)
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
-        inferred = kwargs.get("inferred", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading stix_sighting {" + id + "}.")
@@ -397,7 +392,6 @@ class StixSightingRelationship:
                 firstSeenStop=first_seen_stop,
                 lastSeenStart=last_seen_start,
                 lastSeenStop=last_seen_stop,
-                inferred=inferred,
             )
             if len(result) > 0:
                 return result[0]

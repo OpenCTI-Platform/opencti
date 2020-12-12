@@ -268,7 +268,6 @@ class StixCoreRelationship:
         :param startTimeStop: the start_time date stop filter
         :param stopTimeStart: the stop_time date start filter
         :param stopTimeStop: the stop_time date stop filter
-        :param inferred: includes inferred relations
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
         :return List of stix_core_relationship objects
@@ -285,7 +284,6 @@ class StixCoreRelationship:
         stop_time_start = kwargs.get("stopTimeStart", None)
         stop_time_stop = kwargs.get("stopTimeStop", None)
         filters = kwargs.get("filters", [])
-        inferred = kwargs.get("inferred", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
@@ -307,8 +305,8 @@ class StixCoreRelationship:
         )
         query = (
             """
-                query StixCoreRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $inferred: Boolean, $filters: [StixCoreRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
-                    stixCoreRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, inferred: $inferred, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixCoreRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixCoreRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
+                    stixCoreRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -340,7 +338,6 @@ class StixCoreRelationship:
                 "stopTimeStart": stop_time_start,
                 "stopTimeStop": stop_time_stop,
                 "filters": filters,
-                "inferred": inferred,
                 "first": first,
                 "after": after,
                 "orderBy": order_by,
@@ -362,7 +359,6 @@ class StixCoreRelationship:
         :param startTimeStop: the start_time date stop filter
         :param stopTimeStart: the stop_time date start filter
         :param stopTimeStop: the stop_time date stop filter
-        :param inferred: includes inferred relations
         :return stix_core_relationship object
     """
 
@@ -375,7 +371,6 @@ class StixCoreRelationship:
         start_time_stop = kwargs.get("startTimeStop", None)
         stop_time_start = kwargs.get("stopTimeStart", None)
         stop_time_stop = kwargs.get("stopTimeStop", None)
-        inferred = kwargs.get("inferred", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading stix_core_relationship {" + id + "}.")
@@ -407,7 +402,6 @@ class StixCoreRelationship:
                 startTimeStop=start_time_stop,
                 stopTimeStart=stop_time_start,
                 stopTimeStop=stop_time_stop,
-                inferred=inferred,
             )
             if len(result) > 0:
                 return result[0]

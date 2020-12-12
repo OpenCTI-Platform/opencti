@@ -97,7 +97,6 @@ class StixCyberObservableRelation:
         :param firstSeenStop: the first_seen date stop filter
         :param lastSeenStart: the last_seen date start filter
         :param lastSeenStop: the last_seen date stop filter
-        :param inferred: includes inferred relations
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
         :return List of stix_observable_relation objects
@@ -113,7 +112,6 @@ class StixCyberObservableRelation:
         first_seen_stop = kwargs.get("firstSeenStop", None)
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
-        inferred = kwargs.get("inferred", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
@@ -135,8 +133,8 @@ class StixCyberObservableRelation:
         )
         query = (
             """
-            query StixCyberObservableRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $inferred: Boolean, $first: Int, $after: ID, $orderBy: StixCyberObservableRelationsOrdering, $orderMode: OrderingMode) {
-                StixCyberObservableRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, inferred: $inferred, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query StixCyberObservableRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $first: Int, $after: ID, $orderBy: StixCyberObservableRelationsOrdering, $orderMode: OrderingMode) {
+                StixCyberObservableRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -168,7 +166,6 @@ class StixCyberObservableRelation:
                 "firstSeenStop": first_seen_stop,
                 "lastSeenStart": last_seen_start,
                 "lastSeenStop": last_seen_stop,
-                "inferred": inferred,
                 "first": first,
                 "after": after,
                 "orderBy": order_by,
@@ -191,7 +188,6 @@ class StixCyberObservableRelation:
         :param firstSeenStop: the first_seen date stop filter
         :param lastSeenStart: the last_seen date start filter
         :param lastSeenStop: the last_seen date stop filter
-        :param inferred: includes inferred relations
         :return stix_observable_relation object
     """
 
@@ -204,7 +200,6 @@ class StixCyberObservableRelation:
         first_seen_stop = kwargs.get("firstSeenStop", None)
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
-        inferred = kwargs.get("inferred", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
             self.opencti.log("info", "Reading stix_observable_relation {" + id + "}.")
@@ -236,7 +231,6 @@ class StixCyberObservableRelation:
                 firstSeenStop=first_seen_stop,
                 lastSeenStart=last_seen_start,
                 lastSeenStop=last_seen_stop,
-                inferred=inferred,
             )
             if len(result) > 0:
                 return result[0]
