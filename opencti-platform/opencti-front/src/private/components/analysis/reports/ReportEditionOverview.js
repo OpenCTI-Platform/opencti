@@ -245,7 +245,7 @@ class ReportEditionOverviewComponent extends Component {
       <div>
         <QueryRenderer
           query={attributesQuery}
-          variables={{ type: 'report_types' }}
+          variables={{ key: 'report_types' }}
           render={({ props }) => {
             if (props && props.attributes) {
               const reportTypesEdges = props.attributes.edges;

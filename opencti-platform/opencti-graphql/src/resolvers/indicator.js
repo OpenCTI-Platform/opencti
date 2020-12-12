@@ -1,4 +1,4 @@
-import { addIndicator, findAll, findById, observables } from '../domain/indicator';
+import { addIndicator, findAll, findById, batchObservables } from '../domain/indicator';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -10,15 +10,14 @@ import {
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const batchObservablesLoader = initBatchLoader(batchObservables);
 
 const indicatorResolvers = {
   Query: {
     indicator: (_, { id }) => findById(id),
     indicators: (_, args) => findAll(args),
-  },
-  IndicatorsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   IndicatorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
@@ -28,7 +27,7 @@ const indicatorResolvers = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
-    observables: (indicator) => observables(indicator.id),
+    observables: (indicator) => batchObservablesLoader.load(indicator.id),
     indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {

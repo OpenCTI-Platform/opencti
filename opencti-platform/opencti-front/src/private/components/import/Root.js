@@ -5,21 +5,21 @@ import Import, { ImportQuery } from './Import';
 import Loader from '../../../components/Loader';
 
 const RootImport = () => (
-      <QueryRenderer
-        query={ImportQuery}
-        variables={{}}
-        render={({ props }) => {
-          if (props) {
-            return (
-              <Import
-                connectorsImport={props.connectorsForImport}
-                importFiles={props.importFiles}
-              />
-            );
-          }
-          return <Loader />;
-        }}
-      />
+  <QueryRenderer
+    query={ImportQuery}
+    variables={{}}
+    render={({ props }) => {
+      if (props) {
+        return (
+          <Import
+            connectorsImport={props.connectorsForImport}
+            importFiles={props.importFiles}
+          />
+        );
+      }
+      return <Loader />;
+    }}
+  />
 );
 
 RootImport.propTypes = {

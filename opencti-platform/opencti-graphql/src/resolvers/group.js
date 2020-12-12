@@ -4,18 +4,22 @@ import {
   groupDelete,
   findAll,
   findById,
-  members,
+  batchMarkingDefinitions,
+  batchMembers,
   groupEditField,
   groupDeleteRelation,
   groupAddRelation,
   groupCleanContext,
   groupEditContext,
-  markingDefinitions,
 } from '../domain/group';
 import { fetchEditContext, pubsub } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
+import { initBatchLoader } from '../database/middleware';
+
+const markingsLoader = initBatchLoader(batchMarkingDefinitions);
+const membersLoader = initBatchLoader(batchMembers);
 
 const groupResolvers = {
   Query: {
@@ -23,8 +27,8 @@ const groupResolvers = {
     groups: (_, args) => findAll(args),
   },
   Group: {
-    allowed_marking: (stixCoreObject) => markingDefinitions(stixCoreObject.id),
-    members: (group) => members(group.id),
+    allowed_marking: (stixCoreObject) => markingsLoader.load(stixCoreObject.id),
+    members: (group) => membersLoader.load(group.id),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {

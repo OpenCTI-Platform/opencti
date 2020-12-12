@@ -4,7 +4,7 @@ import { pushToConnector } from '../database/rabbitmq';
 import { connectorsForImport } from './connector';
 import { createWork } from './work';
 import { logger } from '../config/conf';
-import { internalLoadById } from '../database/grakn';
+import { internalLoadById } from '../database/middleware';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { UnsupportedError } from '../config/errors';
 

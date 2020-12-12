@@ -2,7 +2,7 @@ import * as Minio from 'minio';
 import { assoc, concat, map, sort } from 'ramda';
 import querystring from 'querystring';
 import conf, { logger } from '../config/conf';
-import { sinceNowInMinutes } from './grakn';
+import { sinceNowInMinutes } from './middleware';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWork } from '../domain/work';
 

@@ -3,7 +3,7 @@ import { version as uuidVersion } from 'uuid';
 import uuidTime from 'uuid-time';
 import { FunctionalError } from '../config/errors';
 import { isStixDomainObjectIdentity, isStixDomainObjectLocation } from '../schema/stixDomainObject';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservableObject';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../schema/stixCyberObservable';
 import {
   isStixInternalMetaRelationship,
   isStixMetaRelationship,

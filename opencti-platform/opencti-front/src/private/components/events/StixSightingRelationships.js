@@ -36,7 +36,6 @@ class StixSightingRelationships extends Component {
       sortBy: 'first_seen',
       orderAsc: true,
       searchTerm: '',
-      inferred: false,
       view: 'lines',
     };
   }
@@ -120,11 +119,10 @@ class StixSightingRelationships extends Component {
   render() {
     const { classes } = this.props;
     const {
-      view, searchTerm, sortBy, orderAsc, inferred,
+      view, searchTerm, sortBy, orderAsc,
     } = this.state;
     const paginationOptions = {
       fromRole: 'stix-sighting-relationship_from',
-      inferred: inferred && sortBy === null ? inferred : false,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',

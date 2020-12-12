@@ -1,5 +1,5 @@
 import { pipe, assoc, dissoc, filter } from 'ramda';
-import { createEntity, listEntities, loadById } from '../database/grakn';
+import { createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';
@@ -17,7 +17,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_IDENTITY);
   }
-  return listEntities(types, ['name', 'description', 'x_opencti_aliases'], args);
+  return listEntities(types, args);
 };
 
 export const addIdentity = async (user, identity) => {

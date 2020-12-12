@@ -4,10 +4,6 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
-import Drawer from '@material-ui/core/Drawer';
-import Grid from '@material-ui/core/Grid';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -40,15 +36,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
       orderAsc: false,
       searchTerm: '',
       view: 'lines',
-      inferred: false,
     };
-  }
-
-  handleChangeInferred() {
-    this.setState({
-      inferred: !this.state.inferred,
-      sortBy: !this.state.inferred ? null : this.state.sortBy,
-    });
   }
 
   handleSort(field, orderAsc) {
@@ -124,7 +112,7 @@ class StixCyberObservableKnowledgeEntities extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm, inferred,
+      view, sortBy, orderAsc, searchTerm,
     } = this.state;
     const {
       classes,
@@ -133,7 +121,6 @@ class StixCyberObservableKnowledgeEntities extends Component {
       relationship_type: relationshipType,
     } = this.props;
     const paginationOptions = {
-      inferred,
       fromId: entityId,
       relationship_type: relationshipType,
       search: searchTerm,
@@ -142,27 +129,6 @@ class StixCyberObservableKnowledgeEntities extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <Drawer
-          anchor="bottom"
-          variant="permanent"
-          classes={{ paper: classes.bottomNav }}
-        >
-          <Grid container={true} spacing={1}>
-            <Grid item={true} xs="auto">
-              <FormControlLabel
-                style={{ paddingTop: 5, marginRight: 15 }}
-                control={
-                  <Switch
-                    checked={inferred}
-                    onChange={this.handleChangeInferred.bind(this)}
-                    color="primary"
-                  />
-                }
-                label={t('Inferences')}
-              />
-            </Grid>
-          </Grid>
-        </Drawer>
         <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
           {t('Relations')}
         </Typography>

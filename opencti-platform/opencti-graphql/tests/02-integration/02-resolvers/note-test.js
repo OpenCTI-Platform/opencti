@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { now } from '../../../src/database/grakn';
+import { now } from '../../../src/database/middleware';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
@@ -79,6 +79,11 @@ const DISTRIBUTION_QUERY = gql`
     notesDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit, order: $order) {
       label
       value
+      entity {
+        ... on Identity {
+          name
+        }
+      }
     }
   }
 `;
@@ -292,7 +297,7 @@ describe('Note resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        field: 'created_by_ref.name',
+        field: 'created-by.name',
         operation: 'count',
       },
     });
@@ -303,11 +308,11 @@ describe('Note resolver standard behavior', () => {
       query: DISTRIBUTION_QUERY,
       variables: {
         objectId: datasetMalwareInternalId,
-        field: 'created-by.name',
+        field: 'created-by.internal_id',
         operation: 'count',
       },
     });
-    expect(queryResult.data.notesDistribution[0].label).toEqual('ANSSI');
+    expect(queryResult.data.notesDistribution[0].entity.name).toEqual('ANSSI');
     expect(queryResult.data.notesDistribution[0].value).toEqual(1);
   });
   it('should update note', async () => {

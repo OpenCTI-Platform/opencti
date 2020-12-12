@@ -1,5 +1,5 @@
 import validator from 'validator';
-import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from './stixCyberObservableObject';
+import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from './stixCyberObservable';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,

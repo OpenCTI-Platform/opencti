@@ -290,11 +290,17 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
   description: Yup.string(),
 });
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+const sharedUpdater = (
+  store,
+  userId,
+  paginationOptions,
+  newEdge,
+  connectionKey = null,
+) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixCoreRelationships',
+    connectionKey || 'Pagination_stixCoreRelationships',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
@@ -320,7 +326,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
   }
 
   onSubmit(values, { setSubmitting, resetForm }) {
-    const { isRelationReversed, entityId } = this.props;
+    const { isRelationReversed, entityId, connectionKey } = this.props;
     const { targetEntity } = this.state;
     const fromEntityId = isRelationReversed ? targetEntity.id : entityId;
     const toEntityId = isRelationReversed ? entityId : targetEntity.id;
@@ -347,13 +353,19 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       updater: (store) => {
         if (typeof this.props.onCreate !== 'function') {
           const payload = store.getRootField('stixCoreRelationshipAdd');
-          const newEdge = payload.setLinkedRecord(payload, 'node');
+          const newEdge = payload.setLinkedRecord(
+            connectionKey
+              ? payload.getLinkedRecord(isRelationReversed ? 'from' : 'to')
+              : payload,
+            'node',
+          );
           const container = store.getRoot();
           sharedUpdater(
             store,
             container.getDataID(),
             this.props.paginationOptions,
             newEdge,
+            connectionKey,
           );
         }
       },
@@ -862,6 +874,8 @@ StixCoreRelationshipCreationFromEntity.propTypes = {
   onCreate: PropTypes.func,
   paddingRight: PropTypes.number,
   openExports: PropTypes.bool,
+  connectionKey: PropTypes.string,
+  connectionIsFrom: PropTypes.bool,
 };
 
 export default compose(

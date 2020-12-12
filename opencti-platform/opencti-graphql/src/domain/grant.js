@@ -1,5 +1,5 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
-import { createEntity, createRelation, deleteElementById } from '../database/grakn';
+import { createEntity, createRelation, deleteElementById } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';

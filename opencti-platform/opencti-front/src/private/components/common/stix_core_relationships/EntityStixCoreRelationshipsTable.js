@@ -50,7 +50,6 @@ const entityStixCoreRelationshipsTableStixCoreRelationshipDistributionQuery = gr
     $fromId: String!
     $toTypes: [String]
     $relationship_type: String
-    $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
     $field: String!
@@ -60,7 +59,6 @@ const entityStixCoreRelationshipsTableStixCoreRelationshipDistributionQuery = gr
       fromId: $fromId
       toTypes: $toTypes
       relationship_type: $relationship_type
-      inferred: $inferred
       startDate: $startDate
       endDate: $endDate
       field: $field
@@ -82,14 +80,12 @@ class EntityStixCoreRelationshipsTable extends Component {
       // eslint-disable-next-line camelcase
       relationship_type,
       field,
-      inferred,
       startDate,
       endDate,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
-      inferred: inferred || false,
       startDate: startDate || null,
       endDate: endDate || null,
       relationship_type,
@@ -230,7 +226,6 @@ EntityStixCoreRelationshipsTable.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
   entityType: PropTypes.string,
-  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   field: PropTypes.string,

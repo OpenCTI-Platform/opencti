@@ -53,7 +53,6 @@ class CampaignsTimeseries extends Component {
 CampaignsTimeseries.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
-  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   classes: PropTypes.object,

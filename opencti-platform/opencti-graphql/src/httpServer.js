@@ -22,7 +22,7 @@ export const listenServer = async () => {
       const serverPromise = createHttpServer();
       serverPromise.then(({ httpServer, seeMiddleware }) => {
         httpServer.on('close', () => {
-          seeMiddleware.shutdown();
+          if (seeMiddleware) seeMiddleware.shutdown();
         });
         httpServer.listen(PORT, () => {
           logger.info(`[OPENCTI] Servers ready on port ${PORT}`);

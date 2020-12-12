@@ -1,5 +1,5 @@
 import { assoc } from 'ramda';
-import { createEntity, escapeString, listEntities, load, loadById } from '../database/grakn';
+import { batchLoadThroughGetTo, createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY } from '../schema/stixDomainObject';
@@ -11,17 +11,11 @@ export const findById = (cityId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_CITY], ['name', 'description', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_LOCATION_CITY], args);
 };
 
-export const country = async (cityId) => {
-  const element = await load(
-    `match $to isa ${ENTITY_TYPE_LOCATION_COUNTRY}; 
-    $rel(${RELATION_LOCATED_AT}_from:$from, ${RELATION_LOCATED_AT}_to:$to) isa ${RELATION_LOCATED_AT};
-    $from has internal_id "${escapeString(cityId)}"; get;`,
-    ['to']
-  );
-  return element && element.to;
+export const batchCountry = async (cityIds) => {
+  return batchLoadThroughGetTo(cityIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
 export const addCity = async (user, city) => {

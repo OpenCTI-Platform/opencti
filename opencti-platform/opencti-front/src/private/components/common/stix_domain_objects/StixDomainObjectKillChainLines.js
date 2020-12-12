@@ -188,15 +188,12 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                                 </span>
                               }
                               secondary={
-                                // eslint-disable-next-line no-nested-ternary
                                 attackPattern.description
                                 && attackPattern.description.length > 0 ? (
                                   <Markdown
                                     className="markdown"
                                     source={attackPattern.description}
                                   />
-                                  ) : attackPattern.inferred ? (
-                                  <i>{t('This relation is inferred')}</i>
                                   ) : (
                                     t('No description of this usage')
                                   )
@@ -219,12 +216,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                             ))}
                             <ItemYears
                               variant="inList"
-                              years={
-                                attackPattern.inferred
-                                  ? t('Inferred')
-                                  : attackPattern.years
-                              }
-                              disabled={attackPattern.inferred}
+                              years={attackPattern.years}
                             />
                             <ListItemSecondaryAction>
                               <StixCoreRelationshipPopover
@@ -272,7 +264,6 @@ export const stixDomainObjectKillChainLinesStixCoreRelationshipsQuery = graphql`
     $fromId: String
     $toTypes: [String]
     $relationship_type: String
-    $inferred: Boolean
     $first: Int
   ) {
     ...StixDomainObjectKillChainLines_data
@@ -288,7 +279,6 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
           fromId: $fromId
           toTypes: $toTypes
           relationship_type: $relationship_type
-          inferred: $inferred
           first: $first
         ) {
           edges {
@@ -297,7 +287,6 @@ const StixDomainObjectKillChainLines = createRefetchContainer(
               description
               start_time
               stop_time
-              inferred
               to {
                 ... on BasicObject {
                   id

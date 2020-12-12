@@ -1,4 +1,4 @@
-import { createEntity, listEntities, loadById } from '../database/grakn';
+import { createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_TOOL } from '../schema/stixDomainObject';
@@ -9,7 +9,7 @@ export const findById = (toolId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_TOOL], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_TOOL], args);
 };
 
 export const addTool = async (user, tool) => {

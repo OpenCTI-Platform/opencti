@@ -224,7 +224,7 @@ export const addExternalReferencesLinesQuery = graphql`
     $cursor: ID
   ) {
     ...AddExternalReferencesLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -239,7 +239,7 @@ const AddExternalReferencesLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         externalReferences(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_externalReferences") {
+          @connection(key: "Pagination_externalReferences") {
           edges {
             node {
               id

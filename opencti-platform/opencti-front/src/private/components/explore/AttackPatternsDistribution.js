@@ -14,11 +14,7 @@ const styles = () => ({
 class AttackPatternsDistribution extends Component {
   render() {
     const {
-      configuration,
-      handleOpenConfig,
-      inferred,
-      startDate,
-      endDate,
+      configuration, handleOpenConfig, startDate, endDate,
     } = this.props;
     switch (configuration.graph_type) {
       case 'table':
@@ -32,7 +28,6 @@ class AttackPatternsDistribution extends Component {
             entityType="Attack-Pattern"
             relationshipType="uses"
             field="name"
-            inferred={inferred}
             startDate={startDate}
             endDate={endDate}
           />
@@ -48,7 +43,6 @@ class AttackPatternsDistribution extends Component {
             entityType="Attack-Pattern"
             relationshipType="uses"
             field="name"
-            inferred={inferred}
             startDate={startDate}
             endDate={endDate}
           />
@@ -60,7 +54,6 @@ class AttackPatternsDistribution extends Component {
 AttackPatternsDistribution.propTypes = {
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
-  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   classes: PropTypes.object,

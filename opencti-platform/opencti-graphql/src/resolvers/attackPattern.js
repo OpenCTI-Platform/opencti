@@ -2,10 +2,10 @@ import {
   addAttackPattern,
   findAll,
   findById,
-  coursesOfAction,
-  parentAttackPatterns,
-  subAttackPatterns,
-  isSubAttackPattern,
+  batchCoursesOfAction,
+  batchParentAttackPatterns,
+  batchSubAttackPatterns,
+  batchIsSubAttackPattern,
 } from '../domain/attackPattern';
 import {
   stixDomainObjectAddRelation,
@@ -15,14 +15,16 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { killChainPhases } from '../domain/stixCoreObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const killChainPhasesLoader = initBatchLoader(batchKillChainPhases);
+const coursesOfActionLoader = initBatchLoader(batchCoursesOfAction);
+const parentAttackPatternsLoader = initBatchLoader(batchParentAttackPatterns);
+const subAttackPatternsLoader = initBatchLoader(batchSubAttackPatterns);
+const isSubAttackPatternLoader = initBatchLoader(batchIsSubAttackPattern);
 
 const attackPatternResolvers = {
   Query: {
@@ -30,16 +32,11 @@ const attackPatternResolvers = {
     attackPatterns: (_, args) => findAll(args),
   },
   AttackPattern: {
-    killChainPhases: (attackPattern) => killChainPhases(attackPattern.id),
-    coursesOfAction: (attackPattern) => coursesOfAction(attackPattern.id),
-    parentAttackPatterns: (attackPattern) => parentAttackPatterns(attackPattern.id),
-    subAttackPatterns: (attackPattern) => subAttackPatterns(attackPattern.id),
-    isSubAttackPattern: (sector) => isSubAttackPattern(sector.id),
-  },
-  AttackPatternsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-    killChainPhase: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
+    killChainPhases: (attackPattern) => killChainPhasesLoader.load(attackPattern.id),
+    coursesOfAction: (attackPattern) => coursesOfActionLoader.load(attackPattern.id),
+    parentAttackPatterns: (attackPattern) => parentAttackPatternsLoader.load(attackPattern.id),
+    subAttackPatterns: (attackPattern) => subAttackPatternsLoader.load(attackPattern.id),
+    isSubAttackPattern: (attackPattern) => isSubAttackPatternLoader.load(attackPattern.id),
   },
   AttackPatternsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -7,14 +7,14 @@ const LIST_QUERY = gql`
     $after: ID
     $orderBy: AttributesOrdering
     $orderMode: OrderingMode
-    $type: String
+    $key: String
     $search: String
   ) {
-    attributes(first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, type: $type, search: $search) {
+    attributes(first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode, key: $key, search: $search) {
       edges {
         node {
           id
-          type
+          key
           value
         }
       }
@@ -26,7 +26,7 @@ const READ_QUERY = gql`
   query attribute($id: String!) {
     attribute(id: $id) {
       id
-      type
+      key
       value
     }
   }
@@ -39,7 +39,7 @@ describe('Attribute resolver standard behavior', () => {
       mutation AttributeAdd($input: AttributeAddInput) {
         attributeAdd(input: $input) {
           id
-          type
+          key
           value
         }
       }
@@ -47,7 +47,7 @@ describe('Attribute resolver standard behavior', () => {
     // Create the country
     const ATTRIBUTE_TO_CREATE = {
       input: {
-        type: 'report_types',
+        key: 'report_types',
         value: 'Test',
       },
     };
@@ -68,11 +68,11 @@ describe('Attribute resolver standard behavior', () => {
   });
   it('should update attribute', async () => {
     const UPDATE_QUERY = gql`
-      mutation AttributeEdit($id: ID!, $input: AttributeEditInput!) {
+      mutation AttributeEdit($id: ID!, $input: EditInput!) {
         attributeEdit(id: $id) {
-          update(input: $input) {
+          fieldPatch(input: $input) {
             id
-            type
+            key
             value
           }
         }
@@ -80,13 +80,13 @@ describe('Attribute resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: attributeInternalId, input: { type: 'report_types', value: 'Test', newValue: 'Test2' } },
+      variables: { id: attributeInternalId, input: { key: 'value', value: 'Test2' } },
     });
-    expect(queryResult.data.attributeEdit.update.value).toEqual('Test2');
-    attributeInternalId = queryResult.data.attributeEdit.update.id;
+    expect(queryResult.data.attributeEdit.fieldPatch.value).toEqual('Test2');
+    attributeInternalId = queryResult.data.attributeEdit.fieldPatch.id;
   });
   it('should list attributes', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { type: 'report_types' } });
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { key: 'report_types' } });
     expect(queryResult.data.attributes.edges.length).toEqual(3);
   });
   it('should attribute deleted', async () => {

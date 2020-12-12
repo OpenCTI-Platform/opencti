@@ -1,5 +1,5 @@
 import { assoc, dissocPath, pipe } from 'ramda';
-import { createEntity, getGraknVersion, loadById, updateAttribute, listEntities } from '../database/grakn';
+import { createEntity, loadById, updateAttribute, listEntities } from '../database/middleware';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
@@ -11,7 +11,6 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 export const getApplicationInfo = () => ({
   version,
   dependencies: [
-    { name: 'Grakn', version: getGraknVersion() },
     { name: 'Elasticsearch', version: elVersion() },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },
     { name: 'Redis', version: getRedisVersion() },

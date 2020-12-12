@@ -1,4 +1,4 @@
-import { loadById } from '../database/grakn';
+import { loadById } from '../database/middleware';
 
 const internalRelationshipResolvers = {
   InternalRelationship: {

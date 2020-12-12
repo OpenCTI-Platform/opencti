@@ -55,7 +55,6 @@ const entityXOpenCTIIncidentsChartXOpenCTIIncidentsTimeSeriesQuery = graphql`
     $endDate: DateTime!
     $interval: String!
     $relationship_type: String!
-    $inferred: Boolean
   ) {
     xOpenCTIIncidentsTimeSeries(
       objectId: $objectId
@@ -65,7 +64,6 @@ const entityXOpenCTIIncidentsChartXOpenCTIIncidentsTimeSeriesQuery = graphql`
       endDate: $endDate
       interval: $interval
       relationship_type: $relationship_type
-      inferred: $inferred
     ) {
       date
       value
@@ -105,7 +103,6 @@ class EntityXOpenCTIXOpenCTIIncidentsChart extends Component {
       // eslint-disable-next-line camelcase
       relationship_type,
       variant,
-      inferred,
     } = this.props;
     const XOpenCTIIncidentsTimeSeriesVariables = {
       objectId: entityId,
@@ -116,7 +113,6 @@ class EntityXOpenCTIXOpenCTIIncidentsChart extends Component {
       interval: 'month',
       // eslint-disable-next-line camelcase
       relationship_type: relationship_type || 'targets',
-      inferred: inferred || false,
     };
     return (
       <QueryRenderer
@@ -278,7 +274,6 @@ EntityXOpenCTIXOpenCTIIncidentsChart.propTypes = {
   md: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
-  inferred: PropTypes.bool,
   relationship_type: PropTypes.string,
 };
 

@@ -1,4 +1,4 @@
-import { addCountry, findAll, findById, region } from '../domain/country';
+import { addCountry, findAll, findById, batchRegion } from '../domain/country';
 import {
   stixDomainObjectEditContext,
   stixDomainObjectCleanContext,
@@ -7,8 +7,9 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectDelete,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const batchRegionLoader = initBatchLoader(batchRegion);
 
 const countryResolvers = {
   Query: {
@@ -16,12 +17,7 @@ const countryResolvers = {
     countries: (_, args) => findAll(args),
   },
   Country: {
-    region: (country) => region(country.id),
-  },
-  CountriesFilter: {
-    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    region: (country) => batchRegionLoader.load(country.id),
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({

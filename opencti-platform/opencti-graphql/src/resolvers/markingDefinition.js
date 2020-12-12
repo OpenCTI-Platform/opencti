@@ -12,16 +12,11 @@ import {
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { convertDataToStix } from '../database/stix';
-import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-import { REL_INDEX_PREFIX } from '../schema/general';
 
 const markingDefinitionResolvers = {
   Query: {
     markingDefinition: (_, { id }) => findById(id),
     markingDefinitions: (_, args) => findAll(args),
-  },
-  MarkingDefinitionsFilter: {
-    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
   },
   MarkingDefinition: {
     toStix: (markingDefinition) => JSON.stringify(convertDataToStix(markingDefinition)),

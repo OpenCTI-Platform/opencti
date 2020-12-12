@@ -1,4 +1,4 @@
-import { createEntity, listEntities, loadById } from '../database/grakn';
+import { createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INFRASTRUCTURE } from '../schema/stixDomainObject';
@@ -9,7 +9,7 @@ export const findById = (infrastructureId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_INFRASTRUCTURE], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_INFRASTRUCTURE], args);
 };
 
 export const addInfrastructure = async (user, infrastructure) => {

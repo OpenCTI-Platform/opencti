@@ -3,10 +3,7 @@ import PropTypes from 'prop-types';
 import { withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Switch from '@material-ui/core/Switch';
 import Drawer from '@material-ui/core/Drawer';
 import { Clear } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
@@ -27,12 +24,7 @@ const styles = (theme) => ({
 class ExploreBottomBar extends Component {
   render() {
     const {
-      t,
-      classes,
-      handleClear,
-      inferred,
-      handleChangeInferred,
-      entityId,
+      t, classes, handleClear, entityId,
     } = this.props;
     return (
       <Drawer
@@ -40,20 +32,6 @@ class ExploreBottomBar extends Component {
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
       >
-        <Grid item={true} xs="auto">
-          <FormControlLabel
-            style={{ paddingTop: 5, marginRight: 15 }}
-            control={
-              <Switch
-                disabled={!entityId}
-                checked={inferred}
-                onChange={handleChangeInferred.bind(this)}
-                color="primary"
-              />
-            }
-            label={t('Inferences')}
-          />
-        </Grid>
         <div
           style={{
             position: 'absolute',
@@ -81,8 +59,6 @@ class ExploreBottomBar extends Component {
 ExploreBottomBar.propTypes = {
   entityId: PropTypes.string,
   handleClear: PropTypes.func,
-  inferred: PropTypes.bool,
-  handleChangeInferred: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

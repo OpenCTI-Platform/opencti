@@ -83,22 +83,19 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.start_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.start_time)}
+                {nsd(node.start_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.stop_time.width }}
               >
-                {node.inferred ? '-' : nsd(node.stop_time)}
+                {nsd(node.stop_time)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence
-                  confidence={node.inferred ? 99 : node.confidence}
-                  variant="inList"
-                />
+                <ItemConfidence confidence={node.confidence} variant="inList" />
               </div>
             </div>
           }
@@ -107,7 +104,6 @@ class StixCoreObjectStixCyberObservableLineComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -135,7 +131,6 @@ const StixCoreObjectStixCyberObservableLineFragment = createFragmentContainer(
         start_time
         stop_time
         description
-        inferred
         from {
           ... on StixCyberObservable {
             id

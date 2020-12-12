@@ -2,7 +2,7 @@ import { assoc, append, propOr, filter, concat } from 'ramda';
 import { findAll as findAllStixCoreObjects } from './stixCoreObject';
 import { findAll as findAllStixCoreRelationships } from './stixCoreRelationship';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
-import { listEntities, loadById } from '../database/grakn';
+import { listEntities, loadById } from '../database/middleware';
 import { ENTITY_TYPE_CONTAINER, REL_INDEX_PREFIX } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
@@ -25,7 +25,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_CONTAINER);
   }
-  return listEntities(types, ['name', 'description'], args);
+  return listEntities(types, args);
 };
 
 // Entities tab

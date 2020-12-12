@@ -63,7 +63,6 @@ export const entityStixCoreRelationshipsLinesToQuery = graphql`
     $fromTypes: [String]
     $toId: String
     $toRole: String
-    $inferred: Boolean
     $relationship_type: String
     $search: String
     $count: Int!
@@ -72,18 +71,17 @@ export const entityStixCoreRelationshipsLinesToQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixCoreRelationshipsLinesTo_data
-    @arguments(
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      inferred: $inferred
-      relationship_type: $relationship_type
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromTypes: $fromTypes
+        toId: $toId
+        toRole: $toRole
+        relationship_type: $relationship_type
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -96,7 +94,6 @@ export default createPaginationContainer(
         fromTypes: { type: "[String]" }
         toId: { type: "String" }
         toRole: { type: "String" }
-        inferred: { type: "Boolean" }
         relationship_type: { type: "String" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
@@ -111,7 +108,6 @@ export default createPaginationContainer(
           fromTypes: $fromTypes
           toId: $toId
           toRole: $toRole
-          inferred: $inferred
           relationship_type: $relationship_type
           search: $search
           first: $count
@@ -149,7 +145,6 @@ export default createPaginationContainer(
         fromTypes: fragmentVariables.fromTypes,
         toId: fragmentVariables.toId,
         toRole: fragmentVariables.toRole,
-        inferred: fragmentVariables.inferred,
         relationship_type: fragmentVariables.relationship_type,
         search: fragmentVariables.search,
         count,
