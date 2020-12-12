@@ -107,9 +107,9 @@ const i18n = {
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       'Last notes': 'Dernières notes',
-      'Last reports wrote by the entity':
+      'Latest reports written by this entity':
         'Derniers rapports écrits par cette entité',
-      'Last reports about the element':
+      'Latest reports about this entity':
         "Derniers rapports à propos de l'élément",
       'Last reports about the entity': "Derniers rapports à propos de l'entité",
       'Last observables': 'Derniers observables',

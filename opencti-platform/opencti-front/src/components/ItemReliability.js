@@ -117,7 +117,7 @@ class ItemReliability extends Component {
 
 ItemReliability.propTypes = {
   classes: PropTypes.object.isRequired,
-  reliability: PropTypes.number,
+  reliability: PropTypes.string,
   label: PropTypes.string,
   variant: PropTypes.string,
 };
