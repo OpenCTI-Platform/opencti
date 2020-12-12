@@ -642,7 +642,7 @@ describe('Grakn entities distribution', () => {
     expect(aggregationMap.get('Malware')).toEqual(2);
     expect(aggregationMap.get('Campaign')).toEqual(1);
   });
-  it.each(noCacheCases)('should entity distribution filters (noCache = %s)', async (noCache) => {
+  it.skip('should entity distribution filters (noCache = %s)', async (noCache) => {
     // const { startDate, endDate, operation, field, inferred, noCache } = options;
     const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = { field: 'entity_type', operation: 'count', limit: 20, noCache };
