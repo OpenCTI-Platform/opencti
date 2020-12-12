@@ -79,6 +79,11 @@ const DISTRIBUTION_QUERY = gql`
     opinionsDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit, order: $order) {
       label
       value
+      entity {
+        ... on Identity {
+          name
+        }
+      }
     }
   }
 `;
@@ -292,7 +297,7 @@ describe('Opinion resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        field: 'created-by.name',
+        field: 'created-by.internal_id',
         operation: 'count',
       },
     });
@@ -303,11 +308,11 @@ describe('Opinion resolver standard behavior', () => {
       query: DISTRIBUTION_QUERY,
       variables: {
         objectId: datasetMalwareInternalId,
-        field: 'created-by.name',
+        field: 'created-by.internal_id',
         operation: 'count',
       },
     });
-    expect(queryResult.data.opinionsDistribution[0].label).toEqual('ANSSI');
+    expect(queryResult.data.opinionsDistribution[0].entity.name).toEqual('ANSSI');
     expect(queryResult.data.opinionsDistribution[0].value).toEqual(1);
   });
   it('should update opinion', async () => {

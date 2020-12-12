@@ -79,8 +79,8 @@ describe('stixSightingRelationship resolver standard behavior', () => {
         }
       }
     `;
-    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY, variables: { type: 'uses' } });
-    expect(queryResult.data.stixSightingRelationshipsNumber.total).toEqual(8);
+    const queryResult = await queryAsAdmin({ query: NUMBER_QUERY });
+    expect(queryResult.data.stixSightingRelationshipsNumber.total).toEqual(4);
   });
   it('should update stixSightingRelationship', async () => {
     const UPDATE_QUERY = gql`

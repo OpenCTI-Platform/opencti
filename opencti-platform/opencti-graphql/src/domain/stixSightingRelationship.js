@@ -48,7 +48,7 @@ export const stixSightingRelationshipsNumber = (args) => ({
   count: elCount(INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
   total: elCount(
     INDEX_STIX_SIGHTING_RELATIONSHIPS,
-    pipe(assoc('types', [STIX_SIGHTING_RELATIONSHIP]), dissoc('endDate')(args))
+    pipe(assoc('types', [STIX_SIGHTING_RELATIONSHIP]), dissoc('endDate'))(args)
   ),
 });
 

@@ -37,7 +37,7 @@ export const opinionsNumber = (args) => ({
   count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
   total: elCount(
     INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]), dissoc('endDate')(args))
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]), dissoc('endDate'))(args)
   ),
 });
 

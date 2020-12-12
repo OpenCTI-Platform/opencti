@@ -1,11 +1,5 @@
 import { assoc, propOr, pipe, dissoc } from 'ramda';
-import {
-  createEntity,
-  distributionEntities,
-  listEntities,
-  loadById,
-  timeSeriesEntities,
-} from '../database/grakn';
+import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findIdentityById } from './identity';
@@ -52,7 +46,7 @@ export const reportsNumber = (args) => ({
   count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
   total: elCount(
     INDEX_STIX_DOMAIN_OBJECTS,
-    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), dissoc('endDate')(args))
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), dissoc('endDate'))(args)
   ),
 });
 
