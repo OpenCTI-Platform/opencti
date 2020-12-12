@@ -322,7 +322,7 @@ class StixDomainObjectThreatKnowledge extends Component {
           <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
             <StixCoreObjectReportsBars
               stixCoreObjectId={stixDomainObjectId}
-              field="created-by.name"
+              field="created-by.internal_id"
               title={t('Distribution of sources')}
             />
           </Grid>

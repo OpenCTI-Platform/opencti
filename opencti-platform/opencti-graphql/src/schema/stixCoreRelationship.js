@@ -1,8 +1,9 @@
 import * as R from 'ramda';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, schemaTypes } from './general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, schemaTypes } from './general';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
+  ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_COURSE_OF_ACTION,
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -19,6 +20,7 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
 } from './stixDomainObject';
+import { isStixCyberObservable } from './stixCyberObservable';
 
 export const RELATION_DELIVERS = 'delivers';
 export const RELATION_TARGETS = 'targets';
@@ -179,22 +181,24 @@ export const stixCoreRelationshipsMapping = {
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [RELATION_LOCATED_AT],
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_CITY}`]: [RELATION_LOCATED_AT],
   [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_POSITION}`]: [RELATION_LOCATED_AT],
-  'Indicator_Attack-Pattern': ['indicates'],
-  Indicator_Campaign: ['indicates'],
-  Indicator_Infrastructure: ['indicates'],
-  'Indicator_Intrusion-Set': ['indicates'],
-  Indicator_Malware: ['indicates'],
-  'Indicator_Threat-Actor': ['indicates'],
-  Indicator_Tool: ['indicates'],
-  'Indicator_Observed-Data': ['based-on'],
-  Indicator_uses: ['indicates'],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_CAMPAIGN}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_INFRASTRUCTURE}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_INTRUSION_SET}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_MALWARE}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_THREAT_ACTOR}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_TOOL}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_VULNERABILITY}`]: [RELATION_INDICATES],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}`]: [RELATION_BASED_ON],
+  [`${ENTITY_TYPE_INDICATOR}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [RELATION_BASED_ON],
+  [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [RELATION_INDICATES],
   Infrastructure_Infrastructure: ['communicates-with', 'consists-of', 'controls', 'uses'],
   'Infrastructure_IPv4-Addr': ['communicates-with'],
   'Infrastructure_IPv6-Addr': ['communicates-with'],
   'Infrastructure_Domain-Name': ['communicates-with'],
   Infrastructure_Url: ['communicates-with'],
   'Infrastructure_Observed-Data': ['consists-of'],
-  'Infrastructure_Stix-Cyber-Observable': ['consists-of'],
+  'Infrastructure_Stix-Cyber-Observable': ['consists-of', 'based-on'],
   Infrastructure_Malware: ['controls', 'delivers', 'hosts'],
   Infrastructure_Vulnerability: ['has'],
   Infrastructure_Tool: ['hosts'],
@@ -292,6 +296,12 @@ export const stixCoreRelationshipsMapping = {
 export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipType) => {
   if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
     return true;
+  }
+  if (relationshipType === RELATION_BASED_ON && isStixCyberObservable(toType)) {
+    return !!R.includes(
+      relationshipType,
+      stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] || []
+    );
   }
   return !!R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${toType}`] || []);
 };
