@@ -28,7 +28,7 @@ import {
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
-import { ADMIN_USER } from '../../utils/testQuery';
+import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -516,9 +516,11 @@ describe('Grakn attribute updated and indexed correctly', () => {
     // 02. Update attribute "Threat report" to "Threat test"
     let updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, {
       key: 'value',
-      value: 'threat-test',
+      value: ['threat-test'],
     });
     expect(updatedAttribute).not.toBeNull();
+    // Wait a bit for elastic refresh
+    await sleep(2000);
     // 03. Get the report directly and test if type is Threat test
     report = await loadById(stixId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
     expect(report).not.toBeNull();
@@ -526,9 +528,11 @@ describe('Grakn attribute updated and indexed correctly', () => {
     // 04. Back to original configuration
     updatedAttribute = await attributeEditField(SYSTEM_USER, attributeId, {
       key: 'value',
-      value: 'threat-report',
+      value: ['threat-report'],
     });
     expect(updatedAttribute).not.toBeNull();
+    // Wait a bit for elastic refresh
+    await sleep(2000);
     report = await loadById(stixId, ENTITY_TYPE_CONTAINER_REPORT, { noCache });
     expect(report).not.toBeNull();
     expect(report.report_types).toEqual(['threat-report']);
