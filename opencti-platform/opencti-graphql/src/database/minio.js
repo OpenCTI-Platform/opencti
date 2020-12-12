@@ -118,7 +118,7 @@ export const getMinIOVersion = () => {
         const version = serverHeader.substring(serverHeaderPrefix.length);
         resolve(version);
       } else {
-        logger.error(`[MINIO] Unexpected Server header`, { headers: serverHeader });
+        // logger.error(`[MINIO] Unexpected Server header`, { headers: serverHeader });
         resolve('Unknown');
       }
     });
