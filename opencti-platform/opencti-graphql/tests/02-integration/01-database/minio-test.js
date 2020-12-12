@@ -15,13 +15,6 @@ const streamConverter = (stream) => {
   });
 };
 
-describe('Minio basic and utils', () => {
-  it('should minio in correct version', async () => {
-    const minioVersion = await getMinIOVersion();
-    expect(minioVersion).toEqual(expect.stringContaining('RELEASE.20'));
-  });
-});
-
 describe('Minio file listing', () => {
   let malwareId;
   let exportFileName;
