@@ -262,7 +262,7 @@ class OpenCTIStix2Update:
                             key,
                             data["x_data_update"]["add"][key],
                         )
-            elif "remove" in data["x_data_update"]:
+            if "remove" in data["x_data_update"]:
                 for key in data["x_data_update"]["remove"].keys():
                     if key == "object_marking_refs":
                         self.remove_object_marking_refs(
@@ -308,7 +308,7 @@ class OpenCTIStix2Update:
                             key,
                             data["x_data_update"]["remove"][key],
                         )
-            elif "replace" in data["x_data_update"]:
+            if "replace" in data["x_data_update"]:
                 for key in data["x_data_update"]["replace"].keys():
                     if key == "created_by_ref":
                         self.replace_created_by_ref(
@@ -324,8 +324,6 @@ class OpenCTIStix2Update:
                             key,
                             data["x_data_update"]["replace"][key],
                         )
-            else:
-                self.opencti.log("error", "Unsupported operation")
         except:
             self.opencti.log("error", "Cannot process this message")
             pass
