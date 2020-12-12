@@ -80,10 +80,10 @@ describe('Attribute resolver standard behavior', () => {
     `;
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { id: attributeInternalId, input: { value: 'Test2' } },
+      variables: { id: attributeInternalId, input: { key: 'value', value: 'Test2' } },
     });
     expect(queryResult.data.attributeEdit.fieldPatch.value).toEqual('Test2');
-    attributeInternalId = queryResult.data.attributeEdit.update.id;
+    attributeInternalId = queryResult.data.attributeEdit.fieldPatch.id;
   });
   it('should list attributes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { key: 'report_types' } });

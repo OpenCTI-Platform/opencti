@@ -1348,8 +1348,6 @@ const createRelationRaw = async (user, input) => {
     R.assoc('toId', to.internal_id),
     R.assoc('toRole', toRole),
     R.assoc('toType', to.entity_type),
-    // Relation specific
-    R.assoc('inferred', false),
     // Types
     R.assoc('entity_type', relationshipType),
     R.assoc('parent_types', getParentTypes(relationshipType)),
@@ -1659,7 +1657,7 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   for (let i = 0; i < relationsToDelete.length; i += 1) {
     const r = relationsToDelete[i];
     // eslint-disable-next-line no-await-in-loop
-    await deleteElementById(user, r.rel.internal_id, r.rel.entity_type, opts);
+    await deleteElementById(user, r.internal_id, r.entity_type, opts);
   }
   return true;
 };

@@ -1,7 +1,7 @@
 import { listThroughGetFroms, createEntity, listEntities, listThroughGetTos, loadById } from '../database/grakn';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from "../schema/stixDomainObject";
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
 
@@ -19,7 +19,7 @@ export const addAttackPattern = async (user, attackPattern) => {
 };
 
 export const batchCoursesOfAction = (attackPatternIds) => {
-  return listThroughGetFroms(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+  return listThroughGetFroms(attackPatternIds, RELATION_MITIGATES, ENTITY_TYPE_COURSE_OF_ACTION);
 };
 
 export const batchParentAttackPatterns = (attackPatternIds) => {

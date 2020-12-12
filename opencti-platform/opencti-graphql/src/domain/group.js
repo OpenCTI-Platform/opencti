@@ -26,13 +26,13 @@ export const findAll = (args) => {
   return listEntities([ENTITY_TYPE_GROUP], args);
 };
 
-export const members = async (groupId) => {
-  return listThroughGetFroms(groupId, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+export const batchMembers = async (groupIds) => {
+  return listThroughGetFroms(groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
-export const markingDefinitions = async (groupId) => {
+export const batchMarkingDefinitions = async (groupIds) => {
   const opts = { paginate: false };
-  return listThroughGetTos(groupId, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+  return listThroughGetTos(groupIsd, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
 };
 
 export const addGroup = async (user, group) => {
