@@ -68,7 +68,6 @@ const entityStixCoreRelationshipsPieStixCoreRelationshipDistributionQuery = grap
     $fromId: String!
     $toTypes: [String]
     $relationship_type: String
-    $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
     $field: String!
@@ -78,7 +77,6 @@ const entityStixCoreRelationshipsPieStixCoreRelationshipDistributionQuery = grap
       fromId: $fromId
       toTypes: $toTypes
       relationship_type: $relationship_type
-      inferred: $inferred
       startDate: $startDate
       endDate: $endDate
       field: $field
@@ -100,14 +98,12 @@ class EntityStixCoreRelationshipsPie extends Component {
       relationship_type,
       field,
       variant,
-      inferred,
       startDate,
       endDate,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: entityId,
       toTypes: entityType ? [entityType] : null,
-      inferred: inferred || false,
       startDate: startDate || null,
       endDate: endDate || null,
       relationship_type,
@@ -252,7 +248,6 @@ EntityStixCoreRelationshipsPie.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
   entityType: PropTypes.string,
-  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   field: PropTypes.string,

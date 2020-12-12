@@ -75,7 +75,6 @@ class XOpenCTIIncidentDetailsComponent extends Component {
             field="entity_type"
             height={200}
             variant="inLine"
-            inferred={true}
           />
         </Paper>
       </div>

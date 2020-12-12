@@ -1,4 +1,4 @@
-import { findById, findAll, attributeUpdate, attributeDelete, addAttribute } from '../domain/attribute';
+import { findById, findAll, attributeEditField, attributeDelete, addAttribute } from '../domain/attribute';
 
 const attributeResolvers = {
   Query: {
@@ -6,11 +6,11 @@ const attributeResolvers = {
     attributes: (_, args) => findAll(args),
   },
   Mutation: {
-    attributeEdit: (_, { id }) => ({
-      delete: () => attributeDelete(id),
-      update: ({ input }) => attributeUpdate(id, input),
+    attributeEdit: (_, { id }, { user }) => ({
+      delete: () => attributeDelete(user, id),
+      fieldPatch: ({ input }) => attributeEditField(user, id, input),
     }),
-    attributeAdd: (_, { input }) => addAttribute(input),
+    attributeAdd: (_, { input }, { user }) => addAttribute(user, input),
   },
 };
 

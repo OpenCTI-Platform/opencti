@@ -275,7 +275,7 @@ StixCoreObjectExternalReferencesLinesContainer.propTypes = {
 export const stixCoreObjectExternalReferencesLinesQuery = graphql`
   query StixCoreObjectExternalReferencesLinesQuery($count: Int!, $id: String!) {
     ...StixCoreObjectExternalReferencesLines_data
-    @arguments(count: $count, id: $id)
+      @arguments(count: $count, id: $id)
   }
 `;
 
@@ -291,7 +291,7 @@ const StixCoreObjectExternalReferencesLines = createPaginationContainer(
         stixCoreObject(id: $id) {
           id
           externalReferences(first: $count)
-          @connection(key: "Pagination_externalReferences") {
+            @connection(key: "Pagination_externalReferences") {
             edges {
               node {
                 id

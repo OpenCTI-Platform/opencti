@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listToEntitiesThroughRelation, loadById } from '../database/grakn';
+import { createEntity, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
@@ -10,7 +10,7 @@ export const findById = (courseOfActionId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_COURSE_OF_ACTION], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_COURSE_OF_ACTION], args);
 };
 
 export const addCourseOfAction = async (user, courseOfAction) => {
@@ -18,6 +18,6 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const attackPatterns = async (courseOfActionId) => {
-  return listToEntitiesThroughRelation(courseOfActionId, null, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+export const batchAttackPatterns = async (courseOfActionIds) => {
+  return batchListThroughGetTo(courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };

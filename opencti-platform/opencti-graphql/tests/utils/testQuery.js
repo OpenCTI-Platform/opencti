@@ -26,5 +26,8 @@ export const serverFromUser = (user = ADMIN_USER) => {
   });
 };
 
+export const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
 export const queryAsAdmin = createTestClient(serverFromUser()).query;
 export const queryAsUser = (user) => createTestClient(serverFromUser(user)).query;

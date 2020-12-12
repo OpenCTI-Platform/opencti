@@ -22,12 +22,10 @@ export default class SimpleLinkFactory extends SRD.AbstractLinkFactory {
 
   // eslint-disable-next-line class-methods-use-this
   generateLinkSegment(model, widget, selected, path) {
-    const classNameNotInferred = selected ? widget.bem('--path-selected') : '';
+    const className = selected ? widget.bem('--path-selected') : '';
     return (
       <path
-        className={
-          model.inferred ? widget.bem('--path-inferred') : classNameNotInferred
-        }
+        className={className}
         strokeWidth={model.width}
         stroke={model.color}
         d={path}

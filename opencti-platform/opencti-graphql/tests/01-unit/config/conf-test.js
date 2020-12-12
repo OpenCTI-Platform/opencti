@@ -7,5 +7,5 @@ test('default configuration keys must exists', () => {
   expect(nconf.get('app:port')).toEqual(4000);
   expect(nconf.get('app:logs')).toEqual('./logs');
   // Db
-  expect(nconf.get('grakn:hostname')).toBeDefined();
+  expect(nconf.get('elasticsearch:url')).toBeDefined();
 });

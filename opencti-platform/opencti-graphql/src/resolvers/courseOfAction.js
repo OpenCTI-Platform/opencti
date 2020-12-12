@@ -1,4 +1,4 @@
-import { addCourseOfAction, findAll, findById, attackPatterns } from '../domain/courseOfAction';
+import { addCourseOfAction, findAll, findById, batchAttackPatterns } from '../domain/courseOfAction';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -9,6 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const attackPatternsLoader = initBatchLoader(batchAttackPatterns);
 
 const courseOfActionResolvers = {
   Query: {
@@ -16,11 +19,7 @@ const courseOfActionResolvers = {
     coursesOfAction: (_, args) => findAll(args),
   },
   CourseOfAction: {
-    attackPatterns: (courseOfAction) => attackPatterns(courseOfAction.id),
-  },
-  CoursesOfActionOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    attackPatterns: (courseOfAction) => attackPatternsLoader.load(courseOfAction.id),
   },
   CoursesOfActionFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

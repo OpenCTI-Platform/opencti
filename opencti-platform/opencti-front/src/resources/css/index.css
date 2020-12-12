@@ -196,11 +196,6 @@ div.srd-port:hover {
   fill: rgb(165, 165, 165) !important;
 }
 
-.srd-default-link--path-inferred {
-  stroke: #607d8b !important;
-  stroke-dasharray: 10, 2;
-}
-
 .srd-default-link__label {
   overflow: visible;
 }

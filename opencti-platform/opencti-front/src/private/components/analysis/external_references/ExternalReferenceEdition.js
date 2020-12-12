@@ -211,7 +211,7 @@ class ExternalReferenceEditionContainer extends Component {
                 />
                 <Field
                   component={MarkDownField}
-              name="description"
+                  name="description"
                   label={t('Description')}
                   fullWidth={true}
                   multiline={true}

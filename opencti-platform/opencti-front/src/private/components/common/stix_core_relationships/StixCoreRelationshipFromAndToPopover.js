@@ -1,26 +1,21 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
+import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
-import Drawer from '@material-ui/core/Drawer';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import MoreVert from '@material-ui/icons/MoreVert';
-import graphql from 'babel-plugin-relay/macro';
-import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
-import { workspaceEditionQuery } from './WorkspaceEdition';
-import WorkspaceEditionContainer from './WorkspaceEditionContainer';
-import Loader from '../../../components/Loader';
-import Security, { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/Security';
+import { MoreVertOutlined } from '@material-ui/icons';
+import { ConnectionHandler } from 'relay-runtime';
+import inject18n from '../../../../components/i18n';
+import { commitMutation } from '../../../../relay/environment';
 
 const styles = (theme) => ({
   container: {
@@ -45,27 +40,34 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-const WorkspacePopoverDeletionMutation = graphql`
-  mutation WorkspacePopoverDeletionMutation($id: ID!) {
-    workspaceEdit(id: $id) {
-      delete
-    }
+const stixCoreRelationshipFromAndToPopoverDeletionMutation = graphql`
+  mutation StixCoreRelationshipFromAndToPopoverDeletionMutation(
+    $fromId: String!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
   }
 `;
 
-class WorkspacePopover extends Component {
+class StixCoreRelationshipFromAndToPopover extends Component {
   constructor(props) {
     super(props);
     this.state = {
       anchorEl: null,
+      displayUpdate: false,
       displayDelete: false,
-      displayEdit: false,
       deleting: false,
     };
   }
 
   handleOpen(event) {
     this.setState({ anchorEl: event.currentTarget });
+    event.stopPropagation();
   }
 
   handleClose() {
@@ -82,39 +84,54 @@ class WorkspacePopover extends Component {
   }
 
   submitDelete() {
+    const {
+      fromId,
+      toId,
+      relationshipType,
+      connectionKey,
+      nodeId,
+      paginationOptions,
+    } = this.props;
     this.setState({ deleting: true });
     commitMutation({
-      mutation: WorkspacePopoverDeletionMutation,
+      mutation: stixCoreRelationshipFromAndToPopoverDeletionMutation,
       variables: {
-        id: this.props.workspaceId,
+        fromId,
+        toId,
+        relationship_type: relationshipType,
+      },
+      updater: (store) => {
+        if (typeof this.props.onDelete !== 'function') {
+          const container = store.getRoot();
+          const userProxy = store.get(container.getDataID());
+          const conn = ConnectionHandler.getConnection(
+            userProxy,
+            connectionKey || 'Pagination_stixCoreRelationships',
+            paginationOptions,
+          );
+          ConnectionHandler.deleteNode(conn, nodeId);
+        }
       },
       onCompleted: () => {
         this.setState({ deleting: false });
-        this.handleClose();
-        this.props.history.push(`/dashboard/${this.props.workspaceType}`);
+        this.handleCloseDelete();
+        if (typeof this.props.onDelete === 'function') {
+          this.props.onDelete();
+        }
       },
     });
   }
 
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
-  }
-
   render() {
-    const { classes, t, workspaceId } = this.props;
+    const { classes, t, disabled } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
-          style={{ marginTop: 1 }}
+          disabled={disabled}
         >
-          <MoreVert />
+          <MoreVertOutlined />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}
@@ -122,14 +139,9 @@ class WorkspacePopover extends Component {
           onClose={this.handleClose.bind(this)}
           style={{ marginTop: 50 }}
         >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
+          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+            {t('Delete')}
           </MenuItem>
-          <Security needs={[EXPLORE_EXUPDATE_EXDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
         </Menu>
         <Dialog
           open={this.state.displayDelete}
@@ -139,7 +151,7 @@ class WorkspacePopover extends Component {
         >
           <DialogContent>
             <DialogContentText>
-              {t('Do you want to delete this workspace?')}
+              {t('Do you want to delete this relation?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
@@ -159,43 +171,25 @@ class WorkspacePopover extends Component {
             </Button>
           </DialogActions>
         </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          <QueryRenderer
-            query={workspaceEditionQuery}
-            variables={{ id: workspaceId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <WorkspaceEditionContainer
-                    workspace={props.workspace}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
       </div>
     );
   }
 }
 
-WorkspacePopover.propTypes = {
-  workspaceId: PropTypes.string,
-  workspaceType: PropTypes.string,
+StixCoreRelationshipFromAndToPopover.propTypes = {
+  fromId: PropTypes.string,
+  toId: PropTypes.string,
+  relationshipType: PropTypes.string,
+  nodeId: PropTypes.string,
+  disabled: PropTypes.bool,
+  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  history: PropTypes.object,
+  onDelete: PropTypes.func,
+  connectionKey: PropTypes.string,
 };
 
 export default compose(
   inject18n,
-  withRouter,
   withStyles(styles),
-)(WorkspacePopover);
+)(StixCoreRelationshipFromAndToPopover);

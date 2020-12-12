@@ -1,6 +1,6 @@
 import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/grakn';
+import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
@@ -9,7 +9,7 @@ export const findById = (markingDefinitionId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_MARKING_DEFINITION], ['definition_type', 'definition'], args);
+  return listEntities([ENTITY_TYPE_MARKING_DEFINITION], args);
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {

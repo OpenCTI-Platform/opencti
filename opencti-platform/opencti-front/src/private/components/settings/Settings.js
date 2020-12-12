@@ -20,13 +20,11 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import SettingsMenu from './SettingsMenu';
 import Loader from '../../../components/Loader';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
   },
   paper: {
     width: '100%',
@@ -153,7 +151,6 @@ class Settings extends Component {
     const { t, classes } = this.props;
     return (
       <div className={classes.container}>
-        <SettingsMenu />
         <QueryRenderer
           query={settingsQuery}
           render={({ props }) => {
@@ -317,7 +314,10 @@ class Settings extends Component {
                           query={settingsAboutQuery}
                           render={({ props: aboutProps }) => {
                             if (aboutProps) {
-                              const { version, dependencies } = aboutProps.about;
+                              const {
+                                version,
+                                dependencies,
+                              } = aboutProps.about;
                               return (
                                 <div>
                                   <Typography variant="h1" gutterBottom={true}>

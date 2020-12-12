@@ -11,7 +11,7 @@ import {
 } from '../domain/stixCyberObservableRelationship';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { loadById } from '../database/grakn';
+import { loadById } from '../database/middleware';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 
 const stixCyberObservableRelationshipResolvers = {

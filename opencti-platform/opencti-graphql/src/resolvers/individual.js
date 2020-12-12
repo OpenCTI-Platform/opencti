@@ -1,4 +1,4 @@
-import { addIndividual, findAll, findById, organizations } from '../domain/individual';
+import { addIndividual, findAll, findById, batchOrganizations } from '../domain/individual';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -9,6 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const organizationsLoader = initBatchLoader(batchOrganizations);
 
 const individualResolvers = {
   Query: {
@@ -16,11 +19,7 @@ const individualResolvers = {
     individuals: (_, args) => findAll(args),
   },
   Individual: {
-    organizations: (individual) => organizations(individual.id),
-  },
-  IndividualsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    organizations: (individual) => organizationsLoader.load(individual.id),
   },
   IndividualsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -12,26 +12,37 @@ import {
   stixCoreRelationshipEditContext,
   stixCoreRelationshipEditField,
   stixCoreRelationshipsNumber,
-  createdBy,
-  externalReferences,
-  killChainPhases,
-  labels,
-  markingDefinitions,
-  notes,
-  reports,
+  batchCreatedBy,
+  batchKillChainPhases,
+  batchExternalReferences,
+  batchLabels,
+  batchMarkingDefinitions,
+  batchNotes,
+  batchOpinions,
+  batchReports,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, loadById, timeSeriesRelations, REL_CONNECTED_SUFFIX } from '../database/grakn';
+import {
+  distributionRelations,
+  loadById,
+  timeSeriesRelations,
+  REL_CONNECTED_SUFFIX,
+  initBatchLoader,
+} from '../database/middleware';
 import { convertDataToStix } from '../database/stix';
 import { creator } from '../domain/log';
-import {
-  RELATION_CREATED_BY,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
+
+const createdByLoader = initBatchLoader(batchCreatedBy);
+const markingDefinitionsLoader = initBatchLoader(batchMarkingDefinitions);
+const labelsLoader = initBatchLoader(batchLabels);
+const externalReferencesLoader = initBatchLoader(batchExternalReferences);
+const killChainPhasesLoader = initBatchLoader(batchKillChainPhases);
+const notesLoader = initBatchLoader(batchNotes);
+const opinionsLoader = initBatchLoader(batchOpinions);
+const reportsLoader = initBatchLoader(batchReports);
 
 const stixCoreRelationshipResolvers = {
   Query: {
@@ -43,13 +54,7 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipsNumber: (_, args) => stixCoreRelationshipsNumber(args),
   },
   StixCoreRelationshipsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-    killChainPhase: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
     toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
-    toValidFrom: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_from`,
-    toValidUntil: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.valid_until`,
-    toPatternType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.pattern_type`,
   },
   StixCoreRelationshipsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
@@ -65,14 +70,15 @@ const stixCoreRelationshipResolvers = {
     to: (rel) => loadById(rel.toId, rel.toType),
     toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
     creator: (rel) => creator(rel.id),
-    createdBy: (rel) => createdBy(rel.id),
-    objectMarking: (rel) => markingDefinitions(rel.id),
-    objectLabel: (rel) => labels(rel.id),
+    createdBy: (rel) => createdByLoader.load(rel.id),
+    objectMarking: (rel) => markingDefinitionsLoader.load(rel.id),
+    objectLabel: (rel) => labelsLoader.load(rel.id),
+    externalReferences: (rel) => externalReferencesLoader.load(rel.id),
+    killChainPhases: (rel) => killChainPhasesLoader.load(rel.id),
+    reports: (rel) => reportsLoader.load(rel.id),
+    notes: (rel) => notesLoader.load(rel.id),
+    opinions: (rel) => opinionsLoader.load(rel.id),
     editContext: (rel) => fetchEditContext(rel.id),
-    externalReferences: (rel) => externalReferences(rel.id),
-    killChainPhases: (rel) => killChainPhases(rel.id),
-    reports: (rel) => reports(rel.id),
-    notes: (rel) => notes(rel.id),
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, { user }) => ({

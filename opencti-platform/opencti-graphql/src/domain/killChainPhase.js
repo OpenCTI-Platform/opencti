@@ -7,7 +7,7 @@ import {
   listEntities,
   loadById,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixMetaRelationship';
@@ -17,7 +17,7 @@ export const findById = (killChainPhaseId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_KILL_CHAIN_PHASE], ['kill_chain_name', 'phase_name'], args);
+  return listEntities([ENTITY_TYPE_KILL_CHAIN_PHASE], args);
 };
 
 export const addKillChainPhase = async (user, killChainPhase) => {

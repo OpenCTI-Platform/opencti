@@ -34,7 +34,6 @@ class TopMenuSettings extends Component {
           variant={
             location.pathname === '/dashboard/settings'
             || location.pathname === '/dashboard/settings/about'
-            || location.pathname === '/dashboard/settings/inferences'
               ? 'contained'
               : 'text'
           }
@@ -42,7 +41,6 @@ class TopMenuSettings extends Component {
           color={
             location.pathname === '/dashboard/settings'
             || location.pathname === '/dashboard/settings/about'
-            || location.pathname === '/dashboard/settings/inferences'
               ? 'primary'
               : 'inherit'
           }

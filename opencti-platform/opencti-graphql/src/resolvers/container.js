@@ -31,8 +31,6 @@ const containerResolvers = {
     objects: (container, args) => objects(container.id, args),
   },
   ContainersOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.name`,
   },
   ContainersFilter: {

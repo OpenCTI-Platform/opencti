@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, schemaTypes } from './general';
 
 export const RELATION_OPERATING_SYSTEM = 'operating-system';
 export const RELATION_SAMPLE = 'sample';
@@ -58,4 +59,63 @@ const STIX_CYBER_OBSERVABLE_RELATIONSHIPS = [
   RELATION_VALUES,
   RELATION_X509_V3_EXTENSIONS,
 ];
+schemaTypes.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 export const isStixCyberObservableRelationship = (type) => R.includes(type, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
+
+export const stixCyberObservableRelationshipsAttributes = [
+  'internal_id',
+  'standard_id',
+  'entity_type',
+  'created_at',
+  'i_created_at_day',
+  'i_created_at_month',
+  'i_created_at_year',
+  'updated_at',
+  'x_opencti_stix_ids',
+  'spec_version',
+  'revoked',
+  'confidence',
+  'lang',
+  'created',
+  'modified',
+  'relationship_type',
+  'start_time',
+  'i_start_time_day',
+  'i_start_time_month',
+  'i_start_time_month',
+  'stop_time',
+  'i_stop_time_day',
+  'i_stop_time_month',
+  'i_stop_time_year',
+];
+R.map(
+  (stixCyberObservableRelationshipType) =>
+    schemaTypes.registerAttributes(stixCyberObservableRelationshipType, stixCyberObservableRelationshipsAttributes),
+  STIX_CYBER_OBSERVABLE_RELATIONSHIPS
+);
+
+export const stixCyberObservableRelationshipsMapping = {
+  Directory_Directory: ['contains'],
+  Directory_StixFile: ['contains'],
+  'Email-Addr_User-Account': ['belongs-to'],
+  'Email-Message_Email-Addr': ['from', 'sender', 'to', 'bcc'],
+  'Email-Message_Email-Mime-Part-Type': ['body-multipart'],
+  'Email-Message_Artifact': ['raw-email'],
+  'Email-Mime-Part-Type_Artifact': ['body-raw'],
+  StixFile_Directory: ['parent-directory', 'contains'],
+  StixFile_Artifact: ['relation-content'],
+  'IPv4-Addr_Domain-Name': ['resolves-to'],
+  'IPv4-Addr_Mac-Addr': ['belongs-to'],
+  'IPv4-Addr_Autonomous-System': ['belongs-to'],
+  'IPv6-Addr_Domain-Name': ['resolves-to'],
+  'IPv6-Addr_Mac-Addr': ['belongs-to'],
+  'IPv6-Addr_Autonomous-System': ['belongs-to'],
+  'Network-Traffic_IPv4-Addr': ['src', 'dst'],
+  'Network-Traffic_IPv6-Addr': ['src', 'dst'],
+  'Network-Traffic_Network-Traffic': ['encapsulates'],
+  'Network-Traffic_Artifact': ['src-payload', 'dst-payload'],
+};
+
+export const checkStixCyberObservableRelationshipMapping = (fromType, toType, relationshipType) => {
+  return !!R.includes(relationshipType, stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || []);
+};

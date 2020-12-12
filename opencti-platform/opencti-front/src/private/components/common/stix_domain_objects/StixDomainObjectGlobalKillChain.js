@@ -197,15 +197,12 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                                   )
                               }
                               secondary={
-                                // eslint-disable-next-line no-nested-ternary
                                 stixDomainObject.description
                                 && stixDomainObject.description.length > 0 ? (
                                   <Markdown
                                     className="markdown"
                                     source={stixDomainObject.description}
                                   />
-                                  ) : stixDomainObject.inferred ? (
-                                  <i>{t('This relation is inferred')}</i>
                                   ) : (
                                     t('No description of this usage')
                                   )
@@ -228,12 +225,7 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                             ))}
                             <ItemYears
                               variant="inList"
-                              years={
-                                stixDomainObject.inferred
-                                  ? t('Inferred')
-                                  : stixDomainObject.years
-                              }
-                              disabled={stixDomainObject.inferred}
+                              years={stixDomainObject.years}
                             />
                             <ListItemSecondaryAction>
                               <StixCoreRelationshipPopover
@@ -276,7 +268,6 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
           fromRole: $fromRole
           toTypes: $toTypes
           relationship_type: $relationship_type
-          inferred: $inferred
           first: $first
         ) {
           edges {
@@ -285,7 +276,6 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
               description
               start_time
               stop_time
-              inferred
               to {
                 ... on BasicObject {
                   id

@@ -1,22 +1,20 @@
 // Admin user initialization
-import { v4 as uuid } from 'uuid';
 import { logger } from './config/conf';
 import { elCreateIndexes, elDeleteIndexes, elIsAlive, PLATFORM_INDICES } from './database/elasticSearch';
-import { graknIsAlive, internalDirectWrite, executeRead } from './database/grakn';
-import applyMigration from './database/migration';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
+import { BYPASS, findById, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { redisIsAlive } from './database/redis';
-
-// noinspection NodeJsCodingAssistanceForCoreModules
-const fs = require('fs');
+import { OPENCTI_ADMIN_UUID } from './schema/general';
+import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
+import applyMigration from './database/migration';
+import { createEntity } from './database/middleware';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -87,9 +85,6 @@ export const CAPABILITIES = [
 
 // Check every dependencies
 export const checkSystemDependencies = async () => {
-  // Check if Grakn is available
-  await graknIsAlive();
-  logger.info(`[CHECK] Grakn is alive`);
   // Check if elasticsearch is available
   await elIsAlive();
   logger.info(`[CHECK] ElasticSearch is alive`);
@@ -110,10 +105,6 @@ export const checkSystemDependencies = async () => {
 
 // Initialize
 const initializeSchema = async () => {
-  // Inject grakn schema
-  const schema = fs.readFileSync('./src/opencti.gql', 'utf8');
-  await internalDirectWrite(schema);
-  logger.info(`[INIT] Grakn schema loaded`);
   // New platform so delete all indices to prevent conflict
   await elDeleteIndexes(PLATFORM_INDICES);
   // Create default indexes
@@ -125,41 +116,15 @@ const initializeSchema = async () => {
 const initializeMigration = async () => {
   logger.info('[INIT] Creating migration structure');
   const time = new Date().getTime();
-  const lastRunInit = `${parseInt(time, 10) + 1}-init`;
-  await internalDirectWrite(
-    `insert $x isa MigrationStatus, 
-        has entity_type "MigrationStatus",
-        has lastRun "${lastRunInit}", 
-        has internal_id "${uuid()}", 
-        has standard_id "migration-status--${uuid()}";`
-  );
+  const lastRun = `${parseInt(time, 10) + 1}-init`;
+  const migrationStatus = { lastRun };
+  await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
 };
 
+// eslint-disable-next-line
 const createAttributesTypes = async () => {
-  await addAttribute({ type: 'report_types', value: 'threat-report' });
-  await addAttribute({ type: 'report_types', value: 'internal-report' });
-  await addAttribute({ type: 'malware_types', value: 'adware' });
-  await addAttribute({ type: 'malware_types', value: 'backdoor' });
-  await addAttribute({ type: 'malware_types', value: 'bot' });
-  await addAttribute({ type: 'malware_types', value: 'bootkit' });
-  await addAttribute({ type: 'malware_types', value: 'ddos' });
-  await addAttribute({ type: 'malware_types', value: 'downloader' });
-  await addAttribute({ type: 'malware_types', value: 'dropper' });
-  await addAttribute({ type: 'malware_types', value: 'exploit-kit' });
-  await addAttribute({ type: 'malware_types', value: 'keylogger' });
-  await addAttribute({ type: 'malware_types', value: 'ransomware' });
-  await addAttribute({ type: 'malware_types', value: 'remote-access-trojan' });
-  await addAttribute({ type: 'malware_types', value: 'resource-exploitation' });
-  await addAttribute({ type: 'malware_types', value: 'rogue-security-software' });
-  await addAttribute({ type: 'malware_types', value: 'rootkit' });
-  await addAttribute({ type: 'malware_types', value: 'screen-capture' });
-  await addAttribute({ type: 'malware_types', value: 'spyware' });
-  await addAttribute({ type: 'malware_types', value: 'trojan' });
-  await addAttribute({ type: 'malware_types', value: 'unknown' });
-  await addAttribute({ type: 'malware_types', value: 'virus' });
-  await addAttribute({ type: 'malware_types', value: 'webshell' });
-  await addAttribute({ type: 'malware_types', value: 'wiper' });
-  await addAttribute({ type: 'malware_types', value: 'worm' });
+  await addAttribute(SYSTEM_USER, { key: 'report_types', value: 'threat-report' });
+  await addAttribute(SYSTEM_USER, { key: 'report_types', value: 'internal-report' });
 };
 
 const createMarkingDefinitions = async () => {
@@ -249,20 +214,21 @@ const initializeData = async () => {
   return true;
 };
 
-const isEmptyPlatform = async () => {
-  const entityCount = await executeRead(async (rTx) => {
-    const iterator = await rTx.query('match $x sub entity; get;');
-    const answers = await iterator.collect();
-    return answers.length;
-  });
-  return entityCount <= 1; // Only type entity is available on an empty platform.
+const isExistingPlatform = async () => {
+  try {
+    const admin = await findById(OPENCTI_ADMIN_UUID);
+    return admin && admin.internal_id === OPENCTI_ADMIN_UUID;
+  } catch {
+    return false;
+  }
 };
 
+// eslint-disable-next-line
 const platformInit = async (noMigration = false) => {
   await checkSystemDependencies();
   try {
-    const needToBeInitialized = await isEmptyPlatform();
-    if (needToBeInitialized) {
+    const alreadyExists = await isExistingPlatform();
+    if (!alreadyExists) {
       logger.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
       await initializeMigration();

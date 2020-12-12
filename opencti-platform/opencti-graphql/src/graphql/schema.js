@@ -4,7 +4,6 @@ import { makeExecutableSchema } from 'graphql-tools';
 import { constraintDirective } from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
-import inferenceResolvers from '../resolvers/inference';
 import attributeResolvers from '../resolvers/attribute';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
@@ -19,7 +18,6 @@ import stixMetaRelationshipResolvers from '../resolvers/stixMetaRelationship';
 import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
 import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelationship';
 import stixCyberObservableRelationResolvers from '../resolvers/stixCyberObservableRelationship';
-import workspaceResolvers from '../resolvers/workspace';
 import identityResolvers from '../resolvers/identity';
 import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
@@ -66,7 +64,6 @@ const createSchema = () => {
     globalResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
-    inferenceResolvers,
     attributeResolvers,
     subTypeResolvers,
     fileResolvers,
@@ -77,7 +74,6 @@ const createSchema = () => {
     groupResolvers,
     userResolvers,
     connectorResolvers,
-    workspaceResolvers,
     // STIX OBJECT ENTITIES
     // STIX META OBJECT ENTITIES
     markingDefinitionResolvers,

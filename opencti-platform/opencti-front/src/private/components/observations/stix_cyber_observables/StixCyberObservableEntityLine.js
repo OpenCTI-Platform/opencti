@@ -114,11 +114,7 @@ class StixCyberObservableEntityLineComponent extends Component {
                   style={{ width: dataColumns.role_played.width }}
                 >
                   {/* eslint-disable-next-line no-nested-ternary */}
-                  {node.inferred
-                    ? '-'
-                    : node.role_played
-                      ? t(node.role_played)
-                      : t('Unknown')}
+                  {node.role_played ? t(node.role_played) : t('Unknown')}
                 </div>
               ) : (
                 ''
@@ -139,10 +135,7 @@ class StixCyberObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence
-                  confidence={node.inferred ? 1000 : node.confidence}
-                  variant="inList"
-                />
+                <ItemConfidence confidence={node.confidence} variant="inList" />
               </div>
             </div>
           }
@@ -151,7 +144,6 @@ class StixCyberObservableEntityLineComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -181,7 +173,6 @@ const StixCyberObservableEntityLineFragment = createFragmentContainer(
         start_time
         stop_time
         description
-        inferred
         from {
           ... on BasicObject {
             id

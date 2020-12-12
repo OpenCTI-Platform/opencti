@@ -94,16 +94,13 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.created_at.width }}
               >
-                {node.inferred ? '-' : nsd(node.created_at)}
+                {nsd(node.created_at)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence
-                  confidence={node.inferred ? 1000 : node.confidence}
-                  variant="inList"
-                />
+                <ItemConfidence confidence={node.confidence} variant="inList" />
               </div>
             </div>
           }
@@ -112,7 +109,6 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
             connectionKey={connectionKey}
           />
         </ListItemSecondaryAction>
@@ -146,7 +142,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
         start_time
         stop_time
         description
-        inferred
         from {
           ... on StixDomainObject {
             id

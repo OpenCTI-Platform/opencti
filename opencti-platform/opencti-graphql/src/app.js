@@ -62,8 +62,12 @@ const createApp = async (apolloServer, broadcaster) => {
   app.use(bodyParser.json({ limit: '100mb' }));
   app.use(limiter);
 
-  const seeMiddleware = createSeeMiddleware(broadcaster);
-  seeMiddleware.applyMiddleware({ app });
+  let seeMiddleware;
+  if (broadcaster) {
+    seeMiddleware = createSeeMiddleware(broadcaster);
+    seeMiddleware.applyMiddleware({ app });
+  }
+
   const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
   const AppBasePath = nconf.get('app:base_path').trim();
   const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;

@@ -1,4 +1,4 @@
-import { createEntity, listEntities, listFromEntitiesThroughRelation, loadById } from '../database/grakn';
+import { createEntity, listEntities, batchListThroughGetFrom, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_THREAT_ACTOR } from '../schema/stixDomainObject';
@@ -10,7 +10,7 @@ export const findById = (threatActorId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_THREAT_ACTOR], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_THREAT_ACTOR], args);
 };
 
 export const addThreatActor = async (user, threatActor) => {
@@ -18,6 +18,6 @@ export const addThreatActor = async (user, threatActor) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const locations = (threatActorId) => {
-  return listFromEntitiesThroughRelation(threatActorId, null, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
+export const batchLocations = (threatActorIds) => {
+  return batchListThroughGetFrom(threatActorIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_THREAT_ACTOR);
 };

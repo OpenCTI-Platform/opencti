@@ -7,24 +7,17 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { killChainPhases } from '../domain/stixCoreObject';
-import {
-  RELATION_CREATED_BY,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const killChainPhaseLoader = initBatchLoader(batchKillChainPhases);
 
 const toolResolvers = {
   Query: {
     tool: (_, { id }) => findById(id),
     tools: (_, args) => findAll(args),
-  },
-  ToolsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
-    killChainPhase: `${REL_INDEX_PREFIX}${RELATION_KILL_CHAIN_PHASE}.phase_name`,
   },
   ToolsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
@@ -32,7 +25,7 @@ const toolResolvers = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Tool: {
-    killChainPhases: (tool) => killChainPhases(tool.id),
+    killChainPhases: (tool) => killChainPhaseLoader.load(tool.id),
   },
   Mutation: {
     toolEdit: (_, { id }, { user }) => ({

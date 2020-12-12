@@ -1,5 +1,5 @@
 import { assoc } from 'ramda';
-import { createEntity, listEntities, listToEntitiesThroughRelation, loadById } from '../database/grakn';
+import { createEntity, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
@@ -11,7 +11,7 @@ export const findById = (individualId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_INDIVIDUAL], ['name', 'description', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
 };
 
 export const addIndividual = async (user, individual) => {
@@ -23,6 +23,6 @@ export const addIndividual = async (user, individual) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const organizations = (individualId) => {
-  return listToEntitiesThroughRelation(individualId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const batchOrganizations = (individualIds) => {
+  return batchListThroughGetTo(individualIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };

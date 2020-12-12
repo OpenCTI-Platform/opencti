@@ -169,13 +169,13 @@ export const stixCyberObservablesSearchLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCyberObservablesSearchLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

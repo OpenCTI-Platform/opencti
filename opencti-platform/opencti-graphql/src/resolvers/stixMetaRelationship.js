@@ -1,4 +1,4 @@
-import { distributionRelations, loadById } from '../database/grakn';
+import { distributionRelations, loadById } from '../database/middleware';
 import stixMetaRelationshipsNumber from '../domain/stixMetaRelationship';
 
 const stixMetaRelationshipResolvers = {

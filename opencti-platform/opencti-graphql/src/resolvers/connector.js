@@ -19,7 +19,7 @@ import {
   worksForConnector,
   findAll,
 } from '../domain/work';
-import { now } from '../database/grakn';
+import { now } from '../database/middleware';
 import { findById as findUserById } from '../domain/user';
 
 const connectorResolvers = {

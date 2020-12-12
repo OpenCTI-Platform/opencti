@@ -11,11 +11,11 @@ import {
   distributionEntities,
   escape,
   listEntities,
-  listToEntitiesThroughRelation,
+  batchListThroughGetTo,
   loadById,
   timeSeriesEntities,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
 import { INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
@@ -43,7 +43,7 @@ import {
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions,
-} from '../schema/stixCyberObservableObject';
+} from '../schema/stixCyberObservable';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
@@ -64,7 +64,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
   }
-  return listEntities(types, ['standard_id'], args);
+  return listEntities(types, args);
 };
 
 // region by elastic
@@ -102,8 +102,8 @@ export const stixCyberObservableAskEnrichment = async (user, observableId, conne
   return work;
 };
 
-export const indicators = (stixCyberObservableId) => {
-  return listToEntitiesThroughRelation(stixCyberObservableId, null, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+export const batchIndicators = (stixCyberObservableIds) => {
+  return batchListThroughGetTo(stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
 export const observableValue = (stixCyberObservable) => {

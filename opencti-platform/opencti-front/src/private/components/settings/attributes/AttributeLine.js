@@ -88,7 +88,7 @@ const AttributeLineFragment = createFragmentContainer(AttributeLineComponent, {
   node: graphql`
     fragment AttributeLine_node on Attribute {
       id
-      type
+      key
       value
     }
   `,

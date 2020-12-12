@@ -144,7 +144,7 @@ AddLocationsLinesContainer.propTypes = {
 export const addLocationsLinesQuery = graphql`
   query AddLocationsLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddLocationsLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -159,7 +159,7 @@ const AddLocationsLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         locations(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_locations") {
+          @connection(key: "Pagination_locations") {
           edges {
             node {
               id

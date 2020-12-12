@@ -60,7 +60,11 @@ class ContainerStixCyberObservablesLines extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
             containerId={propOr(null, 'id', container)}
-            containerStixCoreObjects={pathOr([], ['objects', 'edges'], container)}
+            containerStixCoreObjects={pathOr(
+              [],
+              ['objects', 'edges'],
+              container,
+            )}
             paginationOptions={paginationOptions}
             withPadding={true}
             targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
@@ -97,15 +101,15 @@ export const containerStixCyberObservablesLinesQuery = graphql`
   ) {
     container(id: $id) {
       ...ContainerStixCyberObservablesLines_container
-      @arguments(
-        types: $types
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+        @arguments(
+          types: $types
+          search: $search
+          count: $count
+          cursor: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+          filters: $filters
+        )
     }
   }
 `;

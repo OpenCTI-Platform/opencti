@@ -5,7 +5,7 @@ import {
   addStixCyberObservable,
   findAll,
   findById,
-  indicators,
+  batchIndicators,
   observableValue,
   stixCyberObservableAddRelation,
   stixCyberObservableAddRelations,
@@ -33,7 +33,10 @@ import { stixCoreRelationships } from '../domain/stixCoreObject';
 import { filesListing } from '../database/minio';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
-import { stixCyberObservableOptions } from '../schema/stixCyberObservableObject';
+import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
+import { initBatchLoader } from '../database/middleware';
+
+const indicatorsLoader = initBatchLoader(batchIndicators);
 
 const stixCyberObservableResolvers = {
   Query: {
@@ -49,7 +52,6 @@ const stixCyberObservableResolvers = {
     },
     stixCyberObservablesExportFiles: (_, { first }) => filesListing(first, 'export/Stix-Cyber-Observable/'),
   },
-  StixCyberObservablesOrdering: stixCyberObservableOptions.StixCyberObservablesOrdering,
   StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
   HashedObservable: {
     hashes: (stixCyberObservable) => complexAttributeToApiFormat('hashes', stixCyberObservable),
@@ -63,7 +65,7 @@ const stixCyberObservableResolvers = {
       return 'Unknown';
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
-    indicators: (stixCyberObservable) => indicators(stixCyberObservable.id),
+    indicators: (stixCyberObservable) => indicatorsLoader.load(stixCyberObservable.id),
     jobs: (stixCyberObservable, args) => worksForSource(stixCyberObservable.id, args),
     connectors: (stixCyberObservable, { onlyAlive = false }) =>
       connectorsForEnrichment(stixCyberObservable.entity_type, onlyAlive),

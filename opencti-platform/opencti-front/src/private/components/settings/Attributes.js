@@ -27,8 +27,8 @@ const styles = () => ({
 });
 
 export const attributesSearchQuery = graphql`
-  query AttributesSearchQuery($type: String!, $search: String, $first: Int) {
-    attributes(type: $type, search: $search, first: $first) {
+  query AttributesSearchQuery($key: String!, $search: String, $first: Int) {
+    attributes(key: $key, search: $search, first: $first) {
       edges {
         node {
           id
@@ -112,12 +112,12 @@ class Attributes extends Component {
     const {
       classes,
       match: {
-        params: { attributeLabel },
+        params: { attributeKey },
       },
     } = this.props;
     const { view, searchTerm } = this.state;
     const paginationOptions = {
-      type: attributeLabel,
+      key: attributeKey,
       search: searchTerm,
     };
     return (
@@ -126,7 +126,7 @@ class Attributes extends Component {
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <AttributeCreation
           paginationOptions={paginationOptions}
-          attributeType={attributeLabel}
+          attributeKey={attributeKey}
         />
       </div>
     );

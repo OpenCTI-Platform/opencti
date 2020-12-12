@@ -1,13 +1,12 @@
 import { assoc } from 'ramda';
 import {
   createEntity,
-  escapeString,
-  getSingleValueNumber,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
   loadById,
-} from '../database/grakn';
+  batchLoadThroughGetTo,
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
@@ -19,29 +18,24 @@ export const findById = (regionId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_REGION], ['name', 'description', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_LOCATION_REGION], args);
 };
 
-export const parentRegions = (regionId) => {
-  return listToEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+export const batchParentRegions = (regionIds) => {
+  return batchListThroughGetTo(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
-export const subRegions = (regionId) => {
-  return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+export const batchSubRegions = (regionIds) => {
+  return batchListThroughGetFrom(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
-export const countries = (regionId) => {
-  return listFromEntitiesThroughRelation(regionId, null, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY, true);
+export const batchCountries = (regionIds) => {
+  return batchListThroughGetFrom(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
-export const isSubRegion = async (regionId) => {
-  const numberOfParents = await getSingleValueNumber(
-    `match $parent isa Region; 
-    $rel(${RELATION_LOCATED_AT}_from:$subregion, ${RELATION_LOCATED_AT}_to:$parent) isa ${RELATION_LOCATED_AT}; 
-    $subregion has internal_id "${escapeString(regionId)}"; 
-    get; count;`
-  );
-  return numberOfParents > 0;
+export const batchIsSubRegion = async (regionIds) => {
+  const batchRegions = await batchLoadThroughGetTo(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+  return batchRegions.map((b) => b !== undefined);
 };
 
 export const addRegion = async (user, region) => {

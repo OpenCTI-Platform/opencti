@@ -103,7 +103,6 @@ class EntityStixCoreRelationshipsChart extends Component {
       variant,
       md,
       field,
-      inferred,
       startDate,
       endDate,
     } = this.props;
@@ -118,7 +117,6 @@ class EntityStixCoreRelationshipsChart extends Component {
           : monthsAgo(this.state.period),
       endDate: variant === 'explore' && endDate ? endDate : now(),
       interval: 'month',
-      inferred: inferred || false,
     };
     return (
       <QueryRenderer
@@ -278,7 +276,6 @@ EntityStixCoreRelationshipsChart.propTypes = {
   entityId: PropTypes.string,
   relationship_type: PropTypes.string,
   field: PropTypes.string,
-  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   entityTypes: PropTypes.array,

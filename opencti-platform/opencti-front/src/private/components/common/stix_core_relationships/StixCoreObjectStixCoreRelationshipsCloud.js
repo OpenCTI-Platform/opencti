@@ -46,7 +46,6 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
     $fromId: String!
     $toTypes: [String]
     $relationship_type: String
-    $inferred: Boolean
     $startDate: DateTime
     $endDate: DateTime
     $field: String!
@@ -59,7 +58,6 @@ const stixCoreObjectStixCoreRelationshipsCloudDistributionQuery = graphql`
       fromId: $fromId
       toTypes: $toTypes
       relationship_type: $relationship_type
-      inferred: $inferred
       startDate: $startDate
       endDate: $endDate
       field: $field
@@ -83,7 +81,6 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
       stixCoreObjectType,
       relationshipType,
       field,
-      inferred,
       startDate,
       endDate,
       classes,
@@ -93,7 +90,6 @@ class StixCoreObjectStixCoreRelationshipsCloud extends Component {
     const stixCoreRelationshipsDistributionVariables = {
       fromId: stixCoreObjectId,
       toTypes: stixCoreObjectType ? [stixCoreObjectType] : null,
-      inferred: inferred || false,
       startDate: startDate || null,
       endDate: endDate || null,
       relationship_type: relationshipType,
@@ -229,7 +225,6 @@ StixCoreObjectStixCoreRelationshipsCloud.propTypes = {
   stixCoreObjectId: PropTypes.string,
   relationshipType: PropTypes.string,
   stixCoreObjectType: PropTypes.string,
-  inferred: PropTypes.bool,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   field: PropTypes.string,

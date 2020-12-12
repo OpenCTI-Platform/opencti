@@ -1,62 +1,48 @@
-import { assoc, map } from 'ramda';
+import { assoc, flatten } from 'ramda';
 import {
-  find,
   createEntity,
-  escapeString,
-  getSingleValueNumber,
   listEntities,
-  listFromEntitiesThroughRelation,
-  listToEntitiesThroughRelation,
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
   loadById,
-} from '../database/grakn';
+  listRelations,
+  listThroughGetFrom,
+  batchLoadThroughGetTo,
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
 import { RELATION_PART_OF, RELATION_TARGETS } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
-import { buildPagination } from '../database/utils';
 
 export const findById = (sectorId) => {
   return loadById(sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], ['name', 'x_opencti_aliases'], args);
+  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], args);
 };
 
-export const parentSectors = (sectorId) => {
-  return listToEntitiesThroughRelation(sectorId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchParentSectors = (sectorIds) => {
+  return batchListThroughGetTo(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const subSectors = (sectorId) => {
-  return listFromEntitiesThroughRelation(sectorId, null, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchSubSectors = (sectorIds) => {
+  return batchListThroughGetFrom(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const isSubSector = async (sectorId) => {
-  const numberOfParents = await getSingleValueNumber(
-    `match $parent isa ${ENTITY_TYPE_IDENTITY_SECTOR}; 
-    $rel(${RELATION_PART_OF}_from:$subsector, ${RELATION_PART_OF}_to:$parent) isa ${RELATION_PART_OF}; 
-    $subsector has internal_id "${escapeString(sectorId)}"; get; count;`
+export const batchIsSubSector = async (sectorIds) => {
+  const batchSubsectors = await batchLoadThroughGetTo(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+  return batchSubsectors.map((b) => b !== undefined);
+};
+
+export const targetedOrganizations = async (sectorId) => {
+  const organizations = await listThroughGetFrom(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+  const targets = await Promise.all(
+    organizations.map((organization) => listRelations(RELATION_TARGETS, { fromId: organization.id }))
   );
-  return numberOfParents > 0;
+  return flatten(targets);
 };
-
-export const targetedOrganizations = async (sectorId) =>
-  find(
-    `match $sector has internal_id "${escapeString(sectorId)}";
-    $organization isa Organization;
-    ($organization, $sector) isa ${RELATION_PART_OF}; 
-  $rel($threat, $organization) isa ${RELATION_TARGETS}, has start_time $order;
-  get; sort $order desc;`,
-    ['rel']
-  ).then((data) =>
-    buildPagination(
-      0,
-      0,
-      map((n) => ({ node: n.rel }), data),
-      data.length
-    )
-  );
 
 export const addSector = async (user, sector) => {
   const created = await createEntity(

@@ -1,6 +1,6 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { now, sinceNowInMinutes } from '../database/grakn';
+import { now, sinceNowInMinutes } from '../database/middleware';
 import { el, elDeleteInstanceIds, elIndex, elLoadByIds, elPaginate, INDEX_HISTORY } from '../database/elasticSearch';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';

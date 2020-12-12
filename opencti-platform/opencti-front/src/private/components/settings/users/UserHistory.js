@@ -50,7 +50,9 @@ class UserHistory extends Component {
         <QueryRenderer
           query={userHistoryLinesQuery}
           variables={{
-            filters: [{ key: 'user_id', values: [userId], operator: 'wildcard' }],
+            filters: [
+              { key: 'user_id', values: [userId], operator: 'wildcard' },
+            ],
             first: 20,
             orderBy: 'timestamp',
             orderMode: 'desc',

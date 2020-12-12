@@ -155,7 +155,7 @@ export const addCoursesOfActionLinesQuery = graphql`
     $cursor: ID
   ) {
     ...AddCoursesOfActionLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -170,7 +170,7 @@ const AddCoursesOfActionLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         coursesOfAction(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_coursesOfAction") {
+          @connection(key: "Pagination_coursesOfAction") {
           edges {
             node {
               id

@@ -9,7 +9,7 @@ import {
   listEntities,
   loadById,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { ForbiddenAccess, FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -21,7 +21,7 @@ export const findById = (externalReferenceId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_EXTERNAL_REFERENCE], ['source_name', 'description'], args);
+  return listEntities([ENTITY_TYPE_EXTERNAL_REFERENCE], args);
 };
 
 export const addExternalReference = async (user, externalReference) => {

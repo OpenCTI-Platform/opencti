@@ -1,27 +1,25 @@
-import { assoc, pipe } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import {
   createEntity,
   distributionEntities,
-  distributionEntitiesThroughRelations,
-  escapeString,
-  getSingleValueNumber,
   listEntities,
   loadById,
-  prepareDate,
   timeSeriesEntities,
-} from '../database/grakn';
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { elCount } from '../database/elasticSearch';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 export const findById = (noteId) => {
   return loadById(noteId, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_NOTE], ['name', 'attribute_abstract', 'content'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
 export const noteContainsStixObjectOrStixRelationship = async (noteId, thingId) => {
@@ -41,12 +39,11 @@ export const notesTimeSeries = (args) => {
 };
 
 export const notesNumber = (args) => ({
-  count: getSingleValueNumber(
-    `match $x isa Note; ${
-      args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    } get; count;`
+  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]), dissoc('endDate'))(args)
   ),
-  total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_NOTE}; get; count;`),
 });
 
 export const notesTimeSeriesByEntity = (args) => {
@@ -69,36 +66,29 @@ export const notesTimeSeriesByAuthor = async (args) => {
 };
 
 export const notesNumberByEntity = (args) => ({
-  count: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_NOTE};
-    $rel(${RELATION_OBJECT}_from:$x, ${RELATION_OBJECT}_to:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
-      args.endDate ? `; $x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    }
-    get;
-    count;`
+  count: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId)
+    )(args)
   ),
-  total: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_NOTE};
-    $rel(${RELATION_OBJECT}_from:$x, ${RELATION_OBJECT}_to:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}";
-    get;
-    count;`
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId),
+      dissoc('endDate')
+    )(args)
   ),
 });
 
 export const notesDistributionByEntity = async (args) => {
-  const { objectId, field } = args;
-  if (field.includes('.')) {
-    const options = pipe(
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('toTypes', [ENTITY_TYPE_CONTAINER_NOTE]),
-      assoc('field', field.split('.')[1]),
-      assoc('remoteRelationshipType', field.split('.')[0]),
-      assoc('fromId', objectId)
-    )(args);
-    return distributionEntitiesThroughRelations(options);
-  }
+  const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
   return distributionEntities(ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };

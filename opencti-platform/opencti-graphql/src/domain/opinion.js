@@ -1,26 +1,18 @@
-import { assoc, pipe } from 'ramda';
-import {
-  createEntity,
-  distributionEntities,
-  distributionEntitiesThroughRelations,
-  escapeString,
-  getSingleValueNumber,
-  listEntities,
-  loadById,
-  prepareDate,
-  timeSeriesEntities,
-} from '../database/grakn';
+import { assoc, dissoc, pipe } from 'ramda';
+import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { elCount } from '../database/elasticSearch';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 export const findById = (opinionId) => {
   return loadById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);
 };
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_OPINION], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_OPINION], args);
 };
 
 // Entities tab
@@ -42,12 +34,11 @@ export const opinionsTimeSeries = (args) => {
 };
 
 export const opinionsNumber = (args) => ({
-  count: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_OPINION}; ${
-      args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    } get; count;`
+  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]), dissoc('endDate'))(args)
   ),
-  total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_OPINION}; get; count;`),
 });
 
 export const opinionsTimeSeriesByEntity = (args) => {
@@ -70,36 +61,29 @@ export const opinionsTimeSeriesByAuthor = async (args) => {
 };
 
 export const opinionsNumberByEntity = (args) => ({
-  count: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_OPINION};
-    $rel(${RELATION_OBJECT}_from:$x, ${RELATION_OBJECT}_to:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}" ${
-      args.endDate ? `; $x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    }
-    get;
-    count;`
+  count: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId)
+    )(args)
   ),
-  total: getSingleValueNumber(
-    `match $x isa ${ENTITY_TYPE_CONTAINER_OPINION};
-    $rel(${RELATION_OBJECT}_from:$x, ${RELATION_OBJECT}_to:$so) isa ${RELATION_OBJECT}; 
-    $so has internal_id "${escapeString(args.objectId)}";
-    get;
-    count;`
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId),
+      dissoc('endDate')
+    )(args)
   ),
 });
 
 export const opinionsDistributionByEntity = async (args) => {
-  const { objectId, field } = args;
-  if (field.includes('.')) {
-    const options = pipe(
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('toTypes', [ENTITY_TYPE_CONTAINER_OPINION]),
-      assoc('field', field.split('.')[1]),
-      assoc('remoteRelationshipType', field.split('.')[0]),
-      assoc('fromId', objectId)
-    )(args);
-    return distributionEntitiesThroughRelations(options);
-  }
+  const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
   return distributionEntities(ENTITY_TYPE_CONTAINER_OPINION, filters, args);
 };

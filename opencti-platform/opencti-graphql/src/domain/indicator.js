@@ -5,10 +5,10 @@ import {
   createEntity,
   createRelation,
   listEntities,
-  listToEntitiesThroughRelation,
+  batchListThroughGetTo,
   loadById,
   now,
-} from '../database/grakn';
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
@@ -16,7 +16,7 @@ import { findById as findKillChainPhaseById } from './killChainPhase';
 import { checkIndicatorSyntax } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { isStixCyberObservable } from '../schema/stixCyberObservableObject';
+import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
@@ -110,7 +110,7 @@ export const findById = (indicatorId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_INDICATOR], ['name', 'alias'], args);
+  return listEntities([ENTITY_TYPE_INDICATOR], args);
 };
 
 export const addIndicator = async (user, indicator) => {
@@ -151,6 +151,6 @@ export const addIndicator = async (user, indicator) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const observables = (indicatorId) => {
-  return listToEntitiesThroughRelation(indicatorId, null, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+export const batchObservables = (indicatorIds) => {
+  return batchListThroughGetTo(indicatorIds, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };

@@ -7,18 +7,17 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { killChainPhases } from '../domain/stixCoreObject';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const killChainPhaseLoader = initBatchLoader(batchKillChainPhases);
 
 const infrastructureResolvers = {
   Query: {
     infrastructure: (_, { id }) => findById(id),
     infrastructures: (_, args) => findAll(args),
-  },
-  InfrastructuresOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
   },
   InfrastructuresFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
@@ -26,7 +25,7 @@ const infrastructureResolvers = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Infrastructure: {
-    killChainPhases: (infrastructure) => killChainPhases(infrastructure.id),
+    killChainPhases: (infrastructure) => killChainPhaseLoader.load(infrastructure.id),
   },
   Mutation: {
     infrastructureEdit: (_, { id }, { user }) => ({

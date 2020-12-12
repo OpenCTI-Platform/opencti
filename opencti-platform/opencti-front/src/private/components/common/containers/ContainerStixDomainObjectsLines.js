@@ -60,7 +60,11 @@ class ContainerStixDomainObjectsLines extends Component {
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ContainerAddStixCoreObjects
             containerId={propOr(null, 'id', container)}
-            containerStixCoreObjects={pathOr([], ['objects', 'edges'], container)}
+            containerStixCoreObjects={pathOr(
+              [],
+              ['objects', 'edges'],
+              container,
+            )}
             paginationOptions={paginationOptions}
             withPadding={true}
             targetStixCoreObjectTypes={['Stix-Domain-Object']}
@@ -98,15 +102,15 @@ export const containerStixDomainObjectsLinesQuery = graphql`
     container(id: $id) {
       id
       ...ContainerStixDomainObjectsLines_container
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-        filters: $filters
-      )
+        @arguments(
+          search: $search
+          types: $types
+          count: $count
+          cursor: $cursor
+          orderBy: $orderBy
+          orderMode: $orderMode
+          filters: $filters
+        )
     }
   }
 `;

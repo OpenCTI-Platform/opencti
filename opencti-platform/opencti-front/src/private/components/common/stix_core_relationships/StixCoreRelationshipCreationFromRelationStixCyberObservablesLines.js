@@ -153,14 +153,14 @@ export const stixCoreRelationshipCreationFromRelationStixCyberObservablesLinesQu
     $orderMode: OrderingMode
   ) {
     ...StixCoreRelationshipCreationFromRelationStixCyberObservablesLines_data
-    @arguments(
-      search: $search
-      types: $types
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        types: $types
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
