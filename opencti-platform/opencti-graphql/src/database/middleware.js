@@ -228,8 +228,15 @@ export const loadThroughGetTo = async (sources, relationType, targetEntityType) 
   return loadThrough(sources, 'from', relationType, targetEntityType);
 };
 export const listEntities = async (entityTypes, args = {}) => {
-  // filters contains potential relations like, mitigates, tagged ...
   return elPaginate(ENTITIES_INDICES, R.assoc('types', entityTypes, args));
+};
+export const loadEntity = async (entityTypes, args = {}) => {
+  const opts = Object.assign(args, { connectionFormat: false });
+  const entities = await listEntities(entityTypes, opts);
+  if (entities.length > 1) {
+    throw DatabaseError('Expect only one response', { entityTypes, args });
+  }
+  return entities && R.head(entities);
 };
 export const listRelations = async (relationshipType, args) => {
   const { relationFilter = false } = args;

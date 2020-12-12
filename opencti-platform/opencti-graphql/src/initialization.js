@@ -12,6 +12,9 @@ import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { redisIsAlive } from './database/redis';
 import { OPENCTI_ADMIN_UUID } from './schema/general';
+import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
+import applyMigration from './database/migration';
+import { createEntity } from './database/middleware';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -112,16 +115,10 @@ const initializeSchema = async () => {
 
 const initializeMigration = async () => {
   logger.info('[INIT] Creating migration structure');
-  // const time = new Date().getTime();
-  // const lastRunInit = `${parseInt(time, 10) + 1}-init`;
-  // await internalDirectWrite(
-  //   `insert $x isa MigrationStatus,
-  //       has entity_type "MigrationStatus",
-  //       has lastRun "${lastRunInit}",
-  //       has internal_id "${uuid()}",
-  //       has standard_id "migration-status--${uuid()}";`
-  // );
-  // TODO JRI MIGRATION
+  const time = new Date().getTime();
+  const lastRun = `${parseInt(time, 10) + 1}-init`;
+  const migrationStatus = { lastRun };
+  await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
 };
 
 // eslint-disable-next-line
@@ -241,10 +238,9 @@ const platformInit = async (noMigration = false) => {
       logger.info('[INIT] Existing platform detected, initialization...');
       // Always reset the admin user
       await initializeAdminUser();
-      // TODO JRI MIGRATE
-      // if (!noMigration) {
-      //   await applyMigration();
-      // }
+      if (!noMigration) {
+        await applyMigration();
+      }
     }
   } catch (e) {
     logger.error(`[OPENCTI] Platform initialization fail`, { error: e });

@@ -208,6 +208,9 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
                   },
                 ],
                 properties: {
+                  timestamp: {
+                    type: 'date',
+                  },
                   confidence: {
                     type: 'integer',
                   },
@@ -1094,7 +1097,13 @@ export const elPaginate = async (indexName, options = {}) => {
 // endregion
 
 export const elBulk = async (args) => {
-  return el.bulk(args);
+  return el.bulk(args).then((result) => {
+    if (result.body.errors) {
+      const errors = result.body.items.map((i) => i.index?.error).filter((f) => f !== undefined);
+      throw DatabaseError('Error executing bulk indexing', { errors });
+    }
+    return result;
+  });
 };
 
 /* istanbul ignore next */

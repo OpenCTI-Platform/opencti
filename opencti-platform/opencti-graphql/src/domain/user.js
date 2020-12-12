@@ -363,36 +363,32 @@ export const logout = async (user, res) => {
 };
 
 // Token related
-// eslint-disable-next-line no-unused-vars
 const internalGetTokenByUUID = async (tokenUUID) => {
   return elLoadBy(['uuid'], tokenUUID, ENTITY_TYPE_TOKEN);
 };
-// eslint-disable-next-line no-unused-vars
+
 export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
-  // // 01. Get current token
-  // const currentToken = await internalGetToken(userId);
-  // // 02. Remove the token
-  // if (currentToken) {
-  //   await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
-  // } else {
-  //   logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
-  //   const detachedToken = await internalGetTokenByUUID(newToken.uuid);
-  //   if (detachedToken) {
-  //     await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
-  //   }
-  // }
-  // // 03. Create a new one
-  // const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
-  // // 04. Associate new token to user.
-  // const input = {
-  //   fromId: userId,
-  //   toId: defaultToken.id,
-  //   relationship_type: RELATION_AUTHORIZED_BY,
-  // };
-  // await createRelation(user, input);
-  // return loadById(userId, ENTITY_TYPE_USER);
-  // TODO JRI MIGRATE
-  // REACTIVATE AFTER MIGRATION OF deleteElementById
+  // 01. Get current token
+  const currentToken = await internalGetToken(userId);
+  // 02. Remove the token
+  if (currentToken) {
+    await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
+  } else {
+    logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
+    const detachedToken = await internalGetTokenByUUID(newToken.uuid);
+    if (detachedToken) {
+      await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
+    }
+  }
+  // 03. Create a new one
+  const defaultToken = await createEntity(user, newToken, ENTITY_TYPE_TOKEN);
+  // 04. Associate new token to user.
+  const input = {
+    fromId: userId,
+    toId: defaultToken.id,
+    relationship_type: RELATION_AUTHORIZED_BY,
+  };
+  await createRelation(user, input);
   return loadById(userId, ENTITY_TYPE_USER);
 };
 
@@ -434,14 +430,6 @@ export const authentication = async (tokenUUID) => {
   }
 };
 
-// The static admin account internal ID
-/**
- * Create or update the default administrator account.
- * @param email the admin email
- * @param password the admin password
- * @param tokenValue the admin default token
- * @returns {*}
- */
 export const initAdmin = async (email, password, tokenValue) => {
   const admin = await findById(OPENCTI_ADMIN_UUID);
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);

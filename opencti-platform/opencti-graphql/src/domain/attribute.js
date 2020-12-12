@@ -6,6 +6,7 @@ import {
   deleteElementById,
   updateAttribute,
   queryAttributes,
+  loadEntity,
 } from '../database/middleware';
 import { ENTITY_TYPE_ATTRIBUTE } from '../schema/internalObject';
 import { notify } from '../database/redis';
@@ -21,9 +22,7 @@ export const find = (attributeKey, attributeValue) => {
     { key: 'key', values: [attributeKey] },
     { key: 'value', values: [attributeValue] },
   ];
-  return listEntities([ENTITY_TYPE_ATTRIBUTE], { filters, connectionFormat: false }).then((attributes) =>
-    R.head(attributes)
-  );
+  return loadEntity([ENTITY_TYPE_ATTRIBUTE], { filters });
 };
 
 export const findAll = (args) => {
