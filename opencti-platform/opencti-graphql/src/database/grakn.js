@@ -261,7 +261,7 @@ export const listRelations = async (relationshipType, args) => {
   // Handle relation type(s)
   const relationToGet = relationshipType || 'stix-core-relationship';
   // 0 - Check if we can support the query by Elastic
-  const finalFilters = [];
+  const finalFilters = filters;
   if (relationFilter) {
     const { relation, id, relationId } = relationFilter;
     finalFilters.push({ key: `${REL_INDEX_PREFIX}${relation}.internal_id`, values: [id] });

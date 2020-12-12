@@ -914,16 +914,39 @@ export const elPaginate = async (indexName, options = {}) => {
         R.join(' ')
       )(splitSearch);
     }
-    must = R.append(
-      {
-        query_string: {
-          query: finalSearch,
-          analyze_wildcard: true,
-          fields: ['name^5', '*'],
-        },
+    const bool = {
+      bool: {
+        should: [
+          {
+            query_string: {
+              query: finalSearch,
+              analyze_wildcard: true,
+              fields: ['name^5', '*'],
+            },
+          },
+          {
+            nested: {
+              path: 'connections',
+              query: {
+                bool: {
+                  must: [
+                    {
+                      query_string: {
+                        query: finalSearch,
+                        analyze_wildcard: true,
+                        fields: ['connections.name^5', 'connections.*'],
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        minimum_should_match: 1,
       },
-      must
-    );
+    };
+    must = R.append(bool, must);
   }
   if (types !== null && types.length > 0) {
     const should = R.flatten(

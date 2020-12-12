@@ -51,8 +51,8 @@ export const internalObjectsAttributes = {
     'i_created_at_year',
     'updated_at',
   ],
-  [ENTITY_TYPE_MIGRATION_STATUS]: ['lastRun'],
-  [ENTITY_TYPE_MIGRATION_REFERENCE]: ['title', 'timestamp'],
+  [ENTITY_TYPE_MIGRATION_STATUS]: ['internal_id', 'standard_id', 'entity_type', 'lastRun'],
+  [ENTITY_TYPE_MIGRATION_REFERENCE]: ['internal_id', 'standard_id', 'entity_type', 'title', 'timestamp'],
   [ENTITY_TYPE_TOKEN]: [
     'internal_id',
     'standard_id',
@@ -142,5 +142,6 @@ export const internalObjectsAttributes = {
     'i_created_at_year',
     'updated_at',
   ],
+  [ENTITY_TYPE_ATTRIBUTE]: ['internal_id', 'standard_id', 'entity_type', 'key', 'value'],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), internalObjectsAttributes);
