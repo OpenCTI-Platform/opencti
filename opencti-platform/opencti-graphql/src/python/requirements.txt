@@ -1,7 +1,7 @@
 stix2==2.1.0
 stix2-patterns==1.3.2
 PyYAML==5.3.1
-git+https://github.com/OpenCTI-Platform/client-python@migration_test
+git+https://github.com/OpenCTI-Platform/client-python@master
 pika==1.1.0
 elasticsearch==7.10.1
 plyara==2.1.1
