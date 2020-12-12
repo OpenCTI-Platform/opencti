@@ -132,6 +132,7 @@ R.map(
 );
 
 export const stixCoreRelationshipsMapping = {
+  [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_ATTACK_PATTERN}`]: [RELATION_SUBTECHNIQUE_OF],
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_MALWARE}`]: [RELATION_DELIVERS, RELATION_USES],
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [RELATION_TARGETS],
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [RELATION_TARGETS],
@@ -171,13 +172,13 @@ export const stixCoreRelationshipsMapping = {
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [RELATION_LOCATED_AT],
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_CITY}`]: [RELATION_LOCATED_AT],
   [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_LOCATION_POSITION}`]: [RELATION_LOCATED_AT],
-  Organization_Organization: ['part-of'],
-  Individual_Individual: ['part-of'],
-  Individual_Organization: ['part-of'],
-  Individual_Region: ['located-at'],
-  Individual_Country: ['located-at'],
-  Individual_City: ['located-at'],
-  Individual_Position: ['located-at'],
+  [`${ENTITY_TYPE_IDENTITY_ORGANIZATION}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [RELATION_PART_OF],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_IDENTITY_INDIVIDUAL}`]: [RELATION_PART_OF],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_IDENTITY_ORGANIZATION}`]: [RELATION_PART_OF],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_REGION}`]: [RELATION_LOCATED_AT],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_COUNTRY}`]: [RELATION_LOCATED_AT],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_CITY}`]: [RELATION_LOCATED_AT],
+  [`${ENTITY_TYPE_IDENTITY_INDIVIDUAL}_${ENTITY_TYPE_LOCATION_POSITION}`]: [RELATION_LOCATED_AT],
   'Indicator_Attack-Pattern': ['indicates'],
   Indicator_Campaign: ['indicates'],
   Indicator_Infrastructure: ['indicates'],
@@ -245,6 +246,7 @@ export const stixCoreRelationshipsMapping = {
   'Threat-Actor_Attack-Pattern': ['uses'],
   'Threat-Actor_Malware': ['uses'],
   'Threat-Actor_Tool': ['uses'],
+  'Tool_Attack-Pattern': ['uses', 'drops', 'delivers'],
   Tool_Malware: ['uses', 'drops', 'delivers'],
   Tool_Vulnerability: ['has', 'targets'],
   Tool_Sector: ['targets'],
@@ -288,7 +290,7 @@ export const stixCoreRelationshipsMapping = {
 };
 
 export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipType) => {
-  if (relationshipType === RELATION_RELATED_TO) {
+  if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
     return true;
   }
   return !!R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${toType}`] || []);
