@@ -174,7 +174,9 @@ class OpenCTIStix2:
             data = json.load(file)
         return self.import_bundle(data, update, types)
 
-    def import_bundle_from_json(self, json_data, update=False, types=None) -> List:
+    def import_bundle_from_json(
+        self, json_data, update=False, types=None, is_in_retry_phase=False
+    ) -> List:
         """import a stix2 bundle from JSON data
 
         :param json_data: JSON data
@@ -186,8 +188,13 @@ class OpenCTIStix2:
         :return: list of imported stix2 objects
         :rtype: List
         """
+        self.opencti.set_is_in_retry_phase(is_in_retry_phase)
         data = json.loads(json_data)
-        return self.import_bundle(data, update, types)
+        return self.import_bundle(
+            data,
+            update,
+            types,
+        )
 
     def resolve_author(self, title):
         if "fireeye" in title.lower() or "mandiant" in title.lower():

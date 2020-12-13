@@ -152,6 +152,9 @@ class OpenCTIApiClient:
         """
         self.request_headers["opencti-applicant-id"] = applicant_id
 
+    def set_is_in_retry_phase(self, is_in_retry_phase):
+        self.request_headers["opencti-retry-phase"] = str(is_in_retry_phase)
+
     def query(self, query, variables={}):
         """submit a query to the OpenCTI GraphQL API
 
