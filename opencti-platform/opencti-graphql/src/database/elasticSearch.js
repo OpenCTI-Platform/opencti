@@ -36,8 +36,17 @@ import {
 } from '../schema/general';
 import { isBooleanAttribute, isMultipleAttribute } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
-import { isStixObjectAliased } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  isStixObjectAliased,
+} from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
+import {
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_MARKING_DEFINITION,
+} from '../schema/stixMetaObject';
 
 export const dateFields = [
   'created',
@@ -92,6 +101,13 @@ const numericOrBooleanFields = [
 ];
 
 export const INDEX_HISTORY = 'opencti_history';
+const UNIMPACTED_ENTITIES = [
+  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
+  ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_MARKING_DEFINITION,
+  ENTITY_TYPE_LABEL,
+  ENTITY_TYPE_KILL_CHAIN_PHASE,
+];
 const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_CREATED_BY}_to`,
   `${RELATION_OBJECT_MARKING}_to`,
@@ -1097,13 +1113,18 @@ export const elPaginate = async (indexName, options = {}) => {
 // endregion
 
 export const elBulk = async (args) => {
-  return el.bulk(args).then((result) => {
-    if (result.body.errors) {
-      const errors = result.body.items.map((i) => i.index?.error).filter((f) => f !== undefined);
-      throw DatabaseError('Error executing bulk indexing', { errors });
-    }
-    return result;
-  });
+  return el
+    .bulk(args)
+    .then((result) => {
+      if (result.body.errors) {
+        const errors = result.body.items.map((i) => i.index?.error).filter((f) => f !== undefined);
+        throw DatabaseError('Error executing bulk indexing', { errors });
+      }
+      return result;
+    })
+    .catch((e) => {
+      throw DatabaseError('Error updating elastic', { error: e });
+    });
 };
 
 /* istanbul ignore next */
@@ -1390,7 +1411,48 @@ export const elUpdateAttributeValue = (key, previousValue, value) => {
     });
 };
 
-const elUpdateConnectionsOfElement = (documentId, documentBody) => {
+export const elUpdateRelationConnections = (elements) => {
+  if (elements.length === 0) return Promise.resolve();
+  const source =
+    'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
+    'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
+  const bodyUpdate = elements.flatMap((doc) => [
+    // eslint-disable-next-line no-underscore-dangle
+    { update: { _index: inferIndexFromConceptType(doc.entity_type), _id: doc.id } },
+    { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
+  ]);
+  return elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
+};
+
+export const elUpdateEntityConnections = (elements) => {
+  const source = `if (ctx._source[params.key] == null) { 
+      ctx._source[params.key] = [params.to];
+    } else if (params.from == null) {
+      ctx._source[params.key].add(params.to);
+    } else {
+      def values = [params.to];
+      for (current in ctx._source[params.key]) { 
+        if (current != params.from) { values.add(current); }
+      }
+      ctx._source[params.key] = values;
+    }
+  `;
+  const docsToImpact = elements.filter((e) => !R.includes(e.entity_type, UNIMPACTED_ENTITIES));
+  if (docsToImpact.length === 0) return Promise.resolve();
+  const bodyUpdate = docsToImpact.flatMap((doc) => [
+    // eslint-disable-next-line no-underscore-dangle
+    { update: { _index: inferIndexFromConceptType(doc.entity_type), _id: doc.id } },
+    {
+      script: {
+        source,
+        params: { key: `rel_${doc.relationType}.internal_id`, from: doc.toReplace, to: doc.data.internal_id },
+      },
+    },
+  ]);
+  return elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
+};
+
+export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
   const source =
     'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
     'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';

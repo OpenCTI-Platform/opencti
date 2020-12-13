@@ -32,6 +32,8 @@ import {
   elPaginate,
   elRemoveRelationConnection,
   elUpdateElement,
+  elUpdateEntityConnections,
+  elUpdateRelationConnections,
   ENTITIES_INDICES,
   RELATIONSHIPS_INDICES,
 } from './elasticSearch';
@@ -391,18 +393,16 @@ const findElementDependencies = async (instance, args = {}) => {
       return R.map((e) => {
         const matchId = e.node.fromId === instance.id ? e.node.toId : e.node.fromId;
         const to = R.find((s) => s.id === matchId, ids);
-        return { rel: e.node, to: { id: to.id, standard_id: to.standard_id } };
+        return { rel: e.node, to };
       }, relations.edges);
     });
   }
   let rawData;
   const data = {};
   if (isRelation && !onlyMarking) {
-    const [rFrom, rTo, rData] = await Promise.all([
-      loadByIdFullyResolved(instance.fromId, null, { onlyMarking: true, noCache }),
-      loadByIdFullyResolved(instance.toId, null, { onlyMarking: true, noCache }),
-      rawDataPromise,
-    ]);
+    const fromPromise = loadByIdFullyResolved(instance.fromId, null, { onlyMarking: true, noCache });
+    const toPromise = loadByIdFullyResolved(instance.toId, null, { onlyMarking: true, noCache });
+    const [rFrom, rTo, rData] = await Promise.all([fromPromise, toPromise, rawDataPromise]);
     data.from = rFrom;
     data.to = rTo;
     rawData = rData;
@@ -783,44 +783,78 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const allTargetFromRelations = targetedRelations([targetEntity], 'to');
   const allSourcesFromRelations = targetedRelations(sourceEntities, 'to');
   const relationsFromRedirectTo = filterTargetByExisting(allSourcesFromRelations, allTargetFromRelations);
-  const queries = [];
   // noinspection DuplicatedCode
+  const updateConnections = [];
+  const updateEntities = [];
+  // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
   for (let indexFrom = 0; indexFrom < relationsToRedirectFrom.length; indexFrom += 1) {
     const r = relationsToRedirectFrom[indexFrom];
-    const actionPromise = loadByIdFullyResolved(r.internal_id, r.entity_type)
-      .then((relationToRecreate) => {
-        return Object.assign(relationToRecreate, {
-          from: targetEntity,
-          fromId: targetEntity.internal_id,
-          relationship_type: r.entity_type,
-        });
-      })
-      .then((input) => {
-        // eslint-disable-next-line no-use-before-define,no-await-in-loop
-        return createRelationRaw(user, input);
-      })
-      .then((relationToIndex) => indexCreatedElement(relationToIndex));
-    queries.push(actionPromise);
+    const sideToRedirect = r.relation.fromId;
+    const sideToKeep = r.relation.toId;
+    const sideToKeepType = r.relation.toType;
+    const sideTarget = targetEntity.internal_id;
+    const relationType = r.relation.entity_type;
+    // Replace relation connection fromId with the new TARGET
+    const relUpdate = {
+      id: r.internal_id,
+      toReplace: sideToRedirect,
+      entity_type: relationType,
+      data: { internal_id: sideTarget, name: targetEntity.name },
+    };
+    updateConnections.push(relUpdate);
+    // Update the side that will remain (RELATED_ELEMENT)
+    updateEntities.push({
+      id: sideToKeep,
+      toReplace: sideToRedirect,
+      relationType,
+      entity_type: sideToKeepType,
+      data: { internal_id: sideTarget },
+    });
+    // Update the MERGED TARGET (Need to add the relation side)
+    updateEntities.push({
+      id: sideTarget,
+      toReplace: null,
+      relationType,
+      entity_type: targetEntity.entity_type,
+      data: { internal_id: sideTarget },
+    });
   }
   // noinspection DuplicatedCode
   for (let indexTo = 0; indexTo < relationsFromRedirectTo.length; indexTo += 1) {
     const r = relationsFromRedirectTo[indexTo];
-    const actionPromise = loadByIdFullyResolved(r.internal_id, r.entity_type)
-      .then((relationToRecreate) => {
-        return Object.assign(relationToRecreate, {
-          to: targetEntity,
-          toId: targetEntity.internal_id,
-          relationship_type: r.entity_type,
-        });
-      })
-      .then((input) => {
-        // eslint-disable-next-line no-use-before-define,no-await-in-loop
-        return createRelationRaw(user, input);
-      })
-      .then((relationToIndex) => indexCreatedElement(relationToIndex));
-    queries.push(actionPromise);
+    const sideToRedirect = r.relation.toId;
+    const sideToKeep = r.relation.fromId;
+    const sideToKeepType = r.relation.fromType;
+    const sideTarget = targetEntity.internal_id;
+    const relationType = r.relation.entity_type;
+    const relUpdate = {
+      id: r.internal_id,
+      toReplace: sideToRedirect,
+      entity_type: relationType,
+      data: { internal_id: sideTarget, name: targetEntity.name },
+    };
+    updateConnections.push(relUpdate);
+    // Update the side that will remain (RELATED_ELEMENT)
+    updateEntities.push({
+      id: sideToKeep,
+      toReplace: sideToRedirect,
+      relationType,
+      entity_type: sideToKeepType,
+      data: { internal_id: sideTarget },
+    });
+    // Update the MERGED TARGET (Need to add the relation side)
+    updateEntities.push({
+      id: sideTarget,
+      toReplace: null,
+      relationType,
+      entity_type: targetEntity.entity_type,
+      data: { internal_id: sideTarget },
+    });
   }
-  await Promise.all(queries);
+  // Update all impacted relations.
+  await elUpdateRelationConnections(updateConnections);
+  // Update all impacted entities
+  await elUpdateEntityConnections(updateEntities);
   // Delete sourcing entities
   for (let delIndex = 0; delIndex < sourceEntities.length; delIndex += 1) {
     const element = sourceEntities[delIndex];
