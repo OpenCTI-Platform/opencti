@@ -1361,7 +1361,7 @@ const createRelationRaw = async (user, input) => {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
     relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
   }
-  // 06. Prepare the final data with Grakn IDs
+  // 06. Prepare the final data
   const created = R.pipe(
     R.assoc('id', internalId),
     R.assoc('fromId', from.internal_id),
@@ -1446,7 +1446,7 @@ export const createRelation = async (user, input) => {
     return dataRel.element;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Transaction fail, execution timeout. (Check your grakn sizing)', { lockIds });
+      throw DatabaseError('Transaction fail, execution timeout', { lockIds });
     }
     throw err;
   } finally {
@@ -1620,7 +1620,7 @@ export const createEntity = async (user, input, type) => {
     return dataEntity.element;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Transaction fail, execution timeout. (Check your grakn sizing)', { participantIds });
+      throw DatabaseError('Transaction fail, execution timeout', { participantIds });
     }
     throw err;
   } finally {

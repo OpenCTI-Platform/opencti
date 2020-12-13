@@ -67,7 +67,7 @@ export const FunctionalError = (reason, data) =>
 export const TYPE_LOCK_ERROR = 'LockError';
 export const TYPE_DUPLICATE_ENTRY = 'DuplicateEntryError';
 export const DuplicateEntryError = (reason, data) =>
-  error(TYPE_DUPLICATE_ENTRY, 'Existing element (Grakn)', {
+  error(TYPE_DUPLICATE_ENTRY, 'Existing element', {
     reason: reason || 'No reason specify',
     category: CATEGORY_BUSINESS,
     ...data,

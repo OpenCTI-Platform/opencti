@@ -29,7 +29,7 @@ const retrieveMigrations = () => {
 
 const migrationStorage = {
   async load(fn) {
-    // Get current status of migrations in Grakn
+    // Get current status of migrations
     const migration = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
     const migrationId = migration.internal_id;
     const migrations = await listThroughGetTo(migrationId, RELATION_MIGRATES, ENTITY_TYPE_MIGRATION_REFERENCE);
