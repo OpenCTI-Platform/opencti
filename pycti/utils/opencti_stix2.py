@@ -175,7 +175,7 @@ class OpenCTIStix2:
         return self.import_bundle(data, update, types)
 
     def import_bundle_from_json(
-        self, json_data, update=False, types=None, is_in_retry_phase=False
+        self, json_data, update=False, types=None, retry_number=None
     ) -> List:
         """import a stix2 bundle from JSON data
 
@@ -188,7 +188,7 @@ class OpenCTIStix2:
         :return: list of imported stix2 objects
         :rtype: List
         """
-        self.opencti.set_is_in_retry_phase(is_in_retry_phase)
+        self.opencti.set_retry_number(retry_number)
         data = json.loads(json_data)
         return self.import_bundle(
             data,
