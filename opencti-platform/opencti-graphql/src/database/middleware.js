@@ -760,17 +760,14 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       updateAttributes.push({ key: sourceFieldKey, value: [sourceFieldValue] });
     }
   }
-  // 2. standard_id must also be kept.
-  if (updateAttributes.length > 1) {
-    // eslint-disable-next-line no-use-before-define
-    const data = await updateAttributeRaw(user, targetEntity, updateAttributes);
-    const { impactedInputs } = data;
-    // region Update elasticsearch
-    // Elastic update with partial instance to prevent data override
-    if (impactedInputs.length > 0) {
-      const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
-      await elUpdateElement(updateAsInstance);
-    }
+  // eslint-disable-next-line no-use-before-define
+  const data = await updateAttributeRaw(user, targetEntity, updateAttributes);
+  const { impactedInputs } = data;
+  // region Update elasticsearch
+  // Elastic update with partial instance to prevent data override
+  if (impactedInputs.length > 0) {
+    const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
+    await elUpdateElement(updateAsInstance);
   }
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
