@@ -847,11 +847,20 @@ const transformPathToInput = (patch) => {
     })
   )(patch);
 };
+const checkAttributeConsistency = (entityType, key) => {
+  let masterKey = key;
+  if (key.includes('.')) {
+    const [firstPart] = key.split('.');
+    masterKey = firstPart;
+  }
+  if (!R.includes(masterKey, schemaTypes.getAttributes(entityType))) {
+    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${entityType}`);
+  }
+};
 const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
   const { key } = rawInput;
-  if (!R.includes(key, schemaTypes.getAttributes(instance.entity_type))) {
-    throw FunctionalError(`This attribute key ${key} is not allowed on the type ${instance.entity_type}`);
-  }
+  // Check consistency
+  checkAttributeConsistency(instance.entity_type, key);
   const input = rebuildAndMergeInputFromExistingData(rawInput, instance, options);
   if (R.isEmpty(input)) return [];
   const updatedInputs = [input];
@@ -1379,6 +1388,24 @@ const createRelationRaw = async (user, input) => {
   const relations = relToCreate.map((r) => r.relation);
   return { type: TRX_CREATION, element: created, relations };
 };
+const checkRelationConsistency = (relationshipType, fromType, toType) => {
+  // Check if StixCoreRelationship is allowed
+  if (isStixCoreRelationship(relationshipType)) {
+    if (!checkStixCoreRelationshipMapping(fromType, toType, relationshipType)) {
+      throw FunctionalError(
+        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+      );
+    }
+  }
+  // Check if StixCyberObservableRelationship is allowed
+  if (isStixCyberObservableRelationship(relationshipType)) {
+    if (!checkStixCyberObservableRelationshipMapping(fromType, toType, relationshipType)) {
+      throw FunctionalError(
+        `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+      );
+    }
+  }
+};
 export const createRelation = async (user, input) => {
   let lock;
   const { fromId, toId, relationship_type: relationshipType } = input;
@@ -1390,22 +1417,8 @@ export const createRelation = async (user, input) => {
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(input);
   const { from, to } = resolvedInput;
-  // Check if StixCoreRelationship is allowed
-  if (isStixCoreRelationship(relationshipType)) {
-    if (!checkStixCoreRelationshipMapping(from.entity_type, to.entity_type, relationshipType)) {
-      throw FunctionalError(
-        `The relationship type ${relationshipType} is not allowed between ${from.entity_type} and ${to.entity_type}`
-      );
-    }
-  }
-  // Check if StixCyberObservableRelationship is allowed
-  if (isStixCyberObservableRelationship(relationshipType)) {
-    if (!checkStixCyberObservableRelationshipMapping(from.entity_type, to.entity_type, relationshipType)) {
-      throw FunctionalError(
-        `The relationship type ${relationshipType} is not allowed between ${from.entity_type} and ${to.entity_type}`
-      );
-    }
-  }
+  // Check consistency
+  checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
   // Build lock ids
   const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
   const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;

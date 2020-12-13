@@ -16,7 +16,7 @@ from requests.exceptions import RequestException
 from pycti import OpenCTIApiClient
 
 ACK_QUEUE = queue.Queue()
-
+PROCESSING_COUNT = 5
 
 class ReportQueueProcessor(threading.Thread):
     def __init__(self, api):
@@ -151,7 +151,7 @@ class Consumer(threading.Thread):
                 else None
             )
             update = data["update"] if "update" in data else False
-            self.api.stix2.import_bundle_from_json(content, update, types)
+            self.api.stix2.import_bundle_from_json(content, update, types, self.processing_count <= PROCESSING_COUNT-1)
             # Ack the message
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
@@ -171,7 +171,7 @@ class Consumer(threading.Thread):
             return False
         except Exception as ex:
             error = str(ex)
-            if "UnsupportedError" not in error and self.processing_count <= 5:
+            if "UnsupportedError" not in error and self.processing_count <= PROCESSING_COUNT:
                 time.sleep(1)
                 logging.info(
                     "Message (delivery_tag="
