@@ -73,8 +73,9 @@ export const DuplicateEntryError = (reason, data) =>
     ...data,
   });
 
+export const MISSING_REF_ERROR = 'MissingReferenceError';
 export const MissingReferenceError = (data) =>
-  error('MissingReferenceError', 'Element not found', {
+  error(MISSING_REF_ERROR, 'Element not found', {
     reason: 'Missing reference to handle creation',
     category: CATEGORY_BUSINESS,
     ...data,
