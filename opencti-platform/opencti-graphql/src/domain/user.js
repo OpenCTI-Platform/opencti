@@ -370,7 +370,7 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   if (currentToken) {
     await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
   } else {
-    logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
+    logger.error(`[INIT] ${userId} user have no token to renew, please report this problem in github`);
     const detachedToken = await internalGetTokenByUUID(newToken.uuid);
     if (detachedToken) {
       await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);

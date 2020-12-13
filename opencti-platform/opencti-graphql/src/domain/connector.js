@@ -27,7 +27,7 @@ const completeConnector = (connector) => {
 };
 // endregion
 
-// region grakn fetch
+// region fetch
 export const loadConnectorById = (id) =>
   loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 

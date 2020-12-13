@@ -1082,7 +1082,7 @@ export const elPaginate = async (indexName, options = {}) => {
         const numberOfCauses = err.meta.body.error.root_cause.length;
         const invalidMappingCauses = R.pipe(
           R.map((r) => r.reason),
-          R.filter((r) => R.includes('No mapping found for', r))
+          R.filter((r) => R.includes('No mapping found for', r) || R.includes('no such index', r))
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
@@ -1289,7 +1289,7 @@ export const elIndexElements = async (elements, retry = 5) => {
   // 01. Bulk the indexing of row elements
   const body = transformedElements.flatMap((doc) => [
     { index: { _index: inferIndexFromConceptType(doc.entity_type), _id: doc.internal_id } },
-    R.pipe(R.dissoc('_index'), R.dissoc('grakn_id'))(doc),
+    R.pipe(R.dissoc('_index'))(doc),
   ]);
   if (body.length > 0) {
     await elBulk({ refresh: true, body });

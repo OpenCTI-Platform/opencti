@@ -6,15 +6,14 @@ import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { BYPASS, findById, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
+import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { redisIsAlive } from './database/redis';
-import { OPENCTI_ADMIN_UUID } from './schema/general';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import applyMigration from './database/migration';
-import { createEntity } from './database/middleware';
+import { createEntity, loadEntity } from './database/middleware';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -216,8 +215,8 @@ const initializeData = async () => {
 
 const isExistingPlatform = async () => {
   try {
-    const admin = await findById(OPENCTI_ADMIN_UUID);
-    return admin && admin.internal_id === OPENCTI_ADMIN_UUID;
+    const migration = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
+    return migration !== undefined;
   } catch {
     return false;
   }

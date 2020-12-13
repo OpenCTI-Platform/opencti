@@ -125,7 +125,7 @@ export const stixDataConverter = (data) => {
     if (key.startsWith('i_') || key === 'x_opencti_graph_data' || val === null) {
       // Internal opencti attributes.
     } else if (key.startsWith('attribute_')) {
-      // Stix but reserved keywords in Grakn
+      // Stix but reserved keywords
       const targetKey = key.replace('attribute_', '');
       filteredData[targetKey] = val;
     } else if (!isMultipleAttribute(key) && !key.endsWith('_refs')) {
@@ -144,7 +144,6 @@ export const buildStixData = (data, onlyBase = false) => {
     R.assoc('x_opencti_id', data.internal_id),
     R.assoc('type', convertTypeToStixType(type)),
     R.dissoc('_index'),
-    R.dissoc('grakn_id'),
     R.dissoc('standard_id'),
     R.dissoc('internal_id'),
     R.dissoc('parent_types'),
