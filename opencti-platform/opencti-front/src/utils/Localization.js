@@ -831,6 +831,8 @@ const i18n = {
       'Number of targeting': 'Nombre de ciblages',
       'Related entities (generic relation "related-to")':
         'Entités liées (relation générique "lié à")',
+      'This panel shows by default the latest created entities, use the search to find more.':
+        'Ce panneau montre par défaut les dernières entités créées, utilisez la recherche pour en trouver plus.',
       Platforms: "Systèmes d'exploitation",
       Platform: "Système d'exploitation",
       'Required permissions': 'Permissions requises',

@@ -13,6 +13,7 @@ import Avatar from '@material-ui/core/Avatar';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
+import Alert from '@material-ui/lab/Alert';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -92,6 +93,9 @@ const styles = (theme) => ({
     verticalAlign: 'middle',
     textAlign: 'center',
   },
+  info: {
+    paddingTop: 10,
+  },
 });
 
 class ContainerAddStixCoreObjects extends Component {
@@ -113,18 +117,20 @@ class ContainerAddStixCoreObjects extends Component {
   }
 
   static isTypeDomainObject(types) {
-    return includes('Stix-Domain-Object', types);
+    return !types || includes('Stix-Domain-Object', types);
   }
 
   static isTypeObservable(types) {
-    return includes('Stix-Cyber-Observable', types);
+    return !types || includes('Stix-Cyber-Observable', types);
   }
 
   renderDomainObjectCreation(paginationOptions) {
-    const { defaultCreatedBy, defaultMarkingDefinitions } = this.props;
-
+    const {
+      defaultCreatedBy,
+      defaultMarkingDefinitions,
+      targetStixCoreObjectTypes,
+    } = this.props;
     const { open, search } = this.state;
-
     return (
       <StixDomainObjectCreation
         display={open}
@@ -134,6 +140,11 @@ class ContainerAddStixCoreObjects extends Component {
         paginationOptions={paginationOptions}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
+        targetStixDomainObjectTypes={
+          targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
+            ? targetStixCoreObjectTypes
+            : []
+        }
       />
     );
   }
@@ -198,109 +209,97 @@ class ContainerAddStixCoreObjects extends Component {
       containerId,
       knowledgeGraph,
       containerStixCoreObjects,
+      t,
     } = this.props;
+    const { search } = this.state;
 
     return (
-      <QueryRenderer
-        query={containerAddStixCoreObjectsLinesQuery}
-        variables={{ count: 100, ...paginationOptions }}
-        render={({ props }) => {
-          if (props) {
+      <div>
+        {search.length === 0 && (
+          <Alert
+            severity="info"
+            variant="outlined"
+            style={{ margin: '15px 15px 0 15px' }}
+            classes={{ message: classes.info }}
+          >
+            {t(
+              'This panel shows by default the latest created entities, use the search to find more.',
+            )}
+          </Alert>
+        )}
+        <QueryRenderer
+          query={containerAddStixCoreObjectsLinesQuery}
+          variables={{ count: 100, ...paginationOptions }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <ContainerAddStixCoreObjectsLines
+                  containerId={containerId}
+                  data={props}
+                  paginationOptions={this.props.paginationOptions}
+                  knowledgeGraph={knowledgeGraph}
+                  containerStixCoreObjects={containerStixCoreObjects}
+                />
+              );
+            }
             return (
-              <ContainerAddStixCoreObjectsLines
-                containerId={containerId}
-                data={props}
-                paginationOptions={this.props.paginationOptions}
-                knowledgeGraph={knowledgeGraph}
-                containerStixCoreObjects={containerStixCoreObjects}
-              />
+              <List>
+                {Array.from(Array(20), (e, i) => (
+                  <ListItem key={i} divider={true} button={false}>
+                    <ListItemIcon>
+                      <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <span className="fakeItem" style={{ width: '80%' }} />
+                      }
+                      secondary={
+                        <span className="fakeItem" style={{ width: '90%' }} />
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
             );
-          }
-          return (
-            <List>
-              {Array.from(Array(20), (e, i) => (
-                <ListItem key={i} divider={true} button={false}>
-                  <ListItemIcon>
-                    <Avatar classes={{ root: classes.avatar }}>{i}</Avatar>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <span className="fakeItem" style={{ width: '80%' }} />
-                    }
-                    secondary={
-                      <span className="fakeItem" style={{ width: '90%' }} />
-                    }
-                  />
-                </ListItem>
-              ))}
-            </List>
-          );
-        }}
-      />
-    );
-  }
-
-  renderUseSearchMessage() {
-    const { t, classes } = this.props;
-
-    return (
-      <div className={classes.useSearchMessageContainer}>
-        <span className={classes.useSearchMessage}>
-          {t(
-            'Use the search functionality to find the entity you want to associate.',
-          )}
-        </span>
+          }}
+        />
       </div>
     );
   }
 
   renderSearch(paginationOptions) {
-    const { search } = this.state;
-
-    if (search === '') {
-      return this.renderUseSearchMessage();
-    }
-
     return this.renderSearchResults(paginationOptions);
   }
 
   getSearchTypes() {
     const { paginationOptions, targetStixCoreObjectTypes } = this.props;
-
     let searchTypes;
-
     if (targetStixCoreObjectTypes !== undefined) {
       searchTypes = [...targetStixCoreObjectTypes];
     }
-
     if (paginationOptions !== undefined) {
       const { types } = paginationOptions;
       searchTypes = [...types];
     }
-
     return searchTypes;
   }
 
   getPaginationOptions() {
     const { targetStixCoreObjectTypes } = this.props;
     const { search } = this.state;
-
     let orderMode = 'desc';
-    let orderBy = 'name';
+    let orderBy = 'created_at';
     if (
       targetStixCoreObjectTypes
       && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
     ) {
       orderBy = 'created_at';
     }
-
     if (search.length > 0) {
       orderBy = null;
       orderMode = null;
     }
-
     const types = this.getSearchTypes();
-
     return {
       types,
       search,
@@ -317,13 +316,10 @@ class ContainerAddStixCoreObjects extends Component {
     if (!paginationOptions) {
       return null;
     }
-
     const { types } = paginationOptions;
-
     if (!types) {
       return null;
     }
-
     if (
       types.length === 1
       && (ContainerAddStixCoreObjects.isTypeDomainObject(types)
@@ -337,20 +333,15 @@ class ContainerAddStixCoreObjects extends Component {
     const renderedTypes = types.map((type) => (
       <Chip
         key={type}
+        variant="outlined"
+        color="secondary"
         style={{ marginLeft: '5px' }}
         label={t(`entity_${type}`)}
         onDelete={this.onSearchTypeFilterDelete.bind(this, type)}
       />
     ));
 
-    return (
-      <div style={{ margin: '20px 20px 0 20px' }}>
-        <span style={{ marginRight: '5px' }}>
-          {t('Applied type filter(s):')}
-        </span>
-        <span>{renderedTypes}</span>
-      </div>
-    );
+    return <div style={{ position: 'fixed' }}>{renderedTypes}</div>;
   }
 
   render() {
@@ -358,7 +349,6 @@ class ContainerAddStixCoreObjects extends Component {
       t, classes, withPadding, simple,
     } = this.props;
     const paginationOptions = this.getPaginationOptions();
-
     return (
       <div>
         {simple ? (
@@ -399,9 +389,17 @@ class ContainerAddStixCoreObjects extends Component {
             >
               <Close fontSize="small" />
             </IconButton>
-            <Typography variant="h6" classes={{ root: classes.title }}>
-              {t('Add entities')}
-            </Typography>
+            {(ContainerAddStixCoreObjects.isTypeDomainObject(
+              paginationOptions.types,
+            )
+              || ContainerAddStixCoreObjects.isTypeObservable(
+                paginationOptions.types,
+              )) && (
+              <Typography variant="h6" classes={{ root: classes.title }}>
+                {t('Add entities')}
+              </Typography>
+            )}
+            {this.renderSearchTypeFilter(paginationOptions)}
             <div className={classes.search}>
               <SearchInput
                 variant="inDrawer"
@@ -411,7 +409,6 @@ class ContainerAddStixCoreObjects extends Component {
             </div>
           </div>
           <div className={classes.container}>
-            {this.renderSearchTypeFilter(paginationOptions)}
             {this.renderSearch(paginationOptions)}
           </div>
         </Drawer>
