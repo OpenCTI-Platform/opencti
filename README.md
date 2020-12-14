@@ -49,7 +49,7 @@ All you need to install the OpenCTI platform can be found in the [official docum
 
 <p align="left">
   <a href="https://www.ssi.gouv.fr" alt="ANSSI"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Anssi.png" width="80" /></a>
-  <a href="https://cert.europa.eu" alt="CERT-EU"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Certeu.png" width="82" /></a>
+  <a href="https://cert.europa.eu" alt="CERT-EU"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Certeu.png" width="83" /></a>
 </p>
 
 ### Sponsors
