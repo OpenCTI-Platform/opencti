@@ -44,7 +44,10 @@ class OpenCTIApiWork:
                 }
             }
            """
-        self.api.query(query, {"id": work_id, "error": error})
+        try:
+            self.api.query(query, {"id": work_id, "error": error})
+        except:
+            self.api.log("error", "Cannot report expectation")
 
     def add_expectations(self, work_id: str, expectations: int):
         logging.info(
@@ -59,7 +62,10 @@ class OpenCTIApiWork:
                 }
             }
            """
-        self.api.query(query, {"id": work_id, "expectations": expectations})
+        try:
+            self.api.query(query, {"id": work_id, "expectations": expectations})
+        except:
+            self.api.log("error", "Cannot report expectation")
 
     def initiate_work(self, connector_id: str, friendly_name: str) -> str:
         logging.info("Initiate work for " + connector_id)
