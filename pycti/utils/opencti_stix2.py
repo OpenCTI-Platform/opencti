@@ -391,7 +391,7 @@ class OpenCTIStix2:
                             for match in matches:
                                 if (
                                     match.timestamp() < yesterday.timestamp()
-                                    and len(match.year) == 4
+                                    and len(str(match.year)) == 4
                                 ):
                                     published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                     break
@@ -752,7 +752,7 @@ class OpenCTIStix2:
                         for match in matches:
                             if (
                                 match.timestamp() < yesterday.timestamp()
-                                and len(match.year) == 4
+                                and len(str(match.year)) == 4
                             ):
                                 date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                 break
