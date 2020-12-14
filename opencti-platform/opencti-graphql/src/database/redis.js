@@ -5,6 +5,8 @@ import * as R from 'ramda';
 import conf, { logger } from '../config/conf';
 import {
   generateLogMessage,
+  isEmptyField,
+  isNotEmptyField,
   relationTypeToInputName,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_CHANGE,
@@ -210,9 +212,14 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
     const convertedInputs = updateEvents.map((i) => {
       const [k, v] = R.head(Object.entries(i));
-      return { [k]: stixDataConverter(v) };
+      const convert = stixDataConverter(v);
+      return isNotEmptyField(convert) ? { [k]: convert } : null;
     });
     const dataUpdate = R.mergeAll(convertedInputs);
+    // dataUpdate can be empty
+    if (isEmptyField(dataUpdate)) {
+      return true;
+    }
     // else just continue as usual1
     const data = {
       id: instance.standard_id,
