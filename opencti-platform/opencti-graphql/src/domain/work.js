@@ -1,7 +1,15 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import { now, sinceNowInMinutes } from '../database/middleware';
-import { el, elDeleteInstanceIds, elIndex, elLoadByIds, elPaginate, INDEX_HISTORY } from '../database/elasticSearch';
+import {
+  el,
+  elDeleteInstanceIds,
+  elIndex,
+  elLoadByIds,
+  elPaginate,
+  elUpdate,
+  INDEX_HISTORY,
+} from '../database/elasticSearch';
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
 import { isNotEmptyField } from '../database/utils';
@@ -164,9 +172,9 @@ export const reportActionImport = (user, workId, errorData) => {
     params.source = source;
     params.error = error;
   }
-  const script = { source: sourceScript, lang: 'painless', params };
-  const update = { id: workId, index: INDEX_HISTORY, retry_on_conflict: 3, body: { script } };
-  return el.update(update).then(() => loadWorkById(workId));
+  return elUpdate(INDEX_HISTORY, workId, {
+    script: { source: sourceScript, lang: 'painless', params },
+  }).then(() => loadWorkById(workId));
 };
 
 export const updateActionExpectation = (user, workId, expectation) => {
@@ -180,9 +188,9 @@ export const updateActionExpectation = (user, workId, expectation) => {
     /*--*/ 'ctx._source[\'status\'] = "progress";' +
     /*--*/ "ctx._source['completed_time'] = null;" +
     '}';
-  const script = { source, lang: 'painless', params };
-  const update = { id: workId, index: INDEX_HISTORY, retry_on_conflict: 3, body: { script } };
-  return el.update(update).then(() => loadWorkById(workId));
+  return elUpdate(INDEX_HISTORY, workId, {
+    script: { source, lang: 'painless', params },
+  }).then(() => loadWorkById(workId));
 };
 
 export const updateReceivedTime = (user, workId, message) => {
@@ -192,15 +200,9 @@ export const updateReceivedTime = (user, workId, message) => {
   if (isNotEmptyField(message)) {
     source += `ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); `;
   }
-  const script = { source, lang: 'painless', params };
-  const update = {
-    id: workId,
-    index: INDEX_HISTORY,
-    retry_on_conflict: 3,
-    refresh: true,
-    body: { script },
-  };
-  return el.update(update).then(() => loadWorkById(workId));
+  return elUpdate(INDEX_HISTORY, workId, {
+    script: { source, lang: 'painless', params },
+  }).then(() => loadWorkById(workId));
 };
 
 export const updateProcessedTime = (user, workId, message, inError = false) => {
@@ -221,13 +223,7 @@ export const updateProcessedTime = (user, workId, message, inError = false) => {
       source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
     }
   }
-  const script = { source, lang: 'painless', params };
-  const update = {
-    id: workId,
-    index: INDEX_HISTORY,
-    retry_on_conflict: 3,
-    refresh: true,
-    body: { script },
-  };
-  return el.update(update).then(() => loadWorkById(workId));
+  return elUpdate(INDEX_HISTORY, workId, {
+    script: { source, lang: 'painless', params },
+  }).then(() => loadWorkById(workId));
 };
