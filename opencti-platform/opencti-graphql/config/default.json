@@ -5,7 +5,7 @@
     "logs_level": "info",
     "rate_protection": {
       "time_window": 1,
-      "max_requests": 100
+      "max_requests": 10000
     },
     "cookie_secure": false,
     "base_path": "",

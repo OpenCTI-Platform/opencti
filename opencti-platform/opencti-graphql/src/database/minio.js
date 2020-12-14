@@ -119,7 +119,7 @@ export const getMinIOVersion = () => {
         resolve(version);
       } else {
         // logger.error(`[MINIO] Unexpected Server header`, { headers: serverHeader });
-        resolve('Unknown');
+        resolve('Latest');
       }
     });
   });
