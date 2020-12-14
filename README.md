@@ -47,15 +47,15 @@ All you need to install the OpenCTI platform can be found in the [official docum
 
 ### Founders
 
-<p align="center">
-  <a href="https://www.ssi.gouv.fr" alt="ANSSI"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Anssi.png" style="width: 100px; margin-left: 10px; margin-right: 10px" /></a>
-  <a href="https://cert.europa.eu" alt="CERT-EU"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Certeu.png" style="width: 100px; margin-left: 10px; margin-right: 10px" /></a>
+<p align="left">
+  <a href="https://www.ssi.gouv.fr" alt="ANSSI"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Anssi.png" style="width: 60px; margin-left: 10px; margin-right: 10px" /></a>
+  <a href="https://cert.europa.eu" alt="CERT-EU"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Certeu.png" style="width: 70px; margin-left: 10px; margin-right: 10px" /></a>
 </p>
 
 ### Sponsors
 
-<p align="center">
-  <a href="https://www.intrinsec.com" alt="Intrinsec"><img src="https://www.luatix.org/wp-content/uploads/2020/11/intrinsec.png" style="width: 100px; margin-left: 10px; margin-right: 10px" /></a>
+<p align="left">
+  <a href="https://www.intrinsec.com" alt="Intrinsec"><img src="https://www.luatix.org/wp-content/uploads/2020/11/intrinsec.png" style="width: 55px; margin-left: 10px; margin-right: 10px" /></a>
 </p>
 
 ## Contributing
