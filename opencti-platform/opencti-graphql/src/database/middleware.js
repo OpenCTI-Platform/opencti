@@ -782,10 +782,10 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const allTargetFromRelations = targetedRelations([targetEntity], 'to');
   const allSourcesFromRelations = targetedRelations(sourceEntities, 'to');
   const relationsFromRedirectTo = filterTargetByExisting(allSourcesFromRelations, allTargetFromRelations);
-  // noinspection DuplicatedCode
   const updateConnections = [];
   const updateEntities = [];
   // FROM (x -> MERGED TARGET) --- (from) relation (to) ---- RELATED_ELEMENT
+  // noinspection DuplicatedCode
   for (let indexFrom = 0; indexFrom < relationsToRedirectFrom.length; indexFrom += 1) {
     const r = relationsToRedirectFrom[indexFrom];
     const sideToRedirect = r.relation.fromId;
@@ -815,9 +815,10 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       toReplace: null,
       relationType,
       entity_type: targetEntity.entity_type,
-      data: { internal_id: sideTarget },
+      data: { internal_id: sideToKeep },
     });
   }
+  // RELATED_ELEMENT --- (from) relation (to) ---- TO (x -> MERGED TARGET)
   // noinspection DuplicatedCode
   for (let indexTo = 0; indexTo < relationsFromRedirectTo.length; indexTo += 1) {
     const r = relationsFromRedirectTo[indexTo];
@@ -847,7 +848,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       toReplace: null,
       relationType,
       entity_type: targetEntity.entity_type,
-      data: { internal_id: sideTarget },
+      data: { internal_id: sideToKeep },
     });
   }
   // Update all impacted relations.
