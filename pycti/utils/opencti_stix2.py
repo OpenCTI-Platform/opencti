@@ -389,7 +389,10 @@ class OpenCTIStix2:
                     if matches is not None:
                         try:
                             for match in matches:
-                                if match.timestamp() < yesterday.timestamp():
+                                if (
+                                    match.timestamp() < yesterday.timestamp()
+                                    and len(match.year) == 4
+                                ):
                                     published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                     break
                         except:
@@ -747,7 +750,10 @@ class OpenCTIStix2:
                 if matches is not None:
                     try:
                         for match in matches:
-                            if match.timestamp() < yesterday.timestamp():
+                            if (
+                                match.timestamp() < yesterday.timestamp()
+                                and len(match.year) == 4
+                            ):
                                 date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                 break
                     except:
