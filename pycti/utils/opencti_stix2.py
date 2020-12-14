@@ -384,12 +384,12 @@ class OpenCTIStix2:
                     except:
                         matches = None
                     published = None
-                    yesterday = datetime.date.today() - datetime.timedelta(days=1)
+                    yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
                     default_date = datetime.datetime.fromtimestamp(1)
                     if matches is not None:
                         try:
                             for match in matches:
-                                if match < yesterday:
+                                if match.timestamp() < yesterday.timestamp():
                                     published = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                     break
                         except:
@@ -743,11 +743,11 @@ class OpenCTIStix2:
                 except:
                     matches = None
                 date = None
-                today = datetime.datetime.today()
+                yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
                 if matches is not None:
                     try:
                         for match in matches:
-                            if match < today:
+                            if match.timestamp() < yesterday.timestamp():
                                 date = match.strftime("%Y-%m-%dT%H:%M:%SZ")
                                 break
                     except:

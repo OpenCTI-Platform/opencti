@@ -53,7 +53,7 @@ setup(
         "requests==2.25.0",
         "PyYAML==5.3.1",
         "python-dateutil==2.8.1",
-        "datefinder==0.7.0",
+        "datefinder==0.7.1",
         "stix2==2.1.0",
         "pytz==2020.4",
         "pika==1.1.0",
