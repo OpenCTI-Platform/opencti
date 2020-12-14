@@ -84,16 +84,6 @@ const styles = (theme) => ({
     right: 30,
     zIndex: 2000,
   },
-  useSearchMessageContainer: {
-    display: 'table',
-    height: '100%',
-    width: '100%',
-  },
-  useSearchMessage: {
-    display: 'table-cell',
-    verticalAlign: 'middle',
-    textAlign: 'center',
-  },
   info: {
     paddingTop: 10,
   },
