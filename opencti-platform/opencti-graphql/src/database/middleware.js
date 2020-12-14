@@ -858,7 +858,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   for (let delIndex = 0; delIndex < sourceEntities.length; delIndex += 1) {
     const element = sourceEntities[delIndex];
     // eslint-disable-next-line no-await-in-loop,no-use-before-define
-    await deleteElementById(user, element.internal_id, element.entity_type);
+    await deleteElementByIdRaw(user, element, element.entity_type);
   }
 };
 export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {}) => {
@@ -1721,16 +1721,7 @@ const getElementsToRemove = async (element, isRelation, options = {}) => {
   // Return list of deleted ids
   return dependencies;
 };
-export const deleteElementById = async (user, elementId, type, options = {}) => {
-  if (R.isNil(type)) {
-    /* istanbul ignore next */
-    throw FunctionalError(`You need to specify a type when deleting an entity`);
-  }
-  // Check consistency
-  const element = await loadByIdFullyResolved(elementId, type, options);
-  if (element === null) {
-    throw DatabaseError(`Cant find entity to delete ${elementId}`);
-  }
+export const deleteElementByIdRaw = async (user, element, type, options = {}) => {
   // Delete entity and all dependencies
   const isRelation = isBasicRelationship(element.entity_type);
   const elements = await getElementsToRemove(element, isRelation, options);
@@ -1745,6 +1736,15 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
     // eslint-disable-next-line
     await elDeleteInstanceIds([id]);
   }
+};
+export const deleteElementById = async (user, elementId, type, options = {}) => {
+  if (R.isNil(type)) {
+    /* istanbul ignore next */
+    throw FunctionalError(`You need to specify a type when deleting an entity`);
+  }
+  // Check consistency
+  const element = await loadByIdFullyResolved(elementId, type, options);
+  await deleteElementByIdRaw(user, element, type, options);
   await storeDeleteEvent(user, element);
   // Return id
   return elementId;
