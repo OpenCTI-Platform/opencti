@@ -41,6 +41,53 @@ export const statsDateAttributes = [
   'valid_from',
   'valid_until',
 ];
+export const dateAttributes = [
+  'created',
+  'modified',
+  'created_at',
+  'i_created_at_day',
+  'i_created_at_month',
+  'updated_at',
+  'first_seen',
+  'i_first_seen_day',
+  'i_first_seen_month',
+  'last_seen',
+  'i_last_seen_day',
+  'i_last_seen_month',
+  'start_time',
+  'i_start_time_day',
+  'i_start_time_month',
+  'stop_time',
+  'i_stop_time_day',
+  'i_stop_time_month',
+  'published',
+  'i_published_day',
+  'i_published_month',
+  'valid_from',
+  'i_valid_from_day',
+  'i_valid_from_month',
+  'valid_until',
+  'i_valid_until_day',
+  'i_valid_until_month',
+  'observable_date',
+  'event_date',
+  'timestamp',
+  'received_time',
+  'processed_time',
+  'completed_time',
+];
+export const numericAttributes = [
+  'attribute_order',
+  'base_score',
+  'confidence',
+  'is_family',
+  'number_observed',
+  'x_opencti_order',
+  'x_opencti_report_status',
+  'import_expected_number',
+  'import_processed_number',
+  'x_opencti_score',
+];
 export const booleanAttributes = [
   'revoked',
   'x_opencti_negative',
@@ -59,6 +106,7 @@ export const booleanAttributes = [
   'is_disabled',
   'is_self_signed',
 ];
+export const numericOrBooleanAttributes = [...numericAttributes, ...booleanAttributes];
 export const dictAttributes = { hashes: { key: 'algorithm', value: 'hash' } };
 
 export const isDictionaryAttribute = (key) => dictAttributes[key];

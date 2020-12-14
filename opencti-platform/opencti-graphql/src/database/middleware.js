@@ -79,10 +79,12 @@ import { isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
+  booleanAttributes,
   dictAttributes,
   isDictionaryAttribute,
   isMultipleAttribute,
   multipleAttributes,
+  numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
 import { checkStixCoreRelationshipMapping, isStixCoreRelationship } from '../schema/stixCoreRelationship';
@@ -932,14 +934,41 @@ const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
   return updatedInputs;
 };
 
+function prepareAttributes(elements) {
+  return R.map((input) => {
+    // Check integer
+    if (R.includes(input.key, numericAttributes)) {
+      return {
+        key: input.key,
+        value: R.map((value) => {
+          const parsedValue = parseInt(value, 10);
+          return Number.isNaN(parsedValue) ? null : parsedValue;
+        }, input.value),
+      };
+    }
+    // Check boolean
+    if (R.includes(input.key, booleanAttributes)) {
+      return {
+        key: input.key,
+        value: R.map((value) => {
+          return value === true || value === 'true';
+        }, input.value),
+      };
+    }
+    return input;
+  }, elements);
+}
+
 export const updateAttributeRaw = async (user, instance, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
   const updatedInputs = [];
   const impactedInputs = [];
   const instanceType = instance.entity_type;
+  // Prepare attributes
+  const preparedElements = prepareAttributes(elements);
   // Update all needed attributes
-  for (let index = 0; index < elements.length; index += 1) {
-    const input = elements[index];
+  for (let index = 0; index < preparedElements.length; index += 1) {
+    const input = preparedElements[index];
     // eslint-disable-next-line no-await-in-loop
     const ins = await innerUpdateAttribute(user, instance, input, options);
     if (ins.length > 0) {

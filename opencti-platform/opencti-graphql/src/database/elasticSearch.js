@@ -34,7 +34,12 @@ import {
   isAbstract,
   REL_INDEX_PREFIX,
 } from '../schema/general';
-import { isBooleanAttribute, isMultipleAttribute } from '../schema/fieldDataAdapter';
+import {
+  dateAttributes,
+  isBooleanAttribute,
+  isMultipleAttribute,
+  numericOrBooleanAttributes,
+} from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import {
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -47,58 +52,6 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-
-export const dateFields = [
-  'created',
-  'modified',
-  'created_at',
-  'i_created_at_day',
-  'i_created_at_month',
-  'updated_at',
-  'first_seen',
-  'i_first_seen_day',
-  'i_first_seen_month',
-  'last_seen',
-  'i_last_seen_day',
-  'i_last_seen_month',
-  'start_time',
-  'i_start_time_day',
-  'i_start_time_month',
-  'stop_time',
-  'i_stop_time_day',
-  'i_stop_time_month',
-  'published',
-  'i_published_day',
-  'i_published_month',
-  'valid_from',
-  'i_valid_from_day',
-  'i_valid_from_month',
-  'valid_until',
-  'i_valid_until_day',
-  'i_valid_until_month',
-  'observable_date',
-  'event_date',
-  'timestamp',
-  'received_time',
-  'processed_time',
-  'completed_time',
-];
-const numericOrBooleanFields = [
-  'object_status',
-  'level',
-  'attribute_order',
-  'base_score',
-  'confidence',
-  'is_family',
-  'number',
-  'negative',
-  'default_assignation',
-  'x_opencti_detection',
-  'x_opencti_order',
-  'x_opencti_report_status',
-  'import_expected_number',
-  'import_processed_number',
-];
 
 export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES = [
@@ -227,10 +180,94 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
                   timestamp: {
                     type: 'date',
                   },
+                  created: {
+                    type: 'date',
+                  },
+                  modified: {
+                    type: 'date',
+                  },
+                  first_seen: {
+                    type: 'date',
+                  },
+                  last_seen: {
+                    type: 'date',
+                  },
+                  start_time: {
+                    type: 'date',
+                  },
+                  stop_time: {
+                    type: 'date',
+                  },
+                  published: {
+                    type: 'date',
+                  },
+                  valid_from: {
+                    type: 'date',
+                  },
+                  valid_until: {
+                    type: 'date',
+                  },
+                  observable_date: {
+                    type: 'date',
+                  },
+                  event_date: {
+                    type: 'date',
+                  },
+                  received_time: {
+                    type: 'date',
+                  },
+                  processed_time: {
+                    type: 'date',
+                  },
+                  completed_time: {
+                    type: 'date',
+                  },
+                  ctime: {
+                    type: 'date',
+                  },
+                  mtime: {
+                    type: 'date',
+                  },
+                  atime: {
+                    type: 'date',
+                  },
                   confidence: {
                     type: 'integer',
                   },
                   x_opencti_report_status: {
+                    type: 'integer',
+                  },
+                  attribute_order: {
+                    type: 'integer',
+                  },
+                  base_score: {
+                    type: 'integer',
+                  },
+                  is_family: {
+                    type: 'boolean',
+                  },
+                  number_observed: {
+                    type: 'integer',
+                  },
+                  x_opencti_negative: {
+                    type: 'boolean',
+                  },
+                  default_assignation: {
+                    type: 'boolean',
+                  },
+                  x_opencti_detection: {
+                    type: 'boolean',
+                  },
+                  x_opencti_order: {
+                    type: 'integer',
+                  },
+                  import_expected_number: {
+                    type: 'integer',
+                  },
+                  import_processed_number: {
+                    type: 'integer',
+                  },
+                  x_opencti_score: {
                     type: 'integer',
                   },
                   connections: {
@@ -926,8 +963,7 @@ export const elPaginate = async (indexName, options = {}) => {
       finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
     } else if (cleanSearch.startsWith('"')) {
       finalSearch = `${cleanSearch}`;
-    } else {
-      const splitSearch = cleanSearch.split(/[\s/]+/);
+    } else {      const splitSearch = cleanSearch.split(/[\s/]+/);
       finalSearch = R.pipe(
         R.map((n) => `*${n}*`),
         R.join(' ')
@@ -1024,7 +1060,7 @@ export const elPaginate = async (indexName, options = {}) => {
           } else if (values[i] === 'EXISTS') {
             valuesFiltering.push({ exists: { field: key } });
           } else if (operator === 'eq') {
-            const isDateOrNumber = dateFields.includes(key) || numericOrBooleanFields.includes(key);
+            const isDateOrNumber = dateAttributes.includes(key) || numericOrBooleanAttributes.includes(key);
             valuesFiltering.push({
               match_phrase: { [`${isDateOrNumber ? key : `${key}.keyword`}`]: values[i].toString() },
             });
@@ -1050,7 +1086,7 @@ export const elPaginate = async (indexName, options = {}) => {
   if (orderBy !== null && orderBy.length > 0) {
     const order = {};
     const orderKeyword =
-      dateFields.includes(orderBy) || numericOrBooleanFields.includes(orderBy) ? orderBy : `${orderBy}.keyword`;
+      dateAttributes.includes(orderBy) || numericOrBooleanAttributes.includes(orderBy) ? orderBy : `${orderBy}.keyword`;
     order[orderKeyword] = orderMode;
     ordering = R.append(order, ordering);
     must = R.append({ exists: { field: orderKeyword } }, must);
