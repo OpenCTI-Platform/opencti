@@ -202,7 +202,10 @@ class ConnectorWorksComponent extends Component {
                         {t('Operations completed')}
                       </Typography>
                       <span className={classes.number}>
-                        {work.import_processed_number}
+                        {work.import_processed_number
+                        > work.import_expected_number
+                          ? work.import_expected_number
+                          : work.import_processed_number}
                       </span>
                     </Grid>
                     <Grid item={true} xs={6}>
