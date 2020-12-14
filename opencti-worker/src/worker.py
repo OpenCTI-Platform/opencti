@@ -17,6 +17,7 @@ from pycti import OpenCTIApiClient
 
 PROCESSING_COUNT = 5
 
+
 class Consumer(threading.Thread):
     def __init__(self, connector, opencti_url, opencti_token):
         threading.Thread.__init__(self)
