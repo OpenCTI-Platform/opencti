@@ -56,7 +56,7 @@ const stixCoreRelationshipsBarsDistributionQuery = graphql`
           entity_type
         }
         ... on BasicRelationship {
-            entity_type
+          entity_type
         }
         ... on AttackPattern {
           name

@@ -92,10 +92,11 @@ class StixDomainObjectsExportsContentComponent extends Component {
                 exportEntityType={exportEntityType}
                 paginationOptions={paginationOptions}
                 context={context}
-                onExportAsk={ () => this.props.relay.refetch({
+                onExportAsk={() => this.props.relay.refetch({
                   type: this.props.exportEntityType,
                   count: 25,
-                })}
+                })
+                }
               />
             </Security>
             <IconButton
@@ -133,7 +134,7 @@ export const stixDomainObjectsExportsContentQuery = graphql`
     $type: String!
   ) {
     ...StixDomainObjectsExportsContent_data
-    @arguments(count: $count, type: $type)
+      @arguments(count: $count, type: $type)
   }
 `;
 
@@ -146,10 +147,8 @@ const StixDomainObjectsExportsContent = createRefetchContainer(
         count: { type: "Int", defaultValue: 25 }
         type: { type: "String!" }
       ) {
-        stixDomainObjectsExportFiles(
-          first: $count
-          type: $type
-        ) @connection(key: "Pagination_stixDomainObjectsExportFiles") {
+        stixDomainObjectsExportFiles(first: $count, type: $type)
+          @connection(key: "Pagination_stixDomainObjectsExportFiles") {
           edges {
             node {
               id

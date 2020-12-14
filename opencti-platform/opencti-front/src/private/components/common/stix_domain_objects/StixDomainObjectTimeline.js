@@ -108,7 +108,6 @@ const StixDomainObjectTimeline = createRefetchContainer(
           fromRole: $fromRole
           toTypes: $toTypes
           relationship_type: $relationship_type
-          inferred: $inferred
           first: $first
         ) {
           edges {
@@ -117,7 +116,6 @@ const StixDomainObjectTimeline = createRefetchContainer(
               description
               start_time
               stop_time
-              inferred
               from {
                 ... on BasicObject {
                   id

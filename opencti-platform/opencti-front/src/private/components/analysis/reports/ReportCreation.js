@@ -172,7 +172,7 @@ class ReportCreation extends Component {
         >
           <QueryRenderer
             query={attributesQuery}
-            variables={{ type: 'report_types' }}
+            variables={{ key: 'report_types' }}
             render={({ props }) => {
               if (props && props.attributes) {
                 const reportClassesEdges = props.attributes.edges;

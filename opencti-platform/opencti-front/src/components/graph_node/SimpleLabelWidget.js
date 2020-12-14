@@ -38,14 +38,6 @@ class SimpleLabelWidget extends Component {
           onClick={model.setSelected.bind(this, true)}
         >
           <strong>{t(`relationship_${label.relationship_type}`)}</strong>
-          {label.inferred === true ? (
-            <span>
-              <br />
-              <em>{t('Inferred')}</em>
-            </span>
-          ) : (
-            ''
-          )}
           {label.first_seen ? (
             <span>
               <br />

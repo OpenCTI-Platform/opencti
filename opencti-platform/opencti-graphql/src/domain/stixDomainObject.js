@@ -1,4 +1,4 @@
-import { assoc, dissoc, filter, map, pipe } from 'ramda';
+import { assoc, dissoc, filter, map } from 'ramda';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
@@ -8,14 +8,13 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  distributionEntitiesThroughRelations,
   escape,
   internalLoadById,
   listEntities,
   loadById,
   timeSeriesEntities,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { elCount } from '../database/elasticSearch';
 import { upload } from '../database/minio';
 import { workToExportFile } from './work';
@@ -25,6 +24,7 @@ import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomai
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
+import { addAttribute, find as findAttribute } from './attribute';
 
 export const findAll = async (args) => {
   let types = [];
@@ -34,7 +34,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
-  return listEntities(types, ['standard_id'], args);
+  return listEntities(types, args);
 };
 
 export const findById = async (stixDomainObjectId) => loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -54,16 +54,7 @@ export const stixDomainObjectsNumber = (args) => ({
 });
 
 export const stixDomainObjectsDistributionByEntity = async (args) => {
-  const { objectId, field, relationship_type: relationshipType } = args;
-  if (field.includes('.')) {
-    const options = pipe(
-      assoc('field', field.split('.')[1]),
-      assoc('relationshipType', relationshipType),
-      assoc('remoteRelationshipType', field.split('.')[0]),
-      assoc('fromId', objectId)
-    )(args);
-    return distributionEntitiesThroughRelations(options);
-  }
+  const { objectId, relationship_type: relationshipType } = args;
   const filters = [{ isRelation: true, type: relationshipType, value: objectId }];
   return distributionEntities(ABSTRACT_STIX_DOMAIN_OBJECT, filters, args);
 };
@@ -175,6 +166,17 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input,
   const stixDomainObject = await loadById(stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
   if (!stixDomainObject) {
     throw FunctionalError('Cannot edit the field, Stix-Domain-Object cannot be found.');
+  }
+  if (input.key === 'report_types') {
+    await Promise.all(
+      input.value.map(async (reportType) => {
+        const currentAttribute = await findAttribute('report_types', reportType);
+        if (!currentAttribute) {
+          await addAttribute(user, { key: 'report_types', value: reportType });
+        }
+        return true;
+      })
+    );
   }
   const updatedStixDomainObject = await updateAttribute(
     user,

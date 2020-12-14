@@ -184,7 +184,7 @@ AddOpinionsLinesContainer.propTypes = {
 export const addOpinionsLinesQuery = graphql`
   query AddOpinionsLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddOpinionsLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -199,7 +199,7 @@ const AddOpinionsLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         opinions(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_opinions") {
+          @connection(key: "Pagination_opinions") {
           edges {
             node {
               id

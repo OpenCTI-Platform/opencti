@@ -15,25 +15,7 @@ import ctypes
 from requests.exceptions import RequestException
 from pycti import OpenCTIApiClient
 
-ACK_QUEUE = queue.Queue()
-
-
-class ReportQueueProcessor(threading.Thread):
-    def __init__(self, api):
-        threading.Thread.__init__(self)
-        self.api = api
-
-    def run(self):
-        logging.info("Listening to ack/nack actions")
-        while True:
-            msg = ACK_QUEUE.get(block=True)
-            work_id = msg["work_id"]
-            if msg["type"] == "ack":
-                self.api.work.report_expectation(work_id, None)
-            else:
-                error = msg["error"]
-                content = msg["content"]
-                self.api.work.report_expectation(work_id, {"error": error, "source": content})
+PROCESSING_COUNT = 5
 
 
 class Consumer(threading.Thread):
@@ -114,26 +96,6 @@ class Consumer(threading.Thread):
             self.pika_connection.sleep(0.05)
         logging.info("Message processed, thread terminated")
 
-    def report_error(self, work_id, content, error):
-        # Add in queue
-        ACK_QUEUE.put(
-            {
-                "type": "nack",
-                "work_id": work_id,
-                "content": content,
-                "error": str(error),
-            }
-        )
-
-    def report_success(self, work_id):
-        # Add in queue
-        ACK_QUEUE.put(
-            {
-                "type": "ack",
-                "work_id": work_id,
-            }
-        )
-
     # Data handling
     def data_handler(self, connection, channel, delivery_tag, data):
         # Set the API headers
@@ -151,12 +113,17 @@ class Consumer(threading.Thread):
                 else None
             )
             update = data["update"] if "update" in data else False
-            self.api.stix2.import_bundle_from_json(content, update, types)
+            processing_count = self.processing_count
+            if self.processing_count == PROCESSING_COUNT:
+                processing_count = None
+            self.api.stix2.import_bundle_from_json(
+                content, update, types, processing_count
+            )
             # Ack the message
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
             if work_id is not None:
-                self.report_success(work_id)
+                self.api.work.report_expectation(work_id, None)
             self.processing_count = 0
             return True
         except RequestException as re:
@@ -171,7 +138,10 @@ class Consumer(threading.Thread):
             return False
         except Exception as ex:
             error = str(ex)
-            if "UnsupportedError" not in error and self.processing_count <= 5:
+            if (
+                "UnsupportedError" not in error
+                and self.processing_count < PROCESSING_COUNT
+            ):
                 time.sleep(1)
                 logging.info(
                     "Message (delivery_tag="
@@ -187,7 +157,9 @@ class Consumer(threading.Thread):
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
                 connection.add_callback_threadsafe(cb)
                 if work_id is not None:
-                    self.report_error(work_id, content, ex)
+                    self.api.work.report_expectation(
+                        work_id, {"error": str(ex), "source": content}
+                    )
                 return False
 
     def run(self):
@@ -225,10 +197,6 @@ class Worker:
             self.opencti_url, self.opencti_token, self.log_level
         )
 
-        # Start the ack/nack queue processor
-        processor = ReportQueueProcessor(self.api)
-        processor.start()
-
         # Configure logger
         numeric_level = getattr(logging, self.log_level.upper(), None)
         if not isinstance(numeric_level, int):
@@ -258,12 +226,16 @@ class Worker:
                                 + " not alive, creating a new one..."
                             )
                             self.consumer_threads[queue] = Consumer(
-                                connector, self.opencti_url, self.opencti_token
+                                connector,
+                                self.opencti_url,
+                                self.opencti_token,
                             )
                             self.consumer_threads[queue].start()
                     else:
                         self.consumer_threads[queue] = Consumer(
-                            connector, self.opencti_url, self.opencti_token
+                            connector,
+                            self.opencti_url,
+                            self.opencti_token,
                         )
                         self.consumer_threads[queue].start()
 

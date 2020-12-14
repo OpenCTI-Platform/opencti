@@ -2,7 +2,7 @@ import * as Minio from 'minio';
 import { assoc, concat, map, sort } from 'ramda';
 import querystring from 'querystring';
 import conf, { logger } from '../config/conf';
-import { sinceNowInMinutes } from './grakn';
+import { sinceNowInMinutes } from './middleware';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWork } from '../domain/work';
 
@@ -118,8 +118,8 @@ export const getMinIOVersion = () => {
         const version = serverHeader.substring(serverHeaderPrefix.length);
         resolve(version);
       } else {
-        logger.error(`[MINIO] Unexpected Server header`, { headers: serverHeader });
-        resolve('Unknown');
+        // logger.error(`[MINIO] Unexpected Server header`, { headers: serverHeader });
+        resolve('Latest');
       }
     });
   });

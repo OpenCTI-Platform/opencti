@@ -1,21 +1,14 @@
-import { assoc, propOr, pipe } from 'ramda';
-import {
-  createEntity,
-  distributionEntities,
-  distributionEntitiesThroughRelations,
-  escapeString,
-  getSingleValueNumber,
-  listEntities,
-  loadById,
-  prepareDate,
-  timeSeriesEntities,
-} from '../database/grakn';
+import { assoc, propOr, pipe, dissoc } from 'ramda';
+import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findIdentityById } from './identity';
+import { find as findAttribute, addAttribute } from './attribute';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
+import { elCount } from '../database/elasticSearch';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;
@@ -27,7 +20,7 @@ export const findById = (reportId) => {
 };
 
 export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_REPORT], ['name', 'description'], args);
+  return listEntities([ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
 // Entities tab
@@ -50,13 +43,11 @@ export const reportsTimeSeries = (args) => {
 };
 
 export const reportsNumber = (args) => ({
-  count: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
-   ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''} 
-   ${args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
-   get; count;`),
-  total: getSingleValueNumber(`match $x isa ${ENTITY_TYPE_CONTAINER_REPORT};
-    ${args.reportClass ? `; $x has report_class "${escapeString(args.reportClass)}"` : ''}
-    get; count;`),
+  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), dissoc('endDate'))(args)
+  ),
 });
 
 export const reportsTimeSeriesByEntity = (args) => {
@@ -72,37 +63,29 @@ export const reportsTimeSeriesByAuthor = async (args) => {
 };
 
 export const reportsNumberByEntity = (args) => ({
-  count: getSingleValueNumber(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
-    $to has internal_id "${escapeString(args.objectId)}"; 
-    ${args.reportType ? `$to has report_types "${escapeString(args.reportType)};"` : ''}
-    ${args.endDate ? `$to has created_at $date; $date < ${prepareDate(args.endDate)};` : ''}
-    get;
-    count;`
+  count: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId)
+    )(args)
   ),
-  total: getSingleValueNumber(
-    `match $from isa ${ENTITY_TYPE_CONTAINER_REPORT};
-    $rel(${RELATION_OBJECT}_from:$from, ${RELATION_OBJECT}_to:$to) isa ${RELATION_OBJECT};
-    $to has internal_id "${escapeString(args.objectId)}";
-    ${args.reportType ? `$x has report_class "${escapeString(args.reportType)};"` : ''}
-    get;
-    count;`
+  total: elCount(
+    INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      assoc('relationshipType', RELATION_OBJECT),
+      assoc('fromId', args.objectId),
+      dissoc('endDate')
+    )(args)
   ),
 });
 
 export const reportsDistributionByEntity = async (args) => {
-  const { objectId, field } = args;
-  if (field.includes('.')) {
-    const options = pipe(
-      assoc('relationshipType', RELATION_OBJECT),
-      assoc('toTypes', [ENTITY_TYPE_CONTAINER_REPORT]),
-      assoc('field', field.split('.')[1]),
-      assoc('remoteRelationshipType', field.split('.')[0]),
-      assoc('fromId', objectId)
-    )(args);
-    return distributionEntitiesThroughRelations(options);
-  }
+  const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
   return distributionEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
@@ -129,6 +112,17 @@ export const addReport = async (user, report) => {
           confidence = 15;
       }
     }
+  }
+  if (report.report_types) {
+    await Promise.all(
+      report.report_types.map(async (reportType) => {
+        const currentAttribute = await findAttribute('report_types', reportType);
+        if (!currentAttribute) {
+          await addAttribute(user, { key: 'report_types', value: reportType });
+        }
+        return true;
+      })
+    );
   }
   const finalReport = pipe(
     assoc('created', report.published),

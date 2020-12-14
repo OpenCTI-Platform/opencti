@@ -1,24 +1,19 @@
-import { assoc } from 'ramda';
+import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  escapeString,
-  getRelationInferredById,
-  getSingleValueNumber,
-  listFromEntitiesThroughRelation,
+  batchListThroughGetFrom,
   listRelations,
-  listToEntitiesThroughRelation,
-  load,
+  batchListThroughGetTo,
   loadById,
-  prepareDate,
   updateAttribute,
-} from '../database/grakn';
+  batchLoadThroughGetTo,
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { isAnId } from '../schema/schemaUtils';
 import { ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
   isStixMetaRelationship,
@@ -38,84 +33,51 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
+import { elCount } from '../database/elasticSearch';
+import { INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
 };
+
 export const findById = (stixSightingRelationshipId) => {
-  if (!isAnId(stixSightingRelationshipId)) {
-    return getRelationInferredById(stixSightingRelationshipId);
-  }
   return loadById(stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 
 export const stixSightingRelationshipsNumber = (args) => ({
-  count: getSingleValueNumber(
-    `match $x($y, $z) isa ${STIX_SIGHTING_RELATIONSHIP}; ${
-      args.endDate ? `$x has created_at $date; $date < ${prepareDate(args.endDate)};` : ''
-    } ${args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''} get; count;`,
-    args.inferred ? args.inferred : false
-  ),
-  total: getSingleValueNumber(
-    `match $x($y, $z) isa ${STIX_SIGHTING_RELATIONSHIP}; ${
-      args.fromId ? `$y has internal_id "${escapeString(args.fromId)}";` : ''
-    } get; count;`,
-    args.inferred ? args.inferred : false
+  count: elCount(INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
+  total: elCount(
+    INDEX_STIX_SIGHTING_RELATIONSHIPS,
+    pipe(assoc('types', [STIX_SIGHTING_RELATIONSHIP]), dissoc('endDate'))(args)
   ),
 });
 
-export const createdBy = async (stixSightingRelationshipId) => {
-  const element = await load(
-    `match $to isa ${ENTITY_TYPE_IDENTITY}; 
-    $rel(${RELATION_CREATED_BY}_from:$from, ${RELATION_CREATED_BY}_to: $to) isa ${RELATION_CREATED_BY};
-    $from has internal_id "${escapeString(stixSightingRelationshipId)}"; get;`,
-    ['to']
-  );
-  return element && element.to;
+export const batchCreatedBy = async (stixCoreRelationshipIds) => {
+  return batchLoadThroughGetTo(stixCoreRelationshipIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
 };
 
-export const reports = (stixSightingRelationshipId) => {
-  return listFromEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_OBJECT,
-    ENTITY_TYPE_CONTAINER_REPORT
-  );
+export const batchReports = async (stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const notes = (stixSightingRelationshipId) => {
-  return listFromEntitiesThroughRelation(stixSightingRelationshipId, null, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+export const batchNotes = (stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const opinions = (stixSightingRelationshipId) => {
-  return listFromEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_OBJECT,
-    ENTITY_TYPE_CONTAINER_OPINION
-  );
+export const batchOpinions = (stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
-export const labels = (stixSightingRelationshipId) => {
-  return listToEntitiesThroughRelation(stixSightingRelationshipId, null, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+export const batchLabels = (stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(stixCoreRelationshipIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const markingDefinitions = (stixSightingRelationshipId) => {
-  return listToEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_OBJECT_MARKING,
-    ENTITY_TYPE_MARKING_DEFINITION
-  );
+export const batchMarkingDefinitions = (stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(stixCoreRelationshipIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const externalReferences = (stixSightingRelationshipId) => {
-  return listToEntitiesThroughRelation(
-    stixSightingRelationshipId,
-    null,
-    RELATION_EXTERNAL_REFERENCE,
-    ENTITY_TYPE_EXTERNAL_REFERENCE
-  );
+export const batchExternalReferences = (stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(stixCoreRelationshipIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
 // region mutations

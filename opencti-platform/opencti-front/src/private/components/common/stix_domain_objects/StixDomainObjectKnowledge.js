@@ -84,14 +84,12 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
     $fromId: String
     $toTypes: [String]
     $endDate: DateTime
-    $inferred: Boolean
   ) {
     stixCoreRelationshipsNumber(
       type: $type
       fromId: $fromId
       toTypes: $toTypes
       endDate: $endDate
-      inferred: $inferred
     ) {
       total
       count
@@ -169,7 +167,6 @@ class StixDomainObjectKnowledge extends Component {
                   fromId: stixDomainObjectId,
                   toTypes: ['Stix-Cyber-Observable'],
                   endDate: monthsAgo(1),
-                  inferred: true,
                 }}
                 render={({ props }) => {
                   if (props && props.stixCoreRelationshipsNumber) {
@@ -213,7 +210,6 @@ class StixDomainObjectKnowledge extends Component {
                 variables={{
                   fromId: stixDomainObjectId,
                   endDate: monthsAgo(1),
-                  inferred: false,
                 }}
                 render={({ props }) => {
                   if (props && props.stixCoreRelationshipsNumber) {
@@ -246,7 +242,7 @@ class StixDomainObjectKnowledge extends Component {
           <Grid item={true} xs={6}>
             <StixCoreObjectReportsBars
               stixCoreObjectId={stixDomainObjectId}
-              field="created-by.name"
+              field="created-by.internal_id"
               title={t('Distribution of sources')}
             />
           </Grid>

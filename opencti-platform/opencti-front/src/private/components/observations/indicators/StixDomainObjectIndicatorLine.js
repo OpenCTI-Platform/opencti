@@ -12,10 +12,10 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixCoreRelationshipPopover from '../../common/stix_core_relationships/StixCoreRelationshipPopover';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarking from '../../../../components/ItemMarking';
+import StixCoreRelationshipFromAndToPopover from '../../common/stix_core_relationships/StixCoreRelationshipFromAndToPopover';
 
 const styles = (theme) => ({
   item: {
@@ -51,16 +51,15 @@ class StixDomainObjectIndicatorLineComponent extends Component {
       dataColumns,
       node,
       paginationOptions,
-      entityLink,
+      entityId,
     } = this.props;
-    const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={link}
+        to={`/dashboard/observations/indicators/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ShieldSearch />
@@ -70,18 +69,15 @@ class StixDomainObjectIndicatorLineComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toPatternType.width }}
+                style={{ width: dataColumns.pattern_type.width }}
               >
-                <ItemPatternType
-                  variant="inList"
-                  label={node.from.pattern_type}
-                />
+                <ItemPatternType variant="inList" label={node.pattern_type} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toName.width }}
+                style={{ width: dataColumns.name.width }}
               >
-                {node.from.name}
+                {node.name}
               </div>
               <div
                 className={classes.bodyItem}
@@ -89,7 +85,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
               >
                 <StixCoreObjectLabels
                   variant="inList"
-                  labels={node.from.objectLabel}
+                  labels={node.objectLabel}
                 />
               </div>
               <div
@@ -100,15 +96,15 @@ class StixDomainObjectIndicatorLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toValidUntil.width }}
+                style={{ width: dataColumns.valid_until.width }}
               >
-                {nsd(node.from.valid_until)}
+                {nsd(node.valid_until)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['objectMarking', 'edges'], node.from)).map(
+                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
                   (markingDefinition) => (
                     <ItemMarking
                       key={markingDefinition.node.id}
@@ -122,10 +118,13 @@ class StixDomainObjectIndicatorLineComponent extends Component {
           }
         />
         <ListItemSecondaryAction>
-          <StixCoreRelationshipPopover
-            stixCoreRelationshipId={node.id}
+          <StixCoreRelationshipFromAndToPopover
+            fromId={node.id}
+            toId={entityId}
+            nodeId={node.id}
+            relationshipType="indicates"
             paginationOptions={paginationOptions}
-            disabled={node.inferred}
+            connectionKey="Pagination_indicators"
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -135,7 +134,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
 
 StixDomainObjectIndicatorLineComponent.propTypes = {
   dataColumns: PropTypes.object,
-  entityLink: PropTypes.string,
+  entityId: PropTypes.string,
   paginationOptions: PropTypes.object,
   node: PropTypes.object,
   classes: PropTypes.object,
@@ -147,42 +146,31 @@ const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
   StixDomainObjectIndicatorLineComponent,
   {
     node: graphql`
-      fragment StixDomainObjectIndicatorLine_node on StixCoreRelationship {
+      fragment StixDomainObjectIndicatorLine_node on Indicator {
         id
-        start_time
-        stop_time
+        name
+        pattern_type
         description
-        confidence
-        inferred
+        valid_from
+        valid_until
+        created
         created_at
-        from {
-          ... on Indicator {
-            id
-            name
-            pattern_type
-            description
-            valid_from
-            valid_until
-            created
-            created_at
-            x_opencti_score
-            x_opencti_main_observable_type
-            objectMarking {
-              edges {
-                node {
-                  id
-                  definition
-                }
-              }
+        x_opencti_score
+        x_opencti_main_observable_type
+        objectMarking {
+          edges {
+            node {
+              id
+              definition
             }
-            objectLabel {
-              edges {
-                node {
-                  id
-                  value
-                  color
-                }
-              }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }
@@ -209,13 +197,13 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
             <div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toPatternType.width }}
+                style={{ width: dataColumns.pattern_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toName.width }}
+                style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
@@ -233,7 +221,7 @@ class StixDomainObjectIndicatorLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.toValidUntil.width }}
+                style={{ width: dataColumns.valid_until.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

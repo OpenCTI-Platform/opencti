@@ -1,4 +1,4 @@
-import { addIntrusionSet, findAll, findById, locations } from '../domain/intrusionSet';
+import { addIntrusionSet, findAll, findById, batchLocations } from '../domain/intrusionSet';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -9,6 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { initBatchLoader } from '../database/middleware';
+
+const locationsLoader = initBatchLoader(batchLocations);
 
 const intrusionSetResolvers = {
   Query: {
@@ -16,11 +19,7 @@ const intrusionSetResolvers = {
     intrusionSets: (_, args) => findAll(args),
   },
   IntrusionSet: {
-    locations: (intrusionSet) => locations(intrusionSet.id),
-  },
-  IntrusionSetsOrdering: {
-    objectMarking: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.definition`,
-    objectLabel: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.value`,
+    locations: (intrusionSet) => locationsLoader.load(intrusionSet.id),
   },
   IntrusionSetsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

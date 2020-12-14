@@ -7,11 +7,11 @@ import { convertEntityTypeToStixType } from './schemaUtils';
 import * as I from './internalObject';
 import * as D from './stixDomainObject';
 import * as M from './stixMetaObject';
-import * as C from './stixCyberObservableObject';
+import * as C from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject } from './stixDomainObject';
-import { isStixCyberObservable } from './stixCyberObservableObject';
+import { isStixCyberObservable } from './stixCyberObservable';
 import { isInternalObject } from './internalObject';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
@@ -100,7 +100,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_WORKSPACE]: [{ src: NAME_FIELD }, { src: 'workspace_type' }],
+    [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: NAME_FIELD }, { src: X_MITRE_ID_FIELD }],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],

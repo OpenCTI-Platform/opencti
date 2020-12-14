@@ -27,10 +27,10 @@ const createApolloServer = () => {
       const auth = await authentication(token);
       if (!auth) return { res, user: auth };
       const origin = {
-        source: 'client',
         ip: req.ip,
         user_id: auth.id,
         applicant_id: req.headers['opencti-applicant-id'],
+        call_retry_number: req.headers['opencti-retry-number'],
       };
       const authMeta = Object.assign(auth, { origin });
       return { res, user: authMeta };

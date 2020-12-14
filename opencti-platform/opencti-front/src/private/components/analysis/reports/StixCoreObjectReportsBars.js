@@ -46,6 +46,11 @@ const stixCoreObjectReportsBarsDistributionQuery = graphql`
     ) {
       label
       value
+      entity {
+        ... on Identity {
+          name
+        }
+      }
     }
   }
 `;
@@ -98,7 +103,7 @@ class StixCoreObjectReportsBars extends Component {
                       />
                       <YAxis
                         stroke="#ffffff"
-                        dataKey="label"
+                        dataKey={field.includes('.') ? 'entity.name' : 'label'}
                         type="category"
                         angle={-30}
                         textAnchor="end"
@@ -125,7 +130,7 @@ class StixCoreObjectReportsBars extends Component {
                         {props.reportsDistribution.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
-                            fill={itemColor(entry.label)}
+                            fill={itemColor(entry.entity.name)}
                           />
                         ))}
                       </Bar>

@@ -67,14 +67,15 @@ export const FunctionalError = (reason, data) =>
 export const TYPE_LOCK_ERROR = 'LockError';
 export const TYPE_DUPLICATE_ENTRY = 'DuplicateEntryError';
 export const DuplicateEntryError = (reason, data) =>
-  error(TYPE_DUPLICATE_ENTRY, 'Existing element (Grakn)', {
+  error(TYPE_DUPLICATE_ENTRY, 'Existing element', {
     reason: reason || 'No reason specify',
     category: CATEGORY_BUSINESS,
     ...data,
   });
 
+export const MISSING_REF_ERROR = 'MissingReferenceError';
 export const MissingReferenceError = (data) =>
-  error('MissingReferenceError', 'Element not found', {
+  error(MISSING_REF_ERROR, 'Element not found', {
     reason: 'Missing reference to handle creation',
     category: CATEGORY_BUSINESS,
     ...data,

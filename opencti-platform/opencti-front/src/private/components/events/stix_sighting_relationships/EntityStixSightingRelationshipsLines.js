@@ -66,7 +66,6 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
     $fromId: String
     $toId: String
     $toTypes: [String]
-    $inferred: Boolean
     $search: String
     $count: Int!
     $cursor: ID
@@ -74,17 +73,16 @@ export const entityStixSightingRelationshipsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...EntityStixSightingRelationshipsLines_data
-    @arguments(
-      fromId: $fromId
-      toId: $toId
-      toTypes: $toTypes
-      inferred: $inferred
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromId: $fromId
+        toId: $toId
+        toTypes: $toTypes
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -97,7 +95,6 @@ export default createPaginationContainer(
         fromId: { type: "String" }
         toId: { type: "String" }
         toTypes: { type: "[String]" }
-        inferred: { type: "Boolean" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
@@ -111,7 +108,6 @@ export default createPaginationContainer(
           fromId: $fromId
           toId: $toId
           toTypes: $toTypes
-          inferred: $inferred
           search: $search
           first: $count
           after: $cursor
@@ -148,7 +144,6 @@ export default createPaginationContainer(
         fromId: fragmentVariables.fromId,
         toId: fragmentVariables.toId,
         toTypes: fragmentVariables.toTypes,
-        inferred: fragmentVariables.inferred,
         search: fragmentVariables.search,
         count,
         cursor,

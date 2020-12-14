@@ -1,8 +1,6 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  propOr, compose,
-} from 'ramda';
+import { propOr, compose } from 'ramda';
 import { v4 as uuid } from 'uuid';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -51,8 +49,9 @@ const FileWorkComponent = (props) => {
     file: { works },
   } = props;
   return (
-      <List component="div" disablePadding={true}>
-        {works && works.map((work) => {
+    <List component="div" disablePadding={true}>
+      {works
+        && works.map((work) => {
           const message = work.messages.map((s) => s.message).join('\r\n');
           const numberOfError = work.errors.length;
           const secondaryLabel = `${nsdt(work.timestamp)} `;
@@ -64,39 +63,60 @@ const FileWorkComponent = (props) => {
               statusText = ` (${work.import_processed_number}/${work.import_expected_number})`;
             }
             if (numberOfError > 0) {
-              statusText += ` - [ ${numberOfError} error${numberOfError > 1 ? 's' : ''} ]`;
+              statusText += ` - [ ${numberOfError} error${
+                numberOfError > 1 ? 's' : ''
+              } ]`;
             }
-            return `${propOr(t('Deleted'), 'name', work.connector)}${statusText}`;
+            return `${propOr(
+              t('Deleted'),
+              'name',
+              work.connector,
+            )}${statusText}`;
           };
           return (
-              <Tooltip title={message} key={uuid()}>
-                <ListItem
-                  dense={true}
-                  button={true}
-                  divider={true}
-                  classes={{ root: classes.nested }}>
-                  <ListItemIcon>
-                    {work.status === 'complete' && numberOfError === 0 && (
-                      <CheckCircleOutlined style={{ fontSize: 15, color: '#4caf50' }}/>
-                    )}
-                    {work.status === 'complete' && numberOfError > 0 && (
-                      <WarningOutlined style={{ fontSize: 15, color: '#f44336' }}/>
-                    )}
-                    {(work.status === 'progress' || work.status === 'wait') && (
-                      <CircularProgress size={20} thickness={2} style={{ marginRight: 10 }}/>
-                    )}
-                  </ListItemIcon>
-                  <ListItemText primary={computeLabel()} secondary={secondaryLabel}/>
-                  <ListItemSecondaryAction style={{ right: 0 }}>
-                    <IconButton color="primary" onClick={() => deleteWork(work.id)}>
-                      <DeleteOutlined />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              </Tooltip>
+            <Tooltip title={message} key={uuid()}>
+              <ListItem
+                dense={true}
+                button={true}
+                divider={true}
+                classes={{ root: classes.nested }}
+              >
+                <ListItemIcon>
+                  {work.status === 'complete' && numberOfError === 0 && (
+                    <CheckCircleOutlined
+                      style={{ fontSize: 15, color: '#4caf50' }}
+                    />
+                  )}
+                  {work.status === 'complete' && numberOfError > 0 && (
+                    <WarningOutlined
+                      style={{ fontSize: 15, color: '#f44336' }}
+                    />
+                  )}
+                  {(work.status === 'progress' || work.status === 'wait') && (
+                    <CircularProgress
+                      size={20}
+                      thickness={2}
+                      style={{ marginRight: 10 }}
+                    />
+                  )}
+                </ListItemIcon>
+                <ListItemText
+                  primary={computeLabel()}
+                  secondary={secondaryLabel}
+                />
+                <ListItemSecondaryAction style={{ right: 0 }}>
+                  <IconButton
+                    color="primary"
+                    onClick={() => deleteWork(work.id)}
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            </Tooltip>
           );
         })}
-      </List>
+    </List>
   );
 };
 

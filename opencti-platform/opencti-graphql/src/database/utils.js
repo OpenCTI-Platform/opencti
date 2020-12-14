@@ -19,7 +19,7 @@ import {
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   isStixCyberObservable,
-} from '../schema/stixCyberObservableObject';
+} from '../schema/stixCyberObservable';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';

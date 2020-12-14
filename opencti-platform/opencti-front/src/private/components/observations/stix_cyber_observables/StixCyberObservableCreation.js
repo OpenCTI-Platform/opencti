@@ -466,7 +466,10 @@ class StixCyberObservableCreation extends Component {
             };
             const attributes = pipe(
               map((n) => n.node),
-              filter((n) => !includes(n.value, ignoredAttributes)),
+              filter(
+                (n) => !includes(n.value, ignoredAttributes)
+                  && !n.value.startsWith('i_'),
+              ),
             )(props.attributes.edges);
             for (const attribute of attributes) {
               if (includes(attribute.value, dateAttributes)) {

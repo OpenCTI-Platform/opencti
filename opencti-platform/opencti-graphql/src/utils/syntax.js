@@ -1,5 +1,5 @@
 /* eslint-disable no-case-declarations,import/prefer-default-export */
-import * as C from '../schema/stixCyberObservableObject';
+import * as C from '../schema/stixCyberObservable';
 
 export const checkObservableSyntax = (observableType, observableData) => {
   switch (observableType) {

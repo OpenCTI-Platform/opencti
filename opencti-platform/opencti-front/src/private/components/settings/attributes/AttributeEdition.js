@@ -11,7 +11,6 @@ import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import { TextField } from 'formik-material-ui';
 import * as Yup from 'yup';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 
@@ -48,12 +47,9 @@ const styles = (theme) => ({
 });
 
 const attributeMutationUpdate = graphql`
-  mutation AttributeEditionUpdateMutation(
-    $id: ID!
-    $input: AttributeEditInput!
-  ) {
+  mutation AttributeEditionUpdateMutation($id: ID!, $input: EditInput!) {
     attributeEdit(id: $id) {
-      update(input: $input) {
+      fieldPatch(input: $input) {
         ...AttributeEdition_attribute
       }
     }
@@ -67,9 +63,8 @@ const attributeValidation = (t) => Yup.object().shape({
 class AttributeEditionContainer extends Component {
   onSubmit(values, { setSubmitting }) {
     const input = {
-      type: this.props.attribute.type,
-      value: this.props.attribute.value,
-      newValue: values.value,
+      key: 'value',
+      value: values.value,
     };
     commitMutation({
       mutation: attributeMutationUpdate,
@@ -77,42 +72,10 @@ class AttributeEditionContainer extends Component {
         id: this.props.attribute.id,
         input,
       },
-      optimisticUpdater: (store) => {
-        // Artificially remove of a line to force refresh in the updater.
-        // Attribute like this should have stable UUID.
-        const container = store.getRoot();
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_attributes',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, this.props.attribute.id);
-      },
-      updater: (store) => {
-        const container = store.getRoot();
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_attributes',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, this.props.attribute.id);
-        const payload = store
-          .getRootField('attributeEdit')
-          .getLinkedRecord('update', { input });
-        const newEdge = ConnectionHandler.createEdge(
-          store,
-          conn,
-          payload,
-          'AttributeEdge',
-        );
-        ConnectionHandler.insertEdgeAfter(conn, newEdge);
-        this.props.handleClose();
-      },
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
+        this.props.handleClose();
       },
     });
   }
@@ -188,7 +151,7 @@ const AttributeEditionFragment = createFragmentContainer(
     attribute: graphql`
       fragment AttributeEdition_attribute on Attribute {
         id
-        type
+        key
         value
       }
     `,

@@ -92,7 +92,6 @@ SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer.propTypes 
 export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery = graphql`
   query SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesPaginationQuery(
     $elementId: String!
-    $inferred: Boolean
     $relationship_type: String
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -105,20 +104,19 @@ export const simpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesQuery =
     $cursor: ID
   ) {
     ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data
-    @arguments(
-      elementId: $elementId
-      inferred: $inferred
-      relationship_type: $relationship_type
-      startTimeStart: $startTimeStart
-      startTimeStop: $startTimeStop
-      stopTimeStart: $stopTimeStart
-      stopTimeStop: $stopTimeStop
-      confidences: $confidences
-      orderBy: $orderBy
-      orderMode: $orderMode
-      count: $count
-      cursor: $cursor
-    )
+      @arguments(
+        elementId: $elementId
+        relationship_type: $relationship_type
+        startTimeStart: $startTimeStart
+        startTimeStop: $startTimeStop
+        stopTimeStart: $stopTimeStart
+        stopTimeStop: $stopTimeStop
+        confidences: $confidences
+        orderBy: $orderBy
+        orderMode: $orderMode
+        count: $count
+        cursor: $cursor
+      )
   }
 `;
 
@@ -129,7 +127,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
       fragment SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines_data on Query
       @argumentDefinitions(
         elementId: { type: "String!" }
-        inferred: { type: "Boolean" }
         relationship_type: { type: "String" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }
@@ -146,7 +143,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
       ) {
         stixCoreRelationshipsOfElement(
           elementId: $elementId
-          inferred: $inferred
           relationship_type: $relationship_type
           startTimeStart: $startTimeStart
           startTimeStop: $startTimeStop
@@ -181,7 +177,6 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
         elementId: fragmentVariables.elementId,
-        inferred: fragmentVariables.inferred,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,
         startTimeStop: fragmentVariables.startTimeStop,

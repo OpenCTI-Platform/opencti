@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  compose,
-  filter,
-  pipe,
-  split,
-  drop,
-  join,
-  propOr,
+  compose, filter, pipe, split, drop, join, propOr,
 } from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
@@ -15,7 +9,11 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import IconButton from '@material-ui/core/IconButton';
 import { FileOutline, ProgressUpload } from 'mdi-material-ui';
-import { DeleteOutlined, GetAppOutlined, WarningOutlined } from '@material-ui/icons';
+import {
+  DeleteOutlined,
+  GetAppOutlined,
+  WarningOutlined,
+} from '@material-ui/icons';
 import Tooltip from '@material-ui/core/Tooltip';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -23,7 +21,11 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { Link } from 'react-router-dom';
-import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import {
+  APP_BASE_PATH,
+  commitMutation,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import FileWork from './FileWork';
 
@@ -141,7 +143,9 @@ class FileLineComponent extends Component {
         >
           <ListItemIcon>
             {isProgress && <CircularProgress size={20} />}
-            {!isProgress && isFail && <WarningOutlined style={{ fontSize: 15, color: '#f44336' }}/>}
+            {!isProgress && isFail && (
+              <WarningOutlined style={{ fontSize: 15, color: '#f44336' }} />
+            )}
             {!isProgress && !isFail && <FileOutline />}
           </ListItemIcon>
           <Tooltip title={toolTip !== 'null' ? toolTip : ''}>
@@ -159,7 +163,8 @@ class FileLineComponent extends Component {
                     disabled={isProgress || !isImportActive()}
                     onClick={this.askForImportJob.bind(this)}
                     aria-haspopup="true"
-                    color="primary">
+                    color="primary"
+                  >
                     <ProgressUpload />
                   </IconButton>
                 </span>
@@ -167,14 +172,15 @@ class FileLineComponent extends Component {
             ) : (
               ''
             )}
-            {(!directDownload && !isFail) ? (
+            {!directDownload && !isFail ? (
               <Tooltip title={t('Download this file')}>
                 <span>
                   <IconButton
                     disabled={isProgress}
                     href={`${APP_BASE_PATH}/storage/get/${file.id}`}
                     aria-haspopup="true"
-                    color="primary">
+                    color="primary"
+                  >
                     <GetAppOutlined />
                   </IconButton>
                 </span>
@@ -187,7 +193,8 @@ class FileLineComponent extends Component {
                 <span>
                   <IconButton
                     color="secondary"
-                    onClick={this.handleRemoveJob.bind(this, file.id)}>
+                    onClick={this.handleRemoveJob.bind(this, file.id)}
+                  >
                     <DeleteOutlined />
                   </IconButton>
                 </span>
@@ -198,7 +205,8 @@ class FileLineComponent extends Component {
                   <IconButton
                     disabled={isProgress}
                     color="primary"
-                    onClick={this.handleRemoveFile.bind(this, file.id)}>
+                    onClick={this.handleRemoveFile.bind(this, file.id)}
+                  >
                     <DeleteOutlined />
                   </IconButton>
                 </span>

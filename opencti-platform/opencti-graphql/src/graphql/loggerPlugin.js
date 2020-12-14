@@ -1,7 +1,9 @@
-import { filter, head, isEmpty, isNil, includes, dissoc } from 'ramda';
+import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
 import { stripIgnoredCharacters } from 'graphql';
 import nconf from 'nconf';
 import { logger } from '../config/conf';
+import { isNotEmptyField } from '../database/utils';
+import { MISSING_REF_ERROR } from '../config/errors';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
@@ -41,7 +43,7 @@ export default {
         const size = Buffer.byteLength(JSON.stringify(context.request.variables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.context.user;
-        const user = contextUser ? { id: contextUser.id, email: contextUser.user_email } : undefined;
+        const origin = contextUser ? contextUser.origin : undefined;
         const [variables] = await tryResolveKeyPromises(context.request.variables);
         const isCallError = context.errors && context.errors.length > 0;
         // Compute inner relations
@@ -60,7 +62,7 @@ export default {
         }
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
         const callMetaData = {
-          user,
+          user: origin,
           type: operationType + (isCallError ? '_ERROR' : ''),
           operation_query: stripIgnoredCharacters(context.request.query),
           inner_relation_creation: innerRelationCount,
@@ -74,9 +76,14 @@ export default {
           const callError = currentError.originalError ? currentError.originalError : currentError;
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
-          if (includes(callError.name, ['AuthRequired', 'AuthFailure', 'ForbiddenAccess'])) {
+          const isRetryableCall = callError.name === MISSING_REF_ERROR && isNotEmptyField(origin.call_retry_number);
+          const isAuthenticationCall = includes(callError.name, ['AuthRequired', 'AuthFailure', 'ForbiddenAccess']);
+          // Authentication problem can be logged in warning (dissoc variables to hide password)
+          // If worker is retrying, missing reference is not really a problem, can be logged in warning
+          if (isRetryableCall || isAuthenticationCall) {
             logger.warn(API_CALL_MESSAGE, Object.assign(dissoc('variables', callMetaData), { error }));
           } else {
+            // Every other uses cases are logged with error level
             logger.error(API_CALL_MESSAGE, Object.assign(callMetaData, { error }));
           }
         } else if (perfLog) {

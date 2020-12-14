@@ -58,15 +58,6 @@ class ItemConfidence extends Component {
       t, confidence, classes, variant,
     } = this.props;
     const style = variant === 'inList' ? classes.chipInList : classes.chip;
-    if (confidence === 1000) {
-      return (
-        <Chip
-          classes={{ root: style }}
-          style={inlineStyles.blueGrey}
-          label={t('Inferred')}
-        />
-      );
-    }
     if (confidence >= 80) {
       return (
         <Chip

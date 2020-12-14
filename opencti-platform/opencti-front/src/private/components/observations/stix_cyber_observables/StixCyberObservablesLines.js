@@ -65,11 +65,8 @@ StixCyberObservablesLines.propTypes = {
 };
 
 export const stixCyberObservablesLinesSubTypesQuery = graphql`
-  query StixCyberObservablesLinesSubTypesQuery(
-    $type: String!
-    $includeParents: Boolean
-  ) {
-    subTypes(type: $type, includeParents: $includeParents) {
+  query StixCyberObservablesLinesSubTypesQuery($type: String!) {
+    subTypes(type: $type) {
       edges {
         node {
           id
@@ -103,15 +100,15 @@ export const stixCyberObservablesLinesQuery = graphql`
     $filters: [StixCyberObservablesFiltering]
   ) {
     ...StixCyberObservablesLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 

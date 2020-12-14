@@ -228,7 +228,7 @@ class Filters extends Component {
         break;
       case 'report_types':
         fetchQuery(attributesSearchQuery, {
-          type: 'report_types',
+          key: 'report_types',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {

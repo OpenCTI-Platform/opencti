@@ -23,7 +23,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
-import Tooltip from '@material-ui/core/Tooltip';
 import Markdown from 'react-markdown';
 import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
@@ -121,11 +120,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const {
-      containerId,
-      paginationOptions,
-      knowledgeGraph,
-    } = this.props;
+    const { containerId, paginationOptions, knowledgeGraph } = this.props;
     const { addedStixCoreObjects } = this.state;
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
@@ -247,10 +242,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      data,
-      fd,
+      t, classes, data, fd,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
     const stixCoreObjectsNodes = pipe(
@@ -295,54 +287,46 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                   {stixCoreObjects[type].map((stixCoreObject) => {
                     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
                       || containerStixCoreObjectsIds.includes(stixCoreObject.id);
-                    const description = stixCoreObject.description
-                        || stixCoreObject.x_opencti_description;
-
                     return (
-                      <Tooltip
-                        classes={{ tooltip: classes.tooltip }}
-                        title={<Markdown source={description} />}
+                      <ListItem
                         key={stixCoreObject.id}
+                        classes={{ root: classes.menuItem }}
+                        divider={true}
+                        button={true}
+                        onClick={this.toggleStixCoreObject.bind(
+                          this,
+                          stixCoreObject,
+                        )}
                       >
-                        <ListItem
-                          classes={{ root: classes.menuItem }}
-                          divider={true}
-                          button={true}
-                          onClick={this.toggleStixCoreObject.bind(
-                            this,
-                            stixCoreObject,
+                        <ListItemIcon>
+                          {alreadyAdded ? (
+                            <CheckCircle classes={{ root: classes.icon }} />
+                          ) : (
+                            <ItemIcon type={type} />
                           )}
-                        >
-                          <ListItemIcon>
-                            {alreadyAdded ? (
-                              <CheckCircle classes={{ root: classes.icon }} />
-                            ) : (
-                              <ItemIcon type={type} />
-                            )}
-                          </ListItemIcon>
-                          <ListItemText
-                            primary={
-                              stixCoreObject.name
-                              || stixCoreObject.observable_value
-                              || stixCoreObject.attribute_abstract
-                              || stixCoreObject.opinion
-                              || `${fd(stixCoreObject.first_observed)} - ${fd(
-                                stixCoreObject.last_observed,
-                              )}`
-                            }
-                            secondary={
-                              <Markdown
-                                className="markdown"
-                                source={truncate(
-                                  stixCoreObject.description
-                                    || fd(stixCoreObject.created_at),
-                                  200,
-                                )}
-                              />
-                            }
-                          />
-                        </ListItem>
-                      </Tooltip>
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            stixCoreObject.name
+                            || stixCoreObject.observable_value
+                            || stixCoreObject.attribute_abstract
+                            || stixCoreObject.opinion
+                            || `${fd(stixCoreObject.first_observed)} - ${fd(
+                              stixCoreObject.last_observed,
+                            )}`
+                          }
+                          secondary={
+                            <Markdown
+                              className="markdown"
+                              source={truncate(
+                                stixCoreObject.description
+                                  || fd(stixCoreObject.created_at),
+                                200,
+                              )}
+                            />
+                          }
+                        />
+                      </ListItem>
                     );
                   })}
                 </List>
@@ -381,14 +365,14 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...ContainerAddStixCoreObjectsLines_data
-    @arguments(
-      types: $types
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        types: $types
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

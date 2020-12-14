@@ -60,14 +60,14 @@ export const intrusionSetsCardsQuery = graphql`
     $filters: [IntrusionSetsFiltering]
   ) {
     ...IntrusionSetsCards_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 

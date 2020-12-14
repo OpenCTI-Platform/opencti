@@ -42,7 +42,6 @@ const TIMESERIES_QUERY = gql`
     $endDate: DateTime!
     $interval: String!
     $relationship_type: String
-    $inferred: Boolean
   ) {
     campaignsTimeSeries(
       objectId: $objectId
@@ -52,7 +51,6 @@ const TIMESERIES_QUERY = gql`
       endDate: $endDate
       interval: $interval
       relationship_type: $relationship_type
-      inferred: $inferred
     ) {
       date
       value

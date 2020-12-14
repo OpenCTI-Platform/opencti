@@ -1,6 +1,6 @@
 import { assoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/grakn';
+import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { normalizeName } from '../schema/identifier';
@@ -10,7 +10,7 @@ export const findById = (labelId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LABEL], ['value'], args);
+  return listEntities([ENTITY_TYPE_LABEL], args);
 };
 
 export const stringToColour = (str) => {

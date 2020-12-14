@@ -150,8 +150,7 @@ class StixDomainObjectHeader extends Component {
   onSubmitCreateAlias(element, data, { resetForm }) {
     const currentAliases = this.getCurrentAliases();
     if (
-      (currentAliases === null
-        || !currentAliases.includes(data.new_alias))
+      (currentAliases === null || !currentAliases.includes(data.new_alias))
       && data.new_alias !== ''
     ) {
       commitMutation({
@@ -172,10 +171,7 @@ class StixDomainObjectHeader extends Component {
 
   deleteAlias(alias) {
     const currentAliases = this.getCurrentAliases();
-    const aliases = filter(
-      (a) => a !== alias,
-      currentAliases,
-    );
+    const aliases = filter((a) => a !== alias, currentAliases);
     commitMutation({
       mutation: stixDomainObjectMutation,
       variables: {
@@ -266,7 +262,8 @@ class StixDomainObjectHeader extends Component {
                   onClick={this.handleToggleOpenAliases.bind(this)}
                   style={{ fontSize: 14 }}
                 >
-                  <DotsHorizontalCircleOutline />&nbsp;&nbsp;{t('More')}
+                  <DotsHorizontalCircleOutline />
+                  &nbsp;&nbsp;{t('More')}
                 </Button>
               ) : (
                 <IconButton

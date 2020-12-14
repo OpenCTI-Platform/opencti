@@ -1,12 +1,5 @@
 import { assoc, pipe, isNil } from 'ramda';
-import {
-  createEntity,
-  listEntities,
-  loadById,
-  FROM_START,
-  UNTIL_END,
-  listToEntitiesThroughRelation,
-} from '../database/grakn';
+import { createEntity, listEntities, loadById, FROM_START, UNTIL_END, batchListThroughGetTo } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_INTRUSION_SET } from '../schema/stixDomainObject';
@@ -18,7 +11,7 @@ export const findById = (intrusionSetId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_INTRUSION_SET], ['name', 'description', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_INTRUSION_SET], args);
 };
 
 export const addIntrusionSet = async (user, intrusionSet) => {
@@ -30,6 +23,6 @@ export const addIntrusionSet = async (user, intrusionSet) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const locations = (intrusionSetId) => {
-  return listToEntitiesThroughRelation(intrusionSetId, null, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
+export const batchLocations = (intrusionSetIds) => {
+  return batchListThroughGetTo(intrusionSetIds, RELATION_ORIGINATES_FROM, ENTITY_TYPE_LOCATION);
 };

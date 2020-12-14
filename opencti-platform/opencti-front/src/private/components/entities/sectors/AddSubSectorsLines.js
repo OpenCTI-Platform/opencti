@@ -138,7 +138,7 @@ AddSubSectorsLinesContainer.propTypes = {
 export const addSubSectorsLinesQuery = graphql`
   query AddSubSectorsLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddSubSectorsLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -153,7 +153,7 @@ const AddSubSectorsLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         sectors(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_sectors") {
+          @connection(key: "Pagination_sectors") {
           edges {
             node {
               id

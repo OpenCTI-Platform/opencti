@@ -357,8 +357,6 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                     className="markdown"
                                     source={stixCoreRelationship.description}
                                   />
-                                  ) : stixCoreRelationship.inferred ? (
-                                  <i>{t('This relation is inferred')}</i>
                                   ) : (
                                     t('No description of this targeting')
                                   )
@@ -381,13 +379,8 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                             ))}
                             <ItemYears
                               variant="inList"
-                              years={
-                                stixCoreRelationship.inferred
-                                  ? t('Inferred')
-                                  : stixCoreRelationship.years
-                              }
+                              years={stixCoreRelationship.years}
                               country
-                              disabled={stixCoreRelationship.inferred}
                             />
                             <ListItemSecondaryAction>
                               <StixCoreRelationshipPopover
@@ -524,14 +517,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                         ))}
                                         <ItemYears
                                           variant="inList"
-                                          years={
-                                            stixCoreRelationship.inferred
-                                              ? t('Inferred')
-                                              : stixCoreRelationship.years
-                                          }
-                                          disabled={
-                                            stixCoreRelationship.inferred
-                                          }
+                                          years={stixCoreRelationship.years}
                                         />
                                         <ListItemSecondaryAction>
                                           <StixCoreRelationshipPopover
@@ -648,12 +634,7 @@ class StixDomainObjectVictimologyRegionsComponent extends Component {
                                               <ItemYears
                                                 variant="inList"
                                                 years={
-                                                  stixCoreRelationship.inferred
-                                                    ? t('Inferred')
-                                                    : stixCoreRelationship.years
-                                                }
-                                                disabled={
-                                                  stixCoreRelationship.inferred
+                                                  stixCoreRelationship.years
                                                 }
                                               />
                                               <ListItemSecondaryAction>
@@ -718,7 +699,6 @@ export const stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery = grap
     $fromId: String
     $toTypes: [String]
     $relationship_type: String
-    $inferred: Boolean
     $first: Int
   ) {
     ...StixDomainObjectVictimologyRegions_data
@@ -734,7 +714,6 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
           fromId: $fromId
           toTypes: $toTypes
           relationship_type: $relationship_type
-          inferred: $inferred
           first: $first
         ) {
           edges {
@@ -743,7 +722,6 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
               description
               start_time
               stop_time
-              inferred
               to {
                 ... on BasicObject {
                   id

@@ -25,7 +25,6 @@ export const saveViewParameters = (
     dissoc('selectedElements'),
     dissoc('lastSeenStart'),
     dissoc('lastSeenStop'),
-    dissoc('inferred'),
   )(params);
   if (params.filters) {
     urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
@@ -71,11 +70,6 @@ export const buildViewParamsFromUrlAndStorage = (
   if (typeof finalParams.observableTypes === 'string') {
     finalParams.observableTypes = finalParams.observableTypes
       ? split(',', finalParams.observableTypes)
-      : '';
-  }
-  if (typeof finalParams.toType === 'string') {
-    finalParams.toType = finalParams.toType
-      ? split(',', finalParams.toType)
       : '';
   }
   if (typeof finalParams.filters === 'string') {

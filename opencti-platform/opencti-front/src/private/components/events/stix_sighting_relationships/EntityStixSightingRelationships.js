@@ -46,7 +46,6 @@ class EntityStixSightingRelationships extends Component {
       searchTerm: '',
       openToType: false,
       toType: 'All',
-      inferred: false,
       view: 'lines',
     };
   }
@@ -163,7 +162,6 @@ class EntityStixSightingRelationships extends Component {
       openToType,
       sortBy,
       orderAsc,
-      inferred,
     } = this.state;
     // Display types selection when target types are multiple
     const displayTypes = !isTo
@@ -171,7 +169,6 @@ class EntityStixSightingRelationships extends Component {
         || targetStixDomainObjectTypes.includes('Identity'));
     // sort only when inferences are disabled or inferences are resolved
     const paginationOptions = {
-      inferred: inferred && sortBy === null ? inferred : false,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',

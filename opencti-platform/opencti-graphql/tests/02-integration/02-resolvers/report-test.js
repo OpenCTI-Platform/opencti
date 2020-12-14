@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { now } from '../../../src/database/grakn';
+import { now } from '../../../src/database/middleware';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
@@ -79,6 +79,11 @@ const DISTRIBUTION_QUERY = gql`
     reportsDistribution(objectId: $objectId, field: $field, operation: $operation, limit: $limit, order: $order) {
       label
       value
+      entity {
+        ... on Identity {
+          name
+        }
+      }
     }
   }
 `;
@@ -304,11 +309,11 @@ describe('Report resolver standard behavior', () => {
       query: DISTRIBUTION_QUERY,
       variables: {
         objectId: datasetMalwareInternalId,
-        field: 'created-by.name',
+        field: 'created-by.internal_id',
         operation: 'count',
       },
     });
-    const aggregationMap = new Map(queryResult.data.reportsDistribution.map((i) => [i.label, i]));
+    const aggregationMap = new Map(queryResult.data.reportsDistribution.map((i) => [i.entity.name, i]));
     expect(aggregationMap.get('ANSSI').value).toEqual(1);
   });
   it('should update report', async () => {

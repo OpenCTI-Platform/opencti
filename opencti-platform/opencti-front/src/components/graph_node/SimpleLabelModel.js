@@ -40,7 +40,6 @@ export default class SimpleLabelModel extends LabelModel {
         listener.selectionChanged({
           ...event,
           openEdit: true,
-          inferred: this.props.model.parent.inferred,
           isSelected: selected,
         });
       }

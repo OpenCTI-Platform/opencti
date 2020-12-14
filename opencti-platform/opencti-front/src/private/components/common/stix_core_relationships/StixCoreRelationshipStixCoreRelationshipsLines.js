@@ -141,14 +141,14 @@ export const stixCoreRelationshipStixCoreRelationshipsLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StixCoreRelationshipStixCoreRelationshipsLines_data
-    @arguments(
-      fromId: $fromId
-      relationship_type: $relationship_type
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        fromId: $fromId
+        relationship_type: $relationship_type
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 

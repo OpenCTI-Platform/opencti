@@ -317,8 +317,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                     className="markdown"
                                     source={stixCoreRelationship.description}
                                   />
-                                  ) : stixCoreRelationship.inferred ? (
-                                  <i>{t('This relation is inferred')}</i>
                                   ) : (
                                     t('No description of this targeting')
                                   )
@@ -341,12 +339,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                             ))}
                             <ItemYears
                               variant="inList"
-                              years={
-                                stixCoreRelationship.inferred
-                                  ? t('Inferred')
-                                  : stixCoreRelationship.years
-                              }
-                              disabled={stixCoreRelationship.inferred}
+                              years={stixCoreRelationship.years}
                             />
                             <ListItemSecondaryAction>
                               <StixCoreRelationshipPopover
@@ -481,14 +474,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                         ))}
                                         <ItemYears
                                           variant="inList"
-                                          years={
-                                            stixCoreRelationship.inferred
-                                              ? t('Inferred')
-                                              : stixCoreRelationship.years
-                                          }
-                                          disabled={
-                                            stixCoreRelationship.inferred
-                                          }
+                                          years={stixCoreRelationship.years}
                                         />
                                         <ListItemSecondaryAction>
                                           <StixCoreRelationshipPopover
@@ -549,7 +535,6 @@ export const stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery = grap
     $fromId: String
     $toTypes: [String]
     $relationship_type: String
-    $inferred: Boolean
     $first: Int
   ) {
     ...StixDomainObjectVictimologySectors_data
@@ -565,7 +550,6 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
           fromId: $fromId
           toTypes: $toTypes
           relationship_type: $relationship_type
-          inferred: $inferred
           first: $first
         ) {
           edges {
@@ -574,7 +558,6 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
               description
               start_time
               stop_time
-              inferred
               to {
                 ... on BasicObject {
                   id

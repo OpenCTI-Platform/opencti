@@ -118,19 +118,22 @@ class StixCoreObjectOrStixCoreRelationshipLastReports extends Component {
       authorId,
     } = this.props;
     const filters = [];
+
     if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
+
     if (stixCoreObjectOrStixCoreRelationshipId) {
       filters.push({
         key: 'objectContains',
         values: [stixCoreObjectOrStixCoreRelationshipId],
       });
     }
+
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {authorId
-            ? t('Last reports wrote by the entity')
-            : t('Last reports about the element')}
+            ? t('Latest reports written by this entity')
+            : t('Latest reports about this entity')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer

@@ -1,42 +1,38 @@
-import { assoc, map } from 'ramda';
+import { assoc } from 'ramda';
 import {
   createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  escapeString,
-  find,
   listEntities,
-  listFromEntitiesThroughRelation,
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
   loadById,
   updateAttribute,
-} from '../database/grakn';
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 export const findById = (groupId) => {
   return loadById(groupId, ENTITY_TYPE_GROUP);
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_GROUP], ['name'], args);
+  return listEntities([ENTITY_TYPE_GROUP], args);
 };
 
-export const members = async (groupId) => {
-  return listFromEntitiesThroughRelation(groupId, ENTITY_TYPE_GROUP, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+export const batchMembers = async (groupIds) => {
+  return batchListThroughGetFrom(groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
-export const markingDefinitions = async (groupId) => {
-  const data = await find(
-    `match $group isa Group, has internal_id "${escapeString(groupId)}";
-            (${RELATION_ACCESSES_TO}_from: $group, ${RELATION_ACCESSES_TO}_to: $marking) isa ${RELATION_ACCESSES_TO}; get;`,
-    ['marking']
-  );
-  return map((r) => r.marking, data);
+export const batchMarkingDefinitions = async (groupIds) => {
+  const opts = { paginate: false };
+  return batchListThroughGetTo(groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
 };
 
 export const addGroup = async (user, group) => {

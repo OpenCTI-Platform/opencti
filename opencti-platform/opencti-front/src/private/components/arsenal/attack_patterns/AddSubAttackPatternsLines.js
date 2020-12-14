@@ -156,7 +156,7 @@ export const addSubAttackPatternsLinesQuery = graphql`
     $cursor: ID
   ) {
     ...AddSubAttackPatternsLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -171,7 +171,7 @@ const AddSubAttackPatternsLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         attackPatterns(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_attackPatterns") {
+          @connection(key: "Pagination_attackPatterns") {
           edges {
             node {
               id

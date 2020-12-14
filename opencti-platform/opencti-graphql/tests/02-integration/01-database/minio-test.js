@@ -1,5 +1,5 @@
 import { head } from 'ramda';
-import { deleteFile, downloadFile, filesListing, getMinIOVersion, loadFile } from '../../../src/database/minio';
+import { deleteFile, downloadFile, filesListing, loadFile } from '../../../src/database/minio';
 import { listenServer, stopServer } from '../../../src/httpServer';
 import { execPython3 } from '../../../src/python/pythonBridge';
 import { API_TOKEN, API_URI, PYTHON_PATH } from '../../utils/testQuery';
@@ -14,13 +14,6 @@ const streamConverter = (stream) => {
     stream.on('end', () => resolve(data));
   });
 };
-
-describe('Minio basic and utils', () => {
-  it('should minio in correct version', async () => {
-    const minioVersion = await getMinIOVersion();
-    expect(minioVersion).toEqual(expect.stringContaining('RELEASE.20'));
-  });
-});
 
 describe('Minio file listing', () => {
   let malwareId;

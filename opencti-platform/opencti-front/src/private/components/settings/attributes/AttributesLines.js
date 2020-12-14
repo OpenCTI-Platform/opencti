@@ -49,12 +49,12 @@ AttributesLines.propTypes = {
 };
 
 export const attributesQuery = graphql`
-  query AttributesLinesAttributesQuery($type: String!) {
-    attributes(type: $type) {
+  query AttributesLinesAttributesQuery($key: String!) {
+    attributes(key: $key) {
       edges {
         node {
           id
-          type
+          key
           value
         }
       }
@@ -64,7 +64,7 @@ export const attributesQuery = graphql`
 
 export const attributesLinesQuery = graphql`
   query AttributesLinesPaginationQuery(
-    $type: String!
+    $key: String!
     $search: String
     $count: Int
     $cursor: ID
@@ -72,14 +72,14 @@ export const attributesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...AttributesLines_data
-    @arguments(
-      type: $type
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        key: $key
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -89,7 +89,7 @@ export default createPaginationContainer(
     data: graphql`
       fragment AttributesLines_data on Query
       @argumentDefinitions(
-        type: { type: "String!" }
+        key: { type: "String!" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
@@ -97,7 +97,7 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         attributes(
-          type: $type
+          key: $key
           search: $search
           first: $count
           after: $cursor

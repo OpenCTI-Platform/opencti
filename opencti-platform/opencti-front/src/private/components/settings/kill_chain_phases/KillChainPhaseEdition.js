@@ -88,8 +88,7 @@ const killChainPhaseValidation = (t) => Yup.object().shape({
   phase_name: Yup.string().required(t('This field is required')),
   x_opencti_order: Yup.number()
     .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
+    .integer(t('The value must be a number')),
 });
 
 class KillChainPhaseEditionContainer extends Component {

@@ -25,16 +25,16 @@ import {
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  escapeString,
-  find,
   listEntities,
-  listToEntitiesThroughRelation,
-  load,
+  batchListThroughGetTo,
   loadById,
   now,
   patchAttribute,
   updateAttribute,
-} from '../database/grakn';
+  loadThroughGetTo,
+  listThroughGetTo,
+  listThroughGetFrom,
+} from '../database/middleware';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -58,6 +58,8 @@ import {
 } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { generateStandardId } from '../schema/identifier';
+import { elLoadBy } from '../database/elasticSearch';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
 // region utils
 export const BYPASS = 'BYPASS';
@@ -100,11 +102,11 @@ export const findById = async (userId) => {
 };
 
 export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_USER], ['name', 'aliases'], args);
+  return listEntities([ENTITY_TYPE_USER], args);
 };
 
-export const groups = (userId) => {
-  return listToEntitiesThroughRelation(userId, ENTITY_TYPE_USER, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+export const batchGroups = async (userIds) => {
+  return batchListThroughGetTo(userIds, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
 };
 
 export const token = async (userId, args, context) => {
@@ -112,51 +114,26 @@ export const token = async (userId, args, context) => {
   if (userId !== context.user.id && !R.includes('SETACCESSES', capabilities) && !R.includes('BYPASS', capabilities)) {
     throw ForbiddenAccess();
   }
-  const element = await load(
-    `match $to isa Token;
-    $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY};
-    $from has internal_id "${escapeString(userId)}"; get;`,
-    ['to']
-  );
-  return element && element.to.uuid;
+  const userToken = await loadThroughGetTo(userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
+  return userToken && userToken.uuid;
 };
 
 const internalGetToken = async (userId) => {
-  const query = `match $to isa Token;
-  $rel(${RELATION_AUTHORIZED_BY}_from:$from, ${RELATION_AUTHORIZED_BY}_to:$to) isa ${RELATION_AUTHORIZED_BY};
-  $from has internal_id "${escapeString(userId)}"; get;`;
-  const element = await load(query, ['to']);
-  return element && element.to;
-};
-
-const internalGetTokenByUUID = async (tokenUUID) => {
-  const query = `match $token isa Token; $token has internal_id $token_id; $token has uuid "${escapeString(
-    tokenUUID
-  )}"; get;`;
-  return load(query, ['token']).then((result) => result && result.token);
+  return loadThroughGetTo(userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
 };
 
 const clearUserTokenCache = (userId) => {
   return internalGetToken(userId).then((tokenValue) => clearUserAccessCache(tokenValue.uuid));
 };
 
-export const getRoles = async (userId) => {
-  const data = await find(
-    `match $client isa User, has internal_id "${escapeString(userId)}";
-            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE};
-            $role has internal_id $role_id; get;`,
-    ['role']
-  );
-  return R.map((r) => r.role, data);
+export const batchRoles = async (userId) => {
+  return batchListThroughGetTo(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
 export const getMarkings = async (userId) => {
-  const userMarkingsPromise = find(
-    `match $client isa User, has internal_id "${escapeString(userId)}";
-            (${RELATION_MEMBER_OF}_from: $client, ${RELATION_MEMBER_OF}_to: $group) isa ${RELATION_MEMBER_OF}; 
-            (${RELATION_ACCESSES_TO}_from: $group, ${RELATION_ACCESSES_TO}_to: $marking) isa ${RELATION_ACCESSES_TO}; get;`,
-    ['marking']
-  ).then((data) => R.map((r) => r.marking, data));
+  const userGroups = await listThroughGetTo(userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
+  const groupIds = userGroups.map((r) => r.id);
+  const userMarkingsPromise = listThroughGetTo(groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
   const allMarkingsPromise = allMarkings().then((data) => R.map((i) => i.node, data.edges));
   const [userMarkings, markings] = await Promise.all([userMarkingsPromise, allMarkingsPromise]);
   const computedMarkings = [];
@@ -170,34 +147,22 @@ export const getMarkings = async (userId) => {
     }, markings);
     computedMarkings.push(...matchingMarkings);
   }
-  return computedMarkings;
+  return R.uniqBy((m) => m.id, computedMarkings);
 };
 
 export const getCapabilities = async (userId) => {
-  const data = await find(
-    `match $client isa User, has internal_id "${escapeString(userId)}";
-            (${RELATION_HAS_ROLE}_from: $client, ${RELATION_HAS_ROLE}_to: $role) isa ${RELATION_HAS_ROLE}; 
-            (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
-            $capability has internal_id $capability_id; get;`,
-    ['capability']
-  );
-  const capabilities = R.map((r) => r.capability, data);
+  const roles = await listThroughGetTo(userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
+  const roleIds = roles.map((r) => r.id);
+  const capabilities = await listThroughGetTo(roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
   if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
-    capabilities.push({ id, internal_id: id, name: BYPASS });
+    capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
   }
   return capabilities;
 };
 
-export const getRoleCapabilities = async (roleId) => {
-  const data = await find(
-    `match $role isa Role, has internal_id "${escapeString(roleId)}";
-            (${RELATION_HAS_CAPABILITY}_from: $role, ${RELATION_HAS_CAPABILITY}_to: $capability) isa ${RELATION_HAS_CAPABILITY}; 
-            $role has internal_id $role_id;
-            $capability has internal_id $capability_id; get;`,
-    ['capability']
-  );
-  return R.map((r) => r.capability, data);
+export const batchRoleCapabilities = async (roleId) => {
+  return batchListThroughGetTo(roleId, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY, { paginate: false });
 };
 
 export const findRoleById = (roleId) => {
@@ -205,12 +170,12 @@ export const findRoleById = (roleId) => {
 };
 
 export const findRoles = (args) => {
-  return listEntities([ENTITY_TYPE_ROLE], ['name'], args);
+  return listEntities([ENTITY_TYPE_ROLE], args);
 };
 
 export const findCapabilities = (args) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);
-  return listEntities([ENTITY_TYPE_CAPABILITY], ['description'], finalArgs);
+  return listEntities([ENTITY_TYPE_CAPABILITY], finalArgs);
 };
 
 export const roleDelete = async (user, roleId) => {
@@ -359,37 +324,31 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
 };
 
 export const loginFromProvider = async (email, name) => {
-  const result = await load(
-    `match $client isa User, has user_email "${escapeString(email)}"; 
-    (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token); get;`,
-    ['client', 'token']
-  );
-  if (R.isNil(result)) {
+  const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
+  if (!user) {
     const newUser = { name, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
   // update the name
+  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
   const inputName = { key: 'name', value: [name] };
-  await userEditField(SYSTEM_USER, result.client.id, inputName);
+  await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
-  await userEditField(SYSTEM_USER, result.client.id, inputExternal);
-  await clearUserAccessCache(result.token.id);
-  return result.token;
+  await userEditField(SYSTEM_USER, user.id, inputExternal);
+  await clearUserAccessCache(userToken.id);
+  return userToken;
 };
 
 export const login = async (email, password) => {
-  const query = `match $client isa User, has user_email "${escapeString(email).toLowerCase()}";
-   $client has internal_id $client_id;
-   (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; 
-   $token has internal_id $token_id;
-   get;`;
-  const result = await load(query, ['client', 'token']);
-  if (R.isNil(result)) throw AuthenticationFailure();
-  const dbPassword = result.client.password;
+  const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
+  if (!user) throw AuthenticationFailure();
+  const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
+  if (!userToken) throw AuthenticationFailure();
+  const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
-  await clearUserAccessCache(result.token.uuid);
-  return result.token;
+  await clearUserAccessCache(userToken.uuid);
+  return userToken;
 };
 
 export const logout = async (user, res) => {
@@ -400,6 +359,10 @@ export const logout = async (user, res) => {
 };
 
 // Token related
+const internalGetTokenByUUID = async (tokenUUID) => {
+  return elLoadBy(['uuid'], tokenUUID, ENTITY_TYPE_TOKEN);
+};
+
 export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
   // 01. Get current token
   const currentToken = await internalGetToken(userId);
@@ -407,7 +370,7 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   if (currentToken) {
     await deleteElementById(user, currentToken.id, ENTITY_TYPE_TOKEN);
   } else {
-    logger.error(`[GRAKN] ${userId} user have no token to renew, please report this problem in github`);
+    logger.error(`[INIT] ${userId} user have no token to renew, please report this problem in github`);
     const detachedToken = await internalGetTokenByUUID(newToken.uuid);
     if (detachedToken) {
       await deleteElementById(user, detachedToken.id, ENTITY_TYPE_TOKEN);
@@ -426,23 +389,16 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
 };
 
 export const findByTokenUUID = async (tokenValue) => {
-  // This method is call every time a user to a platform action
   let user = await getAccessCache(tokenValue);
   if (!user) {
-    const data = await load(
-      `match $token isa Token;
-            $token has uuid "${escapeString(tokenValue)}", has revoked false;
-            (${RELATION_AUTHORIZED_BY}_from:$client, ${RELATION_AUTHORIZED_BY}_to:$token) isa ${RELATION_AUTHORIZED_BY}; get;`,
-      ['client', 'token']
-    );
-    if (!data) return undefined;
-    // eslint-disable-next-line no-shadow
-    const { client, token } = data;
-    if (!client) return undefined;
-    logger.debug(`[REDIS] Setting cache access for ${tokenValue}`);
+    const userToken = await elLoadBy(['uuid'], tokenValue, ENTITY_TYPE_TOKEN);
+    if (!userToken || userToken.revoked === true) return undefined;
+    const users = await listThroughGetFrom(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
+    if (users.length === 0 || users.length > 1) return undefined;
+    const client = R.head(users);
     const [capabilities, markings] = await Promise.all([getCapabilities(client.id), getMarkings(client.id)]);
     user = R.pipe(
-      R.assoc('token', token),
+      R.assoc('token', userToken),
       // Assoc extra information
       R.assoc('capabilities', capabilities),
       R.assoc('allowed_marking', markings)
@@ -467,14 +423,6 @@ export const authentication = async (tokenUUID) => {
   }
 };
 
-// The static admin account internal ID
-/**
- * Create or update the default administrator account.
- * @param email the admin email
- * @param password the admin password
- * @param tokenValue the admin default token
- * @returns {*}
- */
 export const initAdmin = async (email, password, tokenValue) => {
   const admin = await findById(OPENCTI_ADMIN_UUID);
   const tokenAdmin = generateOpenCTIWebToken(tokenValue);

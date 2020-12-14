@@ -107,9 +107,9 @@ const i18n = {
       Information: 'Informations',
       'Last reports': 'Derniers rapports',
       'Last notes': 'Dernières notes',
-      'Last reports wrote by the entity':
+      'Latest reports written by this entity':
         'Derniers rapports écrits par cette entité',
-      'Last reports about the element':
+      'Latest reports about this entity':
         "Derniers rapports à propos de l'élément",
       'Last reports about the entity': "Derniers rapports à propos de l'entité",
       'Last observables': 'Derniers observables',
@@ -503,7 +503,6 @@ const i18n = {
       'Contact information': 'Informations de contact',
       Inferences: 'Inférences',
       'Inference rules': "Règles d'inférence",
-      Inferred: 'Inféré',
       'CSV file': 'Fichier CSV',
       'Export data in CSV': 'Exporter les données en CSV',
       'The CSV file has been generated with the parameters of the view and is ready for download.':
@@ -832,6 +831,8 @@ const i18n = {
       'Number of targeting': 'Nombre de ciblages',
       'Related entities (generic relation "related-to")':
         'Entités liées (relation générique "lié à")',
+      'This panel shows by default the latest created entities, use the search to find more.':
+        'Ce panneau montre par défaut les dernières entités créées, utilisez la recherche pour en trouver plus.',
       Platforms: "Systèmes d'exploitation",
       Platform: "Système d'exploitation",
       'Required permissions': 'Permissions requises',
