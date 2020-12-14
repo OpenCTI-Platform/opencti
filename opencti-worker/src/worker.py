@@ -26,7 +26,7 @@ class ReportQueueProcessor(threading.Thread):
     def run(self):
         logging.info("Listening to ack/nack actions")
         while True:
-            msg = ACK_QUEUE.get(block=True)
+            msg = ACK_QUEUE.get()
             work_id = msg["work_id"]
             if msg["type"] == "ack":
                 self.api.work.report_expectation(work_id, None)
@@ -34,6 +34,7 @@ class ReportQueueProcessor(threading.Thread):
                 error = msg["error"]
                 content = msg["content"]
                 self.api.work.report_expectation(work_id, {"error": error, "source": content})
+            ACK_QUEUE.task_done()
 
 
 class Consumer(threading.Thread):
