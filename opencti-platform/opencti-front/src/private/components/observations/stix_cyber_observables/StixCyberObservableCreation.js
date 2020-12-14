@@ -371,11 +371,8 @@ class StixCyberObservableCreation extends Component {
     const finalValues = {
       type: this.state.type,
       x_opencti_description:
-        values.x_opencti_score.length > 0 ? values.x_opencti_description : null,
-      x_opencti_score:
-        values.x_opencti_score.length > 0
-          ? parseInt(values.x_opencti_score, 10)
-          : null,
+        values.x_opencti_description.length > 0 ? values.x_opencti_description : null,
+      x_opencti_score: values.x_opencti_score,
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
       objectLabel: pluck('value', values.objectLabel),

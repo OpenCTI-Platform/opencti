@@ -6,7 +6,6 @@ import yaml
 import pika
 import os
 import time
-import queue
 import json
 import base64
 import threading
