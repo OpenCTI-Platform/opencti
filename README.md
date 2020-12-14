@@ -43,6 +43,21 @@ All you need to install the OpenCTI platform can be found in the [official docum
 * [Use Docker](https://www.notion.so/luatix/Using-Docker-03d5c0592b9d4547800cc9f4ff7be2b8) (recommended)
 * [Install manually](https://www.notion.so/luatix/Manual-deployment-b911beba44234f179841582ab3894bb1)
 
+## Luatix's members
+
+### Founders
+
+<p align="center">
+  <a href="https://www.ssi.gouv.fr" alt="ANSSI"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Anssi.png" style="width: 100px; margin-left: 10px; margin-right: 10px" /></a>
+  <a href="https://cert.europa.eu" alt="CERT-EU"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Certeu.png" style="width: 100px; margin-left: 10px; margin-right: 10px" /></a>
+</p>
+
+### Sponsors
+
+<p align="center">
+  <a href="https://www.intrinsec.com" alt="Intrinsec"><img src="https://www.luatix.org/wp-content/uploads/2020/11/intrinsec.png" style="width: 100px; margin-left: 10px; margin-right: 10px" /></a>
+</p>
+
 ## Contributing
 
 ### Code of Conduct
