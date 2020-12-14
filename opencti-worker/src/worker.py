@@ -151,7 +151,10 @@ class Consumer(threading.Thread):
                 else None
             )
             update = data["update"] if "update" in data else False
-            self.api.stix2.import_bundle_from_json(content, update, types, self.processing_count <= PROCESSING_COUNT-1)
+            processing_count = self.processing_count
+            if self.processing_count == PROCESSING_COUNT:
+                processing_count = None
+            self.api.stix2.import_bundle_from_json(content, update, types, processing_count)
             # Ack the message
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
@@ -171,7 +174,7 @@ class Consumer(threading.Thread):
             return False
         except Exception as ex:
             error = str(ex)
-            if "UnsupportedError" not in error and self.processing_count <= PROCESSING_COUNT:
+            if "UnsupportedError" not in error and self.processing_count < PROCESSING_COUNT:
                 time.sleep(1)
                 logging.info(
                     "Message (delivery_tag="
