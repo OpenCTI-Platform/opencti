@@ -199,7 +199,6 @@ class EntityStixCoreRelationships extends Component {
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
       || targetStixDomainObjectTypes.includes('Identity');
-    // sort only when inferences are disabled or inferences are resolved
     const selectedTypes = toType === 'All' ? targetStixDomainObjectTypes : [toType];
 
     let paginationOptions = {
@@ -435,7 +434,6 @@ EntityStixCoreRelationships.propTypes = {
   exploreLink: PropTypes.string,
   isRelationReversed: PropTypes.bool,
   noBottomBar: PropTypes.bool,
-  inference: PropTypes.bool,
   noState: PropTypes.bool,
 };
 

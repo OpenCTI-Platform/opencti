@@ -16,6 +16,7 @@ import {
   PublicOutlined,
   AccountBalanceOutlined,
   FlagOutlined,
+  GroupOutlined,
 } from '@material-ui/icons';
 import {
   Gauge,
@@ -110,6 +111,24 @@ class StixCoreObjectKnowledgeBar extends Component {
                 <AccountBalanceOutlined />
               </ListItemIcon>
               <ListItemText primary={t('Organizations')} />
+            </MenuItem>
+          ) : (
+            ''
+          )}
+          {includes('individuals', availableSections) ? (
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/individuals`}
+              selected={
+                location.pathname === `${stixCoreObjectLink}/individuals`
+              }
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <GroupOutlined />
+              </ListItemIcon>
+              <ListItemText primary={t('Individuals')} />
             </MenuItem>
           ) : (
             ''
