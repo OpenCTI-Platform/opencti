@@ -143,6 +143,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'X509-V3-Extensions-Type':
     case 'X-OpenCTI-Cryptographic-Key':
     case 'X-OpenCTI-Cryptocurrency-Wallet':
+    case 'X-OpenCTI-Hostname':
     case 'X-OpenCTI-Text':
     case 'X-OpenCTI-User-Agent':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;

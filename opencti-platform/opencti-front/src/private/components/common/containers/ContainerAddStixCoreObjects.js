@@ -24,7 +24,6 @@ import ContainerAddStixCoreObjectsLines, {
 } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import StixCoreObjectUseSearchMessage from '../stix_core_objects/StixCoreObjectUseSearchMessage';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -259,12 +258,6 @@ class ContainerAddStixCoreObjects extends Component {
   }
 
   renderSearch(paginationOptions) {
-    const { search } = this.state;
-
-    if (search === '') {
-      return <StixCoreObjectUseSearchMessage />;
-    }
-
     return this.renderSearchResults(paginationOptions);
   }
 

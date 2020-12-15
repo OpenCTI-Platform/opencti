@@ -20,6 +20,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Fab from '@material-ui/core/Fab';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
+import Alert from '@material-ui/lab/Alert';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -41,7 +42,6 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
-import StixCoreObjectUseSearchMessage from '../../common/stix_core_objects/StixCoreObjectUseSearchMessage';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -172,6 +172,9 @@ const styles = (theme) => ({
   },
   button: {
     marginLeft: theme.spacing(2),
+  },
+  info: {
+    paddingTop: 10,
   },
 });
 
@@ -375,7 +378,10 @@ class StixSightingRelationshipCreationFromEntity extends Component {
   renderDomainObjectSearchResults() {
     const { targetStixDomainObjectTypes } = this.props;
 
-    if (!targetStixDomainObjectTypes || targetStixDomainObjectTypes.length === 0) {
+    if (
+      !targetStixDomainObjectTypes
+      || targetStixDomainObjectTypes.length === 0
+    ) {
       return null;
     }
 
@@ -390,32 +396,32 @@ class StixSightingRelationshipCreationFromEntity extends Component {
     };
 
     return (
-        <div>
-          <QueryRenderer
-              query={
-                stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
-              }
-              variables={stixDomainObjectsPaginationOptions}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                      <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
-                          handleSelect={this.handleSelectEntity.bind(this)}
-                          data={props}
-                      />
-                  );
-                }
-                return this.renderFakeList();
-              }}
-          />
-          <StixDomainObjectCreation
-              display={open}
-              contextual={true}
-              inputValue={search}
-              paginationOptions={stixDomainObjectsPaginationOptions}
-              targetStixDomainObjectTypes={targetStixDomainObjectTypes}
-          />
-        </div>
+      <div>
+        <QueryRenderer
+          query={
+            stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
+          }
+          variables={stixDomainObjectsPaginationOptions}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <StixSightingRelationshipCreationFromEntityStixDomainObjectsLines
+                  handleSelect={this.handleSelectEntity.bind(this)}
+                  data={props}
+                />
+              );
+            }
+            return this.renderFakeList();
+          }}
+        />
+        <StixDomainObjectCreation
+          display={open}
+          contextual={true}
+          inputValue={search}
+          paginationOptions={stixDomainObjectsPaginationOptions}
+          targetStixDomainObjectTypes={targetStixDomainObjectTypes}
+        />
+      </div>
     );
   }
 
@@ -425,50 +431,47 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       targetStixCyberObservableTypes,
     } = this.props;
 
-    if (!targetStixCyberObservableTypes || targetStixCyberObservableTypes.length === 0) {
+    if (
+      !targetStixCyberObservableTypes
+      || targetStixCyberObservableTypes.length === 0
+    ) {
       return null;
     }
 
     const { search } = this.state;
 
     return (
-        <QueryRenderer
-            query={
-              stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
-            }
-            variables={{
-              search,
-              types: targetStixCyberObservableTypes,
-              count: 50,
-              orderBy: 'created_at',
-              orderMode: 'desc',
-            }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                    <StixSightingRelationshipCreationFromEntityStixCyberObservablesLines
-                        handleSelect={this.handleSelectEntity.bind(this)}
-                        data={props}
-                    />
-                );
-              }
-              return targetStixDomainObjectTypes.length === 0 ? (
-                this.renderFakeList()
-              ) : (
-                  <div> &nbsp; </div>
-              );
-            }}
-        />
+      <QueryRenderer
+        query={
+          stixSightingRelationshipCreationFromEntityStixCyberObservablesLinesQuery
+        }
+        variables={{
+          search,
+          types: targetStixCyberObservableTypes,
+          count: 50,
+          orderBy: 'created_at',
+          orderMode: 'desc',
+        }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <StixSightingRelationshipCreationFromEntityStixCyberObservablesLines
+                handleSelect={this.handleSelectEntity.bind(this)}
+                data={props}
+              />
+            );
+          }
+          return targetStixDomainObjectTypes.length === 0 ? (
+            this.renderFakeList()
+          ) : (
+            <div> &nbsp; </div>
+          );
+        }}
+      />
     );
   }
 
   renderSearchResults() {
-    const { search } = this.state;
-
-    if (search === '') {
-      return <StixCoreObjectUseSearchMessage />;
-    }
-
     return (
       <div>
         {this.renderDomainObjectSearchResults()}
@@ -505,6 +508,18 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
+          {search.length === 0 && (
+            <Alert
+              severity="info"
+              variant="outlined"
+              style={{ margin: '15px 15px 0 15px' }}
+              classes={{ message: classes.info }}
+            >
+              {t(
+                'This panel shows by default the latest created entities, use the search to find more.',
+              )}
+            </Alert>
+          )}
           {this.renderSearchResults()}
         </div>
       </div>
@@ -779,10 +794,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
 
   render() {
     const {
-      classes,
-      entityId,
-      variant,
-      paddingRight,
+      classes, entityId, variant, paddingRight,
     } = this.props;
 
     const { open, step } = this.state;
