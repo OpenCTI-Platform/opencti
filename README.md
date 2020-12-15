@@ -18,7 +18,7 @@ To install the latest Python client library, please use `pip`:
 $ pip3 install pycti
 ```
 
-## Dev local
+## Local development
 
 ```bash
 $ pip3 install . --user --force --upgrade
