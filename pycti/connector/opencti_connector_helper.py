@@ -305,6 +305,7 @@ class OpenCTIConnectorHelper:
             self.connect_auto,
         )
         connector_configuration = self.api.connector.register(self.connector)
+        logging.info("Connector registered with ID:" + self.connect_id)
         self.connector_id = connector_configuration["id"]
         self.work_id = None
         self.applicant_id = connector_configuration["connector_user"]["id"]
