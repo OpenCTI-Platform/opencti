@@ -201,7 +201,7 @@ class EntityStixSightingRelationships extends Component {
                     <div className={classes.chips}>
                       <Chip
                         key={selected}
-                        label={t(`entity_${selected.toLowerCase()}`)}
+                        label={t(`entity_${selected}`)}
                         className={classes.chip}
                       />
                     </div>
