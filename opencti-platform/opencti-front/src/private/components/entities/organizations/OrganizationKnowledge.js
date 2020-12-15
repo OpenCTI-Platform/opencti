@@ -35,6 +35,7 @@ class OrganizationKnowledgeComponent extends Component {
         <StixCoreObjectKnowledgeBar
           stixCoreObjectLink={link}
           availableSections={[
+            'organizations',
             'individuals',
             'threat_actors',
             'intrusion_sets',
@@ -63,6 +64,21 @@ class OrganizationKnowledgeComponent extends Component {
             <StixDomainObjectKnowledge
               stixDomainObjectId={organization.id}
               stixDomainObjectType="Organization"
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/organizations"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipType="part-of"
+              role="part-of_to"
+              targetStixDomainObjectTypes={['Organization']}
+              entityLink={link}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
