@@ -1422,29 +1422,24 @@ export const elUpdateAttributeValue = (key, previousValue, value) => {
   const source = !isMultiple
     ? 'ctx._source[params.key] = params.value'
     : `def index = 0; 
-       if (ctx._source.containsKey(params.key)) {
-         for (att in ctx._source[params.key]) { 
-          if(att == params.previousValue) { 
-            ctx._source[params.key][index] = params.value; 
-          } 
-          index++; 
-         }
-      }`;
+       for (att in ctx._source[params.key]) { 
+        if(att == params.previousValue) { 
+          ctx._source[params.key][index] = params.value; 
+        } 
+        index++; 
+       }`;
+  const query = { match_phrase: { [key]: previousValue } };
   return el
     .updateByQuery({
       index: DATA_INDICES,
       refresh: false,
       body: {
         script: { source, params: { key, value, previousValue } },
-        query: {
-          exists: {
-            field: key,
-          },
-        },
+        query,
       },
     })
     .catch((err) => {
-      throw DatabaseError('Error updating elastic', { error: err, key, value });
+      throw DatabaseError('Updating attribute value fail', { error: err, key, value });
     });
 };
 
