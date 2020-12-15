@@ -99,7 +99,7 @@ class Organizations extends Component {
       objectLabel: {
         label: 'Labels',
         width: '23%',
-        isSortable: true,
+        isSortable: false,
       },
       created: {
         label: 'Creation date',

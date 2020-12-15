@@ -2267,6 +2267,7 @@ enum OrganizationsOrdering {
   confidence
   created
   modified
+  x_opencti_organization_type
 }
 enum OrganizationsFilter {
   name
