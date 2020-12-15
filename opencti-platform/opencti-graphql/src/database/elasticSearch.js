@@ -963,7 +963,8 @@ export const elPaginate = async (indexName, options = {}) => {
       finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
     } else if (cleanSearch.startsWith('"')) {
       finalSearch = `${cleanSearch}`;
-    } else {      const splitSearch = cleanSearch.split(/[\s/]+/);
+    } else {
+      const splitSearch = cleanSearch.split(/[\s/]+/);
       finalSearch = R.pipe(
         R.map((n) => `*${n}*`),
         R.join(' ')

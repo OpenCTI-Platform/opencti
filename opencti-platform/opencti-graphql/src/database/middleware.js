@@ -1717,8 +1717,11 @@ const getRelatedRelations = async (targetId, elements = [], options = {}) => {
     return { internal_id: internalId, type: entityType, relDependency: true };
   }, connectedRelations);
   elements.push(...connectedRelationsIds);
-  // eslint-disable-next-line no-unused-vars
-  await Promise.all(connectedRelationsIds.map(({ id }) => getRelatedRelations(id, elements, options)));
+  await Promise.all(
+    connectedRelationsIds.map(({ internal_id: id }) => {
+      return getRelatedRelations(id, elements, options);
+    })
+  );
   return elements;
 };
 const getElementsToRemove = async (element, isRelation, options = {}) => {
