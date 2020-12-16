@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  compose, filter, head, pathOr,
-} from 'ramda';
+import { filter, head, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Snackbar from '@material-ui/core/Snackbar';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
-import { withRouter } from 'react-router-dom';
 import {
   Google, Key, Facebook, Github,
 } from 'mdi-material-ui';
@@ -110,15 +107,12 @@ const LoginMessage = ({
 );
 const Message = inject18n(LoginMessage);
 
-const Login = ({ location, classes }) => {
-  const query = new URLSearchParams(location.search);
-  const message = query.get('message');
+const Login = ({ classes }) => {
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
     width: window.innerWidth,
     height: window.innerHeight,
   });
-  const [open, setOpen] = React.useState(true);
   const marginTop = dimension.height / 2 - loginHeight / 2 - 120;
   const updateWindowDimensions = () => {
     setDimension({ width: window.innerWidth, height: window.innerHeight });
@@ -173,13 +167,6 @@ const Login = ({ location, classes }) => {
     </React.Fragment>
   );
 
-  const handleClose = (event, reason) => {
-    if (reason === 'clickaway') {
-      return;
-    }
-    setOpen(false);
-  };
-
   return (
     <QueryRenderer
       query={LoginQuery}
@@ -189,25 +176,16 @@ const Login = ({ location, classes }) => {
           const providers = props.settings.platform_providers;
           const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
           const authSSOs = filter((p) => p.type === 'SSO', providers);
-          if (authSSOs.length === 1 && !message) {
+          const auto = providers.length === 1 && authSSOs.length === 1;
+          if (auto) {
             const authSSO = head(authSSOs);
             window.location.href = `/auth/${authSSO.provider}`;
           }
-          // If not display form and buttons if configured
-          const sso = authSSOs.length === 1;
-          const auto = sso && !message;
           const isAuthButtons = authSSOs.length > 1;
           return (
             <ConnectedIntlProvider settings={props.settings}>
               <div className={classes.container} style={{ marginTop }}>
                 <img src={logo} alt="logo" className={classes.logo} />
-                {message && (
-                  <Message
-                    message={message}
-                    open={open}
-                    handleClose={handleClose}
-                  />
-                )}
                 {auto && <Loader />}
                 {isAuthForm && !auto && (
                   <LoginForm
@@ -232,4 +210,4 @@ Login.propTypes = {
   classes: PropTypes.object,
 };
 
-export default compose(withRouter, withStyles(styles))(Login);
+export default withStyles(styles)(Login);
