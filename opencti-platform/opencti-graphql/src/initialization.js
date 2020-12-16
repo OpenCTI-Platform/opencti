@@ -12,8 +12,8 @@ import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
 import { redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
-import applyMigration from './database/migration';
-import { createEntity, loadEntity } from './database/middleware';
+import applyMigration, { lastAvailableMigrationTime } from './database/migration';
+import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -114,10 +114,25 @@ const initializeSchema = async () => {
 
 const initializeMigration = async () => {
   logger.info('[INIT] Creating migration structure');
-  const time = new Date().getTime();
-  const lastRun = `${parseInt(time, 10) + 1}-init`;
+  const time = lastAvailableMigrationTime();
+  const lastRun = `${time}-init`;
   const migrationStatus = { lastRun };
   await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
+};
+
+// This code will patch release <= 4.0.1
+// This prevent some complex procedure for users. To be removed after some times
+const alignMigrationLastRun = async () => {
+  const migrationStatus = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
+  const { lastRun } = migrationStatus;
+  const [lastRunTime] = lastRun.split('-');
+  const lastRunStamp = parseInt(lastRunTime, 10);
+  const timeAvailableMigrationTimestamp = lastAvailableMigrationTime();
+  if (lastRunStamp > timeAvailableMigrationTimestamp) {
+    // Reset the last run to apply migration.
+    const patch = { lastRun: `1608026400000-init` };
+    await patchAttribute(SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, patch);
+  }
 };
 
 // eslint-disable-next-line
@@ -237,6 +252,7 @@ const platformInit = async (noMigration = false) => {
       logger.info('[INIT] Existing platform detected, initialization...');
       // Always reset the admin user
       await initializeAdminUser();
+      await alignMigrationLastRun();
       if (!noMigration) {
         await applyMigration();
       }

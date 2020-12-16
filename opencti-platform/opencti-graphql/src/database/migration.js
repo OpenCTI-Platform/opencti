@@ -5,7 +5,7 @@ import { logger } from '../config/conf';
 import { DatabaseError } from '../config/errors';
 import { RELATION_MIGRATES } from '../schema/internalRelationship';
 import { ENTITY_TYPE_MIGRATION_REFERENCE, ENTITY_TYPE_MIGRATION_STATUS } from '../schema/internalObject';
-import { createEntity, createRelation, loadEntity, patchAttribute, listThroughGetTo } from './middleware';
+import { createEntity, createRelation, listThroughGetTo, loadEntity, patchAttribute } from './middleware';
 import { SYSTEM_USER } from '../domain/user';
 
 const normalizeMigrationName = (rawName) => {
@@ -23,8 +23,16 @@ const retrieveMigrations = () => {
     .map((name) => {
       const title = normalizeMigrationName(name);
       const migration = webpackMigrationsContext(name);
-      return { title, up: migration.up, down: migration.down };
+      const [time] = title.split('-');
+      const timestamp = parseInt(time, 10);
+      return { title, up: migration.up, down: migration.down, timestamp };
     });
+};
+
+export const lastAvailableMigrationTime = () => {
+  const migrations = retrieveMigrations();
+  const lastMigration = R.last(migrations);
+  return lastMigration && lastMigration.timestamp;
 };
 
 const migrationStorage = {
@@ -79,13 +87,9 @@ const applyMigration = () => {
       // Read migrations from webpack
       const filesMigrationSet = retrieveMigrations();
       // Filter migration to apply. Should be > lastRun
-      const [platformTime] = state.lastRun.split('-');
-      const platformDate = new Date(parseInt(platformTime, 10));
-      const migrationToApply = R.filter((file) => {
-        const [time] = file.title.split('-');
-        const fileDate = new Date(parseInt(time, 10));
-        return fileDate > platformDate;
-      }, filesMigrationSet);
+      const [lastMigrationTime] = state.lastRun.split('-');
+      const lastMigrationDate = new Date(parseInt(lastMigrationTime, 10));
+      const migrationToApply = R.filter((file) => new Date(file.timestamp) > lastMigrationDate, filesMigrationSet);
       const alreadyAppliedMigrations = new Map(state.migrations ? state.migrations.map((i) => [i.title, i]) : null);
       /** Match the files migrations to the database migrations.
        Plays migrations that does not have matching name / timestamp */
