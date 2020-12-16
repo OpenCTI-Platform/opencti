@@ -45,8 +45,8 @@ export const attributeDelete = (user, attributeId) => deleteElementById(user, at
 
 export const attributeEditField = async (user, attributeId, input) => {
   const previous = await loadById(attributeId, ENTITY_TYPE_ATTRIBUTE);
-  const { key, value } = input;
-  await elUpdateAttributeValue(key, previous.value, R.head(value));
+  const { value } = input;
+  await elUpdateAttributeValue(previous.key, previous.value, R.head(value));
   const attribute = await updateAttribute(user, attributeId, ENTITY_TYPE_ATTRIBUTE, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_ATTRIBUTE].EDIT_TOPIC, attribute, user);
 };
