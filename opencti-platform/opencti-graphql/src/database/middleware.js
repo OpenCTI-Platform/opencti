@@ -1486,8 +1486,10 @@ export const createRelation = async (user, input) => {
   const { from, to } = resolvedInput;
   // Check consistency
   checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
-  // Get the lock from every side of the relation
-  const lockIds = [from.internal_id, to.internal_id];
+  // Build lock ids
+  const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
+  const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
+  const lockIds = [lockFrom, lockTo];
   if (isNotEmptyField(resolvedInput.stix_id)) {
     lockIds.push(resolvedInput.stix_id);
   }
