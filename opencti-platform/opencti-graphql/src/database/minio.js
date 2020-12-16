@@ -19,16 +19,20 @@ const minioClient = new Minio.Client({
 
 export const isStorageAlive = () => {
   return new Promise((resolve, reject) => {
-    minioClient.bucketExists(bucketName, (existErr, exists) => {
-      if (existErr) reject(existErr);
-      if (!exists) {
-        minioClient.makeBucket(bucketName, bucketRegion, (createErr) => {
-          if (createErr) reject(createErr);
-          resolve(true);
-        });
-      }
-      resolve(exists);
-    });
+    try {
+      minioClient.bucketExists(bucketName, (existErr, exists) => {
+        if (existErr) reject(existErr);
+        if (!exists) {
+          minioClient.makeBucket(bucketName, bucketRegion, (createErr) => {
+            if (createErr) reject(createErr);
+            resolve(true);
+          });
+        }
+        resolve(exists);
+      });
+    } catch (e) {
+      reject(e);
+    }
   });
 };
 

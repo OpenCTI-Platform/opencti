@@ -52,7 +52,7 @@ export const redisIsAlive = async () => {
   const client = await getClient();
   if (client.status !== 'ready') {
     /* istanbul ignore next */
-    throw DatabaseError('redis seems down');
+    throw DatabaseError('Redis seems down');
   }
   return true;
 };
