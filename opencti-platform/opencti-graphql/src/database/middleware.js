@@ -1486,10 +1486,8 @@ export const createRelation = async (user, input) => {
   const { from, to } = resolvedInput;
   // Check consistency
   checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
-  // Build lock ids
-  const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
-  const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
-  const lockIds = [lockFrom, lockTo];
+  // Get the lock from every side of the relation
+  const lockIds = [from.internal_id, to.internal_id];
   if (isNotEmptyField(resolvedInput.stix_id)) {
     lockIds.push(resolvedInput.stix_id);
   }
@@ -1528,7 +1526,7 @@ export const createRelation = async (user, input) => {
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Transaction fail, execution timeout', { lockIds });
     }
-    throw err;
+    throw DatabaseError('Entity creation fail', { error: err });
   } finally {
     if (lock) await lock.unlock();
   }
@@ -1702,7 +1700,7 @@ export const createEntity = async (user, input, type) => {
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Transaction fail, execution timeout', { participantIds });
     }
-    throw err;
+    throw DatabaseError('Entity creation fail', { error: err });
   } finally {
     if (lock) await lock.unlock();
   }

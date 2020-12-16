@@ -8,7 +8,6 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
-export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;

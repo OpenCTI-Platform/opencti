@@ -415,9 +415,14 @@ export const elCount = (indexName, options = {}) => {
     },
   };
   logger.debug(`[ELASTICSEARCH] countEntities`, { query });
-  return el.count(query).then((data) => {
-    return data.body.count;
-  });
+  return el
+    .count(query)
+    .then((data) => {
+      return data.body.count;
+    })
+    .catch((err) => {
+      throw DatabaseError('Count data fail', { error: err, query });
+    });
 };
 export const elAggregationCount = (type, aggregationField, start, end, filters) => {
   const haveRange = start && end;
@@ -467,10 +472,15 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
     },
   };
   logger.debug(`[ELASTICSEARCH] aggregationCount`, { query });
-  return el.search(query).then((data) => {
-    const { buckets } = data.body.aggregations.genres;
-    return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
-  });
+  return el
+    .search(query)
+    .then((data) => {
+      const { buckets } = data.body.aggregations.genres;
+      return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
+    })
+    .catch((err) => {
+      throw DatabaseError('Aggregation fail', { error: err, query });
+    });
 };
 // region relation reconstruction
 const elBuildRelation = (type, connection) => {
@@ -547,7 +557,7 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
     },
   };
   const data = await el.search(query).catch((e) => {
-    console.log(e);
+    throw DatabaseError('Find by from and to fail', { error: e, query });
   });
   const hits = [];
   for (let index = 0; index < data.body.hits.hits.length; index += 1) {
@@ -616,7 +626,9 @@ export const elFindBy = async (fields, values, type = null, indices = DATA_INDIC
     },
   };
   logger.debug(`[ELASTICSEARCH] elFindBy`, { query });
-  const data = await el.search(query);
+  const data = await el.search(query).catch((err) => {
+    throw DatabaseError('Find data fail', { error: err, query });
+  });
   const hits = [];
   for (let index = 0; index < data.body.hits.hits.length; index += 1) {
     const hit = data.body.hits.hits[index];
@@ -683,7 +695,9 @@ export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
     },
   };
   logger.debug(`[ELASTICSEARCH] elInternalLoadById`, { query });
-  const data = await el.search(query);
+  const data = await el.search(query).catch((err) => {
+    throw DatabaseError('Error loading ids', { error: err, query });
+  });
   const hits = [];
   for (let index = 0; index < data.body.hits.hits.length; index += 1) {
     const hit = data.body.hits.hits[index];
@@ -1139,7 +1153,7 @@ export const elPaginate = async (indexName, options = {}) => {
         )(err.meta.body.error.root_cause);
         // If uncontrolled error, log and propagate
         if (numberOfCauses > invalidMappingCauses.length) {
-          logger.error(`[ELASTICSEARCH] Paginate fail`, { error: err });
+          logger.error(`[ELASTICSEARCH] Paginate fail`, { error: err, query });
           throw err;
         } else {
           return connectionFormat ? buildPagination(0, 0, [], 0) : [];
@@ -1229,27 +1243,35 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   const query = {
     match: { [fieldName]: value },
   };
-  await el.deleteByQuery({
-    index: indexName,
-    refresh: true,
-    body: { query },
-  });
+  await el
+    .deleteByQuery({
+      index: indexName,
+      refresh: true,
+      body: { query },
+    })
+    .catch((err) => {
+      throw DatabaseError('Delete by field fail', { error: err, fieldName, value });
+    });
   return value;
 };
 export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
   const terms = R.map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
-  return el.deleteByQuery({
-    index: indexesToHandle,
-    refresh: true,
-    body: {
-      query: {
-        bool: {
-          should: terms,
+  return el
+    .deleteByQuery({
+      index: indexesToHandle,
+      refresh: true,
+      body: {
+        query: {
+          bool: {
+            should: terms,
+          },
         },
       },
-    },
-  });
+    })
+    .catch((err) => {
+      throw DatabaseError('Error deleting instance', { error: err, ids });
+    });
 };
 export const elRemoveRelationConnection = async (relationId) => {
   const relation = await elLoadByIds(relationId);
