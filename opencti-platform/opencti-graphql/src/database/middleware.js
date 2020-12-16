@@ -318,7 +318,7 @@ export const listRelations = async (relationshipType, args) => {
   if (toTypes && toTypes.length > 0) {
     nestedTo.push({ key: 'types', values: toTypes });
     if (fromRole) {
-      nestedFrom.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
+      nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
     }
   }
   if (nestedTo.length > 0) {
