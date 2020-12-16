@@ -260,6 +260,9 @@ class OpenCTIConnectorHelper:
         self.opencti_token = get_config_variable(
             "OPENCTI_TOKEN", ["opencti", "token"], config
         )
+        self.opencti_ssl_verify = get_config_variable(
+            "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, True
+        )
         # Load connector config
         self.connect_id = get_config_variable(
             "CONNECTOR_ID", ["connector", "id"], config
@@ -356,7 +359,9 @@ class OpenCTIConnectorHelper:
         listen_queue = ListenQueue(self, self.config, message_callback)
         listen_queue.start()
 
-    def listen_stream(self, message_callback, url=None, token=None) -> None:
+    def listen_stream(
+        self, message_callback, url=None, token=None, verify=None
+    ) -> None:
         """listen for messages and register callback function
 
         :param message_callback: callback function to process messages
@@ -370,11 +375,13 @@ class OpenCTIConnectorHelper:
             messages = SSEClient(
                 url + "/stream",
                 headers={"Authorization": "Bearer " + token},
+                verify=verify if verify is not None else True,
             )
         else:
             messages = SSEClient(
                 self.opencti_url + "/stream",
                 headers={"Authorization": "Bearer " + self.opencti_token},
+                verify=self.opencti_ssl_verify,
             )
 
         # Create processor thread
