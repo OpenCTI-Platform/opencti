@@ -3,6 +3,7 @@ import { deleteElementByIdRaw, loadById } from '../database/middleware';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { DATA_INDICES, el, RELATIONSHIPS_INDICES } from '../database/elasticSearch';
 import { SYSTEM_USER } from '../domain/user';
+import { logger } from '../config/conf';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
 const computeMissingRelationsForType = async (relationType) => {
@@ -87,12 +88,9 @@ const computeMissingRelationsForType = async (relationType) => {
     const totalEstimation = average(timesSpent) * totalNumberOfIteration;
     const remaining = (totalEstimation - timeSpent) / 1000 / 60;
     const findNumber = relationsToTakeCare.length;
-    process.stdout.clearLine();
-    process.stdout.write(
-      `[MIGRATION] Scanning ${relationType}: ${counter}/${valTotal} (Found ${findNumber} to clear) -- Estimate remaining ${remaining.toFixed(
-        2
-      )} min\r`
-    );
+    const remainTimeMin = remaining.toFixed(2);
+    const message = `[MIGRATION] Scanning ${relationType}: ${counter}/${valTotal} (Found ${findNumber} to clear) -- Estimate remaining ${remainTimeMin} min`;
+    logger.info(message);
     lastRun = new Date();
   }
   return relationsToTakeCare;
@@ -106,14 +104,14 @@ export const up = async (next) => {
   // Fix missing deleted data
   // In case of relation to relation, some deletion was not executed.
   // For each relations of the platform we need to check if the from and the to are available.
-  console.log('[MIGRATION] Starting migration to fix missing deletion');
+  logger.info('[MIGRATION] Starting migration to fix missing deletion');
   const relations = await getMissingRelations();
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
     const element = await loadById(relation.internal_id, relation.entity_type);
     await deleteElementByIdRaw(SYSTEM_USER, element, element.entity_type);
   }
-  console.log('\n[MIGRATION] Fix missing deletion migration done');
+  logger.info('[MIGRATION] Fix missing deletion migration done');
   next();
 };
 
