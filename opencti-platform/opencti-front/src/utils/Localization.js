@@ -1026,6 +1026,8 @@ const i18n = {
     },
     en: {
       progress: 'In progress',
+      wait: 'Waiting',
+      complete: 'Complete',
       Nonee: 'None',
       // Types
       entity_All: 'All entities',

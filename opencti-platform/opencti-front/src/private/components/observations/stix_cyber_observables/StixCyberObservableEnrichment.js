@@ -161,14 +161,16 @@ const StixCyberObservableEnrichment = (props) => {
                   {jobs.map((work) => {
                     const messageToDisplay = (
                       <div>
-                        {map(
-                          (message) => (
-                            <div>
-                              [${nsdt(message.timestamp)}] {message.message}
-                            </div>
-                          ),
-                          work.messages,
-                        )}
+                        {work.messages.length > 0
+                          ? map(
+                            (message) => (
+                                <div>
+                                  [${nsdt(message.timestamp)}] {message.message}
+                                </div>
+                            ),
+                            work.messages,
+                          )
+                          : t(work.status)}
                       </div>
                     );
                     return (
@@ -201,14 +203,14 @@ const StixCyberObservableEnrichment = (props) => {
                                 }}
                               />
                             )}
-                            {work.status === 'wait'
-                              || (work.status === 'progress' && (
-                                <CircularProgress
-                                  size={20}
-                                  thickness={2}
-                                  style={{ marginRight: 10 }}
-                                />
-                              ))}
+                            {(work.status === 'wait'
+                              || work.status === 'progress') && (
+                              <CircularProgress
+                                size={20}
+                                thickness={2}
+                                style={{ marginRight: 10 }}
+                              />
+                            )}
                           </ListItemIcon>
                           <ListItemText primary={nsdt(work.timestamp)} />
                           <ListItemSecondaryAction style={{ right: 0 }}>

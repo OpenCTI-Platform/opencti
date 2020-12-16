@@ -1697,6 +1697,9 @@ export const createEntity = async (user, input, type) => {
     }
     // - TRANSACTION END
     // Return created element after waiting for it.
+    if (dataEntity.type !== TRX_CREATION) {
+      return R.assoc('i_upserted', true, dataEntity.element);
+    }
     return dataEntity.element;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
