@@ -99,7 +99,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_USER]: [{ src: 'user_email' }],
     [I.ENTITY_TYPE_ROLE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
-    [I.ENTITY_TYPE_CONNECTOR]: [{ src: NAME_FIELD }],
+    [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: NAME_FIELD }, { src: X_MITRE_ID_FIELD }],
