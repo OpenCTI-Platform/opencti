@@ -112,9 +112,9 @@ const initializeSchema = async () => {
   return true;
 };
 
-const initializeMigration = async () => {
+const initializeMigration = async (testMode = false) => {
   logger.info('[INIT] Creating migration structure');
-  const time = lastAvailableMigrationTime();
+  const time = testMode ? new Date().getTime() : lastAvailableMigrationTime();
   const lastRun = `${time}-init`;
   const migrationStatus = { lastRun };
   await createEntity(SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
@@ -238,22 +238,22 @@ const isExistingPlatform = async () => {
 };
 
 // eslint-disable-next-line
-const platformInit = async (noMigration = false) => {
+const platformInit = async (testMode = false) => {
   await checkSystemDependencies();
   try {
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {
       logger.info(`[INIT] New platform detected, initialization...`);
       await initializeSchema();
-      await initializeMigration();
+      await initializeMigration(testMode);
       await initializeData();
       await initializeAdminUser();
     } else {
       logger.info('[INIT] Existing platform detected, initialization...');
       // Always reset the admin user
       await initializeAdminUser();
-      await alignMigrationLastRun();
-      if (!noMigration) {
+      if (!testMode) {
+        await alignMigrationLastRun();
         await applyMigration();
       }
     }
