@@ -56,7 +56,7 @@ const stixCyberObservableContribution = {
     ],
     [C.ENTITY_PROCESS]: [{ src: 'stix_id' }],
     [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
-    [C.ENTITY_URL]: [{ src: NAME_FIELD }],
+    [C.ENTITY_URL]: [{ src: 'value' }],
     [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }],
     [C.ENTITY_WINDOWS_REGISTRY_KEY]: [{ src: 'key' }, { src: 'values' }],
     [C.ENTITY_X_OPENCTI_CRYPTOGRAPHIC_KEY]: [{ src: 'value' }],
