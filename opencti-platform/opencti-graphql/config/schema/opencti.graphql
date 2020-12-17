@@ -275,9 +275,7 @@ enum WorksOrdering {
 enum WorksFilter {
   status
   connector_id
-  import_expected_number
-  import_processed_number
-  import_last_processed
+  completed_number
   completed_time
 }
 input WorksFiltering {
@@ -291,6 +289,11 @@ type WorkMessage {
   sequence: Int
   source: String
 }
+type WorkTracking {
+  import_expected_number: Int
+  import_last_processed: DateTime
+  import_processed_number: Int
+}
 type Work {
   id: ID!
   name: String
@@ -302,11 +305,10 @@ type Work {
   received_time: DateTime
   processed_time: DateTime
   completed_time: DateTime
-  import_expected_number: Int
-  import_last_processed: DateTime
-  import_processed_number: Int
+  completed_number: Int
   messages: [WorkMessage]
   errors: [WorkMessage]
+  tracking: WorkTracking
 }
 type WorkEdge {
   cursor: String!
@@ -7895,10 +7897,10 @@ type Subscription {
 
 type WorkEditMutations {
   delete: ID!
-  reportExpectation(error: WorkErrorInput): Work!
-  addExpectations(expectations: Int): Work!
-  toReceived(message: String): Work!
-  toProcessed(message: String, inError: Boolean): Work!
+  reportExpectation(error: WorkErrorInput): ID!
+  addExpectations(expectations: Int): ID!
+  toReceived(message: String): ID!
+  toProcessed(message: String, inError: Boolean): ID!
 }
 
 ######## INTERNAL OBJECT ENTITIES

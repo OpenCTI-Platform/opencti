@@ -151,6 +151,7 @@ class ConnectorWorksComponent extends Component {
       <div>
         {works.map((workEge) => {
           const work = workEge.node;
+          const { tracking } = work;
           return (
             <Paper
               key={work.id}
@@ -202,10 +203,10 @@ class ConnectorWorksComponent extends Component {
                         {t('Operations completed')}
                       </Typography>
                       <span className={classes.number}>
-                        {work.import_processed_number
-                        > work.import_expected_number
-                          ? work.import_expected_number
-                          : work.import_processed_number}
+                        {tracking?.import_processed_number
+                        > tracking?.import_expected_number
+                          ? tracking?.import_expected_number
+                          : tracking?.import_processed_number}
                       </span>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -213,7 +214,7 @@ class ConnectorWorksComponent extends Component {
                         {t('Total number of operations')}
                       </Typography>
                       <span className={classes.number}>
-                        {work.import_expected_number}
+                        {tracking?.import_expected_number}
                       </span>
                     </Grid>
                     <Grid item={true} xs={12}>
@@ -224,8 +225,8 @@ class ConnectorWorksComponent extends Component {
                         classes={{ root: classes.progress }}
                         variant="determinate"
                         value={Math.round(
-                          (work.import_processed_number
-                            / work.import_expected_number)
+                          (tracking?.import_processed_number
+                            / tracking?.import_expected_number)
                             * 100,
                         )}
                       />
@@ -402,9 +403,10 @@ const ConnectorWorks = createRefetchContainer(
               received_time
               processed_time
               completed_time
-              import_expected_number
-              import_last_processed
-              import_processed_number
+              tracking {
+                import_expected_number
+                import_processed_number
+              }
               messages {
                 timestamp
                 message

@@ -21,6 +21,7 @@ import {
 } from '../domain/work';
 import { now } from '../database/middleware';
 import { findById as findUserById } from '../domain/user';
+import { fetchBasicObject } from '../database/redis';
 
 const connectorResolvers = {
   Query: {
@@ -37,6 +38,7 @@ const connectorResolvers = {
   Work: {
     connector: (work) => connectorForWork(work.id),
     user: (work) => findUserById(work.user_id),
+    tracking: (work) => fetchBasicObject(work.id),
   },
   Mutation: {
     deleteConnector: (_, { id }, { user }) => connectorDelete(user, id),

@@ -163,7 +163,7 @@ class ConnectorComponent extends Component {
       filters: [
         { key: 'connector_id', values: [connector.id] },
         { key: 'status', values: ['complete'] },
-        { key: 'import_expected_number', values: ['0'], operator: 'gt' },
+        { key: 'completed_number', values: ['0'], operator: 'gt' },
       ],
     };
     return (

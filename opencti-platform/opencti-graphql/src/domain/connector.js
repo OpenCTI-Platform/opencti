@@ -28,9 +28,10 @@ const completeConnector = (connector) => {
 };
 // endregion
 
-// region fetch
-export const loadConnectorById = (id) =>
-  loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
+// region connectors
+export const loadConnectorById = (id) => {
+  return loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
+};
 
 export const connectors = () => {
   return listEntities([ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) =>
@@ -56,11 +57,13 @@ export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = f
   )(connects);
 };
 
-export const connectorsForExport = async (scope, onlyAlive = false) =>
-  connectorsFor(CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
+export const connectorsForExport = async (scope, onlyAlive = false) => {
+  return connectorsFor(CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
+};
 
-export const connectorsForImport = async (scope, onlyAlive = false) =>
-  connectorsFor(CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive);
+export const connectorsForImport = async (scope, onlyAlive = false) => {
+  return connectorsFor(CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive);
+};
 // endregion
 
 // region mutations

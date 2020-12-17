@@ -392,3 +392,49 @@ export const getStreamRange = async (from, limit, callback) => {
   });
 };
 // endregion
+
+// region
+// Simple object that contains only basic data (string, number)
+export const redisTx = async (callback) => {
+  const client = await getClient();
+  const tx = client.multi();
+  try {
+    await callback(tx);
+    return tx.exec();
+  } catch (e) {
+    throw DatabaseError('Redis Tx error', { error: e });
+  }
+};
+export const basicObjectDelete = async (internalIds) => {
+  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
+  return redisTx((tx) => {
+    tx.call('DEL', ...ids);
+  });
+};
+export const basicObjectCreation = async (element) => {
+  return redisTx((tx) => {
+    const data = R.flatten(R.toPairs(element));
+    tx.call('HSET', element.internal_id, data);
+  });
+};
+export const updateObjectRaw = async (tx, id, input) => {
+  const data = R.flatten(R.toPairs(input));
+  await tx.call('HSET', id, data);
+};
+export const updateObject = async (id, input) => {
+  const data = R.flatten(R.toPairs(input));
+  return redisTx((tx) => {
+    tx.call('HSET', id, data);
+  });
+};
+export const updateObjectCounterRaw = async (tx, id, field, number) => {
+  await tx.call('HINCRBY', id, field, number);
+};
+
+export const fetchBasicObject = async (internalId) => {
+  const client = await getClient();
+  const rawElement = await client.call('HGETALL', internalId);
+  const test = R.fromPairs(R.splitEvery(2, rawElement));
+  return test;
+};
+// endregion

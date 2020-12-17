@@ -55,12 +55,13 @@ const FileWorkComponent = (props) => {
           const message = work.messages.map((s) => s.message).join('\r\n');
           const numberOfError = work.errors.length;
           const secondaryLabel = `${nsdt(work.timestamp)} `;
+          const { tracking } = work;
           const computeLabel = () => {
             let statusText = '';
             if (!work.received_time) {
               statusText = ' (Pending)';
-            } else if (work.import_expected_number > 0) {
-              statusText = ` (${work.import_processed_number}/${work.import_expected_number})`;
+            } else if (tracking.import_expected_number > 0) {
+              statusText = ` (${tracking.import_processed_number}/${tracking.import_expected_number})`;
             }
             if (numberOfError > 0) {
               statusText += ` - [ ${numberOfError} error${
@@ -139,9 +140,10 @@ const FileWork = createFragmentContainer(FileWorkComponent, {
           name
         }
         received_time
-        import_expected_number
-        import_last_processed
-        import_processed_number
+        tracking {
+          import_expected_number
+          import_processed_number
+        }
         messages {
           timestamp
           message

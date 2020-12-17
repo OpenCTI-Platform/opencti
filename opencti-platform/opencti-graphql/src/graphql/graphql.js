@@ -8,6 +8,7 @@ import { DEV_MODE, OPENCTI_TOKEN } from '../config/conf';
 import { authentication } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
+import trackingPlugin from './trackingPlugin';
 
 export const extractTokenFromBearer = (bearer) =>
   bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
@@ -32,11 +33,12 @@ const createApolloServer = () => {
         applicant_id: req.headers['opencti-applicant-id'],
         call_retry_number: req.headers['opencti-retry-number'],
       };
+      const workId = req.headers['opencti-work-id'];
       const authMeta = Object.assign(auth, { origin });
-      return { res, user: authMeta };
+      return { res, user: authMeta, workId };
     },
     tracing: DEV_MODE,
-    plugins: [loggerPlugin],
+    plugins: [loggerPlugin, trackingPlugin],
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof GraphQLError) {

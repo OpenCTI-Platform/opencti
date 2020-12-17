@@ -13,6 +13,14 @@ import {
 import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
 import { isNotEmptyField } from '../database/utils';
+import {
+  basicObjectCreation,
+  fetchBasicObject,
+  redisTx,
+  updateObjectRaw,
+  updateObjectCounterRaw,
+  basicObjectDelete,
+} from '../database/redis';
 
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const ENTITY_TYPE_WORK = 'work';
@@ -82,6 +90,7 @@ export const loadExportWorksAsProgressFiles = async (sourceId) => {
 
 export const deleteWork = async (workId) => {
   await elDeleteInstanceIds([workId], [INDEX_HISTORY]);
+  await basicObjectDelete(workId);
   return workId;
 };
 
@@ -121,9 +130,11 @@ const deleteOldCompletedWorks = async (sourceId, connectorType) => {
   // eslint-disable-next-line no-underscore-dangle
   const ids = hits.map((h) => h._id);
   if (ids.length > 0) {
+    await basicObjectDelete(ids);
     await elDeleteInstanceIds(ids, INDEX_HISTORY);
   }
 };
+
 export const createWork = async (user, connector, friendlyName, sourceId, args = {}) => {
   // 01. Cleanup complete work older
   await deleteOldCompletedWorks(sourceId, connector.connector_type);
@@ -131,7 +142,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
   const { receivedTime = null } = args;
   // Create the work and a initial job
   const workId = generateWorkId();
-  await elIndex(INDEX_HISTORY, {
+  const work = {
     internal_id: workId,
     timestamp: now(),
     name: friendlyName,
@@ -141,81 +152,100 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
     event_source_id: sourceId,
     // Users
     user_id: user.id, // User asking for the action
-    connector_id: connector.id, // Connector responsible for the action
+    connector_id: connector.internal_id, // Connector responsible for the action
     // Action context
     status: receivedTime ? 'progress' : 'wait', // Wait / Progress / Complete
     received_time: receivedTime,
     processed_time: null,
     completed_time: null,
+    completed_number: 0,
     messages: [],
     errors: [],
-    // Importing sequences
+  };
+  const workTracing = {
+    internal_id: workId,
     import_expected_number: 0,
     import_processed_number: 0,
-    import_last_processed: null,
-  });
+  };
+  await basicObjectCreation(workTracing);
+  await elIndex(INDEX_HISTORY, work);
   return loadWorkById(workId);
 };
 
-export const reportActionImport = (user, workId, errorData) => {
-  const params = { now: now() };
-  let sourceScript = "ctx._source['import_processed_number'] += 1;";
-  sourceScript += "ctx._source['import_last_processed'] = params.now;";
-  sourceScript +=
-    "if (ctx._source['processed_time'] != null && ctx._source['import_expected_number'] == ctx._source['import_processed_number']) { " +
-    /*--*/ 'ctx._source[\'status\'] = "complete";' +
-    /*--*/ "ctx._source['completed_time'] = params.now;" +
-    '}';
-  if (errorData) {
-    const { error, source } = errorData;
-    sourceScript += `ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); `;
-    params.source = source;
-    params.error = error;
+const isWorkCompleted = async (workId) => {
+  const { import_processed_number: pn, import_expected_number: en } = await fetchBasicObject(workId);
+  // eslint-disable-next-line camelcase
+  return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn };
+};
+
+export const updateWorkFigures = async (workId) => {
+  const timestamp = now();
+  const [, , fetched] = await redisTx(async (tx) => {
+    await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
+    await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
+    await tx.call('HGETALL', workId);
+  });
+  const updatedMetrics = R.fromPairs(R.splitEvery(2, R.last(fetched)));
+  const { import_processed_number: pn, import_expected_number: en } = updatedMetrics;
+  return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn, expected: en };
+};
+
+export const reportActionImport = async (user, workId, errorData) => {
+  const timestamp = now();
+  const { isComplete, total } = await updateWorkFigures(workId);
+  // const { isComplete, total } = await isWorkCompleted(workId);
+  if (isComplete || errorData) {
+    const params = { now: timestamp };
+    let sourceScript = '';
+    if (isComplete) {
+      params.completed_number = total;
+      sourceScript += `ctx._source['status'] = "complete"; 
+      ctx._source['completed_number'] = params.completed_number;
+      ctx._source['completed_time'] = params.now;`;
+    }
+    if (errorData) {
+      const { error, source } = errorData;
+      sourceScript += `ctx._source.errors.add(["timestamp": params.now, "message": params.error, "source": params.source]); `;
+      params.source = source;
+      params.error = error;
+    }
+    await elUpdate(INDEX_HISTORY, workId, {
+      script: { source: sourceScript, lang: 'painless', params },
+    });
   }
-  return elUpdate(INDEX_HISTORY, workId, {
-    script: { source: sourceScript, lang: 'painless', params },
-  }).then(() => loadWorkById(workId));
+  return workId;
 };
 
-export const updateActionExpectation = (user, workId, expectation) => {
-  const params = { now: now(), expectation };
-  let source = "ctx._source['import_expected_number'] += params.expectation;";
-  source +=
-    "if (ctx._source['import_expected_number'] == ctx._source['import_processed_number']) { " +
-    /*--*/ 'ctx._source[\'status\'] = "complete";' +
-    /*--*/ "ctx._source['completed_time'] = params.now;" +
-    '} else {' +
-    /*--*/ 'ctx._source[\'status\'] = "progress";' +
-    /*--*/ "ctx._source['completed_time'] = null;" +
-    '}';
-  return elUpdate(INDEX_HISTORY, workId, {
-    script: { source, lang: 'painless', params },
-  }).then(() => loadWorkById(workId));
+export const updateActionExpectation = async (user, workId, expectation) => {
+  await redisTx(async (tx) => {
+    await updateObjectCounterRaw(tx, workId, 'import_expected_number', expectation);
+  });
+  return workId;
 };
 
-export const updateReceivedTime = (user, workId, message) => {
+export const updateReceivedTime = async (user, workId, message) => {
   const params = { received_time: now(), message };
   let source = 'ctx._source.status = "progress";';
   source += 'ctx._source["received_time"] = params.received_time;';
   if (isNotEmptyField(message)) {
     source += `ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); `;
   }
-  return elUpdate(INDEX_HISTORY, workId, {
+  await elUpdate(INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
-  }).then(() => loadWorkById(workId));
+  });
+  return workId;
 };
 
-export const updateProcessedTime = (user, workId, message, inError = false) => {
+export const updateProcessedTime = async (user, workId, message, inError = false) => {
   const params = { processed_time: now(), message };
   let source = 'ctx._source["processed_time"] = params.processed_time;';
-  source +=
-    "if (ctx._source['import_expected_number'] == ctx._source['import_processed_number']) { " +
-    /*--*/ 'ctx._source[\'status\'] = "complete";' +
-    /*--*/ "ctx._source['completed_time'] = params.processed_time;" +
-    '} else {' +
-    /*--*/ 'ctx._source[\'status\'] = "progress";' +
-    /*--*/ "ctx._source['completed_time'] = null;" +
-    '}';
+  const { isComplete, total } = await isWorkCompleted(workId);
+  if (isComplete) {
+    params.completed_number = total;
+    source += `ctx._source['status'] = "complete"; 
+               ctx._source['completed_number'] = params.completed_number;
+               ctx._source['completed_time'] = params.processed_time;`;
+  }
   if (isNotEmptyField(message)) {
     if (inError) {
       source += `ctx._source.errors.add(["timestamp": params.processed_time, "message": params.message]); `;
@@ -223,7 +253,8 @@ export const updateProcessedTime = (user, workId, message, inError = false) => {
       source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
     }
   }
-  return elUpdate(INDEX_HISTORY, workId, {
+  await elUpdate(INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
-  }).then(() => loadWorkById(workId));
+  });
+  return workId;
 };
