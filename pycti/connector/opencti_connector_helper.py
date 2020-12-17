@@ -372,7 +372,7 @@ class OpenCTIConnectorHelper:
 
         # Get the last event ID with the "connected" event msg
         if url is not None and token is not None:
-            ssl_verify = verify if verify is not None else True
+            opencti_ssl_verify = verify if verify is not None else True
             logging.info(
                 "Starting listening stream events with SSL verify to: "
                 + str(opencti_ssl_verify)
@@ -380,7 +380,7 @@ class OpenCTIConnectorHelper:
             messages = SSEClient(
                 url + "/stream",
                 headers={"Authorization": "Bearer " + token},
-                verify=ssl_verify,
+                verify=opencti_ssl_verify,
             )
         else:
             logging.info(
