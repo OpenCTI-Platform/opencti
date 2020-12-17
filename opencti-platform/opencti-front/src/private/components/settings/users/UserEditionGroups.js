@@ -75,7 +75,7 @@ class UserEditionGroupsComponent extends Component {
         mutation: userMutationRelationDelete,
         variables: {
           id: this.props.user.id,
-          toId: userGroup.value,
+          toId: userGroup.id,
           relationship_type: 'member-of',
         },
       });
