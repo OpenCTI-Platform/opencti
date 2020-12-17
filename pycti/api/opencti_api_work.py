@@ -12,9 +12,7 @@ class OpenCTIApiWork:
         query = """
             mutation workToReceived($id: ID!, $message: String) {
                 workEdit(id: $id) {
-                    toReceived (message: $message) {
-                      id
-                    }
+                    toReceived (message: $message)
                 }
             }
            """
@@ -25,9 +23,7 @@ class OpenCTIApiWork:
         query = """
             mutation workToProcessed($id: ID!, $message: String, $inError: Boolean) {
                 workEdit(id: $id) {
-                    toProcessed (message: $message, inError: $inError) {
-                      id
-                    }
+                    toProcessed (message: $message, inError: $inError)
                 }
             }
            """
@@ -38,9 +34,7 @@ class OpenCTIApiWork:
         query = """
             mutation reportExpectation($id: ID!, $error: WorkErrorInput) {
                 workEdit(id: $id) {
-                    reportExpectation(error: $error) {
-                      id
-                    }
+                    reportExpectation(error: $error)
                 }
             }
            """
@@ -56,9 +50,7 @@ class OpenCTIApiWork:
         query = """
             mutation addExpectations($id: ID!, $expectations: Int) {
                 workEdit(id: $id) {
-                    addExpectations(expectations: $expectations) {
-                      id
-                    }
+                    addExpectations(expectations: $expectations)
                 }
             }
            """

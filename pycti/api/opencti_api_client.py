@@ -145,12 +145,10 @@ class OpenCTIApiClient:
             )
 
     def set_applicant_id_header(self, applicant_id):
-        """set the request header with the specified token
-
-        :param applicant_id: OpenCTI caller id
-        :type applicant_id: str
-        """
         self.request_headers["opencti-applicant-id"] = applicant_id
+
+    def set_work_id_header(self, work_id):
+        self.request_headers["opencti-work-id"] = work_id
 
     def set_retry_number(self, retry_number):
         self.request_headers["opencti-retry-number"] = (
