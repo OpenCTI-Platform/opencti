@@ -1528,7 +1528,7 @@ export const createRelation = async (user, input) => {
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Transaction fail, execution timeout', { lockIds });
     }
-    throw DatabaseError('Entity creation fail', { error: err });
+    throw err;
   } finally {
     if (lock) await lock.unlock();
   }
@@ -1573,7 +1573,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     }
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, existingEntities);
-    throw DatabaseError('Too many entities resolved', { input, entityIds });
+    throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
   }
   // Complete with identifiers
   const today = now();
@@ -1702,7 +1702,7 @@ export const createEntity = async (user, input, type) => {
     if (err.name === TYPE_LOCK_ERROR) {
       throw DatabaseError('Transaction fail, execution timeout', { participantIds });
     }
-    throw DatabaseError('Entity creation fail', { error: err });
+    throw err;
   } finally {
     if (lock) await lock.unlock();
   }
