@@ -489,7 +489,6 @@ class OpenCTIConnectorHelper:
         :type entities_types: list, optional
         :param update: whether to updated data in the database, defaults to False
         :type update: bool, optional
-        :param split: whether to split the stix bundle before processing, defaults to True
         :raises ValueError: if the bundle is empty
         :return: list of bundles
         :rtype: list
