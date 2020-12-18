@@ -145,12 +145,14 @@ class StixDomainObjectsContainer extends Component {
                           </ListItemIcon>
                           <ListItemText
                             primary={
-                              stixDomainObject.name
-                              || stixDomainObject.attribute_abstract
-                              || stixDomainObject.opinion
-                              || `${fd(stixDomainObject.first_observed)} - ${fd(
-                                stixDomainObject.last_observed,
-                              )}`
+                              stixDomainObject.x_mitre_id
+                                ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
+                                : stixDomainObject.name
+                                  || stixDomainObject.attribute_abstract
+                                  || stixDomainObject.opinion
+                                  || `${fd(
+                                    stixDomainObject.first_observed,
+                                  )} - ${fd(stixDomainObject.last_observed)}`
                             }
                             secondary={truncate(
                               stixDomainObject.description,
@@ -262,6 +264,7 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
           ... on AttackPattern {
             name
             description
+            x_mitre_id
           }
           ... on Note {
             attribute_abstract
@@ -392,6 +395,7 @@ const StixDomainObjectsLines = createPaginationContainer(
               ... on AttackPattern {
                 name
                 description
+                x_mitre_id
               }
               ... on Campaign {
                 name
