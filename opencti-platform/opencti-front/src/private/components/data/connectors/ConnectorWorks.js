@@ -203,10 +203,7 @@ class ConnectorWorksComponent extends Component {
                         {t('Operations completed')}
                       </Typography>
                       <span className={classes.number}>
-                        {tracking?.import_processed_number
-                        > tracking?.import_expected_number
-                          ? tracking?.import_expected_number
-                          : tracking?.import_processed_number}
+                        {tracking?.import_processed_number}
                       </span>
                     </Grid>
                     <Grid item={true} xs={6}>

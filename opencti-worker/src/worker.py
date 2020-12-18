@@ -101,7 +101,6 @@ class Consumer(threading.Thread):
         applicant_id = data["applicant_id"]
         self.api.set_applicant_id_header(applicant_id)
         work_id = data["work_id"] if "work_id" in data else None
-        self.api.set_work_id_header(work_id)
         # Execute the import
         self.processing_count += 1
         content = "Unparseable"
@@ -122,6 +121,8 @@ class Consumer(threading.Thread):
             # Ack the message
             cb = functools.partial(self.ack_message, channel, delivery_tag)
             connection.add_callback_threadsafe(cb)
+            if work_id is not None:
+                self.api.work.report_expectation(work_id, None)
             self.processing_count = 0
             return True
         except RequestException as re:
