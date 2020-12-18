@@ -175,7 +175,7 @@ class XOpenCTIXOpenCTIIncidentPopover extends Component {
                 // Done
                 return (
                   <XOpenCTIIncidentEditionContainer
-                    XOpenCTIIncident={props.XOpenCTIIncident}
+                    xOpenCTIIncident={props.xOpenCTIIncident}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

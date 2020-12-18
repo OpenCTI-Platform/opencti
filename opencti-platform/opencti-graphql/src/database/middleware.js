@@ -1562,6 +1562,19 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     // In this case, we try to find if one match the standard id
     const existingByStandard = R.find((e) => e.standard_id === standardId, existingEntities);
     if (existingByStandard) {
+      // If a STIX ID has been passed in the creation
+      if (input.stix_id) {
+        // Find the entity corresponding to thhis STIX ID
+        const existingByGivenStixId = R.find(
+          (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id),
+          existingEntities
+        );
+        // If the entity exists
+        if (existingByGivenStixId) {
+          // Merge this entity into the one matching the standard id
+          await mergeEntities(user, existingByStandard, [existingByGivenStixId]);
+        }
+      }
       // In this mode we can safely consider this entity like the existing one.
       // We can upsert element except the aliases that are part of other entities
       const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);

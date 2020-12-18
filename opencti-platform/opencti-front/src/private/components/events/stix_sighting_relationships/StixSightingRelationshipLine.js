@@ -271,12 +271,17 @@ const StixSightingRelationshipLineFragment = createFragmentContainer(
             name
             description
           }
-          ... on StixCyberObservable {
-            observable_value
-          }
           ... on ObservedData {
             first_observed
             last_observed
+          }
+          ... on StixCyberObservable {
+            id
+            entity_type
+            parent_types
+            created_at
+            updated_at
+            observable_value
           }
         }
       }
