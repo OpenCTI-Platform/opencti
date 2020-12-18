@@ -271,6 +271,7 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
       lastname
       language
       token
+      description
     }
   `,
 });
