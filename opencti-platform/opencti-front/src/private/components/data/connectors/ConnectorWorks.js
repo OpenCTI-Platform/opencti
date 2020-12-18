@@ -121,10 +121,6 @@ class ConnectorWorksComponent extends Component {
     this.setState({ displayMessages: false, messages: [] });
   }
 
-  handleOpenErrors(errors) {
-    this.setState({ displayErrors: true, errors });
-  }
-
   handleCloseErrors() {
     this.setState({ displayErrors: false, errors: [] });
   }
@@ -235,10 +231,10 @@ class ConnectorWorksComponent extends Component {
                     style={{
                       float: 'right',
                       margin: '0 0 20px 20px',
+                      cursor: 'default',
                     }}
                     variant="outlined"
                     color="secondary"
-                    onClick={this.handleOpenErrors.bind(this, work.errors)}
                     size="small"
                   >
                     {work.errors.length} {t('errors')}
