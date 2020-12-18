@@ -196,110 +196,126 @@ const buildEvent = (eventType, user, markings, message, data) => {
   };
 };
 export const storeMergeEvent = async (user, instance, sourceEntities) => {
-  const message = generateLogMessage(EVENT_TYPE_MERGE, instance);
-  const data = {
-    id: instance.standard_id,
-    x_opencti_id: instance.internal_id,
-    type: convertTypeToStixType(instance.entity_type),
-    source_ids: R.map((s) => s.standard_id, sourceEntities),
-  };
-  const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
-  const client = await getClient();
-  return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
-};
-export const storeUpdateEvent = async (user, instance, updateEvents) => {
-  // updateEvents -> [{ operation, input }]
-  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
-    const convertedInputs = updateEvents.map((i) => {
-      const [k, v] = R.head(Object.entries(i));
-      const convert = stixDataConverter(v);
-      return isNotEmptyField(convert) ? { [k]: convert } : null;
-    });
-    const dataUpdate = R.mergeAll(convertedInputs);
-    // dataUpdate can be empty
-    if (isEmptyField(dataUpdate)) {
-      return true;
-    }
-    // else just continue as usual1
+  try {
+    const message = generateLogMessage(EVENT_TYPE_MERGE, instance);
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
       type: convertTypeToStixType(instance.entity_type),
-      x_data_update: dataUpdate,
+      source_ids: R.map((s) => s.standard_id, sourceEntities),
     };
-    // Generate the message
-    const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
-    const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
-    const message = generateLogMessage(operation, instance, messageInput);
-    // Build and send the event
-    const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
+    const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
     const client = await getClient();
-    await client.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+  } catch (e) {
+    throw DatabaseError('Error in store merge event', { error: e });
+  }
+};
+export const storeUpdateEvent = async (user, instance, updateEvents) => {
+  // updateEvents -> [{ operation, input }]
+  if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
+    try {
+      const convertedInputs = updateEvents.map((i) => {
+        const [k, v] = R.head(Object.entries(i));
+        const convert = stixDataConverter(v);
+        return isNotEmptyField(convert) ? { [k]: convert } : null;
+      });
+      const dataUpdate = R.mergeAll(convertedInputs);
+      // dataUpdate can be empty
+      if (isEmptyField(dataUpdate)) {
+        return true;
+      }
+      // else just continue as usual1
+      const data = {
+        id: instance.standard_id,
+        x_opencti_id: instance.internal_id,
+        type: convertTypeToStixType(instance.entity_type),
+        x_data_update: dataUpdate,
+      };
+      // Generate the message
+      const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
+      const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
+      const message = generateLogMessage(operation, instance, messageInput);
+      // Build and send the event
+      const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
+      const client = await getClient();
+      await client.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    } catch (e) {
+      throw DatabaseError('Error in store update event', { error: e });
+    }
   }
   return true;
 };
 export const storeCreateEvent = async (user, instance, input) => {
   if (isStixObject(instance.entity_type) || isStixRelationship(instance.entity_type)) {
-    // If relationship but not stix core
-    const isCore = isStixCoreRelationship(instance.entity_type);
-    const isSighting = isStixSightingRelationship(instance.entity_type);
-    // If internal relation, publish an update instead of a creation
-    if (isStixRelationship(instance.entity_type) && !isCore && !isSighting) {
-      const field = relationTypeToInputName(instance.entity_type);
-      const inputUpdate = { [field]: input.to };
-      return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
+    try {
+      // If relationship but not stix core
+      const isCore = isStixCoreRelationship(instance.entity_type);
+      const isSighting = isStixSightingRelationship(instance.entity_type);
+      // If internal relation, publish an update instead of a creation
+      if (isStixRelationship(instance.entity_type) && !isCore && !isSighting) {
+        const field = relationTypeToInputName(instance.entity_type);
+        const inputUpdate = { [field]: input.to };
+        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_ADD]: inputUpdate }]);
+      }
+      // Create of an event for
+      const identifiers = {
+        standard_id: instance.standard_id,
+        internal_id: instance.internal_id,
+        entity_type: instance.entity_type,
+      };
+      // Convert the input to data
+      const data = buildStixData(Object.assign(identifiers, input));
+      // Generate the message
+      const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
+      // Build and send the event
+      const event = buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
+      const client = await getClient();
+      await client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    } catch (e) {
+      throw DatabaseError('Error in store create event', { error: e });
     }
-    // Create of an event for
-    const identifiers = {
-      standard_id: instance.standard_id,
-      internal_id: instance.internal_id,
-      entity_type: instance.entity_type,
-    };
-    // Convert the input to data
-    const data = buildStixData(Object.assign(identifiers, input));
-    // Generate the message
-    const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
-    // Build and send the event
-    const event = buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
-    const client = await getClient();
-    await client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   }
   return true;
 };
 export const storeDeleteEvent = async (user, instance) => {
-  if (isStixObject(instance.entity_type)) {
-    const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-    const data = {
-      id: instance.standard_id,
-      x_opencti_id: instance.internal_id,
-      type: convertTypeToStixType(instance.entity_type),
-    };
-    const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-    const client = await getClient();
-    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
-  }
-  if (isStixRelationship(instance.entity_type)) {
-    const isCore = isStixCoreRelationship(instance.entity_type);
-    const isSighting = isStixSightingRelationship(instance.entity_type);
-    if (!isCore && !isSighting) {
-      const field = relationTypeToInputName(instance.entity_type);
-      const inputUpdate = { [field]: instance.to };
-      return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
+  try {
+    if (isStixObject(instance.entity_type)) {
+      const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
+      const data = {
+        id: instance.standard_id,
+        x_opencti_id: instance.internal_id,
+        type: convertTypeToStixType(instance.entity_type),
+      };
+      const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
+      const client = await getClient();
+      return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
     }
-    // for other deletion, just produce a delete event
-    const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-    const data = {
-      id: instance.standard_id,
-      x_opencti_id: instance.internal_id,
-      type: convertTypeToStixType(instance.entity_type),
-      source_ref: instance.from.standard_id,
-      x_opencti_source_ref: instance.from.internal_id,
-      target_ref: instance.to.standard_id,
-      x_opencti_target_ref: instance.to.internal_id,
-    };
-    const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-    const client = await getClient();
-    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    if (isStixRelationship(instance.entity_type)) {
+      const isCore = isStixCoreRelationship(instance.entity_type);
+      const isSighting = isStixSightingRelationship(instance.entity_type);
+      if (!isCore && !isSighting) {
+        const field = relationTypeToInputName(instance.entity_type);
+        const inputUpdate = { [field]: instance.to };
+        return storeUpdateEvent(user, instance.from, [{ [UPDATE_OPERATION_REMOVE]: inputUpdate }]);
+      }
+      // for other deletion, just produce a delete event
+      const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
+      const data = {
+        id: instance.standard_id,
+        x_opencti_id: instance.internal_id,
+        type: convertTypeToStixType(instance.entity_type),
+        source_ref: instance.from.standard_id,
+        x_opencti_source_ref: instance.from.internal_id,
+        target_ref: instance.to.standard_id,
+        x_opencti_target_ref: instance.to.internal_id,
+      };
+      const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
+      const client = await getClient();
+      return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    }
+  } catch (e) {
+    throw DatabaseError('Error in store delete event', { error: e });
   }
   return true;
 };
@@ -430,11 +446,9 @@ export const updateObject = async (id, input) => {
 export const updateObjectCounterRaw = async (tx, id, field, number) => {
   await tx.call('HINCRBY', id, field, number);
 };
-
 export const fetchBasicObject = async (internalId) => {
   const client = await getClient();
   const rawElement = await client.call('HGETALL', internalId);
-  const test = R.fromPairs(R.splitEvery(2, rawElement));
-  return test;
+  return R.fromPairs(R.splitEvery(2, rawElement));
 };
 // endregion
