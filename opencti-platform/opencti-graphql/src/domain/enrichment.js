@@ -13,7 +13,7 @@ export const askEnrich = async (user, observableId, scope) => {
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {
-      return createWork(user, connector, 'Automatic enrichment', observableId).then((work) => {
+      return createWork(user, connector, `Enrichment (${observableId})`, observableId).then((work) => {
         return { connector, work };
       });
     }, targetConnectors)

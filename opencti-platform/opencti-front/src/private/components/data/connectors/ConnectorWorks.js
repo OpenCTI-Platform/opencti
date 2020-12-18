@@ -207,7 +207,9 @@ class ConnectorWorksComponent extends Component {
                         {t('Operations completed')}
                       </Typography>
                       <span className={classes.number}>
-                        {tracking?.import_processed_number}
+                        {work.status === 'wait'
+                          ? '-'
+                          : tracking?.import_processed_number}
                       </span>
                     </Grid>
                     <Grid item={true} xs={6}>
@@ -215,7 +217,9 @@ class ConnectorWorksComponent extends Component {
                         {t('Total number of operations')}
                       </Typography>
                       <span className={classes.number}>
-                        {tracking?.import_expected_number}
+                        {work.status === 'wait'
+                          ? '-'
+                          : tracking?.import_expected_number}
                       </span>
                     </Grid>
                     <Grid item={true} xs={12}>
@@ -225,11 +229,15 @@ class ConnectorWorksComponent extends Component {
                       <LinearProgress
                         classes={{ root: classes.progress }}
                         variant="determinate"
-                        value={Math.round(
-                          (tracking?.import_processed_number
-                            / tracking?.import_expected_number)
-                            * 100,
-                        )}
+                        value={
+                          tracking?.import_expected_number === 0
+                            ? 0
+                            : Math.round(
+                              (tracking?.import_processed_number
+                                  / tracking?.import_expected_number)
+                                  * 100,
+                            )
+                        }
                       />
                     </Grid>
                   </Grid>
@@ -275,8 +283,7 @@ class ConnectorWorksComponent extends Component {
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseMessages.bind(this)}
-          fullWidth={true}
-          maxWidth="lg"
+          fullScreen={true}
         >
           <DialogContent>
             <DialogContentText>
