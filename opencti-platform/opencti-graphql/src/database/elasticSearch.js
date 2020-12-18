@@ -1333,6 +1333,12 @@ const prepareIndexing = async (elements) => {
         }
         const connections = [];
         const [from, to] = await Promise.all([elLoadByIds(thing.fromId), elLoadByIds(thing.toId)]);
+        if (!from || !to) {
+          throw DatabaseError(`[ELASTIC] Cant index relation ${thing.internal_id}, error resolving dependency IDs`, {
+            fromId: thing.fromId,
+            toId: thing.toId,
+          });
+        }
         connections.push({
           internal_id: from.internal_id,
           name: from.name,
