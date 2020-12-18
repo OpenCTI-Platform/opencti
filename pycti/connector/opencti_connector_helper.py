@@ -490,7 +490,6 @@ class OpenCTIConnectorHelper:
         :param update: whether to updated data in the database, defaults to False
         :type update: bool, optional
         :param split: whether to split the stix bundle before processing, defaults to True
-        :type split: bool, optional
         :raises ValueError: if the bundle is empty
         :return: list of bundles
         :rtype: list
@@ -498,42 +497,30 @@ class OpenCTIConnectorHelper:
         work_id = kwargs.get("work_id", self.work_id)
         entities_types = kwargs.get("entities_types", None)
         update = kwargs.get("update", False)
-        split = kwargs.get("split", True)
 
         if entities_types is None:
             entities_types = []
-        if split:
-            stix2_splitter = OpenCTIStix2Splitter()
-            bundles = stix2_splitter.split_bundle(bundle)
-            if len(bundles) == 0:
-                raise ValueError("Nothing to import")
-            if work_id is not None:
-                self.api.work.add_expectations(work_id, len(bundles))
-            pika_connection = pika.BlockingConnection(
-                pika.URLParameters(self.config["uri"])
-            )
-            channel = pika_connection.channel()
-            for sequence, bundle in enumerate(bundles, start=1):
-                self._send_bundle(
-                    channel,
-                    bundle,
-                    work_id=work_id,
-                    entities_types=entities_types,
-                    sequence=sequence,
-                    update=update,
-                )
-            channel.close()
-            return bundles
-        else:
-            pika_connection = pika.BlockingConnection(
-                pika.URLParameters(self.config["uri"])
-            )
-            channel = pika_connection.channel()
+        stix2_splitter = OpenCTIStix2Splitter()
+        bundles = stix2_splitter.split_bundle(bundle)
+        if len(bundles) == 0:
+            raise ValueError("Nothing to import")
+        if work_id is not None:
+            self.api.work.add_expectations(work_id, len(bundles))
+        pika_connection = pika.BlockingConnection(
+            pika.URLParameters(self.config["uri"])
+        )
+        channel = pika_connection.channel()
+        for sequence, bundle in enumerate(bundles, start=1):
             self._send_bundle(
-                channel, bundle, entities_types=entities_types, update=update
+                channel,
+                bundle,
+                work_id=work_id,
+                entities_types=entities_types,
+                sequence=sequence,
+                update=update,
             )
-            channel.close()
-            return [bundle]
+        channel.close()
+        return bundles
 
     def _send_bundle(self, channel, bundle, **kwargs) -> None:
         """send a STIX2 bundle to RabbitMQ to be consumed by workers
