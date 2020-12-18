@@ -1564,7 +1564,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     if (existingByStandard) {
       // If a STIX ID has been passed in the creation
       if (input.stix_id) {
-        // Find the entity corresponding to thhis STIX ID
+        // Find the entity corresponding to this STIX ID
         const existingByGivenStixId = R.find(
           (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id),
           existingEntities

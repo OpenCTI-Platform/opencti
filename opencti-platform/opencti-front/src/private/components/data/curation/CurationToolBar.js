@@ -213,7 +213,6 @@ class CurationToolBar extends Component {
         this.setState({ merging: false });
         this.props.handleResetSelectedElements();
         this.handleCloseMerge();
-
         MESSAGING$.notifySuccess(
           this.props.t('Successfully merged selected entities'),
         );
