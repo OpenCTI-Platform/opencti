@@ -1625,7 +1625,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   // -- Aliased entities
   if (isStixObjectAliased(type)) {
     const aliases = [input.name, ...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id) {
+    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
       aliases.push(input.x_mitre_id);
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesId(aliases), data);
@@ -1675,6 +1675,9 @@ export const createEntity = async (user, input, type) => {
   const participantIds = [standardId];
   if (isStixObjectAliased(type)) {
     const aliases = [resolvedInput.name, ...(resolvedInput.aliases || []), ...(resolvedInput.x_opencti_aliases || [])];
+    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
+      aliases.push(input.x_mitre_id);
+    }
     participantIds.push(...generateAliasesId(aliases));
   }
   if (isNotEmptyField(resolvedInput.stix_id)) {

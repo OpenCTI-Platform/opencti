@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose, pathOr, filter } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -121,6 +121,10 @@ class ConnectorWorksComponent extends Component {
     this.setState({ displayMessages: false, messages: [] });
   }
 
+  handleOpenErrors(errors) {
+    this.setState({ displayErrors: true, errors });
+  }
+
   handleCloseErrors() {
     this.setState({ displayErrors: false, errors: [] });
   }
@@ -148,6 +152,10 @@ class ConnectorWorksComponent extends Component {
         {works.map((workEge) => {
           const work = workEge.node;
           const { tracking } = work;
+          const errors = filter(
+            (n) => !n.message.includes('MissingReferenceError'),
+            work.errors,
+          );
           return (
             <Paper
               key={work.id}
@@ -231,13 +239,13 @@ class ConnectorWorksComponent extends Component {
                     style={{
                       float: 'right',
                       margin: '0 0 20px 20px',
-                      cursor: 'default',
                     }}
                     variant="outlined"
                     color="secondary"
+                    onClick={this.handleOpenErrors.bind(this, errors)}
                     size="small"
                   >
-                    {work.errors.length} {t('errors')}
+                    {errors.length} {t('errors')}
                   </Button>
                   <Button
                     style={{ float: 'right' }}
@@ -306,8 +314,7 @@ class ConnectorWorksComponent extends Component {
           keepMounted={true}
           TransitionComponent={Transition}
           onClose={this.handleCloseErrors.bind(this)}
-          fullWidth={true}
-          maxWidth="lg"
+          fullScreen={true}
         >
           <DialogContent>
             <DialogContentText>
@@ -317,6 +324,7 @@ class ConnectorWorksComponent extends Component {
                     <TableRow>
                       <TableCell>{t('Timestamp')}</TableCell>
                       <TableCell>{t('Message')}</TableCell>
+                      <TableCell>{t('Source')}</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -324,6 +332,7 @@ class ConnectorWorksComponent extends Component {
                       <TableRow key={error.timestamp}>
                         <TableCell>{nsdt(error.timestamp)}</TableCell>
                         <TableCell>{error.message}</TableCell>
+                        <TableCell>{error.source}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
