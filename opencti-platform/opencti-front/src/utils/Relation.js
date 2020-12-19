@@ -118,6 +118,7 @@ const relationsTypesMapping = {
   'Threat-Actor_Attack-Pattern': ['uses'],
   'Threat-Actor_Malware': ['uses'],
   'Threat-Actor_Tool': ['uses'],
+  'Threat-Actor_Vulnerability': ['targets'],
   Tool_Malware: ['uses', 'drops', 'delivers'],
   Tool_Vulnerability: ['has', 'targets'],
   Tool_Sector: ['targets'],

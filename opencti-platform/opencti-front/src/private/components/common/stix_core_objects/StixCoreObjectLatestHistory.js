@@ -22,7 +22,7 @@ class StixCoreObjectLatestHistory extends Component {
               { key: 'entity_id', values: [stixCoreObjectId] },
               {
                 key: 'event_type',
-                values: ['create', 'update'],
+                values: ['create', 'update', 'merge'],
               },
             ],
             first: 5,

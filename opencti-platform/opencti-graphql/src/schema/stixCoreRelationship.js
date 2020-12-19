@@ -20,7 +20,13 @@ import {
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
 } from './stixDomainObject';
-import { isStixCyberObservable } from './stixCyberObservable';
+import {
+  ENTITY_DOMAIN_NAME,
+  ENTITY_IPV4_ADDR,
+  ENTITY_IPV6_ADDR,
+  ENTITY_URL,
+  isStixCyberObservable,
+} from './stixCyberObservable';
 
 export const RELATION_DELIVERS = 'delivers';
 export const RELATION_TARGETS = 'targets';
@@ -192,17 +198,22 @@ export const stixCoreRelationshipsMapping = {
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}`]: [RELATION_BASED_ON],
   [`${ENTITY_TYPE_INDICATOR}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [RELATION_BASED_ON],
   [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [RELATION_INDICATES],
-  Infrastructure_Infrastructure: ['communicates-with', 'consists-of', 'controls', 'uses'],
-  'Infrastructure_IPv4-Addr': ['communicates-with'],
-  'Infrastructure_IPv6-Addr': ['communicates-with'],
-  'Infrastructure_Domain-Name': ['communicates-with'],
-  Infrastructure_Url: ['communicates-with'],
-  'Infrastructure_Observed-Data': ['consists-of'],
-  'Infrastructure_Stix-Cyber-Observable': ['consists-of', 'based-on'],
-  Infrastructure_Malware: ['controls', 'delivers', 'hosts'],
-  Infrastructure_Vulnerability: ['has'],
-  Infrastructure_Tool: ['hosts'],
-  Infrastructure_Region: ['located-at'],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_INFRASTRUCTURE}`]: [
+    RELATION_COMMUNICATES_WITH,
+    RELATION_CONSISTS_OF,
+    RELATION_CONTROLS,
+    RELATION_USES,
+  ],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_IPV4_ADDR}`]: [RELATION_COMMUNICATES_WITH],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_IPV6_ADDR}`]: [RELATION_COMMUNICATES_WITH],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_DOMAIN_NAME}`]: [RELATION_COMMUNICATES_WITH],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_URL}`]: [RELATION_COMMUNICATES_WITH],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}`]: [RELATION_CONSISTS_OF],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [RELATION_CONSISTS_OF, RELATION_BASED_ON],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_MALWARE}`]: [RELATION_CONTROLS, RELATION_DELIVERS, RELATION_HOSTS],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_VULNERABILITY}`]: [RELATION_HAS],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_TOOL}`]: [RELATION_HOSTS],
+  [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_LOCATION_REGION}`]: [RELATION_LOCATED_AT],
   Infrastructure_Country: ['located-at'],
   Infrastructure_City: ['located-at'],
   Infrastructure_Position: ['located-at'],
@@ -250,6 +261,7 @@ export const stixCoreRelationshipsMapping = {
   'Threat-Actor_Attack-Pattern': ['uses'],
   'Threat-Actor_Malware': ['uses'],
   'Threat-Actor_Tool': ['uses'],
+  'Threat-Actor_Vulnerability': ['targets'],
   'Tool_Attack-Pattern': ['uses', 'drops', 'delivers'],
   Tool_Malware: ['uses', 'drops', 'delivers'],
   Tool_Vulnerability: ['has', 'targets'],
@@ -297,11 +309,15 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
   if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
     return true;
   }
-  if (relationshipType === RELATION_BASED_ON && isStixCyberObservable(toType)) {
-    return !!R.includes(
-      relationshipType,
-      stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`] || []
-    );
+  if (isStixCyberObservable(toType)) {
+    if (R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])) {
+      return true;
+    }
+  }
+  if (isStixCyberObservable(fromType)) {
+    if (R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])) {
+      return true;
+    }
   }
   return !!R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${toType}`] || []);
 };

@@ -68,7 +68,7 @@ class StixCoreObjectHistory extends Component {
                 { key: 'entity_id', values: [stixCoreObjectId] },
                 {
                   key: 'event_type',
-                  values: ['create', 'update', 'delete'],
+                  values: ['create', 'update', 'delete', 'merge'],
                 },
               ],
               first: 20,
@@ -118,7 +118,7 @@ class StixCoreObjectHistory extends Component {
                   },
                   {
                     key: 'event_type',
-                    values: ['create', 'delete'],
+                    values: ['create', 'delete', 'merge'],
                   },
                 ],
                 first: 20,

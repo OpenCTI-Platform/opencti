@@ -10,6 +10,7 @@ import {
   deepPurple,
   yellow,
   indigo,
+  teal,
 } from '@material-ui/core/colors';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -22,7 +23,7 @@ import {
   LinkOffOutlined,
   HelpOutlined,
 } from '@material-ui/icons';
-import { LinkVariantPlus, LinkVariantRemove } from 'mdi-material-ui';
+import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip/Tooltip';
 import inject18n from '../../../../components/i18n';
 
@@ -117,6 +118,19 @@ class StixCoreObjectHistoryLineComponent extends Component {
             }}
           >
             <AddOutlined />
+          </Avatar>
+        );
+      }
+      if (eventType === 'merge') {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: teal[500],
+              color: '#ffffff',
+            }}
+          >
+            <Merge />
           </Avatar>
         );
       }
