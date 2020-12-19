@@ -62,10 +62,7 @@ import {
   schemaTypes,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
-import {
-  checkStixCyberObservableRelationshipMapping,
-  isStixCyberObservableRelationship,
-} from '../schema/stixCyberObservableRelationship';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
   isStixMetaRelationship,
   RELATION_CREATED_BY,
@@ -87,7 +84,7 @@ import {
   numericAttributes,
   statsDateAttributes,
 } from '../schema/fieldDataAdapter';
-import { checkStixCoreRelationshipMapping, isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,

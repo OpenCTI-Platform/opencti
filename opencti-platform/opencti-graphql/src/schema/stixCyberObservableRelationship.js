@@ -93,29 +93,3 @@ R.map(
     schemaTypes.registerAttributes(stixCyberObservableRelationshipType, stixCyberObservableRelationshipsAttributes),
   STIX_CYBER_OBSERVABLE_RELATIONSHIPS
 );
-
-export const stixCyberObservableRelationshipsMapping = {
-  Directory_Directory: ['contains'],
-  Directory_StixFile: ['contains'],
-  'Email-Addr_User-Account': ['belongs-to'],
-  'Email-Message_Email-Addr': ['from', 'sender', 'to', 'bcc'],
-  'Email-Message_Email-Mime-Part-Type': ['body-multipart'],
-  'Email-Message_Artifact': ['raw-email'],
-  'Email-Mime-Part-Type_Artifact': ['body-raw'],
-  StixFile_Directory: ['parent-directory', 'contains'],
-  StixFile_Artifact: ['relation-content'],
-  'IPv4-Addr_Domain-Name': ['resolves-to'],
-  'IPv4-Addr_Mac-Addr': ['belongs-to'],
-  'IPv4-Addr_Autonomous-System': ['belongs-to'],
-  'IPv6-Addr_Domain-Name': ['resolves-to'],
-  'IPv6-Addr_Mac-Addr': ['belongs-to'],
-  'IPv6-Addr_Autonomous-System': ['belongs-to'],
-  'Network-Traffic_IPv4-Addr': ['src', 'dst'],
-  'Network-Traffic_IPv6-Addr': ['src', 'dst'],
-  'Network-Traffic_Network-Traffic': ['encapsulates'],
-  'Network-Traffic_Artifact': ['src-payload', 'dst-payload'],
-};
-
-export const checkStixCyberObservableRelationshipMapping = (fromType, toType, relationshipType) => {
-  return !!R.includes(relationshipType, stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || []);
-};
