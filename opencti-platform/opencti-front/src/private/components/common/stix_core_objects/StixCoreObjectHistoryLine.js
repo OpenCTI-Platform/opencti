@@ -147,6 +147,19 @@ class StixCoreObjectHistoryLineComponent extends Component {
           </Avatar>
         );
       }
+      if (eventType === 'update' && eventMesage.includes('changes the')) {
+        return (
+          <Avatar
+            style={{
+              marginTop: 5,
+              backgroundColor: green[500],
+              color: '#ffffff',
+            }}
+          >
+            <EditOutlined />
+          </Avatar>
+        );
+      }
       if (eventType === 'update' && eventMesage.includes('adds the')) {
         return (
           <Avatar
