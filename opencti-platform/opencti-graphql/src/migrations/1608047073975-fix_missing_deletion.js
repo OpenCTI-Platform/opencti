@@ -43,55 +43,55 @@ const computeMissingRelationsForType = async (relationType) => {
     } = queryRelations.body.hits;
     if (hits.length === 0) {
       hasNextPage = false;
-      break;
-    }
-    const lastHit = R.last(hits);
-    searchAfter = R.head(lastHit.sort);
-    counter += hits.length;
-    // eslint-disable-next-line no-underscore-dangle
-    const connectionIds = R.uniq(R.flatten(hits.map((h) => h._source.connections.map((c) => c.internal_id))));
-    // eslint-disable-next-line no-await-in-loop
-    const findTerms = connectionIds.map((c) => {
-      return { term: { [`internal_id.keyword`]: c } };
-    });
-    const findQuery = {
-      index: DATA_INDICES,
-      size: 2000,
-      _source_includes: `internal_id`,
-      body: {
-        query: {
-          bool: {
-            should: findTerms,
-            minimum_should_match: 1,
+    } else {
+      const lastHit = R.last(hits);
+      searchAfter = R.head(lastHit.sort);
+      counter += hits.length;
+      // eslint-disable-next-line no-underscore-dangle
+      const connectionIds = R.uniq(R.flatten(hits.map((h) => h._source.connections.map((c) => c.internal_id))));
+      // eslint-disable-next-line no-await-in-loop
+      const findTerms = connectionIds.map((c) => {
+        return { term: { [`internal_id.keyword`]: c } };
+      });
+      const findQuery = {
+        index: DATA_INDICES,
+        size: 2000,
+        _source_includes: `internal_id`,
+        body: {
+          query: {
+            bool: {
+              should: findTerms,
+              minimum_should_match: 1,
+            },
           },
         },
-      },
-    };
-    const data = await el.search(findQuery);
-    // eslint-disable-next-line no-underscore-dangle
-    const resolvedConns = data.body.hits.hits.map((i) => i._source);
-    const resolvedIds = resolvedConns.map((r) => r.internal_id);
-    const relationsToRemove = hits
+      };
+      const data = await el.search(findQuery);
       // eslint-disable-next-line no-underscore-dangle
-      .map((h) => h._source)
-      .filter((s) => {
-        return !R.all(
-          (a) => resolvedIds.includes(a),
-          s.connections.map((c) => c.internal_id)
-        );
-      });
-    relationsToTakeCare.push(...relationsToRemove);
-    const timeForRun = new Date().getTime() - lastRun.getTime();
-    timesSpent.push(timeForRun);
-    timeSpent += timeForRun;
-    const totalNumberOfIteration = valTotal / paginationCount;
-    const totalEstimation = average(timesSpent) * totalNumberOfIteration;
-    const remaining = (totalEstimation - timeSpent) / 1000 / 60;
-    const findNumber = relationsToTakeCare.length;
-    const remainTimeMin = remaining.toFixed(2);
-    const message = `[MIGRATION] Scanning ${relationType}: ${counter}/${valTotal} (Found ${findNumber} to clear) -- Estimate remaining ${remainTimeMin} min`;
-    logger.info(message);
-    lastRun = new Date();
+      const resolvedConns = data.body.hits.hits.map((i) => i._source);
+      const resolvedIds = resolvedConns.map((r) => r.internal_id);
+      const relationsToRemove = hits
+        // eslint-disable-next-line no-underscore-dangle
+        .map((h) => h._source)
+        .filter((s) => {
+          return !R.all(
+            (a) => resolvedIds.includes(a),
+            s.connections.map((c) => c.internal_id)
+          );
+        });
+      relationsToTakeCare.push(...relationsToRemove);
+      const timeForRun = new Date().getTime() - lastRun.getTime();
+      timesSpent.push(timeForRun);
+      timeSpent += timeForRun;
+      const totalNumberOfIteration = valTotal / paginationCount;
+      const totalEstimation = average(timesSpent) * totalNumberOfIteration;
+      const remaining = (totalEstimation - timeSpent) / 1000 / 60;
+      const findNumber = relationsToTakeCare.length;
+      const remainTimeMin = remaining.toFixed(2);
+      const message = `[MIGRATION] Scanning ${relationType}: ${counter}/${valTotal} (Found ${findNumber} to clear) -- Estimate remaining ${remainTimeMin} min`;
+      logger.info(message);
+      lastRun = new Date();
+    }
   }
   return relationsToTakeCare;
 };
