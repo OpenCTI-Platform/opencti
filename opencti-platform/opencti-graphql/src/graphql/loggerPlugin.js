@@ -81,10 +81,10 @@ export default {
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is retrying, missing reference is not really a problem, can be logged in warning
           if (isRetryableCall || isAuthenticationCall) {
-            logger.warn(API_CALL_MESSAGE, Object.assign(dissoc('variables', callMetaData), { error }));
+            logger.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
           } else {
             // Every other uses cases are logged with error level
-            logger.error(API_CALL_MESSAGE, Object.assign(callMetaData, { error }));
+            logger.error(API_CALL_MESSAGE, { ...callMetaData, error });
           }
         } else if (perfLog) {
           logger.info(API_CALL_MESSAGE, callMetaData);

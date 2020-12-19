@@ -265,7 +265,7 @@ export const storeCreateEvent = async (user, instance, input) => {
         entity_type: instance.entity_type,
       };
       // Convert the input to data
-      const data = buildStixData(Object.assign(identifiers, input));
+      const data = buildStixData({ ...identifiers, ...input });
       // Generate the message
       const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
       // Build and send the event

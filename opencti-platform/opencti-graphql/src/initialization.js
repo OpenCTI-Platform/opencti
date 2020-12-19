@@ -1,6 +1,6 @@
 // Admin user initialization
 import { logger } from './config/conf';
-import { elCreateIndexes, elDeleteIndexes, elIsAlive, PLATFORM_INDICES } from './database/elasticSearch';
+import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
 import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
@@ -14,6 +14,8 @@ import { redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import applyMigration, { lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
+import { INDEX_INTERNAL_OBJECTS } from './database/utils';
+import { ConfigurationError } from './config/errors';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -105,7 +107,10 @@ export const checkSystemDependencies = async () => {
 // Initialize
 const initializeSchema = async () => {
   // New platform so delete all indices to prevent conflict
-  await elDeleteIndexes(PLATFORM_INDICES);
+  const isInternalIndexExists = await elIndexExists(INDEX_INTERNAL_OBJECTS);
+  if (isInternalIndexExists) {
+    throw ConfigurationError('[INIT] Fail initialize schema, index already exists');
+  }
   // Create default indexes
   await elCreateIndexes();
   logger.info(`[INIT] Elasticsearch indexes loaded`);

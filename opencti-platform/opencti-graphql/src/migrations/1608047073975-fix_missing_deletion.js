@@ -27,7 +27,7 @@ const computeMissingRelationsForType = async (relationType) => {
       },
     };
     if (searchAfter) {
-      body = Object.assign(body, { search_after: [searchAfter] });
+      body = { ...body, search_after: [searchAfter] };
     }
     const query = {
       index: RELATIONSHIPS_INDICES,

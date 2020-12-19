@@ -33,7 +33,7 @@ const createApolloServer = () => {
         call_retry_number: req.headers['opencti-retry-number'],
       };
       const workId = req.headers['opencti-work-id'];
-      const authMeta = Object.assign(auth, { origin });
+      const authMeta = { ...auth, origin };
       return { res, user: authMeta, workId };
     },
     tracing: DEV_MODE,

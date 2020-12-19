@@ -162,7 +162,7 @@ const createSeeMiddleware = (broadcaster) => {
     broadcastClients[client.id] = broadcastClient;
     const clients = Object.entries(broadcastClients).length;
     const broadcasterInfo = await broadcaster.info();
-    broadcastClient.sendConnected(Object.assign(broadcasterInfo, { connectionId: client.id, clients }));
+    broadcastClient.sendConnected({ ...broadcasterInfo, connectionId: client.id, clients });
     logger.debug(`[STREAM] Clients connection ${req.userId} (${clients})`);
   };
   return {

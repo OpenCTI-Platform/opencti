@@ -19,6 +19,7 @@ export const up = async (next) => {
             duplicateUri: {
               terms: {
                 field: 'value.keyword',
+                order: { _key: 'desc' },
                 size: 10000,
                 min_doc_count: 2,
               },
@@ -35,16 +36,20 @@ export const up = async (next) => {
   // For each duplicate, merge all entities into one.
   for (let index = 0; index < buckets.length; index += 1) {
     const bucket = buckets[index];
-    const { key } = bucket;
+    const { key: url } = bucket;
     // Find all elements with this key
     const findQuery = {
       index: INDEX_STIX_CYBER_OBSERVABLES,
       body: {
         query: {
           bool: {
-            must: [{ match: { entity_type: 'Url' } }, { match: { value: key } }],
+            must: [
+              { term: { 'entity_type.keyword': { value: 'Url' } } },
+              { term: { 'value.keyword': { value: url } } },
+            ],
           },
         },
+        sort: [{ 'internal_id.keyword': 'desc' }],
       },
     };
     const data = await el.search(findQuery);

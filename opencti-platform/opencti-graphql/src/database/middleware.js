@@ -211,14 +211,14 @@ export const batchListThroughGetFrom = async (sources, relationType, targetEntit
   return batchListThrough(sources, 'to', relationType, targetEntityType, opts);
 };
 export const listThroughGetFrom = async (sources, relationType, targetEntityType, opts = { paginate: false }) => {
-  const options = Object.assign(opts, { batched: false });
+  const options = { ...opts, batched: false };
   return batchListThrough(sources, 'to', relationType, targetEntityType, options);
 };
 export const batchListThroughGetTo = async (sources, relationType, targetEntityType, opts = {}) => {
   return batchListThrough(sources, 'from', relationType, targetEntityType, opts);
 };
 export const listThroughGetTo = async (sources, relationType, targetEntityType, opts = { paginate: false }) => {
-  const options = Object.assign(opts, { batched: false });
+  const options = { ...opts, batched: false };
   return batchListThrough(sources, 'from', relationType, targetEntityType, options);
 };
 // Unary handle
@@ -338,7 +338,7 @@ export const listRelations = async (relationshipType, args) => {
   return elPaginate(RELATIONSHIPS_INDICES, paginateArgs);
 };
 export const loadEntity = async (entityTypes, args = {}) => {
-  const opts = Object.assign(args, { connectionFormat: false });
+  const opts = { ...args, connectionFormat: false };
   const entities = await listEntities(entityTypes, opts);
   if (entities.length > 1) {
     throw DatabaseError('Expect only one response', { entityTypes, args });
@@ -372,7 +372,7 @@ const transformRawRelationsToAttributes = (data, orientation) => {
       )
     ).map(([k, v]) => ({
       [k]: R.map((i) => {
-        return Object.assign(i.target, { i_connected_rel: i.rel });
+        return { ...i.target, i_connected_rel: i.rel };
       }, v),
     }))
   );
@@ -700,16 +700,23 @@ const targetedRelations = (entities, direction) => {
     }, entities)
   );
 };
+
+const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
+const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
 const filterTargetByExisting = (sources, targets) => {
-  const ed = (date) => isEmptyField(date) || date === FROM_START_STR || date === UNTIL_END_STR;
-  const noDate = (e) => ed(e.first_seen) && ed(e.last_seen) && ed(e.start_time) && ed(e.stop_time);
-  return R.filter((f) => {
-    const finder = (t) => {
-      // Find the same if type + target + no date specified
-      return t.entity_type === f.entity_type && t.connect === f.connect && noDate(t.relation);
-    };
-    return !R.find(finder, targets);
-  }, sources);
+  const filtered = [];
+  const cache = [];
+  for (let index = 0; index < sources.length; index += 1) {
+    const source = sources[index];
+    // If the relation source is already in target = filtered
+    const finder = (t) => t.entity_type === source.entity_type && t.connect === source.connect && noDate(t.relation);
+    const id = `${source.entity_type}-${source.connect}`;
+    if (!R.find(finder, targets) && !cache.includes(id)) {
+      filtered.push(source);
+      cache.push(id);
+    }
+  }
+  return filtered;
 };
 
 const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
@@ -1297,7 +1304,7 @@ const upsertElementRaw = async (user, id, type, data) => {
   if (updatedAddInputs.length > 0 || rawRelations.length > 0) {
     let streamInput = updatedInputsToData(updatedAddInputs);
     if (rawRelations.length > 0) {
-      streamInput = Object.assign(streamInput, R.mergeAll(targetsPerType));
+      streamInput = { ...streamInput, ...R.mergeAll(targetsPerType) };
     }
     streamInputs.push({ [UPDATE_OPERATION_ADD]: streamInput });
   }
@@ -1515,7 +1522,7 @@ export const createRelation = async (user, input) => {
         await storeCreateEvent(user, fromCreation, inputEvent);
       } else {
         // Else just dispatch the relation creation
-        const relWithConnections = Object.assign(dataRel.element, { from, to });
+        const relWithConnections = { ...dataRel.element, from, to };
         await storeCreateEvent(user, relWithConnections, resolvedInput);
       }
     } else if (dataRel.streamInputs.length > 0) {
@@ -1581,7 +1588,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       const key = resolveAliasesField(type);
       const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
       const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
-      const inputAliases = Object.assign(input, { [key]: filteredAliases });
+      const inputAliases = { ...input, [key]: filteredAliases };
       return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
     }
     // If not we dont know what to do, just throw an exception.

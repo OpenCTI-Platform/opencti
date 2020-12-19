@@ -54,7 +54,7 @@ export const loadFile = async (filename) => {
     information: '',
     lastModified: stat.lastModified,
     lastModifiedSinceMin: sinceNowInMinutes(stat.lastModified),
-    metaData: Object.assign(stat.metaData, { messages: [], errors: [] }),
+    metaData: { ...stat.metaData, messages: [], errors: [] },
     uploadStatus: 'complete',
   };
 };
@@ -83,7 +83,7 @@ export const upload = async (user, path, file, metadata = {}) => {
   const { createReadStream, filename, mimetype, encoding } = await file;
   const escapeName = querystring.escape(filename);
   const internalMeta = { filename: escapeName, mimetype, encoding };
-  const fileMeta = Object.assign(metadata, internalMeta);
+  const fileMeta = { ...metadata, ...internalMeta };
   const fileDirName = `${path}/${filename}`;
   logger.debug(`[MINIO] Upload file ${fileDirName} by ${user.user_email}`);
   // Upload the file in the storage
