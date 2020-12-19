@@ -47,7 +47,13 @@ import {
   X_MITRE_ID_FIELD,
 } from '../schema/identifier';
 import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
-import { buildStixData, cleanStixIds, STIX_SPEC_VERSION } from './stix';
+import {
+  buildStixData,
+  checkStixCoreRelationshipMapping,
+  checkStixCyberObservableRelationshipMapping,
+  cleanStixIds,
+  STIX_SPEC_VERSION,
+} from './stix';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
