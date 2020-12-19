@@ -101,7 +101,7 @@ import {
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { BUS_TOPICS } from '../config/conf';
+import { BUS_TOPICS, logger } from '../config/conf';
 
 // region global variables
 export const MAX_BATCH_SIZE = 25;
@@ -596,13 +596,14 @@ const indexCreatedElement = async ({ type, element, relations, indexInput }) => 
 // endregion
 
 // region mutation update
+const mergeDeepRightAll = R.unapply(R.reduce(R.mergeDeepRight, {}));
 const updatedInputsToData = (inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value } = input;
     const val = R.includes(key, multipleAttributes) ? value : R.head(value);
     return { [key]: val };
   }, inputs);
-  return R.mergeAll(inputPairs);
+  return mergeDeepRightAll(...inputPairs);
 };
 const mergeInstanceWithInputs = (instance, inputs) => {
   const data = updatedInputsToData(inputs);
@@ -721,6 +722,7 @@ const filterTargetByExisting = (sources, targets) => {
 
 const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
   // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
+  logger.debug(`[OPENCTI] Merging ${sourceEntities.map((i) => i.instance)} in ${targetEntity.internal_id}`);
   const { chosenFields = {} } = opts;
   // Pre-checks
   const sourceIds = R.map((e) => e.internal_id, sourceEntities);
@@ -742,28 +744,31 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const updateAttributes = [];
   // 1. Update all possible attributes
   const attributes = await queryAttributes(targetType);
-  const sourceFields = R.map((a) => a.node.value, attributes.edges);
+  const sourceFields = R.map((a) => a.node.value, attributes.edges).filter((s) => !s.startsWith('i_'));
   for (let fieldIndex = 0; fieldIndex < sourceFields.length; fieldIndex += 1) {
     const sourceFieldKey = sourceFields[fieldIndex];
     const mergedEntityCurrentFieldValue = targetEntity[sourceFieldKey];
     const chosenSourceEntityId = chosenFields[sourceFieldKey];
+    // Select the one that will fill the empty MONO value of the target
     const takenFrom = chosenSourceEntityId
       ? R.find((i) => i.standard_id === chosenSourceEntityId, sourceEntities)
       : R.head(sourceEntities); // If not specified, take the first one.
     const sourceFieldValue = takenFrom[sourceFieldKey];
+    const fieldValues = R.flatten(sourceEntities.map((s) => s[sourceFieldKey])).filter((s) => isNotEmptyField(s));
     // Check if we need to do something
     if (isDictionaryAttribute(sourceFieldKey)) {
       // Special case of dictionary
-      const dictInputs = Object.entries(sourceFieldValue).map(([k, v]) => ({
+      const mergedDict = R.mergeAll([...fieldValues, mergedEntityCurrentFieldValue]);
+      const dictInputs = Object.entries(mergedDict).map(([k, v]) => ({
         key: `${sourceFieldKey}.${k}`,
         value: [v],
       }));
       updateAttributes.push(...dictInputs);
     } else if (isMultipleAttribute(sourceFieldKey)) {
-      const sourceValues = sourceFieldValue || [];
+      const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (sourceFieldKey === ATTRIBUTE_ALIASES || sourceFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
-        sourceValues.push(takenFrom.name);
+        sourceValues.push(...sourceEntities.map((s) => s.name));
       }
       // If multiple attributes, concat all values
       if (sourceValues.length > 0) {
@@ -783,6 +788,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
     await elUpdateElement(updateAsInstance);
+    logger.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
@@ -865,8 +871,10 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     });
   }
   // Update all impacted relations.
+  logger.debug(`[OPENCTI] Merging, updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
   await elUpdateRelationConnections(updateConnections);
   // Update all impacted entities
+  logger.debug(`[OPENCTI] Merging, impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   await elUpdateEntityConnections(updateEntities);
   // Delete sourcing entities
   for (let delIndex = 0; delIndex < sourceEntities.length; delIndex += 1) {

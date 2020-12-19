@@ -7979,7 +7979,7 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject
-  merge(stixCoreObjectsIds: [String]!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  merge(stixCoreObjectsIds: [String]!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
