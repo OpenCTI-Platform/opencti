@@ -52,7 +52,7 @@ export const send = (exchangeName, routingKey, message) => {
           exchangeName,
           routingKey,
           Buffer.from(message),
-          {}, // No option
+          { deliveryMode: 2 }, // Make message persistent
           (err, ok) => {
             if (err) reject(err);
             resolve(ok);
