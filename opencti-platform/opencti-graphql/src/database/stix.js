@@ -463,12 +463,18 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
     return true;
   }
   if (isStixCyberObservable(toType)) {
-    if (R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])) {
+    if (
+      R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, stixCoreRelationshipsMapping) &&
+      R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])
+    ) {
       return true;
     }
   }
   if (isStixCyberObservable(fromType)) {
-    if (R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])) {
+    if (
+      R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, stixCoreRelationshipsMapping) &&
+      R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])
+    ) {
       return true;
     }
   }
