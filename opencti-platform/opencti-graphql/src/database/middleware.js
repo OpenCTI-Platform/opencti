@@ -1069,7 +1069,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     }
   }
   // 02. Check if this update is not resulting to an entity merging
-  let stixObservableTargetMerge = null;
+  let eventualNewStandardId = null;
   if (isFieldContributingToStandardId(instance, keys)) {
     // In this case we need to reconstruct the data like if an update already appears
     // Based on that we will be able to generate the correct standard id
@@ -1079,16 +1079,8 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     const updatedInstance = mergeInstanceWithInputs(instance, resolvedInputs);
     const targetStandardId = generateStandardId(instance.entity_type, updatedInstance);
     if (targetStandardId !== instance.standard_id) {
-      const existingEntity = await loadByIdFullyResolved(targetStandardId);
-      if (existingEntity) {
-        // If stix observable, we can merge. If not throw an error.
-        if (isStixCyberObservable(existingEntity.entity_type)) {
-          stixObservableTargetMerge = existingEntity;
-          participantIds.push(targetStandardId);
-        } else {
-          throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
-        }
-      }
+      participantIds.push(targetStandardId);
+      eventualNewStandardId = targetStandardId;
     }
   }
   // --- take lock, ensure no one currently create or update this element
@@ -1097,11 +1089,18 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     // Only for StixCyberObservable
-    if (stixObservableTargetMerge) {
-      // noinspection UnnecessaryLocalVariableJS
-      const merged = await mergeEntities(user, stixObservableTargetMerge, [instance]);
-      // Return merged element after waiting for it.
-      return merged;
+    if (eventualNewStandardId) {
+      const existingEntity = await loadByIdFullyResolved(eventualNewStandardId);
+      if (existingEntity) {
+        // If stix observable, we can merge. If not throw an error.
+        if (isStixCyberObservable(existingEntity.entity_type)) {
+          // noinspection UnnecessaryLocalVariableJS
+          const merged = await mergeEntities(user, existingEntity, [instance]);
+          // Return merged element after waiting for it.
+          return merged;
+        }
+        throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
+      }
     }
     // noinspection UnnecessaryLocalVariableJS
     const data = await updateAttributeRaw(user, instance, inputs, options);
