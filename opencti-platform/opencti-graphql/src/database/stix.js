@@ -464,7 +464,7 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
   }
   if (isStixCyberObservable(toType)) {
     if (
-      R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, stixCoreRelationshipsMapping) &&
+      R.includes(`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`, R.keys(stixCoreRelationshipsMapping)) &&
       R.includes(relationshipType, stixCoreRelationshipsMapping[`${fromType}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`])
     ) {
       return true;
@@ -472,7 +472,7 @@ export const checkStixCoreRelationshipMapping = (fromType, toType, relationshipT
   }
   if (isStixCyberObservable(fromType)) {
     if (
-      R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, stixCoreRelationshipsMapping) &&
+      R.includes(`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`, R.keys(stixCoreRelationshipsMapping)) &&
       R.includes(relationshipType, stixCoreRelationshipsMapping[`${ABSTRACT_STIX_CYBER_OBSERVABLE}_${toType}`])
     ) {
       return true;
