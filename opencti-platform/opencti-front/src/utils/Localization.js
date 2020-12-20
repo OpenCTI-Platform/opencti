@@ -1086,6 +1086,7 @@ const i18n = {
       'entity_X-OpenCTI-Cryptographic-Key': 'Cryptographic key',
       'entity_X-OpenCTI-Cryptocurrency-Wallet': 'Cryptocurrency wallet',
       'entity_X-OpenCTI-Hostname': 'Hostname',
+      'entity_X-Opencti-Hostname': 'Hostname',
       'entity_X-OpenCTI-Text': 'Text',
       'entity_X-OpenCTI-User-Agent': 'User agent',
       // Relations
