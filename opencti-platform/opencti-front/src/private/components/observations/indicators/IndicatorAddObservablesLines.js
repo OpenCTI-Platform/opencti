@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map, filter, head, keys, groupBy, assoc, compose,
+  map, keys, groupBy, assoc, compose,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Accordion from '@material-ui/core/Accordion';
@@ -63,10 +63,16 @@ export const indicatorMutationRelationAdd = graphql`
 `;
 
 export const indicatorMutationRelationDelete = graphql`
-  mutation IndicatorAddObservablesLinesRelationDeleteMutation($id: ID!) {
-    stixCoreRelationshipEdit(id: $id) {
-      delete
-    }
+  mutation IndicatorAddObservablesLinesRelationDeleteMutation(
+    $fromId: String!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
   }
 `;
 
@@ -82,19 +88,13 @@ class IndicatorAddObservablesLinesContainer extends Component {
     const alreadyAdded = indicatorObservablesIds.includes(
       stixCyberObservable.id,
     );
-
     if (alreadyAdded) {
-      const existingStixCyberObservable = head(
-        filter(
-          (n) => n.node.id === stixCyberObservable.id,
-          indicatorObservables,
-        ),
-      );
       commitMutation({
         mutation: indicatorMutationRelationDelete,
         variables: {
-          id: indicatorId,
-          relationId: existingStixCyberObservable.relation.id,
+          fromId: indicatorId,
+          toId: stixCyberObservable.id,
+          relationship_type: 'based-on',
         },
       });
     } else {
