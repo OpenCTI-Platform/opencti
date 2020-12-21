@@ -181,7 +181,7 @@ const Login = ({ classes }) => {
             const authSSO = head(authSSOs);
             window.location.href = `/auth/${authSSO.provider}`;
           }
-          const isAuthButtons = authSSOs.length > 1;
+          const isAuthButtons = authSSOs.length > 0;
           return (
             <ConnectedIntlProvider settings={props.settings}>
               <div className={classes.container} style={{ marginTop }}>
