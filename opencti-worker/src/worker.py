@@ -24,9 +24,17 @@ class Consumer(threading.Thread):
         self.opencti_token = opencti_token
         self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token)
         self.queue_name = connector["config"]["push"]
-        self.pika_connection = pika.BlockingConnection(
-            pika.URLParameters(connector["config"]["uri"])
+        self.pika_credentials = pika.PlainCredentials(
+            connector["config"]["connection"]["user"],
+            connector["config"]["connection"]["pass"],
         )
+        self.pika_parameters = pika.ConnectionParameters(
+            connector["config"]["connection"]["host"],
+            connector["config"]["connection"]["port"],
+            "/",
+            self.pika_credentials,
+        )
+        self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
         self.channel.basic_qos(prefetch_count=1)
         self.processing_count = 0
