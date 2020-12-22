@@ -80,13 +80,13 @@ export const numericAttributes = [
   'attribute_order',
   'base_score',
   'confidence',
-  'is_family',
   'number_observed',
   'x_opencti_order',
   'x_opencti_report_status',
   'import_expected_number',
   'import_processed_number',
   'x_opencti_score',
+  'size',
 ];
 export const booleanAttributes = [
   'revoked',
