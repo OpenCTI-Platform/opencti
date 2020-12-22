@@ -69,11 +69,16 @@ class ListenQueue(threading.Thread):
 
     def __init__(self, helper, config: dict, callback):
         threading.Thread.__init__(self)
+        self.pika_credentials = None
+        self.pika_parameters = None
         self.pika_connection = None
         self.channel = None
         self.helper = helper
         self.callback = callback
-        self.uri = config["uri"]
+        self.host = config["connection"]["host"]
+        self.port = config["connection"]["port"]
+        self.user = config["connection"]["user"]
+        self.password = config["connection"]["pass"]
         self.queue_name = config["listen"]
 
     # noinspection PyUnusedLocal
@@ -129,9 +134,11 @@ class ListenQueue(threading.Thread):
         while True:
             try:
                 # Connect the broker
-                self.pika_connection = pika.BlockingConnection(
-                    pika.URLParameters(self.uri)
+                self.pika_credentials = pika.PlainCredentials(self.user, self.password)
+                self.pika_parameters = pika.ConnectionParameters(
+                    self.host, self.port, "/", self.pika_credentials
                 )
+                self.pika_connection = pika.BlockingConnection(self.pika_parameters)
                 self.channel = self.pika_connection.channel()
                 self.channel.basic_consume(
                     queue=self.queue_name, on_message_callback=self._process_message
@@ -505,9 +512,16 @@ class OpenCTIConnectorHelper:
             raise ValueError("Nothing to import")
         if work_id is not None:
             self.api.work.add_expectations(work_id, len(bundles))
-        pika_connection = pika.BlockingConnection(
-            pika.URLParameters(self.config["uri"])
+        pika_credentials = pika.PlainCredentials(
+            self.config["connection"]["user"], self.config["connection"]["pass"]
         )
+        pika_parameters = pika.ConnectionParameters(
+            self.config["connection"]["host"],
+            self.config["connection"]["port"],
+            "/",
+            pika_credentials,
+        )
+        pika_connection = pika.BlockingConnection(pika_parameters)
         channel = pika_connection.channel()
         for sequence, bundle in enumerate(bundles, start=1):
             self._send_bundle(
