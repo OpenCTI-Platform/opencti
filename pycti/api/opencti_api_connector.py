@@ -26,7 +26,12 @@ class OpenCTIApiConnector:
                     id
                     name
                     config {
-                        uri
+                        connection {
+                            host
+                            port
+                            user
+                            pass
+                        }
                         listen
                         push
                     }
@@ -75,7 +80,12 @@ class OpenCTIApiConnector:
                     id
                     connector_state
                     config {
-                        uri
+                        connection {
+                            host
+                            port
+                            user
+                            pass
+                        }
                         listen
                         listen_exchange
                         push
