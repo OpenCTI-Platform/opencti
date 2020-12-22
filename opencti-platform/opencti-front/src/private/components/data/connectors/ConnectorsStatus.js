@@ -388,7 +388,6 @@ const ConnectorsStatus = createRefetchContainer(
           connector_scope
           updated_at
           config {
-            uri
             listen
             listen_exchange
             push

@@ -49,7 +49,7 @@ const typesWithOpenCTIAliases = [
   'Region',
 ];
 
-const typesWithoutAliases = ['Vulnerability'];
+const typesWithoutAliases = ['Indicator', 'Vulnerability'];
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -225,6 +225,12 @@ class StixDomainObjectCreation extends Component {
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc('objectLabel', pluck('value', values.objectLabel)),
     )(values);
+    if (finalValues.type !== 'Indicator') {
+      finalValues = pipe(
+        dissoc('pattern_type'),
+        dissoc('pattern'),
+      )(finalValues);
+    }
     if (includes(finalValues.type, typesWithoutAliases)) {
       finalValues = pipe(
         dissoc('aliases'),
@@ -449,6 +455,8 @@ class StixDomainObjectCreation extends Component {
                 type: '',
                 name: '',
                 description: '',
+                pattern_type: '',
+                pattern: '',
                 aliases: '',
                 x_opencti_aliases: '',
                 createdBy: '',
@@ -476,7 +484,7 @@ class StixDomainObjectCreation extends Component {
                     style={{ marginTop: 20 }}
                     detectDuplicate={targetStixDomainObjectTypes || []}
                   />
-                  {!includes(values.type, typesWithoutAliases) ? (
+                  {!includes(values.type, typesWithoutAliases) && (
                     <Field
                       component={TextField}
                       name={
@@ -488,8 +496,35 @@ class StixDomainObjectCreation extends Component {
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                     />
-                  ) : (
-                    ''
+                  )}
+                  {values.type === 'Indicator' && (
+                    <div>
+                      <Field
+                        component={SelectField}
+                        name="pattern_type"
+                        label={t('Pattern type')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        <MenuItem value="stix">STIX</MenuItem>
+                        <MenuItem value="pcre">PCRE</MenuItem>
+                        <MenuItem value="sigma">SIGMA</MenuItem>
+                        <MenuItem value="snort">SNORT</MenuItem>
+                        <MenuItem value="suricata">Suricata</MenuItem>
+                        <MenuItem value="yara">YARA</MenuItem>
+                        <MenuItem value="tanium-signal">Tanium Signal</MenuItem>
+                      </Field>
+                      <Field
+                        component={TextField}
+                        name="pattern"
+                        label={t('Pattern')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={{ marginTop: 20 }}
+                        detectDuplicate={['Indicator']}
+                      />
+                    </div>
                   )}
                   <Field
                     component={MarkDownField}
@@ -559,6 +594,8 @@ class StixDomainObjectCreation extends Component {
       description: '',
       aliases: '',
       x_opencti_aliases: '',
+      pattern_type: '',
+      pattern: '',
       createdBy: defaultCreatedBy
         ? {
           label: defaultCreatedBy.name,
@@ -619,7 +656,7 @@ class StixDomainObjectCreation extends Component {
                     style={{ marginTop: 20 }}
                     detectDuplicate={targetStixDomainObjectTypes || []}
                   />
-                  {!includes(values.type, typesWithoutAliases) ? (
+                  {!includes(values.type, typesWithoutAliases) && (
                     <Field
                       component={TextField}
                       name={
@@ -631,8 +668,35 @@ class StixDomainObjectCreation extends Component {
                       fullWidth={true}
                       style={{ marginTop: 20 }}
                     />
-                  ) : (
-                    ''
+                  )}
+                  {values.type === 'Indicator' && (
+                    <div>
+                      <Field
+                        component={SelectField}
+                        name="pattern_type"
+                        label={t('Pattern type')}
+                        fullWidth={true}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                      >
+                        <MenuItem value="stix">STIX</MenuItem>
+                        <MenuItem value="pcre">PCRE</MenuItem>
+                        <MenuItem value="sigma">SIGMA</MenuItem>
+                        <MenuItem value="snort">SNORT</MenuItem>
+                        <MenuItem value="suricata">Suricata</MenuItem>
+                        <MenuItem value="yara">YARA</MenuItem>
+                        <MenuItem value="tanium-signal">Tanium Signal</MenuItem>
+                      </Field>
+                      <Field
+                        component={TextField}
+                        name="pattern"
+                        label={t('Pattern')}
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        style={{ marginTop: 20 }}
+                        detectDuplicate={['Indicator']}
+                      />
+                    </div>
                   )}
                   <Field
                     component={MarkDownField}

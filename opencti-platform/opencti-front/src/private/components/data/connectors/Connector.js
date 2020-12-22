@@ -355,7 +355,6 @@ const Connector = createRefetchContainer(
         updated_at
         created_at
         config {
-          uri
           listen
           listen_exchange
           push
