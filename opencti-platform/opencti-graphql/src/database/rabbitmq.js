@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
 import conf from '../config/conf';
-import { DatabaseError } from '../config/errors';
+import {DatabaseError} from '../config/errors';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
@@ -13,17 +13,21 @@ export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
 export const amqpUri = () => {
-  const user = conf.get('rabbitmq:username');
-  const pass = conf.get('rabbitmq:password');
   const host = conf.get('rabbitmq:hostname');
   const port = conf.get('rabbitmq:port');
-  return `amqp://${user}:${pass}@${host}:${port}`;
+  return `amqp://${host}:${port}`;
+};
+
+export const amqpCred = () => {
+  const user = conf.get('rabbitmq:username');
+  const pass = conf.get('rabbitmq:password');
+  return { credentials: amqp.credentials.plain(user, pass) };
 };
 
 const amqpExecute = (execute) => {
   return new Promise((resolve, reject) => {
     amqp
-      .connect(amqpUri())
+      .connect(amqpUri(), amqpCred())
       .then((connection) => {
         return connection
           .createConfirmChannel()
