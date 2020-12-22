@@ -560,8 +560,14 @@ input RegisterConnectorInput {
   scope: [String!]
   auto: Boolean
 }
+type RabbitMQConnection {
+  host: String!
+  port: Int!
+  user: String!
+  pass: String!
+}
 type ConnectorConfig {
-  uri: String!
+  connection: RabbitMQConnection!
   listen: String!
   listen_exchange: String!
   push: String!

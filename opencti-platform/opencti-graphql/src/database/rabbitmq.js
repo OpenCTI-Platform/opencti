@@ -2,7 +2,7 @@ import amqp from 'amqplib';
 import axios from 'axios';
 import * as R from 'ramda';
 import conf from '../config/conf';
-import {DatabaseError} from '../config/errors';
+import { DatabaseError } from '../config/errors';
 
 export const CONNECTOR_EXCHANGE = 'amqp.connector.exchange';
 export const WORKER_EXCHANGE = 'amqp.worker.exchange';
@@ -12,16 +12,25 @@ export const EVENT_TYPE_UPDATE = 'update';
 export const EVENT_TYPE_MERGE = 'merge';
 export const EVENT_TYPE_DELETE = 'delete';
 
-export const amqpUri = () => {
+const amqpUri = () => {
   const host = conf.get('rabbitmq:hostname');
   const port = conf.get('rabbitmq:port');
   return `amqp://${host}:${port}`;
 };
 
-export const amqpCred = () => {
+const amqpCred = () => {
   const user = conf.get('rabbitmq:username');
   const pass = conf.get('rabbitmq:password');
   return { credentials: amqp.credentials.plain(user, pass) };
+};
+
+export const config = () => {
+  return {
+    host: conf.get('rabbitmq:hostname'),
+    port: conf.get('rabbitmq:port'),
+    user: conf.get('rabbitmq:username'),
+    pass: conf.get('rabbitmq:password'),
+  };
 };
 
 const amqpExecute = (execute) => {
@@ -111,7 +120,7 @@ export const metrics = async () => {
 };
 
 export const connectorConfig = (id) => ({
-  uri: amqpUri(),
+  connection: config(),
   push: `push_${id}`,
   push_exchange: 'amqp.worker.exchange',
   listen: `listen_${id}`,
