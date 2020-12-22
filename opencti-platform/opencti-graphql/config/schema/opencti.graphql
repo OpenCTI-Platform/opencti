@@ -181,7 +181,6 @@ type Number {
 type LogsWorkerConfig {
   elasticsearch_url: String!
   elasticsearch_index: String!
-  rabbitmq_url: String!
 }
 enum LogsOrdering {
   event

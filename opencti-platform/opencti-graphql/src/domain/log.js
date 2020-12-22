@@ -1,7 +1,7 @@
 import { head, assoc } from 'ramda';
 import { elPaginate, INDEX_HISTORY } from '../database/elasticSearch';
 import conf from '../config/conf';
-import { amqpUri, EVENT_TYPE_CREATE } from '../database/rabbitmq';
+import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById, SYSTEM_USER } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { loadById, timeSeriesEntities } from '../database/middleware';
@@ -33,5 +33,4 @@ export const logsTimeSeries = (args) => {
 export const logsWorkerConfig = () => ({
   elasticsearch_url: conf.get('elasticsearch:url'),
   elasticsearch_index: INDEX_HISTORY,
-  rabbitmq_url: amqpUri(),
 });
