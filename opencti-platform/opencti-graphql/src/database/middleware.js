@@ -22,15 +22,13 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
-  elDeleteInstanceIds,
-  elFindBy,
+  elDeleteElements,
   elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
   elLoadByIds,
   elPaginate,
-  elRemoveRelationConnection,
   elUpdateElement,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
@@ -55,7 +53,6 @@ import {
   STIX_SPEC_VERSION,
 } from './stix';
 import {
-  ABSTRACT_BASIC_RELATIONSHIP,
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   BASE_TYPE_ENTITY,
@@ -80,7 +77,7 @@ import {
 } from '../schema/stixMetaRelationship';
 import { isDatedInternalObject } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   booleanAttributes,
   dictAttributes,
@@ -879,12 +876,8 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   // Update all impacted entities
   logger.debug(`[OPENCTI] Merging, impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   await elUpdateEntityConnections(updateEntities);
-  // Delete sourcing entities
-  for (let delIndex = 0; delIndex < sourceEntities.length; delIndex += 1) {
-    const element = sourceEntities[delIndex];
-    // eslint-disable-next-line no-await-in-loop,no-use-before-define
-    await deleteElementByIdRaw(user, element, element.entity_type);
-  }
+  // All not move relations will be deleted, so we need to remove impacted rel in entities.
+  await elDeleteElements(sourceEntities);
 };
 export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {}) => {
   // - TRANSACTION PART
@@ -1227,9 +1220,11 @@ const buildInnerRelation = (from, to, type) => {
     const { relation } = buildRelationInput(input);
     const basicRelation = {
       id: relation.internal_id,
+      from,
       fromId: from.internal_id,
       fromRole: `${type}_from`,
       fromType: from.entity_type,
+      to: target,
       toId: target.internal_id,
       toRole: `${type}_to`,
       toType: target.entity_type,
@@ -1330,10 +1325,10 @@ const upsertElementRaw = async (user, id, type, data) => {
 
 const createRelationRaw = async (user, input) => {
   const { from, to, relationship_type: relationshipType } = input;
-  // 03. Generate the ID
+  // 01. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
-  // region 04. Check existing relationship
+  // region 02. Check existing relationship
   const listingArgs = { fromId: from.internal_id, toId: to.internal_id };
   if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {
@@ -1363,7 +1358,7 @@ const createRelationRaw = async (user, input) => {
   if (existingRelationship) {
     return upsertElementRaw(user, existingRelationship.id, relationshipType, input);
   }
-  // 05. Prepare the relation to be created
+  // 03. Prepare the relation to be created
   const today = now();
   let data = {};
   // Default attributes
@@ -1454,12 +1449,14 @@ const createRelationRaw = async (user, input) => {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
     relToCreate.push(...buildInnerRelation(data, input.objectMarking, RELATION_OBJECT_MARKING));
   }
-  // 06. Prepare the final data
+  // 05. Prepare the final data
   const created = R.pipe(
     R.assoc('id', internalId),
+    R.assoc('from', from),
     R.assoc('fromId', from.internal_id),
     R.assoc('fromRole', fromRole),
     R.assoc('fromType', from.entity_type),
+    R.assoc('to', to),
     R.assoc('toId', to.internal_id),
     R.assoc('toRole', toRole),
     R.assoc('toType', to.entity_type),
@@ -1468,7 +1465,7 @@ const createRelationRaw = async (user, input) => {
     R.assoc('parent_types', getParentTypes(relationshipType)),
     R.assoc('base_type', BASE_TYPE_RELATION)
   )(data);
-  // 09. Return result if no need to reverse the relations from and to
+  // 06. Return result if no need to reverse the relations from and to
   const relations = relToCreate.map((r) => r.relation);
   return { type: TRX_CREATION, element: created, relations };
 };
@@ -1743,42 +1740,8 @@ export const createEntity = async (user, input, type) => {
 // endregion
 
 // region mutation deletion
-const getRelatedRelations = async (targetId, elements = [], options = {}) => {
-  const connectedRelations = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
-  const connectedRelationsIds = R.map((r) => {
-    const { internal_id: internalId, entity_type: entityType } = r;
-    return { internal_id: internalId, type: entityType, relDependency: true };
-  }, connectedRelations);
-  elements.push(...connectedRelationsIds);
-  await Promise.all(
-    connectedRelationsIds.map(({ internal_id: id }) => {
-      return getRelatedRelations(id, elements, options);
-    })
-  );
-  return elements;
-};
-const getElementsToRemove = async (element, isRelation, options = {}) => {
-  // 00. Load everything we need to remove
-  const dependencies = [{ internal_id: element.internal_id, type: element.entity_type, relDependency: isRelation }];
-  await getRelatedRelations(element.internal_id, dependencies, options);
-  // Return list of deleted ids
-  return dependencies;
-};
-export const deleteElementByIdRaw = async (user, element, type, options = {}) => {
-  // Delete entity and all dependencies
-  const isRelation = isBasicRelationship(element.entity_type);
-  const elements = await getElementsToRemove(element, isRelation, options);
-  // Update elastic index.
-  for (let index = 0; index < elements.length; index += 1) {
-    const { internal_id: id, relDependency } = elements[index];
-    if (relDependency) {
-      // eslint-disable-next-line
-      await elRemoveRelationConnection(id);
-    }
-    // 02. Remove the element itself from the index
-    // eslint-disable-next-line
-    await elDeleteInstanceIds([id]);
-  }
+export const deleteElementByIdRaw = async (element) => {
+  await elDeleteElements([element]);
 };
 export const deleteElementById = async (user, elementId, type, options = {}) => {
   if (R.isNil(type)) {
@@ -1787,7 +1750,7 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
   }
   // Check consistency
   const element = await loadByIdFullyResolved(elementId, type, options);
-  await deleteElementByIdRaw(user, element, type, options);
+  await deleteElementByIdRaw(element);
   await storeDeleteEvent(user, element);
   // Return id
   return elementId;

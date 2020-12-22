@@ -26,6 +26,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
+  ABSTRACT_BASIC_RELATIONSHIP,
   BASE_TYPE_RELATION,
   ID_INTERNAL,
   ID_STANDARD,
@@ -52,6 +53,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
+import { isBasicRelationship } from '../schema/stixRelationship';
 
 export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES = [
@@ -1254,6 +1256,58 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
     });
   return value;
 };
+
+const getRelatedRelations = async (targetId, elements = [], options = {}) => {
+  const connectedRelations = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
+  const connectedRelationsIds = R.map((r) => {
+    const { internal_id: internalId, entity_type: entityType } = r;
+    return { internal_id: internalId, type: entityType, relDependency: true };
+  }, connectedRelations);
+  elements.push(...connectedRelationsIds);
+  await Promise.all(
+    connectedRelationsIds.map(({ internal_id: id }) => {
+      return getRelatedRelations(id, elements, options);
+    })
+  );
+  return elements;
+};
+export const getElementsToRemove = async (element, options = {}) => {
+  // 00. Load everything we need to remove
+  const isRelation = isBasicRelationship(element.entity_type);
+  const dependencies = [{ internal_id: element.internal_id, type: element.entity_type, relDependency: isRelation }];
+  await getRelatedRelations(element.internal_id, dependencies, options);
+  // Return list of deleted ids
+  return dependencies;
+};
+export const elCleanupRelConnections = (ids) => {
+  const relsShould = ids.map((id) => ({ multi_match: { query: id, type: 'phrase', fields: ['rel_*'] } }));
+  const query = {
+    bool: {
+      should: relsShould,
+      minimum_should_match: 1,
+    },
+  };
+  const source = `
+    for (key in ctx._source.keySet()) {
+        if (key.startsWith("rel_")) {
+            if (ctx._source[key] != null) {
+              ctx._source[key].removeIf(rel -> params.ids.contains(rel));
+            }
+        }
+    }`;
+  return el
+    .updateByQuery({
+      index: DATA_INDICES,
+      refresh: true,
+      body: {
+        script: { source, params: { ids } },
+        query,
+      },
+    })
+    .catch((err) => {
+      throw DatabaseError('Error cleaning rel connections', { error: err, ids });
+    });
+};
 export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
   const terms = R.map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
@@ -1273,6 +1327,17 @@ export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) =
       throw DatabaseError('Error deleting instance', { error: err, ids });
     });
 };
+export const elDeleteElements = async (elements) => {
+  // eslint-disable-next-line no-use-before-define
+  const resolvedToRemoves = await Promise.all(elements.map((s) => getElementsToRemove(s)));
+  const toRemoves = R.uniq(R.flatten(resolvedToRemoves).map((e) => e.internal_id));
+  logger.debug(`[OPENCTI] Deleting ${toRemoves}`);
+  // Delete all rel_
+  await elCleanupRelConnections(toRemoves);
+  // Delete all elements
+  await elDeleteInstanceIds(toRemoves);
+};
+
 export const elRemoveRelationConnection = async (relationId) => {
   const relation = await elLoadByIds(relationId);
   const from = await elLoadByIds(relation.fromId);
@@ -1318,6 +1383,47 @@ export const prepareElementForIndexing = (element) => {
   });
   return R.dissoc('_index', thing);
 };
+const prepareRelation = (thing) => {
+  if (thing.fromRole === undefined || thing.toRole === undefined) {
+    throw DatabaseError(`[ELASTIC] Cant index relation ${thing.internal_id} connections without from or to`, thing);
+  }
+  const connections = [];
+  if (!thing.from || !thing.to) {
+    throw DatabaseError(`[ELASTIC] Cant index relation ${thing.internal_id}, error resolving dependency IDs`, {
+      fromId: thing.fromId,
+      toId: thing.toId,
+    });
+  }
+  const { from, to } = thing;
+  connections.push({
+    internal_id: from.internal_id,
+    name: from.name,
+    types: [from.entity_type, ...getParentTypes(from.entity_type)],
+    role: thing.fromRole,
+  });
+  connections.push({
+    internal_id: to.internal_id,
+    name: to.name,
+    types: [to.entity_type, ...getParentTypes(to.entity_type)],
+    role: thing.toRole,
+  });
+  return R.pipe(
+    R.assoc('connections', connections),
+    R.dissoc('i_relations_to'),
+    R.dissoc('i_relations_from'),
+    // Dissoc from
+    R.dissoc('from'),
+    R.dissoc('fromId'),
+    R.dissoc('fromRole'),
+    // Dissoc to
+    R.dissoc('to'),
+    R.dissoc('toId'),
+    R.dissoc('toRole')
+  )(thing);
+};
+const prepareEntity = (thing) => {
+  return R.pipe(R.dissoc('i_relations_to'), R.dissoc('i_relations_from'))(thing);
+};
 const prepareIndexing = async (elements) => {
   return Promise.all(
     R.map(async (element) => {
@@ -1325,47 +1431,9 @@ const prepareIndexing = async (elements) => {
       const thing = prepareElementForIndexing(element);
       // For relation, index a list of connections.
       if (thing.base_type === BASE_TYPE_RELATION) {
-        if (thing.fromRole === undefined || thing.toRole === undefined) {
-          throw DatabaseError(
-            `[ELASTIC] Cant index relation ${thing.internal_id} connections without from or to`,
-            thing
-          );
-        }
-        const connections = [];
-        const [from, to] = await Promise.all([elLoadByIds(thing.fromId), elLoadByIds(thing.toId)]);
-        if (!from || !to) {
-          throw DatabaseError(`[ELASTIC] Cant index relation ${thing.internal_id}, error resolving dependency IDs`, {
-            fromId: thing.fromId,
-            toId: thing.toId,
-          });
-        }
-        connections.push({
-          internal_id: from.internal_id,
-          name: from.name,
-          types: [from.entity_type, ...getParentTypes(from.entity_type)],
-          role: thing.fromRole,
-        });
-        connections.push({
-          internal_id: to.internal_id,
-          name: to.name,
-          types: [to.entity_type, ...getParentTypes(to.entity_type)],
-          role: thing.toRole,
-        });
-        return R.pipe(
-          R.assoc('connections', connections),
-          R.dissoc('i_relations_to'),
-          R.dissoc('i_relations_from'),
-          // Dissoc from
-          R.dissoc('from'),
-          R.dissoc('fromId'),
-          R.dissoc('fromRole'),
-          // Dissoc to
-          R.dissoc('to'),
-          R.dissoc('toId'),
-          R.dissoc('toRole')
-        )(thing);
+        return prepareRelation(thing);
       }
-      return R.pipe(R.dissoc('i_relations_to'), R.dissoc('i_relations_from'))(thing);
+      return prepareEntity(thing);
     }, elements)
   );
 };
@@ -1381,6 +1449,7 @@ export const elIndexElements = async (elements, retry = 5) => {
     await elBulk({ refresh: true, body });
   }
   // 02. If relation, generate impacts for from and to sides
+  const cache = {};
   const impactedEntities = R.pipe(
     R.filter((e) => e.base_type === BASE_TYPE_RELATION),
     R.map((e) => {
@@ -1389,9 +1458,14 @@ export const elIndexElements = async (elements, retry = 5) => {
       const impacts = [];
       // We impact target entities of the relation only if not global entities like
       // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
-      if (!R.includes(fromRole, UNIMPACTED_ENTITIES_ROLE))
-        impacts.push({ from: e.fromId, relationshipType, to: e.toId });
-      if (!R.includes(toRole, UNIMPACTED_ENTITIES_ROLE)) impacts.push({ from: e.toId, relationshipType, to: e.fromId });
+      cache[e.fromId] = e.from;
+      cache[e.toId] = e.to;
+      if (!R.includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) {
+        impacts.push({ from: e.fromId, relationshipType, to: e.to });
+      }
+      if (!R.includes(toRole, UNIMPACTED_ENTITIES_ROLE)) {
+        impacts.push({ from: e.toId, relationshipType, to: e.from });
+      }
       return impacts;
     }),
     R.flatten,
@@ -1400,7 +1474,7 @@ export const elIndexElements = async (elements, retry = 5) => {
   const elementsToUpdate = await Promise.all(
     // For each from, generate the
     R.map(async (entityId) => {
-      const entity = await elLoadByIds(entityId);
+      const entity = cache[entityId];
       const targets = impactedEntities[entityId];
       // Build document fields to update ( per relation type )
       // rel_membership: [{ internal_id: ID, types: [] }]
@@ -1410,8 +1484,7 @@ export const elIndexElements = async (elements, retry = 5) => {
           const data = targetsByRelation[relType];
           const resolvedData = await Promise.all(
             R.map(async (d) => {
-              const resolvedTarget = await elLoadByIds(d.to);
-              return resolvedTarget.internal_id;
+              return d.to.internal_id;
             }, data)
           );
           return { relation: relType, elements: resolvedData };
@@ -1431,7 +1504,8 @@ export const elIndexElements = async (elements, retry = 5) => {
         params[`${REL_INDEX_PREFIX + targetElement.relation}.internal_id`] = targetElement.elements;
       }
       // eslint-disable-next-line no-underscore-dangle
-      return { _index: entity._index, id: entityId, data: { script: { source, params } } };
+      const index = inferIndexFromConceptType(entity.entity_type);
+      return { _index: index, id: entityId, data: { script: { source, params } } };
     }, Object.keys(impactedEntities))
   );
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
@@ -1519,7 +1593,7 @@ export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
   return el
     .updateByQuery({
       index: RELATIONSHIPS_INDICES,
-      refresh: false,
+      refresh: true,
       body: {
         script: { source, params: { id: documentId, changes: documentBody } },
         query: {

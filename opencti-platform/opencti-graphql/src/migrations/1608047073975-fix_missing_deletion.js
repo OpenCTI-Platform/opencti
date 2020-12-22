@@ -2,7 +2,6 @@ import * as R from 'ramda';
 import { deleteElementByIdRaw, loadById } from '../database/middleware';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { DATA_INDICES, el, RELATIONSHIPS_INDICES } from '../database/elasticSearch';
-import { SYSTEM_USER } from '../domain/user';
 import { logger } from '../config/conf';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
@@ -109,7 +108,7 @@ export const up = async (next) => {
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
     const element = await loadById(relation.internal_id, relation.entity_type);
-    await deleteElementByIdRaw(SYSTEM_USER, element, element.entity_type);
+    await deleteElementByIdRaw(element);
   }
   logger.info('[MIGRATION] Fix missing deletion migration done');
   next();
