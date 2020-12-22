@@ -341,7 +341,6 @@ class OpenCTIApiClient:
                 logsWorkerConfig {
                     elasticsearch_url
                     elasticsearch_index
-                    rabbitmq_url
                 }
             }
         """
