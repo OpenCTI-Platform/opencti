@@ -168,6 +168,7 @@ const StixCyberObservableDetails = createFragmentContainer(
           ctime
           mtime
           atime
+          x_opencti_additional_names
           hashes {
             algorithm
             hash

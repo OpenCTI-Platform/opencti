@@ -240,6 +240,7 @@ export const stixCyberObservablesAttributes = {
     'ctime',
     'mtime',
     'atime',
+    'x_opencti_additional_names',
   ],
   [ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [
     'internal_id',

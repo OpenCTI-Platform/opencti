@@ -16,9 +16,13 @@ export const creator = async (entityId) => {
       { key: 'context_data.id', values: [entity.internal_id] },
     ],
     connectionFormat: false,
-  }).then((logs) => {
+  }).then(async (logs) => {
     const user = logs.length > 0 ? head(logs).applicant_id || head(logs).user_id : null;
-    return user ? findById(user) : SYSTEM_USER;
+    let finalUser = null;
+    if (user) {
+      finalUser = await findById(user);
+    }
+    return finalUser || SYSTEM_USER;
   });
 };
 

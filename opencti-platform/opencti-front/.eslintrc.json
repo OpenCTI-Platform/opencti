@@ -11,7 +11,8 @@
     "no-restricted-syntax": 0,
     "react/no-unused-prop-types": 0,
     "react/prop-types": 0,
-    "max-classes-per-file": ["error", 2]
+    "max-classes-per-file": ["error", 2],
+    "no-unused-vars": ["warn"]
   },
   "settings": {
     "react": {
