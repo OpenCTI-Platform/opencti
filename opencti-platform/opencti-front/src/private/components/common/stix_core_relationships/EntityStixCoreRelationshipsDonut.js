@@ -42,6 +42,7 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
     $endDate: DateTime
     $field: String!
     $operation: StatsOperation!
+    $isTo: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -51,6 +52,7 @@ const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = gr
       endDate: $endDate
       field: $field
       operation: $operation
+      isTo: $isTo
     ) {
       label
       value
@@ -130,6 +132,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
       height,
       startDate,
       endDate,
+      isTo,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
       fromId: entityId,
@@ -139,6 +142,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
       relationship_type: relationshipType,
       field,
       operation: 'count',
+      isTo: isTo || false,
     };
     return (
       <QueryRenderer
@@ -260,6 +264,7 @@ EntityStixCoreRelationshipsDonut.propTypes = {
   fld: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
+  isTo: PropTypes.bool,
 };
 
 export default compose(
