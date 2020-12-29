@@ -55,7 +55,8 @@ All you need to install the OpenCTI platform can be found in the [official docum
 ### Sponsors
 
 <p align="left">
-  <a href="https://www.intrinsec.com" alt="Intrinsec"><img src="https://www.luatix.org/wp-content/uploads/2020/11/intrinsec.png" width="80" /></a>
+  <a href="https://www.intrinsec.com" alt="Intrinsec"><img src="https://www.luatix.org/wp-content/uploads/2020/12/intrinsec.png" width="80" /></a>
+  <a href="https://www.thalesgroup.com" alt="Thales"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Thales.png" width="80" /></a>
 </p>
 
 ## Contributing
