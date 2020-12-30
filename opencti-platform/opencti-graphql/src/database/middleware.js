@@ -33,6 +33,7 @@ import {
   elUpdateEntityConnections,
   elUpdateRelationConnections,
   ENTITIES_INDICES,
+  isUnimpactedEntity,
   RELATIONSHIPS_INDICES,
 } from './elasticSearch';
 import {
@@ -104,6 +105,7 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { BUS_TOPICS, logger } from '../config/conf';
 
 // region global variables
+const TIMEOUT_MESSAGE = 'Execution timeout, too many concurrent call on the same entities';
 export const MAX_BATCH_SIZE = 25;
 export const FROM_START = 0;
 export const FROM_START_STR = '1970-01-01T00:00:00.000Z';
@@ -720,6 +722,10 @@ const filterTargetByExisting = (sources, targets) => {
   return filtered;
 };
 
+// const buildMergeParticipants = (entities) => {
+//   // TODO NEED ALSO TO RESOLVE ALL RELATIONS AND IMPACTED ENTITIES
+//   return entities.map((e) => `merge_${e.internal_id}`);
+// };
 const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
   // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
   logger.debug(`[OPENCTI] Merging ${sourceEntities.map((i) => i.instance)} in ${targetEntity.internal_id}`);
@@ -880,13 +886,39 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await elDeleteElements(sourceEntities);
 };
 export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {}) => {
-  // - TRANSACTION PART
-  await mergeEntitiesRaw(user, targetEntity, sourceEntities, opts);
-  await storeMergeEvent(user, targetEntity, sourceEntities);
-  // - END TRANSACTION
-  return loadById(targetEntity.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
-    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
+  // targetEntity and sourceEntities must be fully resolved elements
+  const { locks = [] } = opts;
+  // We need to lock all elements not locked yet.
+  const allTargets = [targetEntity, ...sourceEntities].map((entity) => [
+    entity,
+    entity.i_relations_from || [],
+    entity.i_relations_to || [],
+  ]);
+  const participantIds = R.uniq(
+    R.flatten(allTargets)
+      .filter((f) => !isUnimpactedEntity(f))
+      .map((i) => i.internal_id)
+      .filter((a) => !locks.includes(a))
   );
+  let lock;
+  try {
+    // Lock the participants that will be merged
+    lock = await lockResource(participantIds);
+    // - TRANSACTION PART
+    await mergeEntitiesRaw(user, targetEntity, sourceEntities, opts);
+    await storeMergeEvent(user, targetEntity, sourceEntities);
+    // - END TRANSACTION
+    return loadById(targetEntity.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
+      notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
+    );
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw DatabaseError(TIMEOUT_MESSAGE, { participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 
 const transformPathToInput = (patch) => {
@@ -1044,7 +1076,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
-  const participantIds = [instance.standard_id];
+  const participantIds = [instance.internal_id, instance.standard_id];
   // 01. Check if updating alias lead to entity conflict
   const keys = R.map((t) => t.key, elements);
   if (isStixObjectAliased(instance.entity_type)) {
@@ -1088,7 +1120,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
         // If stix observable, we can merge. If not throw an error.
         if (isStixCyberObservable(existingEntity.entity_type)) {
           // noinspection UnnecessaryLocalVariableJS
-          const merged = await mergeEntities(user, existingEntity, [instance]);
+          const merged = await mergeEntities(user, existingEntity, [instance], { locks: participantIds });
           // Return merged element after waiting for it.
           return merged;
         }
@@ -1323,6 +1355,23 @@ const upsertElementRaw = async (user, id, type, data) => {
   return { type: TRX_UPDATE, element, relations: rawRelations, streamInputs, indexInput };
 };
 
+const getLocksFromInput = (type, input) => {
+  const standardId = input.standard_id || generateStandardId(type, input);
+  const inputIds = [...(input.externalReferences || []), ...(input.objects || [])].map((e) => e.internal_id);
+  const lockIds = [standardId, ...inputIds];
+  if (isNotEmptyField(input.stix_id)) {
+    lockIds.push(input.stix_id);
+  }
+  if (isStixObjectAliased(type)) {
+    const aliases = [input.name, ...(input.aliases || []), ...(input.x_opencti_aliases || [])];
+    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
+      aliases.push(input.x_mitre_id);
+    }
+    lockIds.push(...generateAliasesId(aliases));
+  }
+  return lockIds;
+};
+
 const createRelationRaw = async (user, input) => {
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID
@@ -1501,12 +1550,9 @@ export const createRelation = async (user, input) => {
   // Check consistency
   checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
   // Build lock ids
-  const lockFrom = `${from.standard_id}_${relationshipType}_${to.standard_id}`;
-  const lockTo = `${to.standard_id}_${relationshipType}_${from.standard_id}`;
-  const lockIds = [lockFrom, lockTo];
-  if (isNotEmptyField(resolvedInput.stix_id)) {
-    lockIds.push(resolvedInput.stix_id);
-  }
+  const lockIds = getLocksFromInput(relationshipType, resolvedInput);
+  if (!isUnimpactedEntity(from)) lockIds.push(from.internal_id);
+  if (!isUnimpactedEntity(to)) lockIds.push(to.internal_id);
   try {
     // Try to get the lock in redis
     lock = await lockResource(lockIds);
@@ -1540,7 +1586,7 @@ export const createRelation = async (user, input) => {
     return dataRel.element;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Transaction fail, execution timeout', { lockIds });
+      throw DatabaseError(TIMEOUT_MESSAGE, { lockIds });
     }
     throw err;
   } finally {
@@ -1579,14 +1625,12 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       // If a STIX ID has been passed in the creation
       if (input.stix_id) {
         // Find the entity corresponding to this STIX ID
-        const existingByGivenStixId = R.find(
-          (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id),
-          existingEntities
-        );
-        // If the entity exists
-        if (existingByGivenStixId) {
+        const stixIdFinder = (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id);
+        const existingByGivenStixId = R.find(stixIdFinder, existingEntities);
+        // If the entity exists by the stix id and not the same as the previously founded.
+        if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
           // Merge this entity into the one matching the standard id
-          await mergeEntities(user, existingByStandard, [existingByGivenStixId]);
+          await mergeEntities(user, existingByStandard, [existingByGivenStixId], { locks: participantIds });
         }
       }
       // In this mode we can safely consider this entity like the existing one.
@@ -1699,17 +1743,7 @@ export const createEntity = async (user, input, type) => {
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const standardId = input.standard_id || generateStandardId(type, resolvedInput);
-  const participantIds = [standardId];
-  if (isStixObjectAliased(type)) {
-    const aliases = [resolvedInput.name, ...(resolvedInput.aliases || []), ...(resolvedInput.x_opencti_aliases || [])];
-    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
-      aliases.push(input.x_mitre_id);
-    }
-    participantIds.push(...generateAliasesId(aliases));
-  }
-  if (isNotEmptyField(resolvedInput.stix_id)) {
-    participantIds.push(resolvedInput.stix_id);
-  }
+  const participantIds = getLocksFromInput(type, resolvedInput);
   // Create the element
   try {
     // Try to get the lock in redis
@@ -1730,7 +1764,7 @@ export const createEntity = async (user, input, type) => {
     return R.assoc('i_upserted', dataEntity.type !== TRX_CREATION, dataEntity.element);
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError('Transaction fail, execution timeout', { participantIds });
+      throw DatabaseError(TIMEOUT_MESSAGE, { participantIds });
     }
     throw err;
   } finally {

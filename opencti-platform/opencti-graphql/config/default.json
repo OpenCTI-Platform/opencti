@@ -7,6 +7,12 @@
       "time_window": 1,
       "max_requests": 10000
     },
+    "concurrency": {
+      "retry_count": 70,
+      "retry_delay": 100,
+      "retry_jitter": 50,
+      "max_ttl": 10000
+    },
     "cookie_secure": false,
     "base_path": "",
     "platform_demo": false,

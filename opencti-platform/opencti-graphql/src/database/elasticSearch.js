@@ -69,6 +69,8 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_OBJECT_LABEL}_to`,
   `${RELATION_KILL_CHAIN_PHASE}_to`,
 ];
+export const isUnimpactedEntity = (entity) => UNIMPACTED_ENTITIES.includes(entity.entity_type);
+
 export const DATA_INDICES = [
   INDEX_INTERNAL_OBJECTS,
   INDEX_STIX_META_OBJECTS,
@@ -1338,35 +1340,6 @@ export const elDeleteElements = async (elements) => {
   await elDeleteInstanceIds(toRemoves);
 };
 
-export const elRemoveRelationConnection = async (relationId) => {
-  const relation = await elLoadByIds(relationId);
-  const from = await elLoadByIds(relation.fromId);
-  const to = await elLoadByIds(relation.toId);
-  const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
-  // Update the from entity
-  if (from) {
-    await elUpdate(from._index, relation.fromId, {
-      script: {
-        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-        params: {
-          key: relation.toId,
-        },
-      },
-    });
-  }
-  // Update to to entity
-  if (to) {
-    await elUpdate(to._index, relation.toId, {
-      script: {
-        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
-        params: {
-          key: relation.fromId,
-        },
-      },
-    });
-  }
-};
-
 export const prepareElementForIndexing = (element) => {
   const thing = {};
   Object.keys(element).forEach((key) => {
@@ -1514,7 +1487,7 @@ export const elIndexElements = async (elements, retry = 5) => {
     R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
-    await elBulk({ refresh: true, timeout: '60m', body: bodyUpdate });
+    await elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
   }
   return transformedElements.length;
 };

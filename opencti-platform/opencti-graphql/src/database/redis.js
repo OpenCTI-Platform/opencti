@@ -154,17 +154,22 @@ export const clearUserAccessCache = async (tokenUUID) => {
 
 // region locking
 export const lockResource = async (resources) => {
+  const locks = R.uniq(resources);
   const redisClient = await getClient();
   // Retry during 5 secs
-  const redlock = new Redlock([redisClient], { retryCount: 10, retryDelay: 500 });
-  const lock = await redlock.lock(resources, 10000); // Force unlock after 10 secs
+  const retryCount = conf.get('app:concurrency:retry_count');
+  const retryDelay = conf.get('app:concurrency:retry_delay');
+  const retryJitter = conf.get('app:concurrency:retry_jitter');
+  const maxTtl = conf.get('app:concurrency:max_ttl');
+  const redlock = new Redlock([redisClient], { retryCount, retryDelay, retryJitter });
+  const lock = await redlock.lock(locks, maxTtl); // Force unlock after 10 secs
   return {
     extend: () => true,
     unlock: async () => {
       try {
         await lock.unlock();
       } catch (e) {
-        logger.debug(e, '[REDIS] Failed to unlock resource', { resources });
+        logger.debug(e, '[REDIS] Failed to unlock resource', { locks });
       }
     },
   };
