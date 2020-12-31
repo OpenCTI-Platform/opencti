@@ -101,6 +101,10 @@ export const booleanAttributes = [
   'is_hidden',
 ];
 
+export const multipleAttributes = [
+  'x_opencti_additional_names',
+];
+
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
@@ -365,6 +369,9 @@ class StixCyberObservableCreation extends Component {
         : n)),
       map((n) => (includes(n[0], numberAttributes)
         ? [n[0], n[1] ? parseInt(n[1], 10) : null]
+        : n)),
+      map((n) => (includes(n[0], multipleAttributes)
+        ? [n[0], n[1] ? n[1].split(',') : null]
         : n)),
       fromPairs,
     )(adaptedValues);

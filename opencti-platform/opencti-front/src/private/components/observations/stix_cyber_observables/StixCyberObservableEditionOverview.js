@@ -30,6 +30,7 @@ import {
   dateAttributes,
   ignoredAttributes,
   numberAttributes,
+  multipleAttributes,
 } from './StixCyberObservableCreation';
 import { dateFormat } from '../../../../utils/Time';
 import DatePickerField from '../../../../components/DatePickerField';
@@ -132,14 +133,18 @@ class StixCyberObservableEditionOverviewComponent extends Component {
 
   handleSubmitField(name, value) {
     let finalName = name;
+    let finalValue = value;
     if (name.includes('hashes')) {
       finalName = name.replace('hashes_', 'hashes.');
+    }
+    if (multipleAttributes.includes(finalName)) {
+      finalValue = finalValue.split(',');
     }
     commitMutation({
       mutation: stixCyberObservableMutationFieldPatch,
       variables: {
         id: this.props.stixCyberObservable.id,
-        input: { key: finalName, value },
+        input: { key: finalName, value: finalValue },
       },
       onCompleted: (response) => {
         if (
@@ -288,6 +293,12 @@ class StixCyberObservableEditionOverviewComponent extends Component {
                   attribute.value
                 ]
                   ? dateFormat(stixCyberObservable[attribute.value])
+                  : null;
+              } else if (includes(attribute.value, dateAttributes)) {
+                initialValues[attribute.value] = stixCyberObservable[
+                  attribute.value
+                ]
+                  ? stixCyberObservable[attribute.value].join(',')
                   : null;
               } else if (attribute.value === 'hashes') {
                 const hashes = pipe(
@@ -578,6 +589,7 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           extensions
           size
           name
+          x_opencti_additional_names
           name_enc
           magic_number_hex
           mime_type

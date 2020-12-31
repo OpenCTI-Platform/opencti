@@ -75,10 +75,13 @@ class StixCyberObservableDetailsComponent extends Component {
               } else if (finalValue === false) {
                 finalValue = 'FALSE';
               }
+              if (Array.isArray(finalValue)) {
+                finalValue = finalValue.join('\n');
+              }
               return (
                 <Grid key={observableAttribute.key} item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {observableAttribute.key.replace('attribute_', '')}
+                    {t(observableAttribute.key.replace('attribute_', ''))}
                   </Typography>
                   <pre>{finalValue || '-'}</pre>
                 </Grid>
