@@ -1,5 +1,5 @@
 requests==2.25.0
 PyYAML==5.3.1
 pika==1.1.0
-git+https://github.com/OpenCTI-Platform/client-python@master
+git+https://github.com/OpenCTI-Platform/client-python@4.0.4
 black==20.8b1
