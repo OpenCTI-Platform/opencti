@@ -65,6 +65,13 @@ export const FunctionalError = (reason, data) =>
   });
 
 export const TYPE_LOCK_ERROR = 'LockError';
+export const LockTimeoutError = (data) =>
+  error(TYPE_LOCK_ERROR, 'Lock timeout', {
+    reason: 'Execution timeout, too many concurrent call on the same entities',
+    category: CATEGORY_BUSINESS,
+    ...data,
+  });
+
 export const TYPE_DUPLICATE_ENTRY = 'DuplicateEntryError';
 export const DuplicateEntryError = (reason, data) =>
   error(TYPE_DUPLICATE_ENTRY, 'Existing element', {

@@ -2,6 +2,8 @@
 
 import logging
 import functools
+import random
+
 import yaml
 import pika
 import os
@@ -149,7 +151,9 @@ class Consumer(threading.Thread):
                 "UnsupportedError" not in error
                 and self.processing_count < PROCESSING_COUNT
             ):
-                time.sleep(1)
+                # Sleep between 1 and 3 secs before retrying
+                sleep_jitter = round(random.uniform(1, 3), 2)
+                time.sleep(sleep_jitter)
                 logging.info(
                     "Message (delivery_tag="
                     + str(delivery_tag)

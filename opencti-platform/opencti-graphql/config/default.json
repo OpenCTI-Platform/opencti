@@ -8,10 +8,10 @@
       "max_requests": 10000
     },
     "concurrency": {
-      "retry_count": 70,
+      "retry_count": 200,
       "retry_delay": 100,
       "retry_jitter": 50,
-      "max_ttl": 10000
+      "max_ttl": 30000
     },
     "cookie_secure": false,
     "base_path": "",

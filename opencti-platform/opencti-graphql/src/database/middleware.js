@@ -4,6 +4,7 @@ import DataLoader from 'dataloader';
 import {
   DatabaseError,
   FunctionalError,
+  LockTimeoutError,
   MissingReferenceError,
   TYPE_LOCK_ERROR,
   UnsupportedError,
@@ -105,7 +106,6 @@ import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { BUS_TOPICS, logger } from '../config/conf';
 
 // region global variables
-const TIMEOUT_MESSAGE = 'Execution timeout, too many concurrent call on the same entities';
 export const MAX_BATCH_SIZE = 25;
 export const FROM_START = 0;
 export const FROM_START_STR = '1970-01-01T00:00:00.000Z';
@@ -891,8 +891,8 @@ export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {
   // We need to lock all elements not locked yet.
   const allTargets = [targetEntity, ...sourceEntities].map((entity) => [
     entity,
-    entity.i_relations_from || [],
-    entity.i_relations_to || [],
+    Object.values(entity.i_relations_from || []),
+    Object.values(entity.i_relations_to || []),
   ]);
   const participantIds = R.uniq(
     R.flatten(allTargets)
@@ -913,7 +913,7 @@ export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {
     );
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError(TIMEOUT_MESSAGE, { participantIds });
+      throw LockTimeoutError({ participantIds });
     }
     throw err;
   } finally {
@@ -1586,7 +1586,7 @@ export const createRelation = async (user, input) => {
     return dataRel.element;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError(TIMEOUT_MESSAGE, { lockIds });
+      throw LockTimeoutError({ lockIds });
     }
     throw err;
   } finally {
@@ -1764,7 +1764,7 @@ export const createEntity = async (user, input, type) => {
     return R.assoc('i_upserted', dataEntity.type !== TRX_CREATION, dataEntity.element);
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw DatabaseError(TIMEOUT_MESSAGE, { participantIds });
+      throw LockTimeoutError({ participantIds });
     }
     throw err;
   } finally {

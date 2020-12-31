@@ -3,7 +3,6 @@ import { stripIgnoredCharacters } from 'graphql';
 import nconf from 'nconf';
 import { logger } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
-import { MISSING_REF_ERROR } from '../config/errors';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
@@ -76,10 +75,10 @@ export default {
           const callError = currentError.originalError ? currentError.originalError : currentError;
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
-          const isRetryableCall = callError.name === MISSING_REF_ERROR && isNotEmptyField(origin.call_retry_number);
+          const isRetryableCall = isNotEmptyField(origin.call_retry_number);
           const isAuthenticationCall = includes(callError.name, ['AuthRequired', 'AuthFailure', 'ForbiddenAccess']);
           // Authentication problem can be logged in warning (dissoc variables to hide password)
-          // If worker is retrying, missing reference is not really a problem, can be logged in warning
+          // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall || isAuthenticationCall) {
             logger.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
           } else {
