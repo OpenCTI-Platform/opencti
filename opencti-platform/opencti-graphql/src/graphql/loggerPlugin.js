@@ -75,7 +75,7 @@ export default {
           const callError = currentError.originalError ? currentError.originalError : currentError;
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
-          const isRetryableCall = isNotEmptyField(origin.call_retry_number);
+          const isRetryableCall = isNotEmptyField(origin?.call_retry_number);
           const isAuthenticationCall = includes(callError.name, ['AuthRequired', 'AuthFailure', 'ForbiddenAccess']);
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
