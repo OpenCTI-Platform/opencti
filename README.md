@@ -3,7 +3,7 @@
 </h1>
 <p align="center">
   <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
-  <a href="https://www.notion.so/luatix/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-RTFM-orange.svg" /></a>
+  <a href="https://www.notion.so/luatix/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-Notion-orange.svg" /></a>
   <a href="https://slack.luatix.org" alt="Slack"><img src="https://slack.luatix.org/badge.svg" /></a>
   <a href="https://cloud.drone.io/OpenCTI-Platform/opencti"><img src="https://cloud.drone.io/api/badges/OpenCTI-Platform/opencti/status.svg" /></a>
   <a href="https://codecov.io/gh/OpenCTI-Platform/opencti"><img src="https://codecov.io/gh/OpenCTI-Platform/opencti/graph/badge.svg" /></a>

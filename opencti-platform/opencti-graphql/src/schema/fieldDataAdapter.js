@@ -27,6 +27,7 @@ export const multipleAttributes = [
   'x_mitre_platforms',
   'x_mitre_permissions_required',
   'x_opencti_aliases',
+  'x_opencti_additional_names',
   'labels',
   'external_references',
   'kill_chain_phases',
