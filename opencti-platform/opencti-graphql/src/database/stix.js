@@ -66,7 +66,7 @@ import { isStixCyberObservableRelationship } from '../schema/stixCyberObservable
 import { isMultipleAttribute } from '../schema/fieldDataAdapter';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 
-const MAX_TRANSIENT_STIX_IDS = 50;
+const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
 
 export const convertTypeToStixType = (type) => {

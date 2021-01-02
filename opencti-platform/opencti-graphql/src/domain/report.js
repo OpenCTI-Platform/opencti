@@ -93,26 +93,6 @@ export const reportsDistributionByEntity = async (args) => {
 
 // region mutations
 export const addReport = async (user, report) => {
-  // Get the reliability of the author
-  let confidence = 15;
-  if (report.createdBy) {
-    const identity = await findIdentityById(report.createdBy);
-    if (identity.x_opencti_reliability) {
-      switch (identity.x_opencti_reliability) {
-        case 'A':
-          confidence = 85;
-          break;
-        case 'B':
-          confidence = 75;
-          break;
-        case 'C':
-          confidence = 50;
-          break;
-        default:
-          confidence = 15;
-      }
-    }
-  }
   if (report.report_types) {
     await Promise.all(
       report.report_types.map(async (reportType) => {
@@ -126,8 +106,7 @@ export const addReport = async (user, report) => {
   }
   const finalReport = pipe(
     assoc('created', report.published),
-    assoc('x_opencti_report_status', propOr(STATUS_STATUS_NEW, 'x_opencti_report_status', report)),
-    assoc('confidence', propOr(confidence, 'confidence', report))
+    assoc('x_opencti_report_status', propOr(STATUS_STATUS_NEW, 'x_opencti_report_status', report))
   )(report);
   const created = await createEntity(user, finalReport, ENTITY_TYPE_CONTAINER_REPORT);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

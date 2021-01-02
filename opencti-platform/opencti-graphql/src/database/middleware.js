@@ -595,6 +595,26 @@ const indexCreatedElement = async ({ type, element, relations, indexInput }) => 
     await elIndexElements(relations);
   }
 };
+const computeConfidenceLevel = (input) => {
+  let confidence = 15;
+  const creator = input.createdBy;
+  if (creator) {
+    switch (creator.x_opencti_reliability) {
+      case 'A':
+        confidence = 85;
+        break;
+      case 'B':
+        confidence = 75;
+        break;
+      case 'C':
+        confidence = 50;
+        break;
+      default:
+        confidence = 15;
+    }
+  }
+  return confidence;
+};
 // endregion
 
 // region mutation update
@@ -1422,7 +1442,7 @@ const createRelationRaw = async (user, input) => {
     data.x_opencti_stix_ids = isNotEmptyField(input.stix_id) ? [input.stix_id] : [];
     data.spec_version = STIX_SPEC_VERSION;
     data.revoked = R.isNil(input.revoked) ? false : input.revoked;
-    data.confidence = R.isNil(input.confidence) ? 0 : input.confidence;
+    data.confidence = R.isNil(input.confidence) ? computeConfidenceLevel(input) : input.confidence;
     data.lang = R.isNil(input.lang) ? 'en' : input.lang;
     data.created = R.isNil(input.created) ? today : input.created;
     data.modified = R.isNil(input.modified) ? today : input.modified;
@@ -1687,7 +1707,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   if (isStixDomainObject(type)) {
     data = R.pipe(
       R.assoc('revoked', R.isNil(data.revoked) ? false : data.revoked),
-      R.assoc('confidence', R.isNil(data.confidence) ? 0 : data.confidence),
+      R.assoc('confidence', R.isNil(data.confidence) ? computeConfidenceLevel(input) : data.confidence),
       R.assoc('lang', R.isNil(data.lang) ? 'en' : data.lang),
       R.assoc('created', R.isNil(input.created) ? today : input.created),
       R.assoc('modified', R.isNil(input.modified) ? today : input.modified)
