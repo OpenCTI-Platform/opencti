@@ -149,7 +149,8 @@ class StixCyberObservable:
                 ctime
                 mtime
                 atime
-                 hashes {
+                x_opencti_additional_names
+                hashes {
                   algorithm
                   hash
                 }           
@@ -733,6 +734,11 @@ class StixCyberObservable:
                     else None,
                     "atime": observable_data["atime"]
                     if "atime" in observable_data
+                    else None,
+                    "x_opencti_additional_names": observable_data[
+                        "x_opencti_additional_names"
+                    ]
+                    if "x_opencti_additional_names" in observable_data
                     else None,
                 }
             elif type == "X509-Certificate":
