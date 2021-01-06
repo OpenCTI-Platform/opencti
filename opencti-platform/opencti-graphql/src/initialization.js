@@ -244,8 +244,8 @@ const isExistingPlatform = async () => {
 
 // eslint-disable-next-line
 const platformInit = async (testMode = false) => {
-  await checkSystemDependencies();
   try {
+    await checkSystemDependencies();
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {
       logger.info(`[INIT] New platform detected, initialization...`);
