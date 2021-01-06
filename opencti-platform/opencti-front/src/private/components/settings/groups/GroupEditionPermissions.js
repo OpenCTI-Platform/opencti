@@ -76,7 +76,8 @@ class GroupEditionPermissionsComponent extends Component {
         mutation: groupMutationRelationDelete,
         variables: {
           id: this.props.group.id,
-          relationId: groupMarkingDefinition.relation,
+          toId: markingDefinitionId,
+          relationship_type: 'accesses-to',
         },
       });
     }
