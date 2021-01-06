@@ -34,7 +34,7 @@
     "apollo-errors": "1.9.0",
     "apollo-server-express": "2.19.0",
     "await": "0.2.6",
-    "axios": "0.21.0",
+    "axios": "0.21.1",
     "bcryptjs": "2.4.3",
     "bluebird": "3.7.2",
     "body-parser": "1.19.0",
