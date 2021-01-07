@@ -104,18 +104,8 @@ export const metrics = async () => {
       return response.data;
     });
   // Compute number of push queues
-  const pushQueues = R.filter((q) => R.includes('push_', q.name), queues);
-  const nbPushQueues = pushQueues.length;
-  const nbConsumers = R.pipe(
-    R.map((q) => q.consumers),
-    R.reduce(R.add, 0)
-  )(pushQueues);
-  let finalCount = 0;
-  /* istanbul ignore if */
-  if (nbConsumers > 0 && nbPushQueues > 0) {
-    // Because worker connect to every queue.
-    finalCount = R.divide(nbConsumers, nbPushQueues);
-  }
+  const pushQueues = R.filter((q) => R.includes('push_', q.name) && q.consumers > 0, queues);
+  const finalCount = R.head(pushQueues).consumers;
   return { overview, consumers: Math.round(finalCount), queues };
 };
 
