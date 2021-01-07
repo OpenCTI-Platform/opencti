@@ -70,6 +70,7 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_KILL_CHAIN_PHASE}_to`,
 ];
 export const isUnimpactedEntity = (entity) => UNIMPACTED_ENTITIES.includes(entity.entity_type);
+export const isImpactedType = (type) => !UNIMPACTED_ENTITIES.includes(type);
 
 export const DATA_INDICES = [
   INDEX_INTERNAL_OBJECTS,
@@ -1263,7 +1264,15 @@ const getRelatedRelations = async (targetId, elements = [], options = {}) => {
   const connectedRelations = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
   const connectedRelationsIds = R.map((r) => {
     const { internal_id: internalId, entity_type: entityType } = r;
-    return { internal_id: internalId, type: entityType, relDependency: true };
+    return {
+      internal_id: internalId,
+      type: entityType,
+      fromId: r.fromId,
+      fromType: r.fromType,
+      toId: r.toId,
+      toType: r.toType,
+      relDependency: true,
+    };
   }, connectedRelations);
   elements.push(...connectedRelationsIds);
   await Promise.all(
@@ -1276,7 +1285,17 @@ const getRelatedRelations = async (targetId, elements = [], options = {}) => {
 export const getElementsToRemove = async (element, options = {}) => {
   // 00. Load everything we need to remove
   const isRelation = isBasicRelationship(element.entity_type);
-  const dependencies = [{ internal_id: element.internal_id, type: element.entity_type, relDependency: isRelation }];
+  const dependencies = [
+    {
+      internal_id: element.internal_id,
+      type: element.entity_type,
+      fromId: element.fromId,
+      fromType: element.fromType,
+      toId: element.toId,
+      toType: element.toType,
+      relDependency: isRelation,
+    },
+  ];
   await getRelatedRelations(element.internal_id, dependencies, options);
   // Return list of deleted ids
   return dependencies;
@@ -1310,6 +1329,7 @@ export const elCleanupRelConnections = (ids) => {
       throw DatabaseError('Error cleaning rel connections', { error: err, ids });
     });
 };
+
 export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) => {
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
   const terms = R.map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
@@ -1329,15 +1349,66 @@ export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) =
       throw DatabaseError('Error deleting instance', { error: err, ids });
     });
 };
+
+export const elRemoveRelationConnection = async (relsFromTo) => {
+  if (relsFromTo.length === 0) return true;
+  const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
+    const type = `${REL_INDEX_PREFIX + relation.type}.internal_id`;
+    const updates = [];
+    if (isFromCleanup) {
+      const fromIndex = inferIndexFromConceptType(relation.fromType);
+      const script = {
+        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+        params: {
+          key: relation.toId,
+        },
+      };
+      updates.push([{ update: { _index: fromIndex, _id: relation.fromId } }, { script }]);
+    }
+    // Update to to entity
+    if (isToCleanup) {
+      const toIndex = inferIndexFromConceptType(relation.toType);
+      const script = {
+        source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
+        params: {
+          key: relation.fromId,
+        },
+      };
+      updates.push([{ update: { _index: toIndex, _id: relation.toId } }, { script }]);
+    }
+    return updates;
+  });
+  const bodyUpdate = R.flatten(bodyUpdateRaw);
+  return elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
+};
+
 export const elDeleteElements = async (elements) => {
+  // 01. Get all element that will be removed.
   // eslint-disable-next-line no-use-before-define
   const resolvedToRemoves = await Promise.all(elements.map((s) => getElementsToRemove(s)));
-  const toRemoves = R.uniq(R.flatten(resolvedToRemoves).map((e) => e.internal_id));
-  logger.debug(`[OPENCTI] Deleting ${toRemoves}`);
+  const resolved = R.flatten(resolvedToRemoves);
+  const idsToRemove = R.uniq(resolved.map((e) => e.internal_id));
+  // 02. Compute the id that needs to be remove from rel
+  const relsFromTo = resolved
+    .filter((r) => r.relDependency)
+    .map((r) => {
+      const isFromCleanup = isImpactedType(r.fromType) && !idsToRemove.includes(r.fromId);
+      const isToCleanup = isImpactedType(r.toType) && !idsToRemove.includes(r.toId);
+      return { relation: r, isFromCleanup, isToCleanup };
+    })
+    .filter((r) => r.isFromCleanup || r.isToCleanup);
+  // Update all rels
+  await elRemoveRelationConnection(relsFromTo);
   // Delete all rel_
-  await elCleanupRelConnections(toRemoves);
+  logger.debug(`[OPENCTI] Deleting ${idsToRemove}`);
+  // 03. Remove everything that need to be removed.
+  await elCleanupRelConnections(idsToRemove);
   // Delete all elements
-  await elDeleteInstanceIds(toRemoves);
+  await elDeleteInstanceIds(idsToRemove);
+};
+
+export const elDeleteElement = (element) => {
+  return elDeleteElements([element]);
 };
 
 export const prepareElementForIndexing = (element) => {

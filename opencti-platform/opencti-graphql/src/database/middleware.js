@@ -23,6 +23,7 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
+  elDeleteElement,
   elDeleteElements,
   elFindByFromAndTo,
   elFindByIds,
@@ -1795,7 +1796,7 @@ export const createEntity = async (user, input, type) => {
 
 // region mutation deletion
 export const deleteElementByIdRaw = async (element) => {
-  await elDeleteElements([element]);
+  await elDeleteElement(element);
 };
 export const deleteElementById = async (user, elementId, type, options = {}) => {
   if (R.isNil(type)) {
