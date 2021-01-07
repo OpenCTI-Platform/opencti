@@ -105,8 +105,8 @@ export const metrics = async () => {
     });
   // Compute number of push queues
   const pushQueues = R.filter((q) => R.includes('push_', q.name) && q.consumers > 0, queues);
-  const finalCount = R.head(pushQueues).consumers;
-  return { overview, consumers: Math.round(finalCount), queues };
+  const consumers = R.head(pushQueues) ? R.head(pushQueues).consumers : 0;
+  return { overview, consumers, queues };
 };
 
 export const connectorConfig = (id) => ({
