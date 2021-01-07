@@ -17,7 +17,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
-![Screenshot](https://www.opencti.io/wp-content/uploads/2020/09/github_screenshot.png "Screenshot")
+![Screenshot](https://www.opencti.io/wp-content/uploads/2021/01/github_screenshot.png "Screenshot")
 
 ## Objective
 
