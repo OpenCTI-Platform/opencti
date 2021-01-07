@@ -10,7 +10,7 @@ import {
   elUpdate,
   INDEX_HISTORY,
 } from '../database/elasticSearch';
-import { CONNECTOR_INTERNAL_EXPORT_FILE, CONNECTOR_INTERNAL_IMPORT_FILE, loadConnectorById } from './connector';
+import { CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
 import { isNotEmptyField } from '../database/utils';
 import {
@@ -21,6 +21,7 @@ import {
   updateObjectCounterRaw,
   basicObjectDelete,
 } from '../database/redis';
+import { logger } from '../config/conf';
 
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const ENTITY_TYPE_WORK = 'work';
@@ -105,39 +106,62 @@ const loadWorkById = async (workId) => {
   return R.assoc('id', workId, action);
 };
 
-const deleteOldCompletedWorks = async (sourceId, connectorType) => {
-  let numberToKeep = 50;
-  if (connectorType === CONNECTOR_INTERNAL_EXPORT_FILE) numberToKeep = 5;
-  if (connectorType === CONNECTOR_INTERNAL_IMPORT_FILE) numberToKeep = 5;
-  if (connectorType === CONNECTOR_INTERNAL_ENRICHMENT) numberToKeep = 5;
+export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
+  const paginationCount = 500;
+  const rangeToKeep = connector.connector_type === CONNECTOR_INTERNAL_ENRICHMENT ? 'now-2d/d' : 'now-30d/d';
   const query = {
     bool: {
       must: [
-        { match_phrase: { 'event_source_id.keyword': sourceId } },
+        { match_phrase: { 'connector_id.keyword': connector.id } },
         { match_phrase: { 'status.keyword': 'complete' } },
+        { range: { completed_time: { lte: rangeToKeep } } },
       ],
     },
   };
-  const worksToDelete = await el.search({
-    index: INDEX_HISTORY,
-    body: {
+  let counter = 0;
+  let hasNextPage = true;
+  let searchAfter = '';
+  let totalToDelete = null;
+  while (hasNextPage) {
+    let body = {
       query,
-      from: numberToKeep - 1,
+      size: paginationCount,
+      track_total_hits: true,
       sort: [{ completed_time: { order: 'desc', unmapped_type: 'date' } }],
-    },
-  });
-  const { hits } = worksToDelete.body.hits;
-  // eslint-disable-next-line no-underscore-dangle
-  const ids = hits.map((h) => h._id);
-  if (ids.length > 0) {
-    await basicObjectDelete(ids);
-    await elDeleteInstanceIds(ids, INDEX_HISTORY);
+    };
+    if (searchAfter) {
+      body = { ...body, search_after: [searchAfter] };
+    }
+    // eslint-disable-next-line no-await-in-loop
+    const worksToDelete = await el.search({ index: INDEX_HISTORY, body });
+    // eslint-disable-next-line prettier/prettier
+    const { hits, total: { value: valTotal } } = worksToDelete.body.hits;
+    if (totalToDelete === null) totalToDelete = valTotal;
+    if (hits.length === 0) {
+      hasNextPage = false;
+    } else {
+      const lastHit = R.last(hits);
+      counter += hits.length;
+      searchAfter = R.head(lastHit.sort);
+      // eslint-disable-next-line no-underscore-dangle
+      const ids = hits.map((h) => h._id);
+      if (ids.length > 0) {
+        // eslint-disable-next-line no-await-in-loop
+        await basicObjectDelete(ids);
+        // eslint-disable-next-line no-await-in-loop
+        await elDeleteInstanceIds(ids, INDEX_HISTORY);
+      }
+      if (logInfo) {
+        const message = `[WORKS] Deleting old works ${connector.name}: ${counter}/${totalToDelete}`;
+        logger.info(message);
+      }
+    }
   }
 };
 
 export const createWork = async (user, connector, friendlyName, sourceId, args = {}) => {
   // 01. Cleanup complete work older
-  await deleteOldCompletedWorks(sourceId, connector.connector_type);
+  await deleteOldCompletedWorks(connector);
   // 02. Create the new work
   const { receivedTime = null } = args;
   // Create the work and a initial job
