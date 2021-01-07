@@ -525,7 +525,10 @@ class OpenCTIApiClient:
              """
             if data is None:
                 data = open(file_name, "rb")
-                mime_type = magic.from_file(file_name, mime=True)
+                if file_name.endswith(".json"):
+                    mime_type = "application/json"
+                else:
+                    mime_type = magic.from_file(file_name, mime=True)
 
             return self.query(query, {"file": (File(file_name, data, mime_type))})
         else:

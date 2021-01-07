@@ -626,7 +626,10 @@ class StixDomainObject:
                  """
                 if data is None:
                     data = open(file_name, "rb")
-                    mime_type = magic.from_file(file_name, mime=True)
+                    if file_name.endswith(".json"):
+                        mime_type = "application/json"
+                    else:
+                        mime_type = magic.from_file(file_name, mime=True)
 
                 return self.opencti.query(
                     query,
