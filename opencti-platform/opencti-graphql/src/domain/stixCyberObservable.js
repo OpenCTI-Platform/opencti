@@ -159,6 +159,9 @@ const createIndicatorFromObservable = async (user, input, observable) => {
         key = `${entityType}_md5`;
       }
     }
+    if (observable.pid) {
+      key = `${entityType}_pid`;
+    }
     const indicatorName = observableValue(observable);
     const pattern = await createStixPattern(key, indicatorName);
     if (pattern) {
