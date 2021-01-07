@@ -99,6 +99,28 @@ type DependencyVersion {
 }
 
 """
+NodeJs memory.
+https://nodejs.org/api/process.html#process_process_memoryusage
+https://nodejs.org/docs/latest-v11.x/api/v8.html#v8_v8_getheapstatistics
+"""
+type AppMemory {
+  rss: Float,
+  heapTotal: Float
+  heapUsed: Float
+  external: Float
+  arrayBuffers: Float
+  total_heap_size: Float
+  total_heap_size_executable: Float
+  total_physical_size: Float
+  total_available_size: Float
+  used_heap_size: Float
+  heap_size_limit: Float
+  malloced_memory: Float
+  peak_malloced_memory: Float
+  does_zap_garbage: Float
+}
+
+"""
 Retrieve the application information version add dependencies
 """
 type AppInfo {
@@ -106,6 +128,10 @@ type AppInfo {
   The OpenCTI aplication version
   """
   version: String!
+  """
+  The OpenCTI api current memory usage
+  """
+  memory: AppMemory
   """
   The list of OpenCTI software dependencies
   """

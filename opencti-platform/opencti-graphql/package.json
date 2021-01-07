@@ -5,10 +5,10 @@
   "author": "Luatix",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "webpack --mode development --max_old_space_size=8192",
+    "start": "webpack --mode development",
     "install:python": "pip3 install -r src/python/requirements.txt",
     "build": "yarn install:python && webpack --mode production",
-    "serv": "node --max_old_space_size=8192 build/index.js",
+    "serv": "node build/index.js",
     "lint": "eslint --max-warnings 0 .",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "test": "jest --bail --testSequencer ./tests/utils/testSequencer.js --verbose --runInBand --forceExit --coverage --e test"

@@ -1,4 +1,5 @@
 import { assoc, dissocPath, pipe } from 'ramda';
+import { getHeapStatistics } from 'v8';
 import { createEntity, loadById, updateAttribute, listEntities } from '../database/middleware';
 import conf, { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
@@ -8,8 +9,13 @@ import { getMinIOVersion } from '../database/minio';
 import { version } from '../../package.json';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
+export const getMemoryStatistics = () => {
+  return { ...process.memoryUsage(), ...getHeapStatistics() };
+};
+
 export const getApplicationInfo = () => ({
   version,
+  memory: getMemoryStatistics(),
   dependencies: [
     { name: 'Elasticsearch', version: elVersion() },
     { name: 'RabbitMQ', version: getRabbitMQVersion() },

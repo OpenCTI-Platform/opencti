@@ -3,6 +3,7 @@ import { stripIgnoredCharacters } from 'graphql';
 import nconf from 'nconf';
 import { logger } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
+import { getMemoryStatistics } from '../domain/settings';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
@@ -86,7 +87,7 @@ export default {
             logger.error(API_CALL_MESSAGE, { ...callMetaData, error });
           }
         } else if (perfLog) {
-          logger.info(API_CALL_MESSAGE, callMetaData);
+          logger.info(API_CALL_MESSAGE, { ...callMetaData, memory: getMemoryStatistics() });
         }
       },
     };
