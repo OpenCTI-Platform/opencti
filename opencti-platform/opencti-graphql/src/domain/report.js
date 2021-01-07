@@ -2,7 +2,6 @@ import { assoc, propOr, pipe, dissoc } from 'ramda';
 import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { findById as findIdentityById } from './identity';
 import { find as findAttribute, addAttribute } from './attribute';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
