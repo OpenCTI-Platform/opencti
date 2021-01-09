@@ -1081,7 +1081,7 @@ const i18n = {
       entity_Url: 'URL',
       'entity_User-Account': 'User account',
       'entity_Windows-Registry-Key': 'Windows Registry Key',
-      'entity_Windows-Registry-Value-Type': 'Windows Registry Key',
+      'entity_Windows-Registry-Value-Type': 'Windows Registry Key Value',
       'entity_X509-V3-Extensions-Type': 'X509 certificate - V3 Ext.',
       'entity_X-OpenCTI-Cryptographic-Key': 'Cryptographic key',
       'entity_X-OpenCTI-Cryptocurrency-Wallet': 'Cryptocurrency wallet',
