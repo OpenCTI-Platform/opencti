@@ -5118,6 +5118,10 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   serial_number: String
   signature_algorithm: String
   issuer: String
+  subject: String
+  subject_public_key_algorithm: String
+  subject_public_key_modulus: String
+  subject_public_key_exponent: Int
   validity_not_before: DateTime
   validity_not_after: DateTime
   # Technical
@@ -5134,6 +5138,10 @@ input X509CertificateAddInput {
   serial_number: String
   signature_algorithm: String
   issuer: String
+  subject: String
+  subject_public_key_algorithm: String
+  subject_public_key_modulus: String
+  subject_public_key_exponent: Int
   validity_not_before: DateTime
   validity_not_after: DateTime
 }

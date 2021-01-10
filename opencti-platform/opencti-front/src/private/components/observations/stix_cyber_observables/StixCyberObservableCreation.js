@@ -93,17 +93,17 @@ export const numberAttributes = [
   'pid',
   'size',
   'number_of_subkeys',
+  'subject_public_key_exponent',
 ];
 
 export const booleanAttributes = [
   'is_self_signed',
   'is_multipart',
   'is_hidden',
+  'is_active',
 ];
 
-export const multipleAttributes = [
-  'x_opencti_additional_names',
-];
+export const multipleAttributes = ['x_opencti_additional_names'];
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -378,7 +378,9 @@ class StixCyberObservableCreation extends Component {
     const finalValues = {
       type: this.state.type,
       x_opencti_description:
-        values.x_opencti_description.length > 0 ? values.x_opencti_description : null,
+        values.x_opencti_description.length > 0
+          ? values.x_opencti_description
+          : null,
       x_opencti_score: parseInt(values.x_opencti_score, 10),
       createdBy: propOr(null, 'value', values.createdBy),
       objectMarking: pluck('value', values.objectMarking),
