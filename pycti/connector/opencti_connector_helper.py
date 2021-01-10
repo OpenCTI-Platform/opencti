@@ -217,7 +217,9 @@ class StreamCatcher(threading.Thread):
         r = requests.post(
             self.opencti_url + "/stream/history", json=payload, headers=headers
         )
-        return r.json()["lastEventId"]
+        result = r.json()
+        if result and "lastEventId" in result:
+            return result["lastEventId"]
 
     def run(self):
         from_event_id = self.connector_last_event_id
