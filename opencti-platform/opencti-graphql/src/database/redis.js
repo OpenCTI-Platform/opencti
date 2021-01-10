@@ -295,6 +295,9 @@ export const storeDeleteEvent = async (user, instance) => {
         x_opencti_id: instance.internal_id,
         type: convertTypeToStixType(instance.entity_type),
       };
+      if (instance.hashes) {
+        data.hashes = instance.hashes;
+      }
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
       const client = await getClient();
       return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
