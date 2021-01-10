@@ -96,6 +96,7 @@ const BASIC_FIELDS = [
   'x_opencti_target_ref',
   'start_time',
   'stop_time',
+  'hashes',
 ];
 export const stixDataConverter = (data) => {
   let finalData = data;

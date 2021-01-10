@@ -237,6 +237,9 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
         type: convertTypeToStixType(instance.entity_type),
         x_data_update: dataUpdate,
       };
+      if (instance.hashes) {
+        data.hashes = instance.hashes;
+      }
       // Generate the message
       const operation = updateEvents.length === 1 ? R.head(Object.keys(R.head(updateEvents))) : UPDATE_OPERATION_CHANGE;
       const messageInput = R.mergeAll(updateEvents.map((i) => stixDataConverter(R.head(Object.values(i)))));
