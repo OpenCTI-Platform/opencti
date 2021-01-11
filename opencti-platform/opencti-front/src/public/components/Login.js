@@ -1,21 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { filter, head, pathOr } from 'ramda';
+import { filter, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Snackbar from '@material-ui/core/Snackbar';
-import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
 import {
   Google, Key, Facebook, Github,
 } from 'mdi-material-ui';
-import { Close } from '@material-ui/icons';
 import { APP_BASE_PATH, QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
 import logo from '../../resources/images/logo_opencti.png';
 import LoginForm from './LoginForm';
-import inject18n from '../../components/i18n';
-import Loader from '../../components/Loader';
 
 const loginHeight = 400;
 
@@ -82,31 +77,6 @@ const LoginQuery = graphql`
   }
 `;
 
-const LoginMessage = ({
-  message, t, open, handleClose,
-}) => (
-  <Snackbar
-    anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-    open={open}
-    onClose={handleClose}
-    autoHideDuration={2000}
-    message={t(message)}
-    action={
-      <React.Fragment>
-        <IconButton
-          size="small"
-          aria-label="close"
-          color="inherit"
-          onClick={handleClose}
-        >
-          <Close fontSize="small" />
-        </IconButton>
-      </React.Fragment>
-    }
-  />
-);
-const Message = inject18n(LoginMessage);
-
 const Login = ({ classes }) => {
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
@@ -149,7 +119,7 @@ const Login = ({ classes }) => {
   };
 
   const renderExternalAuth = (authButtons) => (
-    <React.Fragment>
+    <div>
       {authButtons.map((value, index) => (
         <Button
           key={`${value.provider}_${index}`}
@@ -164,7 +134,7 @@ const Login = ({ classes }) => {
           {value.name}
         </Button>
       ))}
-    </React.Fragment>
+    </div>
   );
 
   return (
@@ -176,25 +146,19 @@ const Login = ({ classes }) => {
           const providers = props.settings.platform_providers;
           const isAuthForm = filter((p) => p.type === 'FORM', providers).length > 0;
           const authSSOs = filter((p) => p.type === 'SSO', providers);
-          const auto = providers.length === 1 && authSSOs.length === 1;
-          if (auto) {
-            const authSSO = head(authSSOs);
-            window.location.href = `/auth/${authSSO.provider}`;
-          }
           const isAuthButtons = authSSOs.length > 0;
           return (
             <ConnectedIntlProvider settings={props.settings}>
               <div className={classes.container} style={{ marginTop }}>
                 <img src={logo} alt="logo" className={classes.logo} />
-                {auto && <Loader />}
-                {isAuthForm && !auto && (
+                {isAuthForm && (
                   <LoginForm
                     demo={pathOr(false, ['settings', 'platform_demo'], props)}
                   />
                 )}
-                {isAuthButtons && !auto && renderExternalAuth(authSSOs)}
+                {isAuthButtons && renderExternalAuth(authSSOs)}
                 {providers.length === 0 && (
-                  <Message message={'No authentication providers available'} />
+                    <div>No authentication provider available</div>
                 )}
               </div>
             </ConnectedIntlProvider>
