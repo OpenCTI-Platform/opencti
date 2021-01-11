@@ -8,7 +8,10 @@ const logResolvers = {
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    user: (log) => findById(log.applicant_id || log.user_id || SYSTEM_USER),
+    user: async (log) => {
+      const user = await findById(log.applicant_id || log.user_id);
+      return user || SYSTEM_USER;
+    },
   },
   LogsFilter: {
     entity_id: 'context_data.id',
