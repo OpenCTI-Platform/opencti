@@ -1,5 +1,5 @@
 import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
-import { findById } from '../domain/user';
+import { findById, SYSTEM_USER } from '../domain/user';
 
 const logResolvers = {
   Query: {
@@ -8,7 +8,7 @@ const logResolvers = {
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    user: (log) => findById(log.applicant_id || log.user_id),
+    user: (log) => findById(log.applicant_id || log.user_id || SYSTEM_USER),
   },
   LogsFilter: {
     entity_id: 'context_data.id',
