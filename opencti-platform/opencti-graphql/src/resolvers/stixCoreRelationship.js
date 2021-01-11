@@ -25,7 +25,6 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import {
   distributionRelations,
-  loadById,
   timeSeriesRelations,
   REL_CONNECTED_SUFFIX,
   initBatchLoader,
@@ -34,7 +33,9 @@ import { convertDataToStix } from '../database/stix';
 import { creator } from '../domain/log';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
+import { elBatchIds } from '../database/elasticSearch';
 
+const loadByIdLoader = initBatchLoader(elBatchIds);
 const createdByLoader = initBatchLoader(batchCreatedBy);
 const markingDefinitionsLoader = initBatchLoader(batchMarkingDefinitions);
 const labelsLoader = initBatchLoader(batchLabels);
@@ -66,8 +67,8 @@ const stixCoreRelationshipResolvers = {
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.x_opencti_main_observable_type`,
   },
   StixCoreRelationship: {
-    from: (rel) => loadById(rel.fromId, rel.fromType),
-    to: (rel) => loadById(rel.toId, rel.toType),
+    from: (rel) => loadByIdLoader.load(rel.fromId),
+    to: (rel) => loadByIdLoader.load(rel.toId),
     toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
     creator: (rel) => creator(rel.id),
     createdBy: (rel) => createdByLoader.load(rel.id),

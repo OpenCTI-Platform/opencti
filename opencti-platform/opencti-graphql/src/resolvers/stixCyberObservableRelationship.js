@@ -11,8 +11,11 @@ import {
 } from '../domain/stixCyberObservableRelationship';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { loadById } from '../database/middleware';
+import { initBatchLoader } from '../database/middleware';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
+import { elBatchIds } from '../database/elasticSearch';
+
+const loadByIdLoader = initBatchLoader(elBatchIds);
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {
@@ -21,8 +24,8 @@ const stixCyberObservableRelationshipResolvers = {
     stixCyberObservableRelationshipsOfElement: (_, args) => findAll(args),
   },
   StixCyberObservableRelationship: {
-    from: (rel) => loadById(rel.fromId, rel.fromType),
-    to: (rel) => loadById(rel.toId, rel.toType),
+    from: (rel) => loadByIdLoader.load(rel.fromId),
+    to: (rel) => loadByIdLoader.load(rel.toId),
   },
   Mutation: {
     stixCyberObservableRelationshipEdit: (_, { id }, { user }) => ({

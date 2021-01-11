@@ -724,6 +724,12 @@ export const elLoadByIds = async (ids, type = null, indices = DATA_INDICES) => {
   }
   return R.head(hits);
 };
+
+export const elBatchIds = async (ids) => {
+  const hits = await elFindByIds(ids);
+  return ids.map((id) => R.find((h) => h.internal_id === id, hits));
+};
+
 // field can be "entity_type" or "internal_id"
 export const elAggregationRelationsCount = async (
   type,

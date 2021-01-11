@@ -23,7 +23,6 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import {
   distributionRelations,
-  loadById,
   timeSeriesRelations,
   REL_CONNECTED_SUFFIX,
   initBatchLoader,
@@ -33,7 +32,7 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { creator } from '../domain/log';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import {} from '../domain/stixCoreRelationship';
+import { elBatchIds } from '../database/elasticSearch';
 
 const createdByLoader = initBatchLoader(batchCreatedBy);
 const markingDefinitionsLoader = initBatchLoader(batchMarkingDefinitions);
@@ -42,6 +41,8 @@ const externalReferencesLoader = initBatchLoader(batchExternalReferences);
 const notesLoader = initBatchLoader(batchNotes);
 const opinionsLoader = initBatchLoader(batchOpinions);
 const reportsLoader = initBatchLoader(batchReports);
+
+const loadByIdLoader = initBatchLoader(elBatchIds);
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -62,8 +63,8 @@ const stixSightingRelationshipResolvers = {
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
   },
   StixSightingRelationship: {
-    from: (rel) => loadById(rel.fromId, rel.fromType),
-    to: (rel) => loadById(rel.toId, rel.toType),
+    from: (rel) => loadByIdLoader.load(rel.fromId),
+    to: (rel) => loadByIdLoader.load(rel.toId),
     toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
     creator: (rel) => creator(rel.id),
     createdBy: (rel) => createdByLoader.load(rel.id),

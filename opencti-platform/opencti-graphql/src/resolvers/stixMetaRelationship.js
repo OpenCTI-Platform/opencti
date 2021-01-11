@@ -1,5 +1,8 @@
-import { distributionRelations, loadById } from '../database/middleware';
+import { distributionRelations, initBatchLoader } from '../database/middleware';
 import stixMetaRelationshipsNumber from '../domain/stixMetaRelationship';
+import { elBatchIds } from '../database/elasticSearch';
+
+const loadByIdLoader = initBatchLoader(elBatchIds);
 
 const stixMetaRelationshipResolvers = {
   Query: {
@@ -7,8 +10,8 @@ const stixMetaRelationshipResolvers = {
     stixMetaRelationshipsNumber: (_, args) => stixMetaRelationshipsNumber(args),
   },
   StixMetaRelationship: {
-    from: (rel) => loadById(rel.fromId, rel.fromType),
-    to: (rel) => loadById(rel.toId, rel.toType),
+    from: (rel) => loadByIdLoader.load(rel.fromId),
+    to: (rel) => loadByIdLoader.load(rel.toId),
   },
 };
 
