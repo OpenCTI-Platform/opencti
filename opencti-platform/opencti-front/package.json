@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "author": "Luatix",
   "license": "Apache-2.0",
   "dependencies": {
