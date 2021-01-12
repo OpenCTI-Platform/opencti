@@ -86,7 +86,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
   const { strategy, config } = provider;
   let mappedConfig = configRemapping(config);
   if (config === undefined || !config.disabled) {
-    const providerName = config.label || providerIdent;
+    const providerName = config?.label || providerIdent;
     if (strategy === 'LocalStrategy') {
       const localStrategy = new LocalStrategy((username, password, done) => {
         logger.debug(`[LOCAL] Successfully logged`, { username });
