@@ -350,7 +350,12 @@ class AttackPattern:
                     if "x_opencti_level" in stix_object
                     else 0
                 )
-
+            if "x_mitre_id" not in stix_object:
+                stix_object["x_mitre_id"] = (
+                    stix_object["x_opencti_external_id"]
+                    if "x_opencti_external_id" in stix_object
+                    else None
+                )
             return self.create(
                 stix_id=stix_object["id"],
                 createdBy=extras["created_by_id"]
