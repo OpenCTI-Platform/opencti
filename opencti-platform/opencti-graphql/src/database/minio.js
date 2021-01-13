@@ -13,8 +13,8 @@ const minioClient = new Minio.Client({
   endPoint: conf.get('minio:endpoint'),
   port: conf.get('minio:port') || 9000,
   useSSL: conf.get('minio:use_ssl') || false,
-  accessKey: conf.get('minio:access_key'),
-  secretKey: conf.get('minio:secret_key'),
+  accessKey: String(conf.get('minio:access_key')),
+  secretKey: String(conf.get('minio:secret_key')),
 });
 
 export const isStorageAlive = () => {

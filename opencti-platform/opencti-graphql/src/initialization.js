@@ -1,4 +1,5 @@
 // Admin user initialization
+import { ApolloError } from 'apollo-errors';
 import { logger } from './config/conf';
 import { elCreateIndexes, elIndexExists, elIsAlive } from './database/elasticSearch';
 import { initializeAdminUser } from './config/providers';
@@ -263,7 +264,9 @@ const platformInit = async (testMode = false) => {
       }
     }
   } catch (e) {
-    logger.error(`[OPENCTI] Platform initialization fail`, { error: e });
+    const isApolloError = e instanceof ApolloError;
+    const error = isApolloError ? e : { name: 'UnknownError', data: { message: e.message, _stack: e.stack } };
+    logger.error(`[OPENCTI] Platform initialization fail`, { error });
     throw e;
   }
   return true;
