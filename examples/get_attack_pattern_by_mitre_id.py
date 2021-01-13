@@ -11,7 +11,7 @@ opencti_api_client = OpenCTIApiClient(api_url, api_token)
 
 # Get the Attack-Pattern T1514
 attack_pattern = opencti_api_client.attack_pattern.read(
-    filters=[{"key": "external_id", "values": ["T1514"]}]
+    filters=[{"key": "name", "values": ["T1514"]}]
 )
 
 # Print
