@@ -1,6 +1,7 @@
 import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
 import { INTERNAL_IDS_ALIASES, IDS_STIX } from './general';
+import { STANDARD_HASHES } from './identifier';
 
 export const multipleAttributes = [
   IDS_STIX,
@@ -122,7 +123,12 @@ export const apiAttributeToComplexFormat = (attribute, data) => {
   }
   const inputs = Array.isArray(data) ? data : [data];
   return R.pipe(
-    R.map((d) => [d[info.key], d[info.value]]),
+    R.map((d) => {
+      const keyValue = d[info.key];
+      const isStandardHash = STANDARD_HASHES.includes(keyValue.toUpperCase());
+      const infoKey = isStandardHash ? keyValue.toUpperCase() : keyValue;
+      return [infoKey, d[info.value]];
+    }),
     R.fromPairs
   )(inputs);
 };
@@ -136,6 +142,10 @@ export const complexAttributeToApiFormat = (dataKey, instance) => {
   const { key, value } = info;
   return R.pipe(
     R.toPairs,
-    R.map(([lab, val]) => ({ [key]: lab, [value]: val }))
+    R.map(([lab, val]) => {
+      const isStandardHash = STANDARD_HASHES.includes(lab.toUpperCase());
+      const labValue = isStandardHash ? lab.toUpperCase() : lab;
+      return { [key]: labValue, [value]: val };
+    })
   )(attributeValue);
 };

@@ -19,8 +19,22 @@ import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
 
+// region hashes
+const MD5 = 'MD5';
+const SHA_1 = 'SHA-1';
+const SHA_256 = 'SHA-256';
+const SHA_512 = 'SHA-512';
+const SHA3_256 = 'SHA3-256';
+const SHA3_512 = 'SHA3-512';
+const SSDEEP = 'SSDEEP';
+export const STANDARD_HASHES = [MD5, SHA_1, SHA_256, SHA_512, SHA3_256, SHA3_512, SSDEEP];
+const transformObjectToUpperKeys = (data) => {
+  return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
+};
 export const NAME_FIELD = 'name';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
+// endregion
+
 export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
@@ -30,7 +44,6 @@ const idGen = (data, namespace) => {
   const dataCanonicalize = jsonCanonicalize(data);
   return uuidv5(dataCanonicalize, namespace);
 };
-
 const stixCyberObservableContribution = {
   definition: {
     // Observables
@@ -80,11 +93,18 @@ const stixCyberObservableContribution = {
       return dst?.standard_id;
     },
     hashes(data) {
-      if (data.MD5) return { MD5: data.MD5 };
-      if (data['SHA-1']) return { 'SHA-1': data['SHA-1'] };
-      if (data['SHA-256']) return { 'SHA-256': data['SHA-256'] };
-      if (data['SHA-512']) return { 'SHA-512': data['SHA-512'] };
-      return undefined;
+      // Uppercase the object keys (md5 == MD5)
+      const hashes = transformObjectToUpperKeys(data);
+      // Get the key from stix rules
+      if (hashes[MD5]) return { [MD5]: hashes[MD5] };
+      if (hashes[SHA_1]) return { [SHA_1]: hashes[SHA_1] };
+      if (hashes[SHA_256]) return { [SHA_256]: hashes[SHA_256] };
+      if (hashes[SHA_512]) return { [SHA_512]: hashes[SHA_512] };
+      if (hashes[SHA3_256]) return { [SHA3_256]: hashes[SHA3_256] };
+      if (hashes[SHA3_512]) return { [SHA3_512]: hashes[SHA3_512] };
+      if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
+      // If nothing found, doesnt accept only custom hashes
+      throw UnsupportedError('Hashes must have a stix hash define', { data });
     },
   },
 };
