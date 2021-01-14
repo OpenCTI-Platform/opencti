@@ -11,10 +11,10 @@ import {
   distributionEntities,
   escape,
   listEntities,
-  batchListThroughGetTo,
   loadById,
   timeSeriesEntities,
   updateAttribute,
+  batchListThroughGetFrom,
 } from '../database/middleware';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
@@ -103,7 +103,7 @@ export const stixCyberObservableAskEnrichment = async (user, observableId, conne
 };
 
 export const batchIndicators = (stixCyberObservableIds) => {
-  return batchListThroughGetTo(stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+  return batchListThroughGetFrom(stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
 export const observableValue = (stixCyberObservable) => {
