@@ -37,7 +37,7 @@ and OpenCTI compatible date format.
         description="This is the C2 server of the campaign",
         pattern_type="stix",
         indicator_pattern="[domain-name:value = 'www.5z8.info']",
-        main_observable_type="IPv4-Addr",
+        x_opencti_main_observable_type="IPv4-Addr",
         valid_from=date,
         update=True,
         markingDefinitions=[TLP_GREEN_CTI["id"]],
