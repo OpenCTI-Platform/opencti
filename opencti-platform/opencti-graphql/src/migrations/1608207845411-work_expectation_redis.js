@@ -1,5 +1,6 @@
 import { DatabaseError } from '../config/errors';
-import { el, INDEX_HISTORY } from '../database/elasticSearch';
+import { el } from '../database/elasticSearch';
+import { INDEX_HISTORY } from '../database/utils';
 
 export const up = async (next) => {
   const query = {

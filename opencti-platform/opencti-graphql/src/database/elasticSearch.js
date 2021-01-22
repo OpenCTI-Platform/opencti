@@ -5,6 +5,7 @@ import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import * as R from 'ramda';
 import {
   buildPagination,
+  INDEX_HISTORY,
   INDEX_INTERNAL_OBJECTS,
   INDEX_INTERNAL_RELATIONSHIPS,
   INDEX_STIX_CORE_RELATIONSHIPS,
@@ -55,10 +56,11 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 
+const BULK_TIMEOUT = '5m';
+const RECURSIVE_DELETE_CONCURRENCY = 5;
 const MAX_AGGREGATION_SIZE = 100;
 const MAX_SEARCH_AGGREGATION_SIZE = 10000;
 const MAX_SEARCH_SIZE = 5000;
-export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
@@ -101,10 +103,6 @@ export const RELATIONSHIPS_INDICES = [
   INDEX_STIX_META_RELATIONSHIPS,
 ];
 
-export const useCache = (args = {}) => {
-  const { noCache = false, infer = false } = args;
-  return !infer && !noCache && !conf.get('elasticsearch:noQueryCache');
-};
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
 export const elIsAlive = async () => {
@@ -1271,23 +1269,11 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
-const RECURSIVE_DELETE_CONCURRENCY = 5;
 const getRelatedRelations = async (targetId, elements = [], options = {}) => {
   const { total, hits } = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
   const isPartialRemove = total > hits.length;
-  const connectedRelationsIds = R.map((r) => {
-    const { internal_id: internalId, entity_type: entityType } = r;
-    return {
-      internal_id: internalId,
-      type: entityType,
-      fromId: r.fromId,
-      fromType: r.fromType,
-      toId: r.toId,
-      toType: r.toType,
-    };
-  }, hits);
-  elements.push(...connectedRelationsIds);
-  const ids = connectedRelationsIds.map((rel) => rel.internal_id);
+  elements.push(...hits);
+  const ids = hits.map((rel) => rel.internal_id);
   await Promise.map(ids, (id) => getRelatedRelations(id, elements, options), {
     concurrency: RECURSIVE_DELETE_CONCURRENCY,
   });
@@ -1300,29 +1286,16 @@ export const getRelationsToRemove = async (element, options = {}) => {
   return { isPartialRemove, removed };
 };
 
-export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) => {
+export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
-  if (ids.length === 0) {
-    return Promise.resolve(0);
-  }
-  logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
-  const terms = R.map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
-  return el
-    .deleteByQuery({
-      index: indexesToHandle,
-      _source_excludes: '*',
-      refresh: true,
-      body: {
-        query: {
-          bool: {
-            should: terms,
-          },
-        },
-      },
-    })
-    .catch((err) => {
-      throw DatabaseError('Error deleting instance', { error: err, ids });
-    });
+  if (instances.length === 0) return Promise.resolve(0);
+  logger.debug(`[ELASTICSEARCH] Deleting ${instances.length} instances`);
+  const bodyDelete = instances.flatMap((doc) => {
+    const index = inferIndexFromConceptType(doc.entity_type);
+    // eslint-disable-next-line no-underscore-dangle
+    return [{ delete: { _index: index, _id: doc.internal_id } }];
+  });
+  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
 };
 
 const elRemoveRelationConnection = async (relsFromTo) => {
@@ -1354,17 +1327,17 @@ const elRemoveRelationConnection = async (relsFromTo) => {
     return updates;
   });
   const bodyUpdate = R.flatten(bodyUpdateRaw);
-  return elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
+  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
 };
 
 export const elDeleteElements = async (elements) => {
   // eslint-disable-next-line no-use-before-define,prettier/prettier
   return Promise.all(elements.map(async (element) => {
       const { isPartialRemove, removed } = await getRelationsToRemove(element);
-      const resolved = R.flatten(removed);
-      const idsToRemove = R.uniq(resolved.map((e) => e.internal_id));
+      const relationsToRemoved = R.flatten(removed);
+      const idsToRemove = R.uniq(relationsToRemoved.map((e) => e.internal_id));
       // 02. Compute the id that needs to be remove from rel
-      const relsFromTo = resolved
+      const relsFromTo = relationsToRemoved
         .map((r) => {
           const isFromCleanup = isImpactedType(r.fromType) && !idsToRemove.includes(r.fromId);
           const isToCleanup = isImpactedType(r.toType) && !idsToRemove.includes(r.toId);
@@ -1374,11 +1347,11 @@ export const elDeleteElements = async (elements) => {
       // Update all rel connections that will remain
       await elRemoveRelationConnection(relsFromTo); // Bulk
       // Delete all related elements
-      await elDeleteInstanceIds(idsToRemove); // deleteByQuery
+      await elDeleteInstanceIds(relationsToRemoved); // deleteByQuery
       // delete source elements if everything connected have been deleted
       if (!isPartialRemove) {
         // eslint-disable-next-line no-await-in-loop
-        await elDeleteInstanceIds([element.internal_id]);
+        await elDeleteInstanceIds([element]);
       }
     })
   );
@@ -1535,7 +1508,7 @@ export const elIndexElements = async (elements, retry = 5) => {
     R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
-    await elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
+    await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
   }
   return transformedElements.length;
 };
@@ -1576,7 +1549,7 @@ export const elUpdateRelationConnections = (elements) => {
     { update: { _index: inferIndexFromConceptType(doc.entity_type), _id: doc.id } },
     { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
   ]);
-  return elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
+  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
 };
 
 export const elUpdateEntityConnections = (elements) => {
@@ -1604,7 +1577,7 @@ export const elUpdateEntityConnections = (elements) => {
       },
     },
   ]);
-  return elBulk({ refresh: true, timeout: '5m', body: bodyUpdate });
+  return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
 };
 
 export const elUpdateConnectionsOfElement = (documentId, documentBody) => {

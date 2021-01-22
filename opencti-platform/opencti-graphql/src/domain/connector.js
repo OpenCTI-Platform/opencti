@@ -12,6 +12,7 @@ import { connectorConfig, registerConnectorQueues, unregisterConnector } from '.
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { FunctionalError } from '../config/errors';
 
+export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-
 export const CONNECTOR_INTERNAL_EXPORT_FILE = 'INTERNAL_EXPORT_FILE'; // Files mime types to generate (application/pdf, ...) -> export-
 

@@ -1,30 +1,21 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import { now, sinceNowInMinutes } from '../database/middleware';
-import {
-  el,
-  elDeleteInstanceIds,
-  elIndex,
-  elLoadByIds,
-  elPaginate,
-  elUpdate,
-  INDEX_HISTORY,
-} from '../database/elasticSearch';
-import { CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
+import { el, elDeleteInstanceIds, elIndex, elLoadByIds, elPaginate, elUpdate } from '../database/elasticSearch';
+import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
-import { isNotEmptyField } from '../database/utils';
+import { INDEX_HISTORY, isNotEmptyField } from '../database/utils';
 import {
   basicObjectCreation,
+  basicObjectDelete,
   fetchBasicObject,
   redisTx,
-  updateObjectRaw,
   updateObjectCounterRaw,
-  basicObjectDelete,
+  updateObjectRaw,
 } from '../database/redis';
 import { logger } from '../config/conf';
-
-export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
-export const ENTITY_TYPE_WORK = 'work';
+import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { DatabaseError } from '../config/errors';
 
 export const workToExportFile = (work) => {
   return {
@@ -89,21 +80,16 @@ export const loadExportWorksAsProgressFiles = async (sourceId) => {
   return R.map((item) => workToExportFile(item), filterSuccessCompleted);
 };
 
-export const deleteWork = async (workId) => {
-  await elDeleteInstanceIds([workId], [INDEX_HISTORY]);
-  await basicObjectDelete(workId);
-  return workId;
-};
-
-export const deleteWorkForFile = async (fileId) => {
-  const works = await worksForSource(fileId);
-  await Promise.all(R.map((w) => deleteWork(w.internal_id), works));
-  return true;
-};
-
 const loadWorkById = async (workId) => {
   const action = await elLoadByIds(workId, ENTITY_TYPE_WORK, INDEX_HISTORY);
   return R.assoc('id', workId, action);
+};
+
+export const deleteWork = async (workId) => {
+  const work = await loadWorkById(workId);
+  await elDeleteInstanceIds([work]);
+  await basicObjectDelete(workId);
+  return workId;
 };
 
 export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
@@ -133,7 +119,9 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
       body = { ...body, search_after: [searchAfter] };
     }
     // eslint-disable-next-line no-await-in-loop
-    const worksToDelete = await el.search({ index: INDEX_HISTORY, body });
+    const worksToDelete = await el.search({ index: INDEX_HISTORY, body }).catch((e) => {
+      throw DatabaseError('Error searching for works to delete', { error: e });
+    });
     // eslint-disable-next-line prettier/prettier
     const { hits, total: { value: valTotal } } = worksToDelete.body.hits;
     if (totalToDelete === null) totalToDelete = valTotal;
@@ -143,13 +131,14 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
       const lastHit = R.last(hits);
       counter += hits.length;
       searchAfter = R.head(lastHit.sort);
-      // eslint-disable-next-line no-underscore-dangle
-      const ids = hits.map((h) => h._id);
-      if (ids.length > 0) {
+      if (hits.length > 0) {
+        // eslint-disable-next-line no-underscore-dangle
+        const works = hits.map((h) => h._source);
+        const ids = works.map((w) => w.internal_id);
         // eslint-disable-next-line no-await-in-loop
         await basicObjectDelete(ids);
         // eslint-disable-next-line no-await-in-loop
-        await elDeleteInstanceIds(ids, INDEX_HISTORY);
+        await elDeleteInstanceIds(works);
       }
       if (logInfo) {
         const message = `[WORKS] Deleting old works ${connector.name}: ${counter}/${totalToDelete}`;

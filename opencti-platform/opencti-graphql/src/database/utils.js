@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
 import { DatabaseError, FunctionalError } from '../config/errors';
-import { isInternalObject } from '../schema/internalObject';
+import { isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import {
@@ -37,6 +37,7 @@ export const UPDATE_OPERATION_REPLACE = 'replace';
 export const UPDATE_OPERATION_REMOVE = 'remove';
 export const UPDATE_OPERATION_CHANGE = 'change';
 // Entities
+export const INDEX_HISTORY = 'opencti_history';
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
 export const INDEX_STIX_META_OBJECTS = 'opencti_stix_meta_objects';
 export const INDEX_STIX_DOMAIN_OBJECTS = 'opencti_stix_domain_objects';
@@ -120,6 +121,7 @@ export const buildPagination = (first, offset, instances, globalCount) => {
 export const inferIndexFromConceptType = (conceptType) => {
   // Entities
   if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;
+  if (isHistoryObject(conceptType)) return INDEX_HISTORY;
   if (isStixMetaObject(conceptType)) return INDEX_STIX_META_OBJECTS;
   if (isStixDomainObject(conceptType)) return INDEX_STIX_DOMAIN_OBJECTS;
   if (isStixCyberObservable(conceptType)) return INDEX_STIX_CYBER_OBSERVABLES;

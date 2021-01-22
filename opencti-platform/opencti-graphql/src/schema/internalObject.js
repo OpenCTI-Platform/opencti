@@ -11,6 +11,7 @@ export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_ATTRIBUTE = 'Attribute';
+export const ENTITY_TYPE_WORK = 'work';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_TOKEN,
@@ -32,9 +33,11 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_ATTRIBUTE,
 ];
+const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 schemaTypes.register(ABSTRACT_INTERNAL_OBJECT, INTERNAL_OBJECTS);
 export const isInternalObject = (type) => R.includes(type, INTERNAL_OBJECTS) || type === ABSTRACT_INTERNAL_OBJECT;
 export const isDatedInternalObject = (type) => R.includes(type, DATED_INTERNAL_OBJECTS);
+export const isHistoryObject = (type) => R.includes(type, HISTORY_OBJECTS);
 
 export const internalObjectsAttributes = {
   [ENTITY_TYPE_SETTINGS]: [

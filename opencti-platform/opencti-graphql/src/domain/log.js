@@ -1,10 +1,11 @@
 import { head, assoc } from 'ramda';
-import { elPaginate, INDEX_HISTORY } from '../database/elasticSearch';
+import { elPaginate } from '../database/elasticSearch';
 import conf from '../config/conf';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById, SYSTEM_USER } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { loadById, timeSeriesEntities } from '../database/middleware';
+import { INDEX_HISTORY } from '../database/utils';
 
 export const findAll = (args) => elPaginate(INDEX_HISTORY, assoc('types', ['history'], args));
 
