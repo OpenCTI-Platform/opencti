@@ -1162,6 +1162,11 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     }
     // Return updated element after waiting for it.
     return updatedInstance;
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
   } finally {
     if (lock) await lock.unlock();
   }
@@ -1571,12 +1576,12 @@ export const createRelation = async (user, input) => {
   // Check consistency
   checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
   // Build lock ids
-  const lockIds = getLocksFromInput(relationshipType, resolvedInput);
-  if (!isUnimpactedEntity(from)) lockIds.push(from.internal_id);
-  if (!isUnimpactedEntity(to)) lockIds.push(to.internal_id);
+  const participantIds = getLocksFromInput(relationshipType, resolvedInput);
+  if (!isUnimpactedEntity(from)) participantIds.push(from.internal_id);
+  if (!isUnimpactedEntity(to)) participantIds.push(to.internal_id);
   try {
     // Try to get the lock in redis
-    lock = await lockResource(lockIds);
+    lock = await lockResource(participantIds);
     // - TRANSACTION PART
     const dataRel = await createRelationRaw(user, resolvedInput);
     // Index the created element
@@ -1607,7 +1612,7 @@ export const createRelation = async (user, input) => {
     return dataRel.element;
   } catch (err) {
     if (err.name === TYPE_LOCK_ERROR) {
-      throw LockTimeoutError({ lockIds });
+      throw LockTimeoutError({ participantIds });
     }
     throw err;
   } finally {
