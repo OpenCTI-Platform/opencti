@@ -1,5 +1,6 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
+import { Promise } from 'bluebird';
 import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import * as R from 'ramda';
 import {
@@ -56,7 +57,7 @@ import {
 
 const MAX_AGGREGATION_SIZE = 100;
 const MAX_SEARCH_AGGREGATION_SIZE = 10000;
-const MAX_SEARCH_SIZE = 10000;
+const MAX_SEARCH_SIZE = 5000;
 export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -1270,6 +1271,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
+const RECURSIVE_DELETE_CONCURRENCY = 5;
 const getRelatedRelations = async (targetId, elements = [], options = {}) => {
   const { total, hits } = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
   const isPartialRemove = total > hits.length;
@@ -1285,7 +1287,10 @@ const getRelatedRelations = async (targetId, elements = [], options = {}) => {
     };
   }, hits);
   elements.push(...connectedRelationsIds);
-  await Promise.all(connectedRelationsIds.map(({ internal_id: id }) => getRelatedRelations(id, elements, options)));
+  const ids = connectedRelationsIds.map((rel) => rel.internal_id);
+  await Promise.map(ids, (id) => getRelatedRelations(id, elements, options), {
+    concurrency: RECURSIVE_DELETE_CONCURRENCY,
+  });
   return isPartialRemove;
 };
 export const getRelationsToRemove = async (element, options = {}) => {
