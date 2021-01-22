@@ -53,8 +53,10 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { isBasicRelationship } from '../schema/stixRelationship';
 
+const MAX_AGGREGATION_SIZE = 100;
+const MAX_SEARCH_AGGREGATION_SIZE = 10000;
+const MAX_SEARCH_SIZE = 10000;
 export const INDEX_HISTORY = 'opencti_history';
 const UNIMPACTED_ENTITIES = [
   ENTITY_TYPE_IDENTITY_INDIVIDUAL,
@@ -455,7 +457,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
   const query = {
     index: PLATFORM_INDICES,
     body: {
-      size: 10000,
+      size: MAX_SEARCH_AGGREGATION_SIZE,
       query: {
         bool: {
           must: R.concat(dateFilter, histoFilters),
@@ -470,7 +472,7 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
         genres: {
           terms: {
             field: `${aggregationField}.keyword`,
-            size: 100,
+            size: MAX_AGGREGATION_SIZE,
           },
         },
       },
@@ -551,7 +553,7 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
   });
   const query = {
     index: RELATIONSHIPS_INDICES,
-    size: 1000,
+    size: MAX_SEARCH_SIZE,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
     body: {
       query: {
@@ -573,7 +575,7 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
   return hits;
 };
 
-export const elFindBy = async (fields, values, type = null, indices = DATA_INDICES) => {
+const elFindBy = async (fields, values, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
   const valsArray = Array.isArray(values) ? values : [values];
   const fieldsArray = Array.isArray(fields) ? fields : [fields];
@@ -620,7 +622,8 @@ export const elFindBy = async (fields, values, type = null, indices = DATA_INDIC
   }
   const query = {
     index: indices,
-    size: 1000,
+    size: MAX_SEARCH_SIZE,
+    track_total_hits: true,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
     body: {
       query: {
@@ -635,6 +638,7 @@ export const elFindBy = async (fields, values, type = null, indices = DATA_INDIC
     throw DatabaseError('Find data fail', { error: err, query });
   });
   const hits = [];
+  const total = data.body.hits.total.value;
   for (let index = 0; index < data.body.hits.hits.length; index += 1) {
     const hit = data.body.hits.hits[index];
     let loadedElement = R.assoc('_index', hit._index, hit._source);
@@ -644,12 +648,12 @@ export const elFindBy = async (fields, values, type = null, indices = DATA_INDIC
     }
     hits.push(loadedElement);
   }
-  return hits;
+  return { total, hits };
 };
 export const elLoadBy = async (fields, values, type = null, indices = DATA_INDICES) => {
-  const results = await elFindBy(fields, values, type, indices);
-  if (results.length > 1) throw Error('test');
-  return R.head(results);
+  const { total, hits } = await elFindBy(fields, values, type, indices);
+  if (total > 1) throw Error(`Expected only one response, found ${total}`);
+  return R.head(hits);
 };
 
 export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
@@ -689,7 +693,7 @@ export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   }
   const query = {
     index: indices,
-    size: 1000,
+    size: MAX_SEARCH_SIZE,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
     body: {
       query: {
@@ -786,7 +790,7 @@ export const elAggregationRelationsCount = async (
   const query = {
     index: RELATIONSHIPS_INDICES,
     body: {
-      size: 10000,
+      size: MAX_SEARCH_AGGREGATION_SIZE,
       query: {
         bool: {
           must: R.concat(
@@ -820,7 +824,7 @@ export const elAggregationRelationsCount = async (
               aggs: {
                 genres: {
                   terms: {
-                    size: 100,
+                    size: MAX_AGGREGATION_SIZE,
                     field: field === 'internal_id' ? `connections.internal_id.keyword` : `connections.types.keyword`,
                   },
                 },
@@ -1267,7 +1271,8 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
 };
 
 const getRelatedRelations = async (targetId, elements = [], options = {}) => {
-  const connectedRelations = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
+  const { total, hits } = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
+  const isPartialRemove = total > hits.length;
   const connectedRelationsIds = R.map((r) => {
     const { internal_id: internalId, entity_type: entityType } = r;
     return {
@@ -1277,71 +1282,30 @@ const getRelatedRelations = async (targetId, elements = [], options = {}) => {
       fromType: r.fromType,
       toId: r.toId,
       toType: r.toType,
-      relDependency: true,
     };
-  }, connectedRelations);
+  }, hits);
   elements.push(...connectedRelationsIds);
-  await Promise.all(
-    connectedRelationsIds.map(({ internal_id: id }) => {
-      return getRelatedRelations(id, elements, options);
-    })
-  );
-  return elements;
+  await Promise.all(connectedRelationsIds.map(({ internal_id: id }) => getRelatedRelations(id, elements, options)));
+  return isPartialRemove;
 };
-export const getElementsToRemove = async (element, options = {}) => {
-  // 00. Load everything we need to remove
-  const isRelation = isBasicRelationship(element.entity_type);
-  const dependencies = [
-    {
-      internal_id: element.internal_id,
-      type: element.entity_type,
-      fromId: element.fromId,
-      fromType: element.fromType,
-      toId: element.toId,
-      toType: element.toType,
-      relDependency: isRelation,
-    },
-  ];
-  await getRelatedRelations(element.internal_id, dependencies, options);
+export const getRelationsToRemove = async (element, options = {}) => {
+  const removed = [];
+  const isPartialRemove = await getRelatedRelations(element.internal_id, removed, options);
   // Return list of deleted ids
-  return dependencies;
-};
-export const elCleanupRelConnections = (ids) => {
-  const relsShould = ids.map((id) => ({ multi_match: { query: id, type: 'phrase', fields: ['rel_*'] } }));
-  const query = {
-    bool: {
-      should: relsShould,
-      minimum_should_match: 1,
-    },
-  };
-  const source = `
-    for (key in ctx._source.keySet()) {
-        if (key.startsWith("rel_")) {
-            if (ctx._source[key] != null) {
-              ctx._source[key].removeIf(rel -> params.ids.contains(rel));
-            }
-        }
-    }`;
-  return el
-    .updateByQuery({
-      index: DATA_INDICES,
-      refresh: true,
-      body: {
-        script: { source, params: { ids } },
-        query,
-      },
-    })
-    .catch((err) => {
-      throw DatabaseError('Error cleaning rel connections', { error: err, ids });
-    });
+  return { isPartialRemove, removed };
 };
 
 export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) => {
+  // If nothing to delete, return immediately to prevent elastic to delete everything
+  if (ids.length === 0) {
+    return Promise.resolve(0);
+  }
   logger.debug(`[ELASTICSEARCH] elDeleteInstanceIds`, { ids });
   const terms = R.map((id) => ({ term: { 'internal_id.keyword': id } }), ids);
   return el
     .deleteByQuery({
       index: indexesToHandle,
+      _source_excludes: '*',
       refresh: true,
       body: {
         query: {
@@ -1356,7 +1320,7 @@ export const elDeleteInstanceIds = async (ids, indexesToHandle = DATA_INDICES) =
     });
 };
 
-export const elRemoveRelationConnection = async (relsFromTo) => {
+const elRemoveRelationConnection = async (relsFromTo) => {
   if (relsFromTo.length === 0) return true;
   const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
     const type = `${REL_INDEX_PREFIX + relation.type}.internal_id`;
@@ -1389,28 +1353,30 @@ export const elRemoveRelationConnection = async (relsFromTo) => {
 };
 
 export const elDeleteElements = async (elements) => {
-  // 01. Get all element that will be removed.
-  // eslint-disable-next-line no-use-before-define
-  const resolvedToRemoves = await Promise.all(elements.map((s) => getElementsToRemove(s)));
-  const resolved = R.flatten(resolvedToRemoves);
-  const idsToRemove = R.uniq(resolved.map((e) => e.internal_id));
-  // 02. Compute the id that needs to be remove from rel
-  const relsFromTo = resolved
-    .filter((r) => r.relDependency)
-    .map((r) => {
-      const isFromCleanup = isImpactedType(r.fromType) && !idsToRemove.includes(r.fromId);
-      const isToCleanup = isImpactedType(r.toType) && !idsToRemove.includes(r.toId);
-      return { relation: r, isFromCleanup, isToCleanup };
+  // eslint-disable-next-line no-use-before-define,prettier/prettier
+  return Promise.all(elements.map(async (element) => {
+      const { isPartialRemove, removed } = await getRelationsToRemove(element);
+      const resolved = R.flatten(removed);
+      const idsToRemove = R.uniq(resolved.map((e) => e.internal_id));
+      // 02. Compute the id that needs to be remove from rel
+      const relsFromTo = resolved
+        .map((r) => {
+          const isFromCleanup = isImpactedType(r.fromType) && !idsToRemove.includes(r.fromId);
+          const isToCleanup = isImpactedType(r.toType) && !idsToRemove.includes(r.toId);
+          return { relation: r, isFromCleanup, isToCleanup };
+        })
+        .filter((r) => r.isFromCleanup || r.isToCleanup);
+      // Update all rel connections that will remain
+      await elRemoveRelationConnection(relsFromTo); // Bulk
+      // Delete all related elements
+      await elDeleteInstanceIds(idsToRemove); // deleteByQuery
+      // delete source elements if everything connected have been deleted
+      if (!isPartialRemove) {
+        // eslint-disable-next-line no-await-in-loop
+        await elDeleteInstanceIds([element.internal_id]);
+      }
     })
-    .filter((r) => r.isFromCleanup || r.isToCleanup);
-  // Update all rels
-  await elRemoveRelationConnection(relsFromTo);
-  // Delete all rel_
-  logger.debug(`[OPENCTI] Deleting ${idsToRemove}`);
-  // 03. Remove everything that need to be removed.
-  await elCleanupRelConnections(idsToRemove);
-  // Delete all elements
-  await elDeleteInstanceIds(idsToRemove);
+  );
 };
 
 export const elDeleteElement = (element) => {

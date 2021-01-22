@@ -35,6 +35,8 @@ import {
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
   ENTITY_TYPE_CONTAINER_REPORT,
   ENTITY_TYPE_IDENTITY_ORGANIZATION,
+  ENTITY_TYPE_INDICATOR,
+  ENTITY_TYPE_INTRUSION_SET,
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
@@ -42,6 +44,8 @@ import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../../../src/
 import { RELATION_MITIGATES, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { SYSTEM_USER } from '../../../src/domain/user';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
+import { RELATION_OBJECT_LABEL } from '../../../src/schema/stixMetaRelationship';
+import { addLabel } from '../../../src/domain/label';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -966,5 +970,67 @@ describe('Upsert and merge entities', () => {
     expect(reloadMd5.objectMarking.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
     // Cleanup
     await deleteElementById(ADMIN_USER, reloadMd5.id, ENTITY_HASHED_OBSERVABLE_STIX_FILE);
+  });
+});
+
+describe('Elements deletions', () => {
+  it('should all elements correctly deleted (noCache = %s)', async () => {
+    // Create entities
+    const label = await addLabel(ADMIN_USER, { value: 'MY LABEL' });
+    const intrusionSet = await createEntity(
+      ADMIN_USER,
+      { name: 'MY ISET', description: 'MY ISET' },
+      ENTITY_TYPE_INTRUSION_SET
+    );
+    const malware = await createEntity(ADMIN_USER, { name: 'MY MAL', description: 'MY MAL' }, ENTITY_TYPE_MALWARE);
+    const indicator = await createEntity(
+      ADMIN_USER,
+      { name: 'MY INDIC', pattern: 'pattern', pattern_type: 'pattern-type' },
+      ENTITY_TYPE_INDICATOR
+    );
+    // Create basic relations
+    // eslint-disable-next-line camelcase
+    const intrusionSet_uses_Malware = await createRelation(ADMIN_USER, {
+      fromId: intrusionSet.internal_id,
+      toId: malware.internal_id,
+      relationship_type: 'uses',
+    });
+    // eslint-disable-next-line camelcase
+    const indicator_indicated_uses = await createRelation(ADMIN_USER, {
+      fromId: indicator.internal_id,
+      toId: intrusionSet_uses_Malware.internal_id,
+      relationship_type: 'indicates',
+    });
+    // Create labels relations
+    const intrusionSetLabel = await createRelation(ADMIN_USER, {
+      fromId: intrusionSet.internal_id,
+      toId: label.internal_id,
+      relationship_type: 'object-label',
+    });
+    const relIndicatesLabel = await createRelation(ADMIN_USER, {
+      fromId: indicator_indicated_uses.internal_id,
+      toId: label.internal_id,
+      relationship_type: 'object-label',
+    });
+    const malwareLabel = await createRelation(ADMIN_USER, {
+      fromId: malware.internal_id,
+      toId: label.internal_id,
+      relationship_type: 'object-label',
+    });
+    // Delete the intrusion set, check all relation what need to be deleted
+    const toBeDeleted = [
+      intrusionSet.internal_id,
+      intrusionSet_uses_Malware.internal_id,
+      indicator_indicated_uses.internal_id,
+      intrusionSetLabel.internal_id,
+      relIndicatesLabel.internal_id,
+    ];
+    await deleteElementById(ADMIN_USER, intrusionSet.internal_id, ENTITY_TYPE_INTRUSION_SET);
+    const isExist = await isOneOfThisIdsExists(toBeDeleted);
+    expect(isExist).toBeFalsy();
+    const resolvedMalware = await loadById(malware.internal_id, ENTITY_TYPE_MALWARE);
+    expect(resolvedMalware).not.toBeUndefined();
+    const resolvedRelationLabel = await loadById(malwareLabel.internal_id, RELATION_OBJECT_LABEL);
+    expect(resolvedRelationLabel).not.toBeUndefined();
   });
 });

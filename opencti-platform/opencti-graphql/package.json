@@ -6,6 +6,7 @@
   "license": "Apache-2.0",
   "scripts": {
     "start": "webpack --mode development",
+    "clean:relations": "babel-node ./script/script-clean-relations.js",
     "install:python": "pip3 install -r src/python/requirements.txt",
     "build": "yarn install:python && webpack --mode production",
     "serv": "node build/index.js",
