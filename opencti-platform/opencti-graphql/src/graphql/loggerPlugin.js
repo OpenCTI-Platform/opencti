@@ -4,6 +4,7 @@ import nconf from 'nconf';
 import { logger } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
+import { AUTH_FAILURE, AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR } from '../config/errors';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
@@ -76,8 +77,8 @@ export default {
           const callError = currentError.originalError ? currentError.originalError : currentError;
           const { data, path, stack } = callError;
           const error = { data, path, stacktrace: stack.split('\n').map((line) => line.trim()) };
-          const isRetryableCall = isNotEmptyField(origin?.call_retry_number);
-          const isAuthenticationCall = includes(callError.name, ['AuthRequired', 'AuthFailure', 'ForbiddenAccess']);
+          const isRetryableCall = isNotEmptyField(origin?.call_retry_number) && callError.name !== UNSUPPORTED_ERROR;
+          const isAuthenticationCall = includes(callError.name, [AUTH_REQUIRED, AUTH_FAILURE, FORBIDDEN_ACCESS]);
           // Authentication problem can be logged in warning (dissoc variables to hide password)
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall || isAuthenticationCall) {

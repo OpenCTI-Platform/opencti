@@ -13,6 +13,8 @@ import {
 } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
+const pjson = require('../../package.json');
+
 const DEFAULT_ENV = 'production';
 export const OPENCTI_TOKEN = 'opencti_token';
 export const OPENCTI_WEB_TOKEN = 'Default';
@@ -147,10 +149,11 @@ if (environment === 'test') {
   });
 }
 
+const addBasicMetaInformation = (meta) => ({ ...meta, version: pjson.version });
 export const logger = {
-  debug: (message, meta) => loggerInstance.debug(message, meta),
-  info: (message, meta) => loggerInstance.info(message, meta),
-  warn: (message, meta) => loggerInstance.warn(message, meta),
-  error: (message, meta) => loggerInstance.error(message, meta),
+  debug: (message, meta) => loggerInstance.debug(message, addBasicMetaInformation(meta)),
+  info: (message, meta) => loggerInstance.info(message, addBasicMetaInformation(meta)),
+  warn: (message, meta) => loggerInstance.warn(message, addBasicMetaInformation(meta)),
+  error: (message, meta) => loggerInstance.error(message, addBasicMetaInformation(meta)),
 };
 export default nconf;

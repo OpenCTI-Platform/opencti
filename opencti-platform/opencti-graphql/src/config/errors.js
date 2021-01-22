@@ -8,21 +8,24 @@ const error = (type, message, data) => {
   return new Exception();
 };
 
+export const AUTH_FAILURE = 'AuthFailure';
 export const AuthenticationFailure = (reason, data) =>
-  error('AuthFailure', 'Wrong name or password', {
+  error(AUTH_FAILURE, 'Wrong name or password', {
     category: CATEGORY_TECHNICAL,
     ...data,
   });
 
 // TYPE_AUTH
+export const AUTH_REQUIRED = 'AuthRequired';
 export const AuthRequired = (reason, data) =>
-  error('AuthRequired', 'You must be logged in to do this.', {
+  error(AUTH_REQUIRED, 'You must be logged in to do this.', {
     category: CATEGORY_TECHNICAL,
     ...data,
   });
 
+export const FORBIDDEN_ACCESS = 'ForbiddenAccess';
 export const ForbiddenAccess = (reason, data) =>
-  error('ForbiddenAccess', 'You are not allowed to do this.', {
+  error(FORBIDDEN_ACCESS, 'You are not allowed to do this.', {
     category: CATEGORY_TECHNICAL,
     ...data,
   });
@@ -49,7 +52,7 @@ export const UnknownError = (reason, data) =>
     ...data,
   });
 
-const UNSUPPORTED_ERROR = 'UnsupportedError';
+export const UNSUPPORTED_ERROR = 'UnsupportedError';
 export const UnsupportedError = (reason, data) =>
   error(UNSUPPORTED_ERROR, 'Unsupported element', {
     reason: reason || 'No reason specify',
