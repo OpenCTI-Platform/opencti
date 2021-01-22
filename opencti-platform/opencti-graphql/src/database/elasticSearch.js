@@ -1301,7 +1301,7 @@ export const elDeleteInstanceIds = async (instances) => {
 const elRemoveRelationConnection = async (relsFromTo) => {
   if (relsFromTo.length === 0) return true;
   const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
-    const type = `${REL_INDEX_PREFIX + relation.type}.internal_id`;
+    const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
     const updates = [];
     if (isFromCleanup) {
       const fromIndex = inferIndexFromConceptType(relation.fromType);
