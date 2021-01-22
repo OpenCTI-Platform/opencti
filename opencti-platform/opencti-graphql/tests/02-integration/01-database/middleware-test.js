@@ -46,6 +46,7 @@ import { SYSTEM_USER } from '../../../src/domain/user';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
 import { RELATION_OBJECT_LABEL } from '../../../src/schema/stixMetaRelationship';
 import { addLabel } from '../../../src/domain/label';
+import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -973,7 +974,14 @@ describe('Upsert and merge entities', () => {
   });
 });
 
-describe('Elements deletions', () => {
+describe('Elements impacts deletions', () => {
+  // Intrusion Set    =>    uses      =>   Malware
+  //      ^                  ^                ^
+  //      |                  |                |
+  //    Label  Label <-- indicates         Label
+  //                         ^
+  //                         |
+  //                     Indicator
   it('should all elements correctly deleted (noCache = %s)', async () => {
     // Create entities
     const label = await addLabel(ADMIN_USER, { value: 'MY LABEL' });
@@ -1032,5 +1040,9 @@ describe('Elements deletions', () => {
     expect(resolvedMalware).not.toBeUndefined();
     const resolvedRelationLabel = await loadById(malwareLabel.internal_id, RELATION_OBJECT_LABEL);
     expect(resolvedRelationLabel).not.toBeUndefined();
+    // Clear remaining stuff
+    await deleteElementById(ADMIN_USER, resolvedMalware.internal_id, ENTITY_TYPE_MALWARE);
+    await deleteElementById(ADMIN_USER, indicator.internal_id, ENTITY_TYPE_INDICATOR);
+    await deleteElementById(ADMIN_USER, label.internal_id, ENTITY_TYPE_LABEL);
   });
 });
