@@ -85,11 +85,21 @@ const loadWorkById = async (workId) => {
   return R.assoc('id', workId, action);
 };
 
+export const deleteWorkRaw = async (work) => {
+  await elDeleteInstanceIds([work]);
+  await basicObjectDelete(work.internal_id);
+  return work.internal_id;
+};
+
 export const deleteWork = async (workId) => {
   const work = await loadWorkById(workId);
-  await elDeleteInstanceIds([work]);
-  await basicObjectDelete(workId);
-  return workId;
+  return deleteWorkRaw(work);
+};
+
+export const deleteWorkForFile = async (fileId) => {
+  const works = await worksForSource(fileId);
+  await Promise.all(R.map((w) => deleteWorkRaw(w), works));
+  return true;
 };
 
 export const deleteOldCompletedWorks = async (connector, logInfo = false) => {

@@ -4,7 +4,7 @@ import querystring from 'querystring';
 import conf, { logger } from '../config/conf';
 import { sinceNowInMinutes } from './middleware';
 import { buildPagination } from './utils';
-import { loadExportWorksAsProgressFiles, deleteWork } from '../domain/work';
+import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';
@@ -39,7 +39,7 @@ export const isStorageAlive = () => {
 export const deleteFile = async (user, id) => {
   logger.debug(`[MINIO] delete file ${id} by ${user.user_email}`);
   await minioClient.removeObject(bucketName, id);
-  await deleteWork(id);
+  await deleteWorkForFile(id);
   return true;
 };
 
