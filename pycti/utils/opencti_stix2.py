@@ -1084,7 +1084,20 @@ class OpenCTIStix2:
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
+        # Stix Sighting Relationship
+        if entity["type"] == "stix-sighting-relationship":
+            entity["type"] = "sighting"
+            entity["count"] = entity["attribute_count"]
+            del entity["attribute_count"]
+            entity["sighting_of_ref"] = entity["from"]["standard_id"]
+            objects_to_get.append(entity["from"]["standard_id"])
+            entity["where_sighted_refs"] = entity["to"]["standard_id"]
+            objects_to_get.append(entity["to"]["standard_id"])
+            del entity["from"]
+            del entity["to"]
         # Stix Core Relationship
+        if "from" in entity or "to" in entity:
+            entity["type"] = "relationship"
         if "from" in entity:
             entity["source_ref"] = entity["from"]["standard_id"]
             objects_to_get.append(entity["from"]["standard_id"])
@@ -1095,6 +1108,7 @@ class OpenCTIStix2:
             objects_to_get.append(entity["to"]["standard_id"])
         if "to" in entity:
             del entity["to"]
+        # Stix Cyber Observable
         if "observable_value" in entity:
             del entity["observable_value"]
 
@@ -1139,6 +1153,41 @@ class OpenCTIStix2:
                         + stix_core_relationship["entity_type"]
                         + ' "'
                         + stix_core_relationship["id"]
+                        + '" are less than max definition, not exporting the relation AND the target entity.',
+                    )
+            # Get sighting
+            stix_sighting_relationships = self.opencti.stix_sighting_relationship.list(
+                fromId=entity["x_opencti_id"]
+            )
+            for stix_sighting_relationship in stix_sighting_relationships:
+                if self.check_max_marking_definition(
+                    max_marking_definition_entity,
+                    stix_sighting_relationship["objectMarking"]
+                    if "objectMarking" in stix_sighting_relationship
+                    else None,
+                ):
+                    objects_to_get.append(
+                        stix_sighting_relationship["to"]
+                        if stix_sighting_relationship["to"]["id"] != entity["x_opencti_id"]
+                        else stix_sighting_relationship["from"]
+                    )
+                    relation_object_data = self.prepare_export(
+                        self.generate_export(stix_sighting_relationship),
+                        "simple",
+                        max_marking_definition_entity,
+                    )
+                    relation_object_bundle = self.filter_objects(
+                        uuids, relation_object_data
+                    )
+                    uuids = uuids + [x["id"] for x in relation_object_bundle]
+                    result = result + relation_object_bundle
+                else:
+                    self.opencti.log(
+                        "info",
+                        "Marking definitions of "
+                        + stix_sighting_relationship["entity_type"]
+                        + ' "'
+                        + stix_sighting_relationship["id"]
                         + '" are less than max definition, not exporting the relation AND the target entity.',
                     )
             # Export

@@ -1,0 +1,485 @@
+{
+    "type": "bundle",
+    "id": "bundle--e2d10165-1e88-4a8c-b653-ff7660f1edc1",
+    "objects": [
+        {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:WHITE",
+            "definition": {
+                "tlp": "white"
+            }
+        },
+        {
+            "id": "threat-actor--7086fe64-9523-59d5-9197-947db5e5fa47",
+            "spec_version": "2.1",
+            "revoked": false,
+            "confidence": 15,
+            "created": "2021-01-05T20:12:03.692Z",
+            "modified": "2021-01-25T12:58:04.507Z",
+            "name": "GRU",
+            "description": "The Main Directorate of the General Staff of the Armed Forces of the Russian Federation (Russian: \u0413\u043b\u0430\u0301\u0432\u043d\u043e\u0435 \u0443\u043f\u0440\u0430\u0432\u043b\u0435\u0301\u043d\u0438\u0435 \u0413\u0435\u043d\u0435\u0440\u0430\u0301\u043b\u044c\u043d\u043e\u0433\u043e \u0448\u0442\u0430\u0301\u0431\u0430 \u0412\u043e\u043e\u0440\u0443\u0436\u0451\u043d\u043d\u044b\u0445 \u0421\u0438\u043b \u0420\u043e\u0441\u0441\u0438\u0301\u0439\u0441\u043a\u043e\u0439 \u0424\u0435\u0434\u0435\u0440\u0430\u0301\u0446\u0438\u0438), abbreviated G.U., formerly the Main Intelligence Directorate (Russian: \u0413\u043b\u0430\u0301\u0432\u043d\u043e\u0435 \u0440\u0430\u0437\u0432\u0435\u0301\u0434\u044b\u0432\u0430\u0442\u0435\u043b\u044c\u043d\u043e\u0435 \u0443\u043f\u0440\u0430\u0432\u043b\u0435\u0301\u043d\u0438\u0435, tr. Glavnoye razvedyvatel'noye upravleniye, IPA: [\u02c8\u0261lavn\u0259j\u0259 r\u0250z\u02c8v\u02b2\u025bd\u0268v\u0259t\u02b2\u026al\u02b2n\u0259j\u0259 \u028apr\u0250\u02c8vl\u02b2en\u02b2\u026aj\u0259]) and still commonly known by its previous abbreviation GRU] (Russian: \u0413\u0420\u0423, IPA: [\u0261ee\u02c8ru]), is the foreign military intelligence agency of the General Staff of the Armed Forces of the Russian Federation. Unlike Russia's other security and intelligence agencies, such as the Foreign Intelligence Service (SVR), the Federal Security Service (FSB), and the Federal Protective Service (FSO), whose heads report directly to the president of Russia, the director of the GRU is subordinate to the Russian military command, reporting to the Minister of Defence and the Chief of the General Staff. Until 2010, and again from 2013 onwards, the GRU controlled the military intelligence service and the GRU special forces.",
+            "x_opencti_id": "ea1e1974-c8f1-4aa8-9adb-6ee1440a8249",
+            "type": "threat-actor",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "id": "relationship--59927bcc-cd4f-4b85-8a4b-e676c7a8d4ab",
+            "spec_version": "2.1",
+            "relationship_type": "attributed-to",
+            "start_time": "1970-01-01T00:00:00.000Z",
+            "stop_time": "5138-11-16T09:46:40.000Z",
+            "revoked": false,
+            "confidence": 15,
+            "lang": "en",
+            "created": "2021-01-05T20:12:31.568Z",
+            "modified": "2021-01-05T20:12:31.568Z",
+            "x_opencti_id": "0b8f1710-7df6-4a80-b51c-0b721e2b9656",
+            "type": "relationship",
+            "source_ref": "intrusion-set--f743ab1d-b2f2-58f8-975f-0993511c0b9d",
+            "target_ref": "threat-actor--7086fe64-9523-59d5-9197-947db5e5fa47"
+        },
+        {
+            "id": "sighting--a34f11f2-b2c1-4af9-a951-ba5a5e4fd938",
+            "spec_version": "2.1",
+            "first_seen": "2021-01-24T23:00:00.000Z",
+            "last_seen": "2021-01-24T23:00:00.000Z",
+            "x_opencti_negative": false,
+            "created": "2021-01-25T09:01:55.500Z",
+            "modified": "2021-01-25T09:01:55.500Z",
+            "confidence": 15,
+            "x_opencti_id": "dccd346f-5a43-432d-a5b6-04c240afc088",
+            "type": "sighting",
+            "count": 1,
+            "sighting_of_ref": "threat-actor--7086fe64-9523-59d5-9197-947db5e5fa47",
+            "where_sighted_refs": "location--809b9b62-814e-58d5-bbdc-25cd1b2573f2"
+        },
+        {
+            "id": "identity--3ecff5af-0890-5897-b835-375675b0dc50",
+            "spec_version": "2.1",
+            "name": "The MITRE Corporation",
+            "created": "2020-12-31T10:25:31.518Z",
+            "modified": "2021-01-25T08:00:01.300Z",
+            "x_opencti_id": "e83728b3-8215-4d24-8612-2f968f393010",
+            "type": "identity"
+        },
+        {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
+            "created": "2017-01-20T00:00:00.000Z",
+            "definition_type": "tlp",
+            "name": "TLP:GREEN",
+            "definition": {
+                "tlp": "green"
+            }
+        },
+        {
+            "type": "marking-definition",
+            "spec_version": "2.1",
+            "id": "marking-definition--1fb6e305-ec2a-573a-aa02-7de0ae167aa5",
+            "created": "2017-06-01T00:00:00.000Z",
+            "definition_type": "statement",
+            "name": "Copyright 2015-2020, The MITRE Corporation. MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE Corporation.",
+            "definition": {
+                "statement": "copyright 2015-2020, the mitre corporation. mitre att&ck and att&ck are registered trademarks of the mitre corporation."
+            }
+        },
+        {
+            "id": "intrusion-set--f743ab1d-b2f2-58f8-975f-0993511c0b9d",
+            "spec_version": "2.1",
+            "revoked": false,
+            "confidence": 0,
+            "created": "2017-05-31T21:31:48.664Z",
+            "modified": "2021-01-25T08:00:02.708Z",
+            "name": "APT28",
+            "description": "[APT28](https://attack.mitre.org/groups/G0007) is a threat group that has been attributed to Russia's General Staff Main Intelligence Directorate (GRU) 85th Main Special Service Center (GTsSS) military unit 26165.(Citation: NSA/FBI Drovorub August 2020) This group has been active since at least 2004.(Citation: DOJ GRU Indictment Jul 2018) (Citation: Ars Technica GRU indictment Jul 2018) (Citation: Crowdstrike DNC June 2016) (Citation: FireEye APT28) (Citation: SecureWorks TG-4127) (Citation: FireEye APT28 January 2017) (Citation: GRIZZLY STEPPE JAR) (Citation: Sofacy DealersChoice) (Citation: Palo Alto Sofacy 06-2018) (Citation: Symantec APT28 Oct 2018) (Citation: ESET Zebrocy May 2019)\n\n[APT28](https://attack.mitre.org/groups/G0007) reportedly compromised the Hillary Clinton campaign, the Democratic National Committee, and the Democratic Congressional Campaign Committee in 2016 in an attempt to interfere with the U.S. presidential election. (Citation: Crowdstrike DNC June 2016) In 2018, the US indicted five GRU Unit 26165 officers associated with [APT28](https://attack.mitre.org/groups/G0007) for cyber operations (including close-access operations) conducted between 2014 and 2018 against the World Anti-Doping Agency (WADA), the US Anti-Doping Agency, a US nuclear facility, the Organization for the Prohibition of Chemical Weapons (OPCW), the Spiez Swiss Chemicals Laboratory, and other organizations.(Citation: US District Court Indictment GRU Oct 2018) Some of these were conducted with the assistance of GRU Unit 74455, which is also referred to as [Sandworm Team](https://attack.mitre.org/groups/G0034). ",
+            "aliases": [
+                "APT 28",
+                "APT28",
+                "Fancy Bear",
+                "Grey-Cloud",
+                "Grizzly Steppe",
+                "Group 74",
+                "Group-4127",
+                "IRON TWILIGHT",
+                "Pawn Storm",
+                "PawnStorm",
+                "SIG40",
+                "SNAKEMACKEREL",
+                "STRONTIUM",
+                "Sednit",
+                "Sofacy",
+                "Strontium",
+                "Swallowtail",
+                "TAG_0700",
+                "TG-4127",
+                "Threat Group-4127",
+                "Tsar Team",
+                "TsarTeam",
+                "Wylian Cyber Unit 2101",
+                "apt_sofacy"
+            ],
+            "first_seen": "1970-01-01T00:00:00.000Z",
+            "last_seen": "5138-11-16T09:46:40.000Z",
+            "external_references": [
+                {
+                    "source_name": "mitre-attack",
+                    "url": "https://attack.mitre.org/groups/G0007",
+                    "external_id": "G0007"
+                },
+                {
+                    "source_name": "NSA/FBI Drovorub August 2020",
+                    "description": "NSA/FBI. (2020, August). Russian GRU 85th GTsSS Deploys Previously Undisclosed Drovorub Malware. Retrieved August 25, 2020.",
+                    "url": "https://media.defense.gov/2020/Aug/13/2002476465/-1/-1/0/CSA_DROVORUB_RUSSIAN_GRU_MALWARE_AUG_2020.PDF"
+                },
+                {
+                    "source_name": "SecureWorks TG-4127",
+                    "description": "SecureWorks Counter Threat Unit Threat Intelligence. (2016, June 16). Threat Group-4127 Targets Hillary Clinton Presidential Campaign. Retrieved August 3, 2016.",
+                    "url": "https://www.secureworks.com/research/threat-group-4127-targets-hillary-clinton-presidential-campaign"
+                },
+                {
+                    "source_name": "FireEye APT28 January 2017",
+                    "description": "FireEye iSIGHT Intelligence. (2017, January 11). APT28: At the Center of the Storm. Retrieved January 11, 2017.",
+                    "url": "https://www2.fireeye.com/rs/848-DID-242/images/APT28-Center-of-Storm-2017.pdf"
+                },
+                {
+                    "source_name": "Sofacy DealersChoice",
+                    "description": "Falcone, R. (2018, March 15). Sofacy Uses DealersChoice to Target European Government Agency. Retrieved June 4, 2018.",
+                    "url": "https://researchcenter.paloaltonetworks.com/2018/03/unit42-sofacy-uses-dealerschoice-target-european-government-agency/"
+                },
+                {
+                    "source_name": "Symantec APT28 Oct 2018",
+                    "description": "Symantec Security Response. (2018, October 04). APT28: New Espionage Operations Target Military and Government Organizations. Retrieved November 14, 2018.",
+                    "url": "https://www.symantec.com/blogs/election-security/apt28-espionage-military-government"
+                },
+                {
+                    "source_name": "US District Court Indictment GRU Oct 2018",
+                    "description": "Brady, S . (2018, October 3). Indictment - United States vs Aleksei Sergeyevich Morenets, et al.. Retrieved October 1, 2020.",
+                    "url": "https://www.justice.gov/opa/page/file/1098481/download"
+                },
+                {
+                    "source_name": "Talos Seduploader Oct 2017",
+                    "description": "Mercer, W., et al. (2017, October 22). \"Cyber Conflict\" Decoy Document Used in Real Cyber Conflict. Retrieved November 2, 2018.",
+                    "url": "https://blog.talosintelligence.com/2017/10/cyber-conflict-decoy-document.html"
+                },
+                {
+                    "source_name": "Accenture SNAKEMACKEREL Nov 2018",
+                    "description": "Accenture Security. (2018, November 29). SNAKEMACKEREL. Retrieved April 15, 2019.",
+                    "url": "https://www.accenture.com/t20181129T203820Z__w__/us-en/_acnmedia/PDF-90/Accenture-snakemackerel-delivers-zekapab-malware.pdf#zoom=50"
+                },
+                {
+                    "source_name": "Microsoft STRONTIUM Aug 2019",
+                    "description": "MSRC Team. (2019, August 5). Corporate IoT \u2013 a path to intrusion. Retrieved August 16, 2019.",
+                    "url": "https://msrc-blog.microsoft.com/2019/08/05/corporate-iot-a-path-to-intrusion/"
+                },
+                {
+                    "source_name": "Ars Technica GRU indictment Jul 2018",
+                    "description": "Gallagher, S. (2018, July 27). How they did it (and will likely try again): GRU hackers vs. US elections. Retrieved September 13, 2018.",
+                    "url": "https://arstechnica.com/information-technology/2018/07/from-bitly-to-x-agent-how-gru-hackers-targeted-the-2016-presidential-election/"
+                },
+                {
+                    "source_name": "FireEye APT28",
+                    "description": "FireEye. (2015). APT28: A WINDOW INTO RUSSIA\u2019S CYBER ESPIONAGE OPERATIONS?. Retrieved August 19, 2015.",
+                    "url": "https://www.fireeye.com/content/dam/fireeye-www/global/en/current-threats/pdfs/rpt-apt28.pdf"
+                },
+                {
+                    "source_name": "Palo Alto Sofacy 06-2018",
+                    "description": "Lee, B., Falcone, R. (2018, June 06). Sofacy Group\u2019s Parallel Attacks. Retrieved June 18, 2018.",
+                    "url": "https://researchcenter.paloaltonetworks.com/2018/06/unit42-sofacy-groups-parallel-attacks/"
+                },
+                {
+                    "source_name": "ESET Zebrocy May 2019",
+                    "description": "ESET Research. (2019, May 22). A journey to Zebrocy land. Retrieved June 20, 2019.",
+                    "url": "https://www.welivesecurity.com/2019/05/22/journey-zebrocy-land/"
+                },
+                {
+                    "source_name": "ESET Sednit Part 3",
+                    "description": "ESET. (2016, October). En Route with Sednit - Part 3: A Mysterious Downloader. Retrieved November 21, 2016.",
+                    "url": "http://www.welivesecurity.com/wp-content/uploads/2016/10/eset-sednit-part3.pdf"
+                },
+                {
+                    "source_name": "Securelist Sofacy Feb 2018",
+                    "description": "Kaspersky Lab's Global Research & Analysis Team. (2018, February 20). A Slice of 2017 Sofacy Activity. Retrieved November 27, 2018.",
+                    "url": "https://securelist.com/a-slice-of-2017-sofacy-activity/83930/"
+                },
+                {
+                    "source_name": "Microsoft STRONTIUM New Patterns Cred Harvesting Sept 2020",
+                    "description": "Microsoft Threat Intelligence Center (MSTIC). (2020, September 10). STRONTIUM: Detecting new patterns in credential harvesting. Retrieved September 11, 2020.",
+                    "url": "https://www.microsoft.com/security/blog/2020/09/10/strontium-detecting-new-patters-credential-harvesting/"
+                },
+                {
+                    "source_name": "DOJ GRU Indictment Jul 2018",
+                    "description": "Mueller, R. (2018, July 13). Indictment - United States of America vs. VIKTOR BORISOVICH NETYKSHO, et al. Retrieved September 13, 2018.",
+                    "url": "https://www.justice.gov/file/1080281/download"
+                },
+                {
+                    "source_name": "Crowdstrike DNC June 2016",
+                    "description": "Alperovitch, D.. (2016, June 15). Bears in the Midst: Intrusion into the Democratic National Committee. Retrieved August 3, 2016.",
+                    "url": "https://www.crowdstrike.com/blog/bears-midst-intrusion-democratic-national-committee/"
+                },
+                {
+                    "source_name": "GRIZZLY STEPPE JAR",
+                    "description": "Department of Homeland Security and Federal Bureau of Investigation. (2016, December 29). GRIZZLY STEPPE \u2013 Russian Malicious Cyber Activity. Retrieved January 11, 2017.",
+                    "url": "https://www.us-cert.gov/sites/default/files/publications/JAR_16-20296A_GRIZZLY%20STEPPE-2016-1229.pdf"
+                },
+                {
+                    "source_name": "Kaspersky Sofacy",
+                    "description": "Kaspersky Lab's Global Research and Analysis Team. (2015, December 4). Sofacy APT hits high profile targets with updated toolset. Retrieved December 10, 2015.",
+                    "url": "https://securelist.com/sofacy-apt-hits-high-profile-targets-with-updated-toolset/72924/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.bbc.com/news/technology-37590375"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.bbc.co.uk/news/technology-45257081"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.dw.com/en/hackers-lurking-parliamentarians-told/a-19564630"
+                },
+                {
+                    "source_name": "FireEye Op RussianDoll",
+                    "description": "FireEye Labs. (2015, April 18). Operation RussianDoll: Adobe & Windows Zero-Day Exploits Likely Leveraged by Russia\u2019s APT28 in Highly-Targeted Attack. Retrieved April 24, 2017.",
+                    "url": "https://www.fireeye.com/blog/threat-research/2015/04/probable_apt28_useo.html"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.accenture.com/us-en/blogs/blogs-snakemackerel-delivers-zekapab-malware"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://unit42.paloaltonetworks.com/unit42-new-sofacy-attacks-against-us-government-agency/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://unit42.paloaltonetworks.com/unit42-let-ride-sofacy-groups-dealerschoice-attacks-continue/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.trendmicro.com/cloud-content/us/pdfs/security-intelligence/white-papers/wp-operation-pawn-storm.pdf"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.lse.co.uk/AllNews.asp?code=kwdwehme&headline=Russian_Hackers_Suspected_In_Cyberattack_On_German_Parliament"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.volkskrant.nl/cultuur-media/russen-faalden-bij-hackpogingen-ambtenaren-op-nederlandse-ministeries~b77ff391/"
+                },
+                {
+                    "source_name": "\u00dcberwachung APT28 Forfiles June 2015",
+                    "description": "Guarnieri, C. (2015, June 19). Digital Attack on German Parliament: Investigative Report on the Hack of the Left Party Infrastructure in Bundestag. Retrieved January 22, 2018.",
+                    "url": "https://netzpolitik.org/2015/digital-attack-on-german-parliament-investigative-report-on-the-hack-of-the-left-party-infrastructure-in-bundestag/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://researchcenter.paloaltonetworks.com/2016/10/unit42-dealerschoice-sofacys-flash-player-exploit-platform/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.accenture.com/t20190213T141124Z__w__/us-en/_acnmedia/PDF-94/Accenture-SNAKEMACKEREL-Threat-Campaign-Likely-Targeting-NATO-Members-Defense-and-Military-Outlets.pdf"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://marcoramilli.com/2019/12/05/apt28-attacks-evolution/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.bleepingcomputer.com/news/security/russian-hackers-use-fake-nato-training-docs-to-breach-govt-networks/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://attack.mitre.org/groups/G0007/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://en.wikipedia.org/wiki/Sofacy_Group"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.apnews.com/4d174e45ef5843a0ba82e804f080988f"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://unit42.paloaltonetworks.com/unit42-sofacys-komplex-os-x-trojan/"
+                },
+                {
+                    "source_name": "Unit42 Sofacy Dec 2018",
+                    "description": "Lee, B., Falcone, R. (2018, December 12). Dear Joohn: The Sofacy Group\u2019s Global Campaign. Retrieved April 19, 2019.",
+                    "url": "https://unit42.paloaltonetworks.com/dear-joohn-sofacy-groups-global-campaign/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://aptnotes.malwareconfig.com/web/viewer.html?file=../APTnotes/2014/apt28.pdf"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.wired.com/story/russian-fancy-bears-hackers-release-apparent-ioc-emails/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://symantec-blogs.broadcom.com/blogs/election-security/apt28-espionage-military-government"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.msn.com/en-nz/news/world/russian-hackers-accused-of-targeting-un-chemical-weapons-watchdog-mh17-files/ar-BBNV2ny"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.bleepingcomputer.com/news/security/apt28-uses-lojax-first-uefi-rootkit-seen-in-the-wild/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://blogs.microsoft.com/on-the-issues/2018/08/20/we-are-taking-new-steps-against-broadening-threats-to-democracy/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.ibtimes.co.uk/russian-hackers-fancy-bear-likely-breached-olympic-drug-testing-agency-dnc-experts-say-1577508"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.reuters.com/article/us-sweden-doping/swedish-sports-body-says-anti-doping-unit-hit-by-hacking-attack-idUSKCN1IG2GN"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.handelsblatt.com/today/politics/election-risks-russia-linked-hackers-target-german-political-foundations/23569188.html?ticket=ST-2696734-GRHgtQukDIEXeSOwksXO-ap1"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://en.wikipedia.org/wiki/Fancy_Bear"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.cfr.org/interactive/cyber-operations/apt-28"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.voanews.com/a/iaaf-hack-fancy-bears/3793874.html"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www2.fireeye.com/rs/848-DID-242/images/wp-mandiant-matryoshka-mining.pdf"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.eff.org/deeplinks/2015/08/new-spear-phishing-campaign-pretends-be-eff"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://unit42.paloaltonetworks.com/unit42-sofacy-attacks-multiple-government-entities/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.welivesecurity.com/2018/09/27/lojax-first-uefi-rootkit-found-wild-courtesy-sednit-group/"
+                },
+                {
+                    "source_name": "Unit 42 Sofacy Nov 2018",
+                    "description": "Falcone, R., Lee, B.. (2018, November 20). Sofacy Continues Global Attacks and Wheels Out New \u2018Cannon\u2019 Trojan. Retrieved April 23, 2019.",
+                    "url": "https://unit42.paloaltonetworks.com/unit42-sofacy-continues-global-attacks-wheels-new-cannon-trojan/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://blog.trendmicro.com/trendlabs-security-intelligence/pawn-storm-targets-mh17-investigation-team/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://researchcenter.paloaltonetworks.com/2016/06/unit42-new-sofacy-attacks-against-us-government-agency/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://blog.trendmicro.com/trendlabs-security-intelligence/new-adobe-flash-zero-day-used-in-pawn-storm-campaign/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.bleepingcomputer.com/news/security/microsoft-disrupts-apt28-hacking-campaign-aimed-at-us-midterm-elections/"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.justice.gov/opa/pr/justice-department-announces-actions-disrupt-advanced-persistent-threat-28-botnet-infected"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.accenture.com/t20181129T203820Z__w__/us-en/_acnmedia/PDF-90/Accenture-snakemackerel-delivers-zekapab-malware.pdf"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://www.washingtonpost.com/technology/2019/02/20/microsoft-says-it-has-found-another-russian-operation-targeting-prominent-think-tanks/?utm_term=.870ff11468ae"
+                },
+                {
+                    "source_name": "Malpedia",
+                    "description": "Reference found in the Malpedia library",
+                    "url": "https://quointelligence.eu/2020/09/apt28-zebrocy-malware-campaign-nato-theme/"
+                }
+            ],
+            "x_opencti_id": "4774ee2c-cb72-4cf4-a1bb-731d5b2475e8",
+            "type": "intrusion-set",
+            "created_by_ref": "identity--3ecff5af-0890-5897-b835-375675b0dc50",
+            "object_marking_refs": [
+                "marking-definition--34098fce-860f-48ae-8e50-ebd3cc5e41da",
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9",
+                "marking-definition--1fb6e305-ec2a-573a-aa02-7de0ae167aa5"
+            ]
+        },
+        {
+            "id": "location--809b9b62-814e-58d5-bbdc-25cd1b2573f2",
+            "spec_version": "2.1",
+            "revoked": false,
+            "confidence": 15,
+            "created": "2021-01-09T09:06:02.842Z",
+            "modified": "2021-01-09T09:06:02.842Z",
+            "name": "Live Oak",
+            "latitude": 29.5652,
+            "longitude": -98.3364,
+            "x_opencti_id": "f4855c44-22f1-420e-a969-5312b5050936",
+            "type": "location"
+        }
+    ]
+}
