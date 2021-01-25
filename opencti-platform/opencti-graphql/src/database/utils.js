@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 import moment from 'moment';
-import { DatabaseError, FunctionalError } from '../config/errors';
-import { isHistoryObject, isInternalObject } from '../schema/internalObject';
-import { isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixDomainObject } from '../schema/stixDomainObject';
+import {DatabaseError, FunctionalError} from '../config/errors';
+import {isHistoryObject, isInternalObject} from '../schema/internalObject';
+import {isStixMetaObject} from '../schema/stixMetaObject';
+import {isStixDomainObject} from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -19,17 +19,17 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import { isInternalRelationship } from '../schema/internalRelationship';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import {isInternalRelationship} from '../schema/internalRelationship';
+import {isStixCoreRelationship} from '../schema/stixCoreRelationship';
+import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
+import {isStixCyberObservableRelationship} from '../schema/stixCyberObservableRelationship';
 import {
   isStixInternalMetaRelationship,
   isStixMetaRelationship,
   RELATION_OBJECT_LABEL,
 } from '../schema/stixMetaRelationship';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE } from './rabbitmq';
-import { isStixObject } from '../schema/stixCoreObject';
+import {EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE} from './rabbitmq';
+import {isStixObject} from '../schema/stixCoreObject';
 
 export const UPDATE_OPERATION_ADD = 'add';
 export const UPDATE_OPERATION_REPLACE = 'replace';
@@ -105,8 +105,7 @@ export const cursorToOffset = (cursor) => {
   return JSON.parse(str);
 };
 
-export const buildPagination = (first, searchAfter, instances, globalCount) => {
-  const isAfter = searchAfter !== undefined && searchAfter !== null;
+export const buildPagination = (limit, searchAfter, instances, globalCount) => {
   const edges = R.pipe(
     R.mapObjIndexed((record) => {
       const { node, sort } = record;
@@ -115,8 +114,12 @@ export const buildPagination = (first, searchAfter, instances, globalCount) => {
     }),
     R.values
   )(instances);
-  const hasNextPage = isAfter && instances.length > 0;
-  const hasPreviousPage = isAfter;
+  // Because of stateless approach its difficult to know if its finish
+  // this test could lead to an extra round trip sometimes
+  const hasNextPage = instances.length === limit;
+  // For same reason its difficult to know if a previous page exists.
+  // Considering for now that if user specific an offset, it should exists a previous page.
+  const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
   const startCursor = edges.length > 0 ? R.head(edges).cursor : '';
   const endCursor = edges.length > 0 ? R.last(edges).cursor : '';
   const pageInfo = {

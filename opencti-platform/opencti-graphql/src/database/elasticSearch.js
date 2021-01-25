@@ -1234,25 +1234,34 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
-const getRelatedRelations = async (targetIds, elements = [], options = {}) => {
-  const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
-  const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
-  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-  const hits = await elList(RELATIONSHIPS_INDICES, opts);
-  elements.push(...hits);
-  const ids = hits.map((rel) => rel.internal_id);
-  if (ids.length > 0) {
-    const groups = R.splitEvery(512, ids);
-    await Promise.map(groups, (subIds) => getRelatedRelations(subIds, elements, options), {
-      concurrency: ES_MAX_CONCURRENCY,
-    });
+const getRelatedRelations = async (targetIds, elements = []) => {
+  const MAX_SPLIT = 512; // Max number of terms resolutions (ES limitation)
+  let toResolved = Array.isArray(targetIds) ? targetIds : [targetIds];
+  const resolvedRelationsConnections = async (subIds) => {
+    const filters = [{ nested: [{ key: 'internal_id', values: subIds }], key: 'connections' }];
+    const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+    // eslint-disable-next-line no-await-in-loop
+    const hits = await elList(RELATIONSHIPS_INDICES, opts);
+    const ids = hits.map((rel) => rel.internal_id);
+    const currentStack = elements.map((rel) => rel.internal_id);
+    const newResolution = ids.filter((id) => !currentStack.includes(id));
+    toResolved.push(...newResolution);
+    elements.push(...hits);
+  };
+  while (toResolved.length > 0) {
+    const groups = R.splitEvery(MAX_SPLIT, toResolved);
+    // Clear resolution for next round trip
+    toResolved = [];
+    // eslint-disable-next-line no-await-in-loop
+    await Promise.map(groups, (subIds) => resolvedRelationsConnections(subIds), { concurrency: ES_MAX_CONCURRENCY });
   }
 };
+
 export const getRelationsToRemove = async (elements, options = {}) => {
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
   await getRelatedRelations(ids, relationsToRemove, options);
-  return R.flatten(relationsToRemove);
+  return relationsToRemove;
 };
 export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
