@@ -5,7 +5,7 @@ import { filter, pathOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
-  Google, Key, Facebook, Github,
+  Google, KeyOutline, Facebook, Github,
 } from 'mdi-material-ui';
 import { APP_BASE_PATH, QueryRenderer } from '../../relay/environment';
 import { ConnectedIntlProvider } from '../../components/AppIntlProvider';
@@ -101,7 +101,7 @@ const Login = ({ classes }) => {
       case 'github':
         return <Github className={classes.iconSmall} />;
       default:
-        return <Key className={classes.iconSmall} />;
+        return <KeyOutline className={classes.iconSmall} />;
     }
   };
 

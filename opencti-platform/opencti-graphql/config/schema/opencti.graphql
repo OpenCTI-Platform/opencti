@@ -4142,7 +4142,6 @@ enum StixCyberObservablesOrdering {
 }
 enum StixCyberObservablesFilter {
   entity_type
-  observable_value
   x_opencti_score
   created
   modified
@@ -4154,6 +4153,7 @@ enum StixCyberObservablesFilter {
   relatedTo
   objectContained
   hasExternalReference
+  value
 }
 input StixCyberObservablesFiltering {
   key: StixCyberObservablesFilter!

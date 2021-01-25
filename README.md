@@ -39,7 +39,7 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 All you need to install the OpenCTI platform can be found in the [official documentation](https://www.notion.so/luatix/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518). For installation, you can:
 
-* [Deploy the VM template](https://www.notion.so/luatix/Virtual-machine-template-1789b4442b414dbf87f748db51c85aa5) (recommended)
+* [Deploy the VM template](https://www.notion.so/luatix/Virtual-machine-template-1789b4442b414dbf87f748db51c85aa5)
 * [Use Docker](https://www.notion.so/luatix/Using-Docker-03d5c0592b9d4547800cc9f4ff7be2b8) (recommended)
 * [Install manually](https://www.notion.so/luatix/Manual-deployment-b911beba44234f179841582ab3894bb1)
 
