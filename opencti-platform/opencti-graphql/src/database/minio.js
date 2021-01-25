@@ -101,7 +101,7 @@ export const filesListing = async (first, path) => {
   const allFiles = concat(inExport, files);
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
   const fileNodes = map((f) => ({ node: f }), sortedFiles);
-  return buildPagination(first, 0, fileNodes, allFiles.length);
+  return buildPagination(first, null, fileNodes, allFiles.length);
 };
 
 export const getMinIOVersion = () => {

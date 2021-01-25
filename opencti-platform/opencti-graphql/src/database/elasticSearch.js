@@ -1,10 +1,10 @@
 /* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import { Promise } from 'bluebird';
-import { cursorToOffset } from 'graphql-relay/lib/connection/arrayconnection';
 import * as R from 'ramda';
 import {
   buildPagination,
+  cursorToOffset,
   INDEX_HISTORY,
   INDEX_INTERNAL_OBJECTS,
   INDEX_INTERNAL_RELATIONSHIPS,
@@ -17,6 +17,7 @@ import {
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
   inferIndexFromConceptType,
   isNotEmptyField,
+  offsetToCursor,
   pascalize,
 } from './utils';
 import conf, { logger } from '../config/conf';
@@ -57,7 +58,7 @@ import {
 } from '../schema/stixMetaObject';
 
 const BULK_TIMEOUT = '5m';
-const RECURSIVE_DELETE_CONCURRENCY = 5;
+const ES_MAX_CONCURRENCY = 5;
 const MAX_AGGREGATION_SIZE = 100;
 const MAX_SEARCH_AGGREGATION_SIZE = 10000;
 const MAX_SEARCH_SIZE = 5000;
@@ -574,87 +575,6 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
   return hits;
 };
 
-const elFindBy = async (fields, values, type = null, indices = DATA_INDICES) => {
-  const mustTerms = [];
-  const valsArray = Array.isArray(values) ? values : [values];
-  const fieldsArray = Array.isArray(fields) ? fields : [fields];
-  const workingVals = R.filter((id) => isNotEmptyField(id), valsArray);
-  if (workingVals.length === 0) return [];
-  const valsTermsPerType = [];
-  for (let index = 0; index < workingVals.length; index += 1) {
-    const val = workingVals[index];
-    for (let indexType = 0; indexType < fieldsArray.length; indexType += 1) {
-      const field = fieldsArray[indexType];
-      if (R.includes('connections.', field)) {
-        valsTermsPerType.push({
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [{ match_phrase: { [field]: val } }],
-              },
-            },
-          },
-        });
-      } else {
-        const term = { [`${field}.keyword`]: val };
-        valsTermsPerType.push({ term });
-      }
-    }
-  }
-  // const idsTermsPerType = map((e) => ({ [`${e}.keyword`]: id }), elementTypes);
-  const should = {
-    bool: {
-      should: valsTermsPerType,
-      minimum_should_match: 1,
-    },
-  };
-  mustTerms.push(should);
-  if (type) {
-    const shouldType = {
-      bool: {
-        should: [{ match_phrase: { 'entity_type.keyword': type } }, { match_phrase: { 'parent_types.keyword': type } }],
-        minimum_should_match: 1,
-      },
-    };
-    mustTerms.push(shouldType);
-  }
-  const query = {
-    index: indices,
-    size: MAX_SEARCH_SIZE,
-    track_total_hits: true,
-    _source_excludes: `${REL_INDEX_PREFIX}*`,
-    body: {
-      query: {
-        bool: {
-          must: mustTerms,
-        },
-      },
-    },
-  };
-  logger.debug(`[ELASTICSEARCH] elFindBy`, { query });
-  const data = await el.search(query).catch((err) => {
-    throw DatabaseError('Find data fail', { error: err, query });
-  });
-  const hits = [];
-  const total = data.body.hits.total.value;
-  for (let index = 0; index < data.body.hits.hits.length; index += 1) {
-    const hit = data.body.hits.hits[index];
-    let loadedElement = R.assoc('_index', hit._index, hit._source);
-    // And a specific processing for a relation
-    if (loadedElement.base_type === BASE_TYPE_RELATION) {
-      loadedElement = elReconstructRelation(loadedElement);
-    }
-    hits.push(loadedElement);
-  }
-  return { total, hits };
-};
-export const elLoadBy = async (fields, values, type = null, indices = DATA_INDICES) => {
-  const { total, hits } = await elFindBy(fields, values, type, indices);
-  if (total > 1) throw Error(`Expected only one response, found ${total}`);
-  return R.head(hits);
-};
-
 export const elFindByIds = async (ids, type = null, indices = DATA_INDICES) => {
   const mustTerms = [];
   const idsArray = Array.isArray(ids) ? ids : [ids];
@@ -969,9 +889,10 @@ export const specialElasticCharsEscape = (query) => {
   return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
 export const elPaginate = async (indexName, options = {}) => {
+  // eslint-disable-next-line no-use-before-define
   const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const { types = null, filters = [], search = null, connectionFormat = true } = options;
-  const offset = after ? cursorToOffset(after) : 0;
+  const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
   let mustnot = [];
   let ordering = [];
@@ -1119,40 +1040,46 @@ export const elPaginate = async (indexName, options = {}) => {
     order[orderKeyword] = orderMode;
     ordering = R.append(order, ordering);
     must = R.append({ exists: { field: orderKeyword } }, must);
+  } else {
+    // Default ordering by id
+    ordering.push({ 'internal_id.keyword': 'asc' });
+  }
+  let body = {
+    size: first,
+    sort: ordering,
+    query: {
+      bool: {
+        must,
+        must_not: mustnot,
+      },
+    },
+  };
+  if (searchAfter) {
+    body = { ...body, search_after: searchAfter };
   }
   const query = {
     index: indexName,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
     track_total_hits: true,
-    body: {
-      from: offset,
-      size: first,
-      sort: ordering,
-      query: {
-        bool: {
-          must,
-          must_not: mustnot,
-        },
-      },
-    },
+    body,
   };
   logger.debug(`[ELASTICSEARCH] paginate`, { query });
   return el
     .search(query)
     .then((data) => {
       const dataWithIds = R.map((n) => {
-        const loadedElement = R.pipe(R.assoc('id', n._source.internal_id), R.assoc('_index', n._index))(n._source);
+        const loadedElement = { ...n._source, _index: n._index, id: n._source.internal_id, sort: n.sort };
         if (loadedElement.base_type === BASE_TYPE_RELATION) {
           return elReconstructRelation(loadedElement);
         }
         if (loadedElement.event_data) {
-          return R.assoc('event_data', JSON.stringify(loadedElement.event_data), loadedElement);
+          return { ...loadedElement, event_data: JSON.stringify(loadedElement.event_data) };
         }
         return loadedElement;
       }, data.body.hits.hits);
       if (connectionFormat) {
-        const nodeHits = R.map((n) => ({ node: n }), dataWithIds);
-        return buildPagination(first, offset, nodeHits, data.body.hits.total.value);
+        const nodeHits = R.map((n) => ({ node: n, sort: n.sort }), dataWithIds);
+        return buildPagination(first, searchAfter, nodeHits, data.body.hits.total.value);
       }
       return dataWithIds;
     })
@@ -1170,10 +1097,48 @@ export const elPaginate = async (indexName, options = {}) => {
           logger.error(`[ELASTICSEARCH] Paginate fail`, { error: err, query });
           throw err;
         } else {
-          return connectionFormat ? buildPagination(0, 0, [], 0) : [];
+          return connectionFormat ? buildPagination(0, null, [], 0) : [];
         }
       }
     );
+};
+export const elList = async (indexName, options = {}) => {
+  let hasNextPage = true;
+  let searchAfter = options.after;
+  const listing = [];
+  const publish = async (elements) => {
+    const { callback } = options;
+    if (callback) {
+      // eslint-disable-next-line no-await-in-loop
+      await callback(elements);
+    } else {
+      listing.push(...elements);
+    }
+  };
+  while (hasNextPage) {
+    // Force options to prevent connection format and manage search after
+    const opts = { ...options, after: searchAfter, connectionFormat: false };
+    // eslint-disable-next-line no-await-in-loop
+    const elements = await elPaginate(indexName, opts);
+    if (elements.length === 0 || elements.length < options.first) {
+      if (elements.length > 0) {
+        // eslint-disable-next-line no-await-in-loop
+        await publish(elements);
+      }
+      hasNextPage = false;
+    } else {
+      searchAfter = offsetToCursor(R.last(elements).sort);
+      // eslint-disable-next-line no-await-in-loop
+      await publish(elements);
+    }
+  }
+  return listing;
+};
+export const elLoadBy = async (field, value, type = null, indices = DATA_INDICES) => {
+  const opts = { filters: [{ key: field, values: [value] }], connectionFormat: false, types: type ? [type] : [] };
+  const hits = await elPaginate(indices, opts);
+  if (hits.length > 1) throw Error(`Expected only one response, found ${hits.length}`);
+  return R.head(hits);
 };
 // endregion
 
@@ -1269,23 +1234,26 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
-const getRelatedRelations = async (targetId, elements = [], options = {}) => {
-  const { total, hits } = await elFindBy('connections.internal_id', targetId, ABSTRACT_BASIC_RELATIONSHIP);
-  const isPartialRemove = total > hits.length;
+const getRelatedRelations = async (targetIds, elements = [], options = {}) => {
+  const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
+  const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
+  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+  const hits = await elList(RELATIONSHIPS_INDICES, opts);
   elements.push(...hits);
   const ids = hits.map((rel) => rel.internal_id);
-  await Promise.map(ids, (id) => getRelatedRelations(id, elements, options), {
-    concurrency: RECURSIVE_DELETE_CONCURRENCY,
-  });
-  return isPartialRemove;
+  if (ids.length > 0) {
+    const groups = R.splitEvery(512, ids);
+    await Promise.map(groups, (subIds) => getRelatedRelations(subIds, elements, options), {
+      concurrency: ES_MAX_CONCURRENCY,
+    });
+  }
 };
-export const getRelationsToRemove = async (element, options = {}) => {
-  const removed = [];
-  const isPartialRemove = await getRelatedRelations(element.internal_id, removed, options);
-  // Return list of deleted ids
-  return { isPartialRemove, removed };
+export const getRelationsToRemove = async (elements, options = {}) => {
+  const relationsToRemove = [];
+  const ids = elements.map((e) => e.internal_id);
+  await getRelatedRelations(ids, relationsToRemove, options);
+  return R.flatten(relationsToRemove);
 };
-
 export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
   if (instances.length === 0) return Promise.resolve(0);
@@ -1297,7 +1265,6 @@ export const elDeleteInstanceIds = async (instances) => {
   });
   return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
 };
-
 const elRemoveRelationConnection = async (relsFromTo) => {
   if (relsFromTo.length === 0) return true;
   const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
@@ -1331,33 +1298,23 @@ const elRemoveRelationConnection = async (relsFromTo) => {
 };
 
 export const elDeleteElements = async (elements) => {
-  // eslint-disable-next-line no-use-before-define,prettier/prettier
-  return Promise.all(elements.map(async (element) => {
-      const { isPartialRemove, removed } = await getRelationsToRemove(element);
-      const relationsToRemoved = R.flatten(removed);
-      const idsToRemove = R.uniq(relationsToRemoved.map((e) => e.internal_id));
-      // 02. Compute the id that needs to be remove from rel
-      const relsFromTo = relationsToRemoved
-        .map((r) => {
-          const isFromCleanup = isImpactedType(r.fromType) && !idsToRemove.includes(r.fromId);
-          const isToCleanup = isImpactedType(r.toType) && !idsToRemove.includes(r.toId);
-          return { relation: r, isFromCleanup, isToCleanup };
-        })
-        .filter((r) => r.isFromCleanup || r.isToCleanup);
-      // Update all rel connections that will remain
-      await elRemoveRelationConnection(relsFromTo); // Bulk
-      // Delete all related elements
-      await elDeleteInstanceIds(relationsToRemoved); // deleteByQuery
-      // delete source elements if everything connected have been deleted
-      if (!isPartialRemove) {
-        // eslint-disable-next-line no-await-in-loop
-        await elDeleteInstanceIds([element]);
-      }
+  const relationsToRemoved = await getRelationsToRemove(elements);
+  const relationIdsCache = R.uniq(relationsToRemoved.map((e) => e.internal_id));
+  // 02. Compute the id that needs to be remove from rel
+  const relsFromTo = relationsToRemoved
+    .map((r) => {
+      const isFromCleanup = isImpactedType(r.fromType) && !relationIdsCache.includes(r.fromId);
+      const isToCleanup = isImpactedType(r.toType) && !relationIdsCache.includes(r.toId);
+      return { relation: r, isFromCleanup, isToCleanup };
     })
-  );
+    .filter((r) => r.isFromCleanup || r.isToCleanup);
+  // Update all rel connections that will remain
+  await elRemoveRelationConnection(relsFromTo); // Bul
+  // eslint-disable-next-line no-await-in-loop
+  await elDeleteInstanceIds([...elements, ...relationsToRemoved]);
 };
 
-export const elDeleteElement = (element) => {
+export const elDeleteElement = async (element) => {
   return elDeleteElements([element]);
 };
 

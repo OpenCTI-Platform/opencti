@@ -1,9 +1,9 @@
 /* eslint-disable */
 import * as R from 'ramda';
-import { DATA_INDICES, el, RELATIONSHIPS_INDICES } from '../database/elasticSearch';
+import { DATA_INDICES, el, elDeleteElement, RELATIONSHIPS_INDICES } from '../database/elasticSearch';
 import { logger } from '../config/conf';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
-import { deleteElementByIdRaw, loadById } from '../database/middleware';
+import { loadById } from '../database/middleware';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
 const computeMissingRelationsForType = async (relationType) => {
@@ -108,7 +108,7 @@ export const cleanInconsistentRelations = async () => {
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
     const element = await loadById(relation.internal_id, relation.entity_type);
-    await deleteElementByIdRaw(element);
+    await elDeleteElement(element);
   }
   logger.info('[MIGRATION] Fix missing deletion migration done');
 };

@@ -806,9 +806,8 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await loadByIdFullyResolved(createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.objectMarking.length).toEqual(1);
-    expect(R.head(loadMalware.objectMarking).standard_id).toEqual(
-      'marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c'
-    );
+    const marking = await internalLoadById(R.head(loadMalware.objectMarking).internal_id);
+    expect(marking.standard_id).toEqual('marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c');
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',

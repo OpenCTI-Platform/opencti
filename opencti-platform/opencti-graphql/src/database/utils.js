@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
 import { DatabaseError, FunctionalError } from '../config/errors';
 import { isHistoryObject, isInternalObject } from '../schema/internalObject';
@@ -95,17 +94,29 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   return newData;
 };
 
-export const buildPagination = (first, offset, instances, globalCount) => {
+export const offsetToCursor = (sort) => {
+  const objJsonStr = JSON.stringify(sort);
+  return Buffer.from(objJsonStr, 'utf-8').toString('base64');
+};
+
+export const cursorToOffset = (cursor) => {
+  const buff = Buffer.from(cursor, 'base64');
+  const str = buff.toString('utf-8');
+  return JSON.parse(str);
+};
+
+export const buildPagination = (first, searchAfter, instances, globalCount) => {
+  const isAfter = searchAfter !== undefined && searchAfter !== null;
   const edges = R.pipe(
-    R.mapObjIndexed((record, key) => {
-      const { node } = record;
-      const nodeOffset = offset + parseInt(key, 10) + 1;
-      return { node, cursor: offsetToCursor(nodeOffset) };
+    R.mapObjIndexed((record) => {
+      const { node, sort } = record;
+      const cursor = sort ? offsetToCursor(sort) : '';
+      return { node, cursor };
     }),
     R.values
   )(instances);
-  const hasNextPage = first + offset < globalCount;
-  const hasPreviousPage = offset > 0;
+  const hasNextPage = isAfter && instances.length > 0;
+  const hasPreviousPage = isAfter;
   const startCursor = edges.length > 0 ? R.head(edges).cursor : '';
   const endCursor = edges.length > 0 ? R.last(edges).cursor : '';
   const pageInfo = {

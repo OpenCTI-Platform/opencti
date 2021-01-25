@@ -324,7 +324,7 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
 };
 
 export const loginFromProvider = async (email, name) => {
-  const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
+  const user = await elLoadBy('user_email', email, ENTITY_TYPE_USER);
   if (!user) {
     const newUser = { name, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
@@ -340,7 +340,7 @@ export const loginFromProvider = async (email, name) => {
 };
 
 export const login = async (email, password) => {
-  const user = await elLoadBy(['user_email'], email, ENTITY_TYPE_USER);
+  const user = await elLoadBy('user_email', email, ENTITY_TYPE_USER);
   if (!user) throw AuthenticationFailure();
   const userToken = await loadThroughGetTo(user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
   if (!userToken) throw AuthenticationFailure();
@@ -360,7 +360,7 @@ export const logout = async (user, res) => {
 
 // Token related
 const internalGetTokenByUUID = async (tokenUUID) => {
-  return elLoadBy(['uuid'], tokenUUID, ENTITY_TYPE_TOKEN);
+  return elLoadBy('uuid', tokenUUID, ENTITY_TYPE_TOKEN);
 };
 
 export const userRenewToken = async (user, userId, newToken = generateOpenCTIWebToken()) => {
@@ -391,7 +391,7 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
 export const findByTokenUUID = async (tokenValue) => {
   let user = await getAccessCache(tokenValue);
   if (!user) {
-    const userToken = await elLoadBy(['uuid'], tokenValue, ENTITY_TYPE_TOKEN);
+    const userToken = await elLoadBy('uuid', tokenValue, ENTITY_TYPE_TOKEN);
     if (!userToken || userToken.revoked === true) return undefined;
     const users = await listThroughGetFrom(userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
     if (users.length === 0 || users.length > 1) return undefined;
