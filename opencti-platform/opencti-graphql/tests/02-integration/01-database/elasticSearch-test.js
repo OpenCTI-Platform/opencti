@@ -376,7 +376,9 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate everything after', async () => {
-    const data = await elPaginate(ENTITIES_INDICES, { after: 'WzE2MTE1NzM3MDMyNjdd' });
+    const data = await elPaginate(ENTITIES_INDICES, {
+      after: 'WyJleHRlcm5hbC1yZWZlcmVuY2UtLTUzYjNhZGI2LWQ4M2YtNWQyMS05Mzc2LTQ1YTE5OGU0NDA3ZSJd',
+    });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(55);
   });

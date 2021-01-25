@@ -1042,7 +1042,7 @@ export const elPaginate = async (indexName, options = {}) => {
     must = R.append({ exists: { field: orderKeyword } }, must);
   } else {
     // Default ordering by id
-    ordering.push({ created_at: 'desc' });
+    ordering.push({ 'standard_id.keyword': 'asc' });
   }
   let body = {
     size: first,
