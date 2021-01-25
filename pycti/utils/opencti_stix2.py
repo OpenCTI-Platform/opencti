@@ -1168,7 +1168,8 @@ class OpenCTIStix2:
                 ):
                     objects_to_get.append(
                         stix_sighting_relationship["to"]
-                        if stix_sighting_relationship["to"]["id"] != entity["x_opencti_id"]
+                        if stix_sighting_relationship["to"]["id"]
+                        != entity["x_opencti_id"]
                         else stix_sighting_relationship["from"]
                     )
                     relation_object_data = self.prepare_export(
