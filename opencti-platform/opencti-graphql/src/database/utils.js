@@ -1,10 +1,9 @@
 import * as R from 'ramda';
-import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
-import { DatabaseError, FunctionalError } from '../config/errors';
-import { isHistoryObject, isInternalObject } from '../schema/internalObject';
-import { isStixMetaObject } from '../schema/stixMetaObject';
-import { isStixDomainObject } from '../schema/stixDomainObject';
+import {DatabaseError, FunctionalError} from '../config/errors';
+import {isHistoryObject, isInternalObject} from '../schema/internalObject';
+import {isStixMetaObject} from '../schema/stixMetaObject';
+import {isStixDomainObject} from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -20,17 +19,17 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import { isInternalRelationship } from '../schema/internalRelationship';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
+import {isInternalRelationship} from '../schema/internalRelationship';
+import {isStixCoreRelationship} from '../schema/stixCoreRelationship';
+import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
+import {isStixCyberObservableRelationship} from '../schema/stixCyberObservableRelationship';
 import {
   isStixInternalMetaRelationship,
   isStixMetaRelationship,
   RELATION_OBJECT_LABEL,
 } from '../schema/stixMetaRelationship';
-import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE } from './rabbitmq';
-import { isStixObject } from '../schema/stixCoreObject';
+import {EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE} from './rabbitmq';
+import {isStixObject} from '../schema/stixCoreObject';
 
 export const UPDATE_OPERATION_ADD = 'add';
 export const UPDATE_OPERATION_REPLACE = 'replace';
@@ -95,17 +94,32 @@ export const fillTimeSeries = (startDate, endDate, interval, data) => {
   return newData;
 };
 
-export const buildPagination = (first, offset, instances, globalCount) => {
+export const offsetToCursor = (sort) => {
+  const objJsonStr = JSON.stringify(sort);
+  return Buffer.from(objJsonStr, 'utf-8').toString('base64');
+};
+
+export const cursorToOffset = (cursor) => {
+  const buff = Buffer.from(cursor, 'base64');
+  const str = buff.toString('utf-8');
+  return JSON.parse(str);
+};
+
+export const buildPagination = (limit, searchAfter, instances, globalCount) => {
   const edges = R.pipe(
-    R.mapObjIndexed((record, key) => {
-      const { node } = record;
-      const nodeOffset = offset + parseInt(key, 10) + 1;
-      return { node, cursor: offsetToCursor(nodeOffset) };
+    R.mapObjIndexed((record) => {
+      const { node, sort } = record;
+      const cursor = sort ? offsetToCursor(sort) : '';
+      return { node, cursor };
     }),
     R.values
   )(instances);
-  const hasNextPage = first + offset < globalCount;
-  const hasPreviousPage = offset > 0;
+  // Because of stateless approach its difficult to know if its finish
+  // this test could lead to an extra round trip sometimes
+  const hasNextPage = instances.length === limit;
+  // For same reason its difficult to know if a previous page exists.
+  // Considering for now that if user specific an offset, it should exists a previous page.
+  const hasPreviousPage = searchAfter !== undefined && searchAfter !== null;
   const startCursor = edges.length > 0 ? R.head(edges).cursor : '';
   const endCursor = edges.length > 0 ? R.last(edges).cursor : '';
   const pageInfo = {

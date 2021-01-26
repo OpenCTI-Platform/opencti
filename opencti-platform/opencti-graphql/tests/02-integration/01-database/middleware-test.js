@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { offsetToCursor } from 'graphql-relay';
 import {
   createEntity,
   createRelation,
@@ -190,11 +189,11 @@ describe('Entities listing', () => {
     expect(aggregationMap.get('France')).toBeUndefined(); // Stix organization convert to Country with OpenCTI
   });
   it.each(noCacheCases)('should list entities with basic filtering (noCache = %s)', async (noCache) => {
-    const options = { first: 1, after: offsetToCursor(2), orderBy: 'created', orderMode: 'desc', noCache };
+    const options = { first: 1, orderBy: 'created', orderMode: 'desc', noCache };
     const indicators = await listEntities(['Indicator'], options);
     expect(indicators.edges.length).toEqual(1);
     const indicator = R.head(indicators.edges).node;
-    expect(indicator.name).toEqual('2a0169c72c84e6d3fa49af701fd46ee7aaf1d1d9e107798d93a6ca8df5d25957');
+    expect(indicator.name).toEqual('www.xolod-teplo.ru');
   });
   it.each(noCacheCases)('should list entities with search (noCache = %s)', async (noCache) => {
     let options = { search: 'xolod', noCache };
@@ -295,7 +294,7 @@ describe('Relations listing', () => {
     }
   });
   it.each(noCacheCases)('should list relations with first and order filtering (noCache = %s)', async (noCache) => {
-    const options = { first: 6, after: offsetToCursor(0), orderBy: 'created', orderMode: 'asc', noCache };
+    const options = { first: 6, orderBy: 'created', orderMode: 'asc', noCache };
     const stixRelations = await listRelations('stix-core-relationship', options);
     expect(stixRelations).not.toBeNull();
     expect(stixRelations.edges.length).toEqual(6);
@@ -806,9 +805,8 @@ describe('Upsert and merge entities', () => {
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await loadByIdFullyResolved(createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware.objectMarking.length).toEqual(1);
-    expect(R.head(loadMalware.objectMarking).standard_id).toEqual(
-      'marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c'
-    );
+    const marking = await internalLoadById(R.head(loadMalware.objectMarking).internal_id);
+    expect(marking.standard_id).toEqual('marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c');
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',

@@ -1,4 +1,5 @@
-import { head, assoc } from 'ramda';
+import { head } from 'ramda';
+import * as R from 'ramda';
 import { elPaginate } from '../database/elasticSearch';
 import conf from '../config/conf';
 import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
@@ -7,11 +8,20 @@ import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { loadById, timeSeriesEntities } from '../database/middleware';
 import { INDEX_HISTORY } from '../database/utils';
 
-export const findAll = (args) => elPaginate(INDEX_HISTORY, assoc('types', ['history'], args));
+export const findAll = (args) => {
+  const finalArgs = R.pipe(
+    R.assoc('type', ['history']),
+    R.assoc('orderBy', args.orderBy || 'timestamp'),
+    R.assoc('orderMode', args.orderMode || 'desc')
+  )(args);
+  return elPaginate(INDEX_HISTORY, finalArgs);
+};
 
 export const creator = async (entityId) => {
   const entity = await loadById(entityId, ABSTRACT_STIX_CORE_OBJECT);
   return elPaginate(INDEX_HISTORY, {
+    orderBy: 'timestamp',
+    orderMode: 'asc',
     filters: [
       { key: 'event_type', values: [EVENT_TYPE_CREATE] },
       { key: 'context_data.id', values: [entity.internal_id] },

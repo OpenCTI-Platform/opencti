@@ -1,6 +1,5 @@
 /* eslint-disable no-underscore-dangle */
 import { assoc, find, head, includes, map, propEq, uniq } from 'ramda';
-import { offsetToCursor } from 'graphql-relay';
 import moment from 'moment';
 import {
   elAggregationCount,
@@ -377,7 +376,9 @@ describe('Elasticsearch pagination', () => {
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate everything after', async () => {
-    const data = await elPaginate(ENTITIES_INDICES, { after: offsetToCursor(30) });
+    const data = await elPaginate(ENTITIES_INDICES, {
+      after: 'WyJleHRlcm5hbC1yZWZlcmVuY2UtLTUzYjNhZGI2LWQ4M2YtNWQyMS05Mzc2LTQ1YTE5OGU0NDA3ZSJd',
+    });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(55);
   });
