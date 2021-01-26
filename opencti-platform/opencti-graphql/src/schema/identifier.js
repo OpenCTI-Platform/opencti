@@ -32,6 +32,7 @@ const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
 export const NAME_FIELD = 'name';
+export const IDENTIFIER_FIELD = 'identifier';
 export const CONTENT_FIELD = 'content';
 export const OPINION_FIELD = 'opinion';
 export const PID_FIELD = 'pid';
@@ -121,6 +122,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
+    [I.ENTITY_TYPE_WORKSPACE]: [{ src: IDENTIFIER_FIELD }],
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: X_MITRE_ID_FIELD }],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],

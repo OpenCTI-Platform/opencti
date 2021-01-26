@@ -278,6 +278,7 @@ input WorkErrorInput {
 ############## Workspaces
 enum WorkspacesOrdering {
   name
+  identifier
   created_at
   ownedBy
 }
@@ -291,6 +292,7 @@ type WorkspaceEdge {
 }
 type Workspace {
   id: ID!
+  identifier: String!
   name: String!
   description: String
   owner: User
@@ -299,6 +301,7 @@ type Workspace {
   updated_at: DateTime
 }
 input WorkspaceAddInput {
+  identifier: String!
   name: String!
   description: String
 }

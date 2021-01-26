@@ -151,6 +151,7 @@ export const internalObjectsAttributes = {
     'internal_id',
     'standard_id',
     'entity_type',
+    'identifier',
     'name',
     'description',
     'manifest',
