@@ -129,16 +129,52 @@ class StixDomainObject:
                 attribute_abstract
                 content
                 authors
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                            }
+                            ... on BasicRelationship {
+                                id
+                            } 
+                        }
+                    }
+                }                
             }
             ... on ObservedData {
                 first_observed
                 last_observed
                 number_observed
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                            }
+                            ... on BasicRelationship {
+                                id
+                            } 
+                        }
+                    }
+                }                
             }
             ... on Opinion {
                 explanation
                 authors
                 opinion
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                            }
+                            ... on BasicRelationship {
+                                id
+                            } 
+                        }
+                    }
+                }                
             }
             ... on Report {
                 name
@@ -146,6 +182,18 @@ class StixDomainObject:
                 report_types
                 published
                 x_opencti_report_status
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                            }
+                            ... on BasicRelationship {
+                                id
+                            } 
+                        }
+                    }
+                }
             }
             ... on CourseOfAction {
                 name
