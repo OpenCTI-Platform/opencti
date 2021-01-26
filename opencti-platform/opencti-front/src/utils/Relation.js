@@ -119,6 +119,7 @@ const relationsTypesMapping = {
   'Threat-Actor_Malware': ['uses'],
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
+  'Tool_Attack-Pattern': ['uses'],
   Tool_Malware: ['uses', 'drops', 'delivers'],
   Tool_Vulnerability: ['has', 'targets'],
   Tool_Sector: ['targets'],
@@ -173,6 +174,7 @@ const relationsTypesMapping = {
   'Network-Traffic_IPv6-Addr': ['src', 'dst'],
   'Network-Traffic_Network-Traffic': ['encapsulates'],
   'Network-Traffic_Artifact': ['src-payload', 'dst-payload'],
+  targets_City: ['located-at'],
 };
 
 export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
