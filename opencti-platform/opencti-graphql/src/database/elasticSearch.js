@@ -59,8 +59,9 @@ import {
 
 export const ES_MAX_CONCURRENCY = 5;
 export const MAX_SPLIT = 1000; // Max number of terms resolutions (ES limitation)
-const BULK_TIMEOUT = '5m';
+export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
+const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
 const MAX_SEARCH_AGGREGATION_SIZE = 10000;
 const MAX_SEARCH_SIZE = 5000;
 const UNIMPACTED_ENTITIES = [
@@ -1235,7 +1236,6 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
-const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
 const getRelatedRelations = async (targetIds, elements, level, cache) => {
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];

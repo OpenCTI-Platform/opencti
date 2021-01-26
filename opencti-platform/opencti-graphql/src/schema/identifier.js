@@ -122,7 +122,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
     // Stix Domain
-    [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: NAME_FIELD }, { src: X_MITRE_ID_FIELD }],
+    [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: X_MITRE_ID_FIELD }],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'stix_id' }],
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
@@ -132,7 +132,7 @@ const stixEntityContribution = {
     ],
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'stix_id' }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
-    [D.ENTITY_TYPE_COURSE_OF_ACTION]: [{ src: NAME_FIELD }, { src: X_MITRE_ID_FIELD }],
+    [D.ENTITY_TYPE_COURSE_OF_ACTION]: [{ src: X_MITRE_ID_FIELD }],
     [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }],
