@@ -22,7 +22,6 @@ import {
   ascend,
   descend,
   propOr,
-  join,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';

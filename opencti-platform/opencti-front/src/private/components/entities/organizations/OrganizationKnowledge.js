@@ -42,6 +42,8 @@ class OrganizationKnowledgeComponent extends Component {
             'campaigns',
             'incidents',
             'malwares',
+            'attack_patterns',
+            'tools',
             'observables',
             'sightings',
           ]}
@@ -161,6 +163,34 @@ class OrganizationKnowledgeComponent extends Component {
               entityId={organization.id}
               relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Malware']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/attack_patterns"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Attack-Pattern']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/tools"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
               isRelationReversed={true}
               {...routeProps}

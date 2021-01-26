@@ -5428,7 +5428,7 @@ graphql-redis-subscriptions@2.3.1:
   optionalDependencies:
     ioredis "^4.17.3"
 
-graphql-relay@0.6.0:
+graphql-relay@^0.6.0:
   version "0.6.0"
   resolved "https://registry.yarnpkg.com/graphql-relay/-/graphql-relay-0.6.0.tgz#18ec36b772cfcb3dbb9bd369c3f8004cf42c7b93"
   integrity sha512-OVDi6C9/qOT542Q3KxZdXja3NrDvqzbihn1B44PH8P/c5s0Q90RyQwT6guhGqXqbYEH6zbeLJWjQqiYvcg2vVw==
