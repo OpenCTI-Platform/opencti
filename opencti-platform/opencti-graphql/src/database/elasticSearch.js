@@ -143,149 +143,154 @@ export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
     indexesToCreate.map((index) => {
       return el.indices.exists({ index }).then((result) => {
         if (result.body === false) {
-          return el.indices.create({
-            index,
-            body: {
-              settings: {
-                index: {
-                  max_result_window: 100000,
-                },
-                analysis: {
-                  normalizer: {
-                    string_normalizer: {
-                      type: 'custom',
-                      filter: ['lowercase', 'asciifolding'],
-                    },
+          return el.indices
+            .create({
+              index: `${index}-000001`,
+              body: {
+                aliases: { [index]: {} },
+                settings: {
+                  index: {
+                    max_result_window: 100000,
                   },
-                },
-              },
-              mappings: {
-                dynamic_templates: [
-                  {
-                    integers: {
-                      match_mapping_type: 'long',
-                      mapping: {
-                        type: 'integer',
+                  analysis: {
+                    normalizer: {
+                      string_normalizer: {
+                        type: 'custom',
+                        filter: ['lowercase', 'asciifolding'],
                       },
                     },
                   },
-                  {
-                    strings: {
-                      match_mapping_type: 'string',
-                      mapping: {
-                        type: 'text',
-                        fields: {
-                          keyword: {
-                            type: 'keyword',
-                            normalizer: 'string_normalizer',
-                            ignore_above: 512,
+                },
+                mappings: {
+                  dynamic_templates: [
+                    {
+                      integers: {
+                        match_mapping_type: 'long',
+                        mapping: {
+                          type: 'integer',
+                        },
+                      },
+                    },
+                    {
+                      strings: {
+                        match_mapping_type: 'string',
+                        mapping: {
+                          type: 'text',
+                          fields: {
+                            keyword: {
+                              type: 'keyword',
+                              normalizer: 'string_normalizer',
+                              ignore_above: 512,
+                            },
                           },
                         },
                       },
                     },
-                  },
-                ],
-                properties: {
-                  timestamp: {
-                    type: 'date',
-                  },
-                  created: {
-                    type: 'date',
-                  },
-                  modified: {
-                    type: 'date',
-                  },
-                  first_seen: {
-                    type: 'date',
-                  },
-                  last_seen: {
-                    type: 'date',
-                  },
-                  start_time: {
-                    type: 'date',
-                  },
-                  stop_time: {
-                    type: 'date',
-                  },
-                  published: {
-                    type: 'date',
-                  },
-                  valid_from: {
-                    type: 'date',
-                  },
-                  valid_until: {
-                    type: 'date',
-                  },
-                  observable_date: {
-                    type: 'date',
-                  },
-                  event_date: {
-                    type: 'date',
-                  },
-                  received_time: {
-                    type: 'date',
-                  },
-                  processed_time: {
-                    type: 'date',
-                  },
-                  completed_time: {
-                    type: 'date',
-                  },
-                  ctime: {
-                    type: 'date',
-                  },
-                  mtime: {
-                    type: 'date',
-                  },
-                  atime: {
-                    type: 'date',
-                  },
-                  confidence: {
-                    type: 'integer',
-                  },
-                  x_opencti_report_status: {
-                    type: 'integer',
-                  },
-                  attribute_order: {
-                    type: 'integer',
-                  },
-                  base_score: {
-                    type: 'integer',
-                  },
-                  is_family: {
-                    type: 'boolean',
-                  },
-                  number_observed: {
-                    type: 'integer',
-                  },
-                  x_opencti_negative: {
-                    type: 'boolean',
-                  },
-                  default_assignation: {
-                    type: 'boolean',
-                  },
-                  x_opencti_detection: {
-                    type: 'boolean',
-                  },
-                  x_opencti_order: {
-                    type: 'integer',
-                  },
-                  import_expected_number: {
-                    type: 'integer',
-                  },
-                  import_processed_number: {
-                    type: 'integer',
-                  },
-                  x_opencti_score: {
-                    type: 'integer',
-                  },
-                  connections: {
-                    type: 'nested',
+                  ],
+                  properties: {
+                    timestamp: {
+                      type: 'date',
+                    },
+                    created: {
+                      type: 'date',
+                    },
+                    modified: {
+                      type: 'date',
+                    },
+                    first_seen: {
+                      type: 'date',
+                    },
+                    last_seen: {
+                      type: 'date',
+                    },
+                    start_time: {
+                      type: 'date',
+                    },
+                    stop_time: {
+                      type: 'date',
+                    },
+                    published: {
+                      type: 'date',
+                    },
+                    valid_from: {
+                      type: 'date',
+                    },
+                    valid_until: {
+                      type: 'date',
+                    },
+                    observable_date: {
+                      type: 'date',
+                    },
+                    event_date: {
+                      type: 'date',
+                    },
+                    received_time: {
+                      type: 'date',
+                    },
+                    processed_time: {
+                      type: 'date',
+                    },
+                    completed_time: {
+                      type: 'date',
+                    },
+                    ctime: {
+                      type: 'date',
+                    },
+                    mtime: {
+                      type: 'date',
+                    },
+                    atime: {
+                      type: 'date',
+                    },
+                    confidence: {
+                      type: 'integer',
+                    },
+                    x_opencti_report_status: {
+                      type: 'integer',
+                    },
+                    attribute_order: {
+                      type: 'integer',
+                    },
+                    base_score: {
+                      type: 'integer',
+                    },
+                    is_family: {
+                      type: 'boolean',
+                    },
+                    number_observed: {
+                      type: 'integer',
+                    },
+                    x_opencti_negative: {
+                      type: 'boolean',
+                    },
+                    default_assignation: {
+                      type: 'boolean',
+                    },
+                    x_opencti_detection: {
+                      type: 'boolean',
+                    },
+                    x_opencti_order: {
+                      type: 'integer',
+                    },
+                    import_expected_number: {
+                      type: 'integer',
+                    },
+                    import_processed_number: {
+                      type: 'integer',
+                    },
+                    x_opencti_score: {
+                      type: 'integer',
+                    },
+                    connections: {
+                      type: 'nested',
+                    },
                   },
                 },
               },
-            },
-          });
+            })
+            .catch((e) => {
+              throw DatabaseError('Error creating index', { error: e });
+            });
         }
         /* istanbul ignore next */
         return result;

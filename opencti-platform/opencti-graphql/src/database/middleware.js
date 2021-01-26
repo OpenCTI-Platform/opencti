@@ -124,7 +124,6 @@ import {
 // region global variables
 export const MAX_BATCH_SIZE = 25;
 export const REL_CONNECTED_SUFFIX = 'CONNECTED';
-
 // endregion
 
 // region Loader common
