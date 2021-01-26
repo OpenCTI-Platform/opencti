@@ -1273,9 +1273,7 @@ const getRelatedRelations = async (targetIds, elements, level, cache) => {
     const resolvedIds = internalIds.filter((f) => !cache[f]);
     foundRelations.push(...resolvedIds);
     // eslint-disable-next-line no-param-reassign,prettier/prettier
-    resolvedIds.forEach((id) => {
-      cache[id] = '';
-    });
+    resolvedIds.forEach((id) => { cache[id] = '' });
   }
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {

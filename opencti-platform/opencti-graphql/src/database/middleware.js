@@ -1677,30 +1677,40 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     if (existingEntities.length === 1) {
       return upsertElementRaw(user, R.head(existingEntities).id, type, input);
     }
-    // Sometimes multiple entities can match
-    // Looking for aliasA, aliasB, find in different entities for example
-    // In this case, we try to find if one match the standard id
-    const existingByStandard = R.find((e) => e.standard_id === standardId, existingEntities);
-    if (existingByStandard) {
-      // If a STIX ID has been passed in the creation
-      if (input.stix_id) {
-        // Find the entity corresponding to this STIX ID
-        const stixIdFinder = (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id);
-        const existingByGivenStixId = R.find(stixIdFinder, existingEntities);
-        // If the entity exists by the stix id and not the same as the previously founded.
-        if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
-          // Merge this entity into the one matching the standard id
-          await mergeEntities(user, existingByStandard, [existingByGivenStixId], { locks: participantIds });
+    // If creation is not by a reference
+    // We can in best effort try to merge a common stix_id
+    if (input.update === false) {
+      // Sometimes multiple entities can match
+      // Looking for aliasA, aliasB, find in different entities for example
+      // In this case, we try to find if one match the standard id
+      const existingByStandard = R.find((e) => e.standard_id === standardId, existingEntities);
+      if (existingByStandard) {
+        // If a STIX ID has been passed in the creation
+        if (input.stix_id) {
+          // Find the entity corresponding to this STIX ID
+          const stixIdFinder = (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id);
+          const existingByGivenStixId = R.find(stixIdFinder, existingEntities);
+          // If the entity exists by the stix id and not the same as the previously founded.
+          if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
+            // Merge this entity into the one matching the standard id
+            await mergeEntities(user, existingByStandard, [existingByGivenStixId], { locks: participantIds });
+          }
         }
+        // In this mode we can safely consider this entity like the existing one.
+        // We can upsert element except the aliases that are part of other entities
+        const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
+        const key = resolveAliasesField(type);
+        const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
+        const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
+        const inputAliases = { ...input, [key]: filteredAliases };
+        return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
       }
-      // In this mode we can safely consider this entity like the existing one.
-      // We can upsert element except the aliases that are part of other entities
-      const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
-      const key = resolveAliasesField(type);
-      const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
-      const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
-      const inputAliases = { ...input, [key]: filteredAliases };
-      return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
+    } else {
+      // The new one is new reference, merge all found entities
+      const targetEntity = R.head(existingEntities);
+      const [, ...sourceEntities] = existingEntities;
+      await mergeEntities(user, targetEntity, sourceEntities, { locks: participantIds });
+      return upsertElementRaw(user, targetEntity.id, type, input);
     }
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, existingEntities);
