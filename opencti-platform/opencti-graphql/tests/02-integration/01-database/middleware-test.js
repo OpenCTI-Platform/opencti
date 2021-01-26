@@ -218,7 +218,7 @@ describe('Entities listing', () => {
     const attacks = await listEntities(['Attack-Pattern'], options);
     expect(attacks).not.toBeNull();
     expect(attacks.edges.length).toEqual(1);
-    expect(R.head(attacks.edges).node.standard_id).toEqual('attack-pattern--acdfc109-e0fd-5711-839b-a37ee49529b9');
+    expect(R.head(attacks.edges).node.standard_id).toEqual('attack-pattern--b5c4784e-6ecc-5347-a231-c9739e077dd8');
     expect(R.head(attacks.edges).node.x_opencti_stix_ids).toEqual([
       'attack-pattern--489a7797-01c3-4706-8cd1-ec56a9db3adc',
     ]);
