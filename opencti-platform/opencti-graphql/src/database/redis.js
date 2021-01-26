@@ -22,11 +22,11 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 
-const WORK_DATABASE = 0; // works key for tracking.
-const CONTEXT_DATABASE = 1; // locks / user context / stream
+const BASE_DATABASE = 0; // works key for tracking / stream
+const CONTEXT_DATABASE = 1; // locks / user context
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
-const redisOptions = (database = null) => ({
+const redisOptions = (database) => ({
   lazyConnect: true,
   db: database,
   port: conf.get('redis:port'),
@@ -41,30 +41,30 @@ export const pubsub = new RedisPubSub({
   publisher: new Redis(redisOptions()),
   subscriber: new Redis(redisOptions()),
 });
-const createRedisClient = async (database) => {
+const createRedisClient = async (database = BASE_DATABASE) => {
   const client = new Redis(redisOptions(database));
   if (client.status !== 'ready') await client.connect();
   client.on('connect', () => logger.debug('[REDIS] Redis client connected'));
   return client;
 };
 
-let clientWork = null;
+let clientBase = null;
 let clientContext = null;
 const initializeClients = async () => {
-  clientWork = await createRedisClient(WORK_DATABASE);
+  clientBase = await createRedisClient(BASE_DATABASE);
   clientContext = await createRedisClient(CONTEXT_DATABASE);
 };
 
 export const redisIsAlive = async () => {
   await initializeClients();
-  if (clientWork.status !== 'ready' || clientContext.status !== 'ready') {
+  if (clientBase.status !== 'ready' || clientContext.status !== 'ready') {
     /* istanbul ignore next */
     throw DatabaseError('Redis seems down');
   }
   return true;
 };
 export const getRedisVersion = async () => {
-  return clientContext.serverInfo.redis_version;
+  return clientBase.serverInfo.redis_version;
 };
 
 /* istanbul ignore next */
@@ -208,7 +208,7 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
       source_ids: R.map((s) => s.standard_id, sourceEntities),
     };
     const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
-    return clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    return clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
@@ -243,7 +243,7 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
       const message = generateLogMessage(operation, instance, messageInput);
       // Build and send the event
       const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
-      await clientContext.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      await clientBase.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
     }
@@ -274,7 +274,7 @@ export const storeCreateEvent = async (user, instance, input) => {
       const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
       // Build and send the event
       const event = buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
-      await clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      await clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
     } catch (e) {
       throw DatabaseError('Error in store create event', { error: e });
     }
@@ -294,7 +294,7 @@ export const storeDeleteEvent = async (user, instance) => {
         data.hashes = instance.hashes;
       }
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-      return clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
     }
     if (isStixRelationship(instance.entity_type)) {
       const isCore = isStixCoreRelationship(instance.entity_type);
@@ -316,7 +316,7 @@ export const storeDeleteEvent = async (user, instance) => {
         x_opencti_target_ref: instance.to.internal_id,
       };
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-      return clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
     }
   } catch (e) {
     throw DatabaseError('Error in store delete event', { error: e });
@@ -324,8 +324,8 @@ export const storeDeleteEvent = async (user, instance) => {
   return true;
 };
 
-const fetchStreamInfo = async (client) => {
-  const res = await client.call('XINFO', 'STREAM', OPENCTI_STREAM);
+const fetchStreamInfo = async () => {
+  const res = await clientBase.call('XINFO', 'STREAM', OPENCTI_STREAM);
   // eslint-disable-next-line
   const [, size, , keys, , nodes, , lastId, , groups, , firstEntry, , lastEntry] = res;
   return { lastEventId: lastId, streamSize: size };
@@ -357,8 +357,8 @@ const MAX_RANGE_MESSAGES = 2000;
 const WAIT_TIME = 20000;
 export const createStreamProcessor = (callback) => {
   let startEventId;
-  const processInfo = async (client) => {
-    return fetchStreamInfo(client);
+  const processInfo = async () => {
+    return fetchStreamInfo();
   };
   const processStep = async (client) => {
     const streamResult = await client.xread('BLOCK', WAIT_TIME, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, startEventId);
@@ -374,7 +374,7 @@ export const createStreamProcessor = (callback) => {
     return true;
   };
   const processingLoop = async (client) => {
-    const streamInfo = await processInfo(client);
+    const streamInfo = await processInfo();
     startEventId = streamInfo.lastEventId;
     while (streamListening) {
       // eslint-disable-next-line no-await-in-loop
@@ -434,29 +434,29 @@ export const updateObjectCounterRaw = async (tx, id, field, number) => {
 // region work handling
 export const redisDeleteWork = async (internalIds) => {
   const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
-  return redisTx(clientWork, (tx) => {
+  return redisTx(clientBase, (tx) => {
     tx.call('DEL', ...ids);
   });
 };
 export const redisCreateWork = async (element) => {
-  return redisTx(clientWork, (tx) => {
+  return redisTx(clientBase, (tx) => {
     const data = R.flatten(R.toPairs(element));
     tx.call('HSET', element.internal_id, data);
   });
 };
 export const redisGetWork = async (internalId) => {
-  const rawElement = await clientWork.call('HGETALL', internalId);
+  const rawElement = await clientBase.call('HGETALL', internalId);
   return R.fromPairs(R.splitEvery(2, rawElement));
 };
 export const redisUpdateWork = async (id, input) => {
   const data = R.flatten(R.toPairs(input));
-  return redisTx(clientWork, (tx) => {
+  return redisTx(clientBase, (tx) => {
     tx.call('HSET', id, data);
   });
 };
 export const redisUpdateWorkFigures = async (workId) => {
   const timestamp = now();
-  const [, , fetched] = await redisTx(clientWork, async (tx) => {
+  const [, , fetched] = await redisTx(clientBase, async (tx) => {
     await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
     await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
     await tx.call('HGETALL', workId);
@@ -466,7 +466,7 @@ export const redisUpdateWorkFigures = async (workId) => {
   return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn, expected: en };
 };
 export const redisUpdateActionExpectation = async (user, workId, expectation) => {
-  await redisTx(clientWork, async (tx) => {
+  await redisTx(clientBase, async (tx) => {
     await updateObjectCounterRaw(tx, workId, 'import_expected_number', expectation);
   });
   return workId;
