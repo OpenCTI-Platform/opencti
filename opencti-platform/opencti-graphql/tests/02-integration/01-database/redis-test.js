@@ -12,6 +12,11 @@ import {
   storeUserAccessCache,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { checkSystemDependencies } from '../../../src/initialization';
+
+beforeAll(async () => {
+  await checkSystemDependencies();
+});
 
 describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {
