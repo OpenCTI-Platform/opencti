@@ -12,6 +12,7 @@ import {
   filter,
   join,
   assoc,
+  flatten,
 } from 'ramda';
 import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -37,6 +38,9 @@ class RegionsLinesComponent extends Component {
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || propOr('', 'subregions_text', n)
         .toLowerCase()
+        .indexOf(keyword.toLowerCase()) !== -1
+      || propOr('', 'countries_text', n)
+        .toLowerCase()
         .indexOf(keyword.toLowerCase()) !== -1;
     const regions = pipe(
       pathOr([], ['regions', 'edges']),
@@ -44,6 +48,16 @@ class RegionsLinesComponent extends Component {
       map((n) => assoc(
         'subregions_text',
         pipe(
+          map((o) => `${o.node.name} ${o.node.description}`),
+          join(' | '),
+        )(pathOr([], ['subRegions', 'edges'], n)),
+        n,
+      )),
+      map((n) => assoc(
+        'countries_text',
+        pipe(
+          map((o) => o.node.countries.edges),
+          flatten,
           map((o) => `${o.node.name} ${o.node.description}`),
           join(' | '),
         )(pathOr([], ['subRegions', 'edges'], n)),
@@ -65,6 +79,14 @@ class RegionsLinesComponent extends Component {
               const subRegions = pipe(
                 pathOr([], ['subRegions', 'edges']),
                 map((n) => n.node),
+                map((n) => assoc(
+                  'countries_text',
+                  pipe(
+                    map((o) => `${o.node.name} ${o.node.description}`),
+                    join(' | '),
+                  )(pathOr([], ['countries', 'edges'], n)),
+                  n,
+                )),
                 filter(filterByKeyword),
                 sortByNameCaseInsensitive,
               )(region);

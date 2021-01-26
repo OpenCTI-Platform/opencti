@@ -131,7 +131,6 @@ RegionLineComponent.propTypes = {
   isSubRegion: PropTypes.bool,
   subRegions: PropTypes.array,
   countries: PropTypes.array,
-  keyword: PropTypes.string,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };
