@@ -349,9 +349,7 @@ class Filters extends Component {
                     }
                     noOptionsText={t('No available options')}
                     options={entities[filterKey] ? entities[filterKey] : []}
-                    onInputChange={() => {
-                      this.searchEntities.bind(this, filterKey);
-                    }}
+                    onInputChange={this.searchEntities.bind(this, filterKey)}
                     onChange={this.handleChange.bind(this, filterKey)}
                     getOptionSelected={(option, value) => option.value === value
                     }

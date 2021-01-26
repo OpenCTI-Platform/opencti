@@ -159,6 +159,7 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
                   country {
                     id
                     name
+                    x_opencti_aliases
                     region {
                       id
                       name
@@ -166,7 +167,9 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
                   }
                 }
                 ... on Country {
+                  id
                   name
+                  x_opencti_aliases
                   region {
                     id
                     name
@@ -174,6 +177,7 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
                 }
                 ... on Region {
                   name
+                  x_opencti_aliases
                   countries {
                     edges {
                       node {

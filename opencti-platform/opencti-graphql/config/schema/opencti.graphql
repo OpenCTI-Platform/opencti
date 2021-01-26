@@ -275,6 +275,34 @@ input WorkErrorInput {
   source: String
 }
 
+############## Workspaces
+enum WorkspacesOrdering {
+  name
+  created_at
+  ownedBy
+}
+type WorkspaceConnection {
+  pageInfo: PageInfo!
+  edges: [WorkspaceEdge]
+}
+type WorkspaceEdge {
+  cursor: String!
+  node: Workspace!
+}
+type Workspace {
+  id: ID!
+  name: String!
+  description: String
+  owner: User
+  manifest: String!
+  created_at: DateTime
+  updated_at: DateTime
+}
+input WorkspaceAddInput {
+  name: String!
+  description: String
+}
+
 ############## SubTypes
 enum SubTypesOrdering {
   label
@@ -5658,7 +5686,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input ProcessAddInput {
   extensions: String
   is_hidden: Boolean
-  pid: Int
+  pid: Int!
   created_time: DateTime
   cwd: String
   command_line: String
@@ -7235,6 +7263,17 @@ type Query {
     fieldKey: String
     search: String
   ): AttributeConnection @auth(for: [KNOWLEDGE])
+  workspace(id: String): Workspace @auth(for: [EXPLORE])
+  workspaces(
+    first: Int
+    after: ID
+    orderBy: WorkspacesOrdering
+    orderMode: OrderingMode
+    key: String
+    elementType: String
+    fieldKey: String
+    search: String
+  ): WorkspaceConnection @auth(for: [EXPLORE])
 
   ######## STIX OBJECT ENTITIES
 

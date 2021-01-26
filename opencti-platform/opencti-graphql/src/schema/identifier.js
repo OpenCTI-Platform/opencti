@@ -32,6 +32,9 @@ const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
 export const NAME_FIELD = 'name';
+export const CONTENT_FIELD = 'content';
+export const OPINION_FIELD = 'opinion';
+export const PID_FIELD = 'pid';
 export const X_MITRE_ID_FIELD = 'x_mitre_id';
 // endregion
 
@@ -61,7 +64,7 @@ const stixCyberObservableContribution = {
       { src: 'dst_port' },
       { src: 'protocols' },
     ],
-    [C.ENTITY_PROCESS]: [{ src: 'stix_id' }],
+    [C.ENTITY_PROCESS]: [{ src: PID_FIELD }],
     [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
     [C.ENTITY_URL]: [{ src: 'value' }],
     [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }],
@@ -77,6 +80,9 @@ const stixCyberObservableContribution = {
     [C.ENTITY_WINDOWS_REGISTRY_VALUE_TYPE]: [], // ALL
   },
   resolvers: {
+    pid() {
+      return uuidv4();
+    },
     from(from) {
       return from?.standard_id;
     },
@@ -118,13 +124,13 @@ const stixEntityContribution = {
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: X_MITRE_ID_FIELD }],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: 'stix_id' }],
+    [D.ENTITY_TYPE_CONTAINER_NOTE]: [{ src: CONTENT_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_OBSERVED_DATA]: [
       { src: 'first_observed' },
       { src: 'last_observed' },
       { src: 'number_observed' },
     ],
-    [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'stix_id' }],
+    [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: OPINION_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }],
@@ -149,6 +155,12 @@ const stixEntityContribution = {
     [M.ENTITY_TYPE_EXTERNAL_REFERENCE]: [[{ src: 'url' }], [{ src: 'source_name' }, { src: 'external_id' }]],
   },
   resolvers: {
+    content() {
+      return uuidv4();
+    },
+    opinion() {
+      return uuidv4();
+    },
     name(data) {
       return normalizeName(data);
     },
