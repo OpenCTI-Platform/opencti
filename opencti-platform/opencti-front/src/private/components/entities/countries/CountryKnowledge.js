@@ -14,6 +14,7 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import EntityStixCoreRelationshipsSelection from '../../common/stix_core_relationships/EntityStixCoreRelationshipsSelection';
 
 const styles = () => ({
   container: {
@@ -115,12 +116,11 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/intrusion_sets"
           render={(routeProps) => (
-            <EntityStixCoreRelationships
+            <EntityStixCoreRelationshipsSelection
               entityId={country.id}
-              relationshipType="targets"
-              targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
-              isRelationReversed={true}
+              targetStixDomainObjectTypes={['Intrusion-Set']}
+              targetStixCoreRelationshipTypes={['targets', 'originates-from']}
               {...routeProps}
             />
           )}
