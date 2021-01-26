@@ -38,12 +38,6 @@ export const X_MITRE_ID_FIELD = 'x_mitre_id';
 export const normalizeName = (name) => {
   return (name || '').toLowerCase().trim();
 };
-const idGen = (data, namespace) => {
-  // If element have nothing participating to the key, we can only create an uuidv4
-  if (R.isEmpty(data)) return uuidv4();
-  const dataCanonicalize = jsonCanonicalize(data);
-  return uuidv5(dataCanonicalize, namespace);
-};
 const stixCyberObservableContribution = {
   definition: {
     // Observables
@@ -132,7 +126,7 @@ const stixEntityContribution = {
     ],
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: 'stix_id' }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
-    [D.ENTITY_TYPE_COURSE_OF_ACTION]: [{ src: X_MITRE_ID_FIELD }],
+    [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
     [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }],
@@ -171,6 +165,15 @@ const stixEntityContribution = {
 };
 const resolveContribution = (type) => {
   return isStixCyberObservable(type) ? stixCyberObservableContribution : stixEntityContribution;
+};
+const idGen = (type, raw, data, namespace) => {
+  if (R.isEmpty(data)) {
+    const contrib = resolveContribution(type);
+    const properties = contrib.definition[type];
+    throw UnsupportedError(`Cant create key for ${type} from empty data`, { data: raw, properties });
+  }
+  const dataCanonicalize = jsonCanonicalize(data);
+  return uuidv5(dataCanonicalize, namespace);
 };
 export const isFieldContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
@@ -235,11 +238,11 @@ const generateDataUUID = (type, data) => {
 };
 const generateStixUUID = (type, data) => {
   const dataUUID = generateDataUUID(type, data);
-  return idGen(dataUUID, OASIS_NAMESPACE);
+  return idGen(type, data, dataUUID, OASIS_NAMESPACE);
 };
 const generateObjectUUID = (type, data) => {
   const dataUUID = generateDataUUID(type, data);
-  return idGen(dataUUID, OPENCTI_NAMESPACE);
+  return idGen(type, data, dataUUID, OPENCTI_NAMESPACE);
 };
 
 const generateObjectId = (type, data) => {
@@ -270,7 +273,8 @@ export const generateStandardId = (type, data) => {
 };
 export const generateAliasesId = (aliases) => {
   return R.map((a) => {
-    const uuid = idGen({ name: normalizeName(a) }, OPENCTI_NAMESPACE);
+    const dataUUID = { name: normalizeName(a) };
+    const uuid = idGen('ALIAS', aliases, dataUUID, OPENCTI_NAMESPACE);
     return `aliases--${uuid}`;
   }, aliases);
 };

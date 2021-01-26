@@ -120,7 +120,7 @@ describe('AttackPattern resolver standard behavior', () => {
     expect(queryResult.data.attackPattern.standard_id).toEqual('attack-pattern--a01046cc-192f-5d52-8e75-6e447fae3890');
     expect(queryResult.data.attackPattern.coursesOfAction.edges.length).toEqual(1);
     expect(queryResult.data.attackPattern.coursesOfAction.edges[0].node.standard_id).toEqual(
-      'course-of-action--9b26eb81-cc84-428a-955e-8a6d47ec273d'
+      'course-of-action--2d3af28d-aa36-59ad-ac57-65aa27664752'
     );
   });
   it('should list attackPatterns', async () => {
