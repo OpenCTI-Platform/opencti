@@ -13,6 +13,7 @@ import { isEmpty } from 'ramda';
 import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
+import contentDisposition from 'content-disposition';
 import { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
@@ -104,7 +105,7 @@ const createApp = async (apolloServer, broadcaster) => {
     if (!auth) res.sendStatus(403);
     const { file } = req.params;
     const data = await loadFile(file);
-    res.setHeader('Content-disposition', `inline; filename="${data.name}"`);
+    res.setHeader('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
     res.setHeader('Content-type', data.metaData.mimetype);
     const stream = await downloadFile(file);
     stream.pipe(res);
