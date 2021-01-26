@@ -222,15 +222,16 @@ class StreamCatcher(threading.Thread):
             return result["lastEventId"]
 
     def run(self):
-        from_event_id = self.connector_last_event_id
-        from_event_timestamp = 0
-        last_event_timestamp = int(self.last_event_id.split("-")[0])
-        while (
-            from_event_timestamp <= last_event_timestamp
-            and from_event_id != self.last_event_id
-        ):
-            from_event_id = self.get_range(from_event_id)
-            from_event_timestamp = int(from_event_id.split("-")[0])
+        if self.connector_last_event_id:
+            from_event_id = self.connector_last_event_id
+            from_event_timestamp = 0
+            last_event_timestamp = int(self.last_event_id.split("-")[0])
+            while (
+                from_event_timestamp <= last_event_timestamp
+                and from_event_id != self.last_event_id
+            ):
+                from_event_id = self.get_range(from_event_id)
+                from_event_timestamp = int(from_event_id.split("-")[0])
         logging.info("Events catchup requests done.")
 
 
