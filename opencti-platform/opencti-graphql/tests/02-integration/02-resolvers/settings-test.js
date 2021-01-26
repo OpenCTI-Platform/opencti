@@ -49,7 +49,7 @@ describe('Settings resolver standard behavior', () => {
     expect(queryResult).not.toBeNull();
     const { about } = queryResult.data;
     expect(about).not.toBeNull();
-    expect(about.version).toContain('4.0');
+    expect(about.version).toContain('4.1');
     expect(about.dependencies.length).toEqual(4);
   });
   it('should settings information', async () => {
