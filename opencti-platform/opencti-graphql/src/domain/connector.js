@@ -1,16 +1,9 @@
 import { assoc, filter, includes, map, pipe } from 'ramda';
-import {
-  createEntity,
-  deleteElementById,
-  listEntities,
-  loadById,
-  now,
-  patchAttribute,
-  sinceNowInMinutes,
-} from '../database/middleware';
+import { createEntity, deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
 import { connectorConfig, registerConnectorQueues, unregisterConnector } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR } from '../schema/internalObject';
 import { FunctionalError } from '../config/errors';
+import { now, sinceNowInMinutes } from '../utils/format';
 
 export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
 export const CONNECTOR_INTERNAL_IMPORT_FILE = 'INTERNAL_IMPORT_FILE'; // Files mime types to support (application/json, ...) -> import-

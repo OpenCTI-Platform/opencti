@@ -20,45 +20,51 @@ import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix'
 import { DatabaseError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
+import { now } from '../utils/format';
 
+const WORK_DATABASE = 0; // works key for tracking.
+const CONTEXT_DATABASE = 1; // locks / user context / stream
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
-const redisOptions = {
+const redisOptions = (database = null) => ({
   lazyConnect: true,
+  db: database,
   port: conf.get('redis:port'),
   host: conf.get('redis:hostname'),
   password: conf.get('redis:password'),
   retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
   maxRetriesPerRequest: 2,
-};
+  showFriendlyErrorStack: true,
+});
 
-let redis = null;
-const createRedisClient = async () => {
-  const client = new Redis(redisOptions);
+export const pubsub = new RedisPubSub({
+  publisher: new Redis(redisOptions()),
+  subscriber: new Redis(redisOptions()),
+});
+const createRedisClient = async (database) => {
+  const client = new Redis(redisOptions(database));
   if (client.status !== 'ready') await client.connect();
   client.on('connect', () => logger.debug('[REDIS] Redis client connected'));
   return client;
 };
-const getClient = async () => {
-  if (redis) return redis;
-  redis = createRedisClient();
-  return redis;
+
+let clientWork = null;
+let clientContext = null;
+const initializeClients = async () => {
+  clientWork = await createRedisClient(WORK_DATABASE);
+  clientContext = await createRedisClient(CONTEXT_DATABASE);
 };
-export const pubsub = new RedisPubSub({
-  publisher: new Redis(redisOptions),
-  subscriber: new Redis(redisOptions),
-});
+
 export const redisIsAlive = async () => {
-  const client = await getClient();
-  if (client.status !== 'ready') {
+  await initializeClients();
+  if (clientWork.status !== 'ready' || clientContext.status !== 'ready') {
     /* istanbul ignore next */
     throw DatabaseError('Redis seems down');
   }
   return true;
 };
 export const getRedisVersion = async () => {
-  const client = await getClient();
-  return client.serverInfo.redis_version;
+  return clientContext.serverInfo.redis_version;
 };
 
 /* istanbul ignore next */
@@ -67,11 +73,10 @@ export const notify = (topic, instance, user, context) => {
   return instance;
 };
 
-// region user context
+// region user context (clientContext)
 export const setEditContext = async (user, instanceId, input) => {
-  const client = await getClient();
   const data = R.assoc('name', user.user_email, input);
-  return client.set(
+  return clientContext.set(
     `edit:${instanceId}:${user.id}`,
     JSON.stringify(data),
     'ex',
@@ -79,16 +84,15 @@ export const setEditContext = async (user, instanceId, input) => {
   );
 };
 export const fetchEditContext = async (instanceId) => {
-  const client = await getClient();
   return new Promise((resolve, reject) => {
     const elementsPromise = [];
-    const stream = client.scanStream({
+    const stream = clientContext.scanStream({
       match: `edit:${instanceId}:*`,
       count: 100,
     });
     stream.on('data', (resultKeys) => {
       for (let i = 0; i < resultKeys.length; i += 1) {
-        elementsPromise.push(client.get(resultKeys[i]));
+        elementsPromise.push(clientContext.get(resultKeys[i]));
       }
     });
     stream.on('error', (error) => {
@@ -104,13 +108,11 @@ export const fetchEditContext = async (instanceId) => {
   });
 };
 export const delEditContext = async (user, instanceId) => {
-  const client = await getClient();
-  return client.del(`edit:${instanceId}:${user.id}`);
+  return clientContext.del(`edit:${instanceId}:${user.id}`);
 };
 export const delUserContext = async (user) => {
-  const client = await getClient();
   return new Promise((resolve, reject) => {
-    const stream = client.scanStream({
+    const stream = clientContext.scanStream({
       match: `*:*:${user.id}`,
       count: 100,
     });
@@ -126,7 +128,7 @@ export const delUserContext = async (user) => {
     });
     stream.on('end', () => {
       if (!R.isEmpty(keys)) {
-        client.del(keys);
+        clientContext.del(keys);
       }
       resolve();
     });
@@ -134,34 +136,30 @@ export const delUserContext = async (user) => {
 };
 // endregion
 
-// region cache for access token
+// region cache for access token (clientContext)
 export const getAccessCache = async (tokenUUID) => {
-  const client = await getClient();
-  const data = await client.get(`access-${tokenUUID}`);
+  const data = await clientContext.get(`access-${tokenUUID}`);
   return data && JSON.parse(data);
 };
 export const storeUserAccessCache = async (tokenUUID, access, expiration = REDIS_EXPIRE_TIME) => {
-  const client = await getClient();
   const val = JSON.stringify(access);
-  await client.set(`access-${tokenUUID}`, val, 'ex', expiration);
+  await clientContext.set(`access-${tokenUUID}`, val, 'ex', expiration);
   return access;
 };
 export const clearUserAccessCache = async (tokenUUID) => {
-  const client = await getClient();
-  await client.del(`access-${tokenUUID}`);
+  await clientContext.del(`access-${tokenUUID}`);
 };
 // endregion
 
-// region locking
+// region locking (clientContext)
 export const lockResource = async (resources) => {
   const locks = R.uniq(resources);
-  const redisClient = await getClient();
   // Retry during 5 secs
   const retryCount = conf.get('app:concurrency:retry_count');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
-  const redlock = new Redlock([redisClient], { retryCount, retryDelay, retryJitter });
+  const redlock = new Redlock([clientContext], { retryCount, retryDelay, retryJitter });
   const lock = await redlock.lock(locks, maxTtl); // Force unlock after 10 secs
   return {
     extend: () => true,
@@ -210,8 +208,7 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
       source_ids: R.map((s) => s.standard_id, sourceEntities),
     };
     const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
-    const client = await getClient();
-    return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    return clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
@@ -246,8 +243,7 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
       const message = generateLogMessage(operation, instance, messageInput);
       // Build and send the event
       const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
-      const client = await getClient();
-      await client.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      await clientContext.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
     }
@@ -278,8 +274,7 @@ export const storeCreateEvent = async (user, instance, input) => {
       const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
       // Build and send the event
       const event = buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
-      const client = await getClient();
-      await client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      await clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
     } catch (e) {
       throw DatabaseError('Error in store create event', { error: e });
     }
@@ -299,8 +294,7 @@ export const storeDeleteEvent = async (user, instance) => {
         data.hashes = instance.hashes;
       }
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-      const client = await getClient();
-      return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
     }
     if (isStixRelationship(instance.entity_type)) {
       const isCore = isStixCoreRelationship(instance.entity_type);
@@ -322,8 +316,7 @@ export const storeDeleteEvent = async (user, instance) => {
         x_opencti_target_ref: instance.to.internal_id,
       };
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-      const client = await getClient();
-      return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return clientContext.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
     }
   } catch (e) {
     throw DatabaseError('Error in store delete event', { error: e });
@@ -364,8 +357,7 @@ const MAX_RANGE_MESSAGES = 2000;
 const WAIT_TIME = 20000;
 export const createStreamProcessor = (callback) => {
   let startEventId;
-  const processInfo = async () => {
-    const client = await getClient();
+  const processInfo = async (client) => {
     return fetchStreamInfo(client);
   };
   const processStep = async (client) => {
@@ -381,9 +373,8 @@ export const createStreamProcessor = (callback) => {
     }
     return true;
   };
-  const processingLoop = async () => {
-    const client = await createRedisClient();
-    const streamInfo = await processInfo();
+  const processingLoop = async (client) => {
+    const streamInfo = await processInfo(client);
     startEventId = streamInfo.lastEventId;
     while (streamListening) {
       // eslint-disable-next-line no-await-in-loop
@@ -395,8 +386,9 @@ export const createStreamProcessor = (callback) => {
   return {
     info: async () => processInfo(),
     start: async () => {
+      const client = await createRedisClient(); // Create client for this processing loop
       logger.info('[STREAM] Starting streaming processor');
-      processingLoopPromise = processingLoop();
+      processingLoopPromise = processingLoop(client);
     },
     shutdown: async () => {
       logger.info('[STREAM] Shutdown streaming processor');
@@ -420,10 +412,8 @@ export const getStreamRange = async (from, limit, callback) => {
 };
 // endregion
 
-// region
-// Simple object that contains only basic data (string, number)
-export const redisTx = async (callback) => {
-  const client = await getClient();
+// region basic operations
+export const redisTx = async (client, callback) => {
   const tx = client.multi();
   try {
     await callback(tx);
@@ -432,34 +422,53 @@ export const redisTx = async (callback) => {
     throw DatabaseError('Redis Tx error', { error: e });
   }
 };
-export const basicObjectDelete = async (internalIds) => {
-  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
-  return redisTx((tx) => {
-    tx.call('DEL', ...ids);
-  });
-};
-export const basicObjectCreation = async (element) => {
-  return redisTx((tx) => {
-    const data = R.flatten(R.toPairs(element));
-    tx.call('HSET', element.internal_id, data);
-  });
-};
 export const updateObjectRaw = async (tx, id, input) => {
   const data = R.flatten(R.toPairs(input));
   await tx.call('HSET', id, data);
 };
-export const updateObject = async (id, input) => {
-  const data = R.flatten(R.toPairs(input));
-  return redisTx((tx) => {
-    tx.call('HSET', id, data);
-  });
-};
 export const updateObjectCounterRaw = async (tx, id, field, number) => {
   await tx.call('HINCRBY', id, field, number);
 };
-export const fetchBasicObject = async (internalId) => {
-  const client = await getClient();
-  const rawElement = await client.call('HGETALL', internalId);
+// endregion
+
+// region work handling
+export const redisDeleteWork = async (internalIds) => {
+  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
+  return redisTx(clientWork, (tx) => {
+    tx.call('DEL', ...ids);
+  });
+};
+export const redisCreateWork = async (element) => {
+  return redisTx(clientWork, (tx) => {
+    const data = R.flatten(R.toPairs(element));
+    tx.call('HSET', element.internal_id, data);
+  });
+};
+export const redisGetWork = async (internalId) => {
+  const rawElement = await clientWork.call('HGETALL', internalId);
   return R.fromPairs(R.splitEvery(2, rawElement));
+};
+export const redisUpdateWork = async (id, input) => {
+  const data = R.flatten(R.toPairs(input));
+  return redisTx(clientWork, (tx) => {
+    tx.call('HSET', id, data);
+  });
+};
+export const redisUpdateWorkFigures = async (workId) => {
+  const timestamp = now();
+  const [, , fetched] = await redisTx(clientWork, async (tx) => {
+    await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
+    await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
+    await tx.call('HGETALL', workId);
+  });
+  const updatedMetrics = R.fromPairs(R.splitEvery(2, R.last(fetched)));
+  const { import_processed_number: pn, import_expected_number: en } = updatedMetrics;
+  return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn, expected: en };
+};
+export const redisUpdateActionExpectation = async (user, workId, expectation) => {
+  await redisTx(clientWork, async (tx) => {
+    await updateObjectCounterRaw(tx, workId, 'import_expected_number', expectation);
+  });
+  return workId;
 };
 // endregion

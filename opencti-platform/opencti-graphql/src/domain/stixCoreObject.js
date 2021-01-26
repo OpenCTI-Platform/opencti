@@ -13,7 +13,6 @@ import {
   loadById,
   loadByIdFullyResolved,
   mergeEntities,
-  now,
   updateAttribute,
   batchLoadThroughGetTo,
 } from '../database/middleware';
@@ -48,6 +47,7 @@ import { connectorsForExport } from './connector';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
+import { now } from '../utils/format';
 
 export const findAll = async (args) => {
   let types = [];

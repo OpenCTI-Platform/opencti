@@ -2,31 +2,24 @@ import * as R from 'ramda';
 import {
   createEntity,
   createRelation,
-  dayFormat,
   deleteElementById,
   distributionEntities,
   distributionRelations,
-  escape,
   internalLoadById,
   listEntities,
   listRelations,
   loadById,
   loadByIdFullyResolved,
   mergeEntities,
-  monthFormat,
-  now,
   patchAttribute,
-  prepareDate,
   querySubTypes,
   REL_CONNECTED_SUFFIX,
-  sinceNowInMinutes,
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
-  yearFormat,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { INDEX_STIX_DOMAIN_OBJECTS, utcDate } from '../../../src/database/utils';
+import { INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
 import { DATA_INDICES, el, elLoadByIds } from '../../../src/database/elasticSearch';
 import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
@@ -46,6 +39,16 @@ import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCybe
 import { RELATION_OBJECT_LABEL } from '../../../src/schema/stixMetaRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
+import {
+  dayFormat,
+  escape,
+  monthFormat,
+  now,
+  prepareDate,
+  sinceNowInMinutes,
+  utcDate,
+  yearFormat,
+} from '../../../src/utils/format';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {

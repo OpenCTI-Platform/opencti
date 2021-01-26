@@ -8,7 +8,6 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  escape,
   internalLoadById,
   listEntities,
   loadById,
@@ -25,6 +24,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '..
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { addAttribute, find as findAttribute } from './attribute';
+import { escape } from '../utils/format';
 
 export const findAll = async (args) => {
   let types = [];

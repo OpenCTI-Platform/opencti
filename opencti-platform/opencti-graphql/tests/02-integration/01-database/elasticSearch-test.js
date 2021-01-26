@@ -31,8 +31,8 @@ import {
   INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   INDEX_INTERNAL_RELATIONSHIPS,
   INDEX_STIX_CYBER_OBSERVABLES,
-  utcDate,
 } from '../../../src/database/utils';
+import { utcDate } from '../../../src/utils/format';
 
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {

@@ -9,7 +9,6 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   distributionEntities,
-  escape,
   listEntities,
   loadById,
   timeSeriesEntities,
@@ -51,6 +50,7 @@ import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
+import { escape } from '../utils/format';
 
 export const findById = (stixCyberObservableId) => {
   return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);

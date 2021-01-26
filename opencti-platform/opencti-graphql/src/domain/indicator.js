@@ -1,14 +1,7 @@
 import moment from 'moment';
 import { assoc, descend, dissoc, head, includes, isNil, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
-import {
-  createEntity,
-  createRelation,
-  listEntities,
-  batchListThroughGetTo,
-  loadById,
-  now,
-} from '../database/middleware';
+import { createEntity, createRelation, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
@@ -19,6 +12,7 @@ import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { now } from '../utils/format';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"

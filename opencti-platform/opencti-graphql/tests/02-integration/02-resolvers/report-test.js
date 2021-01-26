@@ -1,7 +1,7 @@
 import gql from 'graphql-tag';
 import { queryAsAdmin } from '../../utils/testQuery';
-import { now } from '../../../src/database/middleware';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
+import { now } from '../../../src/utils/format';
 
 const LIST_QUERY = gql`
   query reports(

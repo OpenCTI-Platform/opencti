@@ -1,9 +1,10 @@
 import { assoc, pipe } from 'ramda';
-import { createEntity, listEntities, loadById, now, timeSeriesEntities } from '../database/middleware';
+import { createEntity, listEntities, loadById, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_X_OPENCTI_INCIDENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { now } from '../utils/format';
 
 export const findById = (incidentId) => {
   return loadById(incidentId, ENTITY_TYPE_X_OPENCTI_INCIDENT);

@@ -2,9 +2,9 @@ import * as Minio from 'minio';
 import { assoc, concat, map, sort } from 'ramda';
 import querystring from 'querystring';
 import conf, { logger } from '../config/conf';
-import { sinceNowInMinutes } from './middleware';
 import { buildPagination } from './utils';
 import { loadExportWorksAsProgressFiles, deleteWorkForFile } from '../domain/work';
+import { sinceNowInMinutes } from '../utils/format';
 
 const bucketName = conf.get('minio:bucket_name') || 'opencti-bucket';
 const bucketRegion = conf.get('minio:bucket_region') || 'us-east-1';

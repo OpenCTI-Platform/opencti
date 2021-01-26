@@ -1,9 +1,9 @@
 import * as R from 'ramda';
 import moment from 'moment';
-import {DatabaseError, FunctionalError} from '../config/errors';
-import {isHistoryObject, isInternalObject} from '../schema/internalObject';
-import {isStixMetaObject} from '../schema/stixMetaObject';
-import {isStixDomainObject} from '../schema/stixDomainObject';
+import { DatabaseError, FunctionalError } from '../config/errors';
+import { isHistoryObject, isInternalObject } from '../schema/internalObject';
+import { isStixMetaObject } from '../schema/stixMetaObject';
+import { isStixDomainObject } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
   ENTITY_DIRECTORY,
@@ -19,17 +19,17 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   isStixCyberObservable,
 } from '../schema/stixCyberObservable';
-import {isInternalRelationship} from '../schema/internalRelationship';
-import {isStixCoreRelationship} from '../schema/stixCoreRelationship';
-import {isStixSightingRelationship} from '../schema/stixSightingRelationship';
-import {isStixCyberObservableRelationship} from '../schema/stixCyberObservableRelationship';
+import { isInternalRelationship } from '../schema/internalRelationship';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
   isStixInternalMetaRelationship,
   isStixMetaRelationship,
   RELATION_OBJECT_LABEL,
 } from '../schema/stixMetaRelationship';
-import {EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE} from './rabbitmq';
-import {isStixObject} from '../schema/stixCoreObject';
+import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE } from './rabbitmq';
+import { isStixObject } from '../schema/stixCoreObject';
 
 export const UPDATE_OPERATION_ADD = 'add';
 export const UPDATE_OPERATION_REPLACE = 'replace';
@@ -52,8 +52,6 @@ export const isNotEmptyField = (field) => !R.isEmpty(field) && !R.isNil(field);
 export const isEmptyField = (field) => !isNotEmptyField(field);
 
 export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-export const utcDate = (date = undefined) => (date ? moment(date).utc() : moment().utc());
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment.parseZone(startDate);

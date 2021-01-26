@@ -1,21 +1,14 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { now, sinceNowInMinutes } from '../database/middleware';
 import { el, elDeleteInstanceIds, elIndex, elLoadByIds, elPaginate, elUpdate } from '../database/elasticSearch';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
 import { INDEX_HISTORY, isNotEmptyField } from '../database/utils';
-import {
-  basicObjectCreation,
-  basicObjectDelete,
-  fetchBasicObject,
-  redisTx,
-  updateObjectCounterRaw,
-  updateObjectRaw,
-} from '../database/redis';
+import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
 import { logger } from '../config/conf';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { DatabaseError } from '../config/errors';
+import { now, sinceNowInMinutes } from '../utils/format';
 
 export const workToExportFile = (work) => {
   return {
@@ -87,7 +80,7 @@ const loadWorkById = async (workId) => {
 
 export const deleteWorkRaw = async (work) => {
   await elDeleteInstanceIds([work]);
-  await basicObjectDelete(work.internal_id);
+  await redisDeleteWork(work.internal_id);
   return work.internal_id;
 };
 
@@ -146,7 +139,7 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
         const works = hits.map((h) => h._source);
         const ids = works.map((w) => w.internal_id);
         // eslint-disable-next-line no-await-in-loop
-        await basicObjectDelete(ids);
+        await redisDeleteWork(ids);
         // eslint-disable-next-line no-await-in-loop
         await elDeleteInstanceIds(works);
       }
@@ -190,32 +183,20 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
     import_expected_number: 0,
     import_processed_number: 0,
   };
-  await basicObjectCreation(workTracing);
+  await redisCreateWork(workTracing);
   await elIndex(INDEX_HISTORY, work);
   return loadWorkById(workId);
 };
 
 const isWorkCompleted = async (workId) => {
-  const { import_processed_number: pn, import_expected_number: en } = await fetchBasicObject(workId);
+  const { import_processed_number: pn, import_expected_number: en } = await redisGetWork(workId);
   // eslint-disable-next-line camelcase
   return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn };
 };
 
-export const updateWorkFigures = async (workId) => {
-  const timestamp = now();
-  const [, , fetched] = await redisTx(async (tx) => {
-    await updateObjectCounterRaw(tx, workId, 'import_processed_number', 1);
-    await updateObjectRaw(tx, workId, { import_last_processed: timestamp });
-    await tx.call('HGETALL', workId);
-  });
-  const updatedMetrics = R.fromPairs(R.splitEvery(2, R.last(fetched)));
-  const { import_processed_number: pn, import_expected_number: en } = updatedMetrics;
-  return { isComplete: parseInt(pn, 10) === parseInt(en, 10), total: pn, expected: en };
-};
-
 export const reportActionImport = async (user, workId, errorData) => {
   const timestamp = now();
-  const { isComplete, total } = await updateWorkFigures(workId);
+  const { isComplete, total } = await redisUpdateWorkFigures(workId);
   // const { isComplete, total } = await isWorkCompleted(workId);
   if (isComplete || errorData) {
     const params = { now: timestamp };
@@ -236,13 +217,6 @@ export const reportActionImport = async (user, workId, errorData) => {
       script: { source: sourceScript, lang: 'painless', params },
     });
   }
-  return workId;
-};
-
-export const updateActionExpectation = async (user, workId, expectation) => {
-  await redisTx(async (tx) => {
-    await updateObjectCounterRaw(tx, workId, 'import_expected_number', expectation);
-  });
   return workId;
 };
 

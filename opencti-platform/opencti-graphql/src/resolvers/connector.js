@@ -13,15 +13,14 @@ import {
   createWork,
   deleteWork,
   reportActionImport,
-  updateActionExpectation,
   updateProcessedTime,
   updateReceivedTime,
   worksForConnector,
   findAll,
 } from '../domain/work';
-import { now } from '../database/middleware';
 import { findById as findUserById } from '../domain/user';
-import { fetchBasicObject } from '../database/redis';
+import { redisGetWork, redisUpdateActionExpectation } from '../database/redis';
+import { now } from '../utils/format';
 
 const connectorResolvers = {
   Query: {
@@ -38,7 +37,7 @@ const connectorResolvers = {
   Work: {
     connector: (work) => connectorForWork(work.id),
     user: (work) => findUserById(work.user_id),
-    tracking: (work) => fetchBasicObject(work.id),
+    tracking: (work) => redisGetWork(work.id),
   },
   Mutation: {
     deleteConnector: (_, { id }, { user }) => connectorDelete(user, id),
@@ -53,7 +52,7 @@ const connectorResolvers = {
     workEdit: (_, { id }, { user }) => ({
       delete: () => deleteWork(id),
       reportExpectation: ({ error }) => reportActionImport(user, id, error),
-      addExpectations: ({ expectations }) => updateActionExpectation(user, id, expectations),
+      addExpectations: ({ expectations }) => redisUpdateActionExpectation(user, id, expectations),
       toReceived: ({ message }) => updateReceivedTime(user, id, message),
       toProcessed: ({ message, inError }) => updateProcessedTime(user, id, message, inError),
     }),

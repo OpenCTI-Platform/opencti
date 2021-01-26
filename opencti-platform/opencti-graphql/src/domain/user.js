@@ -28,7 +28,6 @@ import {
   listEntities,
   batchListThroughGetTo,
   loadById,
-  now,
   patchAttribute,
   updateAttribute,
   loadThroughGetTo,
@@ -60,6 +59,7 @@ import { findAll as allMarkings } from './markingDefinition';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/elasticSearch';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
+import { now } from '../utils/format';
 
 // region utils
 export const BYPASS = 'BYPASS';
