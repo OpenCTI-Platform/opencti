@@ -59,7 +59,7 @@ const inject18n = (WrappedComponent) => {
         }
         return this.props.intl.formatDate(date, {
           day: 'numeric',
-          month: 'numeric',
+          month: 'short',
           year: 'numeric',
         });
       };
@@ -72,7 +72,7 @@ const inject18n = (WrappedComponent) => {
           minute: 'numeric',
           hour: 'numeric',
           day: 'numeric',
-          month: 'numeric',
+          month: 'short',
           year: 'numeric',
         });
       };
@@ -80,7 +80,11 @@ const inject18n = (WrappedComponent) => {
         if (isNone(date)) {
           return translate('None');
         }
-        return this.props.intl.formatDate(date);
+        return this.props.intl.formatDate(date, {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        });
       };
       const monthDate = (date) => {
         if (isNone(date)) {
