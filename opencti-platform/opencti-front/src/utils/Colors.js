@@ -96,7 +96,10 @@ export const itemColor = (type, dark) => {
       }
       return '#689f38';
     case 'Position':
-      return '/dashboard/entities/locations';
+      if (dark) {
+        return '#afb42b';
+      }
+      return '#d4e157';
     case 'Malware':
       if (dark) {
         return '#e65100';

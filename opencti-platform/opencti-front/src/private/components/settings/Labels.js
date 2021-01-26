@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -10,8 +9,6 @@ import {
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
-// TODO @Sam fix dependency cycle
-// eslint-disable-next-line import/no-cycle
 import ListLines from '../../../components/list_lines/ListLines';
 import LabelsLines, { labelsLinesQuery } from './labels/LabelsLines';
 import LabelCreation from './labels/LabelCreation';
@@ -23,20 +20,6 @@ const styles = () => ({
     padding: '0 200px 0 0',
   },
 });
-
-export const labelsSearchQuery = graphql`
-  query LabelsSearchQuery($search: String) {
-    labels(search: $search) {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
-    }
-  }
-`;
 
 class Labels extends Component {
   constructor(props) {

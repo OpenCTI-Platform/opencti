@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { MapOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
+import { ArrowForwardIosOutlined, PlaceOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -36,13 +36,13 @@ const styles = (theme) => ({
   },
 });
 
-class TopMenuCountry extends Component {
+class TopMenuPosition extends Component {
   render() {
     const {
       t,
       location,
       match: {
-        params: { countryId },
+        params: { positionId },
       },
       classes,
     } = this.props;
@@ -50,14 +50,14 @@ class TopMenuCountry extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/countries"
+          to="/dashboard/entities/positions"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <MapOutlined className={classes.icon} fontSize="small" />
-          {t('Countries')}
+          <PlaceOutlined className={classes.icon} fontSize="small" />
+          {t('Positions')}
         </Button>
         <ArrowForwardIosOutlined
           color="inherit"
@@ -65,15 +65,15 @@ class TopMenuCountry extends Component {
         />
         <Button
           component={Link}
-          to={`/dashboard/entities/countries/${countryId}`}
+          to={`/dashboard/entities/positions/${positionId}`}
           variant={
-            location.pathname === `/dashboard/entities/countries/${countryId}`
+            location.pathname === `/dashboard/entities/positions/${positionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/entities/countries/${countryId}`
+            location.pathname === `/dashboard/entities/positions/${positionId}`
               ? 'primary'
               : 'inherit'
           }
@@ -83,10 +83,10 @@ class TopMenuCountry extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/countries/${countryId}/knowledge`}
+          to={`/dashboard/entities/positions/${positionId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/entities/countries/${countryId}/knowledge`,
+              `/dashboard/entities/positions/${positionId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -94,7 +94,7 @@ class TopMenuCountry extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/entities/countries/${countryId}/knowledge`,
+              `/dashboard/entities/positions/${positionId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -105,17 +105,17 @@ class TopMenuCountry extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/countries/${countryId}/analysis`}
+          to={`/dashboard/entities/positions/${positionId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/analysis`
+            === `/dashboard/entities/positions/${positionId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/analysis`
+            === `/dashboard/entities/positions/${positionId}/analysis`
               ? 'primary'
               : 'inherit'
           }
@@ -126,17 +126,17 @@ class TopMenuCountry extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/entities/countries/${countryId}/files`}
+            to={`/dashboard/entities/positions/${positionId}/files`}
             variant={
               location.pathname
-              === `/dashboard/entities/countries/${countryId}/files`
+              === `/dashboard/entities/positions/${positionId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/dashboard/entities/countries/${countryId}/files`
+              === `/dashboard/entities/positions/${positionId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -147,17 +147,17 @@ class TopMenuCountry extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/dashboard/entities/countries/${countryId}/history`}
+          to={`/dashboard/entities/positions/${positionId}/history`}
           variant={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/history`
+            === `/dashboard/entities/positions/${positionId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/history`
+            === `/dashboard/entities/positions/${positionId}/history`
               ? 'primary'
               : 'inherit'
           }
@@ -170,7 +170,7 @@ class TopMenuCountry extends Component {
   }
 }
 
-TopMenuCountry.propTypes = {
+TopMenuPosition.propTypes = {
   classes: PropTypes.object,
   location: PropTypes.object,
   match: PropTypes.object,
@@ -182,4 +182,4 @@ export default compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(TopMenuCountry);
+)(TopMenuPosition);

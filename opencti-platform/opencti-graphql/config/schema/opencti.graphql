@@ -3057,6 +3057,7 @@ input LocationAddInput {
 
 ################ Positions
 enum PositionsOrdering {
+  name
   postal_address
   postal_code
   created
@@ -7625,7 +7626,7 @@ type Query {
     search: String
     toStix: Boolean
   ): RegionConnection @auth(for: [KNOWLEDGE])
-  position(id: String!): Region @auth(for: [KNOWLEDGE])
+  position(id: String!): Position @auth(for: [KNOWLEDGE])
   positions(
     first: Int
     after: ID

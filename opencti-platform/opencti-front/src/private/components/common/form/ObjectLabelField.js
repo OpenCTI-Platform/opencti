@@ -8,7 +8,7 @@ import { Label } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import { labelsSearchQuery } from '../../settings/Labels';
+import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import LabelCreation from '../../settings/labels/LabelCreation';
 
 const styles = () => ({

@@ -9,7 +9,7 @@ import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import {
-  compose, pipe, pluck, assoc,
+  assoc, compose, pipe, pluck,
 } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -64,33 +64,30 @@ const styles = (theme) => ({
   },
 });
 
-const countryMutation = graphql`
-  mutation CountryCreationMutation($input: CountryAddInput!) {
-    countryAdd(input: $input) {
-      ...CountryLine_node
+const positionMutation = graphql`
+  mutation PositionCreationMutation($input: PositionAddInput!) {
+    positionAdd(input: $input) {
+      ...PositionLine_node
     }
   }
 `;
 
-const countryValidation = (t) => Yup.object().shape({
+const positionValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
+  description: Yup.string(),
 });
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_countries',
+    'Pagination_positions',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class CountryCreation extends Component {
+class PositionCreation extends Component {
   constructor(props) {
     super(props);
     this.state = { open: false };
@@ -110,12 +107,12 @@ class CountryCreation extends Component {
       assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
     commitMutation({
-      mutation: countryMutation,
+      mutation: positionMutation,
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('countryAdd');
+        const payload = store.getRootField('positionAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
         const container = store.getRoot();
         sharedUpdater(
@@ -164,7 +161,7 @@ class CountryCreation extends Component {
             >
               <Close fontSize="small" />
             </IconButton>
-            <Typography variant="h6">{t('Create a country')}</Typography>
+            <Typography variant="h6">{t('Create a position')}</Typography>
           </div>
           <div className={classes.container}>
             <Formik
@@ -174,7 +171,7 @@ class CountryCreation extends Component {
                 createdBy: '',
                 objectMarking: [],
               }}
-              validationSchema={countryValidation(t)}
+              validationSchema={positionValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >
@@ -187,7 +184,7 @@ class CountryCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['Country']}
+                    detectDuplicate={['Position']}
                   />
                   <Field
                     component={MarkDownField}
@@ -195,7 +192,7 @@ class CountryCreation extends Component {
                     label={t('Description')}
                     fullWidth={true}
                     multiline={true}
-                    rows="4"
+                    rows={4}
                     style={{ marginTop: 20 }}
                   />
                   <CreatedByField
@@ -236,7 +233,7 @@ class CountryCreation extends Component {
   }
 }
 
-CountryCreation.propTypes = {
+PositionCreation.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
@@ -246,4 +243,4 @@ CountryCreation.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles, { withTheme: true }),
-)(CountryCreation);
+)(PositionCreation);

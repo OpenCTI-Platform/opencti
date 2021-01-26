@@ -36,6 +36,7 @@ const styles = (theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     color: '#a5a5a5',
+    fontSize: 12,
   },
   goIcon: {
     position: 'absolute',
@@ -71,16 +72,8 @@ class SectorLineComponent extends Component {
           <ListItemText
             primary={
               <div>
-                <div
-                  className={classes.name}
-                  style={{ fontSize: isSubSector ? 11 : 13 }}
-                >
-                  {node.name}
-                </div>
-                <div
-                  className={classes.description}
-                  style={{ fontSize: isSubSector ? 11 : 13 }}
-                >
+                <div className={classes.name}>{node.name}</div>
+                <div className={classes.description}>
                   {node.description.length > 0
                     ? node.description
                     : t('This sector does not have any description.')}
@@ -92,8 +85,8 @@ class SectorLineComponent extends Component {
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
         </ListItem>
-        {subSectors ? (
-          <List disablePadding={true}>
+        {subSectors && subSectors.length > 0 && (
+          <List style={{ margin: 0, padding: 0 }}>
             {map(
               (subSector) => (
                 <SectorLine
@@ -105,8 +98,6 @@ class SectorLineComponent extends Component {
               subSectors,
             )}
           </List>
-        ) : (
-          ''
         )}
       </div>
     );

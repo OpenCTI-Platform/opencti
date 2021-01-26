@@ -21,8 +21,6 @@ import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
-// TODO @SAM Fix cyclic redundancy
-// eslint-disable-next-line import/no-cycle
 import Filters from '../../private/components/common/lists/Filters';
 import StixObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
 

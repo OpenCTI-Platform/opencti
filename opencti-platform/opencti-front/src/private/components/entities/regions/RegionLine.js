@@ -5,10 +5,23 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, LocalPlayOutlined } from '@material-ui/icons';
-import { compose, map } from 'ramda';
+import {
+  KeyboardArrowRightOutlined,
+  LocalPlayOutlined,
+} from '@material-ui/icons';
+import {
+  compose,
+  filter,
+  map,
+  pathOr,
+  pipe,
+  prop,
+  sortBy,
+  toLower,
+} from 'ramda';
 import List from '@material-ui/core/List';
 import inject18n from '../../../../components/i18n';
+import { CountryLine } from '../countries/CountryLine';
 
 const styles = (theme) => ({
   item: {},
@@ -54,8 +67,16 @@ const styles = (theme) => ({
 class RegionLineComponent extends Component {
   render() {
     const {
-      classes, subRegions, node, isSubRegion, t,
+      classes,
+      subRegions,
+      countries,
+      node,
+      isSubRegion,
+      keyword,
     } = this.props;
+    const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
+    const filterByKeyword = (n) => keyword === ''
+      || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
     return (
       <div>
         <ListItem
@@ -66,47 +87,39 @@ class RegionLineComponent extends Component {
           to={`/dashboard/entities/regions/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <LocalPlayOutlined fontSize={isSubRegion ? 'small' : 'default'} />
+            <LocalPlayOutlined />
           </ListItemIcon>
-          <ListItemText
-            primary={
-              <div>
-                <div
-                  className={classes.name}
-                  style={{ fontSize: isSubRegion ? 11 : 13 }}
-                >
-                  {node.name}
-                </div>
-                <div
-                  className={classes.description}
-                  style={{ fontSize: isSubRegion ? 11 : 13 }}
-                >
-                  {node.description.length > 0
-                    ? node.description
-                    : t('This region does not have any description.')}
-                </div>
-              </div>
-            }
-          />
+          <ListItemText primary={node.name} />
           <ListItemIcon classes={{ root: classes.goIcon }}>
             <KeyboardArrowRightOutlined />
           </ListItemIcon>
         </ListItem>
-        {subRegions ? (
-          <List disablePadding={true}>
-            {map(
-              (subRegion) => (
+        {subRegions && subRegions.length > 0 && (
+          <List style={{ margin: 0, padding: 0 }}>
+            {subRegions.map((subRegion) => {
+              const subRegionCountries = pipe(
+                pathOr([], ['countries', 'edges']),
+                map((n) => n.node),
+                filter(filterByKeyword),
+                sortByNameCaseInsensitive,
+              )(subRegion);
+              return (
                 <RegionLine
                   key={subRegion.id}
                   node={subRegion}
+                  countries={subRegionCountries}
                   isSubRegion={true}
                 />
-              ),
-              subRegions,
-            )}
+              );
+            })}
           </List>
-        ) : (
-          ''
+        )}
+        {countries && countries.length > 0 && (
+          <List style={{ margin: 0, padding: 0 }}>
+            {countries.map((country) => (
+              <CountryLine key={country.id} node={country} />
+            ))}
+          </List>
         )}
       </div>
     );
@@ -117,6 +130,8 @@ RegionLineComponent.propTypes = {
   node: PropTypes.object,
   isSubRegion: PropTypes.bool,
   subRegions: PropTypes.array,
+  countries: PropTypes.array,
+  keyword: PropTypes.string,
   classes: PropTypes.object,
   fd: PropTypes.func,
 };

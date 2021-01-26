@@ -18,12 +18,10 @@ import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
 import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
-// TODO @Sam fix dependency cycle
-// eslint-disable-next-line import/no-cycle
 import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
-// eslint-disable-next-line import/no-cycle
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader from '../../../../components/Loader';
+import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 
 const styles = (theme) => ({
   card: {
@@ -100,19 +98,6 @@ const stixDomainObjectThreatKnowledgeStixCoreRelationshipsNumberQuery = graphql`
       total
       count
     }
-  }
-`;
-
-export const stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery = graphql`
-  query StixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery(
-    $fromId: String
-    $fromRole: String
-    $toTypes: [String]
-    $relationship_type: String
-    $first: Int
-  ) {
-    ...StixDomainObjectGlobalKillChain_data
-    ...StixDomainObjectTimeline_data
   }
 `;
 

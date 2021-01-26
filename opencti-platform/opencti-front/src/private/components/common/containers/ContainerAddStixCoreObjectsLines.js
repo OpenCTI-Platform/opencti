@@ -28,12 +28,10 @@ import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-// TODO @SAM Fix cyclic redundancies
-// eslint-disable-next-line import/no-cycle
 import {
   reportKnowledgeGraphtMutationRelationAddMutation,
   reportKnowledgeGraphtMutationRelationDeleteMutation,
-} from '../../analysis/reports/ReportKnowledgeGraph';
+} from '../../analysis/reports/ReportKnowledgeGraphQuery';
 
 const styles = (theme) => ({
   container: {

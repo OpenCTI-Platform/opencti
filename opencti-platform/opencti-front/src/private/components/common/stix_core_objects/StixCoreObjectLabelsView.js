@@ -28,7 +28,7 @@ import { Add, CancelOutlined } from '@material-ui/icons';
 import { Label } from 'mdi-material-ui';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { labelsSearchQuery } from '../../settings/Labels';
+import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';

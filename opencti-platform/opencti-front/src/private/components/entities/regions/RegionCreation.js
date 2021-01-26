@@ -64,34 +64,6 @@ const styles = (theme) => ({
   },
 });
 
-const regionMutation = graphql`
-  mutation RegionCreationMutation($input: RegionAddInput!) {
-    regionAdd(input: $input) {
-      id
-      name
-      description
-      isSubRegion
-      subRegions {
-        edges {
-          node {
-            id
-            name
-            description
-          }
-        }
-      }
-    }
-  }
-`;
-
-const regionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-});
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -116,39 +88,7 @@ class RegionCreation extends Component {
     this.setState({ open: false });
   }
 
-  onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = pipe(
-      assoc('createdBy', values.createdBy.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-    )(values);
-    commitMutation({
-      mutation: regionMutation,
-      variables: {
-        input: finalValues,
-      },
-      updater: (store) => {
-        const payload = store.getRootField('regionAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          this.props.paginationOptions,
-          newEdge,
-        );
-      },
-      setSubmitting,
-      onCompleted: () => {
-        setSubmitting(false);
-        resetForm();
-        this.handleClose();
-      },
-    });
-  }
 
-  onReset() {
-    this.handleClose();
-  }
 
   render() {
     const { t, classes } = this.props;
@@ -162,87 +102,7 @@ class RegionCreation extends Component {
         >
           <Add />
         </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-            >
-              <Close fontSize="small" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a region')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                description: '',
-                createdBy: '',
-                objectMarking: [],
-              }}
-              validationSchema={regionValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
-            >
-              {({
-                submitForm, handleReset, isSubmitting, setFieldValue,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Region']}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </div>
-        </Drawer>
+
       </div>
     );
   }

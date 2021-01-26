@@ -18,9 +18,7 @@ import { createRefetchContainer } from 'react-relay';
 import { Link } from 'react-router-dom';
 import inject18n, { isNone } from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-// TODO @Sam fix dependency cycle
-// eslint-disable-next-line import/no-cycle
-import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledge';
+import { stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 
 const styles = (theme) => ({
   paper: {

@@ -4,12 +4,13 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Sectors from './Sectors';
 import RootSector from './sectors/Root';
-import Regions from './Regions';
-import RootRegion from './regions/Root';
 import Countries from './Countries';
+import RootRegion from './regions/Root';
 import RootCountry from './countries/Root';
 import Cities from './Cities';
 import RootCity from './cities/Root';
+import Positions from './Positions';
+import RootPosition from './positions/Root';
 import Organizations from './Organizations';
 import RootOrganization from './organizations/Root';
 import Individuals from './Individuals';
@@ -36,17 +37,12 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/dashboard/entities/regions"
-          component={Regions}
+          path="/dashboard/entities/countries"
+          component={Countries}
         />
         <BoundaryRoute
           path="/dashboard/entities/regions/:regionId"
           render={(routeProps) => <RootRegion {...routeProps} me={me} />}
-        />
-        <BoundaryRoute
-          exact
-          path="/dashboard/entities/countries"
-          component={Countries}
         />
         <BoundaryRoute
           path="/dashboard/entities/countries/:countryId"
@@ -60,6 +56,15 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/entities/cities/:cityId"
           render={(routeProps) => <RootCity {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/entities/positions"
+          component={Positions}
+        />
+        <BoundaryRoute
+          path="/dashboard/entities/positions/:positionId"
+          render={(routeProps) => <RootPosition {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact

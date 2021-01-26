@@ -17,6 +17,7 @@ import {
   LanguageOutlined,
   WifiTetheringOutlined,
   Visibility,
+  PlaceOutlined,
 } from '@material-ui/icons';
 import {
   Biohazard,
@@ -103,12 +104,12 @@ const iconSelector = (type, variant, fontSize, color) => {
       return (
         <CityVariantOutline style={style} fontSize={fontSize} role="img" />
       );
+    case 'Position':
+      return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Country':
       return <FlagOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Region':
       return <MapOutlined style={style} fontSize={fontSize} role="img" />;
-    case 'Position':
-      return '/dashboard/entities/geo/positions';
     case 'Malware':
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
     case 'Threat-Actor':

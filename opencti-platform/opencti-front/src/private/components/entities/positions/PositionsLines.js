@@ -4,17 +4,17 @@ import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { CountryLine, CountryLineDummy } from './CountryLine';
+import { PositionLine, PositionLineDummy } from './PositionLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
-class CountriesLines extends Component {
+class PositionsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'countries',
+      'positions',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -32,14 +32,14 @@ class CountriesLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['countries', 'edges'], this.props.data)}
+        dataList={pathOr([], ['positions', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['countries', 'pageInfo', 'globalCount'],
+          ['positions', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<CountryLine />}
-        DummyLineComponent={<CountryLineDummy />}
+        LineComponent={<PositionLine />}
+        DummyLineComponent={<PositionLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
@@ -48,7 +48,7 @@ class CountriesLines extends Component {
   }
 }
 
-CountriesLines.propTypes = {
+PositionsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
@@ -58,16 +58,16 @@ CountriesLines.propTypes = {
   setNumberOfElements: PropTypes.func,
 };
 
-export const countriesLinesQuery = graphql`
-  query CountriesLinesPaginationQuery(
+export const positionsLinesQuery = graphql`
+  query PositionsLinesPaginationQuery(
     $search: String
     $count: Int!
     $cursor: ID
-    $orderBy: CountriesOrdering
+    $orderBy: PositionsOrdering
     $orderMode: OrderingMode
-    $filters: [CountriesFiltering]
+    $filters: [PositionsFiltering]
   ) {
-    ...CountriesLines_data
+    ...PositionsLines_data
       @arguments(
         search: $search
         count: $count
@@ -80,32 +80,32 @@ export const countriesLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  CountriesLines,
+  PositionsLines,
   {
     data: graphql`
-      fragment CountriesLines_data on Query
+      fragment PositionsLines_data on Query
       @argumentDefinitions(
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
-        orderBy: { type: "CountriesOrdering", defaultValue: name }
+        orderBy: { type: "PositionsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[CountriesFiltering]" }
+        filters: { type: "[PositionsFiltering]" }
       ) {
-        countries(
+        positions(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_countries") {
+        ) @connection(key: "Pagination_positions") {
           edges {
             node {
               id
               name
               description
-              ...CountryLine_node
+              ...PositionLine_node
             }
           }
           pageInfo {
@@ -120,7 +120,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.countries;
+      return props.data && props.data.positions;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -138,6 +138,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: countriesLinesQuery,
+    query: positionsLinesQuery,
   },
 );

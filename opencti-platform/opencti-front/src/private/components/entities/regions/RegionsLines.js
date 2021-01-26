@@ -13,12 +13,14 @@ import {
   join,
   assoc,
 } from 'ramda';
-import { createPaginationContainer } from 'react-relay';
+import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
 import List from '@material-ui/core/List';
 import { RegionLine, RegionLineDummy } from './RegionLine';
 import inject18n from '../../../../components/i18n';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import RegionOrCountryCreation from '../common/RegionOrCountryCreation';
 
 const styles = () => ({
   root: {
@@ -33,7 +35,6 @@ class RegionsLinesComponent extends Component {
     const filterSubregion = (n) => n.isSubRegion === false;
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
       || propOr('', 'subregions_text', n)
         .toLowerCase()
         .indexOf(keyword.toLowerCase()) !== -1;
@@ -53,29 +54,42 @@ class RegionsLinesComponent extends Component {
       sortByNameCaseInsensitive,
     )(data);
     return (
-      <List
-        component="nav"
-        aria-labelledby="nested-list-subheader"
-        className={classes.root}
-      >
-        {data
-          ? map((region) => {
-            const subRegions = pipe(
-              pathOr([], ['subRegions', 'edges']),
-              map((n) => n.node),
-              filter(filterByKeyword),
-              sortByNameCaseInsensitive,
-            )(region);
-            return (
-                <RegionLine
-                  key={region.id}
-                  node={region}
-                  subRegions={subRegions}
-                />
-            );
-          }, regions)
-          : Array.from(Array(20), (e, i) => <RegionLineDummy key={i} />)}
-      </List>
+      <div>
+        <List
+          component="nav"
+          aria-labelledby="nested-list-subheader"
+          className={classes.root}
+        >
+          {data
+            ? map((region) => {
+              const subRegions = pipe(
+                pathOr([], ['subRegions', 'edges']),
+                map((n) => n.node),
+                filter(filterByKeyword),
+                sortByNameCaseInsensitive,
+              )(region);
+              const countries = pipe(
+                pathOr([], ['countries', 'edges']),
+                map((n) => n.node),
+                filter(filterByKeyword),
+                sortByNameCaseInsensitive,
+              )(region);
+              return (
+                  <RegionLine
+                    key={region.id}
+                    node={region}
+                    countries={countries}
+                    subRegions={subRegions}
+                    keyword={keyword}
+                  />
+              );
+            }, regions)
+            : Array.from(Array(20), (e, i) => <RegionLineDummy key={i} />)}
+        </List>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <RegionOrCountryCreation onCreate={this.props.relay.refetch} />
+        </Security>
+      </div>
     );
   }
 }
@@ -88,33 +102,42 @@ RegionsLinesComponent.propTypes = {
 
 export const regionsLinesQuery = graphql`
   query RegionsLinesPaginationQuery($count: Int!, $cursor: ID) {
-    ...RegionsLines_data @arguments(count: $count, cursor: $cursor)
+    ...RegionsLines_data
   }
 `;
 
-const RegionsLinesFragment = createPaginationContainer(
+const RegionsLinesFragment = createRefetchContainer(
   RegionsLinesComponent,
   {
     data: graphql`
-      fragment RegionsLines_data on Query
-      @argumentDefinitions(
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-      ) {
-        regions(first: $count, after: $cursor)
-          @connection(key: "Pagination_regions") {
+      fragment RegionsLines_data on Query {
+        regions(first: $count, after: $cursor) {
           edges {
             node {
               id
               name
-              description
               isSubRegion
               subRegions {
                 edges {
                   node {
                     id
                     name
-                    description
+                    countries {
+                      edges {
+                        node {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              countries {
+                edges {
+                  node {
+                    id
+                    name
                   }
                 }
               }
@@ -129,25 +152,7 @@ const RegionsLinesFragment = createPaginationContainer(
       }
     `,
   },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.regions;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count, cursor }) {
-      return {
-        count,
-        cursor,
-      };
-    },
-    query: regionsLinesQuery,
-  },
+  regionsLinesQuery,
 );
 
 export default compose(inject18n, withStyles(styles))(RegionsLinesFragment);
