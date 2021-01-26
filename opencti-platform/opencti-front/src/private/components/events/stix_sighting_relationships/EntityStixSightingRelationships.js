@@ -181,7 +181,7 @@ class EntityStixSightingRelationships extends Component {
     }
     return (
       <div className={classes.container}>
-        {displayTypes ? (
+        {displayTypes && (
           <Drawer
             anchor="bottom"
             variant="permanent"
@@ -196,56 +196,34 @@ class EntityStixSightingRelationships extends Component {
                   onClose={this.handleCloseToType.bind(this)}
                   onOpen={this.handleOpenToType.bind(this)}
                   onChange={this.handleChangeEntities.bind(this)}
-                  input={<Input id="entities" />}
-                  renderValue={(selected) => (
-                    <div className={classes.chips}>
-                      <Chip
-                        key={selected}
-                        label={t(`entity_${selected}`)}
-                        className={classes.chip}
-                      />
-                    </div>
-                  )}
                 >
                   <MenuItem value="All">{t('All entities')}</MenuItem>
                   {includes('Region', targetStixDomainObjectTypes)
-                  || includes('Identity', targetStixDomainObjectTypes) ? (
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
+                    || (includes('Identity', targetStixDomainObjectTypes) && (
+                      <MenuItem value="Region">{t('Region')}</MenuItem>
+                    ))}
                   {includes('Country', targetStixDomainObjectTypes)
-                  || includes('Identity', targetStixDomainObjectTypes) ? (
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
+                    || (includes('Identity', targetStixDomainObjectTypes) && (
+                      <MenuItem value="Country">{t('Country')}</MenuItem>
+                    ))}
                   {includes('City', targetStixDomainObjectTypes)
-                  || includes('Identity', targetStixDomainObjectTypes) ? (
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
+                    || (includes('Identity', targetStixDomainObjectTypes) && (
+                      <MenuItem value="City">{t('City')}</MenuItem>
+                    ))}
                   {includes('Organization', targetStixDomainObjectTypes)
-                  || includes('Identity', targetStixDomainObjectTypes) ? (
-                    <MenuItem value="Organization">
-                      {t('Organization')}
-                    </MenuItem>
-                    ) : (
-                      ''
-                    )}
+                    || (includes('Identity', targetStixDomainObjectTypes) && (
+                      <MenuItem value="Organization">
+                        {t('Organization')}
+                      </MenuItem>
+                    ))}
                   {includes('User', targetStixDomainObjectTypes)
-                  || includes('Identity', targetStixDomainObjectTypes) ? (
-                    <MenuItem value="User">{t('Individual')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
+                    || (includes('Identity', targetStixDomainObjectTypes) && (
+                      <MenuItem value="User">{t('Individual')}</MenuItem>
+                    ))}
                 </Select>
               </Grid>
             </Grid>
           </Drawer>
-        ) : (
-          ''
         )}
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
