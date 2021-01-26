@@ -12,7 +12,10 @@ import {
   head,
 } from 'ramda';
 import { withStyles } from '@material-ui/core';
-import { Map, TileLayer, GeoJSON } from 'react-leaflet';
+import {
+  Map, TileLayer, GeoJSON, Marker,
+} from 'react-leaflet';
+import L from 'leaflet';
 import countries from '../../../../resources/geo/countries.json';
 import inject18n from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/Security';
@@ -40,6 +43,14 @@ const colors = [
   '#b71c1c',
 ];
 
+const pointerIcon = new L.Icon({
+  iconUrl: '/static/city_orange.png',
+  iconRetinaUrl: '/static/city_orange.png',
+  iconAnchor: [5, 55],
+  popupAnchor: [10, -44],
+  iconSize: [25, 25],
+});
+
 const LocationMiniMapTargets = (props) => {
   const { settings } = useContext(UserContext);
   const countriesAliases = pipe(
@@ -60,14 +71,17 @@ const LocationMiniMapTargets = (props) => {
         ),
       );
       return {
-        color: colors[country.level],
+        color: country.level ? colors[country.level] : colors[5],
         weight: 1,
         fillOpacity: 0.1,
       };
     }
     return { fillOpacity: 0, color: 'none' };
   };
-  const { center, zoom } = props;
+  const { center, zoom, cities } = props;
+  const locatedCities = cities
+    ? filter((n) => n.latitude && n.longitude, cities)
+    : [];
   return (
     <div style={{ height: '100%' }}>
       <Map
@@ -78,6 +92,12 @@ const LocationMiniMapTargets = (props) => {
       >
         <TileLayer url={settings.platform_map_tile_server} />
         <GeoJSON data={countries} style={getStyle} />
+        {locatedCities.map((city) => {
+          const position = [city.latitude, city.longitude];
+          return (
+            <Marker key={city.id} position={position} icon={pointerIcon} />
+          );
+        })}
       </Map>
     </div>
   );
@@ -85,6 +105,7 @@ const LocationMiniMapTargets = (props) => {
 
 LocationMiniMapTargets.propTypes = {
   countries: PropTypes.array,
+  cities: PropTypes.array,
   zoom: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRightOutlined, MapOutlined } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined, LocalPlayOutlined } from '@material-ui/icons';
 import { compose, map } from 'ramda';
 import List from '@material-ui/core/List';
 import inject18n from '../../../../components/i18n';
@@ -66,7 +66,7 @@ class RegionLineComponent extends Component {
           to={`/dashboard/entities/regions/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <MapOutlined fontSize={isSubRegion ? 'small' : 'default'} />
+            <LocalPlayOutlined fontSize={isSubRegion ? 'small' : 'default'} />
           </ListItemIcon>
           <ListItemText
             primary={
@@ -132,7 +132,7 @@ class RegionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <MapOutlined />
+          <LocalPlayOutlined />
         </ListItemIcon>
         <ListItemText
           primary={<span className="fakeItem" style={{ width: '80%' }} />}

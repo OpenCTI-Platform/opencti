@@ -6,7 +6,11 @@ import Grid from '@material-ui/core/Grid';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import Drawer from '@material-ui/core/Drawer';
-import { DomainOutlined, MapOutlined, GroupOutlined } from '@material-ui/icons';
+import {
+  DomainOutlined,
+  LocalPlayOutlined,
+  GroupOutlined,
+} from '@material-ui/icons';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectVictimologySectors, {
   stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery,
@@ -45,6 +49,7 @@ class StixDomainObjectVictimology extends Component {
     this.state = {
       searchTerm: propOr('', 'searchTerm', params),
       type: propOr('sectors', 'type', params),
+      viewMode: propOr('map', 'viewMode', params),
     };
   }
 
@@ -61,12 +66,12 @@ class StixDomainObjectVictimology extends Component {
     this.setState({ type }, () => this.saveView());
   }
 
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
+  handleChangeView(viewMode) {
+    this.setState({ viewMode }, () => this.saveView());
   }
 
   render() {
-    const { searchTerm, type } = this.state;
+    const { type, viewMode } = this.state;
     const {
       classes, stixDomainObjectId, entityLink, t,
     } = this.props;
@@ -80,7 +85,6 @@ class StixDomainObjectVictimology extends Component {
       fromId: stixDomainObjectId,
       toTypes: types,
       relationship_type: 'targets',
-      search: searchTerm,
     };
     return (
       <div className={classes.container}>
@@ -106,7 +110,7 @@ class StixDomainObjectVictimology extends Component {
                   color={type === 'regions' ? 'secondary' : 'primary'}
                   onClick={this.handleChangeType.bind(this, 'regions')}
                 >
-                  <MapOutlined />
+                  <LocalPlayOutlined />
                 </IconButton>
               </Tooltip>
             </Grid>
@@ -122,7 +126,7 @@ class StixDomainObjectVictimology extends Component {
             </Grid>
           </Grid>
         </Drawer>
-        {type === 'sectors' ? (
+        {type === 'sectors' && (
           <QueryRenderer
             query={stixDomainObjectVictimologySectorsStixCoreRelationshipsQuery}
             variables={{ first: 500, ...paginationOptions }}
@@ -132,7 +136,6 @@ class StixDomainObjectVictimology extends Component {
                   <StixDomainObjectVictimologySectors
                     data={props}
                     entityLink={entityLink}
-                    handleSearch={this.handleSearch.bind(this)}
                     paginationOptions={paginationOptions}
                     stixDomainObjectId={stixDomainObjectId}
                   />
@@ -141,8 +144,6 @@ class StixDomainObjectVictimology extends Component {
               return <Loader withRightPadding={true} />;
             }}
           />
-        ) : (
-          ''
         )}
         {type === 'regions' ? (
           <QueryRenderer
@@ -154,9 +155,10 @@ class StixDomainObjectVictimology extends Component {
                   <StixDomainObjectVictimologyRegions
                     data={props}
                     entityLink={entityLink}
-                    handleSearch={this.handleSearch.bind(this)}
                     paginationOptions={paginationOptions}
                     stixDomainObjectId={stixDomainObjectId}
+                    handleChangeView={this.handleChangeView.bind(this)}
+                    currentView={viewMode}
                   />
                 );
               }
@@ -166,7 +168,7 @@ class StixDomainObjectVictimology extends Component {
         ) : (
           ''
         )}
-        {type === 'individuals' ? (
+        {type === 'individuals' && (
           <EntityStixCoreRelationships
             entityLink={entityLink}
             entityId={stixDomainObjectId}
@@ -176,8 +178,6 @@ class StixDomainObjectVictimology extends Component {
             isRelationReversed={false}
             noState={true}
           />
-        ) : (
-          ''
         )}
       </div>
     );

@@ -10,8 +10,8 @@ import MenuItem from '@material-ui/core/MenuItem';
 import {
   ArrowDownward,
   ArrowUpward,
-  TableChart,
-  Dashboard,
+  TableChartOutlined,
+  DashboardOutlined,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -193,7 +193,7 @@ class ListCards extends Component {
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'cards')}
                 >
-                  <Dashboard />
+                  <DashboardOutlined />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -205,7 +205,7 @@ class ListCards extends Component {
                   color="primary"
                   onClick={handleChangeView.bind(this, 'lines')}
                 >
-                  <TableChart />
+                  <TableChartOutlined />
                 </IconButton>
               </Tooltip>
             ) : (

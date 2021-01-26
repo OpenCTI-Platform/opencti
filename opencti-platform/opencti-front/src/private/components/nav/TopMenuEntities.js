@@ -9,7 +9,7 @@ import {
   AccountBalanceOutlined,
   FlagOutlined,
   DomainOutlined,
-  MapOutlined,
+  LocalPlayOutlined,
 } from '@material-ui/icons';
 import { CityVariantOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
@@ -67,7 +67,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <MapOutlined className={classes.icon} fontSize="small" />
+          <LocalPlayOutlined className={classes.icon} fontSize="small" />
           {t('Regions')}
         </Button>
         <Button

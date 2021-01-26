@@ -11,8 +11,8 @@ import IconButton from '@material-ui/core/IconButton';
 import {
   ArrowDropDown,
   ArrowDropUp,
-  Dashboard,
-  TableChart,
+  DashboardOutlined,
+  TableChartOutlined,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -225,7 +225,7 @@ class ListLines extends Component {
                   color="primary"
                   onClick={handleChangeView.bind(this, 'cards')}
                 >
-                  <Dashboard />
+                  <DashboardOutlined />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -237,7 +237,7 @@ class ListLines extends Component {
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'lines')}
                 >
-                  <TableChart />
+                  <TableChartOutlined />
                 </IconButton>
               </Tooltip>
             ) : (

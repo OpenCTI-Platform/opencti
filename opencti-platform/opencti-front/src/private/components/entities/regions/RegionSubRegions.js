@@ -9,7 +9,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import { Link } from 'react-router-dom';
-import { MapOutlined } from '@material-ui/icons';
+import { LocalPlayOutlined } from '@material-ui/icons';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { truncate } from '../../../../utils/String';
@@ -61,7 +61,7 @@ class RegionSubRegionsComponent extends Component {
                   to={`/dashboard/entities/regions/${subRegion.id}`}
                 >
                   <ListItemIcon>
-                    <MapOutlined color="primary" />
+                    <LocalPlayOutlined color="primary" />
                   </ListItemIcon>
                   <ListItemText
                     primary={subRegion.name}

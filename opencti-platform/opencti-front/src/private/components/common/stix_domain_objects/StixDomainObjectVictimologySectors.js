@@ -21,6 +21,8 @@ import {
   sortWith,
   ascend,
   descend,
+  propOr,
+  join,
 } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -81,6 +83,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
   }
 
   render() {
+    const { searchTerm } = this.state;
     const {
       t,
       classes,
@@ -89,10 +92,14 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       paginationOptions,
       stixDomainObjectId,
     } = this.props;
-
+    const filterByKeyword = (n) => searchTerm === ''
+      || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || propOr('', 'subsectors_text', n)
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1;
     const unknownSectorId = 'a8c03ed6-cc9e-444d-9146-66c64220fff9';
     const concatAll = reduce(concat, []);
-
     // Extract all sectors
     const sectors = pipe(
       filter(
@@ -101,7 +108,9 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       map((n) => ({
         id: n.node.to.id,
         name: n.node.to.name,
+        description: n.node.to.description,
         subSectors: {},
+        subsectors_text: '',
         relations: [],
       })),
     )(data.stixCoreRelationships.edges);
@@ -162,7 +171,6 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     const organizationsParentSectors = concatAll(
       pluck('parentSectors', organizationsSectors),
     );
-
     const finalSectors = pipe(
       concat(subSectorsParentSectors),
       concat(organizationsTopLevelSectors),
@@ -173,6 +181,9 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     for (const subSector of subSectors) {
       for (const parentSector of subSector.parentSectors) {
         finalSectors[parentSector.id].subSectors[subSector.id] = subSector;
+        finalSectors[parentSector.id].subsectors_text = `${
+          finalSectors[parentSector.id].subsectors_text
+        } ${subSector.name} ${subSector.description}`;
       }
     }
     for (const organizationSector of organizationsSectors) {
@@ -180,6 +191,9 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
         finalSectors[parentSector.id].subSectors[
           organizationSector.id
         ] = organizationSector;
+        finalSectors[parentSector.id].subsectors_text = `${
+          finalSectors[parentSector.id].subsectors_text
+        } ${organizationSector.name} ${organizationSector.description}`;
       }
     }
     for (const stixCoreRelationshipEdge of data.stixCoreRelationships.edges) {
@@ -223,8 +237,16 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
             finalSectors[parentSectorId].subSectors[sector.id].relations.push(
               stixCoreRelationship,
             );
+            finalSectors[
+              parentSectorId
+            ].subsectors_text = `${finalSectors[parentSectorId].subsectors_text} ${stixCoreRelationship.to.name} ${stixCoreRelationship.to.description}`;
           } else {
             finalSectors[sector.id].relations.push(stixCoreRelationship);
+            finalSectors[sector.id].subsectors_text = `${
+              finalSectors[sector.id].subsectors_text
+            } ${stixCoreRelationship.to.name} ${
+              stixCoreRelationship.to.description
+            }`;
           }
         } else {
           if (!(unknownSectorId in finalSectors)) {
@@ -241,12 +263,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
     const orderedFinalSectors = pipe(
       values,
       sortWith([ascend(prop('name'))]),
+      filter(filterByKeyword),
     )(finalSectors);
     return (
       <div>
         <SearchInput variant="small" onSubmit={this.handleSearch.bind(this)} />
         <div className={classes.container} id="container">
-          <List id="test">
+          <List>
             {orderedFinalSectors.map((sector) => {
               const orderedRelations = pipe(
                 values,
@@ -565,17 +588,20 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                 }
                 ... on Organization {
                   name
+                  description
                   sectors {
                     edges {
                       node {
                         id
                         name
+                        description
                         isSubSector
                         parentSectors {
                           edges {
                             node {
                               id
                               name
+                              description
                             }
                           }
                         }
@@ -585,12 +611,14 @@ const StixDomainObjectVictimologySectorsSectorLines = createRefetchContainer(
                 }
                 ... on Sector {
                   name
+                  description
                   isSubSector
                   parentSectors {
                     edges {
                       node {
                         id
                         name
+                        description
                       }
                     }
                   }

@@ -28,7 +28,7 @@ class ItemYears extends Component {
       <Chip
         classes={{ root: style }}
         color={disabled ? 'default' : 'secondary'}
-        label={years}
+        label={years === '1970 - 5138' ? '-' : years}
       />
     );
   }
