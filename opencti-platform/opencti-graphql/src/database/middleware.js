@@ -1,6 +1,7 @@
 import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
+import { Promise } from 'bluebird';
 import {
   DatabaseError,
   FunctionalError,
@@ -36,7 +37,9 @@ import {
   elUpdateEntityConnections,
   elUpdateRelationConnections,
   ENTITIES_INDICES,
+  ES_MAX_CONCURRENCY,
   isUnimpactedEntity,
+  MAX_SPLIT,
   RELATIONSHIPS_INDICES,
 } from './elasticSearch';
 import {
@@ -892,11 +895,59 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     });
   }
   // Update all impacted relations.
-  logger.debug(`[OPENCTI] Merging, updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
-  await elUpdateRelationConnections(updateConnections);
+  logger.info(`[OPENCTI] Merging, updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
+  let currentRelsUpdateCount = 0;
+  const groupsOfRelsUpdate = R.splitEvery(MAX_SPLIT, updateConnections);
+  const concurrentRelsUpdate = async (connsToUpdate) => {
+    await elUpdateRelationConnections(connsToUpdate);
+    currentRelsUpdateCount += connsToUpdate.length;
+    logger.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
+  };
+  await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Update all impacted entities
-  logger.debug(`[OPENCTI] Merging, impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
-  await elUpdateEntityConnections(updateEntities);
+  logger.info(`[OPENCTI] Merging, impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
+  const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
+  const entries = Object.entries(updatesByEntity);
+  let currentEntitiesUpdateCount = 0;
+  // eslint-disable-next-line prettier/prettier
+  const updateBulkEntities = entries.filter(([, values]) => values.length === 1).map(([, values]) => values).flat();
+  const groupsOfEntityUpdate = R.splitEvery(MAX_SPLIT, updateBulkEntities);
+  const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
+    await elUpdateEntityConnections(entitiesToUpdate);
+    currentEntitiesUpdateCount += entitiesToUpdate.length;
+    logger.info(
+      `[OPENCTI] Merging, updating bulk entities ${currentEntitiesUpdateCount} / ${updateBulkEntities.length}`
+    );
+  };
+  await Promise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
+  // Take care of multi update
+  const updateMultiEntities = entries.filter(([, values]) => values.length > 1);
+  await Promise.map(
+    updateMultiEntities,
+    async ([id, values]) => {
+      logger.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
+      const changeOperations = values.filter((element) => element.toReplace !== null);
+      const addOperations = values.filter((element) => element.toReplace === null);
+      // Group all simple add into single operation
+      const groupedAddOperations = R.groupBy((s) => s.relationType, addOperations);
+      const operations = Object.entries(groupedAddOperations)
+        .map(([key, vals]) => {
+          // eslint-disable-next-line camelcase
+          const { entity_type } = R.head(vals);
+          const ids = vals.map((v) => v.data.internal_id);
+          return { id, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
+        })
+        .flat();
+      operations.push(...changeOperations);
+      // then execute each other one by one
+      for (let index = 0; index < operations.length; index += 1) {
+        const operation = operations[index];
+        // eslint-disable-next-line no-await-in-loop
+        await elUpdateEntityConnections([operation]);
+      }
+    },
+    { concurrency: ES_MAX_CONCURRENCY }
+  );
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
   await elDeleteElements(sourceEntities);
 };
@@ -1800,7 +1851,8 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   // Check consistency
-  const element = await loadByIdFullyResolved(elementId, type, options);
+  const opts = { ...options, onlyMarking: true };
+  const element = await loadByIdFullyResolved(elementId, type, opts);
   await elDeleteElement(element);
   await storeDeleteEvent(user, element);
   // Return id

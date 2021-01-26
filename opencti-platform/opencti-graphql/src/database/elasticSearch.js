@@ -57,8 +57,9 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 
+export const ES_MAX_CONCURRENCY = 5;
+export const MAX_SPLIT = 1000; // Max number of terms resolutions (ES limitation)
 const BULK_TIMEOUT = '5m';
-const ES_MAX_CONCURRENCY = 5;
 const MAX_AGGREGATION_SIZE = 100;
 const MAX_SEARCH_AGGREGATION_SIZE = 10000;
 const MAX_SEARCH_SIZE = 5000;
@@ -1117,7 +1118,7 @@ export const elList = async (indexName, options = {}) => {
   };
   while (hasNextPage) {
     // Force options to prevent connection format and manage search after
-    const opts = { ...options, after: searchAfter, connectionFormat: false };
+    const opts = { ...options, first: MAX_SEARCH_SIZE, after: searchAfter, connectionFormat: false };
     // eslint-disable-next-line no-await-in-loop
     const elements = await elPaginate(indexName, opts);
     if (elements.length === 0 || elements.length < options.first) {
@@ -1147,7 +1148,7 @@ export const elBulk = async (args) => {
     .bulk(args)
     .then((result) => {
       if (result.body.errors) {
-        const errors = result.body.items.map((i) => i.index?.error).filter((f) => f !== undefined);
+        const errors = result.body.items.map((i) => i.index?.error || i.update?.error).filter((f) => f !== undefined);
         throw DatabaseError('Error executing bulk indexing', { errors });
       }
       return result;
@@ -1234,34 +1235,37 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
-const getRelatedRelations = async (targetIds, elements = []) => {
-  const MAX_SPLIT = 512; // Max number of terms resolutions (ES limitation)
-  let toResolved = Array.isArray(targetIds) ? targetIds : [targetIds];
-  const resolvedRelationsConnections = async (subIds) => {
-    const filters = [{ nested: [{ key: 'internal_id', values: subIds }], key: 'connections' }];
-    const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-    // eslint-disable-next-line no-await-in-loop
-    const hits = await elList(RELATIONSHIPS_INDICES, opts);
-    const ids = hits.map((rel) => rel.internal_id);
-    const currentStack = elements.map((rel) => rel.internal_id);
-    const newResolution = ids.filter((id) => !currentStack.includes(id));
-    toResolved.push(...newResolution);
-    elements.push(...hits);
-  };
-  while (toResolved.length > 0) {
-    const groups = R.splitEvery(MAX_SPLIT, toResolved);
-    // Clear resolution for next round trip
-    toResolved = [];
-    // eslint-disable-next-line no-await-in-loop
-    await Promise.map(groups, (subIds) => resolvedRelationsConnections(subIds), { concurrency: ES_MAX_CONCURRENCY });
+const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
+const getRelatedRelations = async (targetIds, elements, level, cache) => {
+  const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
+  const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
+  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+  const hits = await elList(RELATIONSHIPS_INDICES, opts);
+  const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
+  const foundRelations = [];
+  for (let index = 0; index < groupResults.length; index += 1) {
+    const subRels = groupResults[index];
+    elements.unshift(...subRels.map((s) => ({ ...s, level })));
+    const internalIds = subRels.map((g) => g.internal_id);
+    const resolvedIds = internalIds.filter((f) => !cache[f]);
+    foundRelations.push(...resolvedIds);
+    // eslint-disable-next-line no-param-reassign,prettier/prettier
+    resolvedIds.forEach((id) => { cache[id] = '' });
+  }
+  // If relations find, need to recurs to find relations to relations
+  if (foundRelations.length > 0) {
+    const groups = R.splitEvery(MAX_SPLIT, foundRelations);
+    const concurrentFetch = (gIds) => getRelatedRelations(gIds, elements, level + 1, cache);
+    await Promise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
 
-export const getRelationsToRemove = async (elements, options = {}) => {
+export const getRelationsToRemove = async (elements) => {
+  const cache = {};
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
-  await getRelatedRelations(ids, relationsToRemove, options);
-  return relationsToRemove;
+  await getRelatedRelations(ids, relationsToRemove, 0, cache);
+  return { relations: R.flatten(relationsToRemove), cache };
 };
 export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
@@ -1307,20 +1311,35 @@ const elRemoveRelationConnection = async (relsFromTo) => {
 };
 
 export const elDeleteElements = async (elements) => {
-  const relationsToRemoved = await getRelationsToRemove(elements);
-  const relationIdsCache = R.uniq(relationsToRemoved.map((e) => e.internal_id));
+  const { relations, cache } = await getRelationsToRemove(elements);
   // 02. Compute the id that needs to be remove from rel
-  const relsFromTo = relationsToRemoved
+  const relsFromTo = relations
     .map((r) => {
-      const isFromCleanup = isImpactedType(r.fromType) && !relationIdsCache.includes(r.fromId);
-      const isToCleanup = isImpactedType(r.toType) && !relationIdsCache.includes(r.toId);
+      const isFromCleanup = isImpactedType(r.fromType) && !cache[r.fromId];
+      const isToCleanup = isImpactedType(r.toType) && !cache[r.toId];
       return { relation: r, isFromCleanup, isToCleanup };
     })
     .filter((r) => r.isFromCleanup || r.isToCleanup);
   // Update all rel connections that will remain
-  await elRemoveRelationConnection(relsFromTo); // Bul
-  // eslint-disable-next-line no-await-in-loop
-  await elDeleteInstanceIds([...elements, ...relationsToRemoved]);
+  let currentRelationsCount = 0;
+  const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromTo);
+  const concurrentRelsFromTo = async (relsToClean) => {
+    await elRemoveRelationConnection(relsToClean);
+    currentRelationsCount += relsToClean.length;
+    logger.info(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromTo.length}`);
+  };
+  await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, { concurrency: ES_MAX_CONCURRENCY });
+  // Remove all relations
+  let currentRelationsDelete = 0;
+  const groupsOfDeletions = R.splitEvery(MAX_SPLIT, relations);
+  const concurrentDeletions = async (deletions) => {
+    await elDeleteInstanceIds(deletions);
+    currentRelationsDelete += deletions.length;
+    logger.info(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
+  };
+  await Promise.map(groupsOfDeletions, concurrentDeletions, { concurrency: ES_MAX_CONCURRENCY });
+  // Remove the elements
+  await elDeleteInstanceIds(elements); // Bulk
 };
 
 export const elDeleteElement = async (element) => {
@@ -1522,7 +1541,7 @@ export const elUpdateEntityConnections = (elements) => {
   const source = `if (ctx._source[params.key] == null) { 
       ctx._source[params.key] = [params.to];
     } else if (params.from == null) {
-      ctx._source[params.key].add(params.to);
+      ctx._source[params.key].addAll(params.to);
     } else {
       def values = [params.to];
       for (current in ctx._source[params.key]) { 
@@ -1533,13 +1552,19 @@ export const elUpdateEntityConnections = (elements) => {
   `;
   const docsToImpact = elements.filter((e) => !R.includes(e.entity_type, UNIMPACTED_ENTITIES));
   if (docsToImpact.length === 0) return Promise.resolve();
+  const addMultipleFormat = (doc) => {
+    if (doc.toReplace === null && !Array.isArray(doc.data.internal_id)) {
+      return [doc.data.internal_id];
+    }
+    return doc.data.internal_id;
+  };
   const bodyUpdate = docsToImpact.flatMap((doc) => [
     // eslint-disable-next-line no-underscore-dangle
     { update: { _index: inferIndexFromConceptType(doc.entity_type), _id: doc.id } },
     {
       script: {
         source,
-        params: { key: `rel_${doc.relationType}.internal_id`, from: doc.toReplace, to: doc.data.internal_id },
+        params: { key: `rel_${doc.relationType}.internal_id`, from: doc.toReplace, to: addMultipleFormat(doc) },
       },
     },
   ]);
