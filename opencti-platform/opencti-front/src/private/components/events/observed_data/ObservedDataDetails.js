@@ -58,7 +58,7 @@ class ObservedDataDetailsComponent extends Component {
             variant="inLine"
             entityId={observedData.id}
             entityType="Stix-Cyber-Observable"
-            relationshipType="object"
+            relationshipTypes={['object']}
             field="entity_type"
             height={260}
           />

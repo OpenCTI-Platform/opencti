@@ -7,8 +7,6 @@ import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Grid from '@material-ui/core/Grid';
 import Select from '@material-ui/core/Select';
-import Input from '@material-ui/core/Input';
-import Chip from '@material-ui/core/Chip';
 import MenuItem from '@material-ui/core/MenuItem';
 import { QueryRenderer } from '../../../../relay/environment';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -62,9 +60,15 @@ class EntityStixCoreRelationships extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      toType: propOr('All', 'toType', params),
+      selectedEntityType: propOr('All', 'selectedEntityType', params),
+      selectedRelationshipType: propOr(
+        'All',
+        'selectedRelationshipType',
+        params,
+      ),
       numberOfElements: { number: 0, symbol: '' },
-      openToType: false,
+      openEntityType: false,
+      openRelationshipType: false,
     };
   }
 
@@ -87,18 +91,196 @@ class EntityStixCoreRelationships extends Component {
     this.setState({ searchTerm: value }, () => this.saveView());
   }
 
-  handleOpenToType() {
-    this.setState({ openToType: true });
+  handleOpenEntityType() {
+    this.setState({ openEntityType: true });
   }
 
-  handleCloseToType() {
-    this.setState({ openToType: false });
+  handleCloseEntityType() {
+    this.setState({ openEntityType: false });
+  }
+
+  handleOpenRelationshipType() {
+    this.setState({ openRelationshipType: true });
+  }
+
+  handleCloseRelationshipType() {
+    this.setState({ openRelationshipType: false });
   }
 
   handleChangeEntities(event) {
     const { value } = event.target;
+    return this.setState(
+      { openEntityType: false, selectedEntityType: value },
+      () => this.saveView(),
+    );
+  }
 
-    return this.setState({ openToType: false, toType: value }, () => this.saveView());
+  handleChangeRelationshipType(event) {
+    const { value } = event.target;
+    return this.setState(
+      {
+        openRelationshipType: false,
+        selectedRelationshipType: value,
+      },
+      () => this.saveView(),
+    );
+  }
+
+  renderBottomMenu() {
+    const {
+      t,
+      classes,
+      targetStixDomainObjectTypes,
+      relationshipTypes,
+    } = this.props;
+    const {
+      openEntityType,
+      openRelationshipType,
+      selectedEntityType,
+      selectedRelationshipType,
+    } = this.state;
+    const displayTypes = targetStixDomainObjectTypes.length > 1
+      || targetStixDomainObjectTypes.includes('Identity');
+    const displayRelationshipTypes = relationshipTypes.length > 1;
+    return (
+      <Drawer
+        anchor="bottom"
+        variant="permanent"
+        classes={{ paper: classes.bottomNav }}
+      >
+        <Grid container={true} spacing={1}>
+          {displayTypes && (
+            <Grid item={true} xs="auto">
+              <Select
+                style={{ height: 50, marginRight: 15 }}
+                value={selectedEntityType}
+                open={openEntityType}
+                onClose={this.handleCloseEntityType.bind(this)}
+                onOpen={this.handleOpenEntityType.bind(this)}
+                onChange={this.handleChangeEntities.bind(this)}
+              >
+                <MenuItem value="All">{t('All entities')}</MenuItem>
+                {includes('Attack-Pattern', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Attack-Pattern">
+                    {t('Attack pattern')}
+                  </MenuItem>
+                )}
+                {includes('Campaign', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
+                )}
+                {includes('Note', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Note">{t('Note')}</MenuItem>
+                )}
+                {includes('Observed-Data', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Observed-Data">
+                    {t('Observed data')}
+                  </MenuItem>
+                )}
+                {includes('Opinion', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Opinion">{t('Opinion')}</MenuItem>
+                )}
+                {includes('Report', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Report">{t('Report')}</MenuItem>
+                )}
+                {includes('Course-Of-Action', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Course-Of-Action">
+                    {t('Course of action')}
+                  </MenuItem>
+                )}
+                {includes('Individual', targetStixDomainObjectTypes)
+                  || (includes('Identity', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                  ))}
+                {includes('Organization', targetStixDomainObjectTypes)
+                  || (includes('Identity', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Organization">
+                      {t('Organization')}
+                    </MenuItem>
+                  ))}
+                {includes('Sector', targetStixDomainObjectTypes)
+                  || (includes('Identity', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                  ))}
+                {includes('Indicator', targetStixDomainObjectTypes)
+                  || (includes('Indicator', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
+                  ))}
+                {includes('Infrastructure', targetStixDomainObjectTypes)
+                  || (includes('Infrastructure', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Infrastructure">
+                      {t('Infrastructure')}
+                    </MenuItem>
+                  ))}
+                {includes('Intrusion-Set', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Intrusion-Set">
+                    {t('Intrusion set')}
+                  </MenuItem>
+                )}
+                {includes('City', targetStixDomainObjectTypes)
+                  || (includes('Location', targetStixDomainObjectTypes) && (
+                    <MenuItem value="City">{t('City')}</MenuItem>
+                  ))}
+                {includes('Country', targetStixDomainObjectTypes)
+                  || (includes('Location', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Country">{t('Country')}</MenuItem>
+                  ))}
+                {includes('Region', targetStixDomainObjectTypes)
+                  || (includes('Location', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Region">{t('Region')}</MenuItem>
+                  ))}
+                {includes('Position', targetStixDomainObjectTypes)
+                  || (includes('Position', targetStixDomainObjectTypes) && (
+                    <MenuItem value="Position">{t('Position')}</MenuItem>
+                  ))}
+                {includes('Malware', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Malware">{t('Malware')}</MenuItem>
+                )}
+                {includes('Threat-Actor', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Threat-Actor">{t('Threat actor')}</MenuItem>
+                )}
+                {includes('Tool', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Tool">{t('Tool')}</MenuItem>
+                )}
+                {includes('Vulnerability', targetStixDomainObjectTypes) && (
+                  <MenuItem value="Vulnerability">
+                    {t('Vulnerability')}
+                  </MenuItem>
+                )}
+                {includes(
+                  'X-OpenCTI-Incident',
+                  targetStixDomainObjectTypes,
+                ) && (
+                  <MenuItem value="X-OpenCTI-Incident">
+                    {t('Incident')}
+                  </MenuItem>
+                )}
+              </Select>
+            </Grid>
+          )}
+          {displayRelationshipTypes && (
+            <Grid item={true} xs="auto">
+              <Select
+                style={{ height: 50, marginRight: 15 }}
+                value={selectedRelationshipType}
+                open={openRelationshipType}
+                onClose={this.handleCloseRelationshipType.bind(this)}
+                onOpen={this.handleOpenRelationshipType.bind(this)}
+                onChange={this.handleChangeRelationshipType.bind(this)}
+              >
+                <MenuItem value="All">
+                  {t('All types of relationship')}
+                </MenuItem>
+                {relationshipTypes.map((relationshipType) => (
+                  <MenuItem key={relationshipType} value={relationshipType}>
+                    {t(`relationship_${relationshipType}`)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </Grid>
+          )}
+        </Grid>
+      </Drawer>
+    );
   }
 
   renderLines(paginationOptions) {
@@ -108,7 +290,7 @@ class EntityStixCoreRelationships extends Component {
       relationship_type: {
         label: 'Relationship type',
         width: '15%',
-        isSortable: false,
+        isSortable: true,
       },
       name: {
         label: 'Name',
@@ -177,37 +359,38 @@ class EntityStixCoreRelationships extends Component {
 
   render() {
     const {
-      t,
       classes,
       targetStixDomainObjectTypes,
       entityId,
       role,
-      relationshipType,
+      relationshipTypes,
       isRelationReversed,
-      noBottomBar,
     } = this.props;
-
     const {
       view,
       searchTerm,
-      toType,
-      openToType,
+      selectedEntityType,
+      selectedRelationshipType,
       sortBy,
       orderAsc,
     } = this.state;
-
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
       || targetStixDomainObjectTypes.includes('Identity');
-    const selectedTypes = toType === 'All' ? targetStixDomainObjectTypes : [toType];
-
+    const displayRelationshipTypes = relationshipTypes.length > 1;
+    const displayBottomBar = displayTypes || displayRelationshipTypes;
+    const selectedTypes = selectedEntityType === 'All'
+      ? targetStixDomainObjectTypes
+      : selectedEntityType;
     let paginationOptions = {
-      relationship_type: relationshipType || 'stix-core-relationship',
+      relationship_type:
+        selectedRelationshipType === 'All'
+          ? 'stix-core-relationship'
+          : selectedRelationshipType,
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
-
     if (isRelationReversed) {
       paginationOptions = pipe(
         assoc('fromTypes', selectedTypes),
@@ -223,197 +406,15 @@ class EntityStixCoreRelationships extends Component {
     }
     return (
       <div className={classes.container}>
-        {!noBottomBar ? (
-          <Drawer
-            anchor="bottom"
-            variant="permanent"
-            classes={{ paper: classes.bottomNav }}
-          >
-            <Grid container={true} spacing={1}>
-              {displayTypes ? (
-                <Grid item={true} xs="auto">
-                  <Select
-                    style={{ height: 50, marginRight: 15 }}
-                    value={toType}
-                    open={openToType}
-                    onClose={this.handleCloseToType.bind(this)}
-                    onOpen={this.handleOpenToType.bind(this)}
-                    onChange={this.handleChangeEntities.bind(this)}
-                    input={<Input id="entities" />}
-                    renderValue={(selected) => (
-                      <div className={classes.chips}>
-                        <Chip
-                          key={selected}
-                          label={t(`entity_${selected}`)}
-                          className={classes.chip}
-                        />
-                      </div>
-                    )}
-                  >
-                    <MenuItem value="All">{t('All entities')}</MenuItem>
-                    {includes('Attack-Pattern', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Attack-Pattern">
-                        {t('Attack pattern')}
-                      </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Campaign', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Campaign">{t('Campaign')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Note', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Note">{t('Note')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Observed-Data', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Observed-Data">
-                        {t('Observed data')}
-                      </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Opinion', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Opinion">{t('Opinion')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Report', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Report">{t('Report')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes(
-                      'Course-Of-Action',
-                      targetStixDomainObjectTypes,
-                    ) ? (
-                      <MenuItem value="Course-Of-Action">
-                        {t('Course of action')}
-                      </MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Individual', targetStixDomainObjectTypes)
-                    || includes('Identity', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Individual">{t('Individual')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Organization', targetStixDomainObjectTypes)
-                    || includes('Identity', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Organization">
-                        {t('Organization')}
-                      </MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Sector', targetStixDomainObjectTypes)
-                    || includes('Identity', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Indicator', targetStixDomainObjectTypes)
-                    || includes('Indicator', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Indicator">{t('Indicator')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Infrastructure', targetStixDomainObjectTypes)
-                    || includes('Infrastructure', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Infrastructure">
-                        {t('Infrastructure')}
-                      </MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Intrusion-Set', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Intrusion-Set">
-                        {t('Intrusion set')}
-                      </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('City', targetStixDomainObjectTypes)
-                    || includes('Location', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="City">{t('City')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Country', targetStixDomainObjectTypes)
-                    || includes('Location', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Country">{t('Country')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Region', targetStixDomainObjectTypes)
-                    || includes('Location', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Region">{t('Region')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Position', targetStixDomainObjectTypes)
-                    || includes('Position', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Position">{t('Position')}</MenuItem>
-                      ) : (
-                        ''
-                      )}
-                    {includes('Malware', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Malware">{t('Malware')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Threat-Actor', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Threat-Actor">
-                        {t('Threat actor')}
-                      </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Tool', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Tool">{t('Tool')}</MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes('Vulnerability', targetStixDomainObjectTypes) ? (
-                      <MenuItem value="Vulnerability">
-                        {t('Vulnerability')}
-                      </MenuItem>
-                    ) : (
-                      ''
-                    )}
-                    {includes(
-                      'X-OpenCTI-Incident',
-                      targetStixDomainObjectTypes,
-                    ) ? (
-                      <MenuItem value="X-OpenCTI-Incident">
-                        {t('Incident')}
-                      </MenuItem>
-                      ) : (
-                        ''
-                      )}
-                  </Select>
-                </Grid>
-              ) : (
-                ''
-              )}
-            </Grid>
-          </Drawer>
-        ) : (
-          ''
-        )}
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        {displayBottomBar && this.renderBottomMenu()}
+        {view === 'lines' && this.renderLines(paginationOptions)}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             entityId={entityId}
             isRelationReversed={isRelationReversed}
             paddingRight={220}
             targetStixDomainObjectTypes={targetStixDomainObjectTypes}
-            allowedRelationshipTypes={
-              relationshipType ? [relationshipType] : null
-            }
+            allowedRelationshipTypes={relationshipTypes}
             paginationOptions={paginationOptions}
           />
         </Security>
@@ -426,14 +427,13 @@ EntityStixCoreRelationships.propTypes = {
   entityId: PropTypes.string,
   role: PropTypes.string,
   targetStixDomainObjectTypes: PropTypes.array,
+  relationshipTypes: PropTypes.array,
   entityLink: PropTypes.string,
-  relationshipType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
   exploreLink: PropTypes.string,
   isRelationReversed: PropTypes.bool,
-  noBottomBar: PropTypes.bool,
   noState: PropTypes.bool,
 };
 

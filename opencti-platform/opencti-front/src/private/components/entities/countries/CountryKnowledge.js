@@ -14,7 +14,6 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
-import EntityStixCoreRelationshipsSelection from '../../common/stix_core_relationships/EntityStixCoreRelationshipsSelection';
 
 const styles = () => ({
   container: {
@@ -76,7 +75,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationshipType="located-at"
+              relationshipTypes={['located-at']}
               targetStixDomainObjectTypes={['City']}
               entityLink={link}
               isRelationReversed={true}
@@ -90,7 +89,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationshipType="located-at"
+              relationshipTypes={['located-at']}
               targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
               isRelationReversed={true}
@@ -104,7 +103,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
@@ -116,11 +115,12 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/intrusion_sets"
           render={(routeProps) => (
-            <EntityStixCoreRelationshipsSelection
+            <EntityStixCoreRelationships
               entityId={country.id}
+              relationshipTypes={['targets', 'originates-from']}
+              targetStixDomainObjectTypes={['Campaign', 'Intrusion-Set']}
               entityLink={link}
-              targetStixDomainObjectTypes={['Intrusion-Set']}
-              targetStixCoreRelationshipTypes={['targets', 'originates-from']}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -131,7 +131,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
@@ -145,7 +145,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               isRelationReversed={true}
@@ -159,7 +159,7 @@ class CountryKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={country.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}

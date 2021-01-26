@@ -137,7 +137,7 @@ class InfrastructureKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={infrastructure.id}
-              relationshipType="has"
+              relationshipTypes={['has']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
               isRelationReversed={false}

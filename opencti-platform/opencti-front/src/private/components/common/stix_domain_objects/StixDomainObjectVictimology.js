@@ -173,7 +173,7 @@ class StixDomainObjectVictimology extends Component {
             entityLink={entityLink}
             entityId={stixDomainObjectId}
             targetStixDomainObjectTypes={types}
-            relationshipType="targets"
+            relationshipTypes={['targets']}
             noBottomBar={true}
             isRelationReversed={false}
             noState={true}

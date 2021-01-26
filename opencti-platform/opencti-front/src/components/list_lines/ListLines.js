@@ -249,7 +249,7 @@ class ListLines extends Component {
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'duplicates')}
                 >
-                  <TableChart />
+                  <TableChartOutlined />
                 </IconButton>
               </Tooltip>
             ) : (

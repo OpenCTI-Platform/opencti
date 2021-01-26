@@ -74,7 +74,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipType="located-at"
+              relationshipTypes={['located-at']}
               targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
               isRelationReversed={true}
@@ -88,7 +88,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
@@ -102,7 +102,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
@@ -116,7 +116,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
@@ -130,7 +130,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               isRelationReversed={true}
@@ -144,7 +144,7 @@ class CityKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={city.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}

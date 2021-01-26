@@ -67,7 +67,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
@@ -81,7 +81,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
@@ -95,7 +95,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
@@ -110,7 +110,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['XOpenCTIIncident']}
               entityLink={link}
               isRelationReversed={true}
@@ -124,7 +124,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
@@ -138,7 +138,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
               isRelationReversed={true}
@@ -152,7 +152,7 @@ class AttackPatternKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={attackPattern.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
               isRelationReversed={false}

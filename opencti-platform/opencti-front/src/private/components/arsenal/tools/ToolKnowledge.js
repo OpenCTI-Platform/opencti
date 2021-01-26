@@ -74,7 +74,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
@@ -88,7 +88,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
@@ -102,7 +102,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
@@ -116,7 +116,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Attack-Pattern']}
               entityLink={link}
               isRelationReversed={false}
@@ -130,7 +130,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}
@@ -144,7 +144,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
               isRelationReversed={false}
@@ -158,7 +158,7 @@ class ToolKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={tool.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               isRelationReversed={true}

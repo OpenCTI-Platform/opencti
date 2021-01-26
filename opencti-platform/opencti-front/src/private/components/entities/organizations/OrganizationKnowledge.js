@@ -74,7 +74,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="part-of"
+              relationshipTypes={['part-of']}
               role="part-of_to"
               targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
@@ -89,7 +89,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="part-of"
+              relationshipTypes={['part-of']}
               targetStixDomainObjectTypes={['Individual']}
               entityLink={link}
               isRelationReversed={true}
@@ -103,7 +103,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
               isRelationReversed={true}
@@ -117,7 +117,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Intrusion-Set']}
               entityLink={link}
               isRelationReversed={true}
@@ -131,7 +131,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
@@ -145,7 +145,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               isRelationReversed={true}
@@ -159,7 +159,7 @@ class OrganizationKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={organization.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}

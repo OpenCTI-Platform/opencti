@@ -74,7 +74,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
-              relationshipType="attributed-to"
+              relationshipTypes={['attributed-to']}
               targetStixDomainObjectTypes={[
                 'Threat-Actor',
                 'Intrusion-Set',
@@ -114,7 +114,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={false}
@@ -128,7 +128,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
-              relationshipType="uses"
+              relationshipTypes={['uses']}
               targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
               isRelationReversed={false}
@@ -142,7 +142,7 @@ class XOpenCTIIncidentKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={xOpenCTIIncident.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
               isRelationReversed={false}

@@ -74,7 +74,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationshipType="part-of"
+              relationshipTypes={['part-of']}
               targetStixDomainObjectTypes={['Individual']}
               entityLink={link}
               isRelationReversed={false}
@@ -88,7 +88,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationshipType="localization"
+              relationshipTypes={['localization']}
               targetStixDomainObjectTypes={['City', 'Country', 'Region']}
               entityLink={link}
               isRelationReversed={false}
@@ -128,7 +128,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Campaign']}
               entityLink={link}
               isRelationReversed={true}
@@ -142,7 +142,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
               entityLink={link}
               isRelationReversed={true}
@@ -156,7 +156,7 @@ class IndividualKnowledgeComponent extends Component {
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={individual.id}
-              relationshipType="targets"
+              relationshipTypes={['targets']}
               targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               isRelationReversed={true}

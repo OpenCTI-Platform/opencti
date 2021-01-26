@@ -842,6 +842,7 @@ const i18n = {
       // Time
       '24h': '24h',
       // Types
+      'All types of relationship': 'Tous les types de relation',
       entity_All: 'Toutes les entités',
       'entity_Stix-Domain-Object': 'Entité',
       'entity_Stix-Domain-Objects': 'Entités',
@@ -906,6 +907,7 @@ const i18n = {
       'entity_X-OpenCTI-User-Agent': 'User agent',
       'entity_X-Opencti-User-Agent': 'User agent',
       // Relations
+      relationship_All: 'Tous les types de relation',
       'relationship_revoked-by': 'révoqué par',
       relationship_delivers: 'délivre',
       relationship_targets: 'cible',
@@ -1090,6 +1092,7 @@ const i18n = {
       'entity_X-OpenCTI-Text': 'Text',
       'entity_X-OpenCTI-User-Agent': 'User agent',
       // Relations
+      relationship_All: 'All types of relationship',
       'relationship_revoked-by': 'revoked by',
       relationship_delivers: 'delivers',
       relationship_targets: 'targets',

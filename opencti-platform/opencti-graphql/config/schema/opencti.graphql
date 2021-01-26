@@ -6824,6 +6824,7 @@ interface StixRelationship {
 ############## StixCoreRelationships
 enum StixCoreRelationshipsOrdering {
   entity_type
+  relationship_type
   confidence
   start_time
   stop_time
