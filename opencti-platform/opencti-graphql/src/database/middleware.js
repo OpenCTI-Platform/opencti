@@ -734,7 +734,7 @@ const filterTargetByExisting = (sources, targets) => {
 // };
 const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
   // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
-  logger.debug(`[OPENCTI] Merging ${sourceEntities.map((i) => i.instance)} in ${targetEntity.internal_id}`);
+  logger.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
   const { chosenFields = {} } = opts;
   // Pre-checks
   const sourceIds = R.map((e) => e.internal_id, sourceEntities);
@@ -800,7 +800,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
     await elUpdateElement(updateAsInstance);
-    logger.debug(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
+    logger.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
@@ -883,29 +883,27 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     });
   }
   // Update all impacted relations.
-  logger.debug(`[OPENCTI] Merging, updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
+  logger.info(`[OPENCTI] Merging updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
   let currentRelsUpdateCount = 0;
   const groupsOfRelsUpdate = R.splitEvery(MAX_SPLIT, updateConnections);
   const concurrentRelsUpdate = async (connsToUpdate) => {
     await elUpdateRelationConnections(connsToUpdate);
     currentRelsUpdateCount += connsToUpdate.length;
-    logger.debug(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
+    logger.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Update all impacted entities
-  logger.debug(`[OPENCTI] Merging, impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
+  logger.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
   const entries = Object.entries(updatesByEntity);
-  let currentEntitiesUpdateCount = 0;
+  let currentEntUpdateCount = 0;
   // eslint-disable-next-line prettier/prettier
   const updateBulkEntities = entries.filter(([, values]) => values.length === 1).map(([, values]) => values).flat();
   const groupsOfEntityUpdate = R.splitEvery(MAX_SPLIT, updateBulkEntities);
   const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
     await elUpdateEntityConnections(entitiesToUpdate);
-    currentEntitiesUpdateCount += entitiesToUpdate.length;
-    logger.debug(
-      `[OPENCTI] Merging, updating bulk entities ${currentEntitiesUpdateCount} / ${updateBulkEntities.length}`
-    );
+    currentEntUpdateCount += entitiesToUpdate.length;
+    logger.info(`[OPENCTI] Merging updating bulk entities ${currentEntUpdateCount} / ${updateBulkEntities.length}`);
   };
   await Promise.map(groupsOfEntityUpdate, concurrentEntitiesUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Take care of multi update
@@ -913,7 +911,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(
     updateMultiEntities,
     async ([id, values]) => {
-      logger.debug(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
+      logger.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
       const changeOperations = values.filter((element) => element.toReplace !== null);
       const addOperations = values.filter((element) => element.toReplace === null);
       // Group all simple add into single operation
