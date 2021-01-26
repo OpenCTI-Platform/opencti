@@ -121,7 +121,7 @@ const createSeeMiddleware = (broadcaster) => {
       capabilities: req.capabilities,
       sendEvent: (id, topic, data) => {
         if (req.finished) {
-          logger.info('[STREAM] Write on an already terminated response', { id: client.userId });
+          logger.warn('[STREAM] Write on an already terminated response', { id: client.userId });
           return;
         }
         let message = '';

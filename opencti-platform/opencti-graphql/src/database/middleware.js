@@ -801,7 +801,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   if (impactedInputs.length > 0) {
     const updateAsInstance = partialInstanceWithInputs(targetEntity, impactedInputs);
     await elUpdateElement(updateAsInstance);
-    logger.info(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
+    logger.debug(`[OPENCTI] Merging attributes success for ${targetEntity.internal_id}`, { update: updateAsInstance });
   }
   // 2. EACH SOURCE (Ignore createdBy)
   // - EVERYTHING I TARGET (->to) ==> We change to relationship FROM -> TARGET ENTITY
@@ -884,17 +884,17 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     });
   }
   // Update all impacted relations.
-  logger.info(`[OPENCTI] Merging, updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
+  logger.debug(`[OPENCTI] Merging, updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
   let currentRelsUpdateCount = 0;
   const groupsOfRelsUpdate = R.splitEvery(MAX_SPLIT, updateConnections);
   const concurrentRelsUpdate = async (connsToUpdate) => {
     await elUpdateRelationConnections(connsToUpdate);
     currentRelsUpdateCount += connsToUpdate.length;
-    logger.info(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
+    logger.debug(`[OPENCTI] Merging, updating relations ${currentRelsUpdateCount} / ${updateConnections.length}`);
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   // Update all impacted entities
-  logger.info(`[OPENCTI] Merging, impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
+  logger.debug(`[OPENCTI] Merging, impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
   const updatesByEntity = R.groupBy((i) => i.id, updateEntities);
   const entries = Object.entries(updatesByEntity);
   let currentEntitiesUpdateCount = 0;
@@ -904,7 +904,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
     await elUpdateEntityConnections(entitiesToUpdate);
     currentEntitiesUpdateCount += entitiesToUpdate.length;
-    logger.info(
+    logger.debug(
       `[OPENCTI] Merging, updating bulk entities ${currentEntitiesUpdateCount} / ${updateBulkEntities.length}`
     );
   };
@@ -914,7 +914,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   await Promise.map(
     updateMultiEntities,
     async ([id, values]) => {
-      logger.info(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
+      logger.debug(`[OPENCTI] Merging, updating single entity ${id} / ${values.length}`);
       const changeOperations = values.filter((element) => element.toReplace !== null);
       const addOperations = values.filter((element) => element.toReplace === null);
       // Group all simple add into single operation

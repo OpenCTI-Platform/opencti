@@ -1326,7 +1326,7 @@ export const elDeleteElements = async (elements) => {
   const concurrentRelsFromTo = async (relsToClean) => {
     await elRemoveRelationConnection(relsToClean);
     currentRelationsCount += relsToClean.length;
-    logger.info(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromTo.length}`);
+    logger.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromTo.length}`);
   };
   await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, { concurrency: ES_MAX_CONCURRENCY });
   // Remove all relations
@@ -1335,7 +1335,7 @@ export const elDeleteElements = async (elements) => {
   const concurrentDeletions = async (deletions) => {
     await elDeleteInstanceIds(deletions);
     currentRelationsDelete += deletions.length;
-    logger.info(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
+    logger.debug(`[OPENCTI] Deleting related relations ${currentRelationsDelete} / ${relations.length}`);
   };
   await Promise.map(groupsOfDeletions, concurrentDeletions, { concurrency: ES_MAX_CONCURRENCY });
   // Remove the elements
