@@ -129,8 +129,9 @@ class Organizations extends Component {
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labels',
-          'markingDefinitions',
+          'x_opencti_organization_type',
+          'labelledBy',
+          'markedBy',
           'created_start_date',
           'created_end_date',
           'createdBy',

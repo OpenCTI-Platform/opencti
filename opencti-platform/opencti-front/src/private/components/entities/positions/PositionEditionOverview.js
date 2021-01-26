@@ -49,7 +49,10 @@ const styles = (theme) => ({
 });
 
 const positionMutationFieldPatch = graphql`
-  mutation PositionEditionOverviewFieldPatchMutation($id: ID!, $input: EditInput!) {
+  mutation PositionEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: EditInput!
+  ) {
     positionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...PositionEditionOverview_position
@@ -59,7 +62,10 @@ const positionMutationFieldPatch = graphql`
 `;
 
 export const positionEditionOverviewFocus = graphql`
-  mutation PositionEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+  mutation PositionEditionOverviewFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
     positionEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -124,7 +130,10 @@ class PositionEditionOverviewComponent extends Component {
       .then(() => {
         commitMutation({
           mutation: positionMutationFieldPatch,
-          variables: { id: this.props.position.id, input: { key: name, value } },
+          variables: {
+            id: this.props.position.id,
+            input: { key: name, value },
+          },
         });
       })
       .catch(() => false);

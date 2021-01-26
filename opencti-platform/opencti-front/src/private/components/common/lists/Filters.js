@@ -162,7 +162,7 @@ class Filters extends Component {
         break;
       case 'x_opencti_base_severity':
         fetchQuery(attributesSearchQuery, {
-          type: 'x_opencti_base_severity',
+          fieldKey: 'x_opencti_base_severity',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
@@ -183,7 +183,7 @@ class Filters extends Component {
         break;
       case 'x_opencti_attack_vector':
         fetchQuery(attributesSearchQuery, {
-          type: 'x_opencti_attack_vector',
+          fieldKey: 'x_opencti_attack_vector',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
@@ -204,7 +204,7 @@ class Filters extends Component {
         break;
       case 'x_opencti_report_status':
         fetchQuery(attributesSearchQuery, {
-          type: 'x_opencti_report_status',
+          fieldKey: 'x_opencti_report_status',
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
@@ -219,6 +219,27 @@ class Filters extends Component {
           this.setState({
             entities: {
               x_opencti_report_status: union(this.state.entities, entities),
+            },
+          });
+        });
+        break;
+      case 'x_opencti_organization_type':
+        fetchQuery(attributesSearchQuery, {
+          fieldKey: 'x_opencti_organization_type',
+          search: event && event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        }).then((data) => {
+          const entities = pipe(
+            pathOr([], ['attributes', 'edges']),
+            map((n) => ({
+              label: n.node.value,
+              value: n.node.value,
+              type: 'attribute',
+            })),
+          )(data);
+          this.setState({
+            entities: {
+              x_opencti_organization_type: union(this.state.entities, entities),
             },
           });
         });
@@ -328,7 +349,9 @@ class Filters extends Component {
                     }
                     noOptionsText={t('No available options')}
                     options={entities[filterKey] ? entities[filterKey] : []}
-                    onInputChange={this.searchEntities.bind(this, filterKey)}
+                    onInputChange={() => {
+                      this.searchEntities.bind(this, filterKey);
+                    }}
                     onChange={this.handleChange.bind(this, filterKey)}
                     getOptionSelected={(option, value) => option.value === value
                     }

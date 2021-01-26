@@ -88,8 +88,6 @@ class RegionCreation extends Component {
     this.setState({ open: false });
   }
 
-
-
   render() {
     const { t, classes } = this.props;
     return (
@@ -102,7 +100,6 @@ class RegionCreation extends Component {
         >
           <Add />
         </Fab>
-
       </div>
     );
   }

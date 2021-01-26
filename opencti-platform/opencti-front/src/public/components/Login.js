@@ -158,7 +158,7 @@ const Login = ({ classes }) => {
                 )}
                 {isAuthButtons && renderExternalAuth(authSSOs)}
                 {providers.length === 0 && (
-                    <div>No authentication provider available</div>
+                  <div>No authentication provider available</div>
                 )}
               </div>
             </ConnectedIntlProvider>

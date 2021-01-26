@@ -45,10 +45,7 @@ class StixDomainObjectVictimologyRegionsMap extends Component {
       .filter((n) => n.to.entity_type === 'City')
       .map((e) => e.to);
     return (
-      <Paper
-        classes={{ root: classes.paper }}
-        elevation={2}
-      >
+      <Paper classes={{ root: classes.paper }} elevation={2}>
         <LocationMiniMapTargets
           center={[48.8566969, 2.3514616]}
           zoom={2.5}

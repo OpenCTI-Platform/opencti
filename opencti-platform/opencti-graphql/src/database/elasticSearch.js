@@ -1142,6 +1142,29 @@ export const elLoadBy = async (field, value, type = null, indices = DATA_INDICES
   if (hits.length > 1) throw Error(`Expected only one response, found ${hits.length}`);
   return R.head(hits);
 };
+export const elAttributeValues = async (field) => {
+  const body = {
+    aggs: {
+      values: {
+        terms: {
+          field: `${field}.keyword`,
+        },
+      },
+    },
+  };
+  const query = {
+    index: [INDEX_STIX_DOMAIN_OBJECTS, INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    body,
+  };
+  const data = await el.search(query);
+  const { buckets } = data.body.aggregations.values;
+  const finalResult = R.pipe(
+    R.map((n) => ({ node: { id: n.key, key: n.key, value: n.key } })),
+    R.sortWith([R.ascend(R.prop('value'))])
+  )(buckets);
+  return buildPagination(0, null, finalResult, finalResult.length);
+};
 // endregion
 
 export const elBulk = async (args) => {
@@ -1250,7 +1273,9 @@ const getRelatedRelations = async (targetIds, elements, level, cache) => {
     const resolvedIds = internalIds.filter((f) => !cache[f]);
     foundRelations.push(...resolvedIds);
     // eslint-disable-next-line no-param-reassign,prettier/prettier
-    resolvedIds.forEach((id) => { cache[id] = '' });
+    resolvedIds.forEach((id) => {
+      cache[id] = '';
+    });
   }
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {

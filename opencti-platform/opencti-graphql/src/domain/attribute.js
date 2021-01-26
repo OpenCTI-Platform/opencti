@@ -11,7 +11,7 @@ import {
 import { ENTITY_TYPE_ATTRIBUTE } from '../schema/internalObject';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { elUpdateAttributeValue } from '../database/elasticSearch';
+import { elAttributeValues, elUpdateAttributeValue } from '../database/elasticSearch';
 
 export const findById = (attributeId) => {
   return loadById(attributeId, ENTITY_TYPE_ATTRIBUTE);
@@ -26,6 +26,9 @@ export const find = (attributeKey, attributeValue) => {
 };
 
 export const findAll = (args) => {
+  if (args.fieldKey) {
+    return elAttributeValues(args.fieldKey);
+  }
   if (args.elementType) {
     return queryAttributes(args.elementType);
   }

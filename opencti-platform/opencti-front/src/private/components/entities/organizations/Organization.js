@@ -17,7 +17,10 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 const styles = () => ({
   container: {
@@ -101,7 +104,7 @@ class OrganizationComponent extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectOrStixCoreRelationshipLastReports
-                {...lastReportsProps}
+              {...lastReportsProps}
             />
           </Grid>
         </Grid>

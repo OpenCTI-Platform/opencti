@@ -64,7 +64,10 @@ class PositionEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <PositionEditionOverview position={this.props.position} context={editContext} />
+          <PositionEditionOverview
+            position={this.props.position}
+            context={editContext}
+          />
         </div>
       </div>
     );
@@ -79,18 +82,21 @@ PositionEditionContainer.propTypes = {
   t: PropTypes.func,
 };
 
-const PositionEditionFragment = createFragmentContainer(PositionEditionContainer, {
-  position: graphql`
-    fragment PositionEditionContainer_position on Position {
-      id
-      ...PositionEditionOverview_position
-      editContext {
-        name
-        focusOn
+const PositionEditionFragment = createFragmentContainer(
+  PositionEditionContainer,
+  {
+    position: graphql`
+      fragment PositionEditionContainer_position on Position {
+        id
+        ...PositionEditionOverview_position
+        editContext {
+          name
+          focusOn
+        }
       }
-    }
-  `,
-});
+    `,
+  },
+);
 
 export default compose(
   inject18n,

@@ -7232,6 +7232,7 @@ type Query {
     orderMode: OrderingMode
     key: String
     elementType: String
+    fieldKey: String
     search: String
   ): AttributeConnection @auth(for: [KNOWLEDGE])
 

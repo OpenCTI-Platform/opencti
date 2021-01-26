@@ -12,13 +12,21 @@ class ItemCreator extends Component {
         <Security
           needs={[SETTINGS_SETACCESSES]}
           placeholder={
-            <Button variant="outlined" size="small" style={{ cursor: 'default' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              style={{ cursor: 'default' }}
+            >
               {creator.name}
             </Button>
           }
         >
           {creator.id === '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505' ? (
-            <Button variant="outlined" size="small" style={{ cursor: 'default' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              style={{ cursor: 'default' }}
+            >
               {creator.name}
             </Button>
           ) : (
