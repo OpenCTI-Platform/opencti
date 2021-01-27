@@ -13,8 +13,11 @@ import {
 import {
   buildPagination,
   fillTimeSeries,
+  inferIndexFromConceptType,
   isEmptyField,
   isNotEmptyField,
+  READ_ENTITIES_INDICES,
+  READ_RELATIONSHIPS_INDICES,
   relationTypeToInputName,
   UPDATE_OPERATION_ADD,
   UPDATE_OPERATION_REMOVE,
@@ -35,11 +38,9 @@ import {
   elUpdateElement,
   elUpdateEntityConnections,
   elUpdateRelationConnections,
-  ENTITIES_INDICES,
   ES_MAX_CONCURRENCY,
   isUnimpactedEntity,
   MAX_SPLIT,
-  RELATIONSHIPS_INDICES,
 } from './elasticSearch';
 import {
   generateAliasesId,
@@ -176,7 +177,7 @@ const batchListThrough = async (sources, sourceSide, relationType, targetEntityT
   };
   const filters = [directionInternalIdFilter, oppositeTypeFilter];
   // Resolve all relations
-  const relations = await elPaginate(RELATIONSHIPS_INDICES, {
+  const relations = await elPaginate(READ_RELATIONSHIPS_INDICES, {
     connectionFormat: false,
     filters,
     types: [relationType],
@@ -333,15 +334,15 @@ const buildEntitiesFilter = (entityTypes, args) => {
 };
 export const listEntities = async (entityTypes, args = {}) => {
   const paginateArgs = buildEntitiesFilter(entityTypes, args);
-  return elPaginate(ENTITIES_INDICES, paginateArgs);
+  return elPaginate(READ_ENTITIES_INDICES, paginateArgs);
 };
 export const listRelations = async (relationshipType, args) => {
   const paginateArgs = buildRelationsFilter(relationshipType, args);
-  return elPaginate(RELATIONSHIPS_INDICES, paginateArgs);
+  return elPaginate(READ_RELATIONSHIPS_INDICES, paginateArgs);
 };
 export const listAllRelations = async (relationshipType, args) => {
   const paginateArgs = buildRelationsFilter(relationshipType, args);
-  return elList(RELATIONSHIPS_INDICES, paginateArgs);
+  return elList(READ_RELATIONSHIPS_INDICES, paginateArgs);
 };
 export const loadEntity = async (entityTypes, args = {}) => {
   const opts = { ...args, connectionFormat: false };
@@ -387,25 +388,33 @@ const transformRawRelationsToAttributes = (data, orientation) => {
 const loadElementDependencies = async (elementId, args = {}) => {
   const { onlyMarking = false, noCache = false } = args;
   const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
+  // Resolve all relations
   const relations = await listAllRelations(relType, { elementId, noCache });
-  const dataFromRels = relations.map((rel) => {
-    const direction = rel.fromId === elementId ? 'from' : 'to';
-    const toPart = { internal_id: rel.toId, entity_type: rel.toType };
-    const fromPart = { internal_id: rel.fromId, entity_type: rel.fromType };
-    const match = rel.fromId === elementId ? toPart : fromPart;
-    return { rel, to: match, direction };
-  });
-  const data = {};
-  data.i_relations_from = transformRawRelationsToAttributes(dataFromRels, 'from');
-  data.i_relations_to = transformRawRelationsToAttributes(dataFromRels, 'to');
-  // Filter if needed
-  const grouped = R.groupBy((a) => relationTypeToInputName(a.rel.entity_type), dataFromRels);
-  const entries = Object.entries(grouped);
-  for (let index = 0; index < entries.length; index += 1) {
-    const [key, values] = entries[index];
-    data[key] = R.map((v) => v.to, values);
+  if (relations.length > 0) {
+    const dataFromRels = relations.map((rel) => {
+      const direction = rel.fromId === elementId ? 'from' : 'to';
+      const toPart = { internal_id: rel.toId, entity_type: rel.toType };
+      const fromPart = { internal_id: rel.fromId, entity_type: rel.fromType };
+      const match = rel.fromId === elementId ? toPart : fromPart;
+      return { rel, to: match, direction };
+    });
+    // Resolve all targets
+    const toResolvedIds = R.uniq(dataFromRels.map((d) => d.to.internal_id));
+    const dataResolved = await elFindByIds(toResolvedIds, null, { toMap: true });
+    const resolvedRels = dataFromRels.map((d) => ({ ...d, to: dataResolved[d.to.internal_id] }));
+    const data = {};
+    data.i_relations_from = transformRawRelationsToAttributes(resolvedRels, 'from');
+    data.i_relations_to = transformRawRelationsToAttributes(resolvedRels, 'to');
+    // Filter if needed
+    const grouped = R.groupBy((a) => relationTypeToInputName(a.rel.entity_type), resolvedRels);
+    const entries = Object.entries(grouped);
+    for (let index = 0; index < entries.length; index += 1) {
+      const [key, values] = entries[index];
+      data[key] = R.map((v) => v.to, values);
+    }
+    return data;
   }
-  return data;
+  return {};
 };
 export const loadByIdFullyResolved = async (id, type, args = {}) => {
   const typeOpts = type ? args : R.assoc('type', type, args);
@@ -418,10 +427,10 @@ export const loadByIdFullyResolved = async (id, type, args = {}) => {
     const fromPromise = loadByIdFullyResolved(element.fromId, null, { onlyMarking: true });
     const toPromise = loadByIdFullyResolved(element.toId, null, { onlyMarking: true });
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
-    return R.mergeRight(element, { from, to, ...deps });
+    return R.mergeRight(element, { i_fully_resolved: true, from, to, ...deps });
   }
   const deps = await depsPromise;
-  return R.mergeRight(element, deps);
+  return R.mergeRight(element, { i_fully_resolved: true, ...deps });
 };
 
 export const stixElementLoader = async (id, type) => {
@@ -619,7 +628,12 @@ const mergeInstanceWithInputs = (instance, inputs) => {
 };
 const partialInstanceWithInputs = (instance, inputs) => {
   const inputData = updatedInputsToData(inputs);
-  return { internal_id: instance.internal_id, entity_type: instance.entity_type, ...inputData };
+  return {
+    _index: instance._index,
+    internal_id: instance.internal_id,
+    entity_type: instance.entity_type,
+    ...inputData,
+  };
 };
 const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) => {
   const { forceUpdate = false, operation = UPDATE_OPERATION_REPLACE } = options;
@@ -697,6 +711,7 @@ const targetedRelations = (entities, direction) => {
               return {
                 entity_type: key,
                 connect: val.internal_id,
+                connect_index: val._index,
                 relation: val.i_relation,
                 internal_id: val.i_relation.internal_id,
                 standard_id: val.i_relation.standard_id,
@@ -733,7 +748,12 @@ const filterTargetByExisting = (sources, targets) => {
 //   return entities.map((e) => `merge_${e.internal_id}`);
 // };
 const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) => {
-  // chosenFields = { 'description': 'source1EntityStandardId', 'hashes': 'source2EntityStandardId' } ]
+  // 01 Check if everything is fully resolved.
+  const elements = [targetEntity, ...sourceEntities];
+  const notFullyResolved = elements.filter((e) => e.i_fully_resolved).length !== elements.length;
+  if (notFullyResolved) {
+    throw UnsupportedError('[OPENCTI] Merging required full resolved inputs');
+  }
   logger.info(`[OPENCTI] Merging ${sourceEntities.map((i) => i.internal_id).join(',')} in ${targetEntity.internal_id}`);
   const { chosenFields = {} } = opts;
   // Pre-checks
@@ -826,6 +846,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     const relationType = r.relation.entity_type;
     // Replace relation connection fromId with the new TARGET
     const relUpdate = {
+      _index: r.relation._index,
       id: r.internal_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
@@ -834,6 +855,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     updateConnections.push(relUpdate);
     // Update the side that will remain (RELATED_ELEMENT)
     updateEntities.push({
+      _index: r.connect_index,
       id: sideToKeep,
       toReplace: sideToRedirect,
       relationType,
@@ -842,6 +864,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     });
     // Update the MERGED TARGET (Need to add the relation side)
     updateEntities.push({
+      _index: targetEntity._index,
       id: sideTarget,
       toReplace: null,
       relationType,
@@ -859,6 +882,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     const sideTarget = targetEntity.internal_id;
     const relationType = r.relation.entity_type;
     const relUpdate = {
+      _index: r.relation._index,
       id: r.internal_id,
       toReplace: sideToRedirect,
       entity_type: relationType,
@@ -867,6 +891,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     updateConnections.push(relUpdate);
     // Update the side that will remain (RELATED_ELEMENT)
     updateEntities.push({
+      _index: r.connect_index,
       id: sideToKeep,
       toReplace: sideToRedirect,
       relationType,
@@ -875,6 +900,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     });
     // Update the MERGED TARGET (Need to add the relation side)
     updateEntities.push({
+      _index: targetEntity._index,
       id: sideTarget,
       toReplace: null,
       relationType,
@@ -922,16 +948,15 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
       const operations = Object.entries(groupedAddOperations)
         .map(([key, vals]) => {
           // eslint-disable-next-line camelcase
-          const { entity_type } = R.head(vals);
+          const { _index, entity_type } = R.head(vals);
           const ids = vals.map((v) => v.data.internal_id);
-          return { id, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
+          return { id, _index, toReplace: null, relationType: key, entity_type, data: { internal_id: ids } };
         })
         .flat();
       operations.push(...changeOperations);
       // then execute each other one by one
       for (let index = 0; index < operations.length; index += 1) {
         const operation = operations[index];
-        // eslint-disable-next-line no-await-in-loop
         await elUpdateEntityConnections([operation]);
       }
     },
@@ -1074,7 +1099,6 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
   // Update all needed attributes
   for (let index = 0; index < preparedElements.length; index += 1) {
     const input = preparedElements[index];
-    // eslint-disable-next-line no-await-in-loop
     const ins = await innerUpdateAttribute(user, instance, input, options);
     if (ins.length > 0) {
       updatedInputs.push(input);
@@ -1086,7 +1110,6 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
       const aliasesId = generateAliasesId(aliases);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      // eslint-disable-next-line no-await-in-loop
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
       impactedInputs.push(...aliasIns);
     }
@@ -1096,7 +1119,6 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
     if (isAliasesImpacted) {
       const aliasesId = generateAliasesId([instance.name, ...input.value]);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
-      // eslint-disable-next-line no-await-in-loop
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
       if (aliasIns.length > 0) {
         impactedInputs.push(...aliasIns);
@@ -1127,7 +1149,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   if (operation !== UPDATE_OPERATION_REPLACE && elements.length > 1) {
     throw FunctionalError(`Unsupported operation`, { operation, elements });
   }
-  const instance = await loadByIdFullyResolved(id, type, options);
+  const instance = await loadById(id, type, options);
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
@@ -1174,8 +1196,9 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
       if (existingEntity) {
         // If stix observable, we can merge. If not throw an error.
         if (isStixCyberObservable(existingEntity.entity_type)) {
+          const source = await loadByIdFullyResolved(instance.internal_id);
           // noinspection UnnecessaryLocalVariableJS
-          const merged = await mergeEntities(user, existingEntity, [instance], { locks: participantIds });
+          const merged = await mergeEntities(user, existingEntity, [source], { locks: participantIds });
           // Return merged element after waiting for it.
           return merged;
         }
@@ -1225,7 +1248,7 @@ const buildRelationInput = (input) => {
   // 05. Prepare the relation to be created
   const today = now();
   let relationAttributes = {};
-  // Default attributes
+  relationAttributes._index = inferIndexFromConceptType(relationshipType);
   // basic-relationship
   relationAttributes.internal_id = internalId;
   relationAttributes.standard_id = standardId;
@@ -1472,6 +1495,7 @@ const createRelationRaw = async (user, input) => {
   let data = {};
   // Default attributes
   // basic-relationship
+  data._index = inferIndexFromConceptType(relationshipType);
   data.internal_id = internalId;
   data.standard_id = standardId;
   data.entity_type = relationshipType;
@@ -1569,7 +1593,6 @@ const createRelationRaw = async (user, input) => {
     R.assoc('toId', to.internal_id),
     R.assoc('toRole', toRole),
     R.assoc('toType', to.entity_type),
-    // Types
     R.assoc('entity_type', relationshipType),
     R.assoc('parent_types', getParentTypes(relationshipType)),
     R.assoc('base_type', BASE_TYPE_RELATION)
@@ -1659,7 +1682,6 @@ export const createRelations = async (user, inputs) => {
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improve by grouping and indexing in one shot.
   for (let i = 0; i < inputs.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     const relation = await createRelation(user, inputs[i]);
     createdRelations.push(relation);
   }
@@ -1732,6 +1754,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   let data = R.pipe(
     R.assoc(ID_INTERNAL, internalId),
     R.assoc(ID_STANDARD, standardId),
+    R.assoc('_index', inferIndexFromConceptType(type)),
     R.assoc('entity_type', type),
     R.dissoc('update'),
     R.dissoc('createdBy'),
@@ -1878,7 +1901,6 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   const relationsToDelete = await elFindByFromAndTo(fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {
     const r = relationsToDelete[i];
-    // eslint-disable-next-line no-await-in-loop
     await deleteElementById(user, r.internal_id, r.entity_type, opts);
   }
   return true;

@@ -6,7 +6,7 @@ import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
-import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 export const findById = (opinionId) => {
   return loadById(opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -34,9 +34,9 @@ export const opinionsTimeSeries = (args) => {
 };
 
 export const opinionsNumber = (args) => ({
-  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
+  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OPINION], args)),
   total: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]), dissoc('endDate'))(args)
   ),
 });
@@ -62,7 +62,7 @@ export const opinionsTimeSeriesByAuthor = async (args) => {
 
 export const opinionsNumberByEntity = (args) => ({
   count: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
       assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]),
@@ -71,7 +71,7 @@ export const opinionsNumberByEntity = (args) => ({
     )(args)
   ),
   total: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
       assoc('types', [ENTITY_TYPE_CONTAINER_OPINION]),

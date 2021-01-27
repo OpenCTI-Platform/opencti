@@ -11,7 +11,9 @@
         "ignoreStrings": true,
         "ignoreTemplateLiterals": true
       }
-    ]
+    ],
+    "no-underscore-dangle": 0,
+    "no-await-in-loop": 0
   },
   "overrides": [
     {

@@ -241,7 +241,6 @@ const generateDataUUID = (type, data) => {
   if (haveDiffWays) {
     for (let index = 0; index < properties.length; index += 1) {
       const way = properties[index];
-      // eslint-disable-next-line no-await-in-loop
       uuidData = filteredIdContributions(contrib, way, data);
       if (!R.isEmpty(uuidData)) break; // Stop as soon as a correct id is find
     }

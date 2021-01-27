@@ -18,7 +18,7 @@ import { elCount } from '../database/elasticSearch';
 import { upload } from '../database/minio';
 import { workToExportFile } from './work';
 import { FunctionalError } from '../config/errors';
-import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
@@ -49,8 +49,8 @@ export const stixDomainObjectsTimeSeries = (args) => {
 };
 
 export const stixDomainObjectsNumber = (args) => ({
-  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, args),
-  total: elCount(INDEX_STIX_DOMAIN_OBJECTS, dissoc('endDate', args)),
+  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, args),
+  total: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, dissoc('endDate', args)),
 });
 
 export const stixDomainObjectsDistributionByEntity = async (args) => {
@@ -111,7 +111,6 @@ export const stixDomainObjectDelete = async (user, stixDomainObjectId) => {
 export const stixDomainObjectsDelete = async (user, stixDomainObjectsIds) => {
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixDomainObjectsIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     await stixDomainObjectDelete(user, stixDomainObjectsIds[i]);
   }
   return stixDomainObjectsIds;

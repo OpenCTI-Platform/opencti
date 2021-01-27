@@ -19,8 +19,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { INDEX_STIX_DOMAIN_OBJECTS } from '../../../src/database/utils';
-import { DATA_INDICES, el, elLoadByIds } from '../../../src/database/elasticSearch';
+import { el, elLoadByIds } from '../../../src/database/elasticSearch';
 import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -49,6 +48,7 @@ import {
   utcDate,
   yearFormat,
 } from '../../../src/utils/format';
+import { READ_DATA_INDICES } from '../../../src/database/utils';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -768,7 +768,7 @@ const isOneOfThisIdsExists = async (ids) => {
     },
   };
   const query = {
-    index: DATA_INDICES,
+    index: READ_DATA_INDICES,
     size: 5000,
     body: {
       query: {

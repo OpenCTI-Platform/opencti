@@ -14,7 +14,7 @@ import {
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
 import { elCount } from '../database/elasticSearch';
-import { INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
+import { READ_INDEX_STIX_CORE_RELATIONSHIPS } from '../database/utils';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
@@ -61,8 +61,8 @@ export const stixCoreRelationshipsNumber = (args) => {
   }
   const finalArgs = assoc('types', types, args);
   return {
-    count: elCount(INDEX_STIX_CORE_RELATIONSHIPS, finalArgs),
-    total: elCount(INDEX_STIX_CORE_RELATIONSHIPS, dissoc('endDate', finalArgs)),
+    count: elCount(READ_INDEX_STIX_CORE_RELATIONSHIPS, finalArgs),
+    total: elCount(READ_INDEX_STIX_CORE_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
 

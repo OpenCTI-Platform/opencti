@@ -3,7 +3,7 @@ import { createTestClient } from 'apollo-server-testing';
 import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/domain/user';
 import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
-import { checkSystemDependencies } from '../../src/initialization';
+import { redisInitializeClients } from '../../src/database/redis';
 
 export const PYTHON_PATH = './src/python';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;
@@ -12,7 +12,7 @@ export const ONE_MINUTE = 60 * 1000;
 export const FIVE_MINUTES = 5 * ONE_MINUTE;
 
 beforeAll(async () => {
-  await checkSystemDependencies();
+  await redisInitializeClients();
 });
 
 export const ADMIN_USER = {

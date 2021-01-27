@@ -1,18 +1,12 @@
 import { assoc, dissoc, pipe } from 'ramda';
-import {
-  createEntity,
-  distributionEntities,
-  listEntities,
-  loadById,
-  timeSeriesEntities,
-} from '../database/middleware';
+import { createEntity, distributionEntities, listEntities, loadById, timeSeriesEntities } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
-import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 export const findById = (noteId) => {
   return loadById(noteId, ENTITY_TYPE_CONTAINER_NOTE);
@@ -39,9 +33,9 @@ export const notesTimeSeries = (args) => {
 };
 
 export const notesNumber = (args) => ({
-  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
+  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
   total: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]), dissoc('endDate'))(args)
   ),
 });
@@ -67,7 +61,7 @@ export const notesTimeSeriesByAuthor = async (args) => {
 
 export const notesNumberByEntity = (args) => ({
   count: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
       assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]),
@@ -76,7 +70,7 @@ export const notesNumberByEntity = (args) => ({
     )(args)
   ),
   total: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
       assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]),

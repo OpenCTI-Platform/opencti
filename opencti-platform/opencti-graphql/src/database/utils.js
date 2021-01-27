@@ -31,27 +31,77 @@ import {
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE } from './rabbitmq';
 import { isStixObject } from '../schema/stixCoreObject';
 
+// Operations definition
 export const UPDATE_OPERATION_ADD = 'add';
 export const UPDATE_OPERATION_REPLACE = 'replace';
 export const UPDATE_OPERATION_REMOVE = 'remove';
 export const UPDATE_OPERATION_CHANGE = 'change';
+
 // Entities
-export const INDEX_HISTORY = 'opencti_history';
+const INDEX_HISTORY = 'opencti_history';
+export const READ_INDEX_HISTORY = `${INDEX_HISTORY}*`;
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
-export const INDEX_STIX_META_OBJECTS = 'opencti_stix_meta_objects';
-export const INDEX_STIX_DOMAIN_OBJECTS = 'opencti_stix_domain_objects';
-export const INDEX_STIX_CYBER_OBSERVABLES = 'opencti_stix_cyber_observables';
+export const READ_INDEX_INTERNAL_OBJECTS = `${INDEX_INTERNAL_OBJECTS}*`;
+const INDEX_STIX_META_OBJECTS = 'opencti_stix_meta_objects';
+export const READ_INDEX_STIX_META_OBJECTS = `${INDEX_STIX_META_OBJECTS}*`;
+const INDEX_STIX_DOMAIN_OBJECTS = 'opencti_stix_domain_objects';
+export const READ_INDEX_STIX_DOMAIN_OBJECTS = `${INDEX_STIX_DOMAIN_OBJECTS}*`;
+const INDEX_STIX_CYBER_OBSERVABLES = 'opencti_stix_cyber_observables';
+export const READ_INDEX_STIX_CYBER_OBSERVABLES = `${INDEX_STIX_CYBER_OBSERVABLES}*`;
+
 // Relations
-export const INDEX_INTERNAL_RELATIONSHIPS = 'opencti_internal_relationships';
-export const INDEX_STIX_CORE_RELATIONSHIPS = 'opencti_stix_core_relationships';
-export const INDEX_STIX_SIGHTING_RELATIONSHIPS = 'opencti_stix_sighting_relationships';
-export const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_observable_relationships';
-export const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
+const INDEX_INTERNAL_RELATIONSHIPS = 'opencti_internal_relationships';
+export const READ_INDEX_INTERNAL_RELATIONSHIPS = `${INDEX_INTERNAL_RELATIONSHIPS}*`;
+const INDEX_STIX_CORE_RELATIONSHIPS = 'opencti_stix_core_relationships';
+export const READ_INDEX_STIX_CORE_RELATIONSHIPS = `${INDEX_STIX_CORE_RELATIONSHIPS}*`;
+const INDEX_STIX_SIGHTING_RELATIONSHIPS = 'opencti_stix_sighting_relationships';
+export const READ_INDEX_STIX_SIGHTING_RELATIONSHIPS = `${INDEX_STIX_SIGHTING_RELATIONSHIPS}*`;
+const INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = 'opencti_stix_cyber_observable_relationships';
+export const READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS = `${INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS}*`;
+const INDEX_STIX_META_RELATIONSHIPS = 'opencti_stix_meta_relationships';
+export const READ_INDEX_STIX_META_RELATIONSHIPS = `${INDEX_STIX_META_RELATIONSHIPS}*`;
+
+export const PLATFORM_INDICES = [
+  INDEX_HISTORY,
+  INDEX_INTERNAL_OBJECTS,
+  INDEX_STIX_META_OBJECTS,
+  INDEX_STIX_DOMAIN_OBJECTS,
+  INDEX_STIX_CYBER_OBSERVABLES,
+  INDEX_INTERNAL_RELATIONSHIPS,
+  INDEX_STIX_CORE_RELATIONSHIPS,
+  INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  INDEX_STIX_META_RELATIONSHIPS,
+];
+
+export const READ_DATA_INDICES = [
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_STIX_META_OBJECTS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
+];
+export const READ_PLATFORM_INDICES = [READ_INDEX_HISTORY, ...READ_DATA_INDICES];
+export const READ_ENTITIES_INDICES = [
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_STIX_META_OBJECTS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
+];
+export const READ_RELATIONSHIPS_INDICES = [
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
+];
 
 export const isNotEmptyField = (field) => !R.isEmpty(field) && !R.isNil(field);
 export const isEmptyField = (field) => !isNotEmptyField(field);
-
-export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const fillTimeSeries = (startDate, endDate, interval, data) => {
   const startDateParsed = moment.parseZone(startDate);
@@ -132,8 +182,8 @@ export const buildPagination = (limit, searchAfter, instances, globalCount) => {
 
 export const inferIndexFromConceptType = (conceptType) => {
   // Entities
-  if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;
   if (isHistoryObject(conceptType)) return INDEX_HISTORY;
+  if (isInternalObject(conceptType)) return INDEX_INTERNAL_OBJECTS;
   if (isStixMetaObject(conceptType)) return INDEX_STIX_META_OBJECTS;
   if (isStixDomainObject(conceptType)) return INDEX_STIX_DOMAIN_OBJECTS;
   if (isStixCyberObservable(conceptType)) return INDEX_STIX_CYBER_OBSERVABLES;

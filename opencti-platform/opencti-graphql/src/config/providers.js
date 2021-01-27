@@ -156,7 +156,6 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const specificConfig = { profileFields: ['id', 'emails', 'name'], scope: 'email' };
       const facebookOptions = { ...mappedConfig, ...specificConfig };
       const facebookStrategy = new FacebookStrategy(facebookOptions, (accessToken, refreshToken, profile, done) => {
-        // eslint-disable-next-line no-underscore-dangle
         const data = profile._json;
         logger.debug(`[FACEBOOK] Successfully logged`, { profile: data });
         const name = `${data.last_name} ${data.first_name}`;

@@ -17,20 +17,20 @@ import {
   elPaginate,
   elReconstructRelation,
   elVersion,
-  ENTITIES_INDICES,
-  RELATIONSHIPS_INDICES,
   specialElasticCharsEscape,
 } from '../../../src/database/elasticSearch';
 import {
-  INDEX_INTERNAL_OBJECTS,
-  INDEX_STIX_SIGHTING_RELATIONSHIPS,
-  INDEX_STIX_CORE_RELATIONSHIPS,
-  INDEX_STIX_DOMAIN_OBJECTS,
-  INDEX_STIX_META_OBJECTS,
-  INDEX_STIX_META_RELATIONSHIPS,
-  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  INDEX_INTERNAL_RELATIONSHIPS,
-  INDEX_STIX_CYBER_OBSERVABLES,
+  READ_INDEX_INTERNAL_OBJECTS,
+  READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
+  READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_DOMAIN_OBJECTS,
+  READ_INDEX_STIX_META_OBJECTS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_INTERNAL_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLES,
+  READ_RELATIONSHIPS_INDICES,
+  READ_ENTITIES_INDICES,
 } from '../../../src/database/utils';
 import { utcDate } from '../../../src/utils/format';
 
@@ -38,15 +38,15 @@ describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
     expect(elIsAlive()).resolves.toBeTruthy();
     expect(elVersion()).resolves.toContain('7.10');
-    expect(elIndexExists(INDEX_INTERNAL_OBJECTS)).toBeTruthy();
-    expect(elIndexExists(INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(INDEX_STIX_CORE_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(INDEX_STIX_DOMAIN_OBJECTS)).toBeTruthy();
-    expect(elIndexExists(INDEX_STIX_META_OBJECTS)).toBeTruthy();
-    expect(elIndexExists(INDEX_STIX_META_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(INDEX_INTERNAL_RELATIONSHIPS)).toBeTruthy();
-    expect(elIndexExists(INDEX_STIX_CYBER_OBSERVABLES)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_INTERNAL_OBJECTS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_STIX_CORE_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_STIX_DOMAIN_OBJECTS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_STIX_META_OBJECTS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_STIX_META_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_INTERNAL_RELATIONSHIPS)).toBeTruthy();
+    expect(elIndexExists(READ_INDEX_STIX_CYBER_OBSERVABLES)).toBeTruthy();
   });
   it('should manage index', async () => {
     // Create index
@@ -98,12 +98,12 @@ describe('Elasticsearch document loader', () => {
 describe('Elasticsearch computation', () => {
   it('should count accurate', async () => {
     // const { endDate = null, type = null, types = null } = options;
-    const malwaresCount = await elCount(ENTITIES_INDICES, { types: ['Malware'] });
+    const malwaresCount = await elCount(READ_ENTITIES_INDICES, { types: ['Malware'] });
     expect(malwaresCount).toEqual(2);
   });
   it('should count accurate with date filter', async () => {
     const mostRecentMalware = await elLoadByIds('malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88');
-    const malwaresCount = await elCount(ENTITIES_INDICES, {
+    const malwaresCount = await elCount(READ_ENTITIES_INDICES, {
       types: ['Malware'],
       endDate: mostRecentMalware.created_at,
     });
@@ -361,7 +361,7 @@ describe('Elasticsearch pagination', () => {
     expect(escape).toEqual('Looking All\\* \\+ Everything\\| \\- \\\\with');
   });
   it('should entity paginate everything', async () => {
-    const data = await elPaginate(ENTITIES_INDICES);
+    const data = await elPaginate(READ_ENTITIES_INDICES);
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(85);
     const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
@@ -369,14 +369,14 @@ describe('Elasticsearch pagination', () => {
     expect(head(filterBaseTypes)).toEqual('ENTITY');
   });
   it('should entity search with trailing slash', async () => {
-    const data = await elPaginate(ENTITIES_INDICES, { search: 'groups/G0096' });
+    const data = await elPaginate(READ_ENTITIES_INDICES, { search: 'groups/G0096' });
     expect(data).not.toBeNull();
     // external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5 | url
     // intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 | description
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate everything after', async () => {
-    const data = await elPaginate(ENTITIES_INDICES, {
+    const data = await elPaginate(READ_ENTITIES_INDICES, {
       after: 'WyJleHRlcm5hbC1yZWZlcmVuY2UtLTUzYjNhZGI2LWQ4M2YtNWQyMS05Mzc2LTQ1YTE5OGU0NDA3ZSJd',
     });
     expect(data).not.toBeNull();
@@ -386,7 +386,7 @@ describe('Elasticsearch pagination', () => {
     // first = 200, after, types = null, filters = [], search = null,
     // orderBy = null, orderMode = 'asc',
     // connectionFormat = true
-    const data = await elPaginate(ENTITIES_INDICES, { types: ['Malware'] });
+    const data = await elPaginate(READ_ENTITIES_INDICES, { types: ['Malware'] });
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(2);
     const nodes = map((e) => e.node, data.edges);
@@ -399,79 +399,79 @@ describe('Elasticsearch pagination', () => {
     );
   });
   it('should entity paginate with classic search', async () => {
-    let data = await elPaginate(ENTITIES_INDICES, { search: 'malicious' });
+    let data = await elPaginate(READ_ENTITIES_INDICES, { search: 'malicious' });
     expect(data.edges.length).toEqual(2);
-    data = await elPaginate(ENTITIES_INDICES, { search: 'with malicious' });
+    data = await elPaginate(READ_ENTITIES_INDICES, { search: 'with malicious' });
     expect(data.edges.length).toEqual(5);
-    data = await elPaginate(ENTITIES_INDICES, { search: '"with malicious"' });
+    data = await elPaginate(READ_ENTITIES_INDICES, { search: '"with malicious"' });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with escaped search', async () => {
-    let data = await elPaginate(ENTITIES_INDICES, { search: '(Citation:' });
+    let data = await elPaginate(READ_ENTITIES_INDICES, { search: '(Citation:' });
     expect(data.edges.length).toEqual(3);
-    data = await elPaginate(ENTITIES_INDICES, { search: '[APT41]' });
+    data = await elPaginate(READ_ENTITIES_INDICES, { search: '[APT41]' });
     expect(data.edges.length).toEqual(1);
-    data = await elPaginate(ENTITIES_INDICES, { search: '%5BAPT41%5D' });
+    data = await elPaginate(READ_ENTITIES_INDICES, { search: '%5BAPT41%5D' });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with http and https', async () => {
-    let data = await elPaginate(ENTITIES_INDICES, { search: 'http://attack.mitre.org/groups/G0096' });
+    let data = await elPaginate(READ_ENTITIES_INDICES, { search: 'http://attack.mitre.org/groups/G0096' });
     expect(data.edges.length).toEqual(2);
-    data = await elPaginate(ENTITIES_INDICES, { search: 'https://attack.mitre.org/groups/G0096' });
+    data = await elPaginate(READ_ENTITIES_INDICES, { search: 'https://attack.mitre.org/groups/G0096' });
     expect(data.edges.length).toEqual(2);
   });
   it('should entity paginate with incorrect encoding', async () => {
-    const data = await elPaginate(ENTITIES_INDICES, { search: 'ATT%' });
+    const data = await elPaginate(READ_ENTITIES_INDICES, { search: 'ATT%' });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
-    const data = await elPaginate(ENTITIES_INDICES, { filters });
+    const data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(79); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
-    const data = await elPaginate(ENTITIES_INDICES, { filters });
+    const data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(6); // The 4 Default TLP Marking definitions
   });
   it('should entity paginate with equality filter', async () => {
     // eq operation will use the field.keyword to do an exact field equality
     let filters = [{ key: 'x_opencti_color', operator: 'eq', values: ['#c62828'] }];
-    let data = await elPaginate(ENTITIES_INDICES, { filters });
+    let data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(1);
     // Special case when operator = eq + the field key is a dateFields => use a match
     filters = [{ key: 'published', operator: 'eq', values: ['2020-03-01'] }];
-    data = await elPaginate(ENTITIES_INDICES, { filters });
+    data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(1);
   });
   it('should entity paginate with match filter', async () => {
     let filters = [{ key: 'entity_type', operator: 'match', values: ['marking'] }];
-    let data = await elPaginate(ENTITIES_INDICES, { filters });
+    let data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(6); // The 4 Default TLP + MITRE Corporation
     // Verify that nothing is found in this case if using the eq operator
     filters = [{ key: 'entity_type', operator: 'eq', values: ['marking'] }];
-    data = await elPaginate(ENTITIES_INDICES, { filters });
+    data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with dates filter', async () => {
     let filters = [{ key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] }];
-    let data = await elPaginate(ENTITIES_INDICES, { filters });
+    let data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(2); // The 4 Default TLP + MITRE Corporation
     filters = [
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
       { key: 'color', operator: undefined, values: [null] },
     ];
-    data = await elPaginate(ENTITIES_INDICES, { filters });
+    data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(18);
     filters = [
       { key: 'created', operator: 'lte', values: ['2017-06-01T00:00:00.000Z'] },
       { key: 'created', operator: 'gt', values: ['2020-03-01T14:06:06.255Z'] },
     ];
-    data = await elPaginate(ENTITIES_INDICES, { filters });
+    data = await elPaginate(READ_ENTITIES_INDICES, { filters });
     expect(data.edges.length).toEqual(0);
   });
   it('should entity paginate with date ordering', async () => {
-    const data = await elPaginate(ENTITIES_INDICES, { orderBy: 'created', orderMode: 'asc' });
+    const data = await elPaginate(READ_ENTITIES_INDICES, { orderBy: 'created', orderMode: 'asc' });
     expect(data.edges.length).toEqual(56);
     const createdDates = map((e) => e.node.created, data.edges);
     let previousCreatedDate = null;
@@ -490,7 +490,7 @@ describe('Elasticsearch pagination', () => {
   });
   it('should entity paginate with keyword ordering', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
-    const data = await elPaginate(ENTITIES_INDICES, { filters, orderBy: 'definition', orderMode: 'desc' });
+    const data = await elPaginate(READ_ENTITIES_INDICES, { filters, orderBy: 'definition', orderMode: 'desc' });
     expect(data.edges.length).toEqual(6);
     const markings = map((e) => e.node.definition, data.edges);
     expect(markings[0]).toEqual('TLP:WHITE');
@@ -500,14 +500,14 @@ describe('Elasticsearch pagination', () => {
     expect(markings[4]).toEqual('TLP:AMBER');
   });
   it('should relation paginate everything', async () => {
-    let data = await elPaginate(RELATIONSHIPS_INDICES);
+    let data = await elPaginate(READ_RELATIONSHIPS_INDICES);
     expect(data).not.toBeNull();
     expect(data.edges.length).toEqual(137);
     let filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('RELATION');
     // Same query with no pagination
-    data = await elPaginate(RELATIONSHIPS_INDICES, { connectionFormat: false });
+    data = await elPaginate(READ_RELATIONSHIPS_INDICES, { connectionFormat: false });
     expect(data).not.toBeNull();
     expect(data.length).toEqual(137);
     filterBaseTypes = uniq(map((e) => e.base_type, data));

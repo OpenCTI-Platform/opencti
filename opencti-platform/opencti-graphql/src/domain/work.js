@@ -3,7 +3,7 @@ import * as R from 'ramda';
 import { el, elDeleteInstanceIds, elIndex, elLoadByIds, elPaginate, elUpdate } from '../database/elasticSearch';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
-import { INDEX_HISTORY, isNotEmptyField } from '../database/utils';
+import { READ_INDEX_HISTORY, isNotEmptyField } from '../database/utils';
 import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
 import { logger } from '../config/conf';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
@@ -26,7 +26,7 @@ export const workToExportFile = (work) => {
 };
 
 export const connectorForWork = async (id) => {
-  const work = await elLoadByIds(id, ENTITY_TYPE_WORK, INDEX_HISTORY);
+  const work = await elLoadByIds(id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   if (work) return loadConnectorById(work.connector_id);
   return null;
 };
@@ -37,13 +37,13 @@ export const findAll = (args = {}) => {
     R.assoc('orderBy', args.orderBy || 'timestamp'),
     R.assoc('orderMode', args.orderMode || 'desc')
   )(args);
-  return elPaginate(INDEX_HISTORY, finalArgs);
+  return elPaginate(READ_INDEX_HISTORY, finalArgs);
 };
 
 export const worksForConnector = async (connectorId, args = {}) => {
   const { first = 10, filters = [] } = args;
   filters.push({ key: 'connector_id', values: [connectorId] });
-  return elPaginate(INDEX_HISTORY, {
+  return elPaginate(READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
@@ -57,7 +57,7 @@ export const worksForSource = async (sourceId, args = {}) => {
   const { first = 10, filters = [], type } = args;
   const basicFilters = [{ key: 'event_source_id', values: [sourceId] }];
   if (type) basicFilters.push({ key: 'event_type', values: [type] });
-  return elPaginate(INDEX_HISTORY, {
+  return elPaginate(READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
@@ -74,7 +74,7 @@ export const loadExportWorksAsProgressFiles = async (sourceId) => {
 };
 
 const loadWorkById = async (workId) => {
-  const action = await elLoadByIds(workId, ENTITY_TYPE_WORK, INDEX_HISTORY);
+  const action = await elLoadByIds(workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   return R.assoc('id', workId, action);
 };
 
@@ -121,8 +121,7 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
     if (searchAfter) {
       body = { ...body, search_after: [searchAfter] };
     }
-    // eslint-disable-next-line no-await-in-loop
-    const worksToDelete = await el.search({ index: INDEX_HISTORY, body }).catch((e) => {
+    const worksToDelete = await el.search({ index: READ_INDEX_HISTORY, body }).catch((e) => {
       throw DatabaseError('Error searching for works to delete', { error: e });
     });
     // eslint-disable-next-line prettier/prettier
@@ -135,12 +134,9 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
       counter += hits.length;
       searchAfter = R.head(lastHit.sort);
       if (hits.length > 0) {
-        // eslint-disable-next-line no-underscore-dangle
         const works = hits.map((h) => h._source);
         const ids = works.map((w) => w.internal_id);
-        // eslint-disable-next-line no-await-in-loop
         await redisDeleteWork(ids);
-        // eslint-disable-next-line no-await-in-loop
         await elDeleteInstanceIds(works);
       }
       if (logInfo) {
@@ -184,7 +180,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
     import_processed_number: 0,
   };
   await redisCreateWork(workTracing);
-  await elIndex(INDEX_HISTORY, work);
+  await elIndex(READ_INDEX_HISTORY, work);
   return loadWorkById(workId);
 };
 
@@ -213,7 +209,7 @@ export const reportActionImport = async (user, workId, errorData) => {
       params.source = source;
       params.error = error;
     }
-    await elUpdate(INDEX_HISTORY, workId, {
+    await elUpdate(READ_INDEX_HISTORY, workId, {
       script: { source: sourceScript, lang: 'painless', params },
     });
   }
@@ -227,7 +223,7 @@ export const updateReceivedTime = async (user, workId, message) => {
   if (isNotEmptyField(message)) {
     source += `ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); `;
   }
-  await elUpdate(INDEX_HISTORY, workId, {
+  await elUpdate(READ_INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
   });
   return workId;
@@ -250,7 +246,7 @@ export const updateProcessedTime = async (user, workId, message, inError = false
       source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
     }
   }
-  await elUpdate(INDEX_HISTORY, workId, {
+  await elUpdate(READ_INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
   });
   return workId;

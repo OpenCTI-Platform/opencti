@@ -11,7 +11,7 @@ import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
-import { redisIsAlive } from './database/redis';
+import { redisInitializeClients, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import applyMigration, { lastAvailableMigrationTime } from './database/migration';
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
@@ -188,10 +188,8 @@ export const createCapabilities = async (capabilities, parentName = '') => {
     const capability = capabilities[i];
     const { name, description, attribute_order: AttributeOrder } = capability;
     const capabilityName = `${parentName}${name}`;
-    // eslint-disable-next-line no-await-in-loop
     await addCapability(SYSTEM_USER, { name: capabilityName, description, attribute_order: AttributeOrder });
     if (capability.dependencies && capability.dependencies.length > 0) {
-      // eslint-disable-next-line no-await-in-loop
       await createCapabilities(capability.dependencies, `${capabilityName}_`);
     }
   }
@@ -246,6 +244,7 @@ const isExistingPlatform = async () => {
 // eslint-disable-next-line
 const platformInit = async (testMode = false) => {
   try {
+    await redisInitializeClients();
     await checkSystemDependencies();
     const alreadyExists = await isExistingPlatform();
     if (!alreadyExists) {

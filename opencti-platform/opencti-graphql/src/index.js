@@ -1,6 +1,7 @@
 import { DEV_MODE, logger } from './config/conf';
 import platformInit from './initialization';
 import { listenServer, restartServer } from './httpServer';
+import { redisInitializeClients } from './database/redis';
 
 let server;
 if (DEV_MODE && module.hot) {
@@ -11,6 +12,7 @@ if (DEV_MODE && module.hot) {
     const appUpdated = updated.includes('./src/initialization.js');
     if (httpUpdated || appUpdated) {
       try {
+        await redisInitializeClients();
         server = await restartServer(server);
         logger.info('[DEV] Application has been successfully hot swapped');
       } catch (e) {

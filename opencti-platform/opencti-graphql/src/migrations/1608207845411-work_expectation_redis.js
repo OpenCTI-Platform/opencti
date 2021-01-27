@@ -1,6 +1,6 @@
 import { DatabaseError } from '../config/errors';
 import { el } from '../database/elasticSearch';
-import { INDEX_HISTORY } from '../database/utils';
+import { READ_INDEX_HISTORY } from '../database/utils';
 
 export const up = async (next) => {
   const query = {
@@ -9,7 +9,7 @@ export const up = async (next) => {
   // Clean all current platform works
   await el
     .deleteByQuery({
-      index: INDEX_HISTORY,
+      index: READ_INDEX_HISTORY,
       refresh: true,
       body: { query },
     })

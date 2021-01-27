@@ -30,7 +30,8 @@
   },
   "elasticsearch": {
     "url": "http://localhost:9200",
-    "noQueryCache": false
+    "index_creation_pattern": "-000001",
+    "search_ignore_throttled": false
   },
   "minio": {
     "endpoint": "localhost",

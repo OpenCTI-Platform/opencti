@@ -2,7 +2,7 @@ import { assoc, dissoc } from 'ramda';
 import { elCount } from '../database/elasticSearch';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
-import { INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
+import { READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 
 const stixMetaRelationshipsNumber = (args) => {
   const types = [];
@@ -16,8 +16,8 @@ const stixMetaRelationshipsNumber = (args) => {
   }
   const finalArgs = assoc('types', types, args);
   return {
-    count: elCount(INDEX_STIX_META_RELATIONSHIPS, finalArgs),
-    total: elCount(INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
+    count: elCount(READ_INDEX_STIX_META_RELATIONSHIPS, finalArgs),
+    total: elCount(READ_INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
 

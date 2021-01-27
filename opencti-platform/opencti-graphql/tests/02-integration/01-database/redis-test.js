@@ -8,14 +8,14 @@ import {
   getAccessCache,
   getRedisVersion,
   lockResource,
+  redisInitializeClients,
   setEditContext,
   storeUserAccessCache,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
-import { checkSystemDependencies } from '../../../src/initialization';
 
 beforeAll(async () => {
-  await checkSystemDependencies();
+  await redisInitializeClients();
 });
 
 describe('Redis basic and utils', () => {

@@ -7,7 +7,7 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general';
 import { elCount } from '../database/elasticSearch';
-import { INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 export const STATUS_STATUS_NEW = 0;
 export const STATUS_STATUS_PROGRESS = 1;
@@ -42,9 +42,9 @@ export const reportsTimeSeries = (args) => {
 };
 
 export const reportsNumber = (args) => ({
-  count: elCount(INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
+  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
   total: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), dissoc('endDate'))(args)
   ),
 });
@@ -63,7 +63,7 @@ export const reportsTimeSeriesByAuthor = async (args) => {
 
 export const reportsNumberByEntity = (args) => ({
   count: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
       assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
@@ -72,7 +72,7 @@ export const reportsNumberByEntity = (args) => ({
     )(args)
   ),
   total: elCount(
-    INDEX_STIX_DOMAIN_OBJECTS,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
       assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),

@@ -50,13 +50,12 @@ const createRedisClient = async (database = BASE_DATABASE) => {
 
 let clientBase = null;
 let clientContext = null;
-const initializeClients = async () => {
+export const redisInitializeClients = async () => {
   clientBase = await createRedisClient(BASE_DATABASE);
   clientContext = await createRedisClient(CONTEXT_DATABASE);
 };
 
 export const redisIsAlive = async () => {
-  await initializeClients();
   if (clientBase.status !== 'ready' || clientContext.status !== 'ready') {
     /* istanbul ignore next */
     throw DatabaseError('Redis seems down');
@@ -326,8 +325,7 @@ export const storeDeleteEvent = async (user, instance) => {
 
 const fetchStreamInfo = async () => {
   const res = await clientBase.call('XINFO', 'STREAM', OPENCTI_STREAM);
-  // eslint-disable-next-line
-  const [, size, , keys, , nodes, , lastId, , groups, , firstEntry, , lastEntry] = res;
+  const [, size, , , , , , lastId, , , , , ,] = res;
   return { lastEventId: lastId, streamSize: size };
 };
 const mapStreamToJS = ([id, data]) => {
@@ -345,7 +343,6 @@ const processStreamResult = async (results, callback) => {
     const dataElement = streamData[index];
     const { eventId, type, markings, origin, data, message } = dataElement;
     const eventData = { markings, origin, data, message };
-    // eslint-disable-next-line no-await-in-loop
     await callback(eventId, type, eventData);
   }
   return lastElement.eventId;
@@ -377,7 +374,6 @@ export const createStreamProcessor = (callback) => {
     const streamInfo = await processInfo();
     startEventId = streamInfo.lastEventId;
     while (streamListening) {
-      // eslint-disable-next-line no-await-in-loop
       if (!(await processStep(client))) {
         break;
       }

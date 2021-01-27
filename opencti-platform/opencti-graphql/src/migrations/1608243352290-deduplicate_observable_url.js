@@ -1,7 +1,6 @@
-/* eslint-disable no-underscore-dangle,no-await-in-loop */
 import * as R from 'ramda';
 import { el } from '../database/elasticSearch';
-import { INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
+import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { loadByIdFullyResolved, mergeEntities, patchAttribute } from '../database/middleware';
 import { SYSTEM_USER } from '../domain/user';
 import { generateStandardId } from '../schema/identifier';
@@ -10,7 +9,7 @@ import { logger } from '../config/conf';
 export const up = async (next) => {
   // region find duplicates
   const query = {
-    index: INDEX_STIX_CYBER_OBSERVABLES,
+    index: READ_INDEX_STIX_CYBER_OBSERVABLES,
     body: {
       aggs: {
         url: {
@@ -39,7 +38,7 @@ export const up = async (next) => {
     const { key: url } = bucket;
     // Find all elements with this key
     const findQuery = {
-      index: INDEX_STIX_CYBER_OBSERVABLES,
+      index: READ_INDEX_STIX_CYBER_OBSERVABLES,
       body: {
         query: {
           bool: {

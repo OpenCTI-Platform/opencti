@@ -17,7 +17,7 @@ import {
 } from '../database/middleware';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
-import { INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
+import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { addIndicator } from './indicator';
@@ -69,8 +69,8 @@ export const findAll = async (args) => {
 
 // region by elastic
 export const stixCyberObservablesNumber = (args) => ({
-  count: elCount(INDEX_STIX_CYBER_OBSERVABLES, args),
-  total: elCount(INDEX_STIX_CYBER_OBSERVABLES, dissoc('endDate', args)),
+  count: elCount(READ_INDEX_STIX_CYBER_OBSERVABLES, args),
+  total: elCount(READ_INDEX_STIX_CYBER_OBSERVABLES, dissoc('endDate', args)),
 });
 // endregion
 

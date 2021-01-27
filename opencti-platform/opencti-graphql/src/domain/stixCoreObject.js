@@ -158,7 +158,6 @@ export const stixCoreObjectDelete = async (user, stixCoreObjectId) => {
 export const stixCoreObjectsDelete = async (user, stixCoreObjectsIds) => {
   // Relations cannot be created in parallel.
   for (let i = 0; i < stixCoreObjectsIds.length; i += 1) {
-    // eslint-disable-next-line no-await-in-loop
     await stixCoreObjectDelete(user, stixCoreObjectsIds[i]);
   }
   return stixCoreObjectsIds;

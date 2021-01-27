@@ -6,7 +6,7 @@ import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById, SYSTEM_USER } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { loadById, timeSeriesEntities } from '../database/middleware';
-import { INDEX_HISTORY } from '../database/utils';
+import { READ_INDEX_HISTORY } from '../database/utils';
 
 export const findAll = (args) => {
   const finalArgs = R.pipe(
@@ -14,12 +14,12 @@ export const findAll = (args) => {
     R.assoc('orderBy', args.orderBy || 'timestamp'),
     R.assoc('orderMode', args.orderMode || 'desc')
   )(args);
-  return elPaginate(INDEX_HISTORY, finalArgs);
+  return elPaginate(READ_INDEX_HISTORY, finalArgs);
 };
 
 export const creator = async (entityId) => {
   const entity = await loadById(entityId, ABSTRACT_STIX_CORE_OBJECT);
-  return elPaginate(INDEX_HISTORY, {
+  return elPaginate(READ_INDEX_HISTORY, {
     orderBy: 'timestamp',
     orderMode: 'asc',
     filters: [
@@ -47,5 +47,5 @@ export const logsTimeSeries = (args) => {
 
 export const logsWorkerConfig = () => ({
   elasticsearch_url: conf.get('elasticsearch:url'),
-  elasticsearch_index: INDEX_HISTORY,
+  elasticsearch_index: READ_INDEX_HISTORY,
 });

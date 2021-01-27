@@ -1,9 +1,10 @@
 /* eslint-disable */
 import * as R from 'ramda';
-import { DATA_INDICES, el, elDeleteElement, RELATIONSHIPS_INDICES } from '../database/elasticSearch';
+import { el, elDeleteElement} from '../database/elasticSearch';
 import { logger } from '../config/conf';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { loadById } from '../database/middleware';
+import {READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES} from "../database/utils";
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
 const computeMissingRelationsForType = async (relationType) => {
@@ -30,12 +31,11 @@ const computeMissingRelationsForType = async (relationType) => {
       body = { ...body, search_after: [searchAfter] };
     }
     const query = {
-      index: RELATIONSHIPS_INDICES,
+      index: READ_RELATIONSHIPS_INDICES,
       _source_includes: ['internal_id', 'entity_type', `connections`],
       track_total_hits: true,
       body,
     };
-    // eslint-disable-next-line no-await-in-loop
     const queryRelations = await el.search(query);
     const {
       hits,
@@ -47,14 +47,12 @@ const computeMissingRelationsForType = async (relationType) => {
       const lastHit = R.last(hits);
       searchAfter = R.head(lastHit.sort);
       counter += hits.length;
-      // eslint-disable-next-line no-underscore-dangle
       const connectionIds = R.uniq(R.flatten(hits.map((h) => h._source.connections.map((c) => c.internal_id))));
-      // eslint-disable-next-line no-await-in-loop
       const findTerms = connectionIds.map((c) => {
         return { term: { [`internal_id.keyword`]: c } };
       });
       const findQuery = {
-        index: DATA_INDICES,
+        index: READ_DATA_INDICES,
         size: 2000,
         _source_includes: `internal_id`,
         body: {
@@ -67,11 +65,9 @@ const computeMissingRelationsForType = async (relationType) => {
         },
       };
       const data = await el.search(findQuery);
-      // eslint-disable-next-line no-underscore-dangle
       const resolvedConns = data.body.hits.hits.map((i) => i._source);
       const resolvedIds = resolvedConns.map((r) => r.internal_id);
       const relationsToRemove = hits
-        // eslint-disable-next-line no-underscore-dangle
         .map((h) => h._source)
         .filter((s) => {
           return !R.all(

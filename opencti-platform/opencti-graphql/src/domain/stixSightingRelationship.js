@@ -34,7 +34,7 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 import { elCount } from '../database/elasticSearch';
-import { INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
+import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 
 export const findAll = async (args) => {
   return listRelations(STIX_SIGHTING_RELATIONSHIP, args);
@@ -45,9 +45,9 @@ export const findById = (stixSightingRelationshipId) => {
 };
 
 export const stixSightingRelationshipsNumber = (args) => ({
-  count: elCount(INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
+  count: elCount(READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
   total: elCount(
-    INDEX_STIX_SIGHTING_RELATIONSHIPS,
+    READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
     pipe(assoc('types', [STIX_SIGHTING_RELATIONSHIP]), dissoc('endDate'))(args)
   ),
 });
