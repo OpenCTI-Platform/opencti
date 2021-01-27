@@ -1673,7 +1673,8 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
   const existingEntities = await internalFindByIds(participantIds, { type });
-  if (existingEntities.length > 0) {
+  // If existing entities have been found and type is a STIX Core Object
+  if (existingEntities.length > 0 && isStixCoreObject(type)) {
     if (existingEntities.length === 1) {
       return upsertElementRaw(user, R.head(existingEntities).id, type, input);
     }
@@ -1717,8 +1718,8 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       const sourceEntitiesFullyResolved = await Promise.all(
         sourceEntities.map((sourceEntity) => loadByIdFullyResolved(sourceEntity.internal_id))
       );
-      await mergeEntities(user, targetEntityFullyResolved, sourceEntitiesFullyResolved);
-      return upsertElementRaw(user, targetEntity.id, type, input);
+      await mergeEntities(user, targetEntityFullyResolved, sourceEntitiesFullyResolved, { locks: participantIds });
+      return upsertElementRaw(user, targetEntityFullyResolved.internal_id, type, input);
     }
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, existingEntities);
