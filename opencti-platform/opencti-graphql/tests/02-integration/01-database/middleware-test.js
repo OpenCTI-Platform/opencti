@@ -819,13 +819,13 @@ describe('Upsert and merge entities', () => {
       aliases: ['MALWARE_TEST'],
     };
     upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
-    expect(upsertedMalware.name).toEqual('MALWARE_TEST');
+    expect(upsertedMalware.name).toEqual('NEW NAME');
     expect(upsertedMalware.description).toEqual('MALWARE_TEST NEW');
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
     expect(upsertedMalware.aliases.sort()).toEqual(['NEW NAME', 'MALWARE_TEST'].sort());
     loadMalware = await loadByIdFullyResolved(createdMalware.id, ENTITY_TYPE_MALWARE);
-    expect(loadMalware.name).toEqual('MALWARE_TEST');
+    expect(loadMalware.name).toEqual('NEW NAME');
     expect(loadMalware.description).toEqual('MALWARE_TEST NEW');
     expect(loadMalware.id).toEqual(loadMalware.id);
     expect(loadMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
