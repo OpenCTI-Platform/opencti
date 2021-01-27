@@ -898,7 +898,10 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
   const entries = Object.entries(updatesByEntity);
   let currentEntUpdateCount = 0;
   // eslint-disable-next-line prettier/prettier
-  const updateBulkEntities = entries.filter(([, values]) => values.length === 1).map(([, values]) => values).flat();
+  const updateBulkEntities = entries
+    .filter(([, values]) => values.length === 1)
+    .map(([, values]) => values)
+    .flat();
   const groupsOfEntityUpdate = R.splitEvery(MAX_SPLIT, updateBulkEntities);
   const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
     await elUpdateEntityConnections(entitiesToUpdate);
@@ -1706,7 +1709,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       // The new one is new reference, merge all found entities
       // Target entity is existingByStandard by default or any other
       const targetEntity = R.find((e) => e.standard_id === standardId, existingEntities) || R.head(existingEntities);
-      const [, ...sourceEntities] = existingEntities;
+      const sourceEntities = R.filter((e) => e.internal_id !== targetEntity.internal_id, existingEntities);
       await mergeEntities(user, targetEntity, sourceEntities, { locks: participantIds });
       return upsertElementRaw(user, targetEntity.id, type, input);
     }
