@@ -1694,7 +1694,10 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
           // If the entity exists by the stix id and not the same as the previously founded.
           if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
             // Merge this entity into the one matching the standard id
-            await mergeEntities(user, existingByStandard, [existingByGivenStixId], { locks: participantIds });
+            const existingByStandardPromise = loadByIdFullyResolved(existingByStandard.internal_id);
+            const existingByGivenStixIdPromise = loadByIdFullyResolved(existingByGivenStixId.internal_id);
+            const [target, source] = await Promise.all([existingByStandardPromise, existingByGivenStixIdPromise]);
+            await mergeEntities(user, target, [source], { locks: participantIds });
           }
         }
         // In this mode we can safely consider this entity like the existing one.
@@ -1710,16 +1713,14 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       // The new one is new reference, merge all found entities
       // Target entity is existingByStandard by default or any other
       const targetEntity = R.find((e) => e.standard_id === standardId, existingEntities) || R.head(existingEntities);
-      const targetEntityFullyResolved = await loadByIdFullyResolved(
-        targetEntity.internal_id,
-        ABSTRACT_STIX_CORE_OBJECT
-      );
       const sourceEntities = R.filter((e) => e.internal_id !== targetEntity.internal_id, existingEntities);
-      const sourceEntitiesFullyResolved = await Promise.all(
+      const targetEntityPromise = loadByIdFullyResolved(targetEntity.internal_id, ABSTRACT_STIX_CORE_OBJECT);
+      const sourceEntitiesPromise = Promise.all(
         sourceEntities.map((sourceEntity) => loadByIdFullyResolved(sourceEntity.internal_id))
       );
-      await mergeEntities(user, targetEntityFullyResolved, sourceEntitiesFullyResolved, { locks: participantIds });
-      return upsertElementRaw(user, targetEntityFullyResolved.internal_id, type, input);
+      const [target, sources] = await Promise.all([targetEntityPromise, sourceEntitiesPromise]);
+      await mergeEntities(user, target, sources, { locks: participantIds });
+      return upsertElementRaw(user, target.internal_id, type, input);
     }
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, existingEntities);
