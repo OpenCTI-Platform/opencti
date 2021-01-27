@@ -15,7 +15,10 @@ export const up = async (next) => {
     const op = attacks
       .map((att) => {
         const newId = generateStandardId(att.entity_type, att);
-        return [{ update: { _index: att._index, _id: att.id } }, { doc: { standard_id: newId } }];
+        return [
+          { update: { _index: att._index, _id: att.id } },
+          { doc: { standard_id: newId, x_opencti_stix_ids: [] } },
+        ];
       })
       .flat();
     bulkOperations.push(...op);

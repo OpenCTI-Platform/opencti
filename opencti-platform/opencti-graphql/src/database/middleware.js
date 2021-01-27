@@ -1704,7 +1704,8 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       }
     } else {
       // The new one is new reference, merge all found entities
-      const targetEntity = R.head(existingEntities);
+      // Target entity is existingByStandard by default or any other
+      const targetEntity = R.find((e) => e.standard_id === standardId, existingEntities) || R.head(existingEntities);
       const [, ...sourceEntities] = existingEntities;
       await mergeEntities(user, targetEntity, sourceEntities, { locks: participantIds });
       return upsertElementRaw(user, targetEntity.id, type, input);
