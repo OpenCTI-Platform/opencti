@@ -72,7 +72,7 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_OBJECT_LABEL}_to`,
   `${RELATION_KILL_CHAIN_PHASE}_to`,
 ];
-const IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
+export const IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const isUnimpactedEntity = (entity) => UNIMPACTED_ENTITIES.includes(entity.entity_type);
 export const isImpactedType = (type) => !UNIMPACTED_ENTITIES.includes(type);
 

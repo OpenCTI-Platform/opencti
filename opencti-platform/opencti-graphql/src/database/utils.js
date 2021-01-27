@@ -38,7 +38,7 @@ export const UPDATE_OPERATION_REMOVE = 'remove';
 export const UPDATE_OPERATION_CHANGE = 'change';
 
 // Entities
-const INDEX_HISTORY = 'opencti_history';
+export const INDEX_HISTORY = 'opencti_history';
 export const READ_INDEX_HISTORY = `${INDEX_HISTORY}*`;
 export const INDEX_INTERNAL_OBJECTS = 'opencti_internal_objects';
 export const READ_INDEX_INTERNAL_OBJECTS = `${INDEX_INTERNAL_OBJECTS}*`;

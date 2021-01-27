@@ -1,9 +1,17 @@
 import moment from 'moment';
 import * as R from 'ramda';
-import { el, elDeleteInstanceIds, elIndex, elLoadByIds, elPaginate, elUpdate } from '../database/elasticSearch';
+import {
+  el,
+  elDeleteInstanceIds,
+  elIndex,
+  elLoadByIds,
+  elPaginate,
+  elUpdate,
+  IGNORE_THROTTLED,
+} from '../database/elasticSearch';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
-import { READ_INDEX_HISTORY, isNotEmptyField } from '../database/utils';
+import { READ_INDEX_HISTORY, isNotEmptyField, INDEX_HISTORY } from '../database/utils';
 import { redisCreateWork, redisDeleteWork, redisGetWork, redisUpdateWorkFigures } from '../database/redis';
 import { logger } from '../config/conf';
 import { ENTITY_TYPE_WORK } from '../schema/internalObject';
@@ -121,9 +129,11 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
     if (searchAfter) {
       body = { ...body, search_after: [searchAfter] };
     }
-    const worksToDelete = await el.search({ index: READ_INDEX_HISTORY, body }).catch((e) => {
-      throw DatabaseError('Error searching for works to delete', { error: e });
-    });
+    const worksToDelete = await el
+      .search({ index: READ_INDEX_HISTORY, ignore_throttled: IGNORE_THROTTLED, body })
+      .catch((e) => {
+        throw DatabaseError('Error searching for works to delete', { error: e });
+      });
     // eslint-disable-next-line prettier/prettier
     const { hits, total: { value: valTotal } } = worksToDelete.body.hits;
     if (totalToDelete === null) totalToDelete = valTotal;
@@ -180,7 +190,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
     import_processed_number: 0,
   };
   await redisCreateWork(workTracing);
-  await elIndex(READ_INDEX_HISTORY, work);
+  await elIndex(INDEX_HISTORY, work);
   return loadWorkById(workId);
 };
 
@@ -209,7 +219,7 @@ export const reportActionImport = async (user, workId, errorData) => {
       params.source = source;
       params.error = error;
     }
-    await elUpdate(READ_INDEX_HISTORY, workId, {
+    await elUpdate(INDEX_HISTORY, workId, {
       script: { source: sourceScript, lang: 'painless', params },
     });
   }
@@ -223,7 +233,7 @@ export const updateReceivedTime = async (user, workId, message) => {
   if (isNotEmptyField(message)) {
     source += `ctx._source.messages.add(["timestamp": params.received_time, "message": params.message]); `;
   }
-  await elUpdate(READ_INDEX_HISTORY, workId, {
+  await elUpdate(INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
   });
   return workId;
@@ -246,7 +256,7 @@ export const updateProcessedTime = async (user, workId, message, inError = false
       source += `ctx._source.messages.add(["timestamp": params.processed_time, "message": params.message]); `;
     }
   }
-  await elUpdate(READ_INDEX_HISTORY, workId, {
+  await elUpdate(INDEX_HISTORY, workId, {
     script: { source, lang: 'painless', params },
   });
   return workId;

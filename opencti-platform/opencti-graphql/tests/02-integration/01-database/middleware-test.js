@@ -19,7 +19,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { el, elLoadByIds } from '../../../src/database/elasticSearch';
+import { el, elLoadByIds, IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
 import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -769,6 +769,7 @@ const isOneOfThisIdsExists = async (ids) => {
   };
   const query = {
     index: READ_DATA_INDICES,
+    ignore_throttled: IGNORE_THROTTLED,
     size: 5000,
     body: {
       query: {

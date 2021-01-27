@@ -1,10 +1,9 @@
-/* eslint-disable */
 import * as R from 'ramda';
-import { el, elDeleteElement} from '../database/elasticSearch';
+import { el, elDeleteElement, IGNORE_THROTTLED } from '../database/elasticSearch';
 import { logger } from '../config/conf';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { loadById } from '../database/middleware';
-import {READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES} from "../database/utils";
+import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
 const computeMissingRelationsForType = async (relationType) => {
@@ -32,6 +31,7 @@ const computeMissingRelationsForType = async (relationType) => {
     }
     const query = {
       index: READ_RELATIONSHIPS_INDICES,
+      ignore_throttled: IGNORE_THROTTLED,
       _source_includes: ['internal_id', 'entity_type', `connections`],
       track_total_hits: true,
       body,
@@ -53,6 +53,7 @@ const computeMissingRelationsForType = async (relationType) => {
       });
       const findQuery = {
         index: READ_DATA_INDICES,
+        ignore_throttled: IGNORE_THROTTLED,
         size: 2000,
         _source_includes: `internal_id`,
         body: {
@@ -95,6 +96,7 @@ const getMissingRelations = async () => {
   const data = await computeMissingRelationsForType(ABSTRACT_STIX_META_RELATIONSHIP);
   return R.flatten(data);
 };
+// eslint-disable-next-line import/prefer-default-export
 export const cleanInconsistentRelations = async () => {
   // Fix missing deleted data
   // In case of relation to relation, some deletion was not executed.
