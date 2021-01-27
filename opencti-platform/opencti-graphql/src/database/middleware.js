@@ -1674,7 +1674,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   // Check if the entity exists
   const existingEntities = await internalFindByIds(participantIds, { type });
   // If existing entities have been found and type is a STIX Core Object
-  if (existingEntities.length > 0 && isStixCoreObject(type)) {
+  if (existingEntities.length > 0) {
     if (existingEntities.length === 1) {
       return upsertElementRaw(user, R.head(existingEntities).id, type, input);
     }
