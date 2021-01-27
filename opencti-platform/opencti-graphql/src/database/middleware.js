@@ -1709,8 +1709,15 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       // The new one is new reference, merge all found entities
       // Target entity is existingByStandard by default or any other
       const targetEntity = R.find((e) => e.standard_id === standardId, existingEntities) || R.head(existingEntities);
+      const targetEntityFullyResolved = await loadByIdFullyResolved(
+        targetEntity.internal_id,
+        ABSTRACT_STIX_CORE_OBJECT
+      );
       const sourceEntities = R.filter((e) => e.internal_id !== targetEntity.internal_id, existingEntities);
-      await mergeEntities(user, targetEntity, sourceEntities, { locks: participantIds });
+      const sourceEntitiesFullyResolved = await Promise.all(
+        sourceEntities.map((sourceEntity) => loadByIdFullyResolved(sourceEntity.internal_id))
+      );
+      await mergeEntities(user, targetEntityFullyResolved, sourceEntitiesFullyResolved);
       return upsertElementRaw(user, targetEntity.id, type, input);
     }
     // If not we dont know what to do, just throw an exception.
