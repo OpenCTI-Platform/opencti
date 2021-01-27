@@ -247,7 +247,11 @@ const valToMessage = (val) => {
 
 export const generateLogMessage = (type, instance, input = null) => {
   const name = extractEntityMainValue(instance);
-  if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE || type === EVENT_TYPE_MERGE) {
+  if (type === EVENT_TYPE_MERGE) {
+    const sourcesNames = input.map((source) => extractEntityMainValue(source)).join(', ');
+    return `${type}s ${instance.entity_type} \`${sourcesNames}\` in \`${name}\``;
+  }
+  if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE) {
     if (isStixObject(instance.entity_type)) {
       return `${type}s a ${instance.entity_type} \`${name}\``;
     }

@@ -200,7 +200,7 @@ const buildEvent = (eventType, user, markings, message, data) => {
 };
 export const storeMergeEvent = async (user, instance, sourceEntities) => {
   try {
-    const message = generateLogMessage(EVENT_TYPE_MERGE, instance);
+    const message = generateLogMessage(EVENT_TYPE_MERGE, instance, sourceEntities);
     const data = {
       id: instance.standard_id,
       x_opencti_id: instance.internal_id,
