@@ -377,10 +377,14 @@ class OpenCTIStix2:
                     try:
                         if "description" in external_reference:
                             matches = datefinder.find_dates(
-                                external_reference["description"]
+                                external_reference["description"],
+                                base_date=datetime.datetime.fromtimestamp(0),
                             )
                         else:
-                            matches = datefinder.find_dates(source_name)
+                            matches = datefinder.find_dates(
+                                source_name,
+                                base_date=datetime.datetime.fromtimestamp(0),
+                            )
                     except:
                         matches = None
                     published = None
@@ -741,11 +745,13 @@ class OpenCTIStix2:
                 try:
                     if "description" in external_reference:
                         matches = datefinder.find_dates(
-                            external_reference["description"]
+                            external_reference["description"],
+                            base_date=datetime.datetime.fromtimestamp(0),
                         )
                     else:
                         matches = datefinder.find_dates(
-                            external_reference["source_name"]
+                            external_reference["source_name"],
+                            base_date=datetime.datetime.fromtimestamp(0),
                         )
                 except:
                     matches = None
