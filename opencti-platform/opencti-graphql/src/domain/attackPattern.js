@@ -35,7 +35,7 @@ export const batchIsSubAttackPattern = async (attackPatternIds) => {
     attackPatternIds,
     RELATION_SUBTECHNIQUE_OF,
     ENTITY_TYPE_ATTACK_PATTERN,
-    { paginated: false }
+    { paginate: false }
   );
   return batchAttackPatterns.map((b) => b.length > 0);
 };

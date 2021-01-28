@@ -1,0 +1,58 @@
+import { withFilter } from 'graphql-subscriptions';
+import {
+  addWorkspace,
+  findAll,
+  findById,
+  workspaceCleanContext,
+  workspaceDelete,
+  workspaceEditContext,
+  workspaceEditField,
+} from '../domain/workspace';
+import { SYSTEM_USER, findById as findUserById } from '../domain/user';
+import { fetchEditContext, pubsub } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
+import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
+import withCancel from '../graphql/subscriptionWrapper';
+
+const toolResolvers = {
+  Query: {
+    workspace: (_, { id }) => findById(id),
+    workspaces: (_, args) => findAll(args),
+  },
+  Workspace: {
+    owner: async (workspace) => {
+      const user = await findUserById(workspace.owner);
+      return user || SYSTEM_USER;
+    },
+    editContext: (workspace) => fetchEditContext(workspace.id),
+  },
+  Mutation: {
+    workspaceEdit: (_, { id }, { user }) => ({
+      delete: () => workspaceDelete(user, id),
+      fieldPatch: ({ input }) => workspaceEditField(user, id, input),
+      contextPatch: ({ input }) => workspaceEditContext(user, id, input),
+      contextClean: () => workspaceCleanContext(user, id),
+    }),
+    workspaceAdd: (_, { input }, { user }) => addWorkspace(user, input),
+  },
+  Subscription: {
+    workspace: {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
+        workspaceEditContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC),
+          (payload) => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id && payload.instance.id === id;
+          }
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          workspaceCleanContext(user, id);
+        });
+      },
+    },
+  },
+};
+
+export default toolResolvers;

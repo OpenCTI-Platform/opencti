@@ -6,7 +6,11 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import { AccountCircleOutlined, ExploreOutlined } from '@material-ui/icons';
+import {
+  AccountCircleOutlined,
+  ExploreOutlined,
+  InsertChartOutlined,
+} from '@material-ui/icons';
 import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -57,6 +61,7 @@ import Security, {
   EXPLORE,
 } from '../../../utils/Security';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
+import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 
 const styles = (theme) => ({
   appBar: {
@@ -246,6 +251,9 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
           )}
+          {location.pathname.includes('/dashboard/workspaces/dashboards') && (
+            <TopMenuWorkspacesDashboards />
+          )}
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
         <div className={classes.barRight}>
@@ -255,6 +263,25 @@ const TopBar = ({
             </div>
           </Security>
           <Security needs={[EXPLORE]}>
+            <Tooltip title={t('Custom dashboards')}>
+              <IconButton
+                component={Link}
+                to="/dashboard/workspaces/dashboards"
+                variant={
+                  location.pathname.includes('/dashboard/workspaces/dashboards')
+                    ? 'contained'
+                    : 'text'
+                }
+                color={
+                  location.pathname.includes('/dashboard/workspaces/dashboards')
+                    ? 'primary'
+                    : 'inherit'
+                }
+                classes={{ root: classes.button }}
+              >
+                <InsertChartOutlined fontSize="default" />
+              </IconButton>
+            </Tooltip>
             <Tooltip title={t('Investigate')}>
               <IconButton
                 disabled={true}

@@ -5,6 +5,7 @@ import { constraintDirective } from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
+import workspaceResolvers from '../resolvers/workspace';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
@@ -65,6 +66,7 @@ const createSchema = () => {
     logResolvers,
     rabbitmqMetricsResolvers,
     attributeResolvers,
+    workspaceResolvers,
     subTypeResolvers,
     fileResolvers,
     // ENTITIES

@@ -251,3 +251,12 @@ div.srd-port:hover {
   color: #ffffff !important;
   background-color: #28353a !important;
 }
+
+.react-grid-item > .react-resizable-handle::after {
+  border-right: 2px solid rgba(255, 255, 255, 0.4) !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.react-grid-placeholder {
+  background-color: rgba(0, 188, 212, 0.8) !important;
+}

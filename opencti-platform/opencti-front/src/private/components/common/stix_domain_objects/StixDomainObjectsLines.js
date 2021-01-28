@@ -255,8 +255,8 @@ export const stixDomainObjectsLinesQuery = graphql`
 `;
 
 export const stixDomainObjectsLinesSearchQuery = graphql`
-  query StixDomainObjectsLinesSearchQuery($search: String, $types: [String]) {
-    stixDomainObjects(search: $search, types: $types) {
+  query StixDomainObjectsLinesSearchQuery($search: String, $types: [String], $count: Int) {
+    stixDomainObjects(search: $search, types: $types, first: $count) {
       edges {
         node {
           id

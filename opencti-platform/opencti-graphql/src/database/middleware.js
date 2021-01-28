@@ -494,7 +494,7 @@ export const distributionRelations = async (options) => {
     startDate,
     endDate,
     relationship_type: relationshipType,
-    dateAttribute = 'start_time',
+    dateAttribute = 'created_at',
     toTypes = [],
     isTo = false,
     noDirection = false,

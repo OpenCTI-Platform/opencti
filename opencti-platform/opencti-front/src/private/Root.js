@@ -18,6 +18,7 @@ import RootArsenal from './components/arsenal/Root';
 import RootEntities from './components/entities/Root';
 import RootSettings from './components/settings/Root';
 import RootData from './components/data/Root';
+import RootWorkspaces from './components/workspaces/Root';
 import Profile from './components/Profile';
 import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
@@ -126,7 +127,11 @@ const Root = () => {
                       />
                       <BoundaryRoute
                         path="/dashboard/data"
-                        render={(routeProps) => <RootData {...routeProps} />}
+                        render={RootData}
+                      />
+                      <BoundaryRoute
+                        path="/dashboard/workspaces"
+                        component={RootWorkspaces}
                       />
                       <BoundaryRoute
                         path="/dashboard/settings"

@@ -175,7 +175,7 @@ class UserHistoryLineComponent extends Component {
     return (
       <div className={classes.container}>
         <div className={classes.avatar}>
-          {this.renderIcon(node.event_type, node.context_data.message)}
+          {this.renderIcon(node.event_type, node.context_data?.message)}
         </div>
         <div className={classes.content}>
           <Paper classes={{ root: classes.paper }}>
@@ -185,14 +185,14 @@ class UserHistoryLineComponent extends Component {
               title={
                 <Markdown
                   className="markdown"
-                  source={`\`${node.user.name}\` ${node.context_data.message}`}
+                  source={`\`${node.user.name}\` ${node.context_data?.message}`}
                 />
               }
             >
               <div className={classes.description}>
                 <Markdown
                   className="markdown"
-                  source={`\`${node.user.name}\` ${node.context_data.message}`}
+                  source={`\`${node.user.name}\` ${node.context_data?.message}`}
                 />
               </div>
             </Tooltip>

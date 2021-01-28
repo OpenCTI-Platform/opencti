@@ -649,7 +649,7 @@ export const elAggregationRelationsCount = async (
   toTypes,
   fromId = null,
   field = null,
-  dateAttribute = 'start_time',
+  dateAttribute = 'created_at',
   isTo = false,
   noDirection = false
 ) => {
@@ -661,6 +661,10 @@ export const elAggregationRelationsCount = async (
   const filters = [];
   if (haveRange) {
     filters.push({ range: { [dateAttribute]: { gte: start, lte: end } } });
+  } else if (start) {
+    filters.push({ range: { [dateAttribute]: { gte: start } } });
+  } else if (end) {
+    filters.push({ range: { [dateAttribute]: { lte: end } } });
   }
   if (fromId) {
     filters.push({
@@ -1260,7 +1264,9 @@ const getRelatedRelations = async (targetIds, elements, level, cache) => {
     const resolvedIds = internalIds.filter((f) => !cache[f]);
     foundRelations.push(...resolvedIds);
     // eslint-disable-next-line no-param-reassign,prettier/prettier
-    resolvedIds.forEach((id) => { cache[id] = '' });
+    resolvedIds.forEach((id) => {
+      cache[id] = '';
+    });
   }
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {

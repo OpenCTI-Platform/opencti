@@ -21,6 +21,7 @@ const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_ROLE,
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
+  ENTITY_TYPE_WORKSPACE,
 ];
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
@@ -33,6 +34,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_CONNECTOR,
   ENTITY_TYPE_ATTRIBUTE,
+  ENTITY_TYPE_WORKSPACE,
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 schemaTypes.register(ABSTRACT_INTERNAL_OBJECT, INTERNAL_OBJECTS);
@@ -156,6 +158,8 @@ export const internalObjectsAttributes = {
     'description',
     'manifest',
     'owner',
+    'type',
+    'tags',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',

@@ -377,7 +377,7 @@ class EntityStixCoreRelationships extends Component {
     // Display types selection when target types are multiple
     const displayTypes = targetStixDomainObjectTypes.length > 1
       || targetStixDomainObjectTypes.includes('Identity');
-    const displayRelationshipTypes = relationshipTypes.length > 1;
+    const displayRelationshipTypes = relationshipTypes && relationshipTypes.length > 1;
     const displayBottomBar = displayTypes || displayRelationshipTypes;
     const selectedTypes = selectedEntityType === 'All'
       ? targetStixDomainObjectTypes

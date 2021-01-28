@@ -89,4 +89,15 @@ If you need support or you wish to engage a discussion about the OpenCTI platfor
 
 ## About
 
+### Authors
+
 OpenCTI is a product powered by the collaboration of the [French national cybersecurity agency (ANSSI)](https://ssi.gouv.fr), the [CERT-EU](https://cert.europa.eu) and the [Luatix](https://www.luatix.org) non-profit organization.
+
+### GDPR and the OpenCTI OpenStreetMap server
+
+In order to provide OpenCTI users with cartography features, the platform uses a dedicated OpenStreetMap server (https://map.opencti.io). To monitor usage and adapt services performances, Luatix collects access log to this server (including IP addresses).
+
+By using this server, you authorize Luatix to collect this information. Otherwise, you are free to deploy your own OpenStreetMap server and modify the platform configuration accordingly.
+
+If you have started using the Luatix server and change your mind, you have the right to access, limit, rectify, erase and receive your data. To exercise your rights, please send your request to gdpr@opencti.io.
+

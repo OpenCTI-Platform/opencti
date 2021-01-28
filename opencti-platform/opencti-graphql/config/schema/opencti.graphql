@@ -282,6 +282,17 @@ enum WorkspacesOrdering {
   created_at
   ownedBy
 }
+enum WorkspacesFilter {
+  name
+  owner
+  tag
+  type
+}
+input WorkspacesFiltering {
+  key: WorkspacesFilter!
+  values: [String]
+  operator: String
+}
 type WorkspaceConnection {
   pageInfo: PageInfo!
   edges: [WorkspaceEdge]
@@ -293,17 +304,22 @@ type WorkspaceEdge {
 type Workspace {
   id: ID!
   identifier: String!
+  type: String
   name: String!
   description: String
   owner: User
-  manifest: String!
+  tags: [String]
+  manifest: String
   created_at: DateTime
   updated_at: DateTime
+  editContext: [EditUserContext]
 }
 input WorkspaceAddInput {
   identifier: String!
+  type: String!
   name: String!
   description: String
+  tags: [String]
 }
 
 ############## SubTypes
@@ -7272,9 +7288,8 @@ type Query {
     after: ID
     orderBy: WorkspacesOrdering
     orderMode: OrderingMode
-    key: String
-    elementType: String
-    fieldKey: String
+    filters: [WorkspacesFiltering]
+    filterMode: FilterMode
     search: String
   ): WorkspaceConnection @auth(for: [EXPLORE])
 
@@ -7968,6 +7983,7 @@ type Subscription {
   settings(id: ID!): Settings @auth(for: [SETTINGS])
   group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
   user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
+  workspace(id: ID!): Workspace @auth(for: [EXPLORE])
   label(id: ID!): Label @auth(for: [SETTINGS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
   killChainPhase(id: ID!): KillChainPhase @auth(for: [SETTINGS])
@@ -8026,6 +8042,12 @@ type RoleEditMutations {
 type AttributeEditMutations {
   delete: ID
   fieldPatch(input: EditInput, operation: EditOperation): Attribute
+}
+type WorkspaceEditMutations {
+  delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
+  fieldPatch(input: EditInput, operation: EditOperation): Workspace
+  contextPatch(input: EditContext): Workspace
+  contextClean: Workspace
 }
 
 ######## STIX OBJECT ENTITIES
@@ -8366,6 +8388,8 @@ type Mutation {
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
   attributeAdd(input: AttributeAddInput): Attribute @auth(for: [SETTINGS])
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
+  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
 
   ######## STIX OBJECT ENTITIES
 
