@@ -105,7 +105,7 @@ import {
   resolveAliasesField,
   stixDomainObjectFieldsToBeUpdated,
 } from '../schema/stixDomainObject';
-import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
+import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { BUS_TOPICS, logger } from '../config/conf';
@@ -385,8 +385,15 @@ const transformRawRelationsToAttributes = (data, orientation) => {
   );
 };
 
-const loadElementDependencies = async (elementId, args = {}) => {
+const loadElementDependencies = async (element, args = {}) => {
   const { onlyMarking = false, noCache = false } = args;
+  const elementId = element.internal_id;
+  // For marking directly, we dont have any dependencies
+  if (element.entity_type === ENTITY_TYPE_MARKING_DEFINITION) return {};
+  // On non impacted entities, we can only ask for markings.
+  const isDependenciesRestricted = isUnimpactedEntity(element);
+  if (isDependenciesRestricted && !onlyMarking) return {};
+  // Allow resolution
   const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
   // Resolve all relations
   const relations = await listAllRelations(relType, { elementId, noCache });
@@ -421,7 +428,7 @@ export const loadByIdFullyResolved = async (id, type, args = {}) => {
   const element = await internalLoadById(id, typeOpts);
   if (!element) return null;
   // eslint-disable-next-line no-use-before-define
-  const depsPromise = loadElementDependencies(element.internal_id, typeOpts);
+  const depsPromise = loadElementDependencies(element, typeOpts);
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   if (isRelation) {
     const fromPromise = loadByIdFullyResolved(element.fromId, null, { onlyMarking: true });
