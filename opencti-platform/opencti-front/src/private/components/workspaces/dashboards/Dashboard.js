@@ -325,9 +325,11 @@ class DashboardComponent extends Component {
                   onChange={this.handleDateChange.bind(this, 'relativeDate')}
                 >
                   <MenuItem value="none">{t('None')}</MenuItem>
+                  <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
                   <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
-                  <MenuItem value="months-12">{t('Last 12 months')}</MenuItem>
-                  <MenuItem value="years-5">{t('Last 2 years')}</MenuItem>
+                  <MenuItem value="months-1">{t('Last month')}</MenuItem>
+                  <MenuItem value="months-6">{t('Last month')}</MenuItem>
+                  <MenuItem value="years-1">{t('Last year')}</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
