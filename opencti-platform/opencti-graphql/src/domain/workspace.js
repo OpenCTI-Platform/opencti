@@ -1,7 +1,7 @@
 import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
+import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 
 export const findById = (workspaceId) => {
   return loadById(workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -17,7 +17,7 @@ export const addWorkspace = async (user, workspace) => {
 };
 
 export const workspaceEditField = async (user, workspaceId, input) => {
-  const workspace = await updateAttribute(user, workspaceId, ENTITY_TYPE_GROUP, input);
+  const workspace = await updateAttribute(user, workspaceId, ENTITY_TYPE_WORKSPACE, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspace, user);
 };
 
