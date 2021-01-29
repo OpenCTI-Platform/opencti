@@ -57,7 +57,7 @@ class ObservedDataDetailsComponent extends Component {
           <EntityStixCoreRelationshipsDonut
             variant="inLine"
             entityId={observedData.id}
-            entityType="Stix-Cyber-Observable"
+            toTypes={['Stix-Cyber-Observable']}
             relationshipTypes={['object']}
             field="entity_type"
             height={260}

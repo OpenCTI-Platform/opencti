@@ -29,33 +29,34 @@ const styles = () => ({
   },
 });
 
-const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
-  query EntityStixCoreRelationshipsHorizontalBarsDistributionQuery(
-    $fromId: String
+const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
+  query StixCoreRelationshipsHorizontalBarsDistributionQuery(
     $relationship_type: String!
     $toTypes: [String]
-    $isTo: Boolean
     $field: String!
     $operation: StatsOperation!
-    $limit: Int
     $startDate: DateTime
     $endDate: DateTime
+    $dateAttribute: String
+    $limit: Int
   ) {
     stixCoreRelationshipsDistribution(
-      fromId: $fromId
       relationship_type: $relationship_type
       toTypes: $toTypes
-      isTo: $isTo
       field: $field
       operation: $operation
-      limit: $limit
       startDate: $startDate
       endDate: $endDate
+      dateAttribute: $dateAttribute
+      limit: $limit
     ) {
       label
       value
       entity {
         ... on BasicObject {
+          entity_type
+        }
+        ... on BasicRelationship {
           entity_type
         }
         ... on AttackPattern {
@@ -137,7 +138,7 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
 
 const tickFormatter = (title) => truncate(title.replace(/\[(.*?)\]/gi, ''), 100);
 
-class EntityStixCoreRelationshipsHorizontalBars extends Component {
+class StixCoreRelationshipsHorizontalBars extends Component {
   renderContent() {
     const {
       t,
@@ -145,25 +146,26 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
       relationshipType,
       toTypes,
       field,
-      isTo,
+      height,
       startDate,
       endDate,
+      dateAttribute,
     } = this.props;
-    const stixCoreRelationshipsDistributionVariables = {
+    const stixDomainObjectsDistributionVariables = {
       fromId: stixCoreObjectId,
       relationship_type: relationshipType,
       toTypes,
       field: field || 'entity_type',
       operation: 'count',
-      limit: 8,
-      isTo: isTo || false,
       startDate,
       endDate,
+      dateAttribute,
+      limit: 8,
     };
     return (
       <QueryRenderer
-        query={entityStixCoreRelationshipsHorizontalBarsDistributionQuery}
-        variables={stixCoreRelationshipsDistributionVariables}
+        query={stixCoreRelationshipsHorizontalBarsDistributionQuery}
+        variables={stixDomainObjectsDistributionVariables}
         render={({ props }) => {
           if (
             props
@@ -179,7 +181,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
               props.stixCoreRelationshipsDistribution,
             );
             return (
-              <ResponsiveContainer height="100%" width="100%">
+              <ResponsiveContainer height={height || 400} width="100%">
                 <BarChart
                   layout="vertical"
                   data={data}
@@ -270,12 +272,12 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
 
   render() {
     const {
-      t, classes, title, variant,
+      t, classes, title, variant, height,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
+      <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('StixDomainObjects distribution')}
+          {title || t('StixCoreRelationships distribution')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -289,21 +291,21 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
   }
 }
 
-EntityStixCoreRelationshipsHorizontalBars.propTypes = {
-  stixCoreObjectId: PropTypes.string,
+StixCoreRelationshipsHorizontalBars.propTypes = {
   relationshipType: PropTypes.string,
   toTypes: PropTypes.array,
   title: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  isTo: PropTypes.bool,
+  height: PropTypes.number,
+  startDate: PropTypes.object,
+  endDate: PropTypes.object,
+  dateAttribute: PropTypes.string,
   variant: PropTypes.string,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
 };
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipsHorizontalBars);
+)(StixCoreRelationshipsHorizontalBars);

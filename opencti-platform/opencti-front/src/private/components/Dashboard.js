@@ -45,7 +45,7 @@ import { resolveLink } from '../../utils/Entity';
 import ItemIcon from '../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../../utils/Colors';
 import { truncate } from '../../utils/String';
-import StixCoreRelationshipsBars from './common/stix_core_relationships/StixCoreRelationshipsBars';
+import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel } from '../../utils/Number';
 
@@ -663,7 +663,7 @@ class Dashboard extends Component {
           </Grid>
           <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
             <Grid item={true} xs={6}>
-              <StixCoreRelationshipsBars
+              <StixCoreRelationshipsHorizontalBars
                 height={400}
                 relationshipType="stix-core-relationship"
                 toTypes={[

@@ -81,7 +81,7 @@ class ReportDetailsComponent extends Component {
           <EntityStixCoreRelationshipsDonut
             variant="inLine"
             entityId={report.id}
-            entityType="Stix-Core-Object"
+            toTypes={['Stix-Core-Object']}
             relationshipType="object"
             field="entity_type"
             height={260}

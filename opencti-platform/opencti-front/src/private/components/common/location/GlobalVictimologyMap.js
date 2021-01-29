@@ -9,7 +9,6 @@ import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from './LocationMiniMapTargets';
 import { QueryRenderer } from '../../../../relay/environment';
-import { monthsAgo, now } from '../../../../utils/Time';
 import { computeLevel } from '../../../../utils/Number';
 import { dashboardStixCoreRelationshipsDistributionQuery } from '../../Dashboard';
 

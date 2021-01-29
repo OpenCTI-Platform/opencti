@@ -24,7 +24,7 @@ class ThreatVictimologyAll extends Component {
             title={`${t('Victimology')} - ${t('Global')}`}
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       case 'horizontal-bar':
@@ -36,7 +36,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       default:

@@ -65,7 +65,7 @@ class InfrastructureDetailsComponent extends Component {
           <EntityStixCoreRelationshipsDonut
             variant="inLine"
             entityId={infrastructure.id}
-            entityType="Stix-Cyber-Observable"
+            toTypes={['Stix-Cyber-Observable']}
             relationshipType="consists-of"
             field="entity_type"
             height={260}

@@ -26,7 +26,7 @@ class GlobalVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       default:
