@@ -16,7 +16,7 @@ import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
+import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
 import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
@@ -305,7 +305,7 @@ class StixDomainObjectThreatKnowledge extends Component {
         </Grid>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6} style={{ marginBottom: 30 }}>
-            <StixCoreObjectReportsBars
+            <StixCoreObjectReportsHorizontalBars
               stixCoreObjectId={stixDomainObjectId}
               field="created-by.internal_id"
               title={t('Distribution of sources')}

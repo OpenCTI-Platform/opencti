@@ -3,6 +3,7 @@ import {
   createEntity,
   createRelation,
   deleteElementById,
+  deleteRelationsByFromAndTo,
   distributionEntities,
   distributionRelations,
   internalLoadById,
@@ -19,7 +20,7 @@ import {
   updateAttribute,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
-import { el, elLoadByIds, IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
+import { el, elFindByIds, elLoadByIds, IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
 import { ADMIN_USER, sleep } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -31,11 +32,15 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../../../src/schema/general';
+import {
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  REL_INDEX_PREFIX,
+} from '../../../src/schema/general';
 import { RELATION_MITIGATES, RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { SYSTEM_USER } from '../../../src/domain/user';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
-import { RELATION_OBJECT_LABEL } from '../../../src/schema/stixMetaRelationship';
+import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import {
@@ -794,9 +799,12 @@ describe('Upsert and merge entities', () => {
   const whiteMarking = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';
   const mitreMarking = 'marking-definition--fa42a846-8d90-4e51-bc29-71d5b4802168';
   it('should entity upserted', async () => {
-    const markingId = 'marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27';
     // Most simple entity
-    const malware = { name: 'MALWARE_TEST', description: 'MALWARE_TEST DESCRIPTION' };
+    const malware = {
+      name: 'MALWARE_TEST',
+      description: 'MALWARE_TEST DESCRIPTION',
+      objectMarking: [whiteMarking, mitreMarking],
+    };
     const createdMalware = await createEntity(ADMIN_USER, malware, ENTITY_TYPE_MALWARE);
     expect(createdMalware).not.toBeNull();
     expect(createdMalware.name).toEqual('MALWARE_TEST');
@@ -804,17 +812,15 @@ describe('Upsert and merge entities', () => {
     expect(createdMalware.i_aliases_ids.length).toEqual(1); // We put the name as internal alias id
     let loadMalware = await loadByIdFullyResolved(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
     expect(loadMalware).not.toBeNull();
-    expect(loadMalware.objectMarking).toEqual(undefined);
+    expect(loadMalware.objectMarking.length).toEqual(2);
     // Upsert TLP by name
-    let upMalware = { name: 'MALWARE_TEST', objectMarking: [markingId] };
+    let upMalware = { name: 'MALWARE_TEST', objectMarking: [testMarking] };
     let upsertedMalware = await createEntity(ADMIN_USER, upMalware, ENTITY_TYPE_MALWARE);
     expect(upsertedMalware).not.toBeNull();
     expect(upsertedMalware.id).toEqual(createdMalware.id);
     expect(upsertedMalware.name).toEqual('MALWARE_TEST');
     loadMalware = await loadByIdFullyResolved(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
-    expect(loadMalware.objectMarking.length).toEqual(1);
-    const marking = await internalLoadById(ADMIN_USER, R.head(loadMalware.objectMarking).internal_id);
-    expect(marking.standard_id).toEqual('marking-definition--907bb632-e3c2-52fa-b484-cf166a7d377c');
+    expect(loadMalware.objectMarking.length).toEqual(3);
     // Upsert definition per alias
     upMalware = {
       name: 'NEW NAME',
@@ -835,6 +841,22 @@ describe('Upsert and merge entities', () => {
     expect(loadMalware.id).toEqual(loadMalware.id);
     expect(loadMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
     expect(loadMalware.aliases.sort()).toEqual(['NEW NAME', 'MALWARE_TEST'].sort());
+    // Delete the markings
+    const white = await internalLoadById(whiteMarking);
+    await deleteRelationsByFromAndTo(
+      ADMIN_USER,
+      loadMalware.internal_id,
+      white.internal_id,
+      RELATION_OBJECT_MARKING,
+      ABSTRACT_STIX_META_RELATIONSHIP
+    );
+    const checkers = await elFindByIds(loadMalware.id, null, { relExclude: false });
+    const test = await internalLoadById(testMarking);
+    const mitre = await internalLoadById(mitreMarking);
+    const rawMarkings = R.head(checkers)['rel_object-marking.internal_id'];
+    expect(rawMarkings.length).toEqual(2);
+    expect(rawMarkings.includes(test.internal_id)).toBeTruthy();
+    expect(rawMarkings.includes(mitre.internal_id)).toBeTruthy();
     // Delete the malware
     await deleteElementById(ADMIN_USER, createdMalware.id, ENTITY_TYPE_MALWARE);
   });

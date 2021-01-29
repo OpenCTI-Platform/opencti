@@ -4,10 +4,10 @@ import { compose, prop, uniqBy } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Typography from '@material-ui/core/Typography';
+import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import LocationMiniMapTargets from '../location/LocationMiniMapTargets';
 import { QueryRenderer } from '../../../../relay/environment';
-import { stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery } from './StixDomainObjectVictimologyRegions';
 
 const styles = () => ({
   paper: {
@@ -17,18 +17,101 @@ const styles = () => ({
   },
 });
 
+const stixDomainObjectVictimologyMapQuery = graphql`
+  query StixDomainObjectVictimologyMapQuery(
+    $fromId: String
+    $toTypes: [String]
+    $relationship_type: String
+    $first: Int
+    $startDate: DateTime
+    $endDate: DateTime
+  ) {
+    stixCoreRelationships(
+      fromId: $fromId
+      toTypes: $toTypes
+      relationship_type: $relationship_type
+      first: $first
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      edges {
+        node {
+          id
+          description
+          start_time
+          stop_time
+          to {
+            ... on BasicObject {
+              id
+              entity_type
+            }
+            ... on City {
+              name
+              latitude
+              longitude
+              country {
+                id
+                name
+                x_opencti_aliases
+                region {
+                  id
+                  name
+                }
+              }
+            }
+            ... on Country {
+              id
+              name
+              x_opencti_aliases
+              region {
+                id
+                name
+              }
+            }
+            ... on Region {
+              name
+              x_opencti_aliases
+              countries {
+                edges {
+                  node {
+                    name
+                    x_opencti_aliases
+                  }
+                }
+              }
+            }
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition
+                x_opencti_color
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
 class StixDomainObjectVictimologyMap extends Component {
   render() {
     const {
       t, title, stixDomainObjectId, startDate, endDate,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
+      <div style={{ height: '100%', paddingBottom: 10 }}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{ marginBottom: 10 }}
+        >
           {title || t('Victimology map')}
         </Typography>
         <QueryRenderer
-          query={stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery}
+          query={stixDomainObjectVictimologyMapQuery}
           variables={{
             first: 500,
             fromId: stixDomainObjectId,
@@ -38,10 +121,9 @@ class StixDomainObjectVictimologyMap extends Component {
             endDate,
           }}
           render={({ props }) => {
-            if (props && props.data) {
-              const { data } = props;
+            if (props && props.stixCoreRelationships) {
               // Extract all regions
-              const regions = data.stixCoreRelationships.edges
+              const regions = props.stixCoreRelationships.edges
                 .map((e) => e.node)
                 .filter((n) => n.to.entity_type === 'Region')
                 .map((e) => e.to);
@@ -49,7 +131,7 @@ class StixDomainObjectVictimologyMap extends Component {
                 .map((region) => region.countries.edges)
                 .flat()
                 .map((e) => e.node);
-              const directCountries = data.stixCoreRelationships.edges
+              const directCountries = props.stixCoreRelationships.edges
                 .map((e) => e.node)
                 .filter((n) => n.to.entity_type === 'Country')
                 .map((e) => e.to);
@@ -57,7 +139,7 @@ class StixDomainObjectVictimologyMap extends Component {
                 ...directCountries,
                 ...regionCountries,
               ]);
-              const cities = data.stixCoreRelationships.edges
+              const cities = props.stixCoreRelationships.edges
                 .map((e) => e.node)
                 .filter((n) => n.to.entity_type === 'City')
                 .map((e) => e.to);

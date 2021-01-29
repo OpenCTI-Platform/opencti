@@ -4,6 +4,7 @@ import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
   container: {
@@ -20,6 +21,19 @@ class ThreatVictimologyAll extends Component {
       case 'horizontal-bar':
         return (
           <EntityStixCoreRelationshipsHorizontalBars
+            title={`${t('Victimology')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Sector', 'Country']}
+            relationshipType="targets"
+            field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
+      case 'donut':
+        return (
+          <EntityStixCoreRelationshipsDonut
             title={`${t('Victimology')} - ${widget.entity.name}`}
             stixCoreObjectId={widget.entity.id}
             toTypes={['Sector', 'Country']}

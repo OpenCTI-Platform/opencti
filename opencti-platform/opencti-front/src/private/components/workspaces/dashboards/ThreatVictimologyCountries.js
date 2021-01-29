@@ -4,6 +4,8 @@ import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
+import StixDomainObjectVictimologyMap from '../../common/stix_domain_objects/StixDomainObjectVictimologyMap';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
   container: {
@@ -25,6 +27,29 @@ class ThreatVictimologyAll extends Component {
             toTypes={['Country']}
             relationshipType="targets"
             field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
+      case 'donut':
+        return (
+          <EntityStixCoreRelationshipsDonut
+            title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Country']}
+            relationshipType="targets"
+            field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
+      case 'map':
+        return (
+          <StixDomainObjectVictimologyMap
+            title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
+            stixDomainObjectId={widget.entity.id}
             startDate={startDate}
             endDate={endDate}
             variant="inline"

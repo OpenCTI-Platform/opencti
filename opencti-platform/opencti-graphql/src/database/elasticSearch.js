@@ -598,7 +598,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   return hits;
 };
 export const elFindByIds = async (user, ids, type = null, opts = {}) => {
-  const { indices = READ_DATA_INDICES, toMap = false } = opts;
+  const { indices = READ_DATA_INDICES, toMap = false, relExclude = true } = opts;
   const mustTerms = [];
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -646,7 +646,7 @@ export const elFindByIds = async (user, ids, type = null, opts = {}) => {
       index: indices,
       size: MAX_SEARCH_SIZE,
       ignore_throttled: IGNORE_THROTTLED,
-      _source_excludes: `${REL_INDEX_PREFIX}*`,
+      _source_excludes: relExclude ? `${REL_INDEX_PREFIX}*` : '',
       body: {
         query: {
           bool: {
@@ -1312,8 +1312,9 @@ const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
     const internalIds = subRels.map((g) => g.internal_id);
     const resolvedIds = internalIds.filter((f) => !cache[f]);
     foundRelations.push(...resolvedIds);
-    // eslint-disable-next-line no-param-reassign,prettier/prettier
-    resolvedIds.forEach((id) => { cache[id] = ''; });
+    resolvedIds.forEach((id) => {
+      // eslint-disable-next-line no-param-reassign
+      cache[id] = ''; });
   }
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
