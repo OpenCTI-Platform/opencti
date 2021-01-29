@@ -4,6 +4,7 @@ import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
+import StixCoreObjectReportsAreaChart from '../../analysis/reports/StixCoreObjectReportsAreaChart';
 
 const styles = () => ({
   container: {
@@ -20,7 +21,18 @@ class ThreatVictimologyAll extends Component {
       case 'horizontal-bar':
         return (
           <StixCoreObjectReportsHorizontalBars
-            title={`${t('Activity')} - ${t('Reports')}`}
+            title={`${t('Reports')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            field="created-by.internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <StixCoreObjectReportsAreaChart
+            title={`${t('Reports')} - ${widget.entity.name}`}
             stixCoreObjectId={widget.entity.id}
             field="created-by.internal_id"
             startDate={startDate}
