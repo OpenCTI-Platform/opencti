@@ -723,9 +723,9 @@ describe('Relations distribution', () => {
       noCache,
     };
     const distribution = await distributionRelations(options);
-    expect(distribution.length).toEqual(1);
+    expect(distribution.length).toEqual(0);
     const aggregationMap = new Map(distribution.map((i) => [i.label, i.value]));
-    expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
+    expect(aggregationMap.get('Intrusion-Set')).toEqual(undefined);
   });
   it.each(noCacheCases)('should relation distribution filtered by to (noCache = %s)', async (noCache) => {
     const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');

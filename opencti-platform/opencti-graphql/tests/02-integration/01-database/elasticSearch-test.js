@@ -190,7 +190,7 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('City')).toEqual(1);
     expect(aggregationMap.get('Indicator')).toEqual(1);
     expect(aggregationMap.get('Organization')).toEqual(1);
-    expect(aggregationMap.get('Malware')).toEqual(undefined); // Because of date filtering
+    expect(aggregationMap.get('Malware')).toEqual(1); // Because of date filtering
   });
   it('should invalid time histogram fail', async () => {
     const histogramCount = elHistogramCount('Stix-Domain-Object', 'created_at', 'minute', null, null, []);
