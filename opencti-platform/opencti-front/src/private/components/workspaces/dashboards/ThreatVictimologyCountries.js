@@ -48,6 +48,7 @@ class ThreatVictimologyAll extends Component {
       case 'map':
         return (
           <StixDomainObjectVictimologyMap
+            title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
             stixDomainObjectId={widget.entity.id}
             startDate={startDate}
             endDate={endDate}
