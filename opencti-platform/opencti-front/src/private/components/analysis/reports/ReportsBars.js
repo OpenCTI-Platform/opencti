@@ -32,16 +32,12 @@ const styles = () => ({
 });
 
 const reportsBarsDistributionQuery = graphql`
-  query StixCoreObjectReportsBarsDistributionQuery(
+  query ReportsBarsDistributionQuery(
     $field: String!
     $operation: StatsOperation!
     $limit: Int
   ) {
-    reportsDistribution(
-      field: $field
-      operation: $operation
-      limit: $limit
-    ) {
+    reportsDistribution(field: $field, operation: $operation, limit: $limit) {
       label
       value
       entity {
@@ -58,10 +54,9 @@ const tickFormatter = (title) => truncate(title, 10);
 class StixCoreObjectReportsBars extends Component {
   render() {
     const {
-      t, classes, stixCoreObjectId, field, title,
+      t, classes, field, title,
     } = this.props;
     const reportsDistributionVariables = {
-      objectId: stixCoreObjectId,
       field: field || 'report_types',
       operation: 'count',
       limit: 8,
@@ -73,7 +68,7 @@ class StixCoreObjectReportsBars extends Component {
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
           <QueryRenderer
-            query={stixCoreObjectReportsBarsDistributionQuery}
+            query={reportsBarsDistributionQuery}
             variables={reportsDistributionVariables}
             render={({ props }) => {
               if (
@@ -82,7 +77,7 @@ class StixCoreObjectReportsBars extends Component {
                 && props.reportsDistribution.length > 0
               ) {
                 return (
-                  <ResponsiveContainer height={280} width="100%">
+                  <ResponsiveContainer height="100%" width="100%">
                     <BarChart
                       layout="vertical"
                       data={props.reportsDistribution}
@@ -177,7 +172,6 @@ class StixCoreObjectReportsBars extends Component {
 }
 
 StixCoreObjectReportsBars.propTypes = {
-  stixCoreObjectId: PropTypes.string,
   title: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,

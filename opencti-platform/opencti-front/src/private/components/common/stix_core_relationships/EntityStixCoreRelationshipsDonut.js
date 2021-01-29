@@ -122,7 +122,6 @@ class EntityStixCoreRelationshipsDonut extends Component {
       variant,
       relationshipType,
       field,
-      height,
       startDate,
       endDate,
       isTo,
@@ -167,7 +166,7 @@ class EntityStixCoreRelationshipsDonut extends Component {
               );
             }
             return (
-              <ResponsiveContainer height={height} width="100%">
+              <ResponsiveContainer height="100%" width="100%">
                 <PieChart
                   margin={{
                     top: variant === 'inLine' ? 40 : 0,

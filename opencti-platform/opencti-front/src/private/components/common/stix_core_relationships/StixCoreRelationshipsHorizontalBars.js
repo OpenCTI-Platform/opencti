@@ -146,7 +146,6 @@ class StixCoreRelationshipsHorizontalBars extends Component {
       relationshipType,
       toTypes,
       field,
-      height,
       startDate,
       endDate,
       dateAttribute,
@@ -181,7 +180,7 @@ class StixCoreRelationshipsHorizontalBars extends Component {
               props.stixCoreRelationshipsDistribution,
             );
             return (
-              <ResponsiveContainer height={height || 400} width="100%">
+              <ResponsiveContainer height="100%" width="100%">
                 <BarChart
                   layout="vertical"
                   data={data}

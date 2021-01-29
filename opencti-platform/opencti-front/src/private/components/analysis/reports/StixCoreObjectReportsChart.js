@@ -161,7 +161,7 @@ class StixCoreObjectReportsChart extends Component {
             render={({ props }) => {
               if (props && props.reportsTimeSeries) {
                 return (
-                  <ResponsiveContainer height={280} width="100%">
+                  <ResponsiveContainer height="100%" width="100%">
                     <BarChart
                       data={props.reportsTimeSeries}
                       margin={{

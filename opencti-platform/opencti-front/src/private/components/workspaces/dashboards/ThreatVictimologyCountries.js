@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
+import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 
 const styles = () => ({
   container: {
@@ -12,21 +13,22 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const { t, widget } = this.props;
+    const {
+      t, widget, startDate, endDate,
+    } = this.props;
     switch (widget.visualizationType) {
-      case 'donut':
+      case 'horizontal-bar':
         return (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('Not implemented yet.')}
-            </span>
-          </div>
+          <EntityStixCoreRelationshipsHorizontalBars
+            title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Country']}
+            relationshipType="targets"
+            field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
         );
       default:
         return (
