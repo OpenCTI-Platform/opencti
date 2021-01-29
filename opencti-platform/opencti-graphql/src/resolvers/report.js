@@ -25,6 +25,8 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
+import { distributionEntities } from '../database/middleware';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 
 const reportResolvers = {
   Query: {
@@ -49,7 +51,7 @@ const reportResolvers = {
       if (args.objectId && args.objectId.length > 0) {
         return reportsDistributionByEntity(args);
       }
-      return [];
+      return distributionEntities(ENTITY_TYPE_CONTAINER_REPORT, [], args);
     },
     reportContainsStixObjectOrStixRelationship: (_, args) => {
       return reportContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);

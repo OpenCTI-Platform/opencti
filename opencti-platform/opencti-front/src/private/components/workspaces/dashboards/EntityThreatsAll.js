@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
+import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
+import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
   container: {
@@ -10,23 +12,39 @@ const styles = () => ({
   },
 });
 
-class ThreatVictimologyAll extends Component {
+class EntityThreatsAll extends Component {
   render() {
-    const { t, widget } = this.props;
+    const {
+      t, widget, startDate, endDate,
+    } = this.props;
     switch (widget.visualizationType) {
+      case 'horizontal-bar':
+        return (
+          <EntityStixCoreRelationshipsHorizontalBars
+            title={`${t('Threats')} - ${t('All')}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
+            relationshipType="targets"
+            isTo={true}
+            field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
       case 'donut':
         return (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('Not implemented yet.')}
-            </span>
-          </div>
+          <EntityStixCoreRelationshipsDonut
+            title={`${t('Threats')} - ${t('All')}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
+            relationshipType="targets"
+            isTo={true}
+            field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
         );
       default:
         return (
@@ -46,7 +64,7 @@ class ThreatVictimologyAll extends Component {
   }
 }
 
-ThreatVictimologyAll.propTypes = {
+EntityThreatsAll.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   widget: PropTypes.object,
@@ -54,4 +72,4 @@ ThreatVictimologyAll.propTypes = {
   t: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ThreatVictimologyAll);
+export default R.compose(inject18n, withStyles(styles))(EntityThreatsAll);

@@ -104,7 +104,7 @@ https://nodejs.org/api/process.html#process_process_memoryusage
 https://nodejs.org/docs/latest-v11.x/api/v8.html#v8_v8_getheapstatistics
 """
 type AppMemory {
-  rss: Float,
+  rss: Float
   heapTotal: Float
   heapUsed: Float
   external: Float
@@ -7547,6 +7547,8 @@ type Query {
     operation: StatsOperation!
     limit: Int
     order: String
+    startDate: DateTime
+    endDate: DateTime
   ): [Distribution] @auth(for: [KNOWLEDGE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])

@@ -3,6 +3,9 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
+import ReportsHorizontalBars from '../../analysis/reports/ReportsHorizontalBars';
+import ReportsAreaChart from '../../analysis/reports/ReportsAreaChart';
+import ReportsVerticalBars from '../../analysis/reports/ReportsVerticalBars';
 
 const styles = () => ({
   container: {
@@ -10,23 +13,39 @@ const styles = () => ({
   },
 });
 
-class ThreatVictimologyAll extends Component {
+class GlobalActivityReports extends Component {
   render() {
-    const { t, widget } = this.props;
+    const {
+      t, widget, startDate, endDate,
+    } = this.props;
     switch (widget.visualizationType) {
-      case 'donut':
+      case 'horizontal-bar':
         return (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('Not implemented yet.')}
-            </span>
-          </div>
+          <ReportsHorizontalBars
+            title={`${t('Activity')} - ${t('Reports')}`}
+            field="created-by.internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <ReportsVerticalBars
+            title={`${t('Activity')} - ${t('Reports')}`}
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <ReportsAreaChart
+            title={`${t('Activity')} - ${t('Reports')}`}
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
         );
       default:
         return (
@@ -46,7 +65,7 @@ class ThreatVictimologyAll extends Component {
   }
 }
 
-ThreatVictimologyAll.propTypes = {
+GlobalActivityReports.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   widget: PropTypes.object,
@@ -54,4 +73,4 @@ ThreatVictimologyAll.propTypes = {
   t: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ThreatVictimologyAll);
+export default R.compose(inject18n, withStyles(styles))(GlobalActivityReports);

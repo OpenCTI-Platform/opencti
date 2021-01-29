@@ -442,7 +442,7 @@ class DashboardComponent extends Component {
             xxs: 0,
           }}
           cols={{
-            lg: 16,
+            lg: 18,
             md: 12,
             sm: 8,
             xs: 6,

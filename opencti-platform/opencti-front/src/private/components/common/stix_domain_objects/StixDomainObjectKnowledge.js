@@ -16,7 +16,7 @@ import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
 import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
-import StixCoreObjectStixDomainObjectsBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
+import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import SectorTargetedOrganizations from '../../entities/sectors/SectorTargetedOrganizations';
 
 const styles = (theme) => ({
@@ -259,7 +259,7 @@ class StixDomainObjectKnowledge extends Component {
         </Grid>
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
-            <StixCoreObjectStixDomainObjectsBars
+            <EntityStixCoreRelationshipsHorizontalBars
               stixCoreObjectId={stixDomainObjectId}
               relationshipType="targets"
               toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
