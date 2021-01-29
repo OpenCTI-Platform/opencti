@@ -39,6 +39,12 @@ import EntityActivityCampaigns from './EntityActivityCampaigns';
 import EntityActivityIncidents from './EntityActivityIncidents';
 import EntityActivityReports from './EntityActivityReports';
 import WidgetPopover from './WidgetPopover';
+import GlobalVictimologyAll from './GlobalVictimologyAll';
+import GlobalVictimologySectors from './GlobalVictimologySectors';
+import GlobalVictimologyCountries from './GlobalVictimologyCountries';
+import GlobalActivityIntrusionSets from './GlobalActivityIntrusionSets';
+import GlobalActivityMalwares from './GlobalActivityMalwares';
+import GlobalActivityReports from './GlobalActivityReports';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -105,7 +111,7 @@ class DashboardComponent extends Component {
             x: 0,
             y: 0,
             w: 4,
-            h: 4,
+            h: 2,
             minW: 2,
             minH: 2,
           },
@@ -165,6 +171,67 @@ class DashboardComponent extends Component {
       manifest,
     );
     this.saveManifest(newManifest);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  renderGlobalVisualization(widget, config) {
+    const { relativeDate } = config;
+    const startDate = relativeDate
+      ? this.computerRelativeDate(relativeDate)
+      : config.startDate;
+    const endDate = relativeDate ? now() : config.endDate;
+    switch (widget.dataType) {
+      case 'all':
+        return (
+          <GlobalVictimologyAll
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'sectors':
+        return (
+          <GlobalVictimologySectors
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'countries':
+        return (
+          <GlobalVictimologyCountries
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'intrusion-sets':
+        return (
+          <GlobalActivityIntrusionSets
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'malwares':
+        return (
+          <GlobalActivityMalwares
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      case 'reports':
+        return (
+          <GlobalActivityReports
+            startDate={startDate}
+            endDate={endDate}
+            widget={widget}
+          />
+        );
+      default:
+        return 'Go away!';
+    }
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -328,7 +395,7 @@ class DashboardComponent extends Component {
                   <MenuItem value="days-1">{t('Last 24 hours')}</MenuItem>
                   <MenuItem value="days-7">{t('Last 7 days')}</MenuItem>
                   <MenuItem value="months-1">{t('Last month')}</MenuItem>
-                  <MenuItem value="months-6">{t('Last month')}</MenuItem>
+                  <MenuItem value="months-6">{t('Last 6 months')}</MenuItem>
                   <MenuItem value="years-1">{t('Last year')}</MenuItem>
                 </Select>
               </FormControl>
@@ -392,9 +459,9 @@ class DashboardComponent extends Component {
               <WidgetPopover
                 onDelete={this.handleDeleteWidget.bind(this, widget.id)}
               />
-              {widget.perspective === 'threat'
-                ? this.renderThreatVisualization(widget, manifest.config)
-                : this.renderEntityVisualization(widget, manifest.config)}
+              {widget.perspective === 'global' && this.renderGlobalVisualization(widget, manifest.config)}
+              {widget.perspective === 'threat' && this.renderThreatVisualization(widget, manifest.config)}
+              {widget.perspective === 'entity' && this.renderEntityVisualization(widget, manifest.config)}
             </Paper>
           ))}
         </ResponsiveGridLayout>

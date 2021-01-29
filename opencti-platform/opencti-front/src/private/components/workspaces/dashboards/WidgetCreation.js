@@ -28,6 +28,7 @@ import {
   ChartBar,
   ChartDonut,
   AlignHorizontalLeft,
+  DatabaseOutline,
 } from 'mdi-material-ui';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -122,7 +123,7 @@ class WidgetCreation extends Component {
   }
 
   handleSelectPerspective(perspective) {
-    this.setState({ perspective, stepIndex: 1 });
+    this.setState({ perspective, stepIndex: perspective === 'global' ? 2 : 1 });
   }
 
   handleSelectEntity(stixDomainObject) {
@@ -157,11 +158,13 @@ class WidgetCreation extends Component {
       perspective,
       dataType,
       visualizationType,
-      entity: {
-        id: selectedEntity.id,
-        name: selectedEntity.name,
-        type: selectedEntity.entity_type,
-      },
+      entity: selectedEntity
+        ? {
+          id: selectedEntity.id,
+          name: selectedEntity.name,
+          type: selectedEntity.entity_type,
+        }
+        : null,
     });
     this.handleClose();
   }
@@ -252,6 +255,124 @@ class WidgetCreation extends Component {
           );
         }}
       />
+    );
+  }
+
+  renderGlobalDataTypes() {
+    const { t, classes } = this.props;
+    return (
+      <Grid
+        container={true}
+        spacing={3}
+        style={{ marginTop: 20, marginBottom: 20 }}
+      >
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'all')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Victimology - All')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Targeted entities')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'sectors')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Victimology - Sectors')}
+                </Typography>
+                <br />
+                <Typography variant="body1">{t('Targeted sectors')}</Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'countries')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Victimology - Countries')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Targeted countries')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'intrusion-sets')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Activity - Intrusion Sets')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Based on ingested data')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'malwares')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Activity - Malwares')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Based on ingested data')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+        <Grid item={true} xs="4">
+          <Card elevation={3} className={classes.card2}>
+            <CardActionArea
+              onClick={this.handleSelectDataType.bind(this, 'reports')}
+              style={{ height: '100%' }}
+            >
+              <CardContent>
+                <Typography gutterBottom variant="h1" style={{ fontSize: 16 }}>
+                  {t('Activity - Reports')}
+                </Typography>
+                <br />
+                <Typography variant="body1">
+                  {t('Number of reports')}
+                </Typography>
+              </CardContent>
+            </CardActionArea>
+          </Card>
+        </Grid>
+      </Grid>
     );
   }
 
@@ -540,7 +661,32 @@ class WidgetCreation extends Component {
             spacing={3}
             style={{ marginTop: 20, marginBottom: 20 }}
           >
-            <Grid item={true} xs="6">
+            <Grid item={true} xs="4">
+              <Card elevation={3} className={classes.card}>
+                <CardActionArea
+                  onClick={this.handleSelectPerspective.bind(this, 'global')}
+                  style={{ height: '100%' }}
+                >
+                  <CardContent>
+                    <DatabaseOutline style={{ fontSize: 40 }} color="primary" />
+                    <Typography
+                      gutterBottom
+                      variant="h1"
+                      style={{ marginTop: 20 }}
+                    >
+                      {t('Global')}
+                    </Typography>
+                    <br />
+                    <Typography variant="body1">
+                      {t(
+                        'Display global data without selecting a specific entity.',
+                      )}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
+              </Card>
+            </Grid>
+            <Grid item={true} xs="4">
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'threat')}
@@ -565,7 +711,7 @@ class WidgetCreation extends Component {
                 </CardActionArea>
               </Card>
             </Grid>
-            <Grid item={true} xs="6">
+            <Grid item={true} xs="4">
               <Card elevation={3} className={classes.card}>
                 <CardActionArea
                   onClick={this.handleSelectPerspective.bind(this, 'entity')}
@@ -608,9 +754,12 @@ class WidgetCreation extends Component {
       case 2:
         return (
           <div>
+            {this.state.perspective === 'global'
+              && this.renderGlobalDataTypes()}
             {this.state.perspective === 'threat'
-              ? this.renderThreatDataTypes()
-              : this.renderEntityDataTypes()}
+              && this.renderThreatDataTypes()}
+            {this.state.perspective === 'entity'
+              && this.renderEntityDataTypes()}
           </div>
         );
       case 3:
@@ -653,7 +802,9 @@ class WidgetCreation extends Component {
               <Step>
                 <StepButton
                   onClick={this.handleSetStep.bind(this, 1)}
-                  disabled={stepIndex <= 1}
+                  disabled={
+                    stepIndex <= 1 || this.state.perspective === 'global'
+                  }
                 >
                   <StepLabel>{t('Entity')}</StepLabel>
                 </StepButton>

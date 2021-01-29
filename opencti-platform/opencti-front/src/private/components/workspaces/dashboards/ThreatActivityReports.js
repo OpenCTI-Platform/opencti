@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelationsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 
 const styles = () => ({
   container: {
@@ -13,24 +12,36 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const {
-      t, startDate, endDate, widget,
-    } = this.props;
+    const { t, widget } = this.props;
     switch (widget.visualizationType) {
       case 'donut':
         return (
-          <EntityStixRelationsDonut
-            title={`${t('Victimology')} - ${widget.entity.name}`}
-            entityId={widget.entity.id}
-            entityType={widget.entity.type}
-            relationshipType="targets"
-            field="name"
-            startDate={startDate}
-            endDate={endDate}
-          />
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('Not implemented yet.')}
+            </span>
+          </div>
         );
       default:
-        return 'Not implemented yet';
+        return (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('Not implemented yet.')}
+            </span>
+          </div>
+        );
     }
   }
 }

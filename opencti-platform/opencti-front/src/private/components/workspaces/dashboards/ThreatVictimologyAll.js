@@ -31,7 +31,19 @@ class ThreatVictimologyAll extends Component {
           />
         );
       default:
-        return 'Not implemented yet';
+        return (
+          <div style={{ display: 'table', height: '100%', width: '100%' }}>
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('Not implemented yet.')}
+            </span>
+          </div>
+        );
     }
   }
 }

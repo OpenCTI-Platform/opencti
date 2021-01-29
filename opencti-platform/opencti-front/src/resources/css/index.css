@@ -260,3 +260,7 @@ div.srd-port:hover {
 .react-grid-placeholder {
   background-color: rgba(0, 188, 212, 0.8) !important;
 }
+
+.layout {
+  margin-bottom: 80px !important;
+}

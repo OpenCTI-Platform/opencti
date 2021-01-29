@@ -10,7 +10,7 @@ const styles = () => ({
   },
 });
 
-class ThreatVictimologyAll extends Component {
+class GlobalActivityIntrusionSets extends Component {
   render() {
     const { t, widget } = this.props;
     switch (widget.visualizationType) {
@@ -46,7 +46,7 @@ class ThreatVictimologyAll extends Component {
   }
 }
 
-ThreatVictimologyAll.propTypes = {
+GlobalActivityIntrusionSets.propTypes = {
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   widget: PropTypes.object,
@@ -54,4 +54,7 @@ ThreatVictimologyAll.propTypes = {
   t: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(ThreatVictimologyAll);
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(GlobalActivityIntrusionSets);
