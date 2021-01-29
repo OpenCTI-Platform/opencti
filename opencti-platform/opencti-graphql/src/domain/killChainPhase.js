@@ -12,12 +12,12 @@ import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixMetaRelationship';
 
-export const findById = (killChainPhaseId) => {
-  return loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+export const findById = (user, killChainPhaseId) => {
+  return loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_KILL_CHAIN_PHASE], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_KILL_CHAIN_PHASE], args);
 };
 
 export const addKillChainPhase = async (user, killChainPhase) => {
@@ -44,7 +44,7 @@ export const killChainPhaseAddRelation = (user, killChainPhaseId, input) => {
 
 export const killChainPhaseDeleteRelation = async (user, killChainPhaseId, relationId) => {
   await deleteElementById(user, relationId, RELATION_KILL_CHAIN_PHASE);
-  const data = await loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  const data = await loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, data, user);
 };
 
@@ -55,14 +55,14 @@ export const killChainPhaseEditField = async (user, killChainPhaseId, input) => 
 
 export const killChainPhaseCleanContext = async (user, killChainPhaseId) => {
   await delEditContext(user, killChainPhaseId);
-  return loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
+  return loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
     notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user)
   );
 };
 
 export const killChainPhaseEditContext = async (user, killChainPhaseId, input) => {
   await setEditContext(user, killChainPhaseId, input);
-  return loadById(killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
+  return loadById(user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE).then((killChainPhase) =>
     notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, killChainPhase, user)
   );
 };

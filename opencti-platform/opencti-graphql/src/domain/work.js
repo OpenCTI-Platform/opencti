@@ -33,25 +33,25 @@ export const workToExportFile = (work) => {
   };
 };
 
-export const connectorForWork = async (id) => {
-  const work = await elLoadByIds(id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
-  if (work) return loadConnectorById(work.connector_id);
+export const connectorForWork = async (user, id) => {
+  const work = await elLoadByIds(user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
+  if (work) return loadConnectorById(user, work.connector_id);
   return null;
 };
 
-export const findAll = (args = {}) => {
+export const findAll = (user, args = {}) => {
   const finalArgs = R.pipe(
     R.assoc('type', ENTITY_TYPE_WORK),
     R.assoc('orderBy', args.orderBy || 'timestamp'),
     R.assoc('orderMode', args.orderMode || 'desc')
   )(args);
-  return elPaginate(READ_INDEX_HISTORY, finalArgs);
+  return elPaginate(user, READ_INDEX_HISTORY, finalArgs);
 };
 
-export const worksForConnector = async (connectorId, args = {}) => {
+export const worksForConnector = async (connectorId, user, args = {}) => {
   const { first = 10, filters = [] } = args;
   filters.push({ key: 'connector_id', values: [connectorId] });
-  return elPaginate(READ_INDEX_HISTORY, {
+  return elPaginate(user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
@@ -61,11 +61,11 @@ export const worksForConnector = async (connectorId, args = {}) => {
   });
 };
 
-export const worksForSource = async (sourceId, args = {}) => {
+export const worksForSource = async (user, sourceId, args = {}) => {
   const { first = 10, filters = [], type } = args;
   const basicFilters = [{ key: 'event_source_id', values: [sourceId] }];
   if (type) basicFilters.push({ key: 'event_type', values: [type] });
-  return elPaginate(READ_INDEX_HISTORY, {
+  return elPaginate(user, READ_INDEX_HISTORY, {
     type: ENTITY_TYPE_WORK,
     connectionFormat: false,
     orderBy: 'timestamp',
@@ -75,14 +75,14 @@ export const worksForSource = async (sourceId, args = {}) => {
   });
 };
 
-export const loadExportWorksAsProgressFiles = async (sourceId) => {
-  const works = await worksForSource(sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
+export const loadExportWorksAsProgressFiles = async (user, sourceId) => {
+  const works = await worksForSource(user, sourceId, { type: CONNECTOR_INTERNAL_EXPORT_FILE, first: 10 });
   const filterSuccessCompleted = R.filter((w) => w.status !== 'complete' || w.errors.length > 0, works);
   return R.map((item) => workToExportFile(item), filterSuccessCompleted);
 };
 
-const loadWorkById = async (workId) => {
-  const action = await elLoadByIds(workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
+const loadWorkById = async (user, workId) => {
+  const action = await elLoadByIds(user, workId, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
   return R.assoc('id', workId, action);
 };
 
@@ -92,13 +92,13 @@ export const deleteWorkRaw = async (work) => {
   return work.internal_id;
 };
 
-export const deleteWork = async (workId) => {
-  const work = await loadWorkById(workId);
+export const deleteWork = async (user, workId) => {
+  const work = await loadWorkById(user, workId);
   return deleteWorkRaw(work);
 };
 
-export const deleteWorkForFile = async (fileId) => {
-  const works = await worksForSource(fileId);
+export const deleteWorkForFile = async (user, fileId) => {
+  const works = await worksForSource(user, fileId);
   await Promise.all(R.map((w) => deleteWorkRaw(w), works));
   return true;
 };
@@ -191,7 +191,7 @@ export const createWork = async (user, connector, friendlyName, sourceId, args =
   };
   await redisCreateWork(workTracing);
   await elIndex(INDEX_HISTORY, work);
-  return loadWorkById(workId);
+  return loadWorkById(user, workId);
 };
 
 const isWorkCompleted = async (workId) => {

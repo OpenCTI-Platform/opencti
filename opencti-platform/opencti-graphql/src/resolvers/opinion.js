@@ -28,31 +28,31 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const opinionResolvers = {
   Query: {
-    opinion: (_, { id }) => findById(id),
-    opinions: (_, args) => findAll(args),
-    opinionsTimeSeries: (_, args) => {
+    opinion: (_, { id }, { user }) => findById(user, id),
+    opinions: (_, args, { user }) => findAll(user, args),
+    opinionsTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return opinionsTimeSeriesByEntity(args);
+        return opinionsTimeSeriesByEntity(user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return opinionsTimeSeriesByAuthor(args);
+        return opinionsTimeSeriesByAuthor(user, args);
       }
-      return opinionsTimeSeries(args);
+      return opinionsTimeSeries(user, args);
     },
-    opinionsNumber: (_, args) => {
+    opinionsNumber: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return opinionsNumberByEntity(args);
+        return opinionsNumberByEntity(user, args);
       }
-      return opinionsNumber(args);
+      return opinionsNumber(user, args);
     },
-    opinionsDistribution: (_, args) => {
+    opinionsDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return opinionsDistributionByEntity(args);
+        return opinionsDistributionByEntity(user, args);
       }
       return [];
     },
-    opinionContainsStixObjectOrStixRelationship: (_, args) => {
-      return opinionContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
+    opinionContainsStixObjectOrStixRelationship: (_, args, { user }) => {
+      return opinionContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   OpinionsOrdering: {

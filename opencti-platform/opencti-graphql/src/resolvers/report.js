@@ -30,31 +30,31 @@ import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 
 const reportResolvers = {
   Query: {
-    report: (_, { id }) => findById(id),
-    reports: (_, args) => findAll(args),
-    reportsTimeSeries: (_, args) => {
+    report: (_, { id }, { user }) => findById(user, id),
+    reports: (_, args, { user }) => findAll(user, args),
+    reportsTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsTimeSeriesByEntity(args);
+        return reportsTimeSeriesByEntity(user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return reportsTimeSeriesByAuthor(args);
+        return reportsTimeSeriesByAuthor(user, args);
       }
-      return reportsTimeSeries(args);
+      return reportsTimeSeries(user, args);
     },
-    reportsNumber: (_, args) => {
+    reportsNumber: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsNumberByEntity(args);
+        return reportsNumberByEntity(user, args);
       }
-      return reportsNumber(args);
+      return reportsNumber(user, args);
     },
-    reportsDistribution: (_, args) => {
+    reportsDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsDistributionByEntity(args);
+        return reportsDistributionByEntity(user, args);
       }
-      return distributionEntities(ENTITY_TYPE_CONTAINER_REPORT, [], args);
+      return distributionEntities(user, ENTITY_TYPE_CONTAINER_REPORT, [], args);
     },
-    reportContainsStixObjectOrStixRelationship: (_, args) => {
-      return reportContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
+    reportContainsStixObjectOrStixRelationship: (_, args, { user }) => {
+      return reportContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   ReportsOrdering: {

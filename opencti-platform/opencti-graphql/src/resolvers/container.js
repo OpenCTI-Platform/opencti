@@ -17,8 +17,8 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const containerResolvers = {
   Query: {
-    container: (_, { id }) => findById(id),
-    containers: (_, args) => findAll(args),
+    container: (_, { id }, { user }) => findById(user, id),
+    containers: (_, args, { user }) => findAll(user, args),
   },
   Container: {
     __resolveType(obj) {
@@ -27,7 +27,7 @@ const containerResolvers = {
       }
       return 'Unknown';
     },
-    objects: (container, args) => objects(container.id, args),
+    objects: (container, args, { user }) => objects(user, container.id, args),
   },
   ContainersOrdering: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.name`,

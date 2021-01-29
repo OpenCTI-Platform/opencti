@@ -17,8 +17,8 @@ import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
 
 const killChainPhaseResolvers = {
   Query: {
-    killChainPhase: (_, { id }) => findById(id),
-    killChainPhases: (_, args) => findAll(args),
+    killChainPhase: (_, { id }, { user }) => findById(user, id),
+    killChainPhases: (_, args, { user }) => findAll(user, args),
   },
   KillChainPhase: {
     editContext: (killChainPhase) => fetchEditContext(killChainPhase.id),

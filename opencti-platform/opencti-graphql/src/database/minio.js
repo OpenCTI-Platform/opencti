@@ -39,7 +39,7 @@ export const isStorageAlive = () => {
 export const deleteFile = async (user, id) => {
   logger.debug(`[MINIO] delete file ${id} by ${user.user_email}`);
   await minioClient.removeObject(bucketName, id);
-  await deleteWorkForFile(id);
+  await deleteWorkForFile(user, id);
   return true;
 };
 
@@ -95,9 +95,9 @@ export const upload = async (user, path, file, metadata = {}) => {
   });
 };
 
-export const filesListing = async (first, path) => {
+export const filesListing = async (user, first, path) => {
   const files = await rawFilesListing(path);
-  const inExport = await loadExportWorksAsProgressFiles(path);
+  const inExport = await loadExportWorksAsProgressFiles(user, path);
   const allFiles = concat(inExport, files);
   const sortedFiles = sort((a, b) => b.lastModified - a.lastModified, allFiles);
   const fileNodes = map((f) => ({ node: f }), sortedFiles);

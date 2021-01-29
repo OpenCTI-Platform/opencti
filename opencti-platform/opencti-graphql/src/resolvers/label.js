@@ -15,8 +15,8 @@ import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 
 const labelResolvers = {
   Query: {
-    label: (_, { id }) => findById(id),
-    labels: (_, args) => findAll(args),
+    label: (_, { id }, { user }) => findById(user, id),
+    labels: (_, args, { user }) => findAll(user, args),
   },
   Label: {
     editContext: (label) => fetchEditContext(label.id),

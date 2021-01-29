@@ -62,7 +62,7 @@ export const up = async (next) => {
     });
     const elementsToMerge = urlsToMerge.slice(1);
     const resolveElementsToMerge = await Promise.all(
-      elementsToMerge.map((e) => loadByIdFullyResolved(e._source.internal_id))
+      elementsToMerge.map((e) => loadByIdFullyResolved(SYSTEM_USER, e._source.internal_id))
     );
     const sources = resolveElementsToMerge.map((s) => R.assoc('standard_id', updatedTarget.standard_id, s));
     // 2. Merge everything else inside the target

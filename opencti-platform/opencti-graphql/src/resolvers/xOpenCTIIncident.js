@@ -18,13 +18,13 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const xOpenCTIIncidentResolvers = {
   Query: {
-    xOpenCTIIncident: (_, { id }) => findById(id),
-    xOpenCTIIncidents: (_, args) => findAll(args),
-    xOpenCTIIncidentsTimeSeries: (_, args) => {
+    xOpenCTIIncident: (_, { id }, { user }) => findById(user, id),
+    xOpenCTIIncidents: (_, args, { user }) => findAll(user, args),
+    xOpenCTIIncidentsTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return xOpenCTIIncidentsTimeSeriesByEntity(args);
+        return xOpenCTIIncidentsTimeSeriesByEntity(user, args);
       }
-      return xOpenCTIIncidentsTimeSeries(args);
+      return xOpenCTIIncidentsTimeSeries(user, args);
     },
   },
   XOpenCTIIncidentsFilter: {

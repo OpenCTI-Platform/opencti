@@ -7,7 +7,7 @@ import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { BYPASS, ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
+import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
@@ -17,6 +17,7 @@ import applyMigration, { lastAvailableMigrationTime } from './database/migration
 import { createEntity, loadEntity, patchAttribute } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS } from './database/utils';
 import { ConfigurationError } from './config/errors';
+import { BYPASS } from './schema/general';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
@@ -129,7 +130,7 @@ const initializeMigration = async (testMode = false) => {
 // This code will patch release <= 4.0.1
 // This prevent some complex procedure for users. To be removed after some times
 const alignMigrationLastRun = async () => {
-  const migrationStatus = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
+  const migrationStatus = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
   const { lastRun } = migrationStatus;
   const [lastRunTime] = lastRun.split('-');
   const lastRunStamp = parseInt(lastRunTime, 10);
@@ -234,7 +235,7 @@ const initializeData = async () => {
 
 const isExistingPlatform = async () => {
   try {
-    const migration = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
+    const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
     return migration !== undefined;
   } catch {
     return false;

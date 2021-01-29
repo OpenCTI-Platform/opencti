@@ -7,11 +7,11 @@ import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 import { FunctionalError } from '../config/errors';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 
-export const findAll = async (args) =>
-  listRelations(propOr(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, 'relationship_type', args), args);
+export const findAll = async (user, args) =>
+  listRelations(user, propOr(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, 'relationship_type', args), args);
 
-export const findById = (stixCyberObservableRelationshipId) => {
-  return loadById(stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
+export const findById = (user, stixCyberObservableRelationshipId) => {
+  return loadById(user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
 };
 
 // region mutations

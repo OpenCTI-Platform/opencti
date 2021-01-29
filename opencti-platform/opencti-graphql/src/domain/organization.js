@@ -6,16 +6,16 @@ import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '
 import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
-export const findById = (organizationId) => {
-  return loadById(organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const findById = (user, organizationId) => {
+  return loadById(user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
 };
 
-export const batchSectors = (organizationIds) => {
-  return batchListThroughGetTo(organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchSectors = (user, organizationIds) => {
+  return batchListThroughGetTo(user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const addOrganization = async (user, organization) => {

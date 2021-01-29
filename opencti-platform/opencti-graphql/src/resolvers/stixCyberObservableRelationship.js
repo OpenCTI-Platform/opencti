@@ -15,17 +15,17 @@ import { initBatchLoader } from '../database/middleware';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
 
-const loadByIdLoader = initBatchLoader(elBatchIds);
+const loadByIdLoader = (user) => initBatchLoader(user, elBatchIds);
 
 const stixCyberObservableRelationshipResolvers = {
   Query: {
-    stixCyberObservableRelationship: (_, { id }) => findById(id),
-    stixCyberObservableRelationships: (_, args) => findAll(args),
-    stixCyberObservableRelationshipsOfElement: (_, args) => findAll(args),
+    stixCyberObservableRelationship: (_, { id }, { user }) => findById(user, id),
+    stixCyberObservableRelationships: (_, args, { user }) => findAll(user, args),
+    stixCyberObservableRelationshipsOfElement: (_, args, { user }) => findAll(user, args),
   },
   StixCyberObservableRelationship: {
-    from: (rel) => loadByIdLoader.load(rel.fromId),
-    to: (rel) => loadByIdLoader.load(rel.toId),
+    from: (rel, _, { user }) => loadByIdLoader(user).load(rel.fromId),
+    to: (rel, _, { user }) => loadByIdLoader(user).load(rel.toId),
   },
   Mutation: {
     stixCyberObservableRelationshipEdit: (_, { id }, { user }) => ({

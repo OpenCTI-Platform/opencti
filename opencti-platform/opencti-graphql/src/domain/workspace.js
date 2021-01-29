@@ -3,12 +3,12 @@ import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 
-export const findById = (workspaceId) => {
-  return loadById(workspaceId, ENTITY_TYPE_WORKSPACE);
+export const findById = (user, workspaceId) => {
+  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_WORKSPACE], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_WORKSPACE], args);
 };
 
 export const addWorkspace = async (user, workspace) => {
@@ -29,14 +29,14 @@ export const workspaceDelete = async (user, workspaceId) => {
 // region context
 export const workspaceCleanContext = async (user, workspaceId) => {
   await delEditContext(user, workspaceId);
-  return loadById(workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) =>
+  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) =>
     notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user)
   );
 };
 
 export const workspaceEditContext = async (user, workspaceId, input) => {
   await setEditContext(user, workspaceId, input);
-  return loadById(workspaceId, ENTITY_TYPE_WORKSPACE).then((workspaceToReturn) =>
+  return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE).then((workspaceToReturn) =>
     notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, workspaceToReturn, user)
   );
 };

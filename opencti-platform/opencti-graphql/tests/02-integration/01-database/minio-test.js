@@ -22,7 +22,7 @@ describe('Minio file listing', () => {
   let importFileId;
   let importOpts;
   it('should resolve the malware', async () => {
-    const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
+    const malware = await elLoadByIds(user, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     malwareId = malware.internal_id;
     exportFileName = '(ExportFileStix)_Malware-Paradise Ransomware_all.json';
     exportFileId = `export/Malware/${malwareId}/${exportFileName}`;
@@ -39,7 +39,7 @@ describe('Minio file listing', () => {
   });
   it('should file listing', async () => {
     const entity = { id: malwareId };
-    let list = await filesListing(25, `export/Malware/${entity.id}/`);
+    let list = await filesListing(user, 25, `export/Malware/${entity.id}/`);
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     let file = head(list.edges).node;
@@ -51,7 +51,7 @@ describe('Minio file listing', () => {
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('text/plain');
-    list = await filesListing(25, 'import/global/');
+    list = await filesListing(user, 25, 'import/global/');
     expect(list).not.toBeNull();
     expect(list.edges.length).toEqual(1);
     file = head(list.edges).node;

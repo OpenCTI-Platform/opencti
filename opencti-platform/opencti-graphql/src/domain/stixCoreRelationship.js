@@ -42,14 +42,14 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 
-export const findAll = async (args) =>
-  listRelations(propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
+export const findAll = async (user, args) =>
+  listRelations(user, propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
 
-export const findById = (stixCoreRelationshipId) => {
-  return loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+export const findById = (user, stixCoreRelationshipId) => {
+  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 
-export const stixCoreRelationshipsNumber = (args) => {
+export const stixCoreRelationshipsNumber = (user, args) => {
   const types = [];
   if (args.type) {
     if (isStixCoreRelationship(args.type)) {
@@ -61,47 +61,57 @@ export const stixCoreRelationshipsNumber = (args) => {
   }
   const finalArgs = assoc('types', types, args);
   return {
-    count: elCount(READ_INDEX_STIX_CORE_RELATIONSHIPS, finalArgs),
-    total: elCount(READ_INDEX_STIX_CORE_RELATIONSHIPS, dissoc('endDate', finalArgs)),
+    count: elCount(user, READ_INDEX_STIX_CORE_RELATIONSHIPS, finalArgs),
+    total: elCount(user, READ_INDEX_STIX_CORE_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
 
-export const batchCreatedBy = async (stixCoreRelationshipIds) => {
-  const batchCreators = await batchListThroughGetTo(stixCoreRelationshipIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+export const batchCreatedBy = async (user, stixCoreRelationshipIds) => {
+  const batchCreators = await batchListThroughGetTo(
+    user,
+    stixCoreRelationshipIds,
+    RELATION_CREATED_BY,
+    ENTITY_TYPE_IDENTITY
+  );
   return batchCreators.map((b) => (b.edges.length > 0 ? R.head(b.edges).node : null));
 };
 
-export const batchReports = async (stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+export const batchReports = async (user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const batchNotes = (stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+export const batchNotes = (user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const batchOpinions = (stixCoreRelationshipIds) => {
-  return batchListThroughGetFrom(stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+export const batchOpinions = (user, stixCoreRelationshipIds) => {
+  return batchListThroughGetFrom(user, stixCoreRelationshipIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
-export const batchLabels = (stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(stixCoreRelationshipIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+export const batchLabels = (user, stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(user, stixCoreRelationshipIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const batchMarkingDefinitions = (stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(stixCoreRelationshipIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
+export const batchMarkingDefinitions = (user, stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(user, stixCoreRelationshipIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const batchExternalReferences = (stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(stixCoreRelationshipIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
+export const batchExternalReferences = (user, stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(
+    user,
+    stixCoreRelationshipIds,
+    RELATION_EXTERNAL_REFERENCE,
+    ENTITY_TYPE_EXTERNAL_REFERENCE
+  );
 };
 
-export const batchKillChainPhases = (stixCoreRelationshipIds) => {
-  return batchListThroughGetTo(stixCoreRelationshipIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
+export const batchKillChainPhases = (user, stixCoreRelationshipIds) => {
+  return batchListThroughGetTo(user, stixCoreRelationshipIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
-export const stixRelations = (stixCoreObjectId, args) => {
+export const stixRelations = (user, stixCoreObjectId, args) => {
   const finalArgs = assoc('fromId', stixCoreObjectId, args);
-  return findAll(finalArgs);
+  return findAll(user, finalArgs);
 };
 
 // region mutations
@@ -126,7 +136,7 @@ export const stixCoreRelationshipDeleteByFromAndTo = async (user, fromId, toId, 
 };
 
 export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId, input) => {
-  const stixCoreRelationship = await loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot edit the field, stix-core-relationship cannot be found.');
   }
@@ -140,7 +150,7 @@ export const stixCoreRelationshipEditField = async (user, stixCoreRelationshipId
 };
 
 export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationshipId, input) => {
-  const stixCoreRelationship = await loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError('Cannot add the relation, stix-core-relationship cannot be found.');
   }
@@ -155,7 +165,7 @@ export const stixCoreRelationshipAddRelation = async (user, stixCoreRelationship
 };
 
 export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelationshipId, toId, relationshipType) => {
-  const stixCoreRelationship = await loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  const stixCoreRelationship = await loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
   if (!stixCoreRelationship) {
     throw FunctionalError(`Cannot delete the relation, ${ABSTRACT_STIX_CORE_RELATIONSHIP} cannot be found.`);
   }
@@ -176,14 +186,14 @@ export const stixCoreRelationshipDeleteRelation = async (user, stixCoreRelations
 // region context
 export const stixCoreRelationshipCleanContext = (user, stixCoreRelationshipId) => {
   delEditContext(user, stixCoreRelationshipId);
-  return loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
+  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
   );
 };
 
 export const stixCoreRelationshipEditContext = (user, stixCoreRelationshipId, input) => {
   setEditContext(user, stixCoreRelationshipId, input);
-  return loadById(stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
+  return loadById(user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP).then((stixCoreRelationship) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user)
   );
 };

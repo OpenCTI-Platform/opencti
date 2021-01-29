@@ -5,12 +5,12 @@ import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { normalizeName } from '../schema/identifier';
 
-export const findById = (labelId) => {
-  return loadById(labelId, ENTITY_TYPE_LABEL);
+export const findById = (user, labelId) => {
+  return loadById(user, labelId, ENTITY_TYPE_LABEL);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LABEL], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_LABEL], args);
 };
 
 export const stringToColour = (str) => {
@@ -46,14 +46,14 @@ export const labelEditField = async (user, labelId, input) => {
 
 export const labelCleanContext = async (user, labelId) => {
   await delEditContext(user, labelId);
-  return loadById(labelId, ENTITY_TYPE_LABEL).then((label) =>
+  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) =>
     notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user)
   );
 };
 
 export const labelEditContext = async (user, labelId, input) => {
   await setEditContext(user, labelId, input);
-  return loadById(labelId, ENTITY_TYPE_LABEL).then((label) =>
+  return loadById(user, labelId, ENTITY_TYPE_LABEL).then((label) =>
     notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, label, user)
   );
 };

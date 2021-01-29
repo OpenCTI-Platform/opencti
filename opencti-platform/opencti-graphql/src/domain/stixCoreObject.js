@@ -49,7 +49,7 @@ import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
 
-export const findAll = async (args) => {
+export const findAll = async (user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = R.filter((type) => isStixCoreObject(type), args.types);
@@ -57,50 +57,50 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CORE_OBJECT);
   }
-  return listEntities(types, args);
+  return listEntities(user, types, args);
 };
 
-export const findById = async (stixCoreObjectId) => loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+export const findById = async (user, stixCoreObjectId) => loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
 
-export const batchCreatedBy = async (stixCoreObjectIds) => {
-  return batchLoadThroughGetTo(stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
+export const batchCreatedBy = async (user, stixCoreObjectIds) => {
+  return batchLoadThroughGetTo(user, stixCoreObjectIds, RELATION_CREATED_BY, ENTITY_TYPE_IDENTITY);
 };
 
-export const batchReports = async (stixCoreObjectIds) => {
-  return batchListThroughGetFrom(stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
+export const batchReports = async (user, stixCoreObjectIds) => {
+  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const batchNotes = (stixCoreObjectIds) => {
-  return batchListThroughGetFrom(stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
+export const batchNotes = (user, stixCoreObjectIds) => {
+  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const batchOpinions = (stixCoreObjectIds) => {
-  return batchListThroughGetFrom(stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
+export const batchOpinions = (user, stixCoreObjectIds) => {
+  return batchListThroughGetFrom(user, stixCoreObjectIds, RELATION_OBJECT, ENTITY_TYPE_CONTAINER_OPINION);
 };
 
-export const batchLabels = (stixCoreObjectIds) => {
-  return batchListThroughGetTo(stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
+export const batchLabels = (user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_OBJECT_LABEL, ENTITY_TYPE_LABEL);
 };
 
-export const batchMarkingDefinitions = (stixCoreObjectIds) => {
-  return batchListThroughGetTo(stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
+export const batchMarkingDefinitions = (user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_OBJECT_MARKING, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const batchExternalReferences = (stixDomainObjectIds) => {
-  return batchListThroughGetTo(stixDomainObjectIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
+export const batchExternalReferences = (user, stixDomainObjectIds) => {
+  return batchListThroughGetTo(user, stixDomainObjectIds, RELATION_EXTERNAL_REFERENCE, ENTITY_TYPE_EXTERNAL_REFERENCE);
 };
 
-export const batchKillChainPhases = (stixCoreObjectIds) => {
-  return batchListThroughGetTo(stixCoreObjectIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
+export const batchKillChainPhases = (user, stixCoreObjectIds) => {
+  return batchListThroughGetTo(user, stixCoreObjectIds, RELATION_KILL_CHAIN_PHASE, ENTITY_TYPE_KILL_CHAIN_PHASE);
 };
 
-export const stixCoreRelationships = (stixCoreObjectId, args) => {
+export const stixCoreRelationships = (user, stixCoreObjectId, args) => {
   const finalArgs = R.assoc('fromId', stixCoreObjectId, args);
-  return relationFindAll(finalArgs);
+  return relationFindAll(user, finalArgs);
 };
 
 export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) => {
-  const data = await internalLoadById(stixCoreObjectId);
+  const data = await internalLoadById(user, stixCoreObjectId);
   if (!isStixCoreObject(data.entity_type) || !isStixRelationship(input.relationship_type)) {
     throw FunctionalError('Only stix-meta-relationship can be added through this method.', { stixCoreObjectId, input });
   }
@@ -109,7 +109,7 @@ export const stixCoreObjectAddRelation = async (user, stixCoreObjectId, input) =
 };
 
 export const stixCoreObjectAddRelations = async (user, stixCoreObjectId, input) => {
-  const stixCoreObject = await loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot add the relation, Stix-Core-Object cannot be found.');
   }
@@ -121,13 +121,13 @@ export const stixCoreObjectAddRelations = async (user, stixCoreObjectId, input) 
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) =>
+  return loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user)
   );
 };
 
 export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId, relationshipType) => {
-  const stixCoreObject = await loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the relation, Stix-Core-Object cannot be found.');
   }
@@ -139,7 +139,7 @@ export const stixCoreObjectDeleteRelation = async (user, stixCoreObjectId, toId,
 };
 
 export const stixCoreObjectEditField = async (user, stixCoreObjectId, input) => {
-  const stixCoreObject = await loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot edit the field, Stix-Core-Object cannot be found.');
   }
@@ -148,7 +148,7 @@ export const stixCoreObjectEditField = async (user, stixCoreObjectId, input) => 
 };
 
 export const stixCoreObjectDelete = async (user, stixCoreObjectId) => {
-  const stixCoreObject = await loadById(stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  const stixCoreObject = await loadById(user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
   }
@@ -171,20 +171,20 @@ export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
       sourceIds,
     });
   }
-  const targetEntity = await loadByIdFullyResolved(targetId, ABSTRACT_STIX_CORE_OBJECT);
+  const targetEntity = await loadByIdFullyResolved(user, targetId, ABSTRACT_STIX_CORE_OBJECT);
   if (!targetEntity) {
     throw FunctionalError('Cannot merge the other objects, Stix-Object cannot be found.');
   }
   const sourceEntities = await Promise.all(
-    sourceIds.map(async (id) => loadByIdFullyResolved(id, ABSTRACT_STIX_CORE_OBJECT))
+    sourceIds.map(async (id) => loadByIdFullyResolved(user, id, ABSTRACT_STIX_CORE_OBJECT))
   );
   return mergeEntities(user, targetEntity, sourceEntities);
 };
 // endregion
 
 export const askEntityExport = async (user, format, entity, type = 'simple', maxMarkingId = null) => {
-  const connectors = await connectorsForExport(format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(maxMarkingId) : null;
+  const connectors = await connectorsForExport(user, format, true);
+  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entity.entity_type}-${entity.name}_${type}.${mime.extension(format)}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
@@ -244,8 +244,8 @@ export const exportTransformFilters = (listFilters, filterOptions, orderOptions)
   )(listFilters);
 };
 export const askListExport = async (user, format, entityType, listParams, type = 'simple', maxMarkingId = null) => {
-  const connectors = await connectorsForExport(format, true);
-  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(maxMarkingId) : null;
+  const connectors = await connectorsForExport(user, format, true);
+  const markingLevel = maxMarkingId ? await findMarkingDefinitionById(user, maxMarkingId) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entityType}_${type}.${mime.extension(format)}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;

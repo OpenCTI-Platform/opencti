@@ -23,31 +23,31 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const observedDataResolvers = {
   Query: {
-    observedData: (_, { id }) => findById(id),
-    observedDatas: (_, args) => findAll(args),
-    observedDatasTimeSeries: (_, args) => {
+    observedData: (_, { id }, { user }) => findById(user, id),
+    observedDatas: (_, args, { user }) => findAll(user, args),
+    observedDatasTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return observedDatasTimeSeriesByEntity(args);
+        return observedDatasTimeSeriesByEntity(user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return observedDatasTimeSeriesByAuthor(args);
+        return observedDatasTimeSeriesByAuthor(user, args);
       }
-      return observedDatasTimeSeries(args);
+      return observedDatasTimeSeries(user, args);
     },
-    observedDatasNumber: (_, args) => {
+    observedDatasNumber: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return observedDatasNumberByEntity(args);
+        return observedDatasNumberByEntity(user, args);
       }
-      return observedDatasNumber(args);
+      return observedDatasNumber(user, args);
     },
-    observedDatasDistribution: (_, args) => {
+    observedDatasDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return observedDatasDistributionByEntity(args);
+        return observedDatasDistributionByEntity(user, args);
       }
       return [];
     },
-    observedDataContainsStixObjectOrStixRelationship: (_, args) => {
-      return observedDataContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
+    observedDataContainsStixObjectOrStixRelationship: (_, args, { user }) => {
+      return observedDataContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   ObservedDatasFilter: {

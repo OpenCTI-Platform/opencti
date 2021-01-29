@@ -8,45 +8,46 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
-export const findById = (observedDataId) => {
-  return loadById(observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
+export const findById = (user, observedDataId) => {
+  return loadById(user, observedDataId, ENTITY_TYPE_CONTAINER_OBSERVED_DATA);
 };
 
-export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
+export const findAll = async (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args);
 };
 
 // All entities
-export const observedDataContainsStixObjectOrStixRelationship = async (observedDataId, thingId) => {
+export const observedDataContainsStixObjectOrStixRelationship = async (user, observedDataId, thingId) => {
   const args = {
     filters: [
       { key: 'internal_id', values: [observedDataId] },
       { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  const observedDataFound = await findAll(args);
+  const observedDataFound = await findAll(user, args);
   return observedDataFound.edges.length > 0;
 };
 
 // region series
-export const observedDatasTimeSeries = (args) => {
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [], args);
+export const observedDatasTimeSeries = (user, args) => {
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [], args);
 };
 
-export const observedDatasNumber = (args) => ({
-  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args)),
+export const observedDatasNumber = (user, args) => ({
+  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA], args)),
   total: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(assoc('types', [ENTITY_TYPE_CONTAINER_OBSERVED_DATA]), dissoc('endDate')(args))
   ),
 });
 
-export const observedDatasTimeSeriesByEntity = (args) => {
+export const observedDatasTimeSeriesByEntity = (user, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
 };
 
-export const observedDatasTimeSeriesByAuthor = async (args) => {
+export const observedDatasTimeSeriesByAuthor = async (user, args) => {
   const { authorId } = args;
   const filters = [
     {
@@ -57,11 +58,12 @@ export const observedDatasTimeSeriesByAuthor = async (args) => {
       value: authorId,
     },
   ];
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
 };
 
-export const observedDatasNumberByEntity = (args) => ({
+export const observedDatasNumberByEntity = (user, args) => ({
   count: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
@@ -71,6 +73,7 @@ export const observedDatasNumberByEntity = (args) => ({
     )(args)
   ),
   total: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
@@ -82,10 +85,10 @@ export const observedDatasNumberByEntity = (args) => ({
   ),
 });
 
-export const observedDatasDistributionByEntity = async (args) => {
+export const observedDatasDistributionByEntity = async (user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
+  return distributionEntities(user, ENTITY_TYPE_CONTAINER_OBSERVED_DATA, filters, args);
 };
 // endregion
 

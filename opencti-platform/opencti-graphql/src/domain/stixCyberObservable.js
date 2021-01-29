@@ -52,11 +52,11 @@ import { apiAttributeToComplexFormat } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { escape } from '../utils/format';
 
-export const findById = (stixCyberObservableId) => {
-  return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+export const findById = (user, stixCyberObservableId) => {
+  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 
-export const findAll = async (args) => {
+export const findAll = async (user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = filter((type) => isStixCyberObservable(type), args.types);
@@ -64,30 +64,30 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
   }
-  return listEntities(types, args);
+  return listEntities(user, types, args);
 };
 
 // region by elastic
-export const stixCyberObservablesNumber = (args) => ({
-  count: elCount(READ_INDEX_STIX_CYBER_OBSERVABLES, args),
-  total: elCount(READ_INDEX_STIX_CYBER_OBSERVABLES, dissoc('endDate', args)),
+export const stixCyberObservablesNumber = (user, args) => ({
+  count: elCount(user, READ_INDEX_STIX_CYBER_OBSERVABLES, args),
+  total: elCount(user, READ_INDEX_STIX_CYBER_OBSERVABLES, dissoc('endDate', args)),
 });
 // endregion
 
 // region time series
-export const reportsTimeSeries = (stixCyberObservableId, args) => {
+export const reportsTimeSeries = (user, stixCyberObservableId, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixCyberObservableId }];
-  return timeSeriesEntities('Report', filters, args);
+  return timeSeriesEntities(user, 'Report', filters, args);
 };
 
-export const stixCyberObservablesTimeSeries = (args) => {
-  return timeSeriesEntities(args.type ? escape(args.type) : ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
+export const stixCyberObservablesTimeSeries = (user, args) => {
+  return timeSeriesEntities(user, args.type ? escape(args.type) : ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
 };
 // endregion
 
 // region mutations
 export const stixCyberObservableAskEnrichment = async (user, observableId, connectorId) => {
-  const connector = await loadById(connectorId, ENTITY_TYPE_CONNECTOR);
+  const connector = await loadById(user, connectorId, ENTITY_TYPE_CONNECTOR);
   const work = await createWork(user, connector, 'Manual enrichment', observableId);
   const message = {
     internal: {
@@ -102,8 +102,8 @@ export const stixCyberObservableAskEnrichment = async (user, observableId, conne
   return work;
 };
 
-export const batchIndicators = (stixCyberObservableIds) => {
-  return batchListThroughGetFrom(stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
+export const batchIndicators = (user, stixCyberObservableIds) => {
+  return batchListThroughGetFrom(user, stixCyberObservableIds, RELATION_BASED_ON, ENTITY_TYPE_INDICATOR);
 };
 
 export const observableValue = (stixCyberObservable) => {
@@ -237,7 +237,7 @@ export const stixCyberObservableDelete = async (user, stixCyberObservableId) => 
 };
 
 export const stixCyberObservableAddRelation = async (user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const stixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
   }
@@ -252,7 +252,7 @@ export const stixCyberObservableAddRelation = async (user, stixCyberObservableId
 };
 
 export const stixCyberObservableAddRelations = async (user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const stixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
   }
@@ -264,13 +264,13 @@ export const stixCyberObservableAddRelations = async (user, stixCyberObservableI
     input.toIds
   );
   await createRelations(user, finalInput);
-  return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((entity) =>
+  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((entity) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, entity, user)
   );
 };
 
 export const stixCyberObservableDeleteRelation = async (user, stixCyberObservableId, toId, relationshipType) => {
-  const stixCyberObservable = await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  const stixCyberObservable = await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
   if (!stixCyberObservable) {
     throw FunctionalError('Cannot delete the relation, Stix-Cyber-Observable cannot be found.');
   }
@@ -302,13 +302,13 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
 // region context
 export const stixCyberObservableCleanContext = (user, stixCyberObservableId) => {
   delEditContext(user, stixCyberObservableId);
-  return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) =>
+  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user)
   );
 };
 export const stixCyberObservableEditContext = (user, stixCyberObservableId, input) => {
   setEditContext(user, stixCyberObservableId, input);
-  return loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) =>
+  return loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE).then((stixCyberObservable) =>
     notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user)
   );
 };
@@ -334,7 +334,9 @@ export const stixCyberObservablesExportAsk = async (user, args) => {
 };
 export const stixCyberObservableExportAsk = async (user, args) => {
   const { format, exportType, stixCyberObservableId = null, maxMarkingDefinition = null } = args;
-  const entity = stixCyberObservableId ? await loadById(stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE) : null;
+  const entity = stixCyberObservableId
+    ? await loadById(user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
+    : null;
   const works = await askEntityExport(user, format, entity, exportType, maxMarkingDefinition);
   return map((w) => workToExportFile(w.work), works);
 };
@@ -349,11 +351,11 @@ export const stixCyberObservableExportPush = async (user, entityId, file) => {
 // endregion
 
 // region mutation
-export const stixCyberObservableDistribution = async (args) =>
-  distributionEntities(ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
+export const stixCyberObservableDistribution = async (user, args) =>
+  distributionEntities(user, ABSTRACT_STIX_CYBER_OBSERVABLE, [], args);
 
-export const stixCyberObservableDistributionByEntity = async (args) => {
+export const stixCyberObservableDistributionByEntity = async (user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: args.relationship_type, value: objectId }];
-  return distributionEntities(ABSTRACT_STIX_CYBER_OBSERVABLE, filters, args);
+  return distributionEntities(user, ABSTRACT_STIX_CYBER_OBSERVABLE, filters, args);
 };

@@ -5,11 +5,11 @@ import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/general';
 import { isStixDomainObjectLocation } from '../schema/stixDomainObject';
 
-export const findById = async (locationId) => {
-  return loadById(locationId, ENTITY_TYPE_LOCATION);
+export const findById = async (user, locationId) => {
+  return loadById(user, locationId, ENTITY_TYPE_LOCATION);
 };
 
-export const findAll = async (args) => {
+export const findAll = async (user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = filter((type) => isStixDomainObjectLocation(type), args.types);
@@ -17,7 +17,7 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_LOCATION);
   }
-  return listEntities(types, args);
+  return listEntities(user, types, args);
 };
 
 export const addLocation = async (user, location) => {

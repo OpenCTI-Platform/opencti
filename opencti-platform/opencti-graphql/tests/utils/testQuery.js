@@ -1,9 +1,10 @@
 import { ApolloServer } from 'apollo-server-express';
 import { createTestClient } from 'apollo-server-testing';
-import { BYPASS, ROLE_ADMINISTRATOR } from '../../src/domain/user';
+import { ROLE_ADMINISTRATOR } from '../../src/domain/user';
 import createSchema from '../../src/graphql/schema';
 import conf from '../../src/config/conf';
 import { redisInitializeClients } from '../../src/database/redis';
+import { BYPASS } from '../../src/schema/general';
 
 export const PYTHON_PATH = './src/python';
 export const API_URI = `http://localhost:${conf.get('app:port')}`;

@@ -39,30 +39,30 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { initBatchLoader } from '../database/middleware';
 
-const groupsLoader = initBatchLoader(batchGroups);
-const rolesLoader = initBatchLoader(batchRoles);
-const rolesCapabilitiesLoader = initBatchLoader(batchRoleCapabilities);
+const groupsLoader = (user) => initBatchLoader(user, batchGroups);
+const rolesLoader = (user) => initBatchLoader(user, batchRoles);
+const rolesCapabilitiesLoader = (user) => initBatchLoader(user, batchRoleCapabilities);
 
 const userResolvers = {
   Query: {
-    user: (_, { id }) => findById(id),
-    users: (_, args) => findAll(args),
-    role: (_, { id }) => findRoleById(id),
-    roles: (_, args) => findRoles(args),
-    capabilities: (_, args) => findCapabilities(args),
-    me: (_, args, { user }) => findById(user.id),
+    user: (_, { id }, { user }) => findById(user, id),
+    users: (_, args, { user }) => findAll(user, args),
+    role: (_, { id }, { user }) => findRoleById(user, id),
+    roles: (_, args, { user }) => findRoles(user, args),
+    capabilities: (_, args, { user }) => findCapabilities(user, args),
+    me: (_, args, { user }) => findById(user, user.id),
   },
   User: {
-    groups: (user) => groupsLoader.load(user.id),
-    roles: (user) => rolesLoader.load(user.id),
-    allowed_marking: (user) => getMarkings(user.id),
-    capabilities: (user) => getCapabilities(user.id),
-    token: (user, args, context) => token(user.id, args, context),
-    editContext: (user) => fetchEditContext(user.id),
+    groups: (current, _, { user }) => groupsLoader(user).load(current.id),
+    roles: (current, _, { user }) => rolesLoader(user).load(current.id),
+    allowed_marking: (current, _, { user }) => getMarkings(user, current.id),
+    capabilities: (current, _, { user }) => getCapabilities(user, current.id),
+    token: (current, _, { user }) => token(user, current.id),
+    editContext: (current) => fetchEditContext(current.id),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
-    capabilities: (role) => rolesCapabilitiesLoader.load(role.id),
+    capabilities: (role, _, { user }) => rolesCapabilitiesLoader(user).load(role.id),
   },
   Mutation: {
     token: async (_, { input }, context) => {
@@ -75,7 +75,9 @@ const userResolvers = {
         const auth = formProviders[index];
         const loginToken = await new Promise((resolve) => {
           passport.authenticate(auth.provider, { session: false }, (err, tokenAuth, info) => {
-            if (err || info) logger.warn(`[AUTH] ${auth.provider}`, { error: err, info });
+            if (err || info) {
+              logger.warn(`[AUTH] ${auth.provider}`, { error: err, info });
+            }
             resolve(tokenAuth);
           })({ body: { username: input.email, password: input.password } });
         });

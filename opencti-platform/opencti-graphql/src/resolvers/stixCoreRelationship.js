@@ -35,24 +35,24 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
 
-const loadByIdLoader = initBatchLoader(elBatchIds);
-const createdByLoader = initBatchLoader(batchCreatedBy);
-const markingDefinitionsLoader = initBatchLoader(batchMarkingDefinitions);
-const labelsLoader = initBatchLoader(batchLabels);
-const externalReferencesLoader = initBatchLoader(batchExternalReferences);
-const killChainPhasesLoader = initBatchLoader(batchKillChainPhases);
-const notesLoader = initBatchLoader(batchNotes);
-const opinionsLoader = initBatchLoader(batchOpinions);
-const reportsLoader = initBatchLoader(batchReports);
+const loadByIdLoader = (user) => initBatchLoader(user, elBatchIds);
+const createdByLoader = (user) => initBatchLoader(user, batchCreatedBy);
+const markingDefinitionsLoader = (user) => initBatchLoader(user, batchMarkingDefinitions);
+const labelsLoader = (user) => initBatchLoader(user, batchLabels);
+const externalReferencesLoader = (user) => initBatchLoader(user, batchExternalReferences);
+const killChainPhasesLoader = (user) => initBatchLoader(user, batchKillChainPhases);
+const notesLoader = (user) => initBatchLoader(user, batchNotes);
+const opinionsLoader = (user) => initBatchLoader(user, batchOpinions);
+const reportsLoader = (user) => initBatchLoader(user, batchReports);
 
 const stixCoreRelationshipResolvers = {
   Query: {
-    stixCoreRelationship: (_, { id }) => findById(id),
-    stixCoreRelationships: (_, args) => findAll(args),
-    stixCoreRelationshipsOfElement: (_, args) => findAll(args),
-    stixCoreRelationshipsTimeSeries: (_, args) => timeSeriesRelations(args),
-    stixCoreRelationshipsDistribution: (_, args) => distributionRelations(args),
-    stixCoreRelationshipsNumber: (_, args) => stixCoreRelationshipsNumber(args),
+    stixCoreRelationship: (_, { id }, { user }) => findById(user, id),
+    stixCoreRelationships: (_, args, { user }) => findAll(user, args),
+    stixCoreRelationshipsOfElement: (_, args, { user }) => findAll(user, args),
+    stixCoreRelationshipsTimeSeries: (_, args, { user }) => timeSeriesRelations(user, args),
+    stixCoreRelationshipsDistribution: (_, args, { user }) => distributionRelations(user, args),
+    stixCoreRelationshipsNumber: (_, args, { user }) => stixCoreRelationshipsNumber(user, args),
   },
   StixCoreRelationshipsOrdering: {
     toName: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.name`,
@@ -67,18 +67,18 @@ const stixCoreRelationshipResolvers = {
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.x_opencti_main_observable_type`,
   },
   StixCoreRelationship: {
-    from: (rel) => loadByIdLoader.load(rel.fromId),
-    to: (rel) => loadByIdLoader.load(rel.toId),
+    from: (rel, _, { user }) => loadByIdLoader(user).load(rel.fromId),
+    to: (rel, _, { user }) => loadByIdLoader(user).load(rel.toId),
     toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
-    creator: (rel) => creator(rel.id),
-    createdBy: (rel) => createdByLoader.load(rel.id),
-    objectMarking: (rel) => markingDefinitionsLoader.load(rel.id),
-    objectLabel: (rel) => labelsLoader.load(rel.id),
-    externalReferences: (rel) => externalReferencesLoader.load(rel.id),
-    killChainPhases: (rel) => killChainPhasesLoader.load(rel.id),
-    reports: (rel) => reportsLoader.load(rel.id),
-    notes: (rel) => notesLoader.load(rel.id),
-    opinions: (rel) => opinionsLoader.load(rel.id),
+    creator: (rel, _, { user }) => creator(user, rel.id),
+    createdBy: (rel, _, { user }) => createdByLoader(user).load(rel.id),
+    objectMarking: (rel, _, { user }) => markingDefinitionsLoader(user).load(rel.id),
+    objectLabel: (rel, _, { user }) => labelsLoader(user).load(rel.id),
+    externalReferences: (rel, _, { user }) => externalReferencesLoader(user).load(rel.id),
+    killChainPhases: (rel, _, { user }) => killChainPhasesLoader(user).load(rel.id),
+    reports: (rel, _, { user }) => reportsLoader(user).load(rel.id),
+    notes: (rel, _, { user }) => notesLoader(user).load(rel.id),
+    opinions: (rel, _, { user }) => opinionsLoader(user).load(rel.id),
     editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {

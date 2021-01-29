@@ -1,5 +1,7 @@
 import * as R from 'ramda';
 
+export const BYPASS = 'BYPASS';
+
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
 
@@ -83,3 +85,4 @@ export const schemaTypes = {
     return this.attributes[type] || [];
   },
 };
+// region utils

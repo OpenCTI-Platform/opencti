@@ -31,17 +31,17 @@ import { UPDATE_OPERATION_REPLACE } from '../database/utils';
 
 const stixDomainObjectResolvers = {
   Query: {
-    stixDomainObject: (_, { id }) => findById(id),
-    stixDomainObjects: (_, args) => findAll(args),
-    stixDomainObjectsTimeSeries: (_, args) => stixDomainObjectsTimeSeries(args),
-    stixDomainObjectsNumber: (_, args) => stixDomainObjectsNumber(args),
-    stixDomainObjectsDistribution: (_, args) => {
+    stixDomainObject: (_, { id }, { user }) => findById(user, id),
+    stixDomainObjects: (_, args, { user }) => findAll(user, args),
+    stixDomainObjectsTimeSeries: (_, args, { user }) => stixDomainObjectsTimeSeries(user, args),
+    stixDomainObjectsNumber: (_, args, { user }) => stixDomainObjectsNumber(user, args),
+    stixDomainObjectsDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return stixDomainObjectsDistributionByEntity(args);
+        return stixDomainObjectsDistributionByEntity(user, args);
       }
       return [];
     },
-    stixDomainObjectsExportFiles: (_, { type, first }) => filesListing(first, `export/${type}/`),
+    stixDomainObjectsExportFiles: (_, { type, first }, { user }) => filesListing(user, first, `export/${type}/`),
   },
   StixDomainObjectsFilter: stixDomainObjectOptions.StixDomainObjectsFilter,
   StixDomainObject: {
@@ -51,8 +51,10 @@ const stixDomainObjectResolvers = {
       }
       return 'Unknown';
     },
-    importFiles: (entity, { first }) => filesListing(first, `import/${entity.entity_type}/${entity.id}/`),
-    exportFiles: (entity, { first }) => filesListing(first, `export/${entity.entity_type}/${entity.id}/`),
+    importFiles: (entity, { first }, { user }) =>
+      filesListing(user, first, `import/${entity.entity_type}/${entity.id}/`),
+    exportFiles: (entity, { first }, { user }) =>
+      filesListing(user, first, `export/${entity.entity_type}/${entity.id}/`),
   },
   Mutation: {
     stixDomainObjectEdit: (_, { id }, { user }) => ({

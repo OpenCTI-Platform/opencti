@@ -28,31 +28,31 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const noteResolvers = {
   Query: {
-    note: (_, { id }) => findById(id),
-    notes: (_, args) => findAll(args),
-    notesTimeSeries: (_, args) => {
+    note: (_, { id }, { user }) => findById(user, id),
+    notes: (_, args, { user }) => findAll(user, args),
+    notesTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return notesTimeSeriesByEntity(args);
+        return notesTimeSeriesByEntity(user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return notesTimeSeriesByAuthor(args);
+        return notesTimeSeriesByAuthor(user, args);
       }
-      return notesTimeSeries(args);
+      return notesTimeSeries(user, args);
     },
-    notesNumber: (_, args) => {
+    notesNumber: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return notesNumberByEntity(args);
+        return notesNumberByEntity(user, args);
       }
-      return notesNumber(args);
+      return notesNumber(user, args);
     },
-    notesDistribution: (_, args) => {
+    notesDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return notesDistributionByEntity(args);
+        return notesDistributionByEntity(user, args);
       }
       return [];
     },
-    noteContainsStixObjectOrStixRelationship: (_, args) => {
-      return noteContainsStixObjectOrStixRelationship(args.id, args.stixObjectOrStixRelationshipId);
+    noteContainsStixObjectOrStixRelationship: (_, args, { user }) => {
+      return noteContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
   NotesOrdering: {

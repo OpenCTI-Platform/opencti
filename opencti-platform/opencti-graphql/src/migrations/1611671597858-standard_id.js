@@ -1,4 +1,3 @@
-/* eslint-disable no-underscore-dangle */
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
@@ -6,6 +5,7 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../sch
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
 import { generateStandardId } from '../schema/identifier';
 import { logger } from '../config/conf';
+import { SYSTEM_USER } from '../domain/user';
 
 export const up = async (next) => {
   const start = new Date().getTime();
@@ -24,7 +24,7 @@ export const up = async (next) => {
     bulkOperations.push(...op);
   };
   const opts = { types: [ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION], callback };
-  await elList(READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
+  await elList(SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;
   const groupsOfOperations = R.splitEvery(MAX_SPLIT, bulkOperations);

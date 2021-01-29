@@ -58,7 +58,7 @@ const OpenCTITimeToLive = {
   },
 };
 
-const computeValidUntil = async (indicator) => {
+const computeValidUntil = async (user, indicator) => {
   let validFrom = moment().utc();
   if (indicator.valid_from) {
     validFrom = moment(indicator.valid_from).utc();
@@ -68,7 +68,7 @@ const computeValidUntil = async (indicator) => {
   if (indicator.markingDefinitions && indicator.markingDefinitions.length > 0) {
     const markingDefinitions = await Promise.all(
       indicator.markingDefinitions.map((markingDefinitionId) => {
-        return findMarkingDefinitionById(markingDefinitionId);
+        return findMarkingDefinitionById(user, markingDefinitionId);
       })
     );
     markingDefinition = pipe(sortWith([descend(prop('level'))]), head, prop('definition'))(markingDefinitions);
@@ -78,7 +78,7 @@ const computeValidUntil = async (indicator) => {
   if (indicator.killChainPhases && indicator.killChainPhases.length > 0) {
     const killChainPhases = await Promise.all(
       indicator.killChainPhases.map((killChainPhaseId) => {
-        return findKillChainPhaseById(killChainPhaseId);
+        return findKillChainPhaseById(user, killChainPhaseId);
       })
     );
     const killChainPhasesNames = map((n) => n.phase_name, killChainPhases);
@@ -99,12 +99,12 @@ const computeValidUntil = async (indicator) => {
   return validUntil.toDate();
 };
 
-export const findById = (indicatorId) => {
-  return loadById(indicatorId, ENTITY_TYPE_INDICATOR);
+export const findById = (user, indicatorId) => {
+  return loadById(user, indicatorId, ENTITY_TYPE_INDICATOR);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_INDICATOR], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_INDICATOR], args);
 };
 
 export const addIndicator = async (user, indicator) => {
@@ -128,7 +128,10 @@ export const addIndicator = async (user, indicator) => {
     assoc('x_opencti_score', isNil(indicator.x_opencti_score) ? 50 : indicator.x_opencti_score),
     assoc('x_opencti_detection', isNil(indicator.x_opencti_detection) ? false : indicator.x_opencti_detection),
     assoc('valid_from', isNil(indicator.valid_from) ? now() : indicator.valid_from),
-    assoc('valid_until', isNil(indicator.valid_until) ? await computeValidUntil(indicator) : indicator.valid_until)
+    assoc(
+      'valid_until',
+      isNil(indicator.valid_until) ? await computeValidUntil(user, indicator) : indicator.valid_until
+    )
   )(indicator);
   // create the linked observables
   let observablesToLink = [];
@@ -145,6 +148,6 @@ export const addIndicator = async (user, indicator) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchObservables = (indicatorIds) => {
-  return batchListThroughGetTo(indicatorIds, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
+export const batchObservables = (user, indicatorIds) => {
+  return batchListThroughGetTo(user, indicatorIds, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };

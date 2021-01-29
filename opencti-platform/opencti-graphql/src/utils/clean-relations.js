@@ -105,8 +105,8 @@ export const cleanInconsistentRelations = async () => {
   const relations = await getMissingRelations();
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
-    const element = await loadById(relation.internal_id, relation.entity_type);
-    await elDeleteElement(element);
+    const element = await loadById(user, relation.internal_id, relation.entity_type);
+    await elDeleteElement(user, element);
   }
   logger.info('[MIGRATION] Fix missing deletion migration done');
 };

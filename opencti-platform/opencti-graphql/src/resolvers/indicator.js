@@ -12,12 +12,12 @@ import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const batchObservablesLoader = initBatchLoader(batchObservables);
+const batchObservablesLoader = (user) => initBatchLoader(user, batchObservables);
 
 const indicatorResolvers = {
   Query: {
-    indicator: (_, { id }) => findById(id),
-    indicators: (_, args) => findAll(args),
+    indicator: (_, { id }, { user }) => findById(user, id),
+    indicators: (_, args, { user }) => findAll(user, args),
   },
   IndicatorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
@@ -27,7 +27,7 @@ const indicatorResolvers = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
-    observables: (indicator) => batchObservablesLoader.load(indicator.id),
+    observables: (indicator, _, { user }) => batchObservablesLoader(user).load(indicator.id),
     indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {

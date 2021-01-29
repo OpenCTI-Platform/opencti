@@ -61,7 +61,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     expect(queryResult.data.stixCoreRelationship.id).toEqual(stixCoreRelationshipInternalId);
   });
   it('should stixCoreRelationship number to be accurate', async () => {
-    const campaign = await elLoadByIds('campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
+    const campaign = await elLoadByIds(user, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     const NUMBER_QUERY = gql`
       query StixCoreRelationshipsNumber($type: String, $fromId: String) {
         stixCoreRelationshipsNumber(type: $type, fromId: $fromId) {

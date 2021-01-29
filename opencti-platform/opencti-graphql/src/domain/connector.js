@@ -23,18 +23,18 @@ const completeConnector = (connector) => {
 // endregion
 
 // region connectors
-export const loadConnectorById = (id) => {
-  return loadById(id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
+export const loadConnectorById = (user, id) => {
+  return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 };
 
-export const connectors = () => {
-  return listEntities([ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) =>
+export const connectors = (user) => {
+  return listEntities(user, [ENTITY_TYPE_CONNECTOR], { connectionFormat: false }).then((elements) =>
     map((conn) => completeConnector(conn), elements)
   );
 };
 
-export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = false) => {
-  const connects = await connectors();
+export const connectorsFor = async (user, type, scope, onlyAlive = false, onlyAuto = false) => {
+  const connects = await connectors(user);
   return pipe(
     filter((c) => c.connector_type === type),
     filter((c) => (onlyAlive ? c.active === true : true)),
@@ -51,19 +51,19 @@ export const connectorsFor = async (type, scope, onlyAlive = false, onlyAuto = f
   )(connects);
 };
 
-export const connectorsForExport = async (scope, onlyAlive = false) => {
-  return connectorsFor(CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
+export const connectorsForExport = async (user, scope, onlyAlive = false) => {
+  return connectorsFor(user, CONNECTOR_INTERNAL_EXPORT_FILE, scope, onlyAlive);
 };
 
-export const connectorsForImport = async (scope, onlyAlive = false) => {
-  return connectorsFor(CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive);
+export const connectorsForImport = async (user, scope, onlyAlive = false) => {
+  return connectorsFor(user, CONNECTOR_INTERNAL_IMPORT_FILE, scope, onlyAlive);
 };
 // endregion
 
 // region mutations
 export const pingConnector = async (user, id, state) => {
   const creation = now();
-  const connector = await loadById(id, ENTITY_TYPE_CONNECTOR);
+  const connector = await loadById(user, id, ENTITY_TYPE_CONNECTOR);
   if (!connector) {
     throw FunctionalError('No connector found with the specified ID', { id });
   }
@@ -74,25 +74,25 @@ export const pingConnector = async (user, id, state) => {
     const updatePatch = { updated_at: creation, connector_state: state };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, updatePatch);
   }
-  return loadById(id, 'Connector').then((data) => completeConnector(data));
+  return loadById(user, id, 'Connector').then((data) => completeConnector(data));
 };
 
 export const resetStateConnector = async (user, id) => {
   const patch = { connector_state: '', connector_state_reset: true };
   await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
-  return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+  return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 
 export const registerConnector = async (user, connectorData) => {
   const { id, name, type, scope, auto = null } = connectorData;
-  const connector = await loadById(id, ENTITY_TYPE_CONNECTOR);
+  const connector = await loadById(user, id, ENTITY_TYPE_CONNECTOR);
   // Register queues
   await registerConnectorQueues(id, name, type, scope);
   if (connector) {
     // Simple connector update
     const patch = { name, updated_at: now(), connector_user_id: user.id, connector_scope: scope.join(','), auto };
     await patchAttribute(user, id, ENTITY_TYPE_CONNECTOR, patch);
-    return loadById(id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
+    return loadById(user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
   }
   // Need to create the connector
   const connectorToCreate = {

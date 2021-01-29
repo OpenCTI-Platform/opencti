@@ -11,12 +11,12 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const organizationsLoader = initBatchLoader(batchOrganizations);
+const organizationsLoader = (user) => initBatchLoader(user, batchOrganizations);
 
 const individualResolvers = {
   Query: {
-    individual: (_, { id }) => findById(id),
-    individuals: (_, args) => findAll(args),
+    individual: (_, { id }, { user }) => findById(user, id),
+    individuals: (_, args, { user }) => findAll(user, args),
   },
   Individual: {
     organizations: (individual) => organizationsLoader.load(individual.id),

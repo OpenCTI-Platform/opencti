@@ -26,6 +26,7 @@ import {
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   BASE_TYPE_RELATION,
+  BYPASS,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -51,6 +52,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
+import { isBasicRelationship } from '../schema/stixRelationship';
 
 export const ES_MAX_CONCURRENCY = 5;
 export const MAX_SPLIT = 1000; // Max number of terms resolutions (ES limitation)
@@ -77,6 +79,44 @@ export const isUnimpactedEntity = (entity) => UNIMPACTED_ENTITIES.includes(entit
 export const isImpactedType = (type) => !UNIMPACTED_ENTITIES.includes(type);
 
 export const el = new Client({ node: conf.get('elasticsearch:url') });
+
+const buildMarkingRestriction = (user) => {
+  const must = [];
+  // eslint-disable-next-line camelcase
+  const must_not = [];
+  // Check user rights
+  const userMarkings = user.allowed_marking.map((m) => m.internal_id);
+  const isMarkingBypass = userMarkings.includes(BYPASS);
+  if (!isMarkingBypass) {
+    if (userMarkings.length === 0) {
+      // If user have no marking, he can only access to data with no markings.
+      must_not.push({ exists: { field: 'rel_object-marking.internal_id' } });
+    } else {
+      // If use have marking, he can access to data with no marking && data with according marking
+      const shouldMarkingTerms = userMarkings.map((m) => ({ match: { 'rel_object-marking.internal_id': m } }));
+      const markingBool = {
+        bool: {
+          should: [
+            {
+              bool: {
+                must_not: [{ exists: { field: 'rel_object-marking.internal_id' } }],
+              },
+            },
+            {
+              bool: {
+                should: shouldMarkingTerms,
+                minimum_should_match: 1,
+              },
+            },
+          ],
+          minimum_should_match: 1,
+        },
+      };
+      must.push(markingBool);
+    }
+  }
+  return { must, must_not };
+};
 
 export const elIsAlive = async () => {
   return el
@@ -282,7 +322,7 @@ export const elDeleteIndexes = async (indexesToDelete) => {
   );
 };
 
-export const elCount = (indexName, options = {}) => {
+export const elCount = (user, indexName, options = {}) => {
   const {
     endDate = null,
     types = null,
@@ -292,6 +332,8 @@ export const elCount = (indexName, options = {}) => {
     isMetaRelationship = false,
   } = options;
   let must = [];
+  const markingRestrictions = buildMarkingRestriction(user);
+  must.push(...markingRestrictions.must);
   if (endDate !== null) {
     must = R.append(
       {
@@ -395,6 +437,7 @@ export const elCount = (indexName, options = {}) => {
       query: {
         bool: {
           must,
+          must_not: markingRestrictions.must_not,
         },
       },
     },
@@ -409,7 +452,7 @@ export const elCount = (indexName, options = {}) => {
       throw DatabaseError('Count data fail', { error: err, query });
     });
 };
-export const elAggregationCount = (type, aggregationField, start, end, filters) => {
+export const elAggregationCount = (user, type, aggregationField, start, end, filters) => {
   const haveRange = start && end;
   const dateFilter = [];
   if (haveRange) {
@@ -432,13 +475,17 @@ export const elAggregationCount = (type, aggregationField, start, end, filters) 
       },
     };
   }, filters);
+  const must = R.concat(dateFilter, histoFilters);
+  const markingRestrictions = buildMarkingRestriction(user);
+  must.push(...markingRestrictions.must);
   const query = {
     index: READ_PLATFORM_INDICES,
     body: {
       size: MAX_SEARCH_AGGREGATION_SIZE,
       query: {
         bool: {
-          must: R.concat(dateFilter, histoFilters),
+          must,
+          must_not: markingRestrictions.must_not,
           should: [
             { match_phrase: { 'entity_type.keyword': type } },
             { match_phrase: { 'parent_types.keyword': type } },
@@ -492,17 +539,16 @@ export const elReconstructRelation = (concept) => {
   return elMergeRelation(concept, fromConnection, toConnection);
 };
 // endregion
-export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
+export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) => {
   const mustTerms = [];
+  const markingRestrictions = buildMarkingRestriction(user);
+  mustTerms.push(...markingRestrictions.must);
   mustTerms.push({
     nested: {
       path: 'connections',
       query: {
         bool: {
-          must: [
-            { match_phrase: { 'connections.internal_id': fromId } },
-            // { query_string: { query: `*_from`, fields: [`connections.role`] } },
-          ],
+          must: [{ match_phrase: { 'connections.internal_id': fromId } }],
         },
       },
     },
@@ -512,10 +558,7 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
       path: 'connections',
       query: {
         bool: {
-          must: [
-            { match_phrase: { 'connections.internal_id': toId } },
-            // { query_string: { query: `*_to`, fields: [`connections.role`] } },
-          ],
+          must: [{ match_phrase: { 'connections.internal_id': toId } }],
         },
       },
     },
@@ -538,6 +581,7 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
       query: {
         bool: {
           must: mustTerms,
+          must_not: markingRestrictions.must_not,
         },
       },
     },
@@ -553,8 +597,7 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
   }
   return hits;
 };
-
-export const elFindByIds = async (ids, type = null, opts = {}) => {
+export const elFindByIds = async (user, ids, type = null, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false } = opts;
   const mustTerms = [];
   const idsArray = Array.isArray(ids) ? ids : [ids];
@@ -597,6 +640,8 @@ export const elFindByIds = async (ids, type = null, opts = {}) => {
       };
       mustTerms.push(shouldType);
     }
+    const markingRestrictions = buildMarkingRestriction(user);
+    mustTerms.push(...markingRestrictions.must);
     const query = {
       index: indices,
       size: MAX_SEARCH_SIZE,
@@ -606,6 +651,7 @@ export const elFindByIds = async (ids, type = null, opts = {}) => {
         query: {
           bool: {
             must: mustTerms,
+            must_not: markingRestrictions.must_not,
           },
         },
       },
@@ -626,8 +672,8 @@ export const elFindByIds = async (ids, type = null, opts = {}) => {
   }
   return toMap ? hits : Object.values(hits);
 };
-export const elLoadByIds = async (ids, type = null, indices = READ_DATA_INDICES) => {
-  const hits = await elFindByIds(ids, type, { indices });
+export const elLoadByIds = async (user, ids, type = null, indices = READ_DATA_INDICES) => {
+  const hits = await elFindByIds(user, ids, type, { indices });
   /* istanbul ignore if */
   if (hits.length > 1) {
     const errorMeta = { ids, type, hits: hits.length };
@@ -635,24 +681,15 @@ export const elLoadByIds = async (ids, type = null, indices = READ_DATA_INDICES)
   }
   return R.head(hits);
 };
-
-export const elBatchIds = async (ids) => {
-  const hits = await elFindByIds(ids);
+export const elBatchIds = async (user, ids) => {
+  const hits = await elFindByIds(user, ids);
   return ids.map((id) => R.find((h) => h.internal_id === id, hits));
 };
 
 // field can be "entity_type" or "internal_id"
-export const elAggregationRelationsCount = async (
-  type,
-  start,
-  end,
-  toTypes,
-  fromId = null,
-  field = null,
-  dateAttribute = 'created_at',
-  isTo = false,
-  noDirection = false
-) => {
+export const elAggregationRelationsCount = async (user, type, opts) => {
+  const { start, end, toTypes = [], dateAttribute = 'created_at' } = opts;
+  const { fromId = null, field = null, isTo = false, noDirection = false } = opts;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('Unsupported field', field);
   }
@@ -698,6 +735,22 @@ export const elAggregationRelationsCount = async (
       },
     });
   }
+  const must = R.concat(
+    [
+      {
+        bool: {
+          should: [
+            { match_phrase: { 'entity_type.keyword': type } },
+            { match_phrase: { 'parent_types.keyword': type } },
+          ],
+          minimum_should_match: 1,
+        },
+      },
+    ],
+    filters
+  );
+  const markingRestrictions = buildMarkingRestriction(user);
+  must.push(...markingRestrictions.must);
   const query = {
     index: READ_RELATIONSHIPS_INDICES,
     ignore_throttled: IGNORE_THROTTLED,
@@ -705,20 +758,8 @@ export const elAggregationRelationsCount = async (
       size: MAX_SEARCH_AGGREGATION_SIZE,
       query: {
         bool: {
-          must: R.concat(
-            [
-              {
-                bool: {
-                  should: [
-                    { match_phrase: { 'entity_type.keyword': type } },
-                    { match_phrase: { 'parent_types.keyword': type } },
-                  ],
-                  minimum_should_match: 1,
-                },
-              },
-            ],
-            filters
-          ),
+          must,
+          must_not: markingRestrictions.must_not,
         },
       },
       aggs: {
@@ -756,7 +797,7 @@ export const elAggregationRelationsCount = async (
     }
     let fromType = null;
     if (fromId) {
-      const fromEntity = await elLoadByIds(fromId);
+      const fromEntity = await elLoadByIds(user, fromId);
       fromType = fromEntity.entity_type;
     }
     const types = R.pipe(
@@ -775,7 +816,7 @@ export const elAggregationRelationsCount = async (
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });
 };
-export const elHistogramCount = async (type, field, interval, start, end, filters) => {
+export const elHistogramCount = async (user, type, field, interval, start, end, filters) => {
   // const tzStart = moment.parseZone(start).format('Z');
   // Filter: { type: 'relation/attribute/nested' }
   const histogramFilters = R.map((f) => {
@@ -847,6 +888,9 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
       baseFilters
     );
   }
+  const must = R.concat(baseFilters, histogramFilters);
+  const markingRestrictions = buildMarkingRestriction(user);
+  must.push(...markingRestrictions.must);
   const query = {
     index: READ_PLATFORM_INDICES,
     ignore_throttled: IGNORE_THROTTLED,
@@ -854,7 +898,8 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
     body: {
       query: {
         bool: {
-          must: R.concat(baseFilters, histogramFilters),
+          must,
+          must_not: markingRestrictions.must_not,
         },
       },
       aggs: {
@@ -882,7 +927,7 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
 export const specialElasticCharsEscape = (query) => {
   return query.replace(/([+|\-*()~={}[\]:?\\])/g, '\\$1');
 };
-export const elPaginate = async (indexName, options = {}) => {
+export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
   const { types = null, filters = [], search = null, connectionFormat = true } = options;
@@ -890,6 +935,9 @@ export const elPaginate = async (indexName, options = {}) => {
   let must = [];
   let mustnot = [];
   let ordering = [];
+  const markingRestrictions = buildMarkingRestriction(user);
+  must.push(...markingRestrictions.must);
+  mustnot.push(...markingRestrictions.must_not);
   if (search !== null && search.length > 0) {
     // Try to decode before search
     let decodedSearch;
@@ -1097,7 +1145,7 @@ export const elPaginate = async (indexName, options = {}) => {
       }
     );
 };
-export const elList = async (indexName, options = {}) => {
+export const elList = async (user, indexName, options = {}) => {
   let hasNextPage = true;
   let searchAfter = options.after;
   const listing = [];
@@ -1112,7 +1160,7 @@ export const elList = async (indexName, options = {}) => {
   while (hasNextPage) {
     // Force options to prevent connection format and manage search after
     const opts = { ...options, first: MAX_SEARCH_SIZE, after: searchAfter, connectionFormat: false };
-    const elements = await elPaginate(indexName, opts);
+    const elements = await elPaginate(user, indexName, opts);
     if (elements.length === 0 || elements.length < options.first) {
       if (elements.length > 0) {
         await publish(elements);
@@ -1125,14 +1173,19 @@ export const elList = async (indexName, options = {}) => {
   }
   return listing;
 };
-export const elLoadBy = async (field, value, type = null, indices = READ_DATA_INDICES) => {
+export const elLoadBy = async (user, field, value, type = null, indices = READ_DATA_INDICES) => {
   const opts = { filters: [{ key: field, values: [value] }], connectionFormat: false, types: type ? [type] : [] };
-  const hits = await elPaginate(indices, opts);
+  const hits = await elPaginate(user, indices, opts);
   if (hits.length > 1) throw Error(`Expected only one response, found ${hits.length}`);
   return R.head(hits);
 };
-export const elAttributeValues = async (field) => {
+export const elAttributeValues = async (user, field) => {
+  const markingRestrictions = buildMarkingRestriction(user);
   const body = {
+    bool: {
+      must: markingRestrictions.must,
+      must_not: markingRestrictions.must_not,
+    },
     aggs: {
       values: {
         terms: {
@@ -1171,7 +1224,6 @@ export const elBulk = async (args) => {
       throw DatabaseError('Error updating elastic', { error: e });
     });
 };
-
 /* istanbul ignore next */
 export const elReindex = async (indices) => {
   return Promise.all(
@@ -1190,7 +1242,6 @@ export const elReindex = async (indices) => {
     })
   );
 };
-
 export const elIndex = async (indexName, documentBody, refresh = true) => {
   const internalId = documentBody.internal_id;
   const entityType = documentBody.entity_type ? documentBody.entity_type : '';
@@ -1223,7 +1274,6 @@ export const elUpdate = (indexName, documentId, documentBody, retry = 5) => {
       throw DatabaseError('Error updating elastic', { error: err, documentId, body: documentBody });
     });
 };
-
 export const elReplace = (indexName, documentId, documentBody) => {
   const doc = R.dissoc('_index', documentBody.doc);
   const keys = R.keys(doc);
@@ -1233,7 +1283,6 @@ export const elReplace = (indexName, documentId, documentBody) => {
     script: { source, params: doc },
   });
 };
-
 export const elDeleteByField = async (indexName, fieldName, value) => {
   const query = {
     match: { [fieldName]: value },
@@ -1250,11 +1299,11 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
   return value;
 };
 
-const getRelatedRelations = async (targetIds, elements, level, cache) => {
+const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
   const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
-  const hits = await elList(READ_RELATIONSHIPS_INDICES, opts);
+  const hits = await elList(user, READ_RELATIONSHIPS_INDICES, opts);
   const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
   const foundRelations = [];
   for (let index = 0; index < groupResults.length; index += 1) {
@@ -1264,23 +1313,20 @@ const getRelatedRelations = async (targetIds, elements, level, cache) => {
     const resolvedIds = internalIds.filter((f) => !cache[f]);
     foundRelations.push(...resolvedIds);
     // eslint-disable-next-line no-param-reassign,prettier/prettier
-    resolvedIds.forEach((id) => {
-      cache[id] = '';
-    });
+    resolvedIds.forEach((id) => { cache[id] = ''; });
   }
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
     const groups = R.splitEvery(MAX_SPLIT, foundRelations);
-    const concurrentFetch = (gIds) => getRelatedRelations(gIds, elements, level + 1, cache);
+    const concurrentFetch = (gIds) => getRelatedRelations(user, gIds, elements, level + 1, cache);
     await Promise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
 };
-
-export const getRelationsToRemove = async (elements) => {
+export const getRelationsToRemove = async (user, elements) => {
   const cache = {};
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
-  await getRelatedRelations(ids, relationsToRemove, 0, cache);
+  await getRelatedRelations(user, ids, relationsToRemove, 0, cache);
   return { relations: R.flatten(relationsToRemove), cache };
 };
 export const elDeleteInstanceIds = async (instances) => {
@@ -1292,7 +1338,7 @@ export const elDeleteInstanceIds = async (instances) => {
   });
   return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
 };
-const elRemoveRelationConnection = async (relsFromTo) => {
+const elRemoveRelationConnection = async (user, relsFromTo) => {
   if (relsFromTo.length === 0) return true;
   const idsToResolve = R.uniq(
     relsFromTo
@@ -1304,7 +1350,7 @@ const elRemoveRelationConnection = async (relsFromTo) => {
       })
       .flat()
   );
-  const dataIds = await elFindByIds(idsToResolve);
+  const dataIds = await elFindByIds(user, idsToResolve);
   const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
   const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
     const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
@@ -1332,10 +1378,12 @@ const elRemoveRelationConnection = async (relsFromTo) => {
   return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
 };
 
-export const elDeleteElements = async (elements) => {
-  const { relations, cache } = await getRelationsToRemove(elements);
+export const elDeleteElements = async (user, elements) => {
+  const { relations, cache } = await getRelationsToRemove(user, elements);
   // 02. Compute the id that needs to be remove from rel
-  const relsFromTo = relations
+  const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
+  const cleanupRelations = relations.concat(basicCleanup);
+  const relsFromTo = cleanupRelations
     .map((r) => {
       const isFromCleanup = isImpactedType(r.fromType) && !cache[r.fromId];
       const isToCleanup = isImpactedType(r.toType) && !cache[r.toId];
@@ -1346,7 +1394,7 @@ export const elDeleteElements = async (elements) => {
   let currentRelationsCount = 0;
   const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromTo);
   const concurrentRelsFromTo = async (relsToClean) => {
-    await elRemoveRelationConnection(relsToClean);
+    await elRemoveRelationConnection(user, relsToClean);
     currentRelationsCount += relsToClean.length;
     logger.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromTo.length}`);
   };
@@ -1363,9 +1411,8 @@ export const elDeleteElements = async (elements) => {
   // Remove the elements
   await elDeleteInstanceIds(elements); // Bulk
 };
-
-export const elDeleteElement = async (element) => {
-  return elDeleteElements([element]);
+export const elDeleteElement = async (user, element) => {
+  return elDeleteElements(user, [element]);
 };
 
 export const prepareElementForIndexing = (element) => {
@@ -1542,7 +1589,6 @@ export const elUpdateAttributeValue = (key, previousValue, value) => {
       throw DatabaseError('Updating attribute value fail', { error: err, key, value });
     });
 };
-
 export const elUpdateRelationConnections = (elements) => {
   if (elements.length === 0) return Promise.resolve();
   const source =
@@ -1554,7 +1600,6 @@ export const elUpdateRelationConnections = (elements) => {
   ]);
   return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
 };
-
 export const elUpdateEntityConnections = (elements) => {
   const source = `if (ctx._source[params.key] == null) { 
       ctx._source[params.key] = [params.to];
@@ -1587,7 +1632,6 @@ export const elUpdateEntityConnections = (elements) => {
   ]);
   return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
 };
-
 export const elUpdateConnectionsOfElement = (documentId, documentBody) => {
   const source =
     'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +

@@ -129,7 +129,7 @@ const createApp = async (apolloServer, broadcaster) => {
     })(req, res, next);
   });
 
-  const serverHealthCheck = () => checkSystemDependencies().then(() => getSettings());
+  const serverHealthCheck = () => checkSystemDependencies().then(() => getSettings(user));
   apolloServer.applyMiddleware({ app, onHealthCheck: serverHealthCheck, path: `${basePath}/graphql` });
 
   // Other routes

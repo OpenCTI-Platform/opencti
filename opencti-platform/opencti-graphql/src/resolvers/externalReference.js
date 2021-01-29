@@ -18,8 +18,8 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const externalReferenceResolvers = {
   Query: {
-    externalReference: (_, { id }) => findById(id),
-    externalReferences: (_, args) => findAll(args),
+    externalReference: (_, { id }, { user }) => findById(user, id),
+    externalReferences: (_, args, { user }) => findAll(user, args),
   },
   ExternalReferencesFilter: {
     usedBy: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,

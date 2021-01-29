@@ -6,16 +6,16 @@ import { ENTITY_TYPE_LOCATION_CITY, ENTITY_TYPE_LOCATION_COUNTRY } from '../sche
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
-export const findById = (cityId) => {
-  return loadById(cityId, ENTITY_TYPE_LOCATION_CITY);
+export const findById = (user, cityId) => {
+  return loadById(user, cityId, ENTITY_TYPE_LOCATION_CITY);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_CITY], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_LOCATION_CITY], args);
 };
 
-export const batchCountry = async (cityIds) => {
-  return batchLoadThroughGetTo(cityIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
+export const batchCountry = async (user, cityIds) => {
+  return batchLoadThroughGetTo(user, cityIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
 export const addCity = async (user, city) => {

@@ -12,8 +12,8 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const locationResolvers = {
   Query: {
-    location: (_, { id }) => findById(id),
-    locations: (_, args) => findAll(args),
+    location: (_, { id }, { user }) => findById(user, id),
+    locations: (_, args, { user }) => findAll(user, args),
   },
   LocationsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
