@@ -190,7 +190,7 @@ const dashboardStixMetaRelationshipsDistributionQuery = graphql`
   }
 `;
 
-const dashboardStixCoreRelationshipsDistributionQuery = graphql`
+export const dashboardStixCoreRelationshipsDistributionQuery = graphql`
   query DashboardStixCoreRelationshipsDistributionQuery(
     $field: String!
     $operation: StatsOperation!

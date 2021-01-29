@@ -125,6 +125,8 @@ export const stixDomainObjectVictimologyRegionsStixCoreRelationshipsQuery = grap
     $toTypes: [String]
     $relationship_type: String
     $first: Int
+    $startDate: DateTime
+    $endDate: DateTime
   ) {
     ...StixDomainObjectVictimologyRegions_data
   }
@@ -140,6 +142,8 @@ const StixDomainObjectVictimologyRegionsSectorLines = createRefetchContainer(
           toTypes: $toTypes
           relationship_type: $relationship_type
           first: $first
+          startDate: $startDate
+          endDate: $endDate
         ) {
           edges {
             node {

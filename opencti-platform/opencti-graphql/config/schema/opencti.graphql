@@ -7816,6 +7816,8 @@ type Query {
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
+    startDate: DateTime
+    endDate: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]
@@ -7837,6 +7839,8 @@ type Query {
     firstSeenStop: DateTime
     lastSeenStart: DateTime
     lastSeenStop: DateTime
+    startDate: DateTime
+    endDate: DateTime
     confidences: [Int]
     search: String
     filters: [StixCoreRelationshipsFiltering]

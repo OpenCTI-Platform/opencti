@@ -255,6 +255,8 @@ const buildRelationsFilter = (relationshipType, args) => {
     firstSeenStop,
     lastSeenStart,
     lastSeenStop,
+    startDate,
+    endDate,
     confidences = [],
   } = args;
   // Use $from, $to only if fromId or toId specified.
@@ -326,6 +328,8 @@ const buildRelationsFilter = (relationshipType, args) => {
   if (firstSeenStop) finalFilters.push({ key: 'first_seen', values: [firstSeenStop], operator: 'lt' });
   if (lastSeenStart) finalFilters.push({ key: 'last_seen', values: [lastSeenStart], operator: 'gt' });
   if (lastSeenStop) finalFilters.push({ key: 'last_seen', values: [lastSeenStop], operator: 'lt' });
+  if (startDate) finalFilters.push({ key: 'created_at', values: [startDate], operator: 'gt' });
+  if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
   return R.pipe(R.assoc('types', [relationToGet]), R.assoc('filters', finalFilters))(args);
 };
