@@ -154,7 +154,13 @@ class EntityStixCoreRelationshipsDonut extends Component {
               data = map(
                 (n) => assoc(
                   'label',
-                  `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`,
+                  `${
+                    toTypes.length > 1
+                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${
+                        n.entity.name
+                      }`
+                      : `${n.entity.name}`
+                  }`,
                   n,
                 ),
                 props.stixCoreRelationshipsDistribution,

@@ -433,6 +433,7 @@ class DashboardComponent extends Component {
         <ResponsiveGridLayout
           className="layout"
           margin={[20, 20]}
+          rowHeight={50}
           breakpoints={{
             lg: 1200,
             md: 996,
@@ -441,11 +442,11 @@ class DashboardComponent extends Component {
             xxs: 0,
           }}
           cols={{
-            lg: 12,
-            md: 10,
-            sm: 6,
-            xs: 4,
-            xxs: 2,
+            lg: 16,
+            md: 12,
+            sm: 8,
+            xs: 6,
+            xxs: 4,
           }}
           onLayoutChange={this.onLayoutChange.bind(this)}
         >
@@ -459,9 +460,12 @@ class DashboardComponent extends Component {
               <WidgetPopover
                 onDelete={this.handleDeleteWidget.bind(this, widget.id)}
               />
-              {widget.perspective === 'global' && this.renderGlobalVisualization(widget, manifest.config)}
-              {widget.perspective === 'threat' && this.renderThreatVisualization(widget, manifest.config)}
-              {widget.perspective === 'entity' && this.renderEntityVisualization(widget, manifest.config)}
+              {widget.perspective === 'global'
+                && this.renderGlobalVisualization(widget, manifest.config)}
+              {widget.perspective === 'threat'
+                && this.renderThreatVisualization(widget, manifest.config)}
+              {widget.perspective === 'entity'
+                && this.renderEntityVisualization(widget, manifest.config)}
             </Paper>
           ))}
         </ResponsiveGridLayout>

@@ -226,7 +226,13 @@ class StixCoreRelationshipsHorizontalBars extends Component {
               data = map(
                 (n) => assoc(
                   'label',
-                  `[${t(`entity_${n.entity.entity_type}`)}] ${n.entity.name}`,
+                  `${
+                    toTypes.length > 1
+                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${
+                        n.entity.name
+                      }`
+                      : `${n.entity.name}`
+                  }`,
                   n,
                 ),
                 props.stixCoreRelationshipsDistribution,
@@ -255,15 +261,13 @@ class StixCoreRelationshipsHorizontalBars extends Component {
                     labelLine={true}
                     paddingAngle={5}
                   >
-                    {data.map(
-                      (entry, index) => (
-                        <Cell
-                          key={index}
-                          fill={itemColor(entry.label)}
-                          stroke="#28353a"
-                        />
-                      ),
-                    )}
+                    {data.map((entry, index) => (
+                      <Cell
+                        key={index}
+                        fill={itemColor(entry.label)}
+                        stroke="#28353a"
+                      />
+                    ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
