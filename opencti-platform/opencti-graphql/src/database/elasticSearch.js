@@ -51,6 +51,7 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
+import { isBasicRelationship } from '../schema/stixRelationship';
 
 export const ES_MAX_CONCURRENCY = 5;
 export const MAX_SPLIT = 1000; // Max number of terms resolutions (ES limitation)
@@ -555,7 +556,7 @@ export const elFindByFromAndTo = async (fromId, toId, relationshipType) => {
 };
 
 export const elFindByIds = async (ids, type = null, opts = {}) => {
-  const { indices = READ_DATA_INDICES, toMap = false } = opts;
+  const { indices = READ_DATA_INDICES, toMap = false, relExclude = true } = opts;
   const mustTerms = [];
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -601,7 +602,7 @@ export const elFindByIds = async (ids, type = null, opts = {}) => {
       index: indices,
       size: MAX_SEARCH_SIZE,
       ignore_throttled: IGNORE_THROTTLED,
-      _source_excludes: `${REL_INDEX_PREFIX}*`,
+      _source_excludes: relExclude ? `${REL_INDEX_PREFIX}*` : '',
       body: {
         query: {
           bool: {
@@ -1263,8 +1264,8 @@ const getRelatedRelations = async (targetIds, elements, level, cache) => {
     const internalIds = subRels.map((g) => g.internal_id);
     const resolvedIds = internalIds.filter((f) => !cache[f]);
     foundRelations.push(...resolvedIds);
-    // eslint-disable-next-line no-param-reassign,prettier/prettier
     resolvedIds.forEach((id) => {
+      // eslint-disable-next-line no-param-reassign
       cache[id] = '';
     });
   }
@@ -1335,7 +1336,9 @@ const elRemoveRelationConnection = async (relsFromTo) => {
 export const elDeleteElements = async (elements) => {
   const { relations, cache } = await getRelationsToRemove(elements);
   // 02. Compute the id that needs to be remove from rel
-  const relsFromTo = relations
+  const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
+  const cleanupRelations = relations.concat(basicCleanup);
+  const relsFromTo = cleanupRelations
     .map((r) => {
       const isFromCleanup = isImpactedType(r.fromType) && !cache[r.fromId];
       const isToCleanup = isImpactedType(r.toType) && !cache[r.toId];
