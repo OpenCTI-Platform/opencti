@@ -14,7 +14,7 @@ import { monthsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
-import StixCoreObjectReportsBars from '../../analysis/reports/StixCoreObjectReportsBars';
+import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
 import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import SectorTargetedOrganizations from '../../entities/sectors/SectorTargetedOrganizations';
@@ -240,7 +240,7 @@ class StixDomainObjectKnowledge extends Component {
         </Grid>
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item={true} xs={6}>
-            <StixCoreObjectReportsBars
+            <StixCoreObjectReportsHorizontalBars
               stixCoreObjectId={stixDomainObjectId}
               field="created-by.internal_id"
               title={t('Distribution of sources')}

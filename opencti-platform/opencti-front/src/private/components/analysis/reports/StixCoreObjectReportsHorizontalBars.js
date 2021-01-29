@@ -3,97 +3,106 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import BarChart from 'recharts/lib/chart/BarChart';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
+import Cell from 'recharts/lib/component/Cell';
+import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
+import Bar from 'recharts/lib/cartesian/Bar';
+import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
+import { itemColor } from '../../../../utils/Colors';
+import Theme from '../../../../components/ThemeDark';
+import { truncate } from '../../../../utils/String';
 
 const styles = () => ({
   paper: {
-    minHeight: 280,
-    height: '100%',
-    margin: '4px 0 0 0',
-    padding: '0 0 10px 0',
+    height: 300,
+    minHeight: 300,
+    maxHeight: 300,
+    margin: '10px 0 0 0',
+    padding: 0,
     borderRadius: 6,
-  },
-  chip: {
-    fontSize: 10,
-    height: 20,
-    marginLeft: 10,
   },
 });
 
-const reporstVerticalBarsTimeSeriesQuery = graphql`
-  query ReportsVerticalBarsTimeSeriesQuery(
+const stixCoreObjectReportsHorizontalBarsDistributionQuery = graphql`
+  query StixCoreObjectReportsHorizontalBarsDistributionQuery(
+    $objectId: String
     $field: String!
     $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-    $interval: String!
+    $limit: Int
   ) {
-    reportsTimeSeries(
+    reportsDistribution(
+      objectId: $objectId
       field: $field
       operation: $operation
-      startDate: $startDate
-      endDate: $endDate
-      interval: $interval
+      limit: $limit
     ) {
-      date
+      label
       value
+      entity {
+        ... on Identity {
+          name
+        }
+      }
     }
   }
 `;
 
-class ReportsVerticalBars extends Component {
+const tickFormatter = (title) => truncate(title, 10);
+
+class StixCoreObjectReportsHorizontalBars extends Component {
   renderContent() {
-    const {
-      t, md, reportType, startDate, endDate,
-    } = this.props;
-    const interval = 'day';
-    const reportsTimeSeriesVariables = {
-      reportType: reportType || null,
-      field: 'created_at',
+    const { t, stixCoreObjectId, field } = this.props;
+    const reportsDistributionVariables = {
+      objectId: stixCoreObjectId,
+      field: field || 'report_types',
       operation: 'count',
-      startDate,
-      endDate,
-      interval,
+      limit: 8,
     };
     return (
       <QueryRenderer
-        query={reporstVerticalBarsTimeSeriesQuery}
-        variables={reportsTimeSeriesVariables}
+        query={stixCoreObjectReportsHorizontalBarsDistributionQuery}
+        variables={reportsDistributionVariables}
         render={({ props }) => {
-          if (props && props.reportsTimeSeries) {
+          if (
+            props
+            && props.reportsDistribution
+            && props.reportsDistribution.length > 0
+          ) {
             return (
               <ResponsiveContainer height="100%" width="100%">
                 <BarChart
-                  data={props.reportsTimeSeries}
+                  layout="vertical"
+                  data={props.reportsDistribution}
                   margin={{
                     top: 20,
-                    right: 50,
-                    bottom: 20,
-                    left: -10,
+                    right: 20,
+                    bottom: 0,
+                    left: 20,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
                   <XAxis
-                    dataKey="date"
+                    type="number"
+                    dataKey="value"
                     stroke="#ffffff"
-                    interval={interval}
-                    angle={-45}
-                    textAnchor="end"
-                    tickFormatter={md}
+                    allowDecimals={false}
                   />
-                  <YAxis stroke="#ffffff" />
+                  <YAxis
+                    stroke="#ffffff"
+                    dataKey={field.includes('.') ? 'entity.name' : 'label'}
+                    type="category"
+                    angle={-30}
+                    textAnchor="end"
+                    tickFormatter={tickFormatter}
+                  />
+                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -105,13 +114,19 @@ class ReportsVerticalBars extends Component {
                       fontSize: 12,
                       borderRadius: 10,
                     }}
-                    labelFormatter={md}
                   />
                   <Bar
                     fill={Theme.palette.primary.main}
                     dataKey="value"
-                    barSize={5}
-                  />
+                    barSize={15}
+                  >
+                    {props.reportsDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={itemColor(entry.entity.name)}
+                      />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             );
@@ -156,7 +171,7 @@ class ReportsVerticalBars extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Reports history')}
+          {title || t('Reports distribution')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -170,10 +185,15 @@ class ReportsVerticalBars extends Component {
   }
 }
 
-ReportsVerticalBars.propTypes = {
+StixCoreObjectReportsHorizontalBars.propTypes = {
+  stixCoreObjectId: PropTypes.string,
+  title: PropTypes.string,
+  field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  md: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(ReportsVerticalBars);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(StixCoreObjectReportsHorizontalBars);

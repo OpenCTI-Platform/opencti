@@ -26,8 +26,12 @@ class GlobalVictimologyMap extends Component {
       t, title, startDate, endDate,
     } = this.props;
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 10 }}>
+      <div style={{ height: '100%', paddingBottom: 10 }}>
+        <Typography
+          variant="h4"
+          gutterBottom={true}
+          style={{ marginBottom: 10 }}
+        >
           {title || t('Victimology map')}
         </Typography>
         <QueryRenderer

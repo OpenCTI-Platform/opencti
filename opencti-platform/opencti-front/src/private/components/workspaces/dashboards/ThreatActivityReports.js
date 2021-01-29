@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
+import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
 
 const styles = () => ({
   container: {
@@ -12,21 +13,20 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const { t, widget } = this.props;
+    const {
+      t, widget, startDate, endDate,
+    } = this.props;
     switch (widget.visualizationType) {
-      case 'donut':
+      case 'horizontal-bar':
         return (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('Not implemented yet.')}
-            </span>
-          </div>
+          <StixCoreObjectReportsHorizontalBars
+            title={`${t('Activity')} - ${t('Reports')}`}
+            stixCoreObjectId={widget.entity.id}
+            field="created-by.internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
         );
       default:
         return (

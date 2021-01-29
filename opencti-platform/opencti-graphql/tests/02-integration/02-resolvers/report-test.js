@@ -298,11 +298,11 @@ describe('Report resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        field: 'created-by.name',
+        field: 'created-by.internal_id',
         operation: 'count',
       },
     });
-    expect(queryResult.data.reportsDistribution.length).toEqual(0);
+    expect(queryResult.data.reportsDistribution.length).toEqual(1);
   });
   it('should reports distribution by entity to be accurate', async () => {
     const queryResult = await queryAsAdmin({
