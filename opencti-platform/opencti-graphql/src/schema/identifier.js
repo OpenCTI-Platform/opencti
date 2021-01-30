@@ -32,6 +32,8 @@ const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
 export const NAME_FIELD = 'name';
+export const VALID_UNTIL = 'valid_until';
+export const REVOKED = 'revoked';
 export const IDENTIFIER_FIELD = 'identifier';
 export const CONTENT_FIELD = 'content';
 export const OPINION_FIELD = 'opinion';

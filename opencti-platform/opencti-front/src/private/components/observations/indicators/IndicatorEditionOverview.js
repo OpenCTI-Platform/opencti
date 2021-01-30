@@ -300,7 +300,7 @@ class IndicatorEditionOverviewComponent extends Component {
             <Field
               component={DatePickerField}
               name="valid_from"
-              label={t('Valid until')}
+              label={t('Valid from')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
               fullWidth={true}
               style={{ marginTop: 20 }}
@@ -434,6 +434,7 @@ const IndicatorEditionOverview = createFragmentContainer(
         pattern
         valid_from
         valid_until
+        revoked
         x_opencti_score
         x_opencti_detection
         x_mitre_platforms

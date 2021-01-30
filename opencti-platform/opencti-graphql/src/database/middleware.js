@@ -49,6 +49,8 @@ import {
   isFieldContributingToStandardId,
   NAME_FIELD,
   normalizeName,
+  REVOKED,
+  VALID_UNTIL,
   X_MITRE_ID_FIELD,
 } from '../schema/identifier';
 import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
@@ -119,6 +121,7 @@ import {
   prepareDate,
   UNTIL_END,
   UNTIL_END_STR,
+  utcDate,
   yearFormat,
 } from '../utils/format';
 
@@ -1115,6 +1118,17 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
       impactedInputs.push(...aliasIns);
+    }
+    // If is valid_until modification, update also revoked
+    if (input.key === VALID_UNTIL) {
+      const untilDate = R.head(input.value);
+      const untilDateTime = utcDate(untilDate).toDate();
+      const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
+      const revokedIn = await innerUpdateAttribute(user, instance, revokedInput, options);
+      if (revokedIn.length > 0) {
+        updatedInputs.push(revokedInput);
+        impactedInputs.push(...revokedIn);
+      }
     }
     // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
     const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
