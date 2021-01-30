@@ -102,7 +102,6 @@ class GroupEditionPermissionsComponent extends Component {
               const markingDefinitions = pipe(
                 pathOr([], ['markingDefinitions', 'edges']),
                 map((n) => n.node),
-                filter((n) => n.definition_type !== 'statement'),
               )(props);
               return (
                 <List dense={true} className={classes.root}>

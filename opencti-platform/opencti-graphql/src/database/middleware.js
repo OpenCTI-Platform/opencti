@@ -451,6 +451,17 @@ export const stixElementLoader = async (user, id, type) => {
 // endregion
 
 // region Graphics
+const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', parent_types: [] };
+const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
+  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
+  // eslint-disable-next-line prettier/prettier
+  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), null, { toMap: true });
+  return R.map((n) => {
+    const resolved = resolveLabels[n.label];
+    const resolvedData = resolved || restrictedAggElement;
+    return R.assoc('entity', resolvedData, n);
+  }, data);
+};
 export const timeSeriesEntities = async (user, entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
@@ -486,8 +497,7 @@ export const distributionEntities = async (user, entityType, filters = [], optio
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL)) {
-    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
-    return R.map((n) => R.assoc('entity', internalLoadById(user, n.label), n), data);
+    return convertAggregateDistributions(user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
@@ -503,8 +513,7 @@ export const distributionRelations = async (user, options) => {
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field === ID_INTERNAL) {
-    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
-    return R.map((n) => R.assoc('entity', internalLoadById(user, n.label), n), data);
+    return convertAggregateDistributions(user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
