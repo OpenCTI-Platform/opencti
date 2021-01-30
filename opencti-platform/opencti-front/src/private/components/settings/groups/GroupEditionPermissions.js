@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import {
-  compose, map, pathOr, pipe, propEq, find, filter,
+  compose, map, pathOr, pipe, propEq, find,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
