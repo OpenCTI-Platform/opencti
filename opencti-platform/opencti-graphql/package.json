@@ -83,6 +83,7 @@
     "redlock": "4.2.0",
     "rxjs": "6.6.3",
     "sanitize-filename": "1.6.3",
+    "set-interval-async": "^1.0.34",
     "uuid": "8.3.2",
     "uuid-time": "1.0.0",
     "validator": "13.5.2",
