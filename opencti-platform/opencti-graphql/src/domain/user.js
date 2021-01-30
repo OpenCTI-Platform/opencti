@@ -405,16 +405,12 @@ export const findByTokenUUID = async (tokenValue) => {
     const users = await listThroughGetFrom(SYSTEM_USER, userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
     if (users.length === 0 || users.length > 1) return undefined;
     const client = R.head(users);
-    const [capabilities, markings] = await Promise.all([
-      getCapabilities(SYSTEM_USER, client.id),
-      getMarkings(SYSTEM_USER, client.id),
-    ]);
-    user = R.pipe(
-      R.assoc('token', userToken),
-      // Assoc extra information
-      R.assoc('capabilities', capabilities),
-      R.assoc('allowed_marking', markings)
-    )(client);
+    const capabilities = await getCapabilities(SYSTEM_USER, client.id);
+    const markings = await getMarkings(SYSTEM_USER, client.id);
+    // If user have BYPASS capabilities, he can bypass also the markings
+    const isBypass = capabilities.map((c) => c.name).includes(BYPASS);
+    if (isBypass) markings.push({ internal_id: BYPASS });
+    user = { ...client, token: userToken, capabilities, allowed_marking: markings };
     await storeUserAccessCache(tokenValue, user);
   }
   const { created_at: createdAt } = user.token;
