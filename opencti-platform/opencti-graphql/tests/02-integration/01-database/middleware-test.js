@@ -721,15 +721,14 @@ describe('Relations distribution', () => {
     expect(aggregationMap.get('Attack-Pattern')).toEqual(2);
     expect(aggregationMap.get('Intrusion-Set')).toEqual(1);
   });
-  it.each(noCacheCases)('should relation distribution dates filtered (noCache = %s)', async (noCache) => {
+  it('should relation distribution dates filtered (noCache = %s)', async () => {
     const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const options = {
       fromId: malware.internal_id,
       field: 'entity_type',
       operation: 'count',
-      startDate: '2020-02-28T22:59:00.000Z',
-      endDate: '2020-02-28T23:01:00.000Z',
-      noCache,
+      start: '2020-02-28T22:59:00.000Z',
+      end: '2020-02-28T23:01:00.000Z',
     };
     const distribution = await distributionRelations(ADMIN_USER, options);
     expect(distribution.length).toEqual(0);
@@ -842,7 +841,7 @@ describe('Upsert and merge entities', () => {
     expect(loadMalware.x_opencti_stix_ids).toEqual(['malware--907bb632-e3c2-52fa-b484-cf166a7d377e']);
     expect(loadMalware.aliases.sort()).toEqual(['NEW NAME', 'MALWARE_TEST'].sort());
     // Delete the markings
-    const white = await internalLoadById(whiteMarking);
+    const white = await internalLoadById(ADMIN_USER, whiteMarking);
     await deleteRelationsByFromAndTo(
       ADMIN_USER,
       loadMalware.internal_id,
@@ -850,9 +849,9 @@ describe('Upsert and merge entities', () => {
       RELATION_OBJECT_MARKING,
       ABSTRACT_STIX_META_RELATIONSHIP
     );
-    const checkers = await elFindByIds(loadMalware.id, null, { relExclude: false });
-    const test = await internalLoadById(testMarking);
-    const mitre = await internalLoadById(mitreMarking);
+    const checkers = await elFindByIds(ADMIN_USER, loadMalware.id, null, { relExclude: false });
+    const test = await internalLoadById(ADMIN_USER, testMarking);
+    const mitre = await internalLoadById(ADMIN_USER, mitreMarking);
     const rawMarkings = R.head(checkers)['rel_object-marking.internal_id'];
     expect(rawMarkings.length).toEqual(2);
     expect(rawMarkings.includes(test.internal_id)).toBeTruthy();

@@ -453,6 +453,7 @@ export const elCount = (user, indexName, options = {}) => {
     });
 };
 export const elAggregationCount = (user, type, aggregationField, start, end, filters) => {
+  const isIdFields = aggregationField.endsWith('internal_id');
   const haveRange = start && end;
   const dateFilter = [];
   if (haveRange) {
@@ -508,7 +509,7 @@ export const elAggregationCount = (user, type, aggregationField, start, end, fil
     .search(query)
     .then((data) => {
       const { buckets } = data.body.aggregations.genres;
-      return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), buckets);
+      return R.map((b) => ({ label: isIdFields ? b.key : pascalize(b.key), value: b.doc_count }), buckets);
     })
     .catch((err) => {
       throw DatabaseError('Aggregation fail', { error: err, query });

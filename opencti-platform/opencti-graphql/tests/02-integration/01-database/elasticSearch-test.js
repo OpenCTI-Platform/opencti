@@ -211,12 +211,7 @@ describe('Elasticsearch computation', () => {
       fromId: intrusionSet.internal_id,
       noDirection: true,
     };
-    const intrusionRelationsAggregation = await elAggregationRelationsCount(
-      ADMIN_USER,
-      'stix-core-relationship',
-      '2020-02-29T00:00:00Z',
-      opts
-    );
+    const intrusionRelationsAggregation = await elAggregationRelationsCount(ADMIN_USER, 'stix-core-relationship', opts);
     const aggregationMap = new Map(intrusionRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('City')).toEqual(1);
     expect(aggregationMap.get('Indicator')).toEqual(1);

@@ -19,7 +19,7 @@ const cityResolvers = {
     cities: (_, args, { user }) => findAll(user, args),
   },
   City: {
-    country: (city, { user }) => batchCountryLoader(user).load(city.id),
+    country: (city, _, { user }) => batchCountryLoader(user).load(city.id),
   },
   CitiesFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import {ADMIN_USER, queryAsAdmin} from '../../utils/testQuery';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
@@ -96,7 +96,7 @@ describe('CourseOfAction resolver standard behavior', () => {
     expect(queryResult.data.courseOfAction.id).toEqual(courseOfActionInternalId);
   });
   it('should courseOfAction coursesOfAction be accurate', async () => {
-    const courseOfAction = await elLoadByIds(user, 'course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e');
+    const courseOfAction = await elLoadByIds(ADMIN_USER, 'course-of-action--ae56a49d-5281-45c5-ab95-70a1439c338e');
     const queryResult = await queryAsAdmin({
       query: READ_QUERY,
       variables: { id: courseOfAction.internal_id },

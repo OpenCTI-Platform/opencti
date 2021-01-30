@@ -19,7 +19,7 @@ const individualResolvers = {
     individuals: (_, args, { user }) => findAll(user, args),
   },
   Individual: {
-    organizations: (individual) => organizationsLoader.load(individual.id),
+    organizations: (individual, _, { user }) => organizationsLoader(user).load(individual.id),
   },
   IndividualsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
