@@ -1,4 +1,14 @@
-import { addIndicator, findAll, findById, batchObservables } from '../domain/indicator';
+import {
+  addIndicator,
+  findAll,
+  findById,
+  batchObservables,
+  indicatorsDistributionByEntity,
+  indicatorsNumber,
+  indicatorsNumberByEntity,
+  indicatorsTimeSeries,
+  indicatorsTimeSeriesByEntity,
+} from '../domain/indicator';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,
@@ -10,7 +20,9 @@ import {
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { distributionEntities, initBatchLoader } from '../database/middleware';
+
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 
 const batchObservablesLoader = initBatchLoader(batchObservables);
 
@@ -18,6 +30,24 @@ const indicatorResolvers = {
   Query: {
     indicator: (_, { id }) => findById(id),
     indicators: (_, args) => findAll(args),
+    indicatorsTimeSeries: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return indicatorsTimeSeriesByEntity(args);
+      }
+      return indicatorsTimeSeries(args);
+    },
+    indicatorsNumber: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return indicatorsNumberByEntity(args);
+      }
+      return indicatorsNumber(args);
+    },
+    indicatorsDistribution: (_, args) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return indicatorsDistributionByEntity(args);
+      }
+      return distributionEntities(ENTITY_TYPE_INDICATOR, [], args);
+    },
   },
   IndicatorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

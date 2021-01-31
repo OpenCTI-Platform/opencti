@@ -6,6 +6,7 @@ import inject18n from '../../../../components/i18n';
 import ReportsHorizontalBars from '../../analysis/reports/ReportsHorizontalBars';
 import ReportsAreaChart from '../../analysis/reports/ReportsAreaChart';
 import ReportsVerticalBars from '../../analysis/reports/ReportsVerticalBars';
+import ReportsDonut from '../../analysis/reports/ReportsDonut';
 
 const styles = () => ({
   container: {
@@ -22,6 +23,16 @@ class GlobalActivityReports extends Component {
       case 'horizontal-bar':
         return (
           <ReportsHorizontalBars
+            title={`${t('Activity')} - ${t('Reports')}`}
+            field="created-by.internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'donut':
+        return (
+          <ReportsDonut
             title={`${t('Activity')} - ${t('Reports')}`}
             field="created-by.internal_id"
             startDate={startDate}

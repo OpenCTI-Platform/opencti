@@ -5,6 +5,8 @@ import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
 import StixCoreObjectReportsAreaChart from '../../analysis/reports/StixCoreObjectReportsAreaChart';
+import StixCoreObjectReportsVerticalBars from '../../analysis/reports/StixCoreObjectReportsVerticalBars';
+import StixCoreObjectReportsDonut from '../../analysis/reports/StixCoreObjectReportsDonut';
 
 const styles = () => ({
   container: {
@@ -29,12 +31,33 @@ class ThreatVictimologyAll extends Component {
             variant="inLine"
           />
         );
+      case 'donut':
+        return (
+          <StixCoreObjectReportsDonut
+            title={`${t('Reports')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            field="created-by.internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
       case 'area':
         return (
           <StixCoreObjectReportsAreaChart
             title={`${t('Reports')} - ${widget.entity.name}`}
             stixCoreObjectId={widget.entity.id}
             field="created-by.internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <StixCoreObjectReportsVerticalBars
+            title={`${t('Reports')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
             startDate={startDate}
             endDate={endDate}
             variant="inLine"

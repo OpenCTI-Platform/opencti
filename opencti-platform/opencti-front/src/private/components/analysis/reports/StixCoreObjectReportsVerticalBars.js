@@ -16,6 +16,7 @@ import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
+import { monthsAgo, now } from '../../../../utils/Time';
 
 const styles = () => ({
   paper: {
@@ -71,6 +72,8 @@ class ReportsVerticalBars extends Component {
       authorId,
     } = this.props;
     const interval = 'day';
+    const finalStartDate = startDate || monthsAgo(12);
+    const finalEndDate = endDate || now();
     let reportsTimeSeriesVariables;
     if (authorId) {
       reportsTimeSeriesVariables = {
@@ -79,8 +82,8 @@ class ReportsVerticalBars extends Component {
         reportType: reportType || null,
         field: 'created_at',
         operation: 'count',
-        startDate,
-        endDate,
+        startDate: finalStartDate,
+        endDate: finalEndDate,
         interval,
       };
     } else {
@@ -90,8 +93,8 @@ class ReportsVerticalBars extends Component {
         reportType: reportType || null,
         field: 'created_at',
         operation: 'count',
-        startDate,
-        endDate,
+        startDate: finalStartDate,
+        endDate: finalEndDate,
         interval,
       };
     }

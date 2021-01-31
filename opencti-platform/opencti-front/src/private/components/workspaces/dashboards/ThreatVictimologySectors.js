@@ -5,6 +5,8 @@ import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import EntityStixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
+import EntityStixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
 
 const styles = () => ({
   container: {
@@ -39,6 +41,30 @@ class ThreatVictimologyAll extends Component {
             toTypes={['Sector']}
             relationshipType="targets"
             field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
+      case 'area':
+        return (
+          <EntityStixCoreRelationshipsAreaChart
+            title={`${t('Victimology (sectors)')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Sector']}
+            relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <EntityStixCoreRelationshipsVerticalBars
+            title={`${t('Victimology (sectors)')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Sector']}
+            relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
             variant="inline"

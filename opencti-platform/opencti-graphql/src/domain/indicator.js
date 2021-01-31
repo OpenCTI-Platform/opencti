@@ -1,7 +1,15 @@
 import moment from 'moment';
 import { assoc, descend, dissoc, head, includes, isNil, map, pipe, prop, sortWith } from 'ramda';
 import { Promise } from 'bluebird';
-import { createEntity, createRelation, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
+import {
+  createEntity,
+  createRelation,
+  listEntities,
+  batchListThroughGetTo,
+  loadById,
+  timeSeriesEntities,
+  distributionEntities,
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { findById as findMarkingDefinitionById } from './markingDefinition';
@@ -10,9 +18,11 @@ import { checkIndicatorSyntax } from '../python/pythonBridge';
 import { FunctionalError } from '../config/errors';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
-import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { now } from '../utils/format';
+import { elCount } from '../database/elasticSearch';
+import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
 const OpenCTITimeToLive = {
   // Formatted as "[Marking-Definition]-[KillChainPhaseIsDelivery]"
@@ -144,6 +154,55 @@ export const addIndicator = async (user, indicator) => {
   );
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
+
+// region series
+export const indicatorsTimeSeries = (args) => {
+  const { indicatorClass } = args;
+  const filters = indicatorClass ? [{ isRelation: false, type: 'pattern_type', value: args.pattern_type }] : [];
+  return timeSeriesEntities(ENTITY_TYPE_INDICATOR, filters, args);
+};
+
+export const indicatorsNumber = (args) => ({
+  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_INDICATOR], args)),
+  total: elCount(
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(assoc('types', [ENTITY_TYPE_INDICATOR]), dissoc('endDate'))(args)
+  ),
+});
+
+export const indicatorsTimeSeriesByEntity = (args) => {
+  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: args.objectId }];
+  return timeSeriesEntities(ENTITY_TYPE_INDICATOR, filters, args);
+};
+
+export const indicatorsNumberByEntity = (args) => ({
+  count: elCount(
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_INDICATOR]),
+      assoc('relationshipType', RELATION_INDICATES),
+      assoc('fromId', args.objectId)
+    )(args)
+  ),
+  total: elCount(
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_INDICATOR]),
+      assoc('relationshipType', RELATION_INDICATES),
+      assoc('fromId', args.objectId),
+      dissoc('endDate')
+    )(args)
+  ),
+});
+
+export const indicatorsDistributionByEntity = async (args) => {
+  const { objectId } = args;
+  const filters = [{ isRelation: true, type: RELATION_INDICATES, value: objectId }];
+  return distributionEntities(ENTITY_TYPE_INDICATOR, filters, args);
+};
+// endregion
 
 export const batchObservables = (indicatorIds) => {
   return batchListThroughGetTo(indicatorIds, RELATION_BASED_ON, ABSTRACT_STIX_CYBER_OBSERVABLE);

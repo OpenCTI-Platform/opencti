@@ -454,20 +454,20 @@ export const stixElementLoader = async (id, type) => {
 export const timeSeriesEntities = async (entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, field, interval } = options;
+  const { startDate, endDate, field, interval, toTypes = [] } = options;
   // Check if can be supported by ES
-  const histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
+  const histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, toTypes, filters);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesRelations = async (options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid }
   //            { isRelation: false, type: report_class, value: string } ]
-  const { startDate, endDate, relationship_type: relationshipType, field, interval } = options;
+  const { startDate, endDate, relationship_type: relationshipType, field, interval, toTypes = [] } = options;
   const { fromId } = options;
   // Check if can be supported by ES
   const entityType = relationshipType ? escape(relationshipType) : 'stix-relationship';
   const filters = fromId ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }] : [];
-  const histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, filters);
+  const histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, toTypes, filters);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const distributionEntities = async (entityType, filters = [], options) => {

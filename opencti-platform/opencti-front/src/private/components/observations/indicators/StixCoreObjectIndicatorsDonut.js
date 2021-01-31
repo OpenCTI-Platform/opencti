@@ -6,134 +6,51 @@ import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import PieChart from 'recharts/lib/chart/PieChart';
 import Pie from 'recharts/lib/polar/Pie';
 import Cell from 'recharts/lib/component/Cell';
+import Legend from 'recharts/lib/component/Legend';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Legend from 'recharts/lib/component/Legend';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 
 const styles = () => ({
   paper: {
-    height: '100%',
+    height: 300,
+    minHeight: 300,
+    maxHeight: 300,
     margin: '10px 0 0 0',
+    padding: 0,
     borderRadius: 6,
-  },
-  updateButton: {
-    float: 'right',
-    margin: '7px 10px 0 0',
   },
 });
 
-const entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery = graphql`
-  query EntityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery(
-    $fromId: String
-    $toTypes: [String]
-    $relationship_type: String
-    $limit: Int
-    $startDate: DateTime
-    $endDate: DateTime
+const stixCoreObjectIndicatorsDonutDistributionQuery = graphql`
+  query StixCoreObjectIndicatorsDonutDistributionQuery(
+    $objectId: String
     $field: String!
     $operation: StatsOperation!
-    $isTo: Boolean
+    $limit: Int
   ) {
-    stixCoreRelationshipsDistribution(
-      fromId: $fromId
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      limit: $limit
-      startDate: $startDate
-      endDate: $endDate
+    indicatorsDistribution(
+      objectId: $objectId
       field: $field
       operation: $operation
-      isTo: $isTo
+      limit: $limit
     ) {
       label
       value
       entity {
-        ... on BasicObject {
-          entity_type
-        }
-        ... on AttackPattern {
+        ... on Identity {
           name
-          description
-        }
-        ... on Campaign {
-          name
-          description
-        }
-        ... on CourseOfAction {
-          name
-          description
-        }
-        ... on Individual {
-          name
-          description
-        }
-        ... on Organization {
-          name
-          description
-        }
-        ... on Sector {
-          name
-          description
-        }
-        ... on Indicator {
-          name
-          description
-        }
-        ... on Infrastructure {
-          name
-          description
-        }
-        ... on IntrusionSet {
-          name
-          description
-        }
-        ... on Position {
-          name
-          description
-        }
-        ... on City {
-          name
-          description
-        }
-        ... on Country {
-          name
-          description
-        }
-        ... on Region {
-          name
-          description
-        }
-        ... on Malware {
-          name
-          description
-        }
-        ... on ThreatActor {
-          name
-          description
-        }
-        ... on Tool {
-          name
-          description
-        }
-        ... on Vulnerability {
-          name
-          description
-        }
-        ... on XOpenCTIIncident {
-          name
-          description
         }
       }
     }
   }
 `;
 
-class EntityStixCoreRelationshipsDonut extends Component {
+class StixCoreObjectIndicatorsDonut extends Component {
   constructor(props) {
     super(props);
     this.renderLabel = this.renderLabel.bind(this);
@@ -202,63 +119,38 @@ class EntityStixCoreRelationshipsDonut extends Component {
 
   renderContent() {
     const {
-      t,
-      entityId,
-      toTypes,
-      variant,
-      relationshipType,
-      field,
-      startDate,
-      endDate,
-      isTo,
+      t, stixCoreObjectId, field, variant,
     } = this.props;
-    const stixCoreRelationshipsDistributionVariables = {
-      fromId: entityId,
-      toTypes,
-      startDate: startDate || null,
-      endDate: endDate || null,
-      relationship_type: relationshipType,
-      field,
-      limit: 10,
+    const indicatorsDistributionVariables = {
+      objectId: stixCoreObjectId,
+      field: field || 'indicator_types',
       operation: 'count',
-      isTo: isTo || false,
+      limit: 8,
     };
     return (
       <QueryRenderer
-        query={
-          entityStixCoreRelationshipsDonutStixCoreRelationshipDistributionQuery
-        }
-        variables={stixCoreRelationshipsDistributionVariables}
+        query={stixCoreObjectIndicatorsDonutDistributionQuery}
+        variables={indicatorsDistributionVariables}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.indicatorsDistribution
+            && props.indicatorsDistribution.length > 0
           ) {
-            let data = props.stixCoreRelationshipsDistribution;
-            if (field === 'internal_id') {
+            let data = props.indicatorsDistribution;
+            if (field && field.includes('internal_id')) {
               data = map(
-                (n) => assoc(
-                  'label',
-                  `${
-                    toTypes.length > 1
-                      ? `[${t(`entity_${n.entity.entity_type}`)}] ${
-                        n.entity.name
-                      }`
-                      : `${n.entity.name}`
-                  }`,
-                  n,
-                ),
-                props.stixCoreRelationshipsDistribution,
+                (n) => assoc('label', n.entity.name, n),
+                props.indicatorsDistribution,
               );
             }
             return (
               <ResponsiveContainer height="100%" width="100%">
                 <PieChart
                   margin={{
-                    top: variant === 'inEntity' ? 40 : 0,
+                    top: 0,
                     right: 0,
-                    bottom: variant === 'inLine' ? 20 : 0,
+                    bottom: 0,
                     left: 0,
                   }}
                 >
@@ -268,9 +160,9 @@ class EntityStixCoreRelationshipsDonut extends Component {
                     nameKey="label"
                     cx="50%"
                     cy="50%"
-                    fill="#82ca9d"
                     innerRadius="63%"
                     outerRadius="80%"
+                    fill="#82ca9d"
                     label={
                       variant === 'inEntity'
                         ? this.renderLabel
@@ -331,40 +223,30 @@ class EntityStixCoreRelationshipsDonut extends Component {
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography
-          variant={variant === 'inEntity' ? 'h3' : 'h4'}
-          gutterBottom={true}
-        >
-          {title || t('Distribution of entities')}
+        <Typography variant="h4" gutterBottom={true}>
+          {title || t('Indicators distribution')}
         </Typography>
-        {variant === 'inLine' || variant === 'inEntity' ? (
-          this.renderContent()
-        ) : (
+        {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
             {this.renderContent()}
           </Paper>
+        ) : (
+          this.renderContent()
         )}
       </div>
     );
   }
 }
 
-EntityStixCoreRelationshipsDonut.propTypes = {
+StixCoreObjectIndicatorsDonut.propTypes = {
+  stixCoreObjectId: PropTypes.string,
   title: PropTypes.string,
-  variant: PropTypes.string,
-  entityId: PropTypes.string,
-  relationshipType: PropTypes.string,
-  entityType: PropTypes.string,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
   field: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
-  isTo: PropTypes.bool,
 };
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipsDonut);
+)(StixCoreObjectIndicatorsDonut);

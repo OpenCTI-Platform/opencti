@@ -776,7 +776,7 @@ export const elAggregationRelationsCount = async (
     return R.map((b) => ({ label: pascalize(b.key), value: b.doc_count }), filteredBuckets);
   });
 };
-export const elHistogramCount = async (type, field, interval, start, end, filters) => {
+export const elHistogramCount = async (type, field, interval, start, end, toTypes, filters) => {
   // const tzStart = moment.parseZone(start).format('Z');
   // Filter: { type: 'relation/attribute/nested' }
   const histogramFilters = R.map((f) => {
@@ -847,6 +847,26 @@ export const elHistogramCount = async (type, field, interval, start, end, filter
       },
       baseFilters
     );
+  }
+  const typesFilters = [];
+  for (let index = 0; index < toTypes.length; index += 1) {
+    typesFilters.push({
+      match_phrase: { 'connections.types': toTypes[index] },
+    });
+  }
+  if (typesFilters.length > 0) {
+    baseFilters.push({
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            // must: toRoleFilter,
+            should: typesFilters,
+            minimum_should_match: 1,
+          },
+        },
+      },
+    });
   }
   const query = {
     index: READ_PLATFORM_INDICES,

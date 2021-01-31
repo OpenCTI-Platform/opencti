@@ -6,6 +6,8 @@ import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import StixDomainObjectVictimologyMap from '../../common/stix_domain_objects/StixDomainObjectVictimologyMap';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import EntityStixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
+import EntityStixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
 
 const styles = () => ({
   container: {
@@ -50,6 +52,30 @@ class ThreatVictimologyAll extends Component {
           <StixDomainObjectVictimologyMap
             title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
             stixDomainObjectId={widget.entity.id}
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
+      case 'area':
+        return (
+          <EntityStixCoreRelationshipsAreaChart
+            title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Country']}
+            relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inline"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <EntityStixCoreRelationshipsVerticalBars
+            title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Country']}
+            relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
             variant="inline"
