@@ -86,8 +86,8 @@ const buildMarkingRestriction = (user) => {
   const must_not = [];
   // Check user rights
   const userMarkings = user.allowed_marking.map((m) => m.internal_id);
-  const isMarkingBypass = userMarkings.includes(BYPASS);
-  if (!isMarkingBypass) {
+  const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
+  if (!isBypass) {
     if (userMarkings.length === 0) {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: 'rel_object-marking.internal_id' } });

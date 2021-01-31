@@ -57,12 +57,23 @@ import {
   REL_INDEX_PREFIX,
 } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
+import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/elasticSearch';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 
 export const STREAMAPI = 'STREAMAPI';
+export const ROLE_DEFAULT = 'Default';
+export const ROLE_ADMINISTRATOR = 'Administrator';
+export const SYSTEM_USER = {
+  id: OPENCTI_SYSTEM_UUID,
+  name: 'system',
+  origin: { source: 'internal', user_id: OPENCTI_SYSTEM_UUID },
+  roles: [{ name: ROLE_ADMINISTRATOR }],
+  capabilities: [{ name: BYPASS }],
+  allowed_marking: [],
+};
 
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   uuid: tokenValue,
@@ -85,16 +96,6 @@ export const setAuthenticationCookie = (token, res) => {
     });
   }
 };
-// endregion
-
-export const SYSTEM_USER = {
-  id: OPENCTI_SYSTEM_UUID,
-  name: 'system',
-  origin: { source: 'internal', user_id: OPENCTI_SYSTEM_UUID },
-  allowed_marking: [{ internal_id: BYPASS }],
-};
-export const ROLE_DEFAULT = 'Default';
-export const ROLE_ADMINISTRATOR = 'Administrator';
 
 export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
@@ -218,16 +219,7 @@ export const assignRoleToUser = async (user, userId, roleName) => {
 };
 
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
-  let userRoles = newUser.roles || []; // Expected roles name
-  // Assign default roles to user
-  const defaultRoles = await findRoles(user, { filters: [{ key: 'default_assignation', values: [true] }] });
-  if (defaultRoles && defaultRoles.edges.length > 0) {
-    userRoles = R.pipe(
-      R.map((n) => n.node.name),
-      R.append(userRoles),
-      R.flatten
-    )(defaultRoles.edges);
-  }
+  // Create the user
   const userToCreate = R.pipe(
     R.assoc('user_email', newUser.user_email.toLowerCase()),
     R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
@@ -245,7 +237,24 @@ export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken(
   };
   await createRelation(user, input);
   // Link to the roles
+  let userRoles = newUser.roles || []; // Expected roles name
+  const defaultRoles = await findRoles(user, { filters: [{ key: 'default_assignation', values: [true] }] });
+  if (defaultRoles && defaultRoles.edges.length > 0) {
+    userRoles = R.pipe(
+      R.map((n) => n.node.name),
+      R.append(userRoles),
+      R.flatten
+    )(defaultRoles.edges);
+  }
   await Promise.all(R.map((role) => assignRoleToUser(user, userCreated.id, role), userRoles));
+  // Assign default groups to user
+  const defaultGroups = await findGroups(user, { filters: [{ key: 'default_assignation', values: [true] }] });
+  const relationGroups = defaultGroups.edges.map((e) => ({
+    fromId: userCreated.id,
+    toId: e.node.internal_id,
+    relationship_type: RELATION_MEMBER_OF,
+  }));
+  await Promise.all(relationGroups.map((relation) => createRelation(user, relation)));
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
@@ -407,9 +416,6 @@ export const findByTokenUUID = async (tokenValue) => {
     const client = R.head(users);
     const capabilities = await getCapabilities(SYSTEM_USER, client.id);
     const markings = await getMarkings(SYSTEM_USER, client.id);
-    // If user have BYPASS capabilities, he can bypass also the markings
-    const isBypass = capabilities.map((c) => c.name).includes(BYPASS);
-    if (isBypass) markings.push({ internal_id: BYPASS });
     user = { ...client, token: userToken, capabilities, allowed_marking: markings };
     await storeUserAccessCache(tokenValue, user);
   }

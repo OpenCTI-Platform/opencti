@@ -155,6 +155,7 @@ const GroupEditionPermissions = createFragmentContainer(
     group: graphql`
       fragment GroupEditionPermissions_group on Group {
         id
+        default_assignation
         allowed_marking {
           id
         }
