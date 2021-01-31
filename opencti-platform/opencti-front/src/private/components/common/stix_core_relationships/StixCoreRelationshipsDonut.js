@@ -6,6 +6,7 @@ import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import PieChart from 'recharts/lib/chart/PieChart';
 import Pie from 'recharts/lib/polar/Pie';
 import Cell from 'recharts/lib/component/Cell';
+import Legend from 'recharts/lib/component/Legend';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
@@ -130,10 +131,16 @@ const stixCoreRelationshipsDonutsDistributionQuery = graphql`
   }
 `;
 
-class StixCoreRelationshipsHorizontalBars extends Component {
+class StixCoreRelationshipsDonut extends Component {
   constructor(props) {
     super(props);
     this.renderLabel = this.renderLabel.bind(this);
+    this.renderSimpleLabel = this.renderSimpleLabel.bind(this);
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  renderSimpleLabel(props) {
+    return props.value;
   }
 
   // eslint-disable-next-line class-methods-use-this
@@ -200,6 +207,7 @@ class StixCoreRelationshipsHorizontalBars extends Component {
       startDate,
       endDate,
       dateAttribute,
+      variant,
     } = this.props;
     const stixDomainObjectsDistributionVariables = {
       relationship_type: relationshipType,
@@ -254,10 +262,14 @@ class StixCoreRelationshipsHorizontalBars extends Component {
                     nameKey="label"
                     cx="50%"
                     cy="50%"
-                    innerRadius={70}
-                    outerRadius={100}
+                    innerRadius="63%"
+                    outerRadius="80%"
                     fill="#82ca9d"
-                    label={this.renderLabel}
+                    label={
+                      variant === 'inEntity'
+                        ? this.renderLabel
+                        : this.renderSimpleLabel
+                    }
                     labelLine={true}
                     paddingAngle={5}
                   >
@@ -269,6 +281,7 @@ class StixCoreRelationshipsHorizontalBars extends Component {
                       />
                     ))}
                   </Pie>
+                  {variant === 'inLine' && <Legend margin={{ bottom: 20 }} />}
                 </PieChart>
               </ResponsiveContainer>
             );
@@ -327,7 +340,7 @@ class StixCoreRelationshipsHorizontalBars extends Component {
   }
 }
 
-StixCoreRelationshipsHorizontalBars.propTypes = {
+StixCoreRelationshipsDonut.propTypes = {
   relationshipType: PropTypes.string,
   toTypes: PropTypes.array,
   title: PropTypes.string,
@@ -344,4 +357,4 @@ StixCoreRelationshipsHorizontalBars.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreRelationshipsHorizontalBars);
+)(StixCoreRelationshipsDonut);

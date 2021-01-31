@@ -3,6 +3,10 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
+import StixCoreObjectIndicatorsHorizontalBars from '../../observations/indicators/StixCoreObjectIndicatorsHorizontalBars';
+import StixCoreObjectIndicatorsDonut from '../../observations/indicators/StixCoreObjectIndicatorsDonut';
+import StixCoreObjectIndicatorsAreaChart from '../../observations/indicators/StixCoreObjectIndicatorsAreaChart';
+import StixCoreObjectIndicatorsVerticalBars from '../../observations/indicators/StixCoreObjectIndicatorsVerticalBars';
 
 const styles = () => ({
   container: {
@@ -12,21 +16,51 @@ const styles = () => ({
 
 class ThreatVictimologyAll extends Component {
   render() {
-    const { t, widget } = this.props;
+    const {
+      t, widget, startDate, endDate,
+    } = this.props;
     switch (widget.visualizationType) {
+      case 'horizontal-bar':
+        return (
+          <StixCoreObjectIndicatorsHorizontalBars
+            title={`${t('Indicators')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            field="pattern_type"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
       case 'donut':
         return (
-          <div style={{ display: 'table', height: '100%', width: '100%' }}>
-            <span
-              style={{
-                display: 'table-cell',
-                verticalAlign: 'middle',
-                textAlign: 'center',
-              }}
-            >
-              {t('Not implemented yet.')}
-            </span>
-          </div>
+          <StixCoreObjectIndicatorsDonut
+            title={`${t('Indicators')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            field="pattern_type"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <StixCoreObjectIndicatorsAreaChart
+            title={`${t('Indicators')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <StixCoreObjectIndicatorsVerticalBars
+            title={`${t('Indicators')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
         );
       default:
         return (

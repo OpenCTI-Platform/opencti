@@ -3,7 +3,10 @@ import PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
+import StixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
+import StixCoreRelationshipsDonut from '../../common/stix_core_relationships/StixCoreRelationshipsDonut';
+import StixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/StixCoreRelationshipsVerticalBars';
+import StixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsAreaChart';
 
 const styles = () => ({
   container: {
@@ -19,11 +22,45 @@ class GlobalVictimologyAll extends Component {
     switch (widget.visualizationType) {
       case 'horizontal-bar':
         return (
-          <EntityStixCoreRelationshipsHorizontalBars
+          <StixCoreRelationshipsHorizontalBars
             title={`${t('Victimology')} - ${t('Global')}`}
             toTypes={['Sector', 'Country']}
             relationshipType="targets"
             field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'donut':
+        return (
+          <StixCoreRelationshipsDonut
+            title={`${t('Victimology')} - ${t('Global')}`}
+            toTypes={['Sector', 'Country']}
+            relationshipType="targets"
+            field="internal_id"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <StixCoreRelationshipsAreaChart
+            title={`${t('Victimology')} - ${t('Global')}`}
+            toTypes={['Sector', 'Country']}
+            relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <StixCoreRelationshipsVerticalBars
+            title={`${t('Victimology')} - ${t('Global')}`}
+            toTypes={['Sector', 'Country']}
+            relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
             variant="inLine"

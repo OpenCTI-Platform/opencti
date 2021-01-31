@@ -33,21 +33,19 @@ const styles = () => ({
   },
 });
 
-const stixCoreObjectReportsAreaChartTimeSeriesQuery = graphql`
-  query StixCoreObjectReportsAreaChartTimeSeriesQuery(
+const stixCoreObjectIndicatorsAreaChartTimeSeriesQuery = graphql`
+  query StixCoreObjectIndicatorsAreaChartTimeSeriesQuery(
     $objectId: String
-    $authorId: String
-    $reportClass: String
+    $pattern_type: String
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
   ) {
-    reportsTimeSeries(
+    indicatorsTimeSeries(
       objectId: $objectId
-      authorId: $authorId
-      reportType: $reportClass
+      pattern_type: $pattern_type
       field: $field
       operation: $operation
       startDate: $startDate
@@ -60,54 +58,39 @@ const stixCoreObjectReportsAreaChartTimeSeriesQuery = graphql`
   }
 `;
 
-class StixCoreObjectReportsAreaChart extends Component {
+class StixCoreObjectIndicatorsAreaChart extends Component {
   renderContent() {
     const {
       t,
       md,
-      reportType,
+      indicatorType,
       startDate,
       endDate,
       stixCoreObjectId,
-      authorId,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    let reportsTimeSeriesVariables;
-    if (authorId) {
-      reportsTimeSeriesVariables = {
-        authorId,
-        objectId: null,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    } else {
-      reportsTimeSeriesVariables = {
-        authorId: null,
-        objectId: stixCoreObjectId,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    }
+    const indicatorsTimeSeriesVariables = {
+      authorId: null,
+      objectId: stixCoreObjectId,
+      indicatorType: indicatorType || null,
+      field: 'created_at',
+      operation: 'count',
+      startDate: finalStartDate,
+      endDate: finalEndDate,
+      interval,
+    };
     return (
       <QueryRenderer
-        query={stixCoreObjectReportsAreaChartTimeSeriesQuery}
-        variables={reportsTimeSeriesVariables}
+        query={stixCoreObjectIndicatorsAreaChartTimeSeriesQuery}
+        variables={indicatorsTimeSeriesVariables}
         render={({ props }) => {
-          if (props && props.reportsTimeSeries) {
+          if (props && props.indicatorsTimeSeries) {
             return (
               <ResponsiveContainer height="100%" width="100%">
                 <AreaChart
-                  data={props.reportsTimeSeries}
+                  data={props.indicatorsTimeSeries}
                   margin={{
                     top: 20,
                     right: 0,
@@ -190,7 +173,7 @@ class StixCoreObjectReportsAreaChart extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Reports history')}
+          {title || t('Indicators history')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -204,10 +187,9 @@ class StixCoreObjectReportsAreaChart extends Component {
   }
 }
 
-StixCoreObjectReportsAreaChart.propTypes = {
+StixCoreObjectIndicatorsAreaChart.propTypes = {
   classes: PropTypes.object,
   stixCoreObjectId: PropTypes.string,
-  authorId: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
 };
@@ -215,4 +197,4 @@ StixCoreObjectReportsAreaChart.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectReportsAreaChart);
+)(StixCoreObjectIndicatorsAreaChart);

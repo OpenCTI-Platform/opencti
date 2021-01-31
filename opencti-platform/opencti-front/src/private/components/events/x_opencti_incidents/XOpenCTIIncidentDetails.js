@@ -74,7 +74,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
             relationshipType="related-to"
             field="entity_type"
             height={200}
-            variant="inLine"
+            variant="inEntity"
             isTo={true}
           />
         </Paper>

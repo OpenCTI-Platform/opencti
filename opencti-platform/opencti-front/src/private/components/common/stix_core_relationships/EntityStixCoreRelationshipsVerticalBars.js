@@ -2,27 +2,31 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import AreaChart from 'recharts/lib/chart/AreaChart';
+import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
-import Area from 'recharts/lib/cartesian/Area';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
+import { monthsAgo, now } from '../../../../utils/Time';
 import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
 
 const styles = () => ({
   paper: {
-    minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
+    borderRadius: 6,
+  },
+  paperExplore: {
+    height: '100%',
+    margin: 0,
     padding: '0 0 10px 0',
     borderRadius: 6,
   },
@@ -31,23 +35,27 @@ const styles = () => ({
     height: 20,
     marginLeft: 10,
   },
+  updateButton: {
+    float: 'right',
+    margin: '7px 10px 0 0',
+  },
 });
 
-const stixCoreObjectReportsAreaChartTimeSeriesQuery = graphql`
-  query StixCoreObjectReportsAreaChartTimeSeriesQuery(
-    $objectId: String
-    $authorId: String
-    $reportClass: String
+const entityStixCoreRelationshipsVerticalBarsStixCoreRelationshipTimeSeriesQuery = graphql`
+  query EntityStixCoreRelationshipsVerticalBarsStixCoreRelationshipTimeSeriesQuery(
+    $fromId: String
+    $toTypes: [String]
+    $relationship_type: String
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
   ) {
-    reportsTimeSeries(
-      objectId: $objectId
-      authorId: $authorId
-      reportType: $reportClass
+    stixCoreRelationshipsTimeSeries(
+      fromId: $fromId
+      toTypes: $toTypes
+      relationship_type: $relationship_type
       field: $field
       operation: $operation
       startDate: $startDate
@@ -60,57 +68,51 @@ const stixCoreObjectReportsAreaChartTimeSeriesQuery = graphql`
   }
 `;
 
-class StixCoreObjectReportsAreaChart extends Component {
+class EntityStixCoreRelationshipsVerticalBars extends Component {
+  constructor(props) {
+    super(props);
+    this.state = { period: 36, interval: 2 };
+  }
+
   renderContent() {
     const {
       t,
+      entityId,
+      toTypes,
+      relationshipType,
       md,
-      reportType,
+      field,
       startDate,
       endDate,
-      stixCoreObjectId,
-      authorId,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    let reportsTimeSeriesVariables;
-    if (authorId) {
-      reportsTimeSeriesVariables = {
-        authorId,
-        objectId: null,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    } else {
-      reportsTimeSeriesVariables = {
-        authorId: null,
-        objectId: stixCoreObjectId,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    }
+    const stixCoreRelationshipsTimeSeriesVariables = {
+      fromId: entityId || null,
+      toTypes,
+      relationship_type: relationshipType,
+      field: field || 'created_at',
+      operation: 'count',
+      startDate: finalStartDate,
+      endDate: finalEndDate,
+      interval,
+    };
     return (
       <QueryRenderer
-        query={stixCoreObjectReportsAreaChartTimeSeriesQuery}
-        variables={reportsTimeSeriesVariables}
+        query={
+          entityStixCoreRelationshipsVerticalBarsStixCoreRelationshipTimeSeriesQuery
+        }
+        variables={stixCoreRelationshipsTimeSeriesVariables}
         render={({ props }) => {
-          if (props && props.reportsTimeSeries) {
+          if (props && props.stixCoreRelationshipsTimeSeries) {
             return (
               <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props.reportsTimeSeries}
+                <BarChart
+                  data={props.stixCoreRelationshipsTimeSeries}
                   margin={{
                     top: 20,
-                    right: 0,
+                    right: 50,
                     bottom: 20,
                     left: -10,
                   }}
@@ -120,8 +122,8 @@ class StixCoreObjectReportsAreaChart extends Component {
                     dataKey="date"
                     stroke="#ffffff"
                     interval={interval}
+                    angle={-45}
                     textAnchor="end"
-                    angle={-30}
                     tickFormatter={md}
                   />
                   <YAxis stroke="#ffffff" />
@@ -138,15 +140,12 @@ class StixCoreObjectReportsAreaChart extends Component {
                     }}
                     labelFormatter={md}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={Theme.palette.primary.main}
-                    strokeWidth={2}
+                  <Bar
                     fill={Theme.palette.primary.main}
-                    fillOpacity={0.1}
+                    dataKey="value"
+                    barSize={5}
                   />
-                </AreaChart>
+                </BarChart>
               </ResponsiveContainer>
             );
           }
@@ -189,25 +188,34 @@ class StixCoreObjectReportsAreaChart extends Component {
     } = this.props;
     return (
       <div style={{ height: height || '100%' }}>
-        <Typography variant="h4" gutterBottom={true}>
-          {title || t('Reports history')}
+        <Typography
+          variant={variant === 'inEntity' ? 'h3' : 'h4'}
+          gutterBottom={true}
+        >
+          {title || t('History of relationships')}
         </Typography>
-        {variant !== 'inLine' ? (
+        {variant === 'inLine' || variant === 'inEntity' ? (
+          this.renderContent()
+        ) : (
           <Paper classes={{ root: classes.paper }} elevation={2}>
             {this.renderContent()}
           </Paper>
-        ) : (
-          this.renderContent()
         )}
       </div>
     );
   }
 }
 
-StixCoreObjectReportsAreaChart.propTypes = {
+EntityStixCoreRelationshipsVerticalBars.propTypes = {
+  variant: PropTypes.string,
+  title: PropTypes.string,
+  entityId: PropTypes.string,
+  relationshipType: PropTypes.string,
+  field: PropTypes.string,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
+  toTypes: PropTypes.array,
   classes: PropTypes.object,
-  stixCoreObjectId: PropTypes.string,
-  authorId: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
 };
@@ -215,4 +223,4 @@ StixCoreObjectReportsAreaChart.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectReportsAreaChart);
+)(EntityStixCoreRelationshipsVerticalBars);

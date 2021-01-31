@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
+import BarChart from 'recharts/lib/chart/BarChart';
 import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import AreaChart from 'recharts/lib/chart/AreaChart';
+import Bar from 'recharts/lib/cartesian/Bar';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
-import Area from 'recharts/lib/cartesian/Area';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -33,21 +33,19 @@ const styles = () => ({
   },
 });
 
-const stixCoreObjectReportsAreaChartTimeSeriesQuery = graphql`
-  query StixCoreObjectReportsAreaChartTimeSeriesQuery(
+const stixCoreObjectReporstVerticalBarsTimeSeriesQuery = graphql`
+  query StixCoreObjectIndicatorsVerticalBarsTimeSeriesQuery(
     $objectId: String
-    $authorId: String
-    $reportClass: String
+      $pattern_type: String
     $field: String!
     $operation: StatsOperation!
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
   ) {
-    reportsTimeSeries(
+    indicatorsTimeSeries(
       objectId: $objectId
-      authorId: $authorId
-      reportType: $reportClass
+      pattern_type: $pattern_type
       field: $field
       operation: $operation
       startDate: $startDate
@@ -60,57 +58,42 @@ const stixCoreObjectReportsAreaChartTimeSeriesQuery = graphql`
   }
 `;
 
-class StixCoreObjectReportsAreaChart extends Component {
+class IndicatorsVerticalBars extends Component {
   renderContent() {
     const {
       t,
       md,
-      reportType,
+      indicatorType,
       startDate,
       endDate,
       stixCoreObjectId,
-      authorId,
     } = this.props;
     const interval = 'day';
     const finalStartDate = startDate || monthsAgo(12);
     const finalEndDate = endDate || now();
-    let reportsTimeSeriesVariables;
-    if (authorId) {
-      reportsTimeSeriesVariables = {
-        authorId,
-        objectId: null,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    } else {
-      reportsTimeSeriesVariables = {
-        authorId: null,
-        objectId: stixCoreObjectId,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    }
+    const indicatorsTimeSeriesVariables = {
+      authorId: null,
+      objectId: stixCoreObjectId,
+      indicatorType: indicatorType || null,
+      field: 'created_at',
+      operation: 'count',
+      startDate: finalStartDate,
+      endDate: finalEndDate,
+      interval,
+    };
     return (
       <QueryRenderer
-        query={stixCoreObjectReportsAreaChartTimeSeriesQuery}
-        variables={reportsTimeSeriesVariables}
+        query={stixCoreObjectReporstVerticalBarsTimeSeriesQuery}
+        variables={indicatorsTimeSeriesVariables}
         render={({ props }) => {
-          if (props && props.reportsTimeSeries) {
+          if (props && props.indicatorsTimeSeries) {
             return (
               <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props.reportsTimeSeries}
+                <BarChart
+                  data={props.indicatorsTimeSeries}
                   margin={{
                     top: 20,
-                    right: 0,
+                    right: 50,
                     bottom: 20,
                     left: -10,
                   }}
@@ -120,8 +103,8 @@ class StixCoreObjectReportsAreaChart extends Component {
                     dataKey="date"
                     stroke="#ffffff"
                     interval={interval}
+                    angle={-45}
                     textAnchor="end"
-                    angle={-30}
                     tickFormatter={md}
                   />
                   <YAxis stroke="#ffffff" />
@@ -138,15 +121,12 @@ class StixCoreObjectReportsAreaChart extends Component {
                     }}
                     labelFormatter={md}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={Theme.palette.primary.main}
-                    strokeWidth={2}
+                  <Bar
                     fill={Theme.palette.primary.main}
-                    fillOpacity={0.1}
+                    dataKey="value"
+                    barSize={5}
                   />
-                </AreaChart>
+                </BarChart>
               </ResponsiveContainer>
             );
           }
@@ -190,7 +170,7 @@ class StixCoreObjectReportsAreaChart extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Reports history')}
+          {title || t('Indicators history')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -204,15 +184,11 @@ class StixCoreObjectReportsAreaChart extends Component {
   }
 }
 
-StixCoreObjectReportsAreaChart.propTypes = {
+IndicatorsVerticalBars.propTypes = {
   classes: PropTypes.object,
   stixCoreObjectId: PropTypes.string,
-  authorId: PropTypes.string,
   t: PropTypes.func,
   md: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreObjectReportsAreaChart);
+export default compose(inject18n, withStyles(styles))(IndicatorsVerticalBars);

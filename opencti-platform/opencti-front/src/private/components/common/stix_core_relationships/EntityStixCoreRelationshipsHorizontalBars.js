@@ -155,7 +155,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
       toTypes,
       field: field || 'entity_type',
       operation: 'count',
-      limit: 8,
+      limit: 10,
       isTo: isTo || false,
       startDate,
       endDate,

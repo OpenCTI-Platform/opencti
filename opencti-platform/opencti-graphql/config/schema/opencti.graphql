@@ -7620,6 +7620,25 @@ type Query {
     filterMode: FilterMode
     search: String
   ): IndicatorConnection @auth(for: [KNOWLEDGE])
+  indicatorsTimeSeries(
+    objectId: String
+    pattern_type: String
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime!
+    endDate: DateTime!
+    interval: String!
+  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  indicatorsNumber(pattern_type: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  indicatorsDistribution(
+    objectId: String
+    field: String!
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    startDate: DateTime
+    endDate: DateTime
+  ): [Distribution] @auth(for: [KNOWLEDGE])
   infrastructure(id: String!): Infrastructure @auth(for: [KNOWLEDGE])
   infrastructures(
     first: Int
@@ -7854,6 +7873,7 @@ type Query {
   stixCoreRelationshipsTimeSeries(
     fromId: String
     relationship_type: String
+    toTypes: [String]
     field: String!
     operation: StatsOperation!
     startDate: DateTime!

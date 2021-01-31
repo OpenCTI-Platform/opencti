@@ -5,6 +5,10 @@ import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
+import EntityStixCoreRelationshipsAreaChart
+  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
+import EntityStixCoreRelationshipsVerticalBars
+  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
 
 const styles = () => ({
   container: {
@@ -21,7 +25,7 @@ class EntityThreatsAll extends Component {
       case 'horizontal-bar':
         return (
           <EntityStixCoreRelationshipsHorizontalBars
-            title={`${t('Threats')} - ${t('All')}`}
+            title={`${t('Threats')} - ${widget.entity.name}`}
             stixCoreObjectId={widget.entity.id}
             toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             relationshipType="targets"
@@ -29,13 +33,13 @@ class EntityThreatsAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       case 'donut':
         return (
           <EntityStixCoreRelationshipsDonut
-            title={`${t('Threats')} - ${t('All')}`}
+            title={`${t('Threats')} - ${widget.entity.name}`}
             stixCoreObjectId={widget.entity.id}
             toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
             relationshipType="targets"
@@ -43,7 +47,31 @@ class EntityThreatsAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
+          />
+        );
+      case 'area':
+        return (
+          <EntityStixCoreRelationshipsAreaChart
+            title={`${t('Threats')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
+            relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
+          />
+        );
+      case 'vertical-bar':
+        return (
+          <EntityStixCoreRelationshipsVerticalBars
+            title={`${t('Threats')} - ${widget.entity.name}`}
+            stixCoreObjectId={widget.entity.id}
+            toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
+            relationshipType="targets"
+            startDate={startDate}
+            endDate={endDate}
+            variant="inLine"
           />
         );
       default:

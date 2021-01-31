@@ -822,7 +822,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
       throw DatabaseError('Fail processing AggregationRelationsCount', { error: e });
     });
 };
-export const elHistogramCount = async (user, type, field, interval, start, end, filters) => {
+export const elHistogramCount = async (user, type, field, interval, start, end, toTypes, filters) => {
   // const tzStart = moment.parseZone(start).format('Z');
   // Filter: { type: 'relation/attribute/nested' }
   const histogramFilters = R.map((f) => {
@@ -893,6 +893,26 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
       },
       baseFilters
     );
+  }
+  const typesFilters = [];
+  for (let index = 0; index < toTypes.length; index += 1) {
+    typesFilters.push({
+      match_phrase: { 'connections.types': toTypes[index] },
+    });
+  }
+  if (typesFilters.length > 0) {
+    baseFilters.push({
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            // must: toRoleFilter,
+            should: typesFilters,
+            minimum_should_match: 1,
+          },
+        },
+      },
+    });
   }
   const must = R.concat(baseFilters, histogramFilters);
   const markingRestrictions = buildMarkingRestriction(user);

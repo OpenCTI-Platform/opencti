@@ -231,6 +231,7 @@ describe('Elasticsearch computation', () => {
       'day',
       '2019-09-29T00:00:00.000Z',
       new Date().getTime(),
+      [],
       []
     );
     expect(data.length).toEqual(1);
@@ -247,6 +248,7 @@ describe('Elasticsearch computation', () => {
       'month',
       '2019-09-23T00:00:00.000Z',
       '2020-03-02T00:00:00.000Z',
+      [],
       []
     );
     expect(data.length).toEqual(7);
@@ -268,6 +270,7 @@ describe('Elasticsearch computation', () => {
       'year',
       '2019-09-23T00:00:00.000Z',
       '2020-03-02T00:00:00.000Z',
+      [],
       []
     );
     expect(data.length).toEqual(2);
@@ -284,6 +287,7 @@ describe('Elasticsearch computation', () => {
       'year',
       '2019-09-23T00:00:00.000Z',
       '2020-03-02T00:00:00.000Z',
+      [],
       [
         {
           isRelation: true,
@@ -305,6 +309,7 @@ describe('Elasticsearch computation', () => {
       'year',
       '2019-09-23T00:00:00.000Z',
       '2020-03-02T00:00:00.000Z',
+      [],
       [
         {
           isRelation: true,
@@ -319,9 +324,16 @@ describe('Elasticsearch computation', () => {
     expect(aggregationMap.get('2020')).toEqual(1);
   });
   it('should year histogram with attribute filter accurate', async () => {
-    const data = await elHistogramCount(ADMIN_USER, 'Identity', 'created', 'year', undefined, undefined, [
-      { isRelation: false, type: 'name', value: 'ANSSI' },
-    ]);
+    const data = await elHistogramCount(
+      ADMIN_USER,
+      'Identity',
+      'created',
+      'year',
+      undefined, // No start
+      undefined, // No end
+      [],
+      [{ isRelation: false, type: 'name', value: 'ANSSI' }]
+    );
     expect(data.length).toEqual(1);
     const aggregationMap = new Map(data.map((i) => [i.date, i.value]));
     expect(aggregationMap.get('2020')).toEqual(1);

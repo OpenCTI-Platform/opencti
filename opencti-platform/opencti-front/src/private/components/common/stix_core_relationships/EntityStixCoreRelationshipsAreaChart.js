@@ -11,19 +11,14 @@ import YAxis from 'recharts/lib/cartesian/YAxis';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
-import Chip from '@material-ui/core/Chip';
 import Typography from '@material-ui/core/Typography';
-import IconButton from '@material-ui/core/IconButton';
-import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
 import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
-import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
-    minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
     borderRadius: 6,
@@ -45,9 +40,10 @@ const styles = () => ({
   },
 });
 
-const entityStixCoreRelationshipsChartStixCoreRelationshipTimeSeriesQuery = graphql`
-  query EntityStixCoreRelationshipsChartStixCoreRelationshipTimeSeriesQuery(
+const entityStixCoreRelationshipsAreaChartStixCoreRelationshipTimeSeriesQuery = graphql`
+  query EntityStixCoreRelationshipsAreaChartStixCoreRelationshipTimeSeriesQuery(
     $fromId: String
+    $toTypes: [String]
     $relationship_type: String
     $field: String!
     $operation: StatsOperation!
@@ -57,6 +53,7 @@ const entityStixCoreRelationshipsChartStixCoreRelationshipTimeSeriesQuery = grap
   ) {
     stixCoreRelationshipsTimeSeries(
       fromId: $fromId
+      toTypes: $toTypes
       relationship_type: $relationship_type
       field: $field
       operation: $operation
@@ -70,67 +67,46 @@ const entityStixCoreRelationshipsChartStixCoreRelationshipTimeSeriesQuery = grap
   }
 `;
 
-class EntityStixCoreRelationshipsChart extends Component {
+class EntityStixCoreRelationshipsAreaChart extends Component {
   constructor(props) {
     super(props);
     this.state = { period: 36, interval: 2 };
-  }
-
-  changePeriod(period) {
-    let interval;
-    switch (period) {
-      case 12:
-        interval = 0;
-        break;
-      case 24:
-        interval = 1;
-        break;
-      case 36:
-        interval = 2;
-        break;
-      default:
-        interval = 2;
-    }
-    this.setState({ period, interval });
   }
 
   renderContent() {
     const {
       t,
       entityId,
-      // eslint-disable-next-line camelcase
-      relationship_type,
-      variant,
+      toTypes,
+      relationshipType,
       md,
       field,
       startDate,
       endDate,
     } = this.props;
+    const interval = 'day';
+    const finalStartDate = startDate || monthsAgo(12);
+    const finalEndDate = endDate || now();
     const stixCoreRelationshipsTimeSeriesVariables = {
       fromId: entityId || null,
-      relationship_type,
-      field: field || 'first_seen',
+      toTypes,
+      relationship_type: relationshipType,
+      field: field || 'created_at',
       operation: 'count',
-      startDate:
-        variant === 'explore' && startDate
-          ? startDate
-          : monthsAgo(this.state.period),
-      endDate: variant === 'explore' && endDate ? endDate : now(),
-      interval: 'month',
+      startDate: finalStartDate,
+      endDate: finalEndDate,
+      interval,
     };
     return (
       <QueryRenderer
         query={
-          entityStixCoreRelationshipsChartStixCoreRelationshipTimeSeriesQuery
+          entityStixCoreRelationshipsAreaChartStixCoreRelationshipTimeSeriesQuery
         }
         variables={stixCoreRelationshipsTimeSeriesVariables}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsTimeSeries) {
             return (
-              <ResponsiveContainer
-                height={variant === 'explore' ? '90%' : 300}
-                width="100%"
-              >
+              <ResponsiveContainer height="100%" width="100%">
                 <AreaChart
                   data={props.stixCoreRelationshipsTimeSeries}
                   margin={{
@@ -144,7 +120,7 @@ class EntityStixCoreRelationshipsChart extends Component {
                   <XAxis
                     dataKey="date"
                     stroke="#ffffff"
-                    interval={this.state.interval}
+                    interval={interval}
                     angle={-45}
                     textAnchor="end"
                     tickFormatter={md}
@@ -194,100 +170,43 @@ class EntityStixCoreRelationshipsChart extends Component {
 
   render() {
     const {
-      t,
-      classes,
-      title,
-      variant,
-      configuration,
-      handleOpenConfig,
+      t, classes, title, variant, height,
     } = this.props;
-    if (variant === 'explore') {
-      return (
-        <Paper classes={{ root: classes.paperExplore }} elevation={2}>
-          <Typography
-            variant="h4"
-            gutterBottom={true}
-            style={{ float: 'left', padding: '10px 0 0 10px' }}
-          >
-            {title || t('Entity usage')}
-          </Typography>
-          <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton
-              color="secondary"
-              aria-label="Update"
-              size="small"
-              classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}
-            >
-              <SettingsInputComponent fontSize="inherit" />
-            </IconButton>
-          </Security>
-          <div className="clearfix" />
-          {this.renderContent()}
-        </Paper>
-      );
-    }
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {title || t('Entity usage')}
+      <div style={{ height: height || '100%' }}>
+        <Typography
+          variant={variant === 'inEntity' ? 'h3' : 'h4'}
+          gutterBottom={true}
+        >
+          {title || t('History of relationships')}
         </Typography>
-        <div style={{ float: 'right', marginTop: -6 }}>
-          <Chip
-            classes={{ root: classes.chip }}
-            style={{
-              backgroundColor: this.state.period === 12 ? '#795548' : '#757575',
-            }}
-            label="12M"
-            component="button"
-            onClick={this.changePeriod.bind(this, 12)}
-          />
-          <Chip
-            classes={{ root: classes.chip }}
-            style={{
-              backgroundColor: this.state.period === 24 ? '#795548' : '#757575',
-            }}
-            label="24M"
-            component="button"
-            onClick={this.changePeriod.bind(this, 24)}
-          />
-          <Chip
-            classes={{ root: classes.chip }}
-            style={{
-              backgroundColor: this.state.period === 36 ? '#795548' : '#757575',
-            }}
-            label="36M"
-            component="button"
-            onClick={this.changePeriod.bind(this, 36)}
-          />
-        </div>
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          {this.renderContent()}
-        </Paper>
+        {variant === 'inLine' || variant === 'inEntity' ? (
+          this.renderContent()
+        ) : (
+          <Paper classes={{ root: classes.paper }} elevation={2}>
+            {this.renderContent()}
+          </Paper>
+        )}
       </div>
     );
   }
 }
 
-EntityStixCoreRelationshipsChart.propTypes = {
+EntityStixCoreRelationshipsAreaChart.propTypes = {
   variant: PropTypes.string,
   title: PropTypes.string,
   entityId: PropTypes.string,
-  relationship_type: PropTypes.string,
+  relationshipType: PropTypes.string,
   field: PropTypes.string,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
-  entityTypes: PropTypes.array,
   toTypes: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,
   md: PropTypes.func,
-  configuration: PropTypes.object,
-  handleOpenConfig: PropTypes.func,
 };
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(EntityStixCoreRelationshipsChart);
+)(EntityStixCoreRelationshipsAreaChart);

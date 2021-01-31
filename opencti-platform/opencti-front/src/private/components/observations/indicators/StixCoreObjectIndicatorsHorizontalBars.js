@@ -2,129 +2,107 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import AreaChart from 'recharts/lib/chart/AreaChart';
+import BarChart from 'recharts/lib/chart/BarChart';
 import XAxis from 'recharts/lib/cartesian/XAxis';
 import YAxis from 'recharts/lib/cartesian/YAxis';
-import Area from 'recharts/lib/cartesian/Area';
+import Cell from 'recharts/lib/component/Cell';
+import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
+import Bar from 'recharts/lib/cartesian/Bar';
+import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
 import Tooltip from 'recharts/lib/component/Tooltip';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
-import { monthsAgo, now } from '../../../../utils/Time';
+import { itemColor } from '../../../../utils/Colors';
+import Theme from '../../../../components/ThemeDark';
+import { truncate } from '../../../../utils/String';
 
 const styles = () => ({
   paper: {
-    minHeight: 280,
-    height: '100%',
-    margin: '4px 0 0 0',
-    padding: '0 0 10px 0',
+    height: 300,
+    minHeight: 300,
+    maxHeight: 300,
+    margin: '10px 0 0 0',
+    padding: 0,
     borderRadius: 6,
-  },
-  chip: {
-    fontSize: 10,
-    height: 20,
-    marginLeft: 10,
   },
 });
 
-const stixCoreObjectReportsAreaChartTimeSeriesQuery = graphql`
-  query StixCoreObjectReportsAreaChartTimeSeriesQuery(
+const stixCoreObjectIndicatorsHorizontalBarsDistributionQuery = graphql`
+  query StixCoreObjectIndicatorsHorizontalBarsDistributionQuery(
     $objectId: String
-    $authorId: String
-    $reportClass: String
     $field: String!
     $operation: StatsOperation!
-    $startDate: DateTime!
-    $endDate: DateTime!
-    $interval: String!
+    $limit: Int
   ) {
-    reportsTimeSeries(
+    indicatorsDistribution(
       objectId: $objectId
-      authorId: $authorId
-      reportType: $reportClass
       field: $field
       operation: $operation
-      startDate: $startDate
-      endDate: $endDate
-      interval: $interval
+      limit: $limit
     ) {
-      date
+      label
       value
+      entity {
+        ... on Identity {
+          name
+        }
+      }
     }
   }
 `;
 
-class StixCoreObjectReportsAreaChart extends Component {
+const tickFormatter = (title) => truncate(title, 10);
+
+class StixCoreObjectIndicatorsHorizontalBars extends Component {
   renderContent() {
-    const {
-      t,
-      md,
-      reportType,
-      startDate,
-      endDate,
-      stixCoreObjectId,
-      authorId,
-    } = this.props;
-    const interval = 'day';
-    const finalStartDate = startDate || monthsAgo(12);
-    const finalEndDate = endDate || now();
-    let reportsTimeSeriesVariables;
-    if (authorId) {
-      reportsTimeSeriesVariables = {
-        authorId,
-        objectId: null,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    } else {
-      reportsTimeSeriesVariables = {
-        authorId: null,
-        objectId: stixCoreObjectId,
-        reportType: reportType || null,
-        field: 'created_at',
-        operation: 'count',
-        startDate: finalStartDate,
-        endDate: finalEndDate,
-        interval,
-      };
-    }
+    const { t, stixCoreObjectId, field } = this.props;
+    const indicatorsDistributionVariables = {
+      objectId: stixCoreObjectId,
+      field: field || 'indicator_types',
+      operation: 'count',
+      limit: 8,
+    };
     return (
       <QueryRenderer
-        query={stixCoreObjectReportsAreaChartTimeSeriesQuery}
-        variables={reportsTimeSeriesVariables}
+        query={stixCoreObjectIndicatorsHorizontalBarsDistributionQuery}
+        variables={indicatorsDistributionVariables}
         render={({ props }) => {
-          if (props && props.reportsTimeSeries) {
+          if (
+            props
+            && props.indicatorsDistribution
+            && props.indicatorsDistribution.length > 0
+          ) {
             return (
               <ResponsiveContainer height="100%" width="100%">
-                <AreaChart
-                  data={props.reportsTimeSeries}
+                <BarChart
+                  layout="vertical"
+                  data={props.indicatorsDistribution}
                   margin={{
                     top: 20,
-                    right: 0,
-                    bottom: 20,
-                    left: -10,
+                    right: 20,
+                    bottom: 0,
+                    left: 0,
                   }}
                 >
-                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
                   <XAxis
-                    dataKey="date"
+                    type="number"
+                    dataKey="value"
                     stroke="#ffffff"
-                    interval={interval}
-                    textAnchor="end"
-                    angle={-30}
-                    tickFormatter={md}
+                    allowDecimals={false}
                   />
-                  <YAxis stroke="#ffffff" />
+                  <YAxis
+                    stroke="#ffffff"
+                    dataKey={field.includes('.') ? 'entity.name' : 'label'}
+                    type="category"
+                    angle={-30}
+                    textAnchor="end"
+                    tickFormatter={tickFormatter}
+                  />
+                  <CartesianGrid strokeDasharray="2 2" stroke="#0f181f" />
                   <Tooltip
                     cursor={{
                       fill: 'rgba(0, 0, 0, 0.2)',
@@ -136,17 +114,20 @@ class StixCoreObjectReportsAreaChart extends Component {
                       fontSize: 12,
                       borderRadius: 10,
                     }}
-                    labelFormatter={md}
                   />
-                  <Area
-                    type="monotone"
-                    dataKey="value"
-                    stroke={Theme.palette.primary.main}
-                    strokeWidth={2}
+                  <Bar
                     fill={Theme.palette.primary.main}
-                    fillOpacity={0.1}
-                  />
-                </AreaChart>
+                    dataKey="value"
+                    barSize={15}
+                  >
+                    {props.indicatorsDistribution.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={itemColor(entry.entity.name)}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
               </ResponsiveContainer>
             );
           }
@@ -190,7 +171,7 @@ class StixCoreObjectReportsAreaChart extends Component {
     return (
       <div style={{ height: height || '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {title || t('Reports history')}
+          {title || t('Indicators distribution')}
         </Typography>
         {variant !== 'inLine' ? (
           <Paper classes={{ root: classes.paper }} elevation={2}>
@@ -204,15 +185,15 @@ class StixCoreObjectReportsAreaChart extends Component {
   }
 }
 
-StixCoreObjectReportsAreaChart.propTypes = {
-  classes: PropTypes.object,
+StixCoreObjectIndicatorsHorizontalBars.propTypes = {
   stixCoreObjectId: PropTypes.string,
-  authorId: PropTypes.string,
+  title: PropTypes.string,
+  field: PropTypes.string,
+  classes: PropTypes.object,
   t: PropTypes.func,
-  md: PropTypes.func,
 };
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCoreObjectReportsAreaChart);
+)(StixCoreObjectIndicatorsHorizontalBars);
