@@ -504,7 +504,7 @@ export const distributionRelations = async (options) => {
     noDirection = false,
   } = options;
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
-  const finalDateAttribute = isStixMetaRelationship(entityType) ? 'created_at' : dateAttribute;
+  const finalDateAttribute = dateAttribute || 'created_at';
   // Using elastic can only be done if the distribution is a count on types
   const distributionData = await elAggregationRelationsCount(
     entityType,
