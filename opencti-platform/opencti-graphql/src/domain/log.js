@@ -6,7 +6,7 @@ import { EVENT_TYPE_CREATE } from '../database/rabbitmq';
 import { findById, SYSTEM_USER } from './user';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
 import { loadById, timeSeriesEntities } from '../database/middleware';
-import { READ_INDEX_HISTORY } from '../database/utils';
+import { READ_INDEX_HISTORY, INDEX_HISTORY } from '../database/utils';
 
 export const findAll = (args) => {
   const finalArgs = R.pipe(
@@ -47,5 +47,5 @@ export const logsTimeSeries = (args) => {
 
 export const logsWorkerConfig = () => ({
   elasticsearch_url: conf.get('elasticsearch:url'),
-  elasticsearch_index: READ_INDEX_HISTORY,
+  elasticsearch_index: INDEX_HISTORY,
 });
