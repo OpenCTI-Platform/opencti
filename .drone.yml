@@ -12,7 +12,7 @@ steps:
     MINIO__ENDPOINT: minio
     RABBITMQ__HOSTNAME: rabbitmq
   commands:
-  - apk add build-base git
+  - apk add build-base git libffi-dev
   - cd opencti-platform/opencti-graphql
   - yarn install
   - yarn build

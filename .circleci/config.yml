@@ -32,7 +32,7 @@ jobs:
       - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
     steps:
       - run:
-          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic
+          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic libffi-dev
       - checkout
       - run: 
           working_directory: ~/opencti_musl/opencti-platform/opencti-front
