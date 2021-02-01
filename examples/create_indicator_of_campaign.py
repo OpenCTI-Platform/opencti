@@ -29,8 +29,8 @@ indicator = opencti_api_client.indicator.create(
     name="C2 server of the new campaign",
     description="This is the C2 server of the campaign",
     pattern_type="stix",
-    indicator_pattern="[domain-name:value = 'www.5z8.info' AND domain-name:resolves_to_refs[*].value = '198.51.100.1/32']",
-    main_observable_type="IPv4-Addr",
+    pattern="[domain-name:value = 'www.5z8.info' AND domain-name:resolves_to_refs[*].value = '198.51.100.1/32']",
+    x_opencti_main_observable_type="IPv4-Addr",
     valid_from=date,
 )
 print(indicator)
