@@ -15,7 +15,8 @@ RUN apk add --update \
     python3 \
     python3-dev \
     py-pip \
-    build-base
+    build-base \
+    libffi-dev
 
 # Install Python
 RUN echo "**** install Python ****" && \
