@@ -912,6 +912,7 @@ class ReportKnowledgeGraphComponent extends Component {
                 (n) => n.node,
                 pathOr([], ['objectMarking', 'edges'], report),
               )}
+              targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
             />
             <StixCoreRelationshipCreation
               open={openCreateRelation}

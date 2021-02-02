@@ -157,7 +157,6 @@ class ContainerAddStixCoreObjects extends Component {
 
   renderEntityCreation(paginationOptions) {
     const { targetStixCoreObjectTypes } = this.props;
-
     if (
       targetStixCoreObjectTypes
       && ContainerAddStixCoreObjects.isTypeDomainObject(
@@ -321,15 +320,14 @@ class ContainerAddStixCoreObjects extends Component {
     const renderedTypes = types.map((type) => (
       <Chip
         key={type}
-        variant="outlined"
         color="secondary"
-        style={{ marginLeft: '5px' }}
+        style={{ marginLeft: '10px' }}
         label={t(`entity_${type}`)}
         onDelete={this.onSearchTypeFilterDelete.bind(this, type)}
       />
     ));
 
-    return <div style={{ position: 'fixed' }}>{renderedTypes}</div>;
+    return <div style={{ float: 'left', margin: '-3px 0 0 5px' }}>{renderedTypes}</div>;
   }
 
   render() {
