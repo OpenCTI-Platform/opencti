@@ -348,7 +348,7 @@ export const loginFromProvider = async (email, name) => {
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
   }
   // update the name
-  const userToken = await loadThroughGetTo(user, user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
+  const userToken = await loadThroughGetTo(SYSTEM_USER, user.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
   const inputName = { key: 'name', value: [name] };
   await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
