@@ -74,7 +74,6 @@ import {
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
-  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
@@ -87,6 +86,7 @@ import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   booleanAttributes,
+  dateAttributes,
   dictAttributes,
   isDictionaryAttribute,
   isMultipleAttribute,
@@ -119,6 +119,7 @@ import {
   prepareDate,
   UNTIL_END,
   UNTIL_END_STR,
+  utcDate,
   yearFormat,
 } from '../utils/format';
 
@@ -693,8 +694,14 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     }
   } else {
     finalVal = value;
-    if (!forceUpdate && R.equals(instance[key], R.head(value))) {
-      return {}; // No need to update the attribute
+    const isDate = dateAttributes.includes(key);
+    if (!forceUpdate) {
+      if (isDate && utcDate(instance[key]).isSame(utcDate(R.head(value)))) {
+        return {};
+      }
+      if (R.equals(instance[key], R.head(value))) {
+        return {}; // No need to update the attribute
+      }
     }
   }
   // endregion
@@ -1749,7 +1756,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       // We can upsert element except the aliases that are part of other entities
       const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
       const key = resolveAliasesField(type);
-      const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
+      const concurrentAliases = R.uniq(R.flatten(R.map((c) => [c[key], c.name], concurrentEntities)));
       const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
       const inputAliases = { ...input, [key]: filteredAliases };
       return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
