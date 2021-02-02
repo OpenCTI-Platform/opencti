@@ -26,7 +26,7 @@ export const listenServer = async () => {
       serverPromise.then(({ httpServer, seeMiddleware }) => {
         httpServer.on('close', () => {
           if (seeMiddleware) seeMiddleware.shutdown();
-          if (expiredManager) expiredManager.shutdown();
+          expiredManager.shutdown();
         });
         httpServer.listen(PORT, () => {
           logger.info(`[OPENCTI] Servers ready on port ${PORT}`);
