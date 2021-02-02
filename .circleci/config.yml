@@ -7,7 +7,7 @@ jobs:
       - image: nikolaik/python-nodejs:python3.8-nodejs12
     steps:
       - run:
-          command: apt-get update && apt-get install -y build-essential
+          command: apt-get update && apt-get install -y build-essential libffi-dev
       - checkout
       - run: 
           working_directory: ~/opencti/opencti-platform/opencti-front
@@ -32,7 +32,7 @@ jobs:
       - image: nikolaik/python-nodejs:python3.8-nodejs12-alpine
     steps:
       - run:
-          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic
+          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic libffi-dev
       - checkout
       - run: 
           working_directory: ~/opencti_musl/opencti-platform/opencti-front

@@ -16,6 +16,7 @@ import Typography from '@material-ui/core/Typography';
 import { QueryRenderer } from '../../../../relay/environment';
 import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
+import { monthsAgo, now } from '../../../../utils/Time';
 
 const styles = () => ({
   paper: {
@@ -59,12 +60,14 @@ class ReportsAreaChart extends Component {
       t, md, reportType, startDate, endDate,
     } = this.props;
     const interval = 'day';
+    const finalStartDate = startDate || monthsAgo(12);
+    const finalEndDate = endDate || now();
     const reportsTimeSeriesVariables = {
       reportType: reportType || null,
       field: 'created_at',
       operation: 'count',
-      startDate,
-      endDate,
+      startDate: finalStartDate,
+      endDate: finalEndDate,
       interval,
     };
     return (

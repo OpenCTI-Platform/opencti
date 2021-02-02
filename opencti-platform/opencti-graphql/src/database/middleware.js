@@ -76,7 +76,6 @@ import {
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
-  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
@@ -89,6 +88,7 @@ import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
 import { isStixRelationShipExceptMeta } from '../schema/stixRelationship';
 import {
   booleanAttributes,
+  dateAttributes,
   dictAttributes,
   isDictionaryAttribute,
   isMultipleAttribute,
@@ -509,7 +509,7 @@ export const distributionRelations = async (user, options) => {
   const { limit = 50, order } = options;
   const { relationship_type: relationshipType, dateAttribute = 'created_at' } = options;
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
-  const distDateAttribute = isStixMetaRelationship(entityType) ? 'created_at' : dateAttribute;
+  const distDateAttribute = dateAttribute || 'created_at';
   // Using elastic can only be done if the distribution is a count on types
   const opts = { ...options, dateAttribute: distDateAttribute };
   const distributionData = await elAggregationRelationsCount(user, entityType, opts);
@@ -688,8 +688,14 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     }
   } else {
     finalVal = value;
-    if (!forceUpdate && R.equals(instance[key], R.head(value))) {
-      return {}; // No need to update the attribute
+    const isDate = dateAttributes.includes(key);
+    if (!forceUpdate) {
+      if (isDate && utcDate(instance[key]).isSame(utcDate(R.head(value)))) {
+        return {};
+      }
+      if (R.equals(instance[key], R.head(value))) {
+        return {}; // No need to update the attribute
+      }
     }
   }
   // endregion
@@ -1719,36 +1725,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     }
     // If creation is not by a reference
     // We can in best effort try to merge a common stix_id
-    if (input.update === false) {
-      // Sometimes multiple entities can match
-      // Looking for aliasA, aliasB, find in different entities for example
-      // In this case, we try to find if one match the standard id
-      const existingByStandard = R.find((e) => e.standard_id === standardId, existingEntities);
-      if (existingByStandard) {
-        // If a STIX ID has been passed in the creation
-        if (input.stix_id) {
-          // Find the entity corresponding to this STIX ID
-          const stixIdFinder = (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id);
-          const existingByGivenStixId = R.find(stixIdFinder, existingEntities);
-          // If the entity exists by the stix id and not the same as the previously founded.
-          if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
-            // Merge this entity into the one matching the standard id
-            const existingByStandardPromise = loadByIdFullyResolved(user, existingByStandard.internal_id);
-            const existingByGivenStixIdPromise = loadByIdFullyResolved(user, existingByGivenStixId.internal_id);
-            const [target, source] = await Promise.all([existingByStandardPromise, existingByGivenStixIdPromise]);
-            await mergeEntities(user, target, [source], { locks: participantIds });
-          }
-        }
-        // In this mode we can safely consider this entity like the existing one.
-        // We can upsert element except the aliases that are part of other entities
-        const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
-        const key = resolveAliasesField(type);
-        const concurrentAliases = R.uniq(R.flatten(R.map((c) => c[key], concurrentEntities)));
-        const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
-        const inputAliases = { ...input, [key]: filteredAliases };
-        return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
-      }
-    } else {
+    if (input.update === true) {
       // The new one is new reference, merge all found entities
       // Target entity is existingByStandard by default or any other
       const targetEntity = R.find((e) => e.standard_id === standardId, existingEntities) || R.head(existingEntities);
@@ -1761,6 +1738,35 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       await mergeEntities(user, target, sources, { locks: participantIds });
       return upsertElementRaw(user, target.internal_id, type, input);
     }
+    // Sometimes multiple entities can match
+    // Looking for aliasA, aliasB, find in different entities for example
+    // In this case, we try to find if one match the standard id
+    const existingByStandard = R.find((e) => e.standard_id === standardId, existingEntities);
+    if (existingByStandard) {
+      // If a STIX ID has been passed in the creation
+      if (input.stix_id) {
+        // Find the entity corresponding to this STIX ID
+        const stixIdFinder = (e) => e.standard_id === input.stix_id || e.x_opencti_stix_ids.includes(input.stix_id);
+        const existingByGivenStixId = R.find(stixIdFinder, existingEntities);
+        // If the entity exists by the stix id and not the same as the previously founded.
+        if (existingByGivenStixId && existingByGivenStixId.internal_id !== existingByStandard.internal_id) {
+          // Merge this entity into the one matching the standard id
+          const existingByStandardPromise = loadByIdFullyResolved(existingByStandard.internal_id);
+          const existingByGivenStixIdPromise = loadByIdFullyResolved(existingByGivenStixId.internal_id);
+          const [target, source] = await Promise.all([existingByStandardPromise, existingByGivenStixIdPromise]);
+          await mergeEntities(user, target, [source], { locks: participantIds });
+        }
+      }
+      // In this mode we can safely consider this entity like the existing one.
+      // We can upsert element except the aliases that are part of other entities
+      const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
+      const key = resolveAliasesField(type);
+      const concurrentAliases = R.uniq(R.flatten(R.map((c) => [c[key], c.name], concurrentEntities)));
+      const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
+      const inputAliases = { ...input, [key]: filteredAliases };
+      return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
+    }
+
     // If not we dont know what to do, just throw an exception.
     const entityIds = R.map((i) => i.standard_id, existingEntities);
     throw UnsupportedError('Cant upsert entity. Too many entities resolved', { input, entityIds });
