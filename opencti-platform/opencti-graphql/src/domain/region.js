@@ -13,28 +13,28 @@ import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../sc
 import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
-export const findById = (regionId) => {
-  return loadById(regionId, ENTITY_TYPE_LOCATION_REGION);
+export const findById = (user, regionId) => {
+  return loadById(user, regionId, ENTITY_TYPE_LOCATION_REGION);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_LOCATION_REGION], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_LOCATION_REGION], args);
 };
 
-export const batchParentRegions = (regionIds) => {
-  return batchListThroughGetTo(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+export const batchParentRegions = (user, regionIds) => {
+  return batchListThroughGetTo(user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
-export const batchSubRegions = (regionIds) => {
-  return batchListThroughGetFrom(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+export const batchSubRegions = (user, regionIds) => {
+  return batchListThroughGetFrom(user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
-export const batchCountries = (regionIds) => {
-  return batchListThroughGetFrom(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
+export const batchCountries = (user, regionIds) => {
+  return batchListThroughGetFrom(user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_COUNTRY);
 };
 
-export const batchIsSubRegion = async (regionIds) => {
-  const batchRegions = await batchLoadThroughGetTo(regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
+export const batchIsSubRegion = async (user, regionIds) => {
+  const batchRegions = await batchLoadThroughGetTo(user, regionIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
   return batchRegions.map((b) => b !== undefined);
 };
 

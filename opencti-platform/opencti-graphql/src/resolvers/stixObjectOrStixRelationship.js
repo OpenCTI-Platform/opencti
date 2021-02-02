@@ -5,8 +5,8 @@ import { onlyStableStixIds } from '../database/stix';
 
 const stixObjectOrStixRelationshipResolvers = {
   Query: {
-    stixObjectOrStixRelationship: (_, { id }) => findById(id),
-    stixCoreObjectOrStixCoreRelationship: (_, { id }) => findById(id),
+    stixObjectOrStixRelationship: (_, { id }, { user }) => findById(user, id),
+    stixCoreObjectOrStixCoreRelationship: (_, { id }, { user }) => findById(user, id),
   },
   StixObject: {
     x_opencti_stix_ids: (object) => onlyStableStixIds(object.x_opencti_stix_ids || []),

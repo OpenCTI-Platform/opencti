@@ -36,21 +36,22 @@ import { complexAttributeToApiFormat } from '../schema/fieldDataAdapter';
 import { stixCyberObservableOptions } from '../schema/stixCyberObservable';
 import { initBatchLoader } from '../database/middleware';
 
-const indicatorsLoader = initBatchLoader(batchIndicators);
+const indicatorsLoader = (user) => initBatchLoader(user, batchIndicators);
 
 const stixCyberObservableResolvers = {
   Query: {
-    stixCyberObservable: (_, { id }) => findById(id),
-    stixCyberObservables: (_, args) => findAll(args),
-    stixCyberObservablesTimeSeries: (_, args) => stixCyberObservablesTimeSeries(args),
-    stixCyberObservablesNumber: (_, args) => stixCyberObservablesNumber(args),
-    stixCyberObservablesDistribution: (_, args) => {
+    stixCyberObservable: (_, { id }, { user }) => findById(user, id),
+    stixCyberObservables: (_, args, { user }) => findAll(user, args),
+    stixCyberObservablesTimeSeries: (_, args, { user }) => stixCyberObservablesTimeSeries(user, args),
+    stixCyberObservablesNumber: (_, args, { user }) => stixCyberObservablesNumber(user, args),
+    stixCyberObservablesDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return stixCyberObservableDistributionByEntity(args);
+        return stixCyberObservableDistributionByEntity(user, args);
       }
-      return stixCyberObservableDistribution(args);
+      return stixCyberObservableDistribution(user, args);
     },
-    stixCyberObservablesExportFiles: (_, { first }) => filesListing(first, 'export/Stix-Cyber-Observable/'),
+    stixCyberObservablesExportFiles: (_, { first }, { user }) =>
+      filesListing(user, first, 'export/Stix-Cyber-Observable/'),
   },
   StixCyberObservablesFilter: stixCyberObservableOptions.StixCyberObservablesFilter,
   HashedObservable: {
@@ -64,11 +65,11 @@ const stixCyberObservableResolvers = {
       return 'Unknown';
     },
     observable_value: (stixCyberObservable) => observableValue(stixCyberObservable),
-    indicators: (stixCyberObservable) => indicatorsLoader.load(stixCyberObservable.id),
-    jobs: (stixCyberObservable, args) => worksForSource(stixCyberObservable.id, args),
-    connectors: (stixCyberObservable, { onlyAlive = false }) =>
-      connectorsForEnrichment(stixCyberObservable.entity_type, onlyAlive),
-    stixCoreRelationships: (rel, args) => stixCoreRelationships(rel.id, args),
+    indicators: (stixCyberObservable, _, { user }) => indicatorsLoader(user).load(stixCyberObservable.id),
+    jobs: (stixCyberObservable, args, { user }) => worksForSource(user, stixCyberObservable.id, args),
+    connectors: (stixCyberObservable, { onlyAlive = false }, { user }) =>
+      connectorsForEnrichment(user, stixCyberObservable.entity_type, onlyAlive),
+    stixCoreRelationships: (rel, args, { user }) => stixCoreRelationships(user, rel.id, args),
     toStix: (stixCyberObservable) => JSON.stringify(convertDataToStix(stixCyberObservable)),
   },
   Mutation: {

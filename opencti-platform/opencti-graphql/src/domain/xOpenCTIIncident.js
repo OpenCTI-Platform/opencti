@@ -6,22 +6,22 @@ import { ENTITY_TYPE_X_OPENCTI_INCIDENT } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { now } from '../utils/format';
 
-export const findById = (incidentId) => {
-  return loadById(incidentId, ENTITY_TYPE_X_OPENCTI_INCIDENT);
+export const findById = (user, incidentId) => {
+  return loadById(user, incidentId, ENTITY_TYPE_X_OPENCTI_INCIDENT);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_X_OPENCTI_INCIDENT], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_X_OPENCTI_INCIDENT], args);
 };
 
 // region time series
-export const xOpenCTIIncidentsTimeSeriesByEntity = async (args) => {
+export const xOpenCTIIncidentsTimeSeriesByEntity = async (user, args) => {
   const filters = [{ isRelation: true, type: args.relationship_type, value: args.objectId }];
-  return timeSeriesEntities(ENTITY_TYPE_X_OPENCTI_INCIDENT, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_X_OPENCTI_INCIDENT, filters, args);
 };
 
-export const xOpenCTIIncidentsTimeSeries = (args) => {
-  return timeSeriesEntities(ENTITY_TYPE_X_OPENCTI_INCIDENT, [], args);
+export const xOpenCTIIncidentsTimeSeries = (user, args) => {
+  return timeSeriesEntities(user, ENTITY_TYPE_X_OPENCTI_INCIDENT, [], args);
 };
 // endregion
 

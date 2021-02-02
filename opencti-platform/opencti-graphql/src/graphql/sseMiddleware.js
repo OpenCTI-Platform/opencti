@@ -1,11 +1,12 @@
 import * as R from 'ramda';
 import * as bodyParser from 'body-parser';
 import { logger, OPENCTI_TOKEN } from '../config/conf';
-import { authentication, BYPASS, STREAMAPI } from '../domain/user';
+import { authentication, STREAMAPI } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
 import { getStreamRange, createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
+import { BYPASS } from '../schema/general';
 
 let heartbeat;
 const KEEP_ALIVE_INTERVAL_MS = 20000;

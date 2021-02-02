@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import {
-  compose, map, pathOr, pipe, propEq, find, filter,
+  compose, map, pathOr, pipe, propEq, find,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
@@ -102,7 +102,6 @@ class GroupEditionPermissionsComponent extends Component {
               const markingDefinitions = pipe(
                 pathOr([], ['markingDefinitions', 'edges']),
                 map((n) => n.node),
-                filter((n) => n.definition_type !== 'statement'),
               )(props);
               return (
                 <List dense={true} className={classes.root}>
@@ -156,6 +155,7 @@ const GroupEditionPermissions = createFragmentContainer(
     group: graphql`
       fragment GroupEditionPermissions_group on Group {
         id
+        default_assignation
         allowed_marking {
           id
         }

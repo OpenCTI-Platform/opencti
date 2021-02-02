@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 import { now } from '../../../src/utils/format';
 
@@ -104,7 +104,6 @@ const READ_QUERY = gql`
 describe('Note resolver standard behavior', () => {
   let noteInternalId;
   let datasetNoteInternalId;
-  let datasetMalwareInternalId;
   const noteStixId = 'note--2cf49568-b812-45fe-8c48-bb0c7d5eb952';
   it('should note created', async () => {
     const CREATE_QUERY = gql`
@@ -153,7 +152,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note.id).toEqual(noteInternalId);
   });
   it('should note stix objects or stix relationships accurate', async () => {
-    const note = await elLoadByIds('note--573f623c-bf68-4f19-9500-d618f0d00af0');
+    const note = await elLoadByIds(ADMIN_USER, 'note--573f623c-bf68-4f19-9500-d618f0d00af0');
     datasetNoteInternalId = note.internal_id;
     const NOTE_STIX_DOMAIN_ENTITIES = gql`
       query note($id: String!) {
@@ -186,8 +185,8 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.note.objects.edges.length).toEqual(5);
   });
   it('should note contains stix object or stix relationship accurate', async () => {
-    const intrusionSet = await elLoadByIds('intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
-    const stixRelationship = await elLoadByIds('relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
+    const intrusionSet = await elLoadByIds(ADMIN_USER, 'intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7');
+    const stixRelationship = await elLoadByIds(ADMIN_USER, 'relationship--9f999fc5-5c74-4964-ab87-ee4c7cdc37a3');
     const NOTE_CONTAINS_STIX_OBJECT_OR_STIX_RELATIONSHIP = gql`
       query noteContainsStixObjectOrStixRelationship($id: String!, $stixObjectOrStixRelationshipId: String!) {
         noteContainsStixObjectOrStixRelationship(
@@ -237,12 +236,11 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries notes for entity to be accurate', async () => {
-    const malware = await elLoadByIds('malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
-    datasetMalwareInternalId = malware.internal_id;
+    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
-        objectId: datasetMalwareInternalId,
+        objectId: malware.internal_id,
         field: 'created',
         operation: 'count',
         startDate: '2020-01-01T00:00:00+00:00',
@@ -255,7 +253,7 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesTimeSeries[3].value).toEqual(0);
   });
   it('should timeseries notes for author to be accurate', async () => {
-    const identity = await elLoadByIds('identity--7b82b010-b1c0-4dae-981f-7756374a17df');
+    const identity = await elLoadByIds(ADMIN_USER, 'identity--7b82b010-b1c0-4dae-981f-7756374a17df');
     const queryResult = await queryAsAdmin({
       query: TIMESERIES_QUERY,
       variables: {
@@ -282,10 +280,11 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesNumber.count).toEqual(2);
   });
   it('should notes number by entity to be accurate', async () => {
+    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const queryResult = await queryAsAdmin({
       query: NUMBER_QUERY,
       variables: {
-        objectId: datasetMalwareInternalId,
+        objectId: malware.internal_id,
         endDate: now(),
       },
     });
@@ -303,10 +302,11 @@ describe('Note resolver standard behavior', () => {
     expect(queryResult.data.notesDistribution.length).toEqual(0);
   });
   it('should notes distribution by entity to be accurate', async () => {
+    const malware = await elLoadByIds(ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c');
     const queryResult = await queryAsAdmin({
       query: DISTRIBUTION_QUERY,
       variables: {
-        objectId: datasetMalwareInternalId,
+        objectId: malware.internal_id,
         field: 'created-by.internal_id',
         operation: 'count',
       },

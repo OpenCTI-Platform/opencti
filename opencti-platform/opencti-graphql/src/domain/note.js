@@ -8,44 +8,45 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT, REL_INDEX_PREFIX } from '../schema/general
 import { elCount } from '../database/elasticSearch';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 
-export const findById = (noteId) => {
-  return loadById(noteId, ENTITY_TYPE_CONTAINER_NOTE);
+export const findById = (user, noteId) => {
+  return loadById(user, noteId, ENTITY_TYPE_CONTAINER_NOTE);
 };
 
-export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_NOTE], args);
+export const findAll = async (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_CONTAINER_NOTE], args);
 };
 
-export const noteContainsStixObjectOrStixRelationship = async (noteId, thingId) => {
+export const noteContainsStixObjectOrStixRelationship = async (user, noteId, thingId) => {
   const args = {
     filters: [
       { key: 'internal_id', values: [noteId] },
       { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  const noteFound = await findAll(args);
+  const noteFound = await findAll(user, args);
   return noteFound.edges.length > 0;
 };
 
 // region series
-export const notesTimeSeries = (args) => {
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_NOTE, [], args);
+export const notesTimeSeries = (user, args) => {
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_NOTE, [], args);
 };
 
-export const notesNumber = (args) => ({
-  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
+export const notesNumber = (user, args) => ({
+  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_NOTE], args)),
   total: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(assoc('types', [ENTITY_TYPE_CONTAINER_NOTE]), dissoc('endDate'))(args)
   ),
 });
 
-export const notesTimeSeriesByEntity = (args) => {
+export const notesTimeSeriesByEntity = (user, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };
 
-export const notesTimeSeriesByAuthor = async (args) => {
+export const notesTimeSeriesByAuthor = async (user, args) => {
   const { authorId } = args;
   const filters = [
     {
@@ -56,11 +57,12 @@ export const notesTimeSeriesByAuthor = async (args) => {
       value: authorId,
     },
   ];
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };
 
-export const notesNumberByEntity = (args) => ({
+export const notesNumberByEntity = (user, args) => ({
   count: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
@@ -70,6 +72,7 @@ export const notesNumberByEntity = (args) => ({
     )(args)
   ),
   total: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
@@ -81,10 +84,10 @@ export const notesNumberByEntity = (args) => ({
   ),
 });
 
-export const notesDistributionByEntity = async (args) => {
+export const notesDistributionByEntity = async (user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(ENTITY_TYPE_CONTAINER_NOTE, filters, args);
+  return distributionEntities(user, ENTITY_TYPE_CONTAINER_NOTE, filters, args);
 };
 // endregion
 

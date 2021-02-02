@@ -11,15 +11,15 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const locationsLoader = initBatchLoader(batchLocations);
+const locationsLoader = (user) => initBatchLoader(user, batchLocations);
 
 const intrusionSetResolvers = {
   Query: {
-    intrusionSet: (_, { id }) => findById(id),
-    intrusionSets: (_, args) => findAll(args),
+    intrusionSet: (_, { id }, { user }) => findById(user, id),
+    intrusionSets: (_, args, { user }) => findAll(user, args),
   },
   IntrusionSet: {
-    locations: (intrusionSet) => locationsLoader.load(intrusionSet.id),
+    locations: (intrusionSet, _, { user }) => locationsLoader(user).load(intrusionSet.id),
   },
   IntrusionSetsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

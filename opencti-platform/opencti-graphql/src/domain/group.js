@@ -18,21 +18,21 @@ import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
-export const findById = (groupId) => {
-  return loadById(groupId, ENTITY_TYPE_GROUP);
+export const findById = (user, groupId) => {
+  return loadById(user, groupId, ENTITY_TYPE_GROUP);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_GROUP], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_GROUP], args);
 };
 
-export const batchMembers = async (groupIds) => {
-  return batchListThroughGetFrom(groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+export const batchMembers = async (user, groupIds) => {
+  return batchListThroughGetFrom(user, groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
 };
 
-export const batchMarkingDefinitions = async (groupIds) => {
+export const batchMarkingDefinitions = async (user, groupIds) => {
   const opts = { paginate: false };
-  return batchListThroughGetTo(groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+  return batchListThroughGetTo(user, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
 };
 
 export const addGroup = async (user, group) => {
@@ -48,7 +48,7 @@ export const groupEditField = async (user, groupId, input) => {
 };
 
 export const groupAddRelation = async (user, groupId, input) => {
-  const group = await loadById(groupId, ENTITY_TYPE_GROUP);
+  const group = await loadById(user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
     throw FunctionalError('Cannot add the relation, Group cannot be found.');
   }
@@ -68,7 +68,7 @@ export const groupAddRelation = async (user, groupId, input) => {
 };
 
 export const groupDeleteRelation = async (user, groupId, fromId, toId, relationshipType) => {
-  const group = await loadById(groupId, ENTITY_TYPE_GROUP);
+  const group = await loadById(user, groupId, ENTITY_TYPE_GROUP);
   if (!group) {
     throw FunctionalError('Cannot delete the relation, Group cannot be found.');
   }
@@ -85,10 +85,10 @@ export const groupDeleteRelation = async (user, groupId, fromId, toId, relations
 
 export const groupCleanContext = async (user, groupId) => {
   await delEditContext(user, groupId);
-  return loadById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return loadById(user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };
 
 export const groupEditContext = async (user, groupId, input) => {
   await setEditContext(user, groupId, input);
-  return loadById(groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+  return loadById(user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };

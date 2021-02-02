@@ -16,13 +16,13 @@ import withCancel from '../graphql/subscriptionWrapper';
 
 const toolResolvers = {
   Query: {
-    workspace: (_, { id }) => findById(id),
-    workspaces: (_, args) => findAll(args),
+    workspace: (_, { id }, { user }) => findById(user, id),
+    workspaces: (_, args, { user }) => findAll(user, args),
   },
   Workspace: {
-    owner: async (workspace) => {
-      const user = await findUserById(workspace.owner);
-      return user || SYSTEM_USER;
+    owner: async (workspace, { user }) => {
+      const findUser = await findUserById(user, workspace.owner);
+      return findUser || SYSTEM_USER;
     },
     editContext: (workspace) => fetchEditContext(workspace.id),
   },

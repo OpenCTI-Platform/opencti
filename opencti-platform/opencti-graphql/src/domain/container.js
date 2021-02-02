@@ -12,11 +12,11 @@ export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
-export const findById = async (containerId) => {
-  return loadById(containerId, ENTITY_TYPE_CONTAINER);
+export const findById = async (user, containerId) => {
+  return loadById(user, containerId, ENTITY_TYPE_CONTAINER);
 };
 
-export const findAll = async (args) => {
+export const findAll = async (user, args) => {
   let types = [];
   if (args.types && args.types.length > 0) {
     types = filter((type) => isStixDomainObjectContainer(type), args.types);
@@ -24,11 +24,11 @@ export const findAll = async (args) => {
   if (types.length === 0) {
     types.push(ENTITY_TYPE_CONTAINER);
   }
-  return listEntities(types, args);
+  return listEntities(user, types, args);
 };
 
 // Entities tab
-export const objects = async (containerId, args) => {
+export const objects = async (user, containerId, args) => {
   const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
   const stixCoreObjectArgs = assoc(
     'filters',
@@ -55,14 +55,14 @@ export const objects = async (containerId, args) => {
       }
     }
     if (haveStixCoreObjectInTypes && !haveStixCoreRelationshipInTypes) {
-      return findAllStixCoreObjects(stixCoreObjectArgs);
+      return findAllStixCoreObjects(user, stixCoreObjectArgs);
     }
     if (haveStixCoreRelationshipInTypes && !haveStixCoreObjectInTypes) {
-      return findAllStixCoreRelationships(stixCoreRelationshipsArgs);
+      return findAllStixCoreRelationships(user, stixCoreRelationshipsArgs);
     }
   }
-  const stixCoreObjects = await findAllStixCoreObjects(stixCoreObjectArgs);
-  const stixCoreRelationships = await findAllStixCoreRelationships(stixCoreRelationshipsArgs);
+  const stixCoreObjects = await findAllStixCoreObjects(user, stixCoreObjectArgs);
+  const stixCoreRelationships = await findAllStixCoreRelationships(user, stixCoreRelationshipsArgs);
   return assoc('edges', concat(stixCoreObjects.edges, stixCoreRelationships.edges), stixCoreObjects);
 };
 // endregion

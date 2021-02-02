@@ -11,6 +11,7 @@ import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
+import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -63,6 +64,7 @@ const groupEditionOverviewFocus = graphql`
 const groupValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
+  default_assignation: Yup.bool(),
 });
 
 class GroupEditionOverviewComponent extends Component {
@@ -92,7 +94,7 @@ class GroupEditionOverviewComponent extends Component {
 
   render() {
     const { t, group, context } = this.props;
-    const initialValues = pick(['name', 'description'], group);
+    const initialValues = pick(['name', 'description', 'default_assignation'], group);
     return (
       <div>
         <Formik
@@ -131,6 +133,20 @@ class GroupEditionOverviewComponent extends Component {
                   />
                 }
               />
+              <Field
+                  component={SwitchField}
+                  type="checkbox"
+                  name="default_assignation"
+                  label={t('Granted by default at user creation')}
+                  containerstyle={{ marginTop: 20 }}
+                  onChange={this.handleSubmitField.bind(this)}
+                  helperText={
+                    <SubscriptionFocus
+                        context={context}
+                        fieldName="default_assignation"
+                    />
+                  }
+              />
             </Form>
           )}
         </Formik>
@@ -155,6 +171,7 @@ const GroupEditionOverview = createFragmentContainer(
         id
         name
         description
+        default_assignation
       }
     `,
   },

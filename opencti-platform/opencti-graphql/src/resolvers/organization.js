@@ -11,15 +11,15 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const sectorsLoader = initBatchLoader(batchSectors);
+const sectorsLoader = (user) => initBatchLoader(user, batchSectors);
 
 const organizationResolvers = {
   Query: {
-    organization: (_, { id }) => findById(id),
-    organizations: (_, args) => findAll(args),
+    organization: (_, { id }, { user }) => findById(user, id),
+    organizations: (_, args, { user }) => findAll(user, args),
   },
   Organization: {
-    sectors: (organization) => sectorsLoader.load(organization.id),
+    sectors: (organization, _, { user }) => sectorsLoader(user).load(organization.id),
   },
   OrganizationsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

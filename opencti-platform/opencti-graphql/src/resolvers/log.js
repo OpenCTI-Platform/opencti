@@ -3,14 +3,14 @@ import { findById, SYSTEM_USER } from '../domain/user';
 
 const logResolvers = {
   Query: {
-    logs: (_, args) => findAll(args),
-    logsTimeSeries: (_, args) => logsTimeSeries(args),
+    logs: (_, args, { user }) => findAll(user, args),
+    logsTimeSeries: (_, args, { user }) => logsTimeSeries(user, args),
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
-    user: async (log) => {
-      const user = await findById(log.applicant_id || log.user_id);
-      return user || SYSTEM_USER;
+    user: async (log, _, { user }) => {
+      const findUser = await findById(user, log.applicant_id || log.user_id);
+      return findUser || SYSTEM_USER;
     },
   },
   LogsFilter: {

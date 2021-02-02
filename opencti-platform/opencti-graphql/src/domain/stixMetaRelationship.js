@@ -4,7 +4,7 @@ import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
 
-const stixMetaRelationshipsNumber = (args) => {
+const stixMetaRelationshipsNumber = (user, args) => {
   const types = [];
   if (args.type) {
     if (isStixMetaRelationship(args.type)) {
@@ -16,8 +16,8 @@ const stixMetaRelationshipsNumber = (args) => {
   }
   const finalArgs = assoc('types', types, args);
   return {
-    count: elCount(READ_INDEX_STIX_META_RELATIONSHIPS, finalArgs),
-    total: elCount(READ_INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
+    count: elCount(user, READ_INDEX_STIX_META_RELATIONSHIPS, finalArgs),
+    total: elCount(user, READ_INDEX_STIX_META_RELATIONSHIPS, dissoc('endDate', finalArgs)),
   };
 };
 

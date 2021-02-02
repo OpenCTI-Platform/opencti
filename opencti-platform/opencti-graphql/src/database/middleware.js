@@ -49,6 +49,8 @@ import {
   isFieldContributingToStandardId,
   NAME_FIELD,
   normalizeName,
+  REVOKED,
+  VALID_UNTIL,
   X_MITRE_ID_FIELD,
 } from '../schema/identifier';
 import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
@@ -129,9 +131,9 @@ export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 // endregion
 
 // region Loader common
-export const initBatchLoader = (loader) => {
+export const initBatchLoader = (user, loader) => {
   const opts = { cache: false, maxBatchSize: MAX_BATCH_SIZE };
-  return new DataLoader((ids) => loader(ids), opts);
+  return new DataLoader((ids) => loader(user, ids), opts);
 };
 export const querySubTypes = async ({ type }) => {
   const sortByLabel = R.sortBy(R.toLower);
@@ -155,7 +157,7 @@ export const queryAttributes = async (type) => {
 
 // region bulk loading method
 // Listing handle
-const batchListThrough = async (sources, sourceSide, relationType, targetEntityType, opts = {}) => {
+const batchListThrough = async (user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
   const { paginate = true, batched = true } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
@@ -178,13 +180,13 @@ const batchListThrough = async (sources, sourceSide, relationType, targetEntityT
   };
   const filters = [directionInternalIdFilter, oppositeTypeFilter];
   // Resolve all relations
-  const relations = await elPaginate(READ_RELATIONSHIPS_INDICES, {
+  const relations = await elPaginate(user, READ_RELATIONSHIPS_INDICES, {
     connectionFormat: false,
     filters,
     types: [relationType],
   });
   // For each relation resolved the target entity
-  const targets = await elFindByIds(R.uniq(relations.map((s) => s[`${opposite}Id`])));
+  const targets = await elFindByIds(user, R.uniq(relations.map((s) => s[`${opposite}Id`])));
   // Group and rebuild the result
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
   if (paginate) {
@@ -204,23 +206,23 @@ const batchListThrough = async (sources, sourceSide, relationType, targetEntityT
   }
   return R.flatten(elements);
 };
-export const batchListThroughGetFrom = async (sources, relationType, targetEntityType, opts = {}) => {
-  return batchListThrough(sources, 'to', relationType, targetEntityType, opts);
+export const batchListThroughGetFrom = async (user, sources, relationType, targetEntityType, opts = {}) => {
+  return batchListThrough(user, sources, 'to', relationType, targetEntityType, opts);
 };
-export const listThroughGetFrom = async (sources, relationType, targetEntityType, opts = { paginate: false }) => {
+export const listThroughGetFrom = async (user, sources, relationType, targetEntityType, opts = { paginate: false }) => {
   const options = { ...opts, batched: false };
-  return batchListThrough(sources, 'to', relationType, targetEntityType, options);
+  return batchListThrough(user, sources, 'to', relationType, targetEntityType, options);
 };
-export const batchListThroughGetTo = async (sources, relationType, targetEntityType, opts = {}) => {
-  return batchListThrough(sources, 'from', relationType, targetEntityType, opts);
+export const batchListThroughGetTo = async (user, sources, relationType, targetEntityType, opts = {}) => {
+  return batchListThrough(user, sources, 'from', relationType, targetEntityType, opts);
 };
-export const listThroughGetTo = async (sources, relationType, targetEntityType, opts = { paginate: false }) => {
+export const listThroughGetTo = async (user, sources, relationType, targetEntityType, opts = { paginate: false }) => {
   const options = { ...opts, batched: false };
-  return batchListThrough(sources, 'from', relationType, targetEntityType, options);
+  return batchListThrough(user, sources, 'from', relationType, targetEntityType, options);
 };
 // Unary handle
-const loadThrough = async (sources, sourceSide, relationType, targetEntityType) => {
-  const elements = await batchListThrough(sources, sourceSide, relationType, targetEntityType, {
+const loadThrough = async (user, sources, sourceSide, relationType, targetEntityType) => {
+  const elements = await batchListThrough(user, sources, sourceSide, relationType, targetEntityType, {
     paginate: false,
     batched: false,
   });
@@ -229,19 +231,19 @@ const loadThrough = async (sources, sourceSide, relationType, targetEntityType) 
   }
   return R.head(elements);
 };
-export const batchLoadThroughGetFrom = async (sources, relationType, targetEntityType) => {
-  const data = await batchListThroughGetFrom(sources, relationType, targetEntityType, { paginate: false });
+export const batchLoadThroughGetFrom = async (user, sources, relationType, targetEntityType) => {
+  const data = await batchListThroughGetFrom(user, sources, relationType, targetEntityType, { paginate: false });
   return data.map((b) => b && R.head(b));
 };
-export const loadThroughGetFrom = async (sources, relationType, targetEntityType) => {
-  return loadThrough(sources, 'to', relationType, targetEntityType);
+export const loadThroughGetFrom = async (user, sources, relationType, targetEntityType) => {
+  return loadThrough(user, sources, 'to', relationType, targetEntityType);
 };
-export const batchLoadThroughGetTo = async (sources, relationType, targetEntityType) => {
-  const data = await batchListThroughGetTo(sources, relationType, targetEntityType, { paginate: false });
+export const batchLoadThroughGetTo = async (user, sources, relationType, targetEntityType) => {
+  const data = await batchListThroughGetTo(user, sources, relationType, targetEntityType, { paginate: false });
   return data.map((b) => b && R.head(b));
 };
-export const loadThroughGetTo = async (sources, relationType, targetEntityType) => {
-  return loadThrough(sources, 'from', relationType, targetEntityType);
+export const loadThroughGetTo = async (user, sources, relationType, targetEntityType) => {
+  return loadThrough(user, sources, 'from', relationType, targetEntityType);
 };
 // Standard listing
 const buildRelationsFilter = (relationshipType, args) => {
@@ -337,21 +339,21 @@ const buildRelationsFilter = (relationshipType, args) => {
 const buildEntitiesFilter = (entityTypes, args) => {
   return R.assoc('types', entityTypes, args);
 };
-export const listEntities = async (entityTypes, args = {}) => {
+export const listEntities = async (user, entityTypes, args = {}) => {
   const paginateArgs = buildEntitiesFilter(entityTypes, args);
-  return elPaginate(READ_ENTITIES_INDICES, paginateArgs);
+  return elPaginate(user, READ_ENTITIES_INDICES, paginateArgs);
 };
-export const listRelations = async (relationshipType, args) => {
+export const listRelations = async (user, relationshipType, args) => {
   const paginateArgs = buildRelationsFilter(relationshipType, args);
-  return elPaginate(READ_RELATIONSHIPS_INDICES, paginateArgs);
+  return elPaginate(user, READ_RELATIONSHIPS_INDICES, paginateArgs);
 };
-export const listAllRelations = async (relationshipType, args) => {
+export const listAllRelations = async (user, relationshipType, args) => {
   const paginateArgs = buildRelationsFilter(relationshipType, args);
-  return elList(READ_RELATIONSHIPS_INDICES, paginateArgs);
+  return elList(user, READ_RELATIONSHIPS_INDICES, paginateArgs);
 };
-export const loadEntity = async (entityTypes, args = {}) => {
+export const loadEntity = async (user, entityTypes, args = {}) => {
   const opts = { ...args, connectionFormat: false };
-  const entities = await listEntities(entityTypes, opts);
+  const entities = await listEntities(user, entityTypes, opts);
   if (entities.length > 1) {
     throw DatabaseError('Expect only one response', { entityTypes, args });
   }
@@ -360,20 +362,20 @@ export const loadEntity = async (entityTypes, args = {}) => {
 // endregion
 
 // region Loader element
-const internalFindByIds = (ids, args = {}) => {
+const internalFindByIds = (user, ids, args = {}) => {
   const { type } = args;
-  return elFindByIds(ids, type);
+  return elFindByIds(user, ids, type);
 };
-export const internalLoadById = (id, args = {}) => {
+export const internalLoadById = (user, id, args = {}) => {
   const { type } = args;
-  return elLoadByIds(id, type);
+  return elLoadByIds(user, id, type);
 };
-export const loadById = async (id, type, args = {}) => {
+export const loadById = async (user, id, type, args = {}) => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError(`You need to specify a type when loading a element`);
   }
   const loadArgs = R.assoc('type', type, args);
-  return internalLoadById(id, loadArgs);
+  return internalLoadById(user, id, loadArgs);
 };
 const transformRawRelationsToAttributes = (data, orientation) => {
   return R.mergeAll(
@@ -390,7 +392,7 @@ const transformRawRelationsToAttributes = (data, orientation) => {
   );
 };
 
-const loadElementDependencies = async (element, args = {}) => {
+const loadElementDependencies = async (user, element, args = {}) => {
   const { onlyMarking = false, noCache = false } = args;
   const elementId = element.internal_id;
   // For marking directly, we dont have any dependencies
@@ -401,7 +403,7 @@ const loadElementDependencies = async (element, args = {}) => {
   // Allow resolution
   const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
   // Resolve all relations
-  const relations = await listAllRelations(relType, { elementId, noCache });
+  const relations = await listAllRelations(user, relType, { elementId, noCache });
   if (relations.length > 0) {
     const dataFromRels = relations.map((rel) => {
       const direction = rel.fromId === elementId ? 'from' : 'to';
@@ -412,7 +414,7 @@ const loadElementDependencies = async (element, args = {}) => {
     });
     // Resolve all targets
     const toResolvedIds = R.uniq(dataFromRels.map((d) => d.to.internal_id));
-    const dataResolved = await elFindByIds(toResolvedIds, null, { toMap: true });
+    const dataResolved = await elFindByIds(user, toResolvedIds, null, { toMap: true });
     const resolvedRels = dataFromRels.map((d) => ({ ...d, to: dataResolved[d.to.internal_id] }));
     const data = {};
     data.i_relations_from = transformRawRelationsToAttributes(resolvedRels, 'from');
@@ -428,16 +430,16 @@ const loadElementDependencies = async (element, args = {}) => {
   }
   return {};
 };
-export const loadByIdFullyResolved = async (id, type, args = {}) => {
+export const loadByIdFullyResolved = async (user, id, type, args = {}) => {
   const typeOpts = type ? args : R.assoc('type', type, args);
-  const element = await internalLoadById(id, typeOpts);
+  const element = await internalLoadById(user, id, typeOpts);
   if (!element) return null;
   // eslint-disable-next-line no-use-before-define
-  const depsPromise = loadElementDependencies(element, typeOpts);
+  const depsPromise = loadElementDependencies(user, element, typeOpts);
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   if (isRelation) {
-    const fromPromise = loadByIdFullyResolved(element.fromId, null, { onlyMarking: true });
-    const toPromise = loadByIdFullyResolved(element.toId, null, { onlyMarking: true });
+    const fromPromise = loadByIdFullyResolved(user, element.fromId, null, { onlyMarking: true });
+    const toPromise = loadByIdFullyResolved(user, element.toId, null, { onlyMarking: true });
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
     return R.mergeRight(element, { i_fully_resolved: true, from, to, ...deps });
   }
@@ -445,22 +447,33 @@ export const loadByIdFullyResolved = async (id, type, args = {}) => {
   return R.mergeRight(element, { i_fully_resolved: true, ...deps });
 };
 
-export const stixElementLoader = async (id, type) => {
-  const element = await loadByIdFullyResolved(id, type);
+export const stixElementLoader = async (user, id, type) => {
+  const element = await loadByIdFullyResolved(user, id, type);
   return element && buildStixData(element);
 };
 // endregion
 
 // region Graphics
-export const timeSeriesEntities = async (entityType, filters, options) => {
+const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', parent_types: [] };
+const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
+  const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
+  // eslint-disable-next-line prettier/prettier
+  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), null, { toMap: true });
+  return R.map((n) => {
+    const resolved = resolveLabels[n.label];
+    const resolvedData = resolved || restrictedAggElement;
+    return R.assoc('entity', resolvedData, n);
+  }, data);
+};
+export const timeSeriesEntities = async (user, entityType, filters, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid } ]
   //            { isRelation: false, type: report_class, value: string } ]
   const { startDate, endDate, field, interval, toTypes = [] } = options;
   // Check if can be supported by ES
-  const histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, toTypes, filters);
+  const histogramData = await elHistogramCount(user, entityType, field, interval, startDate, endDate, toTypes, filters);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const timeSeriesRelations = async (options) => {
+export const timeSeriesRelations = async (user, options) => {
   // filters: [ { isRelation: true, type: stix_relation, value: uuid }
   //            { isRelation: false, type: report_class, value: string } ]
   const { startDate, endDate, relationship_type: relationshipType, field, interval, toTypes = [] } = options;
@@ -468,10 +481,10 @@ export const timeSeriesRelations = async (options) => {
   // Check if can be supported by ES
   const entityType = relationshipType ? escape(relationshipType) : 'stix-relationship';
   const filters = fromId ? [{ isRelation: false, isNested: true, type: 'connections.internal_id', value: fromId }] : [];
-  const histogramData = await elHistogramCount(entityType, field, interval, startDate, endDate, toTypes, filters);
+  const histogramData = await elHistogramCount(user, entityType, field, interval, startDate, endDate, toTypes, filters);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
-export const distributionEntities = async (entityType, filters = [], options) => {
+export const distributionEntities = async (user, entityType, filters = [], options) => {
   // filters: { isRelation: true, type: stix_relation, start: date, end: date, value: uuid }
   const { limit = 10, order = 'desc' } = options;
   const { startDate, endDate, field } = options;
@@ -483,46 +496,27 @@ export const distributionEntities = async (entityType, filters = [], options) =>
   if (field.includes('.')) {
     finalField = REL_INDEX_PREFIX + field;
   }
-  const distributionData = await elAggregationCount(entityType, finalField, startDate, endDate, filters);
+  const distributionData = await elAggregationCount(user, entityType, finalField, startDate, endDate, filters);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL)) {
-    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
-    return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
+    return convertAggregateDistributions(user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
-export const distributionRelations = async (options) => {
+export const distributionRelations = async (user, options) => {
   const { field } = options; // Mandatory fields
-  const { fromId = null, limit = 50, order } = options;
-  const {
-    startDate,
-    endDate,
-    relationship_type: relationshipType,
-    dateAttribute = 'created_at',
-    toTypes = [],
-    isTo = false,
-    noDirection = false,
-  } = options;
+  const { limit = 50, order } = options;
+  const { relationship_type: relationshipType, dateAttribute = 'created_at' } = options;
   const entityType = relationshipType ? escape(relationshipType) : ABSTRACT_STIX_CORE_RELATIONSHIP;
-  const finalDateAttribute = dateAttribute || 'created_at';
+  const distDateAttribute = dateAttribute || 'created_at';
   // Using elastic can only be done if the distribution is a count on types
-  const distributionData = await elAggregationRelationsCount(
-    entityType,
-    startDate,
-    endDate,
-    toTypes,
-    fromId,
-    field,
-    finalDateAttribute,
-    isTo,
-    noDirection
-  );
+  const opts = { ...options, dateAttribute: distDateAttribute };
+  const distributionData = await elAggregationRelationsCount(user, entityType, opts);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field === ID_INTERNAL) {
-    const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
-    return R.map((n) => R.assoc('entity', internalLoadById(n.label), n), data);
+    return convertAggregateDistributions(user, limit, orderingFunction, distributionData);
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };
@@ -541,7 +535,7 @@ const depsKeys = [
   { src: 'externalReferences' },
   { src: 'objects' },
 ];
-const inputResolveRefs = async (input) => {
+const inputResolveRefs = async (user, input) => {
   const deps = [];
   const expectedIds = [];
   for (let index = 0; index < depsKeys.length; index += 1) {
@@ -558,15 +552,15 @@ const inputResolveRefs = async (input) => {
         };
         id = R.map((label) => idLabel(label), id);
         expectedIds.push(...id);
-        keyPromise = internalFindByIds(id);
+        keyPromise = internalFindByIds(user, id);
       } else if (src === 'fromId' || src === 'toId') {
-        keyPromise = loadByIdFullyResolved(id, null, { onlyMarking: true });
+        keyPromise = loadByIdFullyResolved(user, id, null, { onlyMarking: true });
         expectedIds.push(id);
       } else if (isListing) {
-        keyPromise = internalFindByIds(id);
+        keyPromise = internalFindByIds(user, id);
         expectedIds.push(...id);
       } else {
-        keyPromise = internalLoadById(id);
+        keyPromise = internalLoadById(user, id);
         expectedIds.push(id);
       }
       const dataPromise = keyPromise.then((data) => ({ [destKey]: data }));
@@ -981,7 +975,7 @@ const mergeEntitiesRaw = async (user, targetEntity, sourceEntities, opts = {}) =
     { concurrency: ES_MAX_CONCURRENCY }
   );
   // All not move relations will be deleted, so we need to remove impacted rel in entities.
-  await elDeleteElements(sourceEntities);
+  await elDeleteElements(user, sourceEntities);
 };
 export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {}) => {
   // targetEntity and sourceEntities must be fully resolved elements
@@ -1006,7 +1000,7 @@ export const mergeEntities = async (user, targetEntity, sourceEntities, opts = {
     await mergeEntitiesRaw(user, targetEntity, sourceEntities, opts);
     await storeMergeEvent(user, targetEntity, sourceEntities);
     // - END TRANSACTION
-    return loadById(targetEntity.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
+    return loadById(user, targetEntity.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
       notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
     );
   } catch (err) {
@@ -1131,6 +1125,17 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
       impactedInputs.push(...aliasIns);
     }
+    // If is valid_until modification, update also revoked
+    if (input.key === VALID_UNTIL) {
+      const untilDate = R.head(input.value);
+      const untilDateTime = utcDate(untilDate).toDate();
+      const revokedInput = { key: REVOKED, value: [untilDateTime < utcDate().toDate()] };
+      const revokedIn = await innerUpdateAttribute(user, instance, revokedInput, options);
+      if (revokedIn.length > 0) {
+        updatedInputs.push(revokedInput);
+        impactedInputs.push(...revokedIn);
+      }
+    }
     // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
     const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
     const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
@@ -1167,7 +1172,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
   if (operation !== UPDATE_OPERATION_REPLACE && elements.length > 1) {
     throw FunctionalError(`Unsupported operation`, { operation, elements });
   }
-  const instance = await loadById(id, type, options);
+  const instance = await loadById(user, id, type, options);
   if (!instance) {
     throw FunctionalError(`Cant find element to update`, { id, type });
   }
@@ -1181,7 +1186,7 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (aliasedInputs.length > 0) {
       const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
       const aliasesIds = generateAliasesId(aliases);
-      const existingEntities = await internalFindByIds(aliasesIds, { type: instance.entity_type });
+      const existingEntities = await internalFindByIds(user, aliasesIds, { type: instance.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== id, existingEntities);
       if (differentEntities.length > 0) {
         throw FunctionalError(`This update will produce a duplicate`, { id: instance.id, type });
@@ -1210,11 +1215,11 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     lock = await lockResource(participantIds);
     // Only for StixCyberObservable
     if (eventualNewStandardId) {
-      const existingEntity = await loadByIdFullyResolved(eventualNewStandardId);
+      const existingEntity = await loadByIdFullyResolved(user, eventualNewStandardId);
       if (existingEntity) {
         // If stix observable, we can merge. If not throw an error.
         if (isStixCyberObservable(existingEntity.entity_type)) {
-          const source = await loadByIdFullyResolved(instance.internal_id);
+          const source = await loadByIdFullyResolved(user, instance.internal_id);
           // noinspection UnnecessaryLocalVariableJS
           const merged = await mergeEntities(user, existingEntity, [source], { locks: participantIds });
           // Return merged element after waiting for it.
@@ -1370,7 +1375,7 @@ const buildInnerRelation = (from, to, type) => {
   return relations;
 };
 const upsertElementRaw = async (user, id, type, data) => {
-  let element = await loadByIdFullyResolved(id, type, { onlyMarking: true });
+  let element = await loadByIdFullyResolved(user, id, type, { onlyMarking: true });
   const updatedAddInputs = []; // Direct modified inputs (add)
   const updatedReplaceInputs = []; // Direct modified inputs (replace)
   const impactedInputs = []; // Inputs impacted by updated inputs + updated inputs
@@ -1499,7 +1504,7 @@ const createRelationRaw = async (user, input) => {
       listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months'));
     }
   }
-  const existingRelationships = await listRelations(relationshipType, listingArgs);
+  const existingRelationships = await listRelations(user, relationshipType, listingArgs);
   // endregion
   let existingRelationship = null;
   if (existingRelationships.edges.length > 0) {
@@ -1646,7 +1651,7 @@ export const createRelation = async (user, input) => {
     throw UnsupportedError(`Relation cant be created with the same source and target`, errorData);
   }
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(input);
+  const resolvedInput = await inputResolveRefs(user, input);
   const { from, to } = resolvedInput;
   // Check consistency
   checkRelationConsistency(relationshipType, from.entity_type, to.entity_type);
@@ -1671,7 +1676,7 @@ export const createRelation = async (user, input) => {
         // From and to of the source are required for stream message generation
         let fromCreation = from;
         if (from.base_type === BASE_TYPE_RELATION) {
-          fromCreation = await loadByIdFullyResolved(from.internal_id, from.entity_type);
+          fromCreation = await loadByIdFullyResolved(user, from.internal_id, from.entity_type);
         }
         await storeCreateEvent(user, fromCreation, inputEvent);
       } else {
@@ -1712,7 +1717,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
   // Generate the internal id if needed
   const internalId = input.internal_id || generateInternalId();
   // Check if the entity exists
-  const existingEntities = await internalFindByIds(participantIds, { type });
+  const existingEntities = await internalFindByIds(user, participantIds, { type });
   // If existing entities have been found and type is a STIX Core Object
   if (existingEntities.length > 0) {
     if (existingEntities.length === 1) {
@@ -1725,9 +1730,9 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       // Target entity is existingByStandard by default or any other
       const targetEntity = R.find((e) => e.standard_id === standardId, existingEntities) || R.head(existingEntities);
       const sourceEntities = R.filter((e) => e.internal_id !== targetEntity.internal_id, existingEntities);
-      const targetEntityPromise = loadByIdFullyResolved(targetEntity.internal_id, ABSTRACT_STIX_CORE_OBJECT);
+      const targetEntityPromise = loadByIdFullyResolved(user, targetEntity.internal_id, ABSTRACT_STIX_CORE_OBJECT);
       const sourceEntitiesPromise = Promise.all(
-        sourceEntities.map((sourceEntity) => loadByIdFullyResolved(sourceEntity.internal_id))
+        sourceEntities.map((sourceEntity) => loadByIdFullyResolved(user, sourceEntity.internal_id))
       );
       const [target, sources] = await Promise.all([targetEntityPromise, sourceEntitiesPromise]);
       await mergeEntities(user, target, sources, { locks: participantIds });
@@ -1860,7 +1865,7 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
 export const createEntity = async (user, input, type) => {
   let lock;
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(input);
+  const resolvedInput = await inputResolveRefs(user, input);
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const standardId = input.standard_id || generateStandardId(type, resolvedInput);
@@ -1902,8 +1907,8 @@ export const deleteElementById = async (user, elementId, type, options = {}) => 
   }
   // Check consistency
   const opts = { ...options, onlyMarking: true };
-  const element = await loadByIdFullyResolved(elementId, type, opts);
-  await elDeleteElement(element);
+  const element = await loadByIdFullyResolved(user, elementId, type, opts);
+  await elDeleteElement(user, element);
   await storeDeleteEvent(user, element);
   // Return id
   return elementId;
@@ -1913,10 +1918,10 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   if (R.isNil(scopeType)) {
     throw FunctionalError(`You need to specify a scope type when deleting a relation with from and to`);
   }
-  const fromThing = await internalLoadById(fromId, opts);
-  const toThing = await internalLoadById(toId, opts);
+  const fromThing = await internalLoadById(user, fromId, opts);
+  const toThing = await internalLoadById(user, toId, opts);
   // Looks like the caller doesnt give the correct from, to currently
-  const relationsToDelete = await elFindByFromAndTo(fromThing.internal_id, toThing.internal_id, relationshipType);
+  const relationsToDelete = await elFindByFromAndTo(user, fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {
     const r = relationsToDelete[i];
     await deleteElementById(user, r.internal_id, r.entity_type, opts);

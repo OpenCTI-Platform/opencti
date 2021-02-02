@@ -11,15 +11,15 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const attackPatternsLoader = initBatchLoader(batchAttackPatterns);
+const attackPatternsLoader = (user) => initBatchLoader(user, batchAttackPatterns);
 
 const courseOfActionResolvers = {
   Query: {
-    courseOfAction: (_, { id }) => findById(id),
-    coursesOfAction: (_, args) => findAll(args),
+    courseOfAction: (_, { id }, { user }) => findById(user, id),
+    coursesOfAction: (_, args, { user }) => findAll(user, args),
   },
   CourseOfAction: {
-    attackPatterns: (courseOfAction) => attackPatternsLoader.load(courseOfAction.id),
+    attackPatterns: (courseOfAction, _, { user }) => attackPatternsLoader(user).load(courseOfAction.id),
   },
   CoursesOfActionFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

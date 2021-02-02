@@ -38,9 +38,14 @@ export const lastAvailableMigrationTime = () => {
 const migrationStorage = {
   async load(fn) {
     // Get current status of migrations
-    const migration = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
+    const migration = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
     const migrationId = migration.internal_id;
-    const migrations = await listThroughGetTo(migrationId, RELATION_MIGRATES, ENTITY_TYPE_MIGRATION_REFERENCE);
+    const migrations = await listThroughGetTo(
+      SYSTEM_USER,
+      migrationId,
+      RELATION_MIGRATES,
+      ENTITY_TYPE_MIGRATION_REFERENCE
+    );
     logger.info(`[MIGRATION] Read ${migrations.length} migrations from the database`);
     const migrationStatus = {
       lastRun: migration.lastRun,
@@ -59,7 +64,7 @@ const migrationStorage = {
       // Get current done migration
       const mig = R.head(R.filter((m) => m.title === set.lastRun, set.migrations));
       // Update the reference status to the last run
-      const migrationStatus = await loadEntity([ENTITY_TYPE_MIGRATION_STATUS]);
+      const migrationStatus = await loadEntity(SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
       const statusPatch = { lastRun: set.lastRun };
       await patchAttribute(SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, statusPatch);
       // Insert the migration reference

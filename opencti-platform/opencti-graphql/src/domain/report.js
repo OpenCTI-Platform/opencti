@@ -14,55 +14,57 @@ export const STATUS_STATUS_PROGRESS = 1;
 export const STATUS_STATUS_ANALYZED = 2;
 export const STATUS_STATUS_CLOSED = 3;
 
-export const findById = (reportId) => {
-  return loadById(reportId, ENTITY_TYPE_CONTAINER_REPORT);
+export const findById = (user, reportId) => {
+  return loadById(user, reportId, ENTITY_TYPE_CONTAINER_REPORT);
 };
 
-export const findAll = async (args) => {
-  return listEntities([ENTITY_TYPE_CONTAINER_REPORT], args);
+export const findAll = async (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
 // Entities tab
-export const reportContainsStixObjectOrStixRelationship = async (reportId, thingId) => {
+export const reportContainsStixObjectOrStixRelationship = async (user, reportId, thingId) => {
   const args = {
     filters: [
       { key: 'internal_id', values: [reportId] },
       { key: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`, values: [thingId] },
     ],
   };
-  const reportFound = await findAll(args);
+  const reportFound = await findAll(user, args);
   return reportFound.edges.length > 0;
 };
 
 // region series
-export const reportsTimeSeries = (args) => {
+export const reportsTimeSeries = (user, args) => {
   const { reportClass } = args;
   const filters = reportClass ? [{ isRelation: false, type: 'report_class', value: args.reportClass }] : [];
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-export const reportsNumber = (args) => ({
-  count: elCount(READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
+export const reportsNumber = (user, args) => ({
+  count: elCount(user, READ_INDEX_STIX_DOMAIN_OBJECTS, assoc('types', [ENTITY_TYPE_CONTAINER_REPORT], args)),
   total: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]), dissoc('endDate'))(args)
   ),
 });
 
-export const reportsTimeSeriesByEntity = (args) => {
+export const reportsTimeSeriesByEntity = (user, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: args.objectId }];
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-export const reportsTimeSeriesByAuthor = async (args) => {
+export const reportsTimeSeriesByAuthor = async (user, args) => {
   const { authorId, reportClass } = args;
   const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
   if (reportClass) filters.push({ isRelation: false, type: 'report_class', value: reportClass });
-  return timeSeriesEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return timeSeriesEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 
-export const reportsNumberByEntity = (args) => ({
+export const reportsNumberByEntity = (user, args) => ({
   count: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
@@ -72,6 +74,7 @@ export const reportsNumberByEntity = (args) => ({
     )(args)
   ),
   total: elCount(
+    user,
     READ_INDEX_STIX_DOMAIN_OBJECTS,
     pipe(
       assoc('isMetaRelationship', true),
@@ -83,10 +86,10 @@ export const reportsNumberByEntity = (args) => ({
   ),
 });
 
-export const reportsDistributionByEntity = async (args) => {
+export const reportsDistributionByEntity = async (user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];
-  return distributionEntities(ENTITY_TYPE_CONTAINER_REPORT, filters, args);
+  return distributionEntities(user, ENTITY_TYPE_CONTAINER_REPORT, filters, args);
 };
 // endregion
 
@@ -95,7 +98,7 @@ export const addReport = async (user, report) => {
   if (report.report_types) {
     await Promise.all(
       report.report_types.map(async (reportType) => {
-        const currentAttribute = await findAttribute('report_types', reportType);
+        const currentAttribute = await findAttribute(user, 'report_types', reportType);
         if (!currentAttribute) {
           await addAttribute(user, { key: 'report_types', value: reportType });
         }

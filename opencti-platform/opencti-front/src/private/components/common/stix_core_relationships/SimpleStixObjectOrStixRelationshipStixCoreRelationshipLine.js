@@ -54,8 +54,12 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
       connectionKey,
     } = this.props;
     const link = `${entityLink}/relations/${node.id}`;
-    const isReversed = node.from.id === entityId;
-    const element = node.from.id === entityId ? node.to : node.from;
+    const isReversed = node.from?.id === entityId;
+    const element = node.from?.id === entityId ? node.to : node.from;
+    // Element can be null due to marking restrictions
+    if (element === null) {
+      return <div/>;
+    }
     return (
       <ListItem
         classes={{ root: classes.item }}

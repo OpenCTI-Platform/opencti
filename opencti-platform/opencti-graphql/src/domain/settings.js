@@ -8,6 +8,7 @@ import { getRabbitMQVersion } from '../database/rabbitmq';
 import { getMinIOVersion } from '../database/minio';
 import { version } from '../../package.json';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { SYSTEM_USER } from './user';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -25,7 +26,7 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const settingsList = await listEntities([ENTITY_TYPE_SETTINGS]);
+  const settingsList = await listEntities(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
   const settings = settingsList.edges.length > 0 ? settingsList.edges[0].node : null;
   if (settings === null) return null;
   const config = pipe(
@@ -51,14 +52,14 @@ export const addSettings = async (user, settings) => {
 
 export const settingsCleanContext = (user, settingsId) => {
   delEditContext(user, settingsId);
-  return loadById(settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
+  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };
 
 export const settingsEditContext = (user, settingsId, input) => {
   setEditContext(user, settingsId, input);
-  return loadById(settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
+  return loadById(user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) =>
     notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user)
   );
 };

@@ -11,15 +11,15 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const batchCountryLoader = initBatchLoader(batchCountry);
+const batchCountryLoader = (user) => initBatchLoader(user, batchCountry);
 
 const cityResolvers = {
   Query: {
-    city: (_, { id }) => findById(id),
-    cities: (_, args) => findAll(args),
+    city: (_, { id }, { user }) => findById(user, id),
+    cities: (_, args, { user }) => findAll(user, args),
   },
   City: {
-    country: (city) => batchCountryLoader.load(city.id),
+    country: (city, _, { user }) => batchCountryLoader(user).load(city.id),
   },
   CitiesFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

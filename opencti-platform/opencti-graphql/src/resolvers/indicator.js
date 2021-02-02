@@ -24,29 +24,29 @@ import { distributionEntities, initBatchLoader } from '../database/middleware';
 
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 
-const batchObservablesLoader = initBatchLoader(batchObservables);
+const batchObservablesLoader = (user) => initBatchLoader(user, batchObservables);
 
 const indicatorResolvers = {
   Query: {
-    indicator: (_, { id }) => findById(id),
-    indicators: (_, args) => findAll(args),
-    indicatorsTimeSeries: (_, args) => {
+    indicator: (_, { id }, { user }) => findById(user, id),
+    indicators: (_, args, { user }) => findAll(user, args),
+    indicatorsTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return indicatorsTimeSeriesByEntity(args);
+        return indicatorsTimeSeriesByEntity(user, args);
       }
-      return indicatorsTimeSeries(args);
+      return indicatorsTimeSeries(user, args);
     },
-    indicatorsNumber: (_, args) => {
+    indicatorsNumber: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return indicatorsNumberByEntity(args);
+        return indicatorsNumberByEntity(user, args);
       }
-      return indicatorsNumber(args);
+      return indicatorsNumber(user, args);
     },
-    indicatorsDistribution: (_, args) => {
+    indicatorsDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return indicatorsDistributionByEntity(args);
+        return indicatorsDistributionByEntity(user, args);
       }
-      return distributionEntities(ENTITY_TYPE_INDICATOR, [], args);
+      return distributionEntities(user, ENTITY_TYPE_INDICATOR, [], args);
     },
   },
   IndicatorsFilter: {
@@ -57,7 +57,7 @@ const indicatorResolvers = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
-    observables: (indicator) => batchObservablesLoader.load(indicator.id),
+    observables: (indicator, _, { user }) => batchObservablesLoader(user).load(indicator.id),
     indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {

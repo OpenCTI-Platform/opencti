@@ -2,8 +2,8 @@ import { findById, findAll, attributeEditField, attributeDelete, addAttribute } 
 
 const attributeResolvers = {
   Query: {
-    attribute: (_, { id }) => findById(id),
-    attributes: (_, args) => findAll(args),
+    attribute: (_, { id }, { user }) => findById(user, id),
+    attributes: (_, args, { user }) => findAll(user, args),
   },
   Mutation: {
     attributeEdit: (_, { id }, { user }) => ({

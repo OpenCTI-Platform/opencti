@@ -80,6 +80,7 @@ export const internalObjectsAttributes = {
     'entity_type',
     'name',
     'description',
+    'default_assignation',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',

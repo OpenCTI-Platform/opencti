@@ -12,13 +12,13 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const campaignResolvers = {
   Query: {
-    campaign: (_, { id }) => findById(id),
-    campaigns: (_, args) => findAll(args),
-    campaignsTimeSeries: (_, args) => {
+    campaign: (_, { id }, { user }) => findById(user, id),
+    campaigns: (_, args, { user }) => findAll(user, args),
+    campaignsTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return campaignsTimeSeriesByEntity(args);
+        return campaignsTimeSeriesByEntity(user, args);
       }
-      return campaignsTimeSeries(args);
+      return campaignsTimeSeries(user, args);
     },
   },
   CampaignsFilter: {

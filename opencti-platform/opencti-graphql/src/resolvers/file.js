@@ -4,10 +4,10 @@ import { worksForSource } from '../domain/work';
 
 const fileResolvers = {
   Query: {
-    importFiles: (entity, { first }) => filesListing(first, 'import/global/'),
+    importFiles: (entity, { first }, { user }) => filesListing(user, first, 'import/global/'),
   },
   File: {
-    works: (file) => worksForSource(file.id),
+    works: (file, _, { user }) => worksForSource(user, file.id),
   },
   Mutation: {
     uploadImport: (_, { file }, { user }) => uploadImport(user, file),

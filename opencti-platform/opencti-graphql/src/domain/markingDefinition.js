@@ -4,12 +4,12 @@ import { createEntity, deleteElementById, listEntities, loadById, updateAttribut
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
-export const findById = (markingDefinitionId) => {
-  return loadById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+export const findById = (user, markingDefinitionId) => {
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_MARKING_DEFINITION], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_MARKING_DEFINITION], args);
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
@@ -35,14 +35,14 @@ export const markingDefinitionEditField = async (user, markingDefinitionId, inpu
 
 export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {
   await delEditContext(user, markingDefinitionId);
-  return loadById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
     notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };
 
 export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
   await setEditContext(user, markingDefinitionId, input);
-  return loadById(markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
     notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };

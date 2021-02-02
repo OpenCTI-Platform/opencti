@@ -12,12 +12,12 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const killChainPhaseLoader = initBatchLoader(batchKillChainPhases);
+const killChainPhaseLoader = (user) => initBatchLoader(user, batchKillChainPhases);
 
 const infrastructureResolvers = {
   Query: {
-    infrastructure: (_, { id }) => findById(id),
-    infrastructures: (_, args) => findAll(args),
+    infrastructure: (_, { id }, { user }) => findById(user, id),
+    infrastructures: (_, args, { user }) => findAll(user, args),
   },
   InfrastructuresFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
@@ -25,7 +25,7 @@ const infrastructureResolvers = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Infrastructure: {
-    killChainPhases: (infrastructure) => killChainPhaseLoader.load(infrastructure.id),
+    killChainPhases: (infrastructure, _, { user }) => killChainPhaseLoader(user).load(infrastructure.id),
   },
   Mutation: {
     infrastructureEdit: (_, { id }, { user }) => ({

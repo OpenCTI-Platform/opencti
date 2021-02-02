@@ -9,15 +9,15 @@ import {
 } from '../domain/stixDomainObject';
 import { initBatchLoader } from '../database/middleware';
 
-const batchRegionLoader = initBatchLoader(batchRegion);
+const batchRegionLoader = (user) => initBatchLoader(user, batchRegion);
 
 const countryResolvers = {
   Query: {
-    country: (_, { id }) => findById(id),
-    countries: (_, args) => findAll(args),
+    country: (_, { id }, { user }) => findById(user, id),
+    countries: (_, args, { user }) => findAll(user, args),
   },
   Country: {
-    region: (country) => batchRegionLoader.load(country.id),
+    region: (country, _, { user }) => batchRegionLoader(user).load(country.id),
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({

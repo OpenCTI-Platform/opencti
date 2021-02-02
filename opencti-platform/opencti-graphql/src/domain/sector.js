@@ -16,31 +16,31 @@ import { RELATION_PART_OF, RELATION_TARGETS } from '../schema/stixCoreRelationsh
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { buildPagination } from '../database/utils';
 
-export const findById = (sectorId) => {
-  return loadById(sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
+export const findById = (user, sectorId) => {
+  return loadById(user, sectorId, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_IDENTITY_SECTOR], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_IDENTITY_SECTOR], args);
 };
 
-export const batchParentSectors = (sectorIds) => {
-  return batchListThroughGetTo(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchParentSectors = (user, sectorIds) => {
+  return batchListThroughGetTo(user, sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const batchSubSectors = (sectorIds) => {
-  return batchListThroughGetFrom(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchSubSectors = (user, sectorIds) => {
+  return batchListThroughGetFrom(user, sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
-export const batchIsSubSector = async (sectorIds) => {
-  const batchSubsectors = await batchLoadThroughGetTo(sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
+export const batchIsSubSector = async (user, sectorIds) => {
+  const batchSubsectors = await batchLoadThroughGetTo(user, sectorIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
   return batchSubsectors.map((b) => b !== undefined);
 };
 
-export const targetedOrganizations = async (sectorId) => {
-  const organizations = await listThroughGetFrom(sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
+export const targetedOrganizations = async (user, sectorId) => {
+  const organizations = await listThroughGetFrom(user, sectorId, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_ORGANIZATION);
   const targets = await Promise.all(
-    organizations.map((organization) => listRelations(RELATION_TARGETS, { fromId: organization.id }))
+    organizations.map((organization) => listRelations(user, RELATION_TARGETS, { fromId: organization.id }))
   );
   const finalTargets = R.pipe(
     R.map((n) => n.edges),

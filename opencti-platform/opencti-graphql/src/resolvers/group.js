@@ -18,17 +18,17 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { initBatchLoader } from '../database/middleware';
 
-const markingsLoader = initBatchLoader(batchMarkingDefinitions);
-const membersLoader = initBatchLoader(batchMembers);
+const markingsLoader = (user) => initBatchLoader(user, batchMarkingDefinitions);
+const membersLoader = (user) => initBatchLoader(user, batchMembers);
 
 const groupResolvers = {
   Query: {
-    group: (_, { id }) => findById(id),
-    groups: (_, args) => findAll(args),
+    group: (_, { id }, { user }) => findById(user, id),
+    groups: (_, args, { user }) => findAll(user, args),
   },
   Group: {
-    allowed_marking: (stixCoreObject) => markingsLoader.load(stixCoreObject.id),
-    members: (group) => membersLoader.load(group.id),
+    allowed_marking: (stixCoreObject, _, { user }) => markingsLoader(user).load(stixCoreObject.id),
+    members: (group, _, { user }) => membersLoader(user).load(group.id),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {

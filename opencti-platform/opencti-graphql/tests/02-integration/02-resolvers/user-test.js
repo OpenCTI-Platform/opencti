@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import { queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
 import { authentication } from '../../../src/domain/user';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 import { generateStandardId } from '../../../src/schema/identifier';
@@ -133,7 +133,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should user remove role', async () => {
     const roleStandardId = generateStandardId(ENTITY_TYPE_ROLE, { name: 'Default' });
-    const role = await elLoadByIds(roleStandardId);
+    const role = await elLoadByIds(ADMIN_USER, roleStandardId);
     const REMOTE_ROLE_QUERY = gql`
       mutation UserEditRemoveRole($id: ID!, $toId: String!, $relationship_type: String!) {
         userEdit(id: $id) {

@@ -24,19 +24,19 @@ import { now } from '../utils/format';
 
 const connectorResolvers = {
   Query: {
-    connector: (_, { id }) => loadConnectorById(id),
-    connectors: () => connectors(),
-    connectorsForExport: () => connectorsForExport(),
-    connectorsForImport: () => connectorsForImport(),
-    works: (_, args) => findAll(args),
+    connector: (_, { id }, { user }) => loadConnectorById(user, id),
+    connectors: (_, __, { user }) => connectors(user),
+    connectorsForExport: (_, __, { user }) => connectorsForExport(user),
+    connectorsForImport: (_, __, { user }) => connectorsForImport(user),
+    works: (_, args, { user }) => findAll(user, args),
   },
   Connector: {
-    connector_user: (connector) => findUserById(connector.connector_user_id),
-    works: (connector, args) => worksForConnector(connector.id, args),
+    connector_user: (connector, _, { user }) => findUserById(user, connector.connector_user_id),
+    works: (connector, args, { user }) => worksForConnector(connector.id, user, args),
   },
   Work: {
-    connector: (work) => connectorForWork(work.id),
-    user: (work) => findUserById(work.user_id),
+    connector: (work, _, { user }) => connectorForWork(user, work.id),
+    user: (work, _, { user }) => findUserById(user, work.user_id),
     tracking: (work) => redisGetWork(work.id),
   },
   Mutation: {
@@ -46,11 +46,11 @@ const connectorResolvers = {
     pingConnector: (_, { id, state }, { user }) => pingConnector(user, id, state),
     // Work part
     workAdd: async (_, { connectorId, friendlyName }, { user }) => {
-      const connector = await loadConnectorById(connectorId);
+      const connector = await loadConnectorById(user, connectorId);
       return createWork(user, connector, friendlyName, connector.id, { receivedTime: now() });
     },
     workEdit: (_, { id }, { user }) => ({
-      delete: () => deleteWork(id),
+      delete: () => deleteWork(user, id),
       reportExpectation: ({ error }) => reportActionImport(user, id, error),
       addExpectations: ({ expectations }) => redisUpdateActionExpectation(user, id, expectations),
       toReceived: ({ message }) => updateReceivedTime(user, id, message),

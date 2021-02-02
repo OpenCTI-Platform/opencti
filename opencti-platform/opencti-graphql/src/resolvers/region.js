@@ -19,21 +19,21 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { initBatchLoader } from '../database/middleware';
 
-const countriesLoader = initBatchLoader(batchCountries);
-const parentRegionsLoader = initBatchLoader(batchParentRegions);
-const subRegionsLoader = initBatchLoader(batchSubRegions);
-const isSubRegionLoader = initBatchLoader(batchIsSubRegion);
+const countriesLoader = (user) => initBatchLoader(user, batchCountries);
+const parentRegionsLoader = (user) => initBatchLoader(user, batchParentRegions);
+const subRegionsLoader = (user) => initBatchLoader(user, batchSubRegions);
+const isSubRegionLoader = (user) => initBatchLoader(user, batchIsSubRegion);
 
 const regionResolvers = {
   Query: {
-    region: (_, { id }) => findById(id),
-    regions: (_, args) => findAll(args),
+    region: (_, { id }, { user }) => findById(user, id),
+    regions: (_, args, { user }) => findAll(user, args),
   },
   Region: {
-    parentRegions: (region) => parentRegionsLoader.load(region.id),
-    subRegions: (region) => subRegionsLoader.load(region.id),
-    isSubRegion: (region) => isSubRegionLoader.load(region.id),
-    countries: (region) => countriesLoader.load(region.id),
+    parentRegions: (region, _, { user }) => parentRegionsLoader(user).load(region.id),
+    subRegions: (region, _, { user }) => subRegionsLoader(user).load(region.id),
+    isSubRegion: (region, _, { user }) => isSubRegionLoader(user).load(region.id),
+    countries: (region, _, { user }) => countriesLoader(user).load(region.id),
   },
   RegionsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -4,12 +4,12 @@ import { CONNECTOR_INTERNAL_ENRICHMENT, connectorsFor } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 
-export const connectorsForEnrichment = async (scope, onlyAlive = false, onlyAuto = false) =>
-  connectorsFor(CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
+export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) =>
+  connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 
 export const askEnrich = async (user, observableId, scope) => {
   // Get the list of compatible connectors
-  const targetConnectors = await connectorsForEnrichment(scope, true, true);
+  const targetConnectors = await connectorsForEnrichment(user, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(
     map((connector) => {

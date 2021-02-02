@@ -478,6 +478,7 @@ type Group implements InternalObject & BasicObject {
   parent_types: [String]!
   # Group
   name: String!
+  default_assignation: Boolean
   description: String
   members: UserConnection
   created_at: DateTime

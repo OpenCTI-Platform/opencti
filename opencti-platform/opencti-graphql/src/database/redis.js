@@ -161,7 +161,13 @@ export const lockResource = async (resources) => {
   const redlock = new Redlock([clientContext], { retryCount, retryDelay, retryJitter });
   const lock = await redlock.lock(locks, maxTtl); // Force unlock after 10 secs
   return {
-    extend: () => true,
+    extend: async () => {
+      try {
+        await lock.extend(maxTtl);
+      } catch (e) {
+        logger.debug(e, '[REDIS] Failed to extend resource', { locks });
+      }
+    },
     unlock: async () => {
       try {
         await lock.unlock();

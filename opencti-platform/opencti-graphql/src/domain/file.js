@@ -11,11 +11,11 @@ import { UnsupportedError } from '../config/errors';
 const uploadJobImport = async (user, fileId, fileMime, entityId) => {
   let isImportInContainer = false;
   if (entityId) {
-    const entity = await internalLoadById(entityId);
+    const entity = await internalLoadById(user, entityId);
     isImportInContainer = isStixDomainObjectContainer(entity.entity_type);
     if (!isImportInContainer) throw UnsupportedError('Cant importing on none container entity');
   }
-  const connectors = await connectorsForImport(fileMime, true);
+  const connectors = await connectorsForImport(user, fileMime, true);
   if (connectors.length > 0) {
     // Create job and send ask to broker
     const createConnectorWork = async (connector) => {

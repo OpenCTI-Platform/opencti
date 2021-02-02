@@ -15,8 +15,8 @@ import { convertDataToStix } from '../database/stix';
 
 const markingDefinitionResolvers = {
   Query: {
-    markingDefinition: (_, { id }) => findById(id),
-    markingDefinitions: (_, args) => findAll(args),
+    markingDefinition: (_, { id }, { user }) => findById(user, id),
+    markingDefinitions: (_, args, { user }) => findAll(user, args),
   },
   MarkingDefinition: {
     toStix: (markingDefinition) => JSON.stringify(convertDataToStix(markingDefinition)),

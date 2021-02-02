@@ -12,8 +12,8 @@ import { REL_INDEX_PREFIX } from '../schema/general';
 
 const identityResolvers = {
   Query: {
-    identity: (_, { id }) => findById(id),
-    identities: (_, args) => findAll(args),
+    identity: (_, { id }, { user }) => findById(user, id),
+    identities: (_, args, { user }) => findAll(user, args),
   },
   IdentitiesFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

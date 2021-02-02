@@ -5,12 +5,12 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../sch
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
 
-export const findById = (courseOfActionId) => {
-  return loadById(courseOfActionId, ENTITY_TYPE_COURSE_OF_ACTION);
+export const findById = (user, courseOfActionId) => {
+  return loadById(user, courseOfActionId, ENTITY_TYPE_COURSE_OF_ACTION);
 };
 
-export const findAll = (args) => {
-  return listEntities([ENTITY_TYPE_COURSE_OF_ACTION], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_COURSE_OF_ACTION], args);
 };
 
 export const addCourseOfAction = async (user, courseOfAction) => {
@@ -18,6 +18,6 @@ export const addCourseOfAction = async (user, courseOfAction) => {
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const batchAttackPatterns = async (courseOfActionIds) => {
-  return batchListThroughGetTo(courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
+export const batchAttackPatterns = async (user, courseOfActionIds) => {
+  return batchListThroughGetTo(user, courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };
