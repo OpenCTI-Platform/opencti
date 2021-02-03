@@ -135,7 +135,10 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
         throw DatabaseError('Error searching for works to delete', { error: e });
       });
     // eslint-disable-next-line prettier/prettier
-    const { hits, total: { value: valTotal } } = worksToDelete.body.hits;
+    const {
+      hits,
+      total: { value: valTotal },
+    } = worksToDelete.body.hits;
     if (totalToDelete === null) totalToDelete = valTotal;
     if (hits.length === 0) {
       hasNextPage = false;
@@ -144,7 +147,7 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
       counter += hits.length;
       searchAfter = R.head(lastHit.sort);
       if (hits.length > 0) {
-        const works = hits.map((h) => h._source);
+        const works = hits.map((h) => R.assoc('_index', h._index, h._source));
         const ids = works.map((w) => w.internal_id);
         await redisDeleteWork(ids);
         await elDeleteInstanceIds(works);
