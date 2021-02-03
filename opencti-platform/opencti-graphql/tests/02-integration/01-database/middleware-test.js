@@ -345,12 +345,7 @@ describe('Relations listing', () => {
     };
     const options = { noCache, relationFilter };
     stixRelations = await listRelations(ADMIN_USER, 'uses', options);
-    expect(stixRelations.edges.length).toEqual(1);
-    const relation = R.head(stixRelations.edges).node;
-    expect(relation.x_opencti_stix_ids).toEqual(['relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de']);
-    expect(relation.fromRole).toEqual('uses_from');
-    expect(relation.toRole).toEqual('uses_to');
-    expect(relation.created).toEqual('2020-03-01T14:05:16.797Z');
+    expect(stixRelations.edges.length).toEqual(0);
   });
   it.each(noCacheCases)('should list relations with relation filtering on report (noCache = %s)', async (noCache) => {
     const report = await elLoadByIds(ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
