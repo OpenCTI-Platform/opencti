@@ -257,8 +257,8 @@ class StixDomainObjectKnowledge extends Component {
             />
           </Grid>
         </Grid>
-        <Grid container={true} spacing={3}>
-          <Grid item={true} xs={6}>
+        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+          <Grid item={true} xs={6} style={{ height: 350 }}>
             <EntityStixCoreRelationshipsHorizontalBars
               stixCoreObjectId={stixDomainObjectId}
               relationshipType="targets"
@@ -268,15 +268,13 @@ class StixDomainObjectKnowledge extends Component {
               isTo={true}
             />
           </Grid>
-          {stixDomainObjectType === 'Sector' ? (
+          {stixDomainObjectType === 'Sector' && (
             <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
               <SectorTargetedOrganizations
                 sectorId={stixDomainObjectId}
                 link={link}
               />
             </Grid>
-          ) : (
-            ''
           )}
         </Grid>
       </div>
