@@ -287,11 +287,29 @@ class Location:
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)
-        if stix_object is not None:
-            if "x_opencti_location_type" in stix_object:
-                type = stix_object["x_opencti_location_type"]
+        if "name" in stix_object:
+            name = stix_object["name"]
+        elif "city" in stix_object:
+            name = stix_object["city"]
+        elif "country" in stix_object:
+            name = stix_object["country"]
+        elif "region" in stix_object:
+            name = stix_object["region"]
+        else:
+            self.opencti.log("error", "[opencti_location] Missing name")
+            return
+        if "x_opencti_location_type" in stix_object:
+            type = stix_object["x_opencti_location_type"]
+        else:
+            if "city" in stix_object:
+                type = "City"
+            elif "country" in stix_object:
+                type = "Country"
+            elif "region" in stix_object:
+                type = "Region"
             else:
                 type = "Position"
+        if stix_object is not None:
             return self.create(
                 type=type,
                 stix_id=stix_object["id"],
@@ -314,7 +332,7 @@ class Location:
                 lang=stix_object["lang"] if "lang" in stix_object else None,
                 created=stix_object["created"] if "created" in stix_object else None,
                 modified=stix_object["modified"] if "modified" in stix_object else None,
-                name=stix_object["name"],
+                name=name,
                 description=self.opencti.stix2.convert_markdown(
                     stix_object["description"]
                 )
