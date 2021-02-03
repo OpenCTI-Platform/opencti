@@ -7,7 +7,7 @@ jobs:
       - image: nikolaik/python-nodejs:python3.8-nodejs12
     steps:
       - run:
-          command: apt-get update && apt-get install -y build-essential libffi-dev
+          command: apt-get --allow-unauthenticated update && apt-get install -y build-essential libffi-dev
       - checkout
       - run: 
           working_directory: ~/opencti/opencti-platform/opencti-front
