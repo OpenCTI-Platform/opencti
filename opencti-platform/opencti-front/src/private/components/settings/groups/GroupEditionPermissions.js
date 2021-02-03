@@ -10,10 +10,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
-import Avatar from '@material-ui/core/Avatar';
 import Alert from '@material-ui/lab/Alert/Alert';
+import { CenterFocusStrongOutlined } from '@material-ui/icons';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
@@ -90,7 +90,7 @@ class GroupEditionPermissionsComponent extends Component {
       <div style={{ paddingTop: 15 }}>
         <Alert severity="warning" style={{ marginBottom: 10 }}>
           {t(
-            'Groups marking definitions will filter the stream consumer to only data he can access to.',
+            'All users of this group will be able to view entities and relationships marked with checked marking definitions, including statements and special markings.',
           )}
         </Alert>
         <QueryRenderer
@@ -104,18 +104,16 @@ class GroupEditionPermissionsComponent extends Component {
                 map((n) => n.node),
               )(props);
               return (
-                <List dense={true} className={classes.root}>
+                <List className={classes.root}>
                   {markingDefinitions.map((markingDefinition) => {
                     const groupMarkingDefinition = find(
                       propEq('id', markingDefinition.id),
                     )(groupMarkingDefinitions);
                     return (
                       <ListItem key={markingDefinition.id} divider={true}>
-                        <ListItemAvatar>
-                          <Avatar className={classes.avatar}>
-                            {markingDefinition.definition.charAt(0)}
-                          </Avatar>
-                        </ListItemAvatar>
+                        <ListItemIcon color="primary">
+                          <CenterFocusStrongOutlined />
+                        </ListItemIcon>
                         <ListItemText primary={markingDefinition.definition} />
                         <ListItemSecondaryAction>
                           <Checkbox

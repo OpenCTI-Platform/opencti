@@ -17,7 +17,7 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';

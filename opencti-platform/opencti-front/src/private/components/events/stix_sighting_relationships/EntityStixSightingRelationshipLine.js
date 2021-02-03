@@ -73,16 +73,20 @@ class EntityStixSightingRelationshipLineComponent extends Component {
       isTo,
     } = this.props;
     const entity = isTo ? node.from : node.to;
+    const restricted = entity === null;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={`${resolveLink(entity.entity_type)}/${entity.id}`}
+        to={
+          !restricted ? `${resolveLink(entity.entity_type)}/${entity.id}` : null
+        }
+        disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={entity.entity_type} />
+          <ItemIcon type={!restricted ? entity.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -114,13 +118,17 @@ class EntityStixSightingRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {entity.name || entity.observable_value}
+                {!restricted
+                  ? entity.name || entity.observable_value
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${entity.entity_type}`)}
+                {!restricted
+                  ? t(`entity_${entity.entity_type}`)
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -147,6 +155,7 @@ class EntityStixSightingRelationshipLineComponent extends Component {
           <StixSightingRelationshipPopover
             stixSightingRelationshipId={node.id}
             paginationOptions={paginationOptions}
+            disabled={restricted}
           />
         </ListItemSecondaryAction>
       </ListItem>

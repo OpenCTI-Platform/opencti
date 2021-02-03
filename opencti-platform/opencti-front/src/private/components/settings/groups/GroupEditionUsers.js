@@ -3,19 +3,19 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import {
-  compose, map, pathOr, pipe, propOr, propEq, find,
+  compose, find, map, pathOr, pipe, propEq,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import ListItemText from '@material-ui/core/ListItemText';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
-import { GroupOutlined } from '@material-ui/icons';
+import { PersonOutlined } from '@material-ui/icons';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { groupsSearchQuery } from '../Groups';
+import { usersLinesSearchQuery } from '../users/UsersLines';
 
 const styles = (theme) => ({
   list: {
@@ -29,14 +29,14 @@ const styles = (theme) => ({
 });
 
 const userMutationRelationAdd = graphql`
-  mutation UserEditionGroupsRelationAddMutation(
+  mutation GroupEditionUsersRelationAddMutation(
     $id: ID!
     $input: InternalRelationshipAddInput
   ) {
-    userEdit(id: $id) {
+    groupEdit(id: $id) {
       relationAdd(input: $input) {
-        from {
-          ...UserEditionGroups_user
+        to {
+          ...GroupEditionUsers_group
         }
       }
     }
@@ -44,38 +44,38 @@ const userMutationRelationAdd = graphql`
 `;
 
 const userMutationRelationDelete = graphql`
-  mutation UserEditionGroupsRelationDeleteMutation(
+  mutation GroupEditionUsersRelationDeleteMutation(
     $id: ID!
-    $toId: String!
+    $fromId: String!
     $relationship_type: String!
   ) {
-    userEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...UserEditionGroups_user
+    groupEdit(id: $id) {
+      relationDelete(fromId: $fromId, relationship_type: $relationship_type) {
+        ...GroupEditionUsers_group
       }
     }
   }
 `;
 
-class UserEditionGroupsComponent extends Component {
-  handleToggle(groupId, userGroup, event) {
+class GroupEditionUsersComponent extends Component {
+  handleToggle(userId, groupUser, event) {
     if (event.target.checked) {
       commitMutation({
         mutation: userMutationRelationAdd,
         variables: {
-          id: this.props.user.id,
+          id: this.props.group.id,
           input: {
-            toId: groupId,
+            fromId: userId,
             relationship_type: 'member-of',
           },
         },
       });
-    } else if (userGroup !== undefined) {
+    } else if (groupUser !== undefined) {
       commitMutation({
         mutation: userMutationRelationDelete,
         variables: {
-          id: this.props.user.id,
-          toId: userGroup.id,
+          id: this.props.group.id,
+          fromId: groupUser.id,
           relationship_type: 'member-of',
         },
       });
@@ -83,44 +83,43 @@ class UserEditionGroupsComponent extends Component {
   }
 
   render() {
-    const { classes, user } = this.props;
-    const userGroups = pipe(
-      pathOr([], ['groups', 'edges']),
+    const { classes, group } = this.props;
+    const groupUsers = pipe(
+      pathOr([], ['members', 'edges']),
       map((n) => ({ id: n.node.id })),
-    )(user);
+    )(group);
     return (
       <div>
         <QueryRenderer
-          query={groupsSearchQuery}
+          query={usersLinesSearchQuery}
           variables={{ search: '' }}
           render={({ props }) => {
             if (props) {
-              // Done
-              const groups = pipe(
-                pathOr([], ['groups', 'edges']),
+              const users = pipe(
+                pathOr([], ['users', 'edges']),
                 map((n) => n.node),
               )(props);
               return (
-                <List className={classes.root}>
-                  {groups.map((group) => {
-                    const userGroup = find(propEq('id', group.id))(userGroups);
+                <List dense={true} className={classes.root}>
+                  {users.map((user) => {
+                    const groupUser = find(propEq('id', user.id))(groupUsers);
                     return (
                       <ListItem key={group.id} divider={true}>
                         <ListItemIcon color="primary">
-                          <GroupOutlined />
+                          <PersonOutlined />
                         </ListItemIcon>
                         <ListItemText
-                          primary={group.name}
-                          secondary={propOr('-', 'description', group)}
+                          primary={user.name}
+                          secondary={user.user_email}
                         />
                         <ListItemSecondaryAction>
                           <Checkbox
                             onChange={this.handleToggle.bind(
                               this,
-                              group.id,
-                              userGroup,
+                              user.id,
+                              groupUser,
                             )}
-                            checked={userGroup !== undefined}
+                            checked={groupUser !== undefined}
                           />
                         </ListItemSecondaryAction>
                       </ListItem>
@@ -138,7 +137,7 @@ class UserEditionGroupsComponent extends Component {
   }
 }
 
-UserEditionGroupsComponent.propTypes = {
+GroupEditionUsersComponent.propTypes = {
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,
@@ -147,11 +146,11 @@ UserEditionGroupsComponent.propTypes = {
   me: PropTypes.object,
 };
 
-const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
-  user: graphql`
-    fragment UserEditionGroups_user on User {
+const GroupEditionUsers = createFragmentContainer(GroupEditionUsersComponent, {
+  group: graphql`
+    fragment GroupEditionUsers_group on Group {
       id
-      groups {
+      members {
         edges {
           node {
             id
@@ -163,7 +162,4 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(UserEditionGroups);
+export default compose(inject18n, withStyles(styles))(GroupEditionUsers);

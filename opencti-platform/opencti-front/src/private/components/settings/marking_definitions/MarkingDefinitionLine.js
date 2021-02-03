@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
+import { MoreVert, CenterFocusStrongOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
@@ -54,7 +54,7 @@ class MarkingDefinitionLineComponent extends Component {
           style={{ color: node.x_opencti_color }}
           classes={{ root: classes.itemIcon }}
         >
-          <CenterFocusStrong />
+          <CenterFocusStrongOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -140,7 +140,7 @@ class MarkingDefinitionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <CenterFocusStrong />
+          <CenterFocusStrongOutlined />
         </ListItemIcon>
         <ListItemText
           primary={

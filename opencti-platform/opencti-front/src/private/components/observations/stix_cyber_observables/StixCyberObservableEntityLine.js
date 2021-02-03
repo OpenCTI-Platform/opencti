@@ -120,14 +120,17 @@ class StixCyberObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {targetEntity.entity_type === 'stix_relation'
-                || targetEntity.entity_type === 'stix-relation'
-                  ? `${targetEntity.from.name} ${String.fromCharCode(8594)} ${
-                    targetEntity.to.name
-                  }`
-                  : targetEntity.name}
+                {/* eslint-disable-next-line no-nested-ternary */}
+                {!restricted
+                  ? targetEntity.entity_type === 'stix_relation'
+                    || targetEntity.entity_type === 'stix-relation'
+                    ? `${targetEntity.from.name} ${String.fromCharCode(8594)} ${
+                      targetEntity.to.name
+                    }`
+                    : targetEntity.name
+                  : t('Restricted')}
               </div>
-              {!displayRelation ? (
+              {!displayRelation && (
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.role_played.width }}
@@ -135,8 +138,6 @@ class StixCyberObservableEntityLineComponent extends Component {
                   {/* eslint-disable-next-line no-nested-ternary */}
                   {node.role_played ? t(node.role_played) : t('Unknown')}
                 </div>
-              ) : (
-                ''
               )}
               <div
                 className={classes.bodyItem}

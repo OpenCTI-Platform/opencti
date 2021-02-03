@@ -68,7 +68,7 @@ export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 export const SYSTEM_USER = {
   id: OPENCTI_SYSTEM_UUID,
-  name: 'system',
+  name: 'SYSTEM',
   origin: { source: 'internal', user_id: OPENCTI_SYSTEM_UUID },
   roles: [{ name: ROLE_ADMINISTRATOR }],
   capabilities: [{ name: BYPASS }],

@@ -14,6 +14,7 @@ import inject18n from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import GroupEditionOverview from './GroupEditionOverview';
 import GroupEditionPermissions from './GroupEditionPermissions';
+import GroupEditionUsers from './GroupEditionUsers';
 
 const styles = (theme) => ({
   header: {
@@ -71,12 +72,14 @@ const GroupEdition = ({
           <Tabs value={currentTab} onChange={(event, value) => setTab(value)}>
             <Tab label={t('Overview')} />
             <Tab label={t('Permissions')} />
+            <Tab label={t('Members')} />
           </Tabs>
         </AppBar>
         {currentTab === 0 && (
           <GroupEditionOverview group={group} context={editContext} />
         )}
         {currentTab === 1 && <GroupEditionPermissions group={group} />}
+        {currentTab === 2 && <GroupEditionUsers group={group} />}
       </div>
     </div>
   );
@@ -96,6 +99,7 @@ const GroupEditionFragment = createFragmentContainer(GroupEdition, {
       id
       ...GroupEditionOverview_group
       ...GroupEditionPermissions_group
+      ...GroupEditionUsers_group
       editContext {
         name
         focusOn

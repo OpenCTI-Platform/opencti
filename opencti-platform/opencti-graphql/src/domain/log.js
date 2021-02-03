@@ -10,7 +10,7 @@ import { READ_INDEX_HISTORY, INDEX_HISTORY } from '../database/utils';
 
 export const findAll = (user, args) => {
   const finalArgs = R.pipe(
-    R.assoc('type', ['history']),
+    R.assoc('types', ['history']),
     R.assoc('orderBy', args.orderBy || 'timestamp'),
     R.assoc('orderMode', args.orderMode || 'desc')
   )(args);

@@ -8,6 +8,20 @@ import { UserLine, UserLineDummy } from './UserLine';
 
 const nbOfRowsToLoad = 50;
 
+export const usersLinesSearchQuery = graphql`
+  query UsersLinesSearchQuery($search: String) {
+    users(search: $search) {
+      edges {
+        node {
+          id
+          name
+          user_email
+        }
+      }
+    }
+  }
+`;
+
 class UsersLines extends Component {
   render() {
     const {

@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Group } from '@material-ui/icons';
+import { MoreVert, GroupOutlined, Check } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import GroupPopover from './GroupPopover';
@@ -51,7 +51,7 @@ class GroupLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Group />
+          <GroupOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -61,6 +61,12 @@ class GroupLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {node.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.default_assignation.width }}
+              >
+                {node.default_assignation ? <Check /> : '-'}
               </div>
               <div
                 className={classes.bodyItem}
@@ -102,6 +108,7 @@ const GroupLineFragment = createFragmentContainer(GroupLineComponent, {
     fragment GroupLine_node on Group {
       id
       name
+      default_assignation
       created_at
       updated_at
     }
@@ -119,7 +126,7 @@ class GroupLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Group />
+          <GroupOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -129,6 +136,12 @@ class GroupLineDummyComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.default_assignation.width }}
+              >
+                <div className="fakeItem" style={{ width: 80 }} />
               </div>
               <div
                 className={classes.bodyItem}

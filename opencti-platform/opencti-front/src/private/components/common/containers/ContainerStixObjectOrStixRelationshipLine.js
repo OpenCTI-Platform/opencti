@@ -53,19 +53,23 @@ class ContainerStixObjectOrStixRelationshipLineComponent extends Component {
       containerId,
       paginationOptions,
     } = this.props;
+    const restrictedWithFrom = node.from === null;
+    // eslint-disable-next-line no-nested-ternary
+    const link = node.relationship_type
+      ? !restrictedWithFrom
+        ? `${resolveLink(node.from.entity_type)}/${
+          node.from.id
+        }/knowledge/relations/${node.id}`
+        : null
+      : `${resolveLink(node.entity_type)}/${node.id}`;
     return (
       <ListItem
         classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
-        to={
-          node.relationship_type
-            ? `${resolveLink(node.from.entity_type)}/${
-              node.from.id
-            }/knowledge/relations/${node.id}`
-            : `${resolveLink(node.entity_type)}/${node.id}`
-        }
+        to={link}
+        disabled={node.relationship_type && restrictedWithFrom}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <ItemIcon type={node.entity_type} />
@@ -77,18 +81,24 @@ class ContainerStixObjectOrStixRelationshipLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
+                {/* eslint-disable-next-line no-nested-ternary */}
                 {node.relationship_type
-                  ? t(`relationship_${node.entity_type}`)
+                  ? !restrictedWithFrom
+                    ? t(`relationship_${node.entity_type}`)
+                    : t('Restricted')
                   : t(`entity_${node.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
+                {/* eslint-disable-next-line no-nested-ternary */}
                 {node.relationship_type
-                  ? `${node.from.name || node.from.observable_value} - ${
-                    node.to.name || node.to.observable_value
-                  }`
+                  ? !restrictedWithFrom
+                    ? `${node.from.name || node.from.observable_value} - ${
+                      node.to.name || node.to.observable_value
+                    }`
+                    : t('Restricted')
                   : node.name
                     || node.observable_value
                     || node.attribute_abstract
