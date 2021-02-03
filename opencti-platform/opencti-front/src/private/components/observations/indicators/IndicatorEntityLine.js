@@ -73,7 +73,7 @@ class IndicatorEntityLineComponent extends Component {
         disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={!restricted ? node.to.entity_type : 'disabled'} />
+          <ItemIcon type={!restricted ? node.to.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
           primary={

@@ -54,12 +54,26 @@ class StixCyberObservableEntityLineComponent extends Component {
       displayRelation,
       entityId,
     } = this.props;
-    const targetEntity = node.from.id === entityId ? node.to : node.from;
-    const link = targetEntity.parent_types.includes('stix-core-relationship')
-      ? `/dashboard/observations/observables/${entityId}/knowledge/relations/${node.id}`
-      : `${resolveLink(targetEntity.entity_type)}/${
-        targetEntity.id
-      }/knowledge/relations/${node.id}`;
+    let restricted = false;
+    let targetEntity = null;
+    if (node.from && node.from.id === entityId) {
+      targetEntity = node.to;
+    } else if (node.to && node.to.id === entityId) {
+      targetEntity = node.from;
+    } else {
+      restricted = true;
+    }
+    if (targetEntity === null) {
+      restricted = true;
+    }
+    // eslint-disable-next-line no-nested-ternary
+    const link = !restricted
+      ? targetEntity.parent_types.includes('stix-core-relationship')
+        ? `/dashboard/observations/observables/${entityId}/knowledge/relations/${node.id}`
+        : `${resolveLink(targetEntity.entity_type)}/${
+          targetEntity.id
+        }/knowledge/relations/${node.id}`
+      : null;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -67,9 +81,12 @@ class StixCyberObservableEntityLineComponent extends Component {
         button={true}
         component={Link}
         to={link}
+        disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={targetEntity.entity_type} />
+          <ItemIcon
+            type={!restricted ? targetEntity.entity_type : 'restricted'}
+          />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -88,14 +105,16 @@ class StixCyberObservableEntityLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(
-                  `entity_${
-                    targetEntity.entity_type === 'stix_relation'
-                    || targetEntity.entity_type === 'stix-relation'
-                      ? targetEntity.parent_types[0]
-                      : targetEntity.entity_type
-                  }`,
-                )}
+                {!restricted
+                  ? t(
+                    `entity_${
+                      targetEntity.entity_type === 'stix_relation'
+                        || targetEntity.entity_type === 'stix-relation'
+                        ? targetEntity.parent_types[0]
+                        : targetEntity.entity_type
+                    }`,
+                  )
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -144,6 +163,7 @@ class StixCyberObservableEntityLineComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
+            disabled={restricted}
           />
         </ListItemSecondaryAction>
       </ListItem>

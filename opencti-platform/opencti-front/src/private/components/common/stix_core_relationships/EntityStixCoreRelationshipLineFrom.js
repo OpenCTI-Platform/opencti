@@ -52,6 +52,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
       paginationOptions,
       entityLink,
     } = this.props;
+    const restricted = node.to === null;
     const link = `${entityLink}/relations/${node.id}`;
     return (
       <ListItem
@@ -60,9 +61,10 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
         button={true}
         component={Link}
         to={link}
+        disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.to.entity_type} />
+          <ItemIcon type={!restricted ? node.to.entity_type : 'restricted'} />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -77,13 +79,15 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.to.name}
+                {!restricted ? node.to.name : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${node.to.entity_type}`)}
+                {!restricted
+                  ? t(`entity_${node.to.entity_type}`)
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -110,6 +114,7 @@ class EntityStixCoreRelationshipLineFromComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
+            disabled={restricted}
           />
         </ListItemSecondaryAction>
       </ListItem>
