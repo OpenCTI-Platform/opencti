@@ -5,7 +5,7 @@ import sys
 from setuptools import setup
 from setuptools.command.install import install
 
-VERSION = "4.2.0"
+VERSION = "4.1.2"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
