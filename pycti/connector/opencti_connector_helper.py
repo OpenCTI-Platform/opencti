@@ -351,13 +351,13 @@ class OpenCTIConnectorHelper:
         """
 
         try:
-            return (
-                None
-                if self.connector_state is None
-                else json.loads(self.connector_state)
-            )
+            if self.connector_state:
+                state = json.loads(self.connector_state)
+                if isinstance(state, dict) and state:
+                    return state
         except:
-            return None
+            pass
+        return None
 
     def listen(self, message_callback: Callable[[str, Dict], str]) -> None:
         """listen for messages and register callback function
