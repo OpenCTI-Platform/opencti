@@ -1131,7 +1131,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   const query = {
     index: indexName,
     ignore_throttled: IGNORE_THROTTLED,
-    _source_excludes: `${REL_INDEX_PREFIX}*`,
+    //_source_excludes: `${REL_INDEX_PREFIX}*`,
     track_total_hits: true,
     body,
   };

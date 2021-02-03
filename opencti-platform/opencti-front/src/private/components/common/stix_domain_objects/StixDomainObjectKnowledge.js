@@ -269,7 +269,7 @@ class StixDomainObjectKnowledge extends Component {
             />
           </Grid>
           {stixDomainObjectType === 'Sector' && (
-            <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
+            <Grid item={true} xs={6} style={{ height: 350 }}>
               <SectorTargetedOrganizations
                 sectorId={stixDomainObjectId}
                 link={link}
