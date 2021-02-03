@@ -55,7 +55,7 @@ import {
 import { isBasicRelationship } from '../schema/stixRelationship';
 
 export const ES_MAX_CONCURRENCY = 5;
-export const MAX_SPLIT = 1000; // Max number of terms resolutions (ES limitation)
+export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
 export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
 const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
@@ -600,13 +600,13 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
 };
 export const elFindByIds = async (user, ids, type = null, opts = {}) => {
   const { indices = READ_DATA_INDICES, toMap = false, relExclude = true } = opts;
-  const mustTerms = [];
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) return [];
   const groupIds = R.splitEvery(MAX_SPLIT, processIds);
   const hits = {};
   for (let index = 0; index < groupIds.length; index += 1) {
+    const mustTerms = [];
     const workingIds = groupIds[index];
     const idsTermsPerType = [];
     const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
@@ -1389,7 +1389,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
         source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
         params: { key: relation.toId },
       };
-      updates.push([{ update: { _index: index, _id: relation.fromId } }, { script }]);
+      updates.push([{ update: { _index: index, _id: relation.fromId, retry_on_conflict: 5 } }, { script }]);
     }
     // Update to to entity
     if (isToCleanup) {
@@ -1398,7 +1398,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
         source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
         params: { key: relation.fromId },
       };
-      updates.push([{ update: { _index: index, _id: relation.toId } }, { script }]);
+      updates.push([{ update: { _index: index, _id: relation.toId, retry_on_conflict: 5 } }, { script }]);
     }
     return updates;
   });

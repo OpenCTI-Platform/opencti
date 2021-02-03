@@ -11,7 +11,7 @@ import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../sch
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { RELATION_MITIGATES, RELATION_SUBTECHNIQUE_OF } from '../schema/stixCoreRelationship';
 
-export const findById = (user, attackPatternId) => {
+export const findById = async (user, attackPatternId) => {
   return loadById(user, attackPatternId, ENTITY_TYPE_ATTACK_PATTERN);
 };
 
