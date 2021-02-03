@@ -54,11 +54,15 @@ class IndicatorEntityLineComponent extends Component {
       displayRelation,
       entityId,
     } = this.props;
-    const link = node.to.parent_types.includes('stix_relation')
-      ? `/dashboard/signatures/indicators/${entityId}/knowledge/relations/${node.id}`
-      : `${resolveLink(node.to.entity_type)}/${
-        node.to.id
-      }/indicators/relations/${node.id}`;
+    const restricted = node.to === null;
+    // eslint-disable-next-line no-nested-ternary
+    const link = !restricted
+      ? node.to.parent_types.includes('stix_relation')
+        ? `/dashboard/signatures/indicators/${entityId}/knowledge/relations/${node.id}`
+        : `${resolveLink(node.to.entity_type)}/${
+          node.to.id
+        }/indicators/relations/${node.id}`
+      : null;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -66,46 +70,50 @@ class IndicatorEntityLineComponent extends Component {
         button={true}
         component={Link}
         to={link}
+        disabled={restricted}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={node.to.entity_type} />
+          <ItemIcon type={!restricted ? node.to.entity_type : 'disabled'} />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              {displayRelation ? (
+              {displayRelation && (
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
                   {t(`relationship_${node.relationship_type}`)}
                 </div>
-              ) : (
-                ''
               )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(
-                  `entity_${
-                    node.to.entity_type === 'stix_relation'
-                    || node.to.entity_type === 'stix-relation'
-                      ? node.to.parent_types[0]
-                      : node.to.entity_type
-                  }`,
-                )}
+                {!restricted
+                  ? t(
+                    `entity_${
+                      node.to.entity_type === 'stix_relation'
+                        || node.to.entity_type === 'stix-relation'
+                        ? node.to.parent_types[0]
+                        : node.to.entity_type
+                    }`,
+                  )
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.to.entity_type === 'stix_relation'
-                || node.to.entity_type === 'stix-relation'
-                  ? `${node.to.from.name} ${String.fromCharCode(8594)} ${
-                    node.to.to.name
-                  }`
-                  : node.to.name}
+                {/* eslint-disable-next-line no-nested-ternary */}
+                {!restricted
+                  ? node.to.entity_type === 'stix_relation'
+                    || node.to.entity_type === 'stix-relation'
+                    ? `${node.to.from.name} ${String.fromCharCode(8594)} ${
+                      node.to.to.name
+                    }`
+                    : node.to.name
+                  : t('Restricted')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -132,6 +140,7 @@ class IndicatorEntityLineComponent extends Component {
           <StixCoreRelationshipPopover
             stixCoreRelationshipId={node.id}
             paginationOptions={paginationOptions}
+            disabled={restricted}
           />
         </ListItemSecondaryAction>
       </ListItem>

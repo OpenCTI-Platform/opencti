@@ -13,7 +13,7 @@ import { logger } from '../config/conf';
 // Each API will start is manager.
 // When manager do it scan it take a lock and periodically renew it until the job is done.
 // If the lock is free, every API as the right to take it.
-const SCHEDULE_TIME = 5000; // Each 5 secs
+const SCHEDULE_TIME = 3600000; // Each 1 hour
 const EXPIRED_MANAGER_KEY = 'expired_manager_lock';
 
 const expireHandler = async () => {
