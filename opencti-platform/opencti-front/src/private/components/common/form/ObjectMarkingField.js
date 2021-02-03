@@ -5,6 +5,7 @@ import {
 import { withStyles } from '@material-ui/core/styles';
 import { CenterFocusStrong } from '@material-ui/icons';
 import { Field } from 'formik';
+import graphql from 'babel-plugin-relay/macro';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
@@ -21,6 +22,19 @@ const styles = () => ({
     marginLeft: 10,
   },
 });
+
+export const objectMarkingFieldAllowedMarkingsQuery = graphql`
+  query ObjectMarkingFieldAllowedMarkingsQuery {
+    me {
+      allowed_marking {
+        id
+        definition_type
+        definition
+        x_opencti_color
+      }
+    }
+  }
+`;
 
 class ObjectMarkingField extends Component {
   constructor(props) {

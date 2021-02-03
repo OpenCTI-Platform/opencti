@@ -53,6 +53,7 @@ import {
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
+import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 
 export const ES_MAX_CONCURRENCY = 5;
 export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
@@ -73,6 +74,7 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_OBJECT_MARKING}_to`,
   `${RELATION_OBJECT_LABEL}_to`,
   `${RELATION_KILL_CHAIN_PHASE}_to`,
+  `${RELATION_INDICATES}_to`,
 ];
 export const IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const isUnimpactedEntity = (entity) => UNIMPACTED_ENTITIES.includes(entity.entity_type);
@@ -80,12 +82,12 @@ export const isImpactedType = (type) => !UNIMPACTED_ENTITIES.includes(type);
 
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
-const buildMarkingRestriction = (user) => {
+const buildMarkingRestriction = (/* user */) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
   // Check user rights
-  const userMarkings = user.allowed_marking.map((m) => m.internal_id);
+  /* const userMarkings = user.allowed_marking.map((m) => m.internal_id);
   const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
   if (!isBypass) {
     if (userMarkings.length === 0) {
@@ -115,6 +117,7 @@ const buildMarkingRestriction = (user) => {
       must.push(markingBool);
     }
   }
+   */
   return { must, must_not };
 };
 
