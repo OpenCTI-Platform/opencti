@@ -16,10 +16,10 @@ import { fetchEditContext, pubsub } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const markingsLoader = (user) => initBatchLoader(user, batchMarkingDefinitions);
-const membersLoader = (user) => initBatchLoader(user, batchMembers);
+const markingsLoader = batchLoader(batchMarkingDefinitions);
+const membersLoader = batchLoader(batchMembers);
 
 const groupResolvers = {
   Query: {
@@ -27,8 +27,8 @@ const groupResolvers = {
     groups: (_, args, { user }) => findAll(user, args),
   },
   Group: {
-    allowed_marking: (stixCoreObject, _, { user }) => markingsLoader(user).load(stixCoreObject.id),
-    members: (group, _, { user }) => membersLoader(user).load(group.id),
+    allowed_marking: (stixCoreObject, _, { user }) => markingsLoader.load(stixCoreObject.id, user),
+    members: (group, _, { user }) => membersLoader.load(group.id, user),
     editContext: (group) => fetchEditContext(group.id),
   },
   Mutation: {

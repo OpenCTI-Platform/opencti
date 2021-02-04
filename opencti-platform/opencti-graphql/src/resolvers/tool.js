@@ -10,9 +10,9 @@ import {
 import { batchKillChainPhases } from '../domain/stixCoreObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const killChainPhaseLoader = (user) => initBatchLoader(user, batchKillChainPhases);
+const killChainPhaseLoader = batchLoader(batchKillChainPhases);
 
 const toolResolvers = {
   Query: {
@@ -25,7 +25,7 @@ const toolResolvers = {
     labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
   },
   Tool: {
-    killChainPhases: (tool, _, { user }) => killChainPhaseLoader(user).load(tool.id),
+    killChainPhases: (tool, _, { user }) => killChainPhaseLoader.load(tool.id, user),
   },
   Mutation: {
     toolEdit: (_, { id }, { user }) => ({

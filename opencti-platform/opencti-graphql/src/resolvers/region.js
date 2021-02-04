@@ -17,12 +17,12 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const countriesLoader = (user) => initBatchLoader(user, batchCountries);
-const parentRegionsLoader = (user) => initBatchLoader(user, batchParentRegions);
-const subRegionsLoader = (user) => initBatchLoader(user, batchSubRegions);
-const isSubRegionLoader = (user) => initBatchLoader(user, batchIsSubRegion);
+const countriesLoader = batchLoader(batchCountries);
+const parentRegionsLoader = batchLoader(batchParentRegions);
+const subRegionsLoader = batchLoader(batchSubRegions);
+const isSubRegionLoader = batchLoader(batchIsSubRegion);
 
 const regionResolvers = {
   Query: {
@@ -30,10 +30,10 @@ const regionResolvers = {
     regions: (_, args, { user }) => findAll(user, args),
   },
   Region: {
-    parentRegions: (region, _, { user }) => parentRegionsLoader(user).load(region.id),
-    subRegions: (region, _, { user }) => subRegionsLoader(user).load(region.id),
-    isSubRegion: (region, _, { user }) => isSubRegionLoader(user).load(region.id),
-    countries: (region, _, { user }) => countriesLoader(user).load(region.id),
+    parentRegions: (region, _, { user }) => parentRegionsLoader.load(region.id, user),
+    subRegions: (region, _, { user }) => subRegionsLoader.load(region.id, user),
+    isSubRegion: (region, _, { user }) => isSubRegionLoader.load(region.id, user),
+    countries: (region, _, { user }) => countriesLoader.load(region.id, user),
   },
   RegionsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -18,13 +18,13 @@ import {
 import { batchKillChainPhases } from '../domain/stixCoreObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const killChainPhasesLoader = (user) => initBatchLoader(user, batchKillChainPhases);
-const coursesOfActionLoader = (user) => initBatchLoader(user, batchCoursesOfAction);
-const parentAttackPatternsLoader = (user) => initBatchLoader(user, batchParentAttackPatterns);
-const subAttackPatternsLoader = (user) => initBatchLoader(user, batchSubAttackPatterns);
-const isSubAttackPatternLoader = (user) => initBatchLoader(user, batchIsSubAttackPattern);
+const killChainPhasesLoader = batchLoader(batchKillChainPhases);
+const coursesOfActionLoader = batchLoader(batchCoursesOfAction);
+const parentAttackPatternsLoader = batchLoader(batchParentAttackPatterns);
+const subAttackPatternsLoader = batchLoader(batchSubAttackPatterns);
+const isSubAttackPatternLoader = batchLoader(batchIsSubAttackPattern);
 
 const attackPatternResolvers = {
   Query: {
@@ -32,11 +32,11 @@ const attackPatternResolvers = {
     attackPatterns: (_, args, { user }) => findAll(user, args),
   },
   AttackPattern: {
-    killChainPhases: (attackPattern, _, { user }) => killChainPhasesLoader(user).load(attackPattern.id),
-    coursesOfAction: (attackPattern, _, { user }) => coursesOfActionLoader(user).load(attackPattern.id),
-    parentAttackPatterns: (attackPattern, _, { user }) => parentAttackPatternsLoader(user).load(attackPattern.id),
-    subAttackPatterns: (attackPattern, _, { user }) => subAttackPatternsLoader(user).load(attackPattern.id),
-    isSubAttackPattern: (attackPattern, _, { user }) => isSubAttackPatternLoader(user).load(attackPattern.id),
+    killChainPhases: (attackPattern, _, { user }) => killChainPhasesLoader.load(attackPattern.id, user),
+    coursesOfAction: (attackPattern, _, { user }) => coursesOfActionLoader.load(attackPattern.id, user),
+    parentAttackPatterns: (attackPattern, _, { user }) => parentAttackPatternsLoader.load(attackPattern.id, user),
+    subAttackPatterns: (attackPattern, _, { user }) => subAttackPatternsLoader.load(attackPattern.id, user),
+    isSubAttackPattern: (attackPattern, _, { user }) => isSubAttackPatternLoader.load(attackPattern.id, user),
   },
   AttackPatternsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

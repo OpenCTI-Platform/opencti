@@ -18,15 +18,15 @@ import { creator } from '../domain/log';
 import { fetchEditContext } from '../database/redis';
 import { convertDataToStix } from '../database/stix';
 import { ABSTRACT_STIX_CORE_OBJECT } from '../schema/general';
-import { initBatchLoader, stixElementLoader } from '../database/middleware';
+import { batchLoader, stixElementLoader } from '../database/middleware';
 
-const createdByLoader = (user) => initBatchLoader(user, batchCreatedBy);
-const markingDefinitionsLoader = (user) => initBatchLoader(user, batchMarkingDefinitions);
-const labelsLoader = (user) => initBatchLoader(user, batchLabels);
-const externalReferencesLoader = (user) => initBatchLoader(user, batchExternalReferences);
-const notesLoader = (user) => initBatchLoader(user, batchNotes);
-const opinionsLoader = (user) => initBatchLoader(user, batchOpinions);
-const reportsLoader = (user) => initBatchLoader(user, batchReports);
+const createdByLoader = batchLoader(batchCreatedBy);
+const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
+const labelsLoader = batchLoader(batchLabels);
+const externalReferencesLoader = batchLoader(batchExternalReferences);
+const notesLoader = batchLoader(batchNotes);
+const opinionsLoader = batchLoader(batchOpinions);
+const reportsLoader = batchLoader(batchReports);
 
 const stixCoreObjectResolvers = {
   Query: {
@@ -49,13 +49,13 @@ const stixCoreObjectResolvers = {
     creator: (stixCoreObject, _, { user }) => creator(user, stixCoreObject.id),
     editContext: (stixCoreObject) => fetchEditContext(stixCoreObject.id),
     stixCoreRelationships: (stixCoreObject, args, { user }) => stixCoreRelationships(user, stixCoreObject.id, args),
-    createdBy: (stixCoreObject, _, { user }) => createdByLoader(user).load(stixCoreObject.id),
-    objectMarking: (stixCoreObject, _, { user }) => markingDefinitionsLoader(user).load(stixCoreObject.id),
-    objectLabel: (stixCoreObject, _, { user }) => labelsLoader(user).load(stixCoreObject.id),
-    externalReferences: (stixCoreObject, _, { user }) => externalReferencesLoader(user).load(stixCoreObject.id),
-    reports: (stixCoreObject, _, { user }) => reportsLoader(user).load(stixCoreObject.id),
-    notes: (stixCoreObject, _, { user }) => notesLoader(user).load(stixCoreObject.id),
-    opinions: (stixCoreObject, _, { user }) => opinionsLoader(user).load(stixCoreObject.id),
+    createdBy: (stixCoreObject, _, { user }) => createdByLoader.load(stixCoreObject.id, user),
+    objectMarking: (stixCoreObject, _, { user }) => markingDefinitionsLoader.load(stixCoreObject.id, user),
+    objectLabel: (stixCoreObject, _, { user }) => labelsLoader.load(stixCoreObject.id, user),
+    externalReferences: (stixCoreObject, _, { user }) => externalReferencesLoader.load(stixCoreObject.id, user),
+    reports: (stixCoreObject, _, { user }) => reportsLoader.load(stixCoreObject.id, user),
+    notes: (stixCoreObject, _, { user }) => notesLoader.load(stixCoreObject.id, user),
+    opinions: (stixCoreObject, _, { user }) => opinionsLoader.load(stixCoreObject.id, user),
   },
   Mutation: {
     stixCoreObjectEdit: (_, { id }, { user }) => ({

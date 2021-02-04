@@ -9,9 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const batchCountryLoader = (user) => initBatchLoader(user, batchCountry);
+const batchCountryLoader = batchLoader(batchCountry);
 
 const cityResolvers = {
   Query: {
@@ -19,7 +19,7 @@ const cityResolvers = {
     cities: (_, args, { user }) => findAll(user, args),
   },
   City: {
-    country: (city, _, { user }) => batchCountryLoader(user).load(city.id),
+    country: (city, _, { user }) => batchCountryLoader.load(city.id, user),
   },
   CitiesFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

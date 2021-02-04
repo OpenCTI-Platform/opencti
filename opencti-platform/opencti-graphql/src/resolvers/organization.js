@@ -9,9 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const sectorsLoader = (user) => initBatchLoader(user, batchSectors);
+const sectorsLoader = batchLoader(batchSectors);
 
 const organizationResolvers = {
   Query: {
@@ -19,7 +19,7 @@ const organizationResolvers = {
     organizations: (_, args, { user }) => findAll(user, args),
   },
   Organization: {
-    sectors: (organization, _, { user }) => sectorsLoader(user).load(organization.id),
+    sectors: (organization, _, { user }) => sectorsLoader.load(organization.id, user),
   },
   OrganizationsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

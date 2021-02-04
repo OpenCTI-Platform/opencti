@@ -20,11 +20,11 @@ import {
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { distributionEntities, initBatchLoader } from '../database/middleware';
+import { distributionEntities, batchLoader } from '../database/middleware';
 
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
 
-const batchObservablesLoader = (user) => initBatchLoader(user, batchObservables);
+const batchObservablesLoader = batchLoader(batchObservables);
 
 const indicatorResolvers = {
   Query: {
@@ -57,7 +57,7 @@ const indicatorResolvers = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
-    observables: (indicator, _, { user }) => batchObservablesLoader(user).load(indicator.id),
+    observables: (indicator, _, { user }) => batchObservablesLoader.load(indicator.id, user),
     indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {

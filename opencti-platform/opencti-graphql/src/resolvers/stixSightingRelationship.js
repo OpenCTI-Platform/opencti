@@ -21,12 +21,7 @@ import {
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import {
-  distributionRelations,
-  timeSeriesRelations,
-  REL_CONNECTED_SUFFIX,
-  initBatchLoader,
-} from '../database/middleware';
+import { distributionRelations, timeSeriesRelations, REL_CONNECTED_SUFFIX, batchLoader } from '../database/middleware';
 import { convertDataToStix } from '../database/stix';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
@@ -34,15 +29,15 @@ import { creator } from '../domain/log';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { elBatchIds } from '../database/elasticSearch';
 
-const createdByLoader = (user) => initBatchLoader(user, batchCreatedBy);
-const markingDefinitionsLoader = (user) => initBatchLoader(user, batchMarkingDefinitions);
-const labelsLoader = (user) => initBatchLoader(user, batchLabels);
-const externalReferencesLoader = (user) => initBatchLoader(user, batchExternalReferences);
-const notesLoader = (user) => initBatchLoader(user, batchNotes);
-const opinionsLoader = (user) => initBatchLoader(user, batchOpinions);
-const reportsLoader = (user) => initBatchLoader(user, batchReports);
+const createdByLoader = batchLoader(batchCreatedBy);
+const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
+const labelsLoader = batchLoader(batchLabels);
+const externalReferencesLoader = batchLoader(batchExternalReferences);
+const notesLoader = batchLoader(batchNotes);
+const opinionsLoader = batchLoader(batchOpinions);
+const reportsLoader = batchLoader(batchReports);
 
-const loadByIdLoader = (user) => initBatchLoader(user, elBatchIds);
+const loadByIdLoader = batchLoader(elBatchIds);
 
 const stixSightingRelationshipResolvers = {
   Query: {
@@ -63,17 +58,17 @@ const stixSightingRelationshipResolvers = {
     toMainObservableType: `${REL_INDEX_PREFIX}${REL_CONNECTED_SUFFIX}to.main_observable_type`,
   },
   StixSightingRelationship: {
-    from: (rel, _, { user }) => loadByIdLoader(user).load(rel.fromId),
-    to: (rel, _, { user }) => loadByIdLoader(user).load(rel.toId),
+    from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),
+    to: (rel, _, { user }) => loadByIdLoader.load(rel.toId, user),
     toStix: (rel) => JSON.stringify(convertDataToStix(rel)),
     creator: (rel, _, { user }) => creator(user, rel.id),
-    createdBy: (rel, _, { user }) => createdByLoader(user).load(rel.id),
-    objectMarking: (rel, _, { user }) => markingDefinitionsLoader(user).load(rel.id),
-    objectLabel: (rel, _, { user }) => labelsLoader(user).load(rel.id),
-    externalReferences: (rel, _, { user }) => externalReferencesLoader(user).load(rel.id),
-    reports: (rel, _, { user }) => reportsLoader(user).load(rel.id),
-    notes: (rel, _, { user }) => notesLoader(user).load(rel.id),
-    opinions: (rel, _, { user }) => opinionsLoader(user).load(rel.id),
+    createdBy: (rel, _, { user }) => createdByLoader.load(rel.id, user),
+    objectMarking: (rel, _, { user }) => markingDefinitionsLoader.load(rel.id, user),
+    objectLabel: (rel, _, { user }) => labelsLoader.load(rel.id, user),
+    externalReferences: (rel, _, { user }) => externalReferencesLoader.load(rel.id, user),
+    reports: (rel, _, { user }) => reportsLoader.load(rel.id, user),
+    notes: (rel, _, { user }) => notesLoader.load(rel.id, user),
+    opinions: (rel, _, { user }) => opinionsLoader.load(rel.id, user),
     editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {

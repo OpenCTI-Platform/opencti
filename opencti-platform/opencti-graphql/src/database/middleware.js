@@ -126,15 +126,27 @@ import {
 } from '../utils/format';
 
 // region global variables
-export const MAX_BATCH_SIZE = 25;
+export const MAX_BATCH_SIZE = 300;
 export const REL_CONNECTED_SUFFIX = 'CONNECTED';
 // endregion
 
 // region Loader common
-export const initBatchLoader = (user, loader) => {
-  const opts = { cache: false, maxBatchSize: MAX_BATCH_SIZE };
-  return new DataLoader((ids) => loader(user, ids), opts);
+export const batchLoader = (loader) => {
+  const dataLoader = new DataLoader(
+    (objects) => {
+      const { user } = R.head(objects);
+      const ids = objects.map((i) => i.id);
+      return loader(user, ids);
+    },
+    { maxBatchSize: MAX_BATCH_SIZE }
+  );
+  return {
+    load: (id, user) => {
+      return dataLoader.load({ id, user });
+    },
+  };
 };
+
 export const querySubTypes = async ({ type }) => {
   const sortByLabel = R.sortBy(R.toLower);
   const types = schemaTypes.get(type);

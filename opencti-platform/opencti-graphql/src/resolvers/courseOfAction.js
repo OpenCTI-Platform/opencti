@@ -9,9 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const attackPatternsLoader = (user) => initBatchLoader(user, batchAttackPatterns);
+const attackPatternsLoader = batchLoader(batchAttackPatterns);
 
 const courseOfActionResolvers = {
   Query: {
@@ -19,7 +19,7 @@ const courseOfActionResolvers = {
     coursesOfAction: (_, args, { user }) => findAll(user, args),
   },
   CourseOfAction: {
-    attackPatterns: (courseOfAction, _, { user }) => attackPatternsLoader(user).load(courseOfAction.id),
+    attackPatterns: (courseOfAction, _, { user }) => attackPatternsLoader.load(courseOfAction.id, user),
   },
   CoursesOfActionFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

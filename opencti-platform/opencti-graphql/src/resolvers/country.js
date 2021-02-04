@@ -7,9 +7,9 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectDelete,
 } from '../domain/stixDomainObject';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const batchRegionLoader = (user) => initBatchLoader(user, batchRegion);
+const batchRegionLoader = batchLoader(batchRegion);
 
 const countryResolvers = {
   Query: {
@@ -17,7 +17,7 @@ const countryResolvers = {
     countries: (_, args, { user }) => findAll(user, args),
   },
   Country: {
-    region: (country, _, { user }) => batchRegionLoader(user).load(country.id),
+    region: (country, _, { user }) => batchRegionLoader.load(country.id, user),
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({

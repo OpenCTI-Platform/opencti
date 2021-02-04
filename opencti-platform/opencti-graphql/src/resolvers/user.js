@@ -37,11 +37,11 @@ import { addRole } from '../domain/grant';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const groupsLoader = (user) => initBatchLoader(user, batchGroups);
-const rolesLoader = (user) => initBatchLoader(user, batchRoles);
-const rolesCapabilitiesLoader = (user) => initBatchLoader(user, batchRoleCapabilities);
+const groupsLoader = batchLoader(batchGroups);
+const rolesLoader = batchLoader(batchRoles);
+const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 
 const userResolvers = {
   Query: {
@@ -53,8 +53,8 @@ const userResolvers = {
     me: (_, args, { user }) => findById(user, user.id),
   },
   User: {
-    groups: (current, _, { user }) => groupsLoader(user).load(current.id),
-    roles: (current, _, { user }) => rolesLoader(user).load(current.id),
+    groups: (current, _, { user }) => groupsLoader.load(current.id, user),
+    roles: (current, _, { user }) => rolesLoader.load(current.id, user),
     allowed_marking: (current, _, { user }) => getMarkings(user, current.id),
     capabilities: (current, _, { user }) => getCapabilities(user, current.id),
     token: (current, _, { user }) => token(user, current.id),
@@ -62,7 +62,7 @@ const userResolvers = {
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
-    capabilities: (role, _, { user }) => rolesCapabilitiesLoader(user).load(role.id),
+    capabilities: (role, _, { user }) => rolesCapabilitiesLoader.load(role.id, user),
   },
   Mutation: {
     token: async (_, { input }, context) => {

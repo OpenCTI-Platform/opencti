@@ -18,11 +18,11 @@ import {
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const parentSectorsLoader = (user) => initBatchLoader(user, batchParentSectors);
-const subSectorsLoader = (user) => initBatchLoader(user, batchSubSectors);
-const isSubSectorLoader = (user) => initBatchLoader(user, batchIsSubSector);
+const parentSectorsLoader = batchLoader(batchParentSectors);
+const subSectorsLoader = batchLoader(batchSubSectors);
+const isSubSectorLoader = batchLoader(batchIsSubSector);
 
 const sectorResolvers = {
   Query: {
@@ -30,10 +30,10 @@ const sectorResolvers = {
     sectors: (_, args, { user }) => findAll(user, args),
   },
   Sector: {
-    parentSectors: (sector, _, { user }) => parentSectorsLoader(user).load(sector.id),
-    subSectors: (sector, _, { user }) => subSectorsLoader(user).load(sector.id),
-    isSubSector: (sector, _, { user }) => isSubSectorLoader(user).load(sector.id),
-    targetedOrganizations: (sector, _, { user }) => targetedOrganizations(user, sector.id),
+    parentSectors: (sector, _, { user }) => parentSectorsLoader.load(sector.id, user),
+    subSectors: (sector, _, { user }) => subSectorsLoader.load(sector.id, user),
+    isSubSector: (sector, _, { user }) => isSubSectorLoader.load(sector.id, user),
+    targetedOrganizations: (sector, _, { user }) => targetedOrganizations(user, sector.id, user),
   },
   SectorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

@@ -9,9 +9,9 @@ import {
 } from '../domain/stixDomainObject';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
-import { initBatchLoader } from '../database/middleware';
+import { batchLoader } from '../database/middleware';
 
-const locationsLoader = (user) => initBatchLoader(user, batchLocations);
+const locationsLoader = batchLoader(batchLocations);
 
 const threatActorResolvers = {
   Query: {
@@ -19,7 +19,7 @@ const threatActorResolvers = {
     threatActors: (_, args, { user }) => findAll(user, args),
   },
   ThreatActor: {
-    locations: (threatActor, _, { user }) => locationsLoader(user).load(threatActor.id),
+    locations: (threatActor, _, { user }) => locationsLoader.load(threatActor.id, user),
   },
   ThreatActorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
