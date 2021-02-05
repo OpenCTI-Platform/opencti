@@ -146,7 +146,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_LOCATION_POSITION]: [{ src: 'latitude' }, { src: 'longitude' }],
+    [D.ENTITY_TYPE_LOCATION_POSITION]: [{ src: 'name' }, { src: 'latitude' }, { src: 'longitude' }],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
