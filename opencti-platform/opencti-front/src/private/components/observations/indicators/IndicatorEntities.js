@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-import Paper from '@material-ui/core/Paper';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -13,12 +11,9 @@ import IndicatorEntitiesLines, {
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
 const styles = () => ({
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '-4px 0 0 0',
-    padding: '25px 15px 0 15px',
-    borderRadius: 6,
+  container: {
+    marginTop: 15,
+    paddingBottom: 70,
   },
 });
 
@@ -45,14 +40,19 @@ class IndicatorEntities extends Component {
     const { entityId } = this.props;
     const { sortBy, orderAsc } = this.state;
     const dataColumns = {
+      relationship_type: {
+        label: 'Relationship type',
+        width: '15%',
+        isSortable: true,
+      },
       entity_type: {
         label: 'Entity type',
-        width: '20%',
+        width: '15%',
         isSortable: false,
       },
       name: {
         label: 'Name',
-        width: '32%',
+        width: '30%',
         isSortable: false,
       },
       start_time: {
@@ -91,6 +91,7 @@ class IndicatorEntities extends Component {
               dataColumns={dataColumns}
               initialLoading={props === null}
               entityId={entityId}
+              displayRelation={true}
             />
           )}
         />
@@ -102,25 +103,20 @@ class IndicatorEntities extends Component {
     const {
       view, sortBy, orderAsc, searchTerm,
     } = this.state;
-    const {
-      classes, t, entityId, relationshipType,
-    } = this.props;
+    const { indicatorId, relationshipType, classes } = this.props;
     const paginationOptions = {
-      fromId: entityId,
-      relationship_type: relationshipType || 'indicates',
+      fromId: indicatorId,
+      relationship_type: relationshipType || 'stix-core-relationship',
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     return (
-      <div style={{ height: '100%' }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Relations to threats')}
-        </Typography>
+      <div className={classes.container}>
+        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <StixCoreRelationshipCreationFromEntity
           paginationOptions={paginationOptions}
-          entityId={entityId}
-          variant="inLine"
+          entityId={indicatorId}
           isRelationReversed={false}
           targetStixDomainObjectTypes={[
             'Threat-Actor',
@@ -130,19 +126,16 @@ class IndicatorEntities extends Component {
             'Tool',
             'Vulnerability',
             'Attack-Pattern',
+            'Indicator',
           ]}
         />
-        <div className="clearfix" />
-        <Paper classes={{ root: classes.paper }} elevation={2}>
-          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        </Paper>
       </div>
     );
   }
 }
 
 IndicatorEntities.propTypes = {
-  entityId: PropTypes.string,
+  indicatorId: PropTypes.string,
   relationshipType: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,

@@ -46,7 +46,7 @@ import {
   RELATION_COMPROMISES,
   RELATION_CONSISTS_OF,
   RELATION_CONTROLS,
-  RELATION_DELIVERS,
+  RELATION_DELIVERS, RELATION_DERIVED_FROM,
   RELATION_HAS,
   RELATION_HOSTS,
   RELATION_INDICATES,
@@ -59,8 +59,8 @@ import {
   RELATION_REVOKED_BY,
   RELATION_SUBTECHNIQUE_OF,
   RELATION_TARGETS,
-  RELATION_USES,
-} from '../schema/stixCoreRelationship';
+  RELATION_USES
+} from "../schema/stixCoreRelationship";
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import { isMultipleAttribute } from '../schema/fieldDataAdapter';
@@ -350,6 +350,7 @@ export const stixCoreRelationshipsMapping = {
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_TOOL}`]: [RELATION_INDICATES],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_VULNERABILITY}`]: [RELATION_INDICATES],
   [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_CONTAINER_OBSERVED_DATA}`]: [RELATION_BASED_ON],
+  [`${ENTITY_TYPE_INDICATOR}_${ENTITY_TYPE_INDICATOR}`]: [RELATION_DERIVED_FROM],
   [`${ENTITY_TYPE_INDICATOR}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [RELATION_BASED_ON],
   [`${ENTITY_TYPE_INDICATOR}_${RELATION_USES}`]: [RELATION_INDICATES],
   [`${ENTITY_TYPE_INFRASTRUCTURE}_${ENTITY_TYPE_INFRASTRUCTURE}`]: [

@@ -13,6 +13,7 @@ import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import IndicatorHeader from './IndicatorHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import IndicatorEntities from './IndicatorEntities';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -110,6 +111,19 @@ class RootIndicator extends Component {
                         <StixCoreObjectHistory
                           {...routeProps}
                           stixCoreObjectId={indicatorId}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/observations/indicators/:indicatorId/knowledge"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <IndicatorHeader indicator={props.indicator} />
+                        <IndicatorEntities
+                          {...routeProps}
+                          indicatorId={indicatorId}
                         />
                       </React.Fragment>
                     )}

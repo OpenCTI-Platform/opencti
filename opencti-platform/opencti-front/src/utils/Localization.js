@@ -756,6 +756,7 @@ const i18n = {
       Timeline: 'Chronologie',
       'Total pending inserts': "Nombre d'insertions en attente",
       'Relations to threats': 'Relations vers des menaces',
+      'Relations to other entities': "Relations vers d'autres entités",
       'Context relations': 'Relations de contexte',
       'Direct relations creations': 'Créations de relations directes',
       'Number of target relations': 'Nombre de relations de ciblage',

@@ -15,7 +15,7 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import IndicatorHeader from './IndicatorHeader';
-import IndicatorEntities from './IndicatorEntities';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
   container: {
@@ -55,7 +55,10 @@ class IndicatorComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <IndicatorEntities entityId={indicator.id} />
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={indicator.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
+            />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectOrStixCoreRelationshipLastReports

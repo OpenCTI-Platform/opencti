@@ -82,6 +82,28 @@ class TopMenuIndicator extends Component {
         </Button>
         <Button
           component={Link}
+          to={`/dashboard/observations/indicators/${indicatorId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/observations/indicators/${indicatorId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/observations/indicators/${indicatorId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
           to={`/dashboard/observations/indicators/${indicatorId}/sightings`}
           variant={
             location.pathname

@@ -55,6 +55,7 @@ const relationsTypesMapping = {
   'Indicator_Threat-Actor': ['indicates'],
   Indicator_Tool: ['indicates'],
   'Indicator_Observed-Data': ['based-on'],
+  Indicator_Indicator: ['derived-from'],
   Infrastructure_Infrastructure: [
     'communicates-with',
     'consists-of',

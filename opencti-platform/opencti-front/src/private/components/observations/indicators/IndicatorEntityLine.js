@@ -61,7 +61,7 @@ class IndicatorEntityLineComponent extends Component {
         ? `/dashboard/signatures/indicators/${entityId}/knowledge/relations/${node.id}`
         : `${resolveLink(node.to.entity_type)}/${
           node.to.id
-        }/indicators/relations/${node.id}`
+        }/knowledge/relations/${node.id}`
       : null;
     return (
       <ListItem
@@ -110,9 +110,9 @@ class IndicatorEntityLineComponent extends Component {
                   ? node.to.entity_type === 'stix_relation'
                     || node.to.entity_type === 'stix-relation'
                     ? `${node.to.from.name} ${String.fromCharCode(8594)} ${
-                      node.to.to.name
+                      node.to.to.name || node.to.to.observable_value
                     }`
-                    : node.to.name
+                    : node.to.name || node.to.observable_value
                   : t('Restricted')}
               </div>
               <div
@@ -261,6 +261,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
             name
             description
           }
+          ... on StixCyberObservable {
+            observable_value
+          }
           ... on StixCoreRelationship {
             from {
               ... on AttackPattern {
@@ -316,6 +319,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               }
               ... on XOpenCTIIncident {
                 name
+              }
+              ... on StixCyberObservable {
+                observable_value
               }
             }
             to {
@@ -373,6 +379,9 @@ const IndicatorEntityLineFragment = createFragmentContainer(
               ... on XOpenCTIIncident {
                 name
               }
+              ... on StixCyberObservable {
+                observable_value
+              }
             }
           }
         }
@@ -397,15 +406,13 @@ class IndicatorEntityLineDummyComponent extends Component {
         <ListItemText
           primary={
             <div>
-              {displayRelation ? (
+              {displayRelation && (
                 <div
                   className={classes.bodyItem}
                   style={{ width: dataColumns.relationship_type.width }}
                 >
                   <div className="fakeItem" style={{ width: '80%' }} />
                 </div>
-              ) : (
-                ''
               )}
               <div
                 className={classes.bodyItem}
