@@ -329,7 +329,7 @@ class StixCoreRelationship:
         result = self.opencti.query(
             query,
             {
-                "element_id": element_id,
+                "elementId": element_id,
                 "fromId": from_id,
                 "fromTypes": from_types,
                 "toId": to_id,
