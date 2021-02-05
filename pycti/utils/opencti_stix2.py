@@ -1128,7 +1128,7 @@ class OpenCTIStix2:
                 uuids.append(x["id"])
             # Get extra relations (from)
             stix_core_relationships = self.opencti.stix_core_relationship.list(
-                fromId=entity["x_opencti_id"]
+                elementId=entity["x_opencti_id"]
             )
             for stix_core_relationship in stix_core_relationships:
                 if self.check_max_marking_definition(
@@ -1163,7 +1163,7 @@ class OpenCTIStix2:
                     )
             # Get sighting
             stix_sighting_relationships = self.opencti.stix_sighting_relationship.list(
-                fromId=entity["x_opencti_id"]
+                elementId=entity["x_opencti_id"]
             )
             for stix_sighting_relationship in stix_sighting_relationships:
                 if self.check_max_marking_definition(

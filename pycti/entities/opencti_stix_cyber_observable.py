@@ -712,9 +712,6 @@ class StixCyberObservable:
             elif type == "StixFile":
                 input_variables["StixFile"] = {
                     "hashes": hashes if len(hashes) > 0 else None,
-                    "extensions": observable_data["extensions"]
-                    if "extensions" in observable_data
-                    else None,
                     "size": observable_data["size"]
                     if "size" in observable_data
                     else None,
@@ -814,9 +811,6 @@ class StixCyberObservable:
                 }
             elif type == "Network-Traffic":
                 input_variables["NetworkTraffic"] = {
-                    "extensions": observable_data["extensions"]
-                    if "extensions" in observable_data
-                    else None,
                     "start": observable_data["start"]
                     if "start" in observable_data
                     else None,
@@ -848,9 +842,6 @@ class StixCyberObservable:
                 }
             elif type == "Process":
                 input_variables["Process"] = {
-                    "extensions": observable_data["extensions"]
-                    if "extensions" in observable_data
-                    else None,
                     "is_hidden": observable_data["is_hidden"]
                     if "is_hidden" in observable_data
                     else None,
@@ -893,9 +884,6 @@ class StixCyberObservable:
                 }
             elif type == "User-Account":
                 input_variables["UserAccount"] = {
-                    "extensions": observable_data["extensions"]
-                    if "extensions" in observable_data
-                    else None,
                     "user_id": observable_data["user_id"]
                     if "user_id" in observable_data
                     else None,

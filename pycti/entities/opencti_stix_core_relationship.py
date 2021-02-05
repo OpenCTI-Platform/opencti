@@ -274,6 +274,7 @@ class StixCoreRelationship:
     """
 
     def list(self, **kwargs):
+        element_id = kwargs.get("elementId", None)
         from_id = kwargs.get("fromId", None)
         from_types = kwargs.get("fromTypes", None)
         to_id = kwargs.get("toId", None)
@@ -305,8 +306,8 @@ class StixCoreRelationship:
         )
         query = (
             """
-                query StixCoreRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixCoreRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
-                    stixCoreRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixCoreRelationships($elementId: String, $fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixCoreRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCoreRelationshipsOrdering, $orderMode: OrderingMode) {
+                    stixCoreRelationships(elementId: $elementId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -328,6 +329,7 @@ class StixCoreRelationship:
         result = self.opencti.query(
             query,
             {
+                "element_id": element_id,
                 "fromId": from_id,
                 "fromTypes": from_types,
                 "toId": to_id,
@@ -352,6 +354,7 @@ class StixCoreRelationship:
         Read a stix_core_relationship object
 
         :param id: the id of the stix_core_relationship
+        :param elementId: the id of the entity of the relation
         :param fromId: the id of the source entity of the relation
         :param toId: the id of the target entity of the relation
         :param relationship_type: the relation type
@@ -364,6 +367,7 @@ class StixCoreRelationship:
 
     def read(self, **kwargs):
         id = kwargs.get("id", None)
+        element_id = kwargs.get("elementId", None)
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         relationship_type = kwargs.get("relationship_type", None)
@@ -395,6 +399,7 @@ class StixCoreRelationship:
             )
         elif from_id is not None and to_id is not None:
             result = self.list(
+                elementId=element_id,
                 fromId=from_id,
                 toId=to_id,
                 relationship_type=relationship_type,
