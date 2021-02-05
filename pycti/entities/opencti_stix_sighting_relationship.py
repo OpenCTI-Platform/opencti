@@ -271,6 +271,7 @@ class StixSightingRelationship:
     """
 
     def list(self, **kwargs):
+        element_id = kwargs.get("elementId", None)
         from_id = kwargs.get("fromId", None)
         from_types = kwargs.get("fromTypes", None)
         to_id = kwargs.get("toId", None)
@@ -299,8 +300,8 @@ class StixSightingRelationship:
         )
         query = (
             """
-                query StixSightingRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $filters: [StixSightingRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode) {
-                    stixSightingRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+                query StixSightingRelationships($elementId: String, $fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $filters: [StixSightingRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixSightingRelationshipsOrdering, $orderMode: OrderingMode) {
+                    stixSightingRelationships(elementId: $elementId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                         edges {
                             node {
                                 """
@@ -322,6 +323,7 @@ class StixSightingRelationship:
         result = self.opencti.query(
             query,
             {
+                "elementId": element_id,
                 "fromId": from_id,
                 "fromTypes": from_types,
                 "toId": to_id,
@@ -356,6 +358,7 @@ class StixSightingRelationship:
 
     def read(self, **kwargs):
         id = kwargs.get("id", None)
+        element_id = kwargs.get("elementId", None)
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         first_seen_start = kwargs.get("firstSeenStart", None)
@@ -386,6 +389,7 @@ class StixSightingRelationship:
             )
         elif from_id is not None and to_id is not None:
             result = self.list(
+                elementId=element_id,
                 fromId=from_id,
                 toId=to_id,
                 firstSeenStart=first_seen_start,
