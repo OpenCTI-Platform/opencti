@@ -125,10 +125,7 @@ const Root = () => {
                         path="/dashboard/entities"
                         component={RootEntities}
                       />
-                      <BoundaryRoute
-                        path="/dashboard/data"
-                        render={RootData}
-                      />
+                      <BoundaryRoute path="/dashboard/data" render={RootData} />
                       <BoundaryRoute
                         path="/dashboard/workspaces"
                         component={RootWorkspaces}

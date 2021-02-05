@@ -38,7 +38,6 @@ import {
 import Theme from '../../components/ThemeDark';
 import inject18n from '../../components/i18n';
 import ItemNumberDifference from '../../components/ItemNumberDifference';
-import ItemMarking from '../../components/ItemMarking';
 import Loader from '../../components/Loader';
 import Security, { KNOWLEDGE } from '../../utils/Security';
 import { resolveLink } from '../../utils/Entity';
@@ -48,6 +47,7 @@ import { truncate } from '../../utils/String';
 import StixCoreRelationshipsHorizontalBars from './common/stix_core_relationships/StixCoreRelationshipsHorizontalBars';
 import LocationMiniMapTargets from './common/location/LocationMiniMapTargets';
 import { computeLevel } from '../../utils/Number';
+import ItemMarkings from '../../components/ItemMarkings';
 
 const styles = (theme) => ({
   root: {
@@ -775,13 +775,6 @@ class Dashboard extends Component {
                               const stixDomainObjectLink = `${resolveLink(
                                 stixDomainObject.entity_type,
                               )}/${stixDomainObject.id}`;
-                              const markingDefinition = head(
-                                pathOr(
-                                  [],
-                                  ['objectMarking', 'edges'],
-                                  stixDomainObject,
-                                ),
-                              );
                               return (
                                 <ListItem
                                   key={stixDomainObject.id}
@@ -830,17 +823,15 @@ class Dashboard extends Component {
                                       paddingRight: 20,
                                     }}
                                   >
-                                    {markingDefinition ? (
-                                      <ItemMarking
-                                        key={markingDefinition.node.id}
-                                        label={
-                                          markingDefinition.node.definition
-                                        }
-                                        variant="inList"
-                                      />
-                                    ) : (
-                                      ''
-                                    )}
+                                    <ItemMarkings
+                                      markingDefinitions={pathOr(
+                                        [],
+                                        ['objectMarking', 'edges'],
+                                        stixDomainObject,
+                                      )}
+                                      limit={1}
+                                      variant="inList"
+                                    />
                                   </div>
                                 </ListItem>
                               );

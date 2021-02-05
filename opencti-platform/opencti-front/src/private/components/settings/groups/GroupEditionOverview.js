@@ -94,7 +94,10 @@ class GroupEditionOverviewComponent extends Component {
 
   render() {
     const { t, group, context } = this.props;
-    const initialValues = pick(['name', 'description', 'default_assignation'], group);
+    const initialValues = pick(
+      ['name', 'description', 'default_assignation'],
+      group,
+    );
     return (
       <div>
         <Formik
@@ -134,18 +137,18 @@ class GroupEditionOverviewComponent extends Component {
                 }
               />
               <Field
-                  component={SwitchField}
-                  type="checkbox"
-                  name="default_assignation"
-                  label={t('Granted by default at user creation')}
-                  containerstyle={{ marginTop: 20 }}
-                  onChange={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                        context={context}
-                        fieldName="default_assignation"
-                    />
-                  }
+                component={SwitchField}
+                type="checkbox"
+                name="default_assignation"
+                label={t('Granted by default at user creation')}
+                containerstyle={{ marginTop: 20 }}
+                onChange={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="default_assignation"
+                  />
+                }
               />
             </Form>
           )}

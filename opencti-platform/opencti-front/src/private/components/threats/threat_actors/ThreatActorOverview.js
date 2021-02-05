@@ -41,6 +41,7 @@ class ThreatActorOverviewComponent extends Component {
                 <ItemMarking
                   key={markingDefinition.node.id}
                   label={markingDefinition.node.definition}
+                  color={markingDefinition.node.x_opencti_color}
                 />
               ),
               threatActor.objectMarking.edges,
@@ -112,6 +113,7 @@ const ThreatActorOverview = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_color
             }
           }
         }

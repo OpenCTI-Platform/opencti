@@ -108,6 +108,7 @@ class IndicatorLineComponent extends Component {
                       key={markingDefinition.node.id}
                       variant="inList"
                       label={markingDefinition.node.definition}
+                      color={markingDefinition.node.x_opencti_color}
                     />
                   ),
                 )}
@@ -148,6 +149,7 @@ const IndicatorLineFragment = createFragmentContainer(IndicatorLineComponent, {
           node {
             id
             definition
+            x_opencti_color
           }
         }
       }

@@ -41,6 +41,7 @@ class ToolOverviewComponent extends Component {
                 <ItemMarking
                   key={markingDefinition.node.id}
                   label={markingDefinition.node.definition}
+                  color={markingDefinition.node.x_opencti_color}
                 />
               ),
               tool.objectMarking.edges,
@@ -110,6 +111,7 @@ const ToolOverview = createFragmentContainer(ToolOverviewComponent, {
           node {
             id
             definition
+            x_opencti_color
           }
         }
       }

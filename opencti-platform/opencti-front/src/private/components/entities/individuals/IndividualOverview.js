@@ -41,6 +41,7 @@ class IndividualOverviewComponent extends Component {
                 <ItemMarking
                   key={markingDefinition.node.id}
                   label={markingDefinition.node.definition}
+                  color={markingDefinition.node.x_opencti_color}
                 />
               ),
               individual.objectMarking.edges,
@@ -115,6 +116,7 @@ const IndividualOverview = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_color
             }
           }
         }

@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, propOr,
-} from 'ramda';
+import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -122,7 +120,10 @@ class Dashboards extends Component {
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <WorkspaceCreation paginationOptions={paginationOptions} type="dashboard" />
+          <WorkspaceCreation
+            paginationOptions={paginationOptions}
+            type="dashboard"
+          />
         </Security>
       </div>
     );

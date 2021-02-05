@@ -11,11 +11,11 @@ import {
   KeyboardArrowRightOutlined,
   DescriptionOutlined,
 } from '@material-ui/icons';
-import { compose, pathOr, take } from 'ramda';
+import { compose, pathOr } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemStatus from '../../../../components/ReportStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -114,16 +114,15 @@ class ReportLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.objectMarking.width }}
               >
-                {take(1, pathOr([], ['objectMarking', 'edges'], node)).map(
-                  (markingDefinition) => (
-                    <ItemMarking
-                      key={markingDefinition.node.id}
-                      variant="inList"
-                      label={markingDefinition.node.definition}
-                      color={markingDefinition.node.x_opencti_color}
-                    />
-                  ),
-                )}
+                <ItemMarkings
+                  markingDefinitions={pathOr(
+                    [],
+                    ['objectMarking', 'edges'],
+                    node,
+                  )}
+                  limit={1}
+                  variant="inList"
+                />
               </div>
             </div>
           }

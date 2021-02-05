@@ -58,7 +58,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
     const element = node.from?.id === entityId ? node.to : node.from;
     // Element can be null due to marking restrictions
     if (element === null) {
-      return <div/>;
+      return <div />;
     }
     return (
       <ListItem

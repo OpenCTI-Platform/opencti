@@ -15,6 +15,7 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
+          no_output_timeout: 30m
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
@@ -40,6 +41,7 @@ jobs:
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-front
           command: yarn build
+          no_output_timeout: 30m          
       - run:
           working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
           command: yarn install
@@ -206,6 +208,7 @@ jobs:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
           command: docker build -t opencti/platform:rolling .
+          no_output_timeout: 30m
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker

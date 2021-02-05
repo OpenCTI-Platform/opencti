@@ -5,10 +5,8 @@ import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
 import EntityStixCoreRelationshipsHorizontalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
-import EntityStixCoreRelationshipsAreaChart
-  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
-import EntityStixCoreRelationshipsVerticalBars
-  from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
+import EntityStixCoreRelationshipsAreaChart from '../../common/stix_core_relationships/EntityStixCoreRelationshipsAreaChart';
+import EntityStixCoreRelationshipsVerticalBars from '../../common/stix_core_relationships/EntityStixCoreRelationshipsVerticalBars';
 
 const styles = () => ({
   container: {

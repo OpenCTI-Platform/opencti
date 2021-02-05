@@ -33,7 +33,7 @@ const sectorResolvers = {
     parentSectors: (sector, _, { user }) => parentSectorsLoader.load(sector.id, user),
     subSectors: (sector, _, { user }) => subSectorsLoader.load(sector.id, user),
     isSubSector: (sector, _, { user }) => isSubSectorLoader.load(sector.id, user),
-    targetedOrganizations: (sector, _, { user }) => targetedOrganizations(user, sector.id, user),
+    targetedOrganizations: (sector, _, { user }) => targetedOrganizations(user, sector.id),
   },
   SectorsFilter: {
     createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,

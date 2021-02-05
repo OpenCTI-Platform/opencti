@@ -101,6 +101,7 @@ class StixCyberObservableLineComponent extends Component {
                       key={markingDefinition.node.id}
                       variant="inList"
                       label={markingDefinition.node.definition}
+                      color={markingDefinition.node.x_opencti_color}
                     />
                   ),
                 )}
@@ -139,6 +140,7 @@ const StixCyberObservableLineFragment = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_color
             }
           }
         }

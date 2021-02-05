@@ -327,7 +327,11 @@ class ContainerAddStixCoreObjects extends Component {
       />
     ));
 
-    return <div style={{ float: 'left', margin: '-3px 0 0 5px' }}>{renderedTypes}</div>;
+    return (
+      <div style={{ float: 'left', margin: '-3px 0 0 5px' }}>
+        {renderedTypes}
+      </div>
+    );
   }
 
   render() {

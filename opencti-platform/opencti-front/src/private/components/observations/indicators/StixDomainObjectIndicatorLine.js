@@ -110,6 +110,7 @@ class StixDomainObjectIndicatorLineComponent extends Component {
                       key={markingDefinition.node.id}
                       variant="inList"
                       label={markingDefinition.node.definition}
+                      color={markingDefinition.node.x_opencti_color}
                     />
                   ),
                 )}
@@ -162,6 +163,7 @@ const StixDomainObjectIndicatorLineFragment = createFragmentContainer(
             node {
               id
               definition
+              x_opencti_color
             }
           }
         }

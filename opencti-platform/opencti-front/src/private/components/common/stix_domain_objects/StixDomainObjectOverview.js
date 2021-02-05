@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, propOr } from 'ramda';
+import { compose, pathOr, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -14,8 +14,8 @@ import ItemConfidence from '../../../../components/ItemConfidence';
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemRevoked from '../../../../components/ItemRevoked';
 import StixCoreObjectLabelsView from '../stix_core_objects/StixCoreObjectLabelsView';
-import ItemMarking from '../../../../components/ItemMarking';
 import ItemPatternType from '../../../../components/ItemPatternType';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = () => ({
   paper: {
@@ -118,7 +118,7 @@ class StixDomainObjectOverview extends Component {
               >
                 {stixDomainObject.spec_version}
               </Button>
-              {!withoutMarking && stixDomainObject.objectMarking ? (
+              {!withoutMarking && stixDomainObject.objectMarking && (
                 <div>
                   <Typography
                     variant="h3"
@@ -127,20 +127,15 @@ class StixDomainObjectOverview extends Component {
                   >
                     {t('Marking')}
                   </Typography>
-                  {stixDomainObject.objectMarking.edges.length > 0
-                    ? map(
-                      (markingDefinition) => (
-                          <ItemMarking
-                            key={markingDefinition.node.id}
-                            label={markingDefinition.node.definition}
-                          />
-                      ),
-                      stixDomainObject.objectMarking.edges,
-                    )
-                    : ''}
+                  <ItemMarkings
+                    markingDefinitions={pathOr(
+                      [],
+                      ['objectMarking', 'edges'],
+                      stixDomainObject,
+                    )}
+                    limit={10}
+                  />
                 </div>
-              ) : (
-                ''
               )}
               <Typography
                 variant="h3"

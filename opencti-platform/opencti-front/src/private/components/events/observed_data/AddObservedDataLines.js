@@ -158,6 +158,7 @@ class AddObservedDataLinesContainer extends Component {
                       <ItemMarking
                         key={markingDefinition.node.id}
                         label={markingDefinition.node.definition}
+                        color={markingDefinition.node.x_opencti_color}
                         variant="inList"
                       />
                       ),
