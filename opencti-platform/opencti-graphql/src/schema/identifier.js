@@ -31,6 +31,8 @@ export const STANDARD_HASHES = [MD5, SHA_1, SHA_256, SHA_512, SHA3_256, SHA3_512
 const transformObjectToUpperKeys = (data) => {
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k.toUpperCase(), v]));
 };
+export const INTERNAL_FROM_FIELD = 'i_relations_from';
+export const INTERNAL_TO_FIELD = 'i_relations_to';
 export const NAME_FIELD = 'name';
 export const VALID_UNTIL = 'valid_until';
 export const REVOKED = 'revoked';

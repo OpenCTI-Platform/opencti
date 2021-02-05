@@ -26,6 +26,7 @@ import {
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   BASE_TYPE_RELATION,
+  BYPASS,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -40,19 +41,11 @@ import {
   numericOrBooleanAttributes,
 } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
-import {
-  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  isStixObjectAliased,
-} from '../schema/stixDomainObject';
+import { isStixObjectAliased } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
-import {
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-} from '../schema/stixMetaObject';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 
 export const ES_MAX_CONCURRENCY = 5;
 export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
@@ -61,32 +54,27 @@ const MAX_AGGREGATION_SIZE = 100;
 const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
 const MAX_SEARCH_AGGREGATION_SIZE = 10000;
 const MAX_SEARCH_SIZE = 5000;
-const UNIMPACTED_ENTITIES = [
-  ENTITY_TYPE_IDENTITY_INDIVIDUAL,
-  ENTITY_TYPE_IDENTITY_ORGANIZATION,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-];
+export const ROLE_FROM = 'from';
+export const ROLE_TO = 'to';
 const UNIMPACTED_ENTITIES_ROLE = [
-  `${RELATION_CREATED_BY}_to`,
-  `${RELATION_OBJECT_MARKING}_to`,
-  `${RELATION_OBJECT_LABEL}_to`,
-  `${RELATION_KILL_CHAIN_PHASE}_to`,
-  `${RELATION_INDICATES}_to`,
+  `${RELATION_CREATED_BY}_${ROLE_TO}`,
+  `${RELATION_OBJECT_MARKING}_${ROLE_TO}`,
+  `${RELATION_OBJECT_LABEL}_${ROLE_TO}`,
+  `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
+  `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
 export const IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
-export const isUnimpactedEntity = (entity) => UNIMPACTED_ENTITIES.includes(entity.entity_type);
-export const isImpactedType = (type) => !UNIMPACTED_ENTITIES.includes(type);
+export const isImpactedTypeAndSide = (type, side) => !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
+export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
 export const el = new Client({ node: conf.get('elasticsearch:url') });
 
-const buildMarkingRestriction = (/* user */) => {
+const buildMarkingRestriction = (user) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
   // Check user rights
-  /* const userMarkings = user.allowed_marking.map((m) => m.internal_id);
+  const userMarkings = user.allowed_marking.map((m) => m.internal_id);
   const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
   if (!isBypass) {
     if (userMarkings.length === 0) {
@@ -116,7 +104,6 @@ const buildMarkingRestriction = (/* user */) => {
       must.push(markingBool);
     }
   }
-   */
   return { must, must_not };
 };
 
@@ -1130,7 +1117,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   const query = {
     index: indexName,
     ignore_throttled: IGNORE_THROTTLED,
-    //_source_excludes: `${REL_INDEX_PREFIX}*`,
+    _source_excludes: `${REL_INDEX_PREFIX}*`,
     track_total_hits: true,
     body,
   };
@@ -1341,8 +1328,7 @@ const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
     const resolvedIds = internalIds.filter((f) => !cache[f]);
     foundRelations.push(...resolvedIds);
     resolvedIds.forEach((id) => {
-      // eslint-disable-next-line no-param-reassign
-      cache[id] = '';
+      cache.set(id, '');
     });
   }
   // If relations find, need to recurs to find relations to relations
@@ -1353,11 +1339,11 @@ const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
   }
 };
 export const getRelationsToRemove = async (user, elements) => {
-  const cache = {};
+  const relationsToRemoveMap = new Map();
   const relationsToRemove = [];
   const ids = elements.map((e) => e.internal_id);
-  await getRelatedRelations(user, ids, relationsToRemove, 0, cache);
-  return { relations: R.flatten(relationsToRemove), cache };
+  await getRelatedRelations(user, ids, relationsToRemove, 0, relationsToRemoveMap);
+  return { relations: R.flatten(relationsToRemove), relationsToRemoveMap };
 };
 export const elDeleteInstanceIds = async (instances) => {
   // If nothing to delete, return immediately to prevent elastic to delete everything
@@ -1409,24 +1395,26 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
 };
 
 export const elDeleteElements = async (user, elements) => {
-  const { relations, cache } = await getRelationsToRemove(user, elements);
+  const { relations, relationsToRemoveMap } = await getRelationsToRemove(user, elements);
   // 02. Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
   const cleanupRelations = relations.concat(basicCleanup);
-  const relsFromTo = cleanupRelations
+  const relsFromToImpacts = cleanupRelations
     .map((r) => {
-      const isFromCleanup = isImpactedType(r.fromType) && !cache[r.fromId];
-      const isToCleanup = isImpactedType(r.toType) && !cache[r.toId];
+      const fromWillNotBeRemoved = !relationsToRemoveMap.has(r.fromId);
+      const isFromCleanup = fromWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_FROM);
+      const toWillNotBeRemoved = !relationsToRemoveMap.has(r.toId);
+      const isToCleanup = toWillNotBeRemoved && isImpactedTypeAndSide(r.entity_type, ROLE_TO);
       return { relation: r, isFromCleanup, isToCleanup };
     })
     .filter((r) => r.isFromCleanup || r.isToCleanup);
   // Update all rel connections that will remain
   let currentRelationsCount = 0;
-  const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromTo);
+  const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromToImpacts);
   const concurrentRelsFromTo = async (relsToClean) => {
     await elRemoveRelationConnection(user, relsToClean);
     currentRelationsCount += relsToClean.length;
-    logger.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromTo.length}`);
+    logger.debug(`[OPENCTI] Updating relations for deletion ${currentRelationsCount} / ${relsFromToImpacts.length}`);
   };
   await Promise.map(groupsOfRelsFromTo, concurrentRelsFromTo, { concurrency: ES_MAX_CONCURRENCY });
   // Remove all relations
@@ -1487,8 +1475,8 @@ const prepareRelation = (thing) => {
   });
   return R.pipe(
     R.assoc('connections', connections),
-    R.dissoc('i_relations_to'),
-    R.dissoc('i_relations_from'),
+    R.dissoc(INTERNAL_TO_FIELD),
+    R.dissoc(INTERNAL_FROM_FIELD),
     // Dissoc from
     R.dissoc('from'),
     R.dissoc('fromId'),
@@ -1500,7 +1488,7 @@ const prepareRelation = (thing) => {
   )(thing);
 };
 const prepareEntity = (thing) => {
-  return R.pipe(R.dissoc('i_relations_to'), R.dissoc('i_relations_from'))(thing);
+  return R.pipe(R.dissoc(INTERNAL_TO_FIELD), R.dissoc(INTERNAL_FROM_FIELD))(thing);
 };
 const prepareIndexing = async (elements) => {
   return Promise.all(
@@ -1538,10 +1526,10 @@ export const elIndexElements = async (elements, retry = 5) => {
       // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
       cache[e.fromId] = e.from;
       cache[e.toId] = e.to;
-      if (!R.includes(fromRole, UNIMPACTED_ENTITIES_ROLE)) {
+      if (isImpactedRole(fromRole)) {
         impacts.push({ from: e.fromId, relationshipType, to: e.to });
       }
-      if (!R.includes(toRole, UNIMPACTED_ENTITIES_ROLE)) {
+      if (isImpactedRole(toRole)) {
         impacts.push({ from: e.toId, relationshipType, to: e.from });
       }
       return impacts;
@@ -1643,15 +1631,16 @@ export const elUpdateEntityConnections = (elements) => {
       ctx._source[params.key] = values;
     }
   `;
-  const docsToImpact = elements.filter((e) => !R.includes(e.entity_type, UNIMPACTED_ENTITIES));
-  if (docsToImpact.length === 0) return Promise.resolve();
+  if (elements.length === 0) {
+    return Promise.resolve();
+  }
   const addMultipleFormat = (doc) => {
     if (doc.toReplace === null && !Array.isArray(doc.data.internal_id)) {
       return [doc.data.internal_id];
     }
     return doc.data.internal_id;
   };
-  const bodyUpdate = docsToImpact.flatMap((doc) => [
+  const bodyUpdate = elements.flatMap((doc) => [
     { update: { _index: doc._index, _id: doc.id } },
     {
       script: {

@@ -17,12 +17,12 @@ const SCHEDULE_TIME = 3600000; // Each 1 hour
 const EXPIRED_MANAGER_KEY = 'expired_manager_lock';
 
 const expireHandler = async () => {
-  logger.info('[OPENCTI] Running Expiration manager');
+  logger.debug('[OPENCTI] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([EXPIRED_MANAGER_KEY]);
-    logger.info('[OPENCTI] Expiration manager lock acquired');
+    logger.debug('[OPENCTI] Expiration manager lock acquired');
     // Execute the cleaning
     const callback = async (elements) => {
       logger.info(`[OPENCTI] Expiration manager will clear ${elements.length} elements`);
@@ -43,7 +43,7 @@ const expireHandler = async () => {
     // We dont care about failing to get the lock.
     logger.info('[OPENCTI] Expiration manager already in progress by another API');
   } finally {
-    logger.info('[OPENCTI] Expiration manager done');
+    logger.debug('[OPENCTI] Expiration manager done');
     if (lock) await lock.unlock();
   }
 };

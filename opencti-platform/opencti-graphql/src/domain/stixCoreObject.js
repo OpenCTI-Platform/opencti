@@ -11,7 +11,6 @@ import {
   listEntities,
   batchListThroughGetFrom,
   loadById,
-  loadByIdFullyResolved,
   mergeEntities,
   updateAttribute,
   batchLoadThroughGetTo,
@@ -95,7 +94,7 @@ export const batchKillChainPhases = (user, stixCoreObjectIds) => {
 };
 
 export const stixCoreRelationships = (user, stixCoreObjectId, args) => {
-  const finalArgs = R.assoc('fromId', stixCoreObjectId, args);
+  const finalArgs = R.assoc('elementId', stixCoreObjectId, args);
   return relationFindAll(user, finalArgs);
 };
 
@@ -164,21 +163,7 @@ export const stixCoreObjectsDelete = async (user, stixCoreObjectsIds) => {
 };
 
 export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
-  // Pre-checks
-  if (R.includes(targetId, sourceIds)) {
-    throw FunctionalError(`Cannot merge entities, same ID detected in source and destination`, {
-      targetId,
-      sourceIds,
-    });
-  }
-  const targetEntity = await loadByIdFullyResolved(user, targetId, ABSTRACT_STIX_CORE_OBJECT);
-  if (!targetEntity) {
-    throw FunctionalError('Cannot merge the other objects, Stix-Object cannot be found.');
-  }
-  const sourceEntities = await Promise.all(
-    sourceIds.map(async (id) => loadByIdFullyResolved(user, id, ABSTRACT_STIX_CORE_OBJECT))
-  );
-  return mergeEntities(user, targetEntity, sourceEntities);
+  return mergeEntities(user, targetId, sourceIds);
 };
 // endregion
 

@@ -53,12 +53,12 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer exte
         isLoading={relay.isLoading.bind(this)}
         dataList={pathOr(
           [],
-          ['stixCoreRelationshipsOfElement', 'edges'],
+          ['stixCoreRelationships', 'edges'],
           this.props.data,
         )}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixCoreRelationshipsOfElement', 'pageInfo', 'globalCount'],
+          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={
@@ -72,7 +72,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer exte
         paginationOptions={paginationOptions}
         entityId={stixObjectOrStixRelationshipId}
         entityLink={stixObjectOrStixRelationshipLink}
-        connectionKey="Pagination_stixCoreRelationshipsOfElement"
+        connectionKey="Pagination_stixCoreRelationships"
       />
     );
   }
@@ -141,7 +141,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
       ) {
-        stixCoreRelationshipsOfElement(
+        stixCoreRelationships(
           elementId: $elementId
           relationship_type: $relationship_type
           startTimeStart: $startTimeStart
@@ -153,7 +153,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
           orderMode: $orderMode
           first: $count
           after: $cursor
-        ) @connection(key: "Pagination_stixCoreRelationshipsOfElement") {
+        ) @connection(key: "Pagination_stixCoreRelationships") {
           edges {
             node {
               ...SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine_node

@@ -7823,6 +7823,7 @@ type Query {
     after: ID
     orderBy: StixCoreRelationshipsOrdering
     orderMode: OrderingMode
+    elementId: String
     fromId: String
     fromRole: String
     fromTypes: [String]
@@ -7846,30 +7847,6 @@ type Query {
     filterMode: FilterMode
     stix: Boolean
   ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
-  stixCoreRelationshipsOfElement(
-    first: Int
-    after: ID
-    orderBy: StixCoreRelationshipsOrdering
-    orderMode: OrderingMode
-    elementId: String!
-    relationship_type: String
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    firstSeenStart: DateTime
-    firstSeenStop: DateTime
-    lastSeenStart: DateTime
-    lastSeenStop: DateTime
-    startDate: DateTime
-    endDate: DateTime
-    confidences: [Int]
-    search: String
-    filters: [StixCoreRelationshipsFiltering]
-    filterMode: FilterMode
-    stix: Boolean
-  ): StixCoreRelationshipConnection @auth(for: [KNOWLEDGE])
-
   stixCoreRelationshipsTimeSeries(
     fromId: String
     relationship_type: String
@@ -7910,6 +7887,7 @@ type Query {
     after: ID
     orderBy: StixSightingRelationshipsOrdering
     orderMode: OrderingMode
+    elementId: String
     fromId: String
     toId: String
     fromTypes: [String]

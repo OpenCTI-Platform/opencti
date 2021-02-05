@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { el, IGNORE_THROTTLED } from '../database/elasticSearch';
 import { READ_INDEX_STIX_CYBER_OBSERVABLES } from '../database/utils';
-import { loadByIdFullyResolved, mergeEntities, patchAttribute } from '../database/middleware';
+import { mergeEntities, patchAttribute } from '../database/middleware';
 import { SYSTEM_USER } from '../domain/user';
 import { generateStandardId } from '../schema/identifier';
 import { logger } from '../config/conf';
@@ -61,12 +61,9 @@ export const up = async (next) => {
       standard_id: generateStandardId(target.entity_type, target),
     });
     const elementsToMerge = urlsToMerge.slice(1);
-    const resolveElementsToMerge = await Promise.all(
-      elementsToMerge.map((e) => loadByIdFullyResolved(SYSTEM_USER, e._source.internal_id))
-    );
-    const sources = resolveElementsToMerge.map((s) => R.assoc('standard_id', updatedTarget.standard_id, s));
+    const sources = elementsToMerge.map((s) => s._source.internal_id);
     // 2. Merge everything else inside the target
-    await mergeEntities(SYSTEM_USER, updatedTarget, sources);
+    await mergeEntities(SYSTEM_USER, updatedTarget.internal_id, sources);
     logger.info(
       `[MIGRATION] URL ${updatedTarget.value} merged (${urlsToMerge.length}) -- ${index + 1}/${buckets.length}`
     );
