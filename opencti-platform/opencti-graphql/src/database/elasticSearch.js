@@ -47,7 +47,9 @@ import { isBasicRelationship } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 
+const MIN_DATA_FIELDS = ['name', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = 5;
+const ES_RETRY_ON_CONFLICT = 5;
 export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
 export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
@@ -526,7 +528,8 @@ export const elReconstructRelation = (concept) => {
   const entityType = concept.entity_type;
   const fromConnection = R.find((connection) => connection.role === `${entityType}_from`, connections);
   const toConnection = R.find((connection) => connection.role === `${entityType}_to`, connections);
-  return elMergeRelation(concept, fromConnection, toConnection);
+  const relation = elMergeRelation(concept, fromConnection, toConnection);
+  return R.dissoc('connections', relation);
 };
 // endregion
 export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) => {
@@ -587,8 +590,10 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
   }
   return hits;
 };
-export const elFindByIds = async (user, ids, type = null, opts = {}) => {
-  const { indices = READ_DATA_INDICES, toMap = false, relExclude = true } = opts;
+
+export const elFindByIds = async (user, ids, opts = {}) => {
+  const { indices = READ_DATA_INDICES, toMap = false, type = null } = opts;
+  const { relExclude = true, minSource = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) return [];
@@ -637,6 +642,7 @@ export const elFindByIds = async (user, ids, type = null, opts = {}) => {
       size: MAX_SEARCH_SIZE,
       ignore_throttled: IGNORE_THROTTLED,
       _source_excludes: relExclude ? `${REL_INDEX_PREFIX}*` : '',
+      _source_includes: minSource ? MIN_DATA_FIELDS : '*',
       body: {
         query: {
           bool: {
@@ -663,7 +669,7 @@ export const elFindByIds = async (user, ids, type = null, opts = {}) => {
   return toMap ? hits : Object.values(hits);
 };
 export const elLoadByIds = async (user, ids, type = null, indices = READ_DATA_INDICES) => {
-  const hits = await elFindByIds(user, ids, type, { indices });
+  const hits = await elFindByIds(user, ids, { type, indices });
   /* istanbul ignore if */
   if (hits.length > 1) {
     const errorMeta = { ids, type, hits: hits.length };
@@ -944,7 +950,7 @@ export const specialElasticCharsEscape = (query) => {
 };
 export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { first = 200, after, orderBy = null, orderMode = 'asc' } = options;
+  const { first = 200, after, orderBy = null, orderMode = 'asc', minSource = false } = options;
   const { types = null, filters = [], search = null, connectionFormat = true } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
@@ -1102,7 +1108,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   let body = {
-    size: first,
+    size: first || 10,
     sort: ordering,
     query: {
       bool: {
@@ -1118,6 +1124,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     index: indexName,
     ignore_throttled: IGNORE_THROTTLED,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
+    _source_includes: minSource ? MIN_DATA_FIELDS : '*',
     track_total_hits: true,
     body,
   };
@@ -1275,7 +1282,7 @@ export const elIndex = async (indexName, documentBody, refresh = true) => {
   return documentBody;
 };
 /* istanbul ignore next */
-export const elUpdate = (indexName, documentId, documentBody, retry = 5) => {
+export const elUpdate = (indexName, documentId, documentBody, retry = ES_RETRY_ON_CONFLICT) => {
   return el
     .update({
       id: documentId,
@@ -1317,7 +1324,7 @@ export const elDeleteByField = async (indexName, fieldName, value) => {
 const getRelatedRelations = async (user, targetIds, elements, level, cache) => {
   const elementIds = Array.isArray(targetIds) ? targetIds : [targetIds];
   const filters = [{ nested: [{ key: 'internal_id', values: elementIds }], key: 'connections' }];
-  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP] };
+  const opts = { filters, connectionFormat: false, types: [ABSTRACT_BASIC_RELATIONSHIP], minSource: true };
   const hits = await elList(user, READ_RELATIONSHIPS_INDICES, opts);
   const groupResults = R.splitEvery(MAX_JS_PARAMS, hits);
   const foundRelations = [];
@@ -1350,7 +1357,7 @@ export const elDeleteInstanceIds = async (instances) => {
   if (instances.length === 0) return Promise.resolve(0);
   logger.debug(`[ELASTICSEARCH] Deleting ${instances.length} instances`);
   const bodyDelete = instances.flatMap((doc) => {
-    return [{ delete: { _index: doc._index, _id: doc.internal_id } }];
+    return [{ delete: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } }];
   });
   return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyDelete });
 };
@@ -1366,7 +1373,7 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
       })
       .flat()
   );
-  const dataIds = await elFindByIds(user, idsToResolve);
+  const dataIds = await elFindByIds(user, idsToResolve, { minSource: true });
   const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
   const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
     const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
@@ -1377,7 +1384,10 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
         source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
         params: { key: relation.toId },
       };
-      updates.push([{ update: { _index: index, _id: relation.fromId, retry_on_conflict: 5 } }, { script }]);
+      updates.push([
+        { update: { _index: index, _id: relation.fromId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { script },
+      ]);
     }
     // Update to to entity
     if (isToCleanup) {
@@ -1386,7 +1396,10 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
         source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
         params: { key: relation.fromId },
       };
-      updates.push([{ update: { _index: index, _id: relation.toId, retry_on_conflict: 5 } }, { script }]);
+      updates.push([
+        { update: { _index: index, _id: relation.toId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { script },
+      ]);
     }
     return updates;
   });
@@ -1503,12 +1516,12 @@ const prepareIndexing = async (elements) => {
     }, elements)
   );
 };
-export const elIndexElements = async (elements, retry = 5) => {
+export const elIndexElements = async (elements) => {
   // 00. Relations must be transformed before indexing.
   const transformedElements = await prepareIndexing(elements);
   // 01. Bulk the indexing of row elements
   const body = transformedElements.flatMap((doc) => [
-    { index: { _index: doc._index, _id: doc.internal_id } },
+    { index: { _index: doc._index, _id: doc.internal_id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     R.pipe(R.dissoc('_index'))(doc),
   ]);
   if (body.length > 0) {
@@ -1573,7 +1586,7 @@ export const elIndexElements = async (elements, retry = 5) => {
     }, Object.keys(impactedEntities))
   );
   const bodyUpdate = elementsToUpdate.flatMap((doc) => [
-    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: retry } },
+    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     R.dissoc('_index', doc.data),
   ]);
   if (bodyUpdate.length > 0) {
@@ -1613,7 +1626,7 @@ export const elUpdateRelationConnections = (elements) => {
     'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); ' +
     'for (change in params.changes.entrySet()) { conn[change.getKey()] = change.getValue() }';
   const bodyUpdate = elements.flatMap((doc) => [
-    { update: { _index: doc._index, _id: doc.id } },
+    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     { script: { source, params: { id: doc.toReplace, changes: doc.data } } },
   ]);
   return elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bodyUpdate });
@@ -1641,7 +1654,7 @@ export const elUpdateEntityConnections = (elements) => {
     return doc.data.internal_id;
   };
   const bodyUpdate = elements.flatMap((doc) => [
-    { update: { _index: doc._index, _id: doc.id } },
+    { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
     {
       script: {
         source,

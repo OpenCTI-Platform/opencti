@@ -845,7 +845,7 @@ describe('Upsert and merge entities', () => {
       RELATION_OBJECT_MARKING,
       ABSTRACT_STIX_META_RELATIONSHIP
     );
-    const checkers = await elFindByIds(ADMIN_USER, loadMalware.id, null, { relExclude: false });
+    const checkers = await elFindByIds(ADMIN_USER, loadMalware.id, { relExclude: false });
     const test = await internalLoadById(ADMIN_USER, testMarking);
     const mitre = await internalLoadById(ADMIN_USER, mitreMarking);
     const rawMarkings = R.head(checkers)['rel_object-marking.internal_id'];

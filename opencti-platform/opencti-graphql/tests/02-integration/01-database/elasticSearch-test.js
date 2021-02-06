@@ -611,10 +611,8 @@ describe('Elasticsearch reindex', () => {
     // target_ref -> attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
     const data = await elLoadByIds(ADMIN_USER, 'relationship--1fc9b5f8-3822-44c5-85d9-ee3476ca26de');
     expect(data).not.toBeNull();
-    expect(data.connections.length).toEqual(2);
-    const connections = map((c) => c.internal_id, data.connections);
-    expect(includes(malwareInternalId, connections)).toBeTruthy(); // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
-    expect(includes(attackPatternId, connections)).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
+    expect(data.fromId === malwareInternalId).toBeTruthy(); // malware--faa5b705-cf44-4e50-8472-29e5fec43c3c
+    expect(data.toId === attackPatternId).toBeTruthy(); // attack-pattern--2fc04aa5-48c1-49ec-919a-b88241ef1d17
   });
   it('should relation reindex check consistency', async () => {
     const indexPromise = elIndexElements([{ relationship_type: 'uses' }]);

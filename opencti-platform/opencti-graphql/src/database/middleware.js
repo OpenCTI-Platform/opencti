@@ -383,8 +383,7 @@ export const loadEntity = async (user, entityTypes, args = {}) => {
 
 // region Loader element
 const internalFindByIds = (user, ids, args = {}) => {
-  const { type } = args;
-  return elFindByIds(user, ids, type);
+  return elFindByIds(user, ids, args);
 };
 export const internalLoadById = (user, id, args = {}) => {
   const { type } = args;
@@ -406,15 +405,15 @@ const loadElementDependencies = async (user, element, args = {}) => {
   const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
   // Resolve all relations
   // noinspection ES6MissingAwait
-  const toRelationsPromise = fullResolve ? listAllRelations(user, relType, { toId: elementId }) : [];
-  const fromRelationsPromise = listAllRelations(user, relType, { fromId: elementId });
+  const toRelationsPromise = fullResolve ? listAllRelations(user, relType, { toId: elementId, minSource: true }) : [];
+  const fromRelationsPromise = listAllRelations(user, relType, { fromId: elementId, minSource: true });
   const [fromRelations, toRelations] = await Promise.all([fromRelationsPromise, toRelationsPromise]);
   const data = {};
   // Parallel resolutions
   const toResolvedIds = R.uniq(fromRelations.map((rel) => rel.toId));
   const fromResolvedIds = R.uniq(toRelations.map((rel) => rel.fromId));
-  const toResolvedPromise = elFindByIds(user, toResolvedIds, null, { toMap: true });
-  const fromResolvedPromise = elFindByIds(user, fromResolvedIds, null, { toMap: true });
+  const toResolvedPromise = elFindByIds(user, toResolvedIds, { toMap: true, minSource: true });
+  const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true, minSource: true });
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
     // Put the row data in internal attributes
@@ -477,7 +476,7 @@ const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', paren
 const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // eslint-disable-next-line prettier/prettier
-  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), null, { toMap: true });
+  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), { toMap: true });
   return R.map((n) => {
     const resolved = resolveLabels[n.label];
     const resolvedData = resolved || restrictedAggElement;
