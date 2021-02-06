@@ -219,9 +219,14 @@ export const assignRoleToUser = async (user, userId, roleName) => {
 };
 
 export const addUser = async (user, newUser, newToken = generateOpenCTIWebToken()) => {
+  const userEmail = newUser.user_email.toLowerCase();
+  const existingUser = await elLoadBy(SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
+  if (existingUser) {
+    throw FunctionalError('User already exists', { email: userEmail });
+  }
   // Create the user
   const userToCreate = R.pipe(
-    R.assoc('user_email', newUser.user_email.toLowerCase()),
+    R.assoc('user_email', userEmail),
     R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
     R.assoc('external', newUser.external ? newUser.external : false),
