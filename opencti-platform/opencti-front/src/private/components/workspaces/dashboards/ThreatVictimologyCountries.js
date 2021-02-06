@@ -31,7 +31,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       case 'donut':
@@ -44,7 +44,7 @@ class ThreatVictimologyAll extends Component {
             field="internal_id"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       case 'map':
@@ -54,7 +54,7 @@ class ThreatVictimologyAll extends Component {
             stixDomainObjectId={widget.entity.id}
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       case 'area':
@@ -66,7 +66,7 @@ class ThreatVictimologyAll extends Component {
             relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       case 'vertical-bar':
@@ -78,7 +78,7 @@ class ThreatVictimologyAll extends Component {
             relationshipType="targets"
             startDate={startDate}
             endDate={endDate}
-            variant="inline"
+            variant="inLine"
           />
         );
       default:

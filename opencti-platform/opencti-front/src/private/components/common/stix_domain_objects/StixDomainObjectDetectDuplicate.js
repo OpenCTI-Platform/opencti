@@ -54,7 +54,7 @@ class StixDomainObjectDetectDuplicate extends Component {
         fetchQuery(stixDomainObjectsLinesSearchQuery, {
           types: this.props.types,
           search: `"${this.props.value}"`,
-          first: 10,
+          count: 10,
         }).then((data) => {
           const potentialDuplicates = pathOr(
             [],

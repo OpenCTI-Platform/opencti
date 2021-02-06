@@ -46,7 +46,8 @@ import {
   RELATION_COMPROMISES,
   RELATION_CONSISTS_OF,
   RELATION_CONTROLS,
-  RELATION_DELIVERS, RELATION_DERIVED_FROM,
+  RELATION_DELIVERS,
+  RELATION_DERIVED_FROM,
   RELATION_HAS,
   RELATION_HOSTS,
   RELATION_INDICATES,
@@ -59,8 +60,8 @@ import {
   RELATION_REVOKED_BY,
   RELATION_SUBTECHNIQUE_OF,
   RELATION_TARGETS,
-  RELATION_USES
-} from "../schema/stixCoreRelationship";
+  RELATION_USES,
+} from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import { isMultipleAttribute } from '../schema/fieldDataAdapter';
