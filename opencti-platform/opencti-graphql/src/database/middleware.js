@@ -1805,8 +1805,9 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
       // We can upsert element except the aliases that are part of other entities
       const concurrentEntities = R.filter((e) => e.standard_id !== standardId, existingEntities);
       const key = resolveAliasesField(type);
-      const concurrentAliases = R.uniq(R.flatten(R.map((c) => [c[key], c.name], concurrentEntities)));
-      const filteredAliases = input[key] ? R.filter((i) => !concurrentAliases.includes(i), input[key]) : [];
+      const concurrentAliases = R.flatten(R.map((c) => [c[key], c.name], concurrentEntities));
+      const normedAliases = R.uniq(concurrentAliases.map((c) => normalizeName(c)));
+      const filteredAliases = R.filter((i) => !normedAliases.includes(normalizeName(i)), input[key] || []);
       const inputAliases = { ...input, [key]: filteredAliases };
       return upsertElementRaw(user, existingByStandard.id, type, inputAliases);
     }
@@ -1918,7 +1919,7 @@ export const createEntity = async (user, input, type) => {
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
-    // - TRANSACTION PART
+    // Create the object
     const dataEntity = await createEntityRaw(user, standardId, participantIds, resolvedInput, type);
     // Index the created element
     await indexCreatedElement(dataEntity);
@@ -1929,7 +1930,6 @@ export const createEntity = async (user, input, type) => {
       // If upsert with new data
       await storeUpdateEvent(user, dataEntity.element, dataEntity.streamInputs);
     }
-    // - TRANSACTION END
     // Return created element after waiting for it.
     return R.assoc('i_upserted', dataEntity.type !== TRX_CREATION, dataEntity.element);
   } catch (err) {
