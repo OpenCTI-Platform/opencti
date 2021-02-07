@@ -7540,8 +7540,8 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  reportsNumber(reportType: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  reportsNumber(reportType: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
   reportsDistribution(
     objectId: String
     field: String!
@@ -7550,7 +7550,7 @@ type Query {
     order: String
     startDate: DateTime
     endDate: DateTime
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   reportContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
   courseOfAction(id: String): CourseOfAction @auth(for: [KNOWLEDGE])
@@ -7800,7 +7800,7 @@ type Query {
   stixCyberObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
   stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
-    @auth(for: [KNOWLEDGE])
+    @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX META RELATIONSHIPS
   stixMetaRelationshipsDistribution(
@@ -7812,7 +7812,7 @@ type Query {
     endDate: DateTime
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
 
   ######## STIX CORE RELATIONSHIPS
@@ -7856,7 +7856,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsDistribution(
     fromId: String
     field: String!
@@ -7870,14 +7870,14 @@ type Query {
     dateAttribute: String
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsNumber(
     type: String
     fromId: String
     toTypes: [String]
     noDirection: Boolean
     endDate: DateTime
-  ): Number @auth(for: [KNOWLEDGE])
+  ): Number @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX SIGHTING RELATIONSHIPS
 
@@ -7908,7 +7908,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsDistribution(
     fromId: String!
     field: String!
@@ -7918,7 +7918,7 @@ type Query {
     endDate: DateTime
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixSightingRelationshipsNumber(fromId: String, endDate: DateTime): Number
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
@@ -7929,25 +7929,11 @@ type Query {
     after: ID
     orderBy: StixCyberObservableRelationshipsOrdering
     orderMode: OrderingMode
+    elementId: String
     fromId: String
     toId: String
     fromTypes: [String]
     toTypes: [String]
-    startTimeStart: DateTime
-    startTimeStop: DateTime
-    stopTimeStart: DateTime
-    stopTimeStop: DateTime
-    search: String
-    filters: [StixCyberObservableRelationshipsFiltering]
-    filterMode: FilterMode
-    toStix: Boolean
-  ): StixCyberObservableRelationshipConnection @auth(for: [KNOWLEDGE])
-  stixCyberObservableRelationshipsOfElement(
-    first: Int
-    after: ID
-    orderBy: StixCyberObservableRelationshipsOrdering
-    orderMode: OrderingMode
-    elementId: String
     startTimeStart: DateTime
     startTimeStop: DateTime
     stopTimeStart: DateTime
@@ -7964,7 +7950,7 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservableRelationshipsDistribution(
     fromId: String!
     field: String!
@@ -7974,7 +7960,7 @@ type Query {
     endDate: DateTime
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number
 
   ####### ALL

@@ -102,7 +102,7 @@ class StixCyberObservableRelationshipPopover extends Component {
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_stixCyberObservableRelationshipsOfElement',
+          'Pagination_stixCyberObservableRelationships',
           this.props.paginationOptions,
         );
         ConnectionHandler.deleteNode(conn, payload.getValue('delete'));

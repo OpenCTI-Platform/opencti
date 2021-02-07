@@ -304,7 +304,7 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixCyberObservableRelationshipsOfElement',
+    'Pagination_stixCyberObservableRelationships',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);

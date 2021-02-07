@@ -21,7 +21,6 @@ const stixCyberObservableRelationshipResolvers = {
   Query: {
     stixCyberObservableRelationship: (_, { id }, { user }) => findById(user, id),
     stixCyberObservableRelationships: (_, args, { user }) => findAll(user, args),
-    stixCyberObservableRelationshipsOfElement: (_, args, { user }) => findAll(user, args),
   },
   StixCyberObservableRelationship: {
     from: (rel, _, { user }) => loadByIdLoader.load(rel.fromId, user),

@@ -98,8 +98,8 @@ class StixCyberObservableLinksComponent extends Component {
         />
         <div className="clearfix" />
         <List>
-          {data && data.stixCyberObservableRelationshipsOfElement
-            ? data.stixCyberObservableRelationshipsOfElement.edges.map(
+          {data && data.stixCyberObservableRelationships
+            ? data.stixCyberObservableRelationships.edges.map(
               (stixCyberObservableRelationEdge) => {
                 const stixCyberObservableRelation = stixCyberObservableRelationEdge.node;
                 const stixCyberObservable = stixCyberObservableRelation.from.id
@@ -198,7 +198,7 @@ const StixCyberObservableLinks = createFragmentContainer(
         orderBy: { type: "StixCyberObservableRelationshipsOrdering" }
         orderMode: { type: "OrderingMode" }
       ) {
-        stixCyberObservableRelationshipsOfElement(
+        stixCyberObservableRelationships(
           elementId: $elementId
           search: $search
           first: $count
@@ -206,7 +206,7 @@ const StixCyberObservableLinks = createFragmentContainer(
           orderMode: $orderMode
         )
           @connection(
-            key: "Pagination_stixCyberObservableRelationshipsOfElement"
+            key: "Pagination_stixCyberObservableRelationships"
           ) {
           edges {
             node {

@@ -262,5 +262,6 @@ div.srd-port:hover {
 }
 
 .layout {
+  max-width: 100%;
   margin-bottom: 80px !important;
 }

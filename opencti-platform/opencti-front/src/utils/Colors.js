@@ -1,5 +1,8 @@
 /* eslint-disable no-bitwise */
 export const stringToColour = (str) => {
+  if (!str) {
+    return '#5d4037';
+  }
   let hash = 0;
   for (let i = 0; i < str.length; i += 1) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);

@@ -45,6 +45,9 @@ const stixCoreObjectReportsDonutDistributionQuery = graphql`
         ... on Identity {
           name
         }
+        ... on Malware {
+          name
+        }
       }
     }
   }
