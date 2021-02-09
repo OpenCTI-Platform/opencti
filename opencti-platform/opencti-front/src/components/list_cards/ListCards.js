@@ -191,7 +191,7 @@ class ListCards extends Component {
                     classes={{ root: classes.filter }}
                     label={
                       <div>
-                        {label}: {values}
+                        <strong>{label}</strong>: {values}
                       </div>
                     }
                     onDelete={handleRemoveFilter.bind(this, currentFilter[0])}

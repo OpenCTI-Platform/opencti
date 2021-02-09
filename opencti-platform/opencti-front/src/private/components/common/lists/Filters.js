@@ -577,7 +577,7 @@ class Filters extends Component {
                         classes={{ root: classes.filter }}
                         label={
                           <div>
-                            {label}: {values}
+                            <strong>{label}</strong>: {values}
                           </div>
                         }
                         onDelete={this.handleRemoveFilter.bind(
