@@ -1029,7 +1029,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   if (validFilters.length > 0) {
     for (let index = 0; index < validFilters.length; index += 1) {
       const valuesFiltering = [];
-      const { key, values, nested, operator = 'eq', filterMode = 'or' } = validFilters[index];
+      const { key, values, nested, operator = 'eq', filterMode: localFilterMode = 'or' } = validFilters[index];
       if (nested) {
         const nestedMust = [];
         for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
@@ -1053,7 +1053,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
           const should = {
             bool: {
               should: nestedShould,
-              minimum_should_match: filterMode === 'or' ? 1 : nestedShould.length,
+              minimum_should_match: localFilterMode === 'or' ? 1 : nestedShould.length,
             },
           };
           nestedMust.push(should);
@@ -1094,7 +1094,12 @@ export const elPaginate = async (user, indexName, options = {}) => {
           }
         }
         mustFilters = R.append(
-          { bool: { should: valuesFiltering, minimum_should_match: filterMode === 'or' ? 1 : valuesFiltering.length } },
+          {
+            bool: {
+              should: valuesFiltering,
+              minimum_should_match: localFilterMode === 'or' ? 1 : valuesFiltering.length,
+            },
+          },
           mustFilters
         );
       }
