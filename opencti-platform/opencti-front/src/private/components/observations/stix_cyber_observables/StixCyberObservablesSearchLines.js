@@ -130,8 +130,11 @@ class StixCyberObservablesContainer extends Component {
                       <ItemIcon type={type} />
                     </ListItemIcon>
                     <ListItemText
-                      primary={stixCyberObservable.observable_value}
-                      secondary={truncate(stixCyberObservable.description, 200)}
+                      primary={truncate(
+                        stixCyberObservable.observable_value,
+                        100,
+                      )}
+                      secondary={truncate(stixCyberObservable.description, 150)}
                     />
                     <ListItemSecondaryAction>
                       <StixCoreObjectLabels
@@ -167,6 +170,7 @@ export const stixCyberObservablesSearchLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCyberObservablesOrdering
     $orderMode: OrderingMode
+    $filters: [StixCyberObservablesFiltering]
   ) {
     ...StixCyberObservablesSearchLines_data
       @arguments(
@@ -175,6 +179,7 @@ export const stixCyberObservablesSearchLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -193,6 +198,7 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
           defaultValue: created_at
         }
         orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixCyberObservablesFiltering]" }
       ) {
         stixCyberObservables(
           search: $search
@@ -200,6 +206,7 @@ const StixCyberObservablesSearchLines = createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixCyberObservables") {
           edges {
             node {

@@ -204,10 +204,7 @@ const StixCyberObservableLinks = createFragmentContainer(
           first: $count
           orderBy: $orderBy
           orderMode: $orderMode
-        )
-          @connection(
-            key: "Pagination_stixCyberObservableRelationships"
-          ) {
+        ) @connection(key: "Pagination_stixCyberObservableRelationships") {
           edges {
             node {
               id

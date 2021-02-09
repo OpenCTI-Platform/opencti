@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  append, assoc, dissoc, filter, map, propOr,
+  append,
+  assoc,
+  dissoc,
+  filter,
+  map,
+  propOr,
+  uniqBy,
+  prop,
 } from 'ramda';
 import StixDomainObjectIndicatorsLines, {
   stixDomainObjectIndicatorsLinesQuery,
@@ -92,12 +99,25 @@ class StixDomainObjectIndicators extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    this.setState(
-      {
-        filters: assoc(key, [{ id, value }], this.state.filters),
-      },
-      () => this.saveView(),
-    );
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: assoc(
+            key,
+            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
   }
 
   handleRemoveFilter(key) {

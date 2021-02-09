@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc, compose, dissoc, propOr,
+  assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
@@ -24,7 +24,7 @@ class Vulnerabilities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Vulnerabilities-view',
+      'view-vulnerabilities',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -41,8 +41,8 @@ class Vulnerabilities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Vulnerabilities-view',
-      dissoc('filters', this.state),
+      'view-vulnerabilities',
+      this.state,
     );
   }
 
@@ -63,13 +63,29 @@ class Vulnerabilities extends Component {
       event.stopPropagation();
       event.preventDefault();
     }
-    this.setState({
-      filters: assoc(key, [{ id, value }], this.state.filters),
-    });
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: assoc(
+            key,
+            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) });
+    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {

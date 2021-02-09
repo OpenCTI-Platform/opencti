@@ -20,7 +20,7 @@ class ExternalReferences extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'ExternalReferences-view',
+      'view-external_references',
     );
     this.state = {
       sortBy: propOr('created', 'sortBy', params),
@@ -34,7 +34,7 @@ class ExternalReferences extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'ExternalReferences-view',
+      'view-external_references',
       this.state,
     );
   }

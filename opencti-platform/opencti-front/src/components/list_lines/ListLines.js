@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, toPairs } from 'ramda';
+import {
+  compose, last, map, toPairs,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -23,6 +25,7 @@ import StixDomainObjectsExports from '../../private/components/common/stix_domai
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import StixObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
   container: {
@@ -88,6 +91,11 @@ const styles = (theme) => ({
     margin: '2px 0 0 10px',
   },
   filter: {
+    marginRight: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
     marginRight: 10,
   },
 });
@@ -189,22 +197,44 @@ class ListLines extends Component {
               ''
             )}
           <div className={classes.filters}>
-            {map(
-              (filter) => map(
-                (f) => (
+            {map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {map(
+                    (n) => (
+                      <span key={n.value}>
+                        {truncate(n.value, 15)}{' '}
+                        {last(currentFilter[1]).value !== n.value && (
+                          <code>OR</code>
+                        )}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <span>
+                  <Chip
+                    key={currentFilter[0]}
+                    classes={{ root: classes.filter }}
+                    label={
+                      <div>
+                        {label}: {values}
+                      </div>
+                    }
+                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
+                  />
+                  {last(toPairs(filters))[0] !== currentFilter[0] && (
                     <Chip
-                      key={filter[0]}
-                      classes={{ root: classes.filter }}
-                      label={`${t(`filter_${filter[0]}`)}: ${
-                        f.value === null ? t('No label') : f.value
-                      }`}
-                      onDelete={handleRemoveFilter.bind(this, filter[0])}
+                      classes={{ root: classes.operator }}
+                      label={t('AND')}
                     />
-                ),
-                filter[1],
-              ),
-              toPairs(filters),
-            )}
+                  )}
+                </span>
+              );
+            }, toPairs(filters))}
           </div>
         </div>
         <div className={classes.views}>

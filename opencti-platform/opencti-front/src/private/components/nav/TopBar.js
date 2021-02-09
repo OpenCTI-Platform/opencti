@@ -13,6 +13,7 @@ import {
 } from '@material-ui/icons';
 import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
+import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
@@ -62,6 +63,7 @@ import Security, {
 } from '../../../utils/Security';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
+import Filters from '../common/lists/Filters';
 
 const styles = (theme) => ({
   appBar: {
@@ -87,14 +89,29 @@ const styles = (theme) => ({
   barRight: {
     position: 'absolute',
     right: 5,
+    verticalAlign: 'middle',
+    height: '100%',
+  },
+  barContainer: {
+    display: 'table-cell',
+    float: 'left',
+    paddingTop: 10,
+  },
+  divider: {
+    display: 'table-cell',
+    float: 'left',
+    height: '100%',
+    margin: '0 5px 0 5px',
   },
   searchContainer: {
-    display: 'inline-block',
-    verticalAlign: 'middle',
-    marginRight: 20,
+    display: 'table-cell',
+    float: 'left',
+    marginRight: 5,
+    paddingTop: 9,
   },
   button: {
-    display: 'inline-block',
+    display: 'table-cell',
+    float: 'left',
   },
 });
 
@@ -145,7 +162,7 @@ const TopBar = ({
         <div className={classes.menuContainer}>
           {location.pathname === '/dashboard'
             || (location.pathname === '/dashboard/import' && <TopMenuDashboard />)}
-          {location.pathname.includes('/dashboard/search/') && (
+          {location.pathname.includes('/dashboard/search') && (
             <TopMenuSearch />
           )}
           {location.pathname === '/dashboard/analysis'
@@ -257,99 +274,119 @@ const TopBar = ({
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
         <div className={classes.barRight}>
-          <Security needs={[KNOWLEDGE]}>
-            <div className={classes.searchContainer}>
-              <SearchInput onSubmit={handleSearch} keyword={keyword} />
-            </div>
-          </Security>
-          <Security needs={[EXPLORE]}>
-            <Tooltip title={t('Custom dashboards')}>
-              <IconButton
-                component={Link}
-                to="/dashboard/workspaces/dashboards"
-                variant={
-                  location.pathname.includes('/dashboard/workspaces/dashboards')
-                    ? 'contained'
-                    : 'text'
-                }
-                color={
-                  location.pathname.includes('/dashboard/workspaces/dashboards')
-                    ? 'primary'
-                    : 'inherit'
-                }
-                classes={{ root: classes.button }}
-              >
-                <InsertChartOutlined fontSize="default" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={t('Investigate')}>
-              <IconButton
-                disabled={true}
-                component={Link}
-                to="/dashboard/investigate"
-                variant={
-                  location.pathname === '/dashboard/investigate'
-                    ? 'contained'
-                    : 'text'
-                }
-                color={
-                  location.pathname === '/dashboard/investigate'
-                    ? 'primary'
-                    : 'inherit'
-                }
-                classes={{ root: classes.button }}
-              >
-                <ExploreOutlined fontSize="default" />
-              </IconButton>
-            </Tooltip>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-            <Tooltip title={t('Data import')}>
-              <IconButton
-                component={Link}
-                to="/dashboard/import"
-                variant={
-                  location.pathname === '/dashboard/import'
-                    ? 'contained'
-                    : 'text'
-                }
-                color={
-                  location.pathname === '/dashboard/import'
-                    ? 'primary'
-                    : 'inherit'
-                }
-                classes={{ root: classes.button }}
-              >
-                <UploadOutline fontSize="default" />
-              </IconButton>
-            </Tooltip>
-          </Security>
-          <IconButton
-            size="medium"
-            classes={{ root: classes.button }}
-            aria-owns={menuOpen.open ? 'menu-appbar' : null}
-            aria-haspopup="true"
-            onClick={handleOpenMenu}
-            color="inherit"
-          >
-            <AccountCircleOutlined fontSize="default" />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            style={{ marginTop: 40, zIndex: 2100 }}
-            anchorEl={menuOpen.anchorEl}
-            open={menuOpen.open}
-            onClose={handleCloseMenu}
-          >
-            <MenuItem
-              component={Link}
-              to="/dashboard/profile"
-              onClick={handleCloseMenu}
+          <div className={classes.barContainer}>
+            <Security needs={[KNOWLEDGE]}>
+              <div className={classes.searchContainer}>
+                <SearchInput onSubmit={handleSearch} keyword={keyword} />
+              </div>
+              <Filters
+                variant="dialog"
+                availableFilterKeys={[
+                  'markedBy',
+                  'labelledBy',
+                  'createdBy',
+                  'confidence_gt',
+                ]}
+                currentFilters={[]}
+                disabled={location.pathname.includes('/dashboard/search')}
+              />
+            </Security>
+          </div>
+          <Divider className={classes.divider} orientation="vertical" />
+          <div className={classes.barContainer}>
+            <Security needs={[EXPLORE]}>
+              <Tooltip title={t('Custom dashboards')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/workspaces/dashboards"
+                  variant={
+                    location.pathname.includes(
+                      '/dashboard/workspaces/dashboards',
+                    )
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    location.pathname.includes(
+                      '/dashboard/workspaces/dashboards',
+                    )
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <InsertChartOutlined fontSize="default" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t('Investigate')}>
+                <IconButton
+                  disabled={true}
+                  component={Link}
+                  to="/dashboard/investigate"
+                  variant={
+                    location.pathname === '/dashboard/investigate'
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    location.pathname === '/dashboard/investigate'
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <ExploreOutlined fontSize="default" />
+                </IconButton>
+              </Tooltip>
+            </Security>
+            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+              <Tooltip title={t('Data import')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/import"
+                  variant={
+                    location.pathname === '/dashboard/import'
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    location.pathname === '/dashboard/import'
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <UploadOutline fontSize="default" />
+                </IconButton>
+              </Tooltip>
+            </Security>
+            <IconButton
+              size="medium"
+              classes={{ root: classes.button }}
+              aria-owns={menuOpen.open ? 'menu-appbar' : null}
+              aria-haspopup="true"
+              onClick={handleOpenMenu}
+              color="inherit"
             >
-              {t('Profile')}
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
-          </Menu>
+              <AccountCircleOutlined fontSize="default" />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              style={{ marginTop: 40, zIndex: 2100 }}
+              anchorEl={menuOpen.anchorEl}
+              open={menuOpen.open}
+              onClose={handleCloseMenu}
+            >
+              <MenuItem
+                component={Link}
+                to="/dashboard/profile"
+                onClick={handleCloseMenu}
+              >
+                {t('Profile')}
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+            </Menu>
+          </div>
         </div>
       </Toolbar>
     </AppBar>

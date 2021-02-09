@@ -44,7 +44,7 @@ class Groups extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Groups-view',
+      'view-groups',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -58,7 +58,7 @@ class Groups extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Groups-view',
+      'view-groups',
       this.state,
     );
   }

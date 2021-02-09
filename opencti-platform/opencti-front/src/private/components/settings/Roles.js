@@ -42,7 +42,7 @@ class Roles extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Roles-view',
+      'view-roles',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -56,7 +56,7 @@ class Roles extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Roles-view',
+      'view-roles',
       this.state,
     );
   }

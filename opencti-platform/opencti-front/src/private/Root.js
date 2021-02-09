@@ -96,6 +96,13 @@ const Root = () => {
                       />
                       <BoundaryRoute
                         exact
+                        path="/dashboard/search"
+                        render={(routeProps) => (
+                          <Search {...routeProps} me={props.me} />
+                        )}
+                      />
+                      <BoundaryRoute
+                        exact
                         path="/dashboard/search/:keyword"
                         render={(routeProps) => (
                           <Search {...routeProps} me={props.me} />

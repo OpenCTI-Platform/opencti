@@ -3,14 +3,10 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { compose, pathOr } from 'ramda';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import {
-  SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine,
-  SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy,
-} from './SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine';
-
-const nbOfRowsToLoad = 50;
+import { compose } from 'ramda';
+import List from '@material-ui/core/List';
+import { SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine } from './SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine';
+import inject18n from '../../../../components/i18n';
 
 const styles = (theme) => ({
   paper: {
@@ -38,42 +34,56 @@ const styles = (theme) => ({
 class SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLinesContainer extends Component {
   render() {
     const {
-      initialLoading,
+      data,
       dataColumns,
-      relay,
       stixObjectOrStixRelationshipId,
       stixObjectOrStixRelationshipLink,
       paginationOptions,
+      t,
     } = this.props;
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr(
-          [],
-          ['stixCoreRelationships', 'edges'],
-          this.props.data,
+      <div style={{ height: '100%' }}>
+        {data.stixCoreRelationships.edges.length > 0 ? (
+          <List>
+            {data.stixCoreRelationships.edges.map(
+              (stixCoreRelationshipEdge) => {
+                const stixCoreRelationship = stixCoreRelationshipEdge.node;
+                return (
+                  <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine
+                    key={stixCoreRelationship.id}
+                    dataColumns={dataColumns}
+                    entityId={stixObjectOrStixRelationshipId}
+                    entityLink={stixObjectOrStixRelationshipLink}
+                    paginationOptions={paginationOptions}
+                    node={stixCoreRelationship}
+                    connectionKey="Pagination_stixCoreRelationships"
+                  />
+                );
+              },
+            )}
+          </List>
+        ) : (
+          <div
+            style={{
+              display: 'table',
+              height: '100%',
+              width: '100%',
+              paddingTop: 15,
+              paddingBottom: 15,
+            }}
+          >
+            <span
+              style={{
+                display: 'table-cell',
+                verticalAlign: 'middle',
+                textAlign: 'center',
+              }}
+            >
+              {t('No entities of this type has been found.')}
+            </span>
+          </div>
         )}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['stixCoreRelationships', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLine />
-        }
-        DummyLineComponent={
-          <SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineDummy />
-        }
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-        entityId={stixObjectOrStixRelationshipId}
-        entityLink={stixObjectOrStixRelationshipLink}
-        connectionKey="Pagination_stixCoreRelationships"
-      />
+      </div>
     );
   }
 }
@@ -193,6 +203,7 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines = createPagin
   },
 );
 
-export default compose(withStyles(styles))(
-  SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines,
-);
+export default compose(
+  inject18n,
+  withStyles(styles),
+)(SimpleStixObjectOrStixRelationshipStixCoreRelationshipsLines);

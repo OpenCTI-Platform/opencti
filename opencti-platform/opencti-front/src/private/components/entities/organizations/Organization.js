@@ -53,7 +53,7 @@ class OrganizationComponent extends Component {
       this.props.history,
       this.props.location,
       `view-organization-${this.props.organization.id}`,
-      dissoc('filters', this.state),
+      this.state,
     );
   }
 

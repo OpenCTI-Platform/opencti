@@ -144,19 +144,20 @@ class StixDomainObjectsContainer extends Component {
                             <ItemIcon type={type} />
                           </ListItemIcon>
                           <ListItemText
-                            primary={
+                            primary={truncate(
                               stixDomainObject.x_mitre_id
                                 ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
                                 : stixDomainObject.name
-                                  || stixDomainObject.attribute_abstract
-                                  || stixDomainObject.opinion
-                                  || `${fd(
-                                    stixDomainObject.first_observed,
-                                  )} - ${fd(stixDomainObject.last_observed)}`
-                            }
+                                    || stixDomainObject.attribute_abstract
+                                    || stixDomainObject.opinion
+                                    || `${fd(
+                                      stixDomainObject.first_observed,
+                                    )} - ${fd(stixDomainObject.last_observed)}`,
+                              100,
+                            )}
                             secondary={truncate(
                               stixDomainObject.description,
-                              200,
+                              150,
                             )}
                           />
                           <ListItemSecondaryAction>
@@ -178,10 +179,10 @@ class StixDomainObjectsContainer extends Component {
                           <ItemIcon type={type} />
                         </ListItemIcon>
                         <ListItemText
-                          primary={stixDomainObject.name}
+                          primary={truncate(stixDomainObject.name, 100)}
                           secondary={truncate(
                             stixDomainObject.description,
-                            200,
+                            150,
                           )}
                         />
                         <ListItemSecondaryAction>
@@ -242,6 +243,7 @@ export const stixDomainObjectsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixDomainObjectsOrdering
     $orderMode: OrderingMode
+    $filters: [StixDomainObjectsFiltering]
   ) {
     ...StixDomainObjectsLines_data
       @arguments(
@@ -250,6 +252,7 @@ export const stixDomainObjectsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -259,8 +262,14 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
     $search: String
     $types: [String]
     $count: Int
+    $filters: [StixDomainObjectsFiltering]
   ) {
-    stixDomainObjects(search: $search, types: $types, first: $count) {
+    stixDomainObjects(
+      search: $search
+      types: $types
+      first: $count
+      filters: $filters
+    ) {
       edges {
         node {
           id
@@ -382,6 +391,7 @@ const StixDomainObjectsLines = createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "StixDomainObjectsOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixDomainObjectsFiltering]" }
       ) {
         stixDomainObjects(
           search: $search
@@ -389,6 +399,7 @@ const StixDomainObjectsLines = createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_stixDomainObjects") {
           edges {
             node {

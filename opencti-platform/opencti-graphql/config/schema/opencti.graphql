@@ -227,6 +227,7 @@ input LogsFiltering {
   key: LogsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type LogEdge {
   cursor: String!
@@ -292,6 +293,7 @@ input WorkspacesFiltering {
   key: WorkspacesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type WorkspaceConnection {
   pageInfo: PageInfo!
@@ -354,6 +356,7 @@ input WorksFiltering {
   key: WorksFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type WorkMessage {
   timestamp: DateTime
@@ -513,6 +516,7 @@ input UsersFiltering {
   key: UsersFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type UserConnection {
   pageInfo: PageInfo!
@@ -717,6 +721,7 @@ input MarkingDefinitionsFiltering {
   key: MarkingDefinitionsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type MarkingDefinitionConnection {
   pageInfo: PageInfo!
@@ -777,6 +782,7 @@ input LabelsFiltering {
   key: LabelsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type LabelConnection {
   pageInfo: PageInfo!
@@ -836,6 +842,7 @@ input ExternalReferencesFiltering {
   key: ExternalReferencesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type ExternalReferenceConnection {
   pageInfo: PageInfo!
@@ -898,6 +905,7 @@ input KillChainPhasesFiltering {
   key: KillChainPhasesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type KillChainPhaseConnection {
   pageInfo: PageInfo!
@@ -970,6 +978,7 @@ input StixCoreObjectsFiltering {
   key: StixCoreObjectsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type StixCoreObjectConnection {
   pageInfo: PageInfo!
@@ -1068,6 +1077,7 @@ input StixDomainObjectsFiltering {
   key: StixDomainObjectsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type StixDomainObjectConnection {
   pageInfo: PageInfo!
@@ -1179,6 +1189,7 @@ input AttackPatternsFiltering {
   key: AttackPatternsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type AttackPatternConnection {
   pageInfo: PageInfo!
@@ -1304,6 +1315,7 @@ input CampaignsFiltering {
   key: CampaignsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type CampaignConnection {
   pageInfo: PageInfo!
@@ -1420,6 +1432,7 @@ input ContainersFiltering {
   key: ContainersFilter!
   values: [String]!
   operator: String
+  filterMode: FilterMode
 }
 type ContainerConnection {
   pageInfo: PageInfo!
@@ -1514,6 +1527,7 @@ input NotesFiltering {
   key: NotesFilter!
   values: [String]!
   operator: String
+  filterMode: FilterMode
 }
 type NoteConnection {
   pageInfo: PageInfo!
@@ -1639,6 +1653,7 @@ input ObservedDatasFiltering {
   key: ObservedDatasFilter!
   values: [String]!
   operator: String
+  filterMode: FilterMode
 }
 type ObservedDataConnection {
   pageInfo: PageInfo!
@@ -1761,6 +1776,7 @@ input OpinionsFiltering {
   key: OpinionsFilter!
   values: [String]!
   operator: String
+  filterMode: FilterMode
 }
 type OpinionConnection {
   pageInfo: PageInfo!
@@ -1888,6 +1904,7 @@ input ReportsFiltering {
   key: ReportsFilter!
   values: [String]!
   operator: String
+  filterMode: FilterMode
 }
 type ReportConnection {
   pageInfo: PageInfo!
@@ -2014,6 +2031,7 @@ input CoursesOfActionFiltering {
   key: CoursesOfActionFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type CourseOfActionConnection {
   pageInfo: PageInfo!
@@ -2128,6 +2146,7 @@ input IdentitiesFiltering {
   key: IdentitiesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type IdentityConnection {
   pageInfo: PageInfo!
@@ -2248,6 +2267,7 @@ input IndividualsFiltering {
   key: IndividualsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type IndividualConnection {
   pageInfo: PageInfo!
@@ -2369,6 +2389,7 @@ input OrganizationsFiltering {
   key: OrganizationsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type OrganizationConnection {
   pageInfo: PageInfo!
@@ -2499,6 +2520,7 @@ input SectorsFiltering {
   key: SectorsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type SectorConnection {
   pageInfo: PageInfo!
@@ -2635,6 +2657,7 @@ input IndicatorsFiltering {
   key: IndicatorsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type IndicatorConnection {
   pageInfo: PageInfo!
@@ -2770,6 +2793,7 @@ input InfrastructuresFiltering {
   key: InfrastructuresFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type InfrastructureConnection {
   pageInfo: PageInfo!
@@ -2886,6 +2910,7 @@ input IntrusionSetsFiltering {
   key: IntrusionSetsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type IntrusionSetConnection {
   pageInfo: PageInfo!
@@ -3011,6 +3036,7 @@ input LocationsFiltering {
   key: LocationsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type LocationConnection {
   pageInfo: PageInfo!
@@ -3126,6 +3152,7 @@ input PositionsFiltering {
   key: PositionsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type PositionConnection {
   pageInfo: PageInfo!
@@ -3249,6 +3276,7 @@ input CitiesFiltering {
   key: CitiesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type CityConnection {
   pageInfo: PageInfo!
@@ -3363,6 +3391,7 @@ input CountriesFiltering {
   key: CountriesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type CountryConnection {
   pageInfo: PageInfo!
@@ -3477,6 +3506,7 @@ input RegionsFiltering {
   key: RegionsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type RegionConnection {
   pageInfo: PageInfo!
@@ -3605,6 +3635,7 @@ input MalwaresFiltering {
   key: MalwaresFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type MalwareConnection {
   pageInfo: PageInfo!
@@ -3729,6 +3760,7 @@ input ThreatActorsFiltering {
   key: ThreatActorsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type ThreatActorConnection {
   pageInfo: PageInfo!
@@ -3856,6 +3888,7 @@ input ToolsFiltering {
   key: ToolsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type ToolConnection {
   pageInfo: PageInfo!
@@ -3974,6 +4007,7 @@ input VulnerabilitiesFiltering {
   key: VulnerabilitiesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type VulnerabilityConnection {
   pageInfo: PageInfo!
@@ -4091,6 +4125,7 @@ input XOpenCTIIncidentsFiltering {
   key: XOpenCTIIncidentsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type XOpenCTIIncidentConnection {
   pageInfo: PageInfo!
@@ -4203,11 +4238,13 @@ enum StixCyberObservablesFilter {
   objectContained
   hasExternalReference
   value
+  confidence
 }
 input StixCyberObservablesFiltering {
   key: StixCyberObservablesFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type StixCyberObservableConnection {
   pageInfo: PageInfo!
@@ -6736,6 +6773,7 @@ input StixObjectOrStixRelationshipsFiltering {
   key: StixObjectOrStixRelationshipsFilter!
   values: [String]!
   operator: String
+  filterMode: FilterMode
 }
 type StixObjectOrStixRelationshipConnection {
   pageInfo: PageInfo!
@@ -6906,6 +6944,7 @@ input StixCoreRelationshipsFiltering {
   key: StixCoreRelationshipsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type StixCoreRelationshipConnection {
   pageInfo: PageInfo!
@@ -7033,6 +7072,7 @@ input StixSightingRelationshipsFiltering {
   key: StixSightingRelationshipsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type StixSightingRelationshipConnection {
   pageInfo: PageInfo!
@@ -7121,6 +7161,7 @@ input StixCyberObservableRelationshipsFiltering {
   key: StixCyberObservableRelationshipsFilter!
   values: [String]
   operator: String
+  filterMode: FilterMode
 }
 type StixCyberObservableRelationshipConnection {
   pageInfo: PageInfo!
@@ -7376,8 +7417,8 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixDomainObjectsNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixDomainObjectsDistribution(
     objectId: String
     relationship_type: String!
@@ -7386,7 +7427,7 @@ type Query {
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   attackPattern(id: String): AttackPattern @auth(for: [KNOWLEDGE])
   attackPatterns(
     first: Int
@@ -7417,7 +7458,7 @@ type Query {
     endDate: DateTime!
     interval: String!
     relationship_type: String
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   # Containers
   container(id: String): Container @auth(for: [KNOWLEDGE])
   containers(
@@ -7449,8 +7490,8 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  notesNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  notesNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
   notesDistribution(
     objectId: String
     field: String!
@@ -7479,15 +7520,15 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  observedDatasNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  observedDatasNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
   observedDatasDistribution(
     objectId: String
     field: String!
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   observedDataContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
   opinion(id: String): Opinion @auth(for: [KNOWLEDGE])
@@ -7509,15 +7550,15 @@ type Query {
     startDate: DateTime!
     endDate: DateTime!
     interval: String!
-  ): [TimeSeries] @auth(for: [KNOWLEDGE])
-  opinionsNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+  ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
+  opinionsNumber(objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
   opinionsDistribution(
     objectId: String
     field: String!
     operation: StatsOperation!
     limit: Int
     order: String
-  ): [Distribution] @auth(for: [KNOWLEDGE])
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   opinionContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
     @auth(for: [KNOWLEDGE])
   report(id: String): Report @auth(for: [KNOWLEDGE])
@@ -7797,8 +7838,8 @@ type Query {
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
   stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
-  stixCyberObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE])
-  stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE])
+  stixCyberObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
     @auth(for: [KNOWLEDGE, EXPLORE])
 
@@ -7919,7 +7960,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixSightingRelationshipsNumber(fromId: String, endDate: DateTime): Number
+  stixSightingRelationshipsNumber(fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
 
   ######## STIX CYBER OBSERVABLE RELATIONSHIPS
 
@@ -7961,7 +8002,7 @@ type Query {
     limit: Int
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
-  stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number
+  stixCyberObservableRelationshipsNumber(fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
 
   ####### ALL
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
@@ -8080,7 +8121,7 @@ type StixCoreObjectEditMutations {
   relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
   relationDelete(toId: String!, relationship_type: String!): StixCoreObject
-  merge(stixCoreObjectsIds: [String]!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  merge(stixCoreObjectsIds: [String]!): StixCoreObject
 }
 
 ######## STIX DOMAIN OBJECT ENTITIES
