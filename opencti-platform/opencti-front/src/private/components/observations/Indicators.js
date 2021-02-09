@@ -48,7 +48,7 @@ class Indicators extends Component {
       view: propOr('lines', 'view', params),
       indicatorTypes: propOr([], 'indicatorTypes', params),
       observableTypes: propOr([], 'observableTypes', params),
-      filters: {},
+      filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };

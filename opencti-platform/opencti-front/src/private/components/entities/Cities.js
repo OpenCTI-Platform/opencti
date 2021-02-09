@@ -30,7 +30,7 @@ class Cities extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
-      filters: {},
+      filters: propOr({}, 'filters', params),
       numberOfElements: { number: 0, symbol: '' },
     };
   }

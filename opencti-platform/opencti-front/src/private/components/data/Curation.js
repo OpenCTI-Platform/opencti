@@ -46,7 +46,7 @@ class StixCyberObservables extends Component {
       orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      filters: {},
+      filters: propOr({}, 'filters', params),
       types: propOr([], 'types', params),
       numberOfElements: { number: 0, symbol: '' },
       selectedElements: {},
@@ -199,8 +199,8 @@ class StixCyberObservables extends Component {
           paginationOptions={paginationOptions}
           numberOfElements={numberOfElements}
           availableFilterKeys={[
-            'labels',
-            'markingDefinitions',
+            'labelledBy',
+            'markedBy',
             'created_start_date',
             'created_end_date',
             'createdBy',

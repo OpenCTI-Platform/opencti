@@ -177,7 +177,7 @@ class ListCards extends Component {
                         {truncate(n.value, 15)}{' '}
                         {last(currentFilter[1]).value !== n.value && (
                           <code>OR</code>
-                        )}
+                        )}{' '}
                       </span>
                     ),
                     currentFilter[1],
