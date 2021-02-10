@@ -163,6 +163,9 @@ const createIndicatorFromObservable = async (user, input, observable) => {
       key = `${entityType}_pid`;
     }
     const indicatorName = observableValue(observable);
+    if (key.includes('StixFile')) {
+      key = key.replace('StixFile', 'File');
+    }
     const pattern = await createStixPattern(key, indicatorName);
     if (pattern) {
       const indicatorToCreate = {
