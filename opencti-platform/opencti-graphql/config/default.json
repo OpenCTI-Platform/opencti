@@ -28,7 +28,7 @@
   },
   "expiration_scheduler": {
     "lock_key": "expired_manager_lock",
-    "interval": 3000
+    "interval": 300000
   },
   "redis": {
     "hostname": "localhost",
