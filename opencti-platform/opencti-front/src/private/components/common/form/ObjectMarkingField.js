@@ -9,7 +9,6 @@ import graphql from 'babel-plugin-relay/macro';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
-import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_definitions/MarkingDefinitionsLines';
 
 const styles = () => ({
   icon: {
