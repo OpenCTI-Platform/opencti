@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { createHash } from 'crypto';
 import { assoc, dissoc, map, pipe, filter, values } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
