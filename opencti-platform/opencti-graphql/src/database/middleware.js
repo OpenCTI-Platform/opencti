@@ -683,7 +683,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance, options = {}) 
     const currentJson = instance[baseKey];
     const valueToTake = R.head(value);
     const compareValue = R.isEmpty(valueToTake) || R.isNil(valueToTake) ? undefined : valueToTake;
-    if (currentJson[targetKey] === compareValue) {
+    if (currentJson && currentJson[targetKey] === compareValue) {
       return []; // No need to update the attribute
     }
     // If data is empty, remove the key

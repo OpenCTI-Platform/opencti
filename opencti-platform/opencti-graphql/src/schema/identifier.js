@@ -55,7 +55,7 @@ const stixCyberObservableContribution = {
     [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }],
     [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }],
     [C.ENTITY_HASHED_OBSERVABLE_ARTIFACT]: [{ src: 'hashes' }],
-    [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [{ src: 'hashes' }],
+    [C.ENTITY_HASHED_OBSERVABLE_STIX_FILE]: [[{ src: 'hashes' }], [{ src: 'name' }]],
     [C.ENTITY_HASHED_OBSERVABLE_X509_CERTIFICATE]: [{ src: 'hashes' }],
     [C.ENTITY_IPV4_ADDR]: [{ src: 'value' }],
     [C.ENTITY_IPV6_ADDR]: [{ src: 'value' }],
@@ -108,8 +108,7 @@ const stixCyberObservableContribution = {
       if (hashes[SHA3_256]) return { [SHA3_256]: hashes[SHA3_256] };
       if (hashes[SHA3_512]) return { [SHA3_512]: hashes[SHA3_512] };
       if (hashes[SSDEEP]) return { [SSDEEP]: hashes[SSDEEP] };
-      // If nothing found, doesnt accept only custom hashes
-      throw UnsupportedError('Hashes must have a stix hash define', { data });
+      return undefined;
     },
   },
 };
@@ -204,7 +203,7 @@ export const isFieldContributingToStandardId = (instance, keys) => {
   }
   if (properties.length === 0) return true;
   const targetKeys = R.map((k) => (k.includes('.') ? R.head(k.split('.')) : k), keys);
-  const propertiesToKeep = R.flatten(R.map((t) => t.src, properties));
+  const propertiesToKeep = R.map((t) => t.src, R.flatten(properties));
   const keysIncluded = R.filter((p) => R.includes(p, targetKeys), propertiesToKeep);
   return keysIncluded.length > 0;
 };

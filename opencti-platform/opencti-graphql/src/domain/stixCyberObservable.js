@@ -208,16 +208,6 @@ export const addStixCyberObservable = async (user, input) => {
     const hashInputToJson = apiAttributeToComplexFormat('hashes', observableInput.hashes);
     observableInput = R.assoc('hashes', hashInputToJson, observableInput);
   }
-  if (input.type === ENTITY_HASHED_OBSERVABLE_STIX_FILE && !observableInput.hashes) {
-    if (!observableInput.name) {
-      throw FunctionalError(`Expecting at least a name or a hash`);
-    }
-    observableInput = R.assoc(
-      'hashes',
-      { MD5: createHash('md5').update(observableInput.name).digest('hex') },
-      observableInput
-    );
-  }
   // Check the consistency of the observable.
   const observableSyntaxResult = checkObservableSyntax(input.type, observableInput);
   if (observableSyntaxResult !== true) {
