@@ -13,10 +13,11 @@ import base64
 import threading
 import ctypes
 
-from requests.exceptions import RequestException
+from requests.exceptions import RequestException, Timeout
 from pycti import OpenCTIApiClient
 
 PROCESSING_COUNT = 5
+MAX_PROCESSING_COUNT = 30
 
 
 class Consumer(threading.Thread):
@@ -135,6 +136,13 @@ class Consumer(threading.Thread):
                 self.api.work.report_expectation(work_id, None)
             self.processing_count = 0
             return True
+        except Timeout as te:
+            logging.warn("A connection timeout occurred: { " + str(te) + " }")
+            # Platform is under heavy load, wait for unlock & retry almost indefinitely
+            sleep_jitter = round(random.uniform(10, 30), 2)
+            time.sleep(sleep_jitter)
+            self.data_handler(connection, channel, delivery_tag, data)
+            return True
         except RequestException as re:
             logging.error("A connection error occurred: { " + str(re) + " }")
             time.sleep(60)
@@ -147,11 +155,16 @@ class Consumer(threading.Thread):
             return False
         except Exception as ex:
             error = str(ex)
-            if (
-                "UnsupportedError" not in error
+            if "LockError" in error and self.processing_count < MAX_PROCESSING_COUNT:
+                # Platform is under heavy load, wait for unlock & retry almost indefinitely
+                sleep_jitter = round(random.uniform(10, 30), 2)
+                time.sleep(sleep_jitter)
+                self.data_handler(connection, channel, delivery_tag, data)
+            elif (
+                "MissingReferenceError" in error
                 and self.processing_count < PROCESSING_COUNT
             ):
-                # Sleep between 1 and 3 secs before retrying
+                # In case of missing reference, wait & retry
                 sleep_jitter = round(random.uniform(1, 3), 2)
                 time.sleep(sleep_jitter)
                 logging.info(
@@ -163,6 +176,7 @@ class Consumer(threading.Thread):
                 )
                 self.data_handler(connection, channel, delivery_tag, data)
             else:
+                # Platform does not know what to do and raises an error, fail and acknowledge the message
                 logging.error(str(ex))
                 self.processing_count = 0
                 cb = functools.partial(self.ack_message, channel, delivery_tag)
