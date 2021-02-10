@@ -48,7 +48,8 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 
 const MIN_DATA_FIELDS = ['name', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
-export const ES_MAX_CONCURRENCY = 5;
+export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
+export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 const ES_RETRY_ON_CONFLICT = 5;
 export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
 export const BULK_TIMEOUT = '5m';
@@ -65,7 +66,6 @@ const UNIMPACTED_ENTITIES_ROLE = [
   `${RELATION_KILL_CHAIN_PHASE}_${ROLE_TO}`,
   `${RELATION_INDICATES}_${ROLE_TO}`,
 ];
-export const IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
 export const isImpactedTypeAndSide = (type, side) => !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
@@ -569,7 +569,7 @@ export const elFindByFromAndTo = async (user, fromId, toId, relationshipType) =>
     index: READ_RELATIONSHIPS_INDICES,
     size: MAX_SEARCH_SIZE,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
-    ignore_throttled: IGNORE_THROTTLED,
+    ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
       query: {
         bool: {
@@ -640,7 +640,7 @@ export const elFindByIds = async (user, ids, opts = {}) => {
     const query = {
       index: indices,
       size: MAX_SEARCH_SIZE,
-      ignore_throttled: IGNORE_THROTTLED,
+      ignore_throttled: ES_IGNORE_THROTTLED,
       _source_excludes: relExclude ? `${REL_INDEX_PREFIX}*` : '',
       _source_includes: minSource ? MIN_DATA_FIELDS : '*',
       body: {
@@ -749,7 +749,7 @@ export const elAggregationRelationsCount = async (user, type, opts) => {
   must.push(...markingRestrictions.must);
   const query = {
     index: READ_RELATIONSHIPS_INDICES,
-    ignore_throttled: IGNORE_THROTTLED,
+    ignore_throttled: ES_IGNORE_THROTTLED,
     body: {
       size: MAX_SEARCH_AGGREGATION_SIZE,
       query: {
@@ -914,7 +914,7 @@ export const elHistogramCount = async (user, type, field, interval, start, end, 
   must.push(...markingRestrictions.must);
   const query = {
     index: READ_PLATFORM_INDICES,
-    ignore_throttled: IGNORE_THROTTLED,
+    ignore_throttled: ES_IGNORE_THROTTLED,
     _source_excludes: '*', // Dont need to get anything
     body: {
       query: {
@@ -1136,7 +1136,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
   }
   const query = {
     index: indexName,
-    ignore_throttled: IGNORE_THROTTLED,
+    ignore_throttled: ES_IGNORE_THROTTLED,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
     _source_includes: minSource ? MIN_DATA_FIELDS : '*',
     track_total_hits: true,
@@ -1232,7 +1232,7 @@ export const elAttributeValues = async (user, field) => {
   };
   const query = {
     index: [READ_INDEX_STIX_DOMAIN_OBJECTS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
-    ignore_throttled: IGNORE_THROTTLED,
+    ignore_throttled: ES_IGNORE_THROTTLED,
     _source_excludes: `${REL_INDEX_PREFIX}*`,
     body,
   };

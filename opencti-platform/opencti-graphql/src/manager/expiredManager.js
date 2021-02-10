@@ -6,15 +6,15 @@ import { SYSTEM_USER } from '../domain/user';
 import { READ_DATA_INDICES } from '../database/utils';
 import { prepareDate } from '../utils/format';
 import { patchAttribute } from '../database/middleware';
-import { logger } from '../config/conf';
+import conf, { logger } from '../config/conf';
 
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true
 // Each API will start is manager.
 // When manager do it scan it take a lock and periodically renew it until the job is done.
 // If the lock is free, every API as the right to take it.
-const SCHEDULE_TIME = 3600000; // Each 1 hour
-const EXPIRED_MANAGER_KEY = 'expired_manager_lock';
+const SCHEDULE_TIME = conf.get('expiration_scheduler:interval');
+const EXPIRED_MANAGER_KEY = conf.get('expiration_scheduler:lock_key');
 
 const expireHandler = async () => {
   logger.debug('[OPENCTI] Running Expiration manager');
@@ -31,7 +31,6 @@ const expireHandler = async () => {
         await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);
       };
       await Promise.map(elements, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-      await lock.extend();
     };
     const filters = [
       { key: 'valid_until', values: [prepareDate()], operator: 'lt' },

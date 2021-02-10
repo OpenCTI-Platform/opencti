@@ -1122,8 +1122,7 @@ const innerUpdateAttribute = async (user, instance, rawInput, options = {}) => {
   await Promise.all(updateOperations);
   return updatedInputs;
 };
-
-function prepareAttributes(elements) {
+const prepareAttributes = (elements) => {
   return R.map((input) => {
     // Check integer
     if (R.includes(input.key, numericAttributes)) {
@@ -1146,7 +1145,7 @@ function prepareAttributes(elements) {
     }
     return input;
   }, elements);
-}
+};
 
 export const updateAttributeRaw = async (user, instance, inputs, options = {}) => {
   const elements = Array.isArray(inputs) ? inputs : [inputs];
@@ -1299,7 +1298,6 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (lock) await lock.unlock();
   }
 };
-
 export const patchAttributeRaw = async (user, instance, patch, options = {}) => {
   const inputs = transformPathToInput(patch);
   return updateAttributeRaw(user, instance, inputs, options);
@@ -1311,6 +1309,22 @@ export const patchAttribute = async (user, id, type, patch, options = {}) => {
 // endregion
 
 // region mutation relation
+const getLocksFromInput = (type, input) => {
+  const standardId = input.standard_id || generateStandardId(type, input);
+  const inputIds = [...(input.externalReferences || []), ...(input.objects || [])].map((e) => e.internal_id);
+  const lockIds = [standardId, ...inputIds];
+  if (isNotEmptyField(input.stix_id)) {
+    lockIds.push(input.stix_id);
+  }
+  if (isStixObjectAliased(type)) {
+    const aliases = [input.name, ...(input.aliases || []), ...(input.x_opencti_aliases || [])];
+    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
+      aliases.push(input.x_mitre_id);
+    }
+    lockIds.push(...generateAliasesId(aliases));
+  }
+  return lockIds;
+};
 const buildRelationInput = (input) => {
   const { relationship_type: relationshipType } = input;
   // 03. Generate the ID
@@ -1508,24 +1522,6 @@ const upsertElementRaw = async (user, id, type, data) => {
   // Return all elements requirement for stream and indexation
   return { type: TRX_UPDATE, element, relations: rawRelations, streamInputs, indexInput };
 };
-
-const getLocksFromInput = (type, input) => {
-  const standardId = input.standard_id || generateStandardId(type, input);
-  const inputIds = [...(input.externalReferences || []), ...(input.objects || [])].map((e) => e.internal_id);
-  const lockIds = [standardId, ...inputIds];
-  if (isNotEmptyField(input.stix_id)) {
-    lockIds.push(input.stix_id);
-  }
-  if (isStixObjectAliased(type)) {
-    const aliases = [input.name, ...(input.aliases || []), ...(input.x_opencti_aliases || [])];
-    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
-      aliases.push(input.x_mitre_id);
-    }
-    lockIds.push(...generateAliasesId(aliases));
-  }
-  return lockIds;
-};
-
 const createRelationRaw = async (user, input) => {
   const { from, to, relationship_type: relationshipType } = input;
   // 01. Generate the ID

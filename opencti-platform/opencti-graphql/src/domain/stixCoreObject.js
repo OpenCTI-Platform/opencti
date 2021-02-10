@@ -16,9 +16,9 @@ import {
   batchLoadThroughGetTo,
 } from '../database/middleware';
 import { findAll as relationFindAll } from './stixCoreRelationship';
-import { notify } from '../database/redis';
+import { lockResource, notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { FunctionalError } from '../config/errors';
+import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR } from '../config/errors';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
@@ -163,7 +163,21 @@ export const stixCoreObjectsDelete = async (user, stixCoreObjectsIds) => {
 };
 
 export const stixCoreObjectMerge = async (user, targetId, sourceIds) => {
-  return mergeEntities(user, targetId, sourceIds);
+  let lock;
+  const participantIds = [targetId, ...sourceIds];
+  try {
+    // Try to get the lock in redis
+    lock = await lockResource(participantIds);
+    // Create the object
+    await mergeEntities(user, targetId, sourceIds, { locks: participantIds });
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
 };
 // endregion
 

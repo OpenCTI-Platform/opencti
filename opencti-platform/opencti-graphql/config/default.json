@@ -3,6 +3,7 @@
     "port": 4000,
     "logs": "./logs",
     "logs_level": "info",
+    "request_timeout": 120000,
     "rate_protection": {
       "time_window": 1,
       "max_requests": 10000
@@ -11,7 +12,8 @@
       "retry_count": 200,
       "retry_delay": 100,
       "retry_jitter": 50,
-      "max_ttl": 30000
+      "max_ttl": 30000,
+      "extension_threshold": 5000
     },
     "cookie_secure": false,
     "base_path": "",
@@ -24,6 +26,10 @@
       "token": "ChangeMe"
     }
   },
+  "expiration_scheduler": {
+    "lock_key": "expired_manager_lock",
+    "interval": 3000
+  },
   "redis": {
     "hostname": "localhost",
     "port": 6379
@@ -31,7 +37,8 @@
   "elasticsearch": {
     "url": "http://localhost:9200",
     "index_creation_pattern": "-000001",
-    "search_ignore_throttled": false
+    "search_ignore_throttled": false,
+    "max_concurrency": 2
   },
   "minio": {
     "endpoint": "localhost",

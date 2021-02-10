@@ -151,28 +151,49 @@ export const clearUserAccessCache = async (tokenUUID) => {
 // endregion
 
 // region locking (clientContext)
-export const lockResource = async (resources) => {
+export const lockResource = async (resources, automaticExtension = true) => {
+  let timeout;
   const locks = R.uniq(resources);
-  // Retry during 5 secs
+  const automaticExtensionThreshold = conf.get('app:concurrency:extension_threshold');
   const retryCount = conf.get('app:concurrency:retry_count');
   const retryDelay = conf.get('app:concurrency:retry_delay');
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
   const redlock = new Redlock([clientContext], { retryCount, retryDelay, retryJitter });
-  const lock = await redlock.lock(locks, maxTtl); // Force unlock after 10 secs
-  return {
-    extend: async () => {
-      try {
-        await lock.extend(maxTtl);
-      } catch (e) {
-        logger.debug(e, '[REDIS] Failed to extend resource', { locks });
+  const lock = await redlock.lock(locks, maxTtl); // Force unlock after maxTtl
+  let expiration = Date.now() + maxTtl;
+  const extend = async () => {
+    try {
+      await lock.extend(maxTtl);
+      expiration = Date.now() + maxTtl;
+      if (automaticExtension) {
+        // eslint-disable-next-line no-use-before-define
+        queue();
       }
-    },
+    } catch (e) {
+      logger.debug('[REDIS] Failed to extend resource', { locks });
+    }
+  };
+  const queue = () => {
+    const timeToWait = expiration - Date.now() - automaticExtensionThreshold;
+    timeout = setTimeout(() => extend(maxTtl), timeToWait);
+  };
+  if (automaticExtension) {
+    queue();
+  }
+  return {
+    extend,
     unlock: async () => {
+      // First clear the auto extends if needed
+      if (timeout) {
+        clearTimeout(timeout);
+        timeout = undefined;
+      }
+      // Then unlock in redis
       try {
         await lock.unlock();
       } catch (e) {
-        logger.debug(e, '[REDIS] Failed to unlock resource', { locks });
+        logger.debug('[REDIS] Failed to unlock resource', { locks });
       }
     },
   };

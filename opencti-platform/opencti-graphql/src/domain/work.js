@@ -7,7 +7,7 @@ import {
   elLoadByIds,
   elPaginate,
   elUpdate,
-  IGNORE_THROTTLED,
+  ES_IGNORE_THROTTLED,
 } from '../database/elasticSearch';
 import { CONNECTOR_INTERNAL_ENRICHMENT, CONNECTOR_INTERNAL_EXPORT_FILE, loadConnectorById } from './connector';
 import { generateWorkId } from '../schema/identifier';
@@ -130,7 +130,7 @@ export const deleteOldCompletedWorks = async (connector, logInfo = false) => {
       body = { ...body, search_after: [searchAfter] };
     }
     const worksToDelete = await el
-      .search({ index: READ_INDEX_HISTORY, ignore_throttled: IGNORE_THROTTLED, body })
+      .search({ index: READ_INDEX_HISTORY, ignore_throttled: ES_IGNORE_THROTTLED, body })
       .catch((e) => {
         throw DatabaseError('Error searching for works to delete', { error: e });
       });
