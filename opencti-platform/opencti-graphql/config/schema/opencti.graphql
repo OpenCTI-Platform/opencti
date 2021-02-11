@@ -1053,6 +1053,7 @@ enum StixDomainObjectsOrdering {
 }
 enum StixDomainObjectsFilter {
   name
+  entity_type
   aliases
   x_opencti_aliases
   created

@@ -155,7 +155,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'uses':
     case 'related-to':
     case 'mitigates':
-    case 'imindividualates':
+    case 'impersonates':
     case 'indicates':
     case 'comes-after':
     case 'attributed-to':

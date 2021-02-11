@@ -282,10 +282,14 @@ const TopBar = ({
               <Filters
                 variant="dialog"
                 availableFilterKeys={[
+                  'entity_type',
                   'markedBy',
                   'labelledBy',
                   'createdBy',
                   'confidence_gt',
+                  'x_opencti_organization_type',
+                  'created_at_start_date',
+                  'created_at_end_date',
                 ]}
                 currentFilters={[]}
                 disabled={location.pathname.includes('/dashboard/search')}

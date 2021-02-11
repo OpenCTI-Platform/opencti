@@ -304,6 +304,46 @@ class Filters extends Component {
           });
         });
         break;
+      case 'entity_type':
+        this.setState({
+          entities: {
+            entity_type: union(
+              this.state.entities,
+              pipe(
+                map((n) => ({
+                  label: t(`entity_${n.toString()}`),
+                  value: n,
+                  type: n,
+                })),
+              )([
+                'Attack-Pattern',
+                'Campaign',
+                'Note',
+                'Observed-Data',
+                'Opinion',
+                'Report',
+                'Course-Of-Action',
+                'Individual',
+                'Organization',
+                'Sector',
+                'Indicator',
+                'Infrastructure',
+                'Intrusion-Set',
+                'City',
+                'Country',
+                'Region',
+                'Position',
+                'Malware',
+                'Threat-Actor',
+                'Tool',
+                'Vulnerability',
+                'X-OpenCTI-Incident',
+                'Stix-Cyber-Observable',
+              ]),
+            ),
+          },
+        });
+        break;
       default:
         this.setState({ entities: union(this.state.entities, []) });
     }
@@ -356,71 +396,69 @@ class Filters extends Component {
             />
           </Grid>
         )}
-        {filter((n) => !includes(n, directFilters), availableFilterKeys).map(
-          (filterKey) => {
-            const currentValue = currentFilters[filterKey]
-              ? currentFilters[filterKey][0]
-              : null;
-            if (
-              filterKey.endsWith('start_date')
-              || filterKey.endsWith('end_date')
-            ) {
-              return (
-                <Grid key={filterKey} item={true} xs={6}>
-                  <KeyboardDatePicker
-                    label={t(`filter_${filterKey}`)}
-                    value={currentValue ? currentValue.id : null}
-                    variant="inline"
-                    disableToolbar={false}
-                    autoOk={true}
-                    allowKeyboardControl={true}
-                    format="YYYY-MM-DD"
-                    inputVariant="outlined"
-                    size="small"
-                    onChange={this.handleChangeDate.bind(this, filterKey)}
-                  />
-                </Grid>
-              );
-            }
+        {availableFilterKeys.map((filterKey) => {
+          const currentValue = currentFilters[filterKey]
+            ? currentFilters[filterKey][0]
+            : null;
+          if (
+            filterKey.endsWith('start_date')
+            || filterKey.endsWith('end_date')
+          ) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
-                <Autocomplete
-                  selectOnFocus={true}
-                  autoSelect={false}
-                  autoHighlight={true}
-                  getOptionLabel={(option) => (option.label ? option.label : '')
-                  }
-                  noOptionsText={t('No available options')}
-                  options={entities[filterKey] ? entities[filterKey] : []}
-                  onInputChange={this.searchEntities.bind(this, filterKey)}
-                  onChange={this.handleChange.bind(this, filterKey)}
-                  getOptionSelected={(option, value) => option.value === value}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label={t(`filter_${filterKey}`)}
-                      variant="outlined"
-                      size="small"
-                      fullWidth={true}
-                      onFocus={this.searchEntities.bind(this, filterKey)}
-                    />
-                  )}
-                  renderOption={(option) => (
-                    <React.Fragment>
-                      <div
-                        className={classes.icon}
-                        style={{ color: option.color }}
-                      >
-                        <ItemIcon type={option.type} />
-                      </div>
-                      <div className={classes.text}>{option.label}</div>
-                    </React.Fragment>
-                  )}
+                <KeyboardDatePicker
+                  label={t(`filter_${filterKey}`)}
+                  value={currentValue ? currentValue.id : null}
+                  variant="inline"
+                  disableToolbar={false}
+                  autoOk={true}
+                  allowKeyboardControl={true}
+                  format="YYYY-MM-DD"
+                  inputVariant="outlined"
+                  size='small'
+                  fullWidth={variant === 'dialog'}
+                  onChange={this.handleChangeDate.bind(this, filterKey)}
                 />
               </Grid>
             );
-          },
-        )}
+          }
+          return (
+            <Grid key={filterKey} item={true} xs={6}>
+              <Autocomplete
+                selectOnFocus={true}
+                autoSelect={false}
+                autoHighlight={true}
+                getOptionLabel={(option) => (option.label ? option.label : '')}
+                noOptionsText={t('No available options')}
+                options={entities[filterKey] ? entities[filterKey] : []}
+                onInputChange={this.searchEntities.bind(this, filterKey)}
+                onChange={this.handleChange.bind(this, filterKey)}
+                getOptionSelected={(option, value) => option.value === value}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={t(`filter_${filterKey}`)}
+                    variant="outlined"
+                    size="small"
+                    fullWidth={true}
+                    onFocus={this.searchEntities.bind(this, filterKey)}
+                  />
+                )}
+                renderOption={(option) => (
+                  <React.Fragment>
+                    <div
+                      className={classes.icon}
+                      style={{ color: option.color }}
+                    >
+                      <ItemIcon type={option.type} />
+                    </div>
+                    <div className={classes.text}>{option.label}</div>
+                  </React.Fragment>
+                )}
+              />
+            </Grid>
+          );
+        })}
       </Grid>
     );
   }

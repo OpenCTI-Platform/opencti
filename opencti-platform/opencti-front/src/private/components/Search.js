@@ -138,10 +138,14 @@ class Search extends Component {
         <div className={classes.parameters}>
           <Filters
             availableFilterKeys={[
+              'entity_type',
               'markedBy',
               'labelledBy',
               'createdBy',
               'confidence_gt',
+              'x_opencti_organization_type',
+              'created_at_start_date',
+              'created_at_end_date',
             ]}
             handleAddFilter={this.handleAddFilter.bind(this)}
             currentFilters={filters}
