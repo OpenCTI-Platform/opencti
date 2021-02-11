@@ -1,2 +1,2 @@
-pycti==4.2.0
+pycti==4.2.1
 black==20.8b1
