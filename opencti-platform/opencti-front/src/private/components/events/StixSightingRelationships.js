@@ -60,12 +60,12 @@ class StixSightingRelationships extends Component {
       },
       attribute_count: {
         label: 'Count',
-        width: '5%',
+        width: '10%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '20%',
+        width: '25%',
         isSortable: false,
       },
       entity_type: {
@@ -85,7 +85,6 @@ class StixSightingRelationships extends Component {
       },
       confidence: {
         label: 'Confidence level',
-        width: '15%',
         isSortable: true,
       },
     };

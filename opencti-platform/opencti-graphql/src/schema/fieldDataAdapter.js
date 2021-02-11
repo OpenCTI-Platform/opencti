@@ -90,6 +90,7 @@ export const numericAttributes = [
   'import_processed_number',
   'x_opencti_score',
   'size',
+  'attribute_count',
 ];
 export const booleanAttributes = [
   'revoked',

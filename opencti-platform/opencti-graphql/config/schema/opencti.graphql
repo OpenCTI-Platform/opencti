@@ -7041,7 +7041,6 @@ input StixCoreRelationshipAddInput {
 ############## StixSightingRelationships
 enum StixSightingRelationshipsOrdering {
   confidence
-  number
   x_opencti_negative
   first_seen
   last_seen
@@ -7056,9 +7055,11 @@ enum StixSightingRelationshipsOrdering {
   toValidUntil
   toPatternType
   toCreatedAt
+  attribute_count
 }
 enum StixSightingRelationshipsFilter {
   x_opencti_negative
+  attribute_count
   created
   modified
   created_at
