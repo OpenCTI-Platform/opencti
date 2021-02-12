@@ -51,6 +51,7 @@ import {
   INTERNAL_FROM_FIELD,
   INTERNAL_TO_FIELD,
   isFieldContributingToStandardId,
+  isNameOnlyContributorToStandardId,
   NAME_FIELD,
   normalizeName,
   REVOKED,
@@ -476,7 +477,11 @@ const restrictedAggElement = { name: 'Restricted', entity_type: 'Malware', paren
 const convertAggregateDistributions = async (user, limit, orderingFunction, distribution) => {
   const data = R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distribution));
   // eslint-disable-next-line prettier/prettier
-  const resolveLabels = await elFindByIds(user, data.map((d) => d.label), { toMap: true });
+  const resolveLabels = await elFindByIds(
+    user,
+    data.map((d) => d.label),
+    { toMap: true }
+  );
   return R.map((n) => {
     const resolved = resolveLabels[n.label];
     const resolvedData = resolved || restrictedAggElement;
@@ -1163,7 +1168,11 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       impactedInputs.push(...ins);
     }
     // If named entity name updated, modify the aliases ids
-    if (isStixObjectAliased(instanceType) && (input.key === NAME_FIELD || input.key === X_MITRE_ID_FIELD)) {
+    if (
+      isStixObjectAliased(instanceType) &&
+      isNameOnlyContributorToStandardId(instanceType) &&
+      input.key === NAME_FIELD
+    ) {
       const name = R.head(input.value);
       const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
       const aliasesId = generateAliasesId(aliases);
@@ -1185,7 +1194,7 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
     // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
     const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
     const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
-    if (isAliasesImpacted) {
+    if (isNameOnlyContributorToStandardId(instanceType) && isAliasesImpacted) {
       const aliasesId = generateAliasesId([instance.name, ...input.value]);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
@@ -1316,11 +1325,8 @@ const getLocksFromInput = (type, input) => {
   if (isNotEmptyField(input.stix_id)) {
     lockIds.push(input.stix_id);
   }
-  if (isStixObjectAliased(type)) {
+  if (isStixObjectAliased(type) && isNameOnlyContributorToStandardId(type)) {
     const aliases = [input.name, ...(input.aliases || []), ...(input.x_opencti_aliases || [])];
-    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
-      aliases.push(input.x_mitre_id);
-    }
     lockIds.push(...generateAliasesId(aliases));
   }
   return lockIds;
@@ -1860,11 +1866,8 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     )(data);
   }
   // -- Aliased entities
-  if (isStixObjectAliased(type)) {
+  if (isStixObjectAliased(type) && isNameOnlyContributorToStandardId(type)) {
     const aliases = [input.name, ...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    if (type === ENTITY_TYPE_ATTACK_PATTERN && input.x_mitre_id && !aliases.includes(input.x_mitre_id)) {
-      aliases.push(input.x_mitre_id);
-    }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesId(aliases), data);
   }
   // Add the additional fields for dates (day, month, year)

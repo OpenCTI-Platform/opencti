@@ -8,7 +8,7 @@ import { SYSTEM_USER } from '../domain/user';
 
 export const up = async (next) => {
   const start = new Date().getTime();
-  logger.info(`[MIGRATION] Cleaning aliases and STIX IDs of Attack Patterns`);
+  logger.info(`[MIGRATION] Cleaning aliases and STIX IDs (pass 2) of Attack Patterns`);
   const bulkOperations = [];
   const callback = (attacks) => {
     const op = attacks
@@ -29,10 +29,10 @@ export const up = async (next) => {
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;
-    logger.info(`[OPENCTI] Cleaning aliases and STIX IDs ${currentProcessing} / ${bulkOperations.length}`);
+    logger.info(`[OPENCTI] Cleaning aliases and STIX IDs (pass 2) ${currentProcessing} / ${bulkOperations.length}`);
   };
   await Promise.map(groupsOfOperations, concurrentUpdate, { concurrency: ES_MAX_CONCURRENCY });
-  logger.info(`[MIGRATION] Cleaning aliases and STIX IDs of attack patterns done in ${new Date() - start} ms`);
+  logger.info(`[MIGRATION] Cleaning aliases and STIX IDs (pass 2) of attack patterns done in ${new Date() - start} ms`);
   next();
 };
 

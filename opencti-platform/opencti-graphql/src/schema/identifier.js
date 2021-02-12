@@ -147,7 +147,7 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_LOCATION_POSITION]: [{ src: 'name' }, { src: 'latitude' }, { src: 'longitude' }],
+    [D.ENTITY_TYPE_LOCATION_POSITION]: [{ src: NAME_FIELD }, { src: 'latitude' }, { src: 'longitude' }],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_TOOL]: [{ src: NAME_FIELD }],
@@ -191,6 +191,24 @@ const idGen = (type, raw, data, namespace) => {
   }
   const dataCanonicalize = jsonCanonicalize(data);
   return uuidv5(dataCanonicalize, namespace);
+};
+export const isNameOnlyContributorToStandardId = (entityType) => {
+  const contrib = resolveContribution(entityType);
+  const properties = contrib.definition[entityType];
+  if (!properties) {
+    throw DatabaseError(`Unknown definition for type ${entityType}`);
+  }
+  if (properties.length === 0) return true;
+  if (Array.isArray(R.head(properties))) {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const property of properties) {
+      if (property.length === 1 && R.head(property).src === NAME_FIELD) {
+        return true;
+      }
+    }
+    return false;
+  }
+  return properties.length === 1 && R.head(properties).src === NAME_FIELD;
 };
 export const isFieldContributingToStandardId = (instance, keys) => {
   const instanceType = instance.entity_type;
