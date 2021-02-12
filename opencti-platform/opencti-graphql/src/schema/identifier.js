@@ -194,9 +194,9 @@ const idGen = (type, raw, data, namespace) => {
   return uuidv5(dataCanonicalize, namespace);
 };
 export const isNameOnlyContributorToStandardId = (entityType) => {
+  if (isBasicRelationship(entityType)) return false;
   const contrib = resolveContribution(entityType);
   const properties = contrib.definition[entityType];
-  if (isBasicRelationship(entityType)) return false;
   if (!properties) {
     throw DatabaseError(`Unknown definition for type ${entityType}`);
   }
