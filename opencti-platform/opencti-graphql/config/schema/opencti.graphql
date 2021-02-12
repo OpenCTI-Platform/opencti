@@ -1754,6 +1754,7 @@ input ObservedDataAddInput {
 
 ################ Opînions
 enum OpinionsOrdering {
+  opinion
   created
   modified
   created_at
