@@ -18,6 +18,7 @@ import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
+import { isBasicRelationship } from './stixRelationship';
 
 // region hashes
 const MD5 = 'MD5';
@@ -195,6 +196,7 @@ const idGen = (type, raw, data, namespace) => {
 export const isNameOnlyContributorToStandardId = (entityType) => {
   const contrib = resolveContribution(entityType);
   const properties = contrib.definition[entityType];
+  if (isBasicRelationship(entityType)) return false;
   if (!properties) {
     throw DatabaseError(`Unknown definition for type ${entityType}`);
   }
