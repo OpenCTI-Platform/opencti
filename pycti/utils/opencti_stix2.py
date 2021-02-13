@@ -1490,13 +1490,15 @@ class OpenCTIStix2:
                     if "where_sighted_refs" in item:
                         for where_sighted_ref in item["where_sighted_refs"]:
                             to_ids.append(where_sighted_ref)
-
                     # Import sighting_of_ref
-                    from_id = item["sighting_of_ref"]
+                    from_id = (
+                        item["x_opencti_sighting_of_ref"]
+                        if "x_opencti_sighting_of_ref" in item
+                        else item["sighting_of_ref"]
+                    )
                     if len(to_ids) > 0:
                         for to_id in to_ids:
                             self.import_sighting(item, from_id, to_id, update)
-
                     # Import observed_data_refs
                     if "observed_data_refs" in item:
                         for observed_data_ref in item["observed_data_refs"]:

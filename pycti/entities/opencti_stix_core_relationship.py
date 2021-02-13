@@ -1025,10 +1025,19 @@ class StixCoreRelationship:
                 stix_relation["relationship_type"] = "part-of"
             elif stix_relation["relationship_type"] == "localization":
                 stix_relation["relationship_type"] = "located-at"
-
+            source_ref = (
+                stix_relation["x_opencti_source_ref"]
+                if "x_opencti_source_ref" in stix_relation
+                else stix_relation["source_ref"]
+            )
+            target_ref = (
+                stix_relation["x_opencti_target_ref"]
+                if "x_opencti_target_ref" in stix_relation
+                else stix_relation["target_ref"]
+            )
             return self.create(
-                fromId=stix_relation["source_ref"],
-                toId=stix_relation["target_ref"],
+                fromId=source_ref,
+                toId=target_ref,
                 stix_id=stix_relation["id"],
                 relationship_type=stix_relation["relationship_type"],
                 description=self.opencti.stix2.convert_markdown(
