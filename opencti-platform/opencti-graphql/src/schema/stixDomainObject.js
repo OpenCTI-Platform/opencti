@@ -181,8 +181,17 @@ export const stixDomainObjectFieldsToBeUpdated = {
     'secondary_motivations',
   ],
   [ENTITY_TYPE_TOOL]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_VULNERABILITY]: ['name', 'revoked', 'description'],
-  [ENTITY_TYPE_X_OPENCTI_INCIDENT]: ['name', 'revoked', 'description'],
+  [ENTITY_TYPE_VULNERABILITY]: [
+    'name',
+    'revoked',
+    'description',
+    'x_opencti_base_score',
+    'x_opencti_base_severity',
+    'x_opencti_attack_vector',
+    'x_opencti_integrity_impact',
+    'x_opencti_availability_impact',
+  ],
+  [ENTITY_TYPE_X_OPENCTI_INCIDENT]: ['name', 'revoked', 'description', 'first_seen', 'last_seen', 'objective'],
 };
 
 export const stixDomainObjectsAttributes = {

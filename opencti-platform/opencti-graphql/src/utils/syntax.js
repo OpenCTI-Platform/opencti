@@ -15,6 +15,24 @@ export const checkObservableSyntax = (observableType, observableData) => {
       const domainChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$/;
       if (!domainChecker.test(observableData.value)) return 'Valid domain name';
       break;
+    case C.ENTITY_HASHED_OBSERVABLE_STIX_FILE:
+      if (observableData.hashes && observableData.hashes.MD5) {
+        const md5Checker = /^[a-fA-F0-9]{32}$/;
+        if (!md5Checker.test(observableData.hashes.MD5)) return 'Valid MD5 hash';
+      }
+      if (observableData.hashes && observableData.hashes['SHA-1']) {
+        const sha1Checker = /^[a-fA-F0-9]{40}$/;
+        if (!sha1Checker.test(observableData.hashes['SHA-1'])) return 'Valid SHA-1 hash';
+      }
+      if (observableData.hashes && observableData.hashes['SHA-256']) {
+        const sha256checker = /^[a-fA-F0-9]{64}$/;
+        if (!sha256checker.test(observableData.hashes['SHA-256'])) return 'Valid SHA-256 hash';
+      }
+      if (observableData.hashes && observableData.hashes['SHA-512']) {
+        const sha512checker = /^[a-fA-F0-9]{128}$/;
+        if (!sha512checker.test(observableData.hashes['SHA-512'])) return 'Valid SHA-512 hash';
+      }
+      break;
     case C.ENTITY_X_OPENCTI_HOSTNAME:
       const hostnameChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$/;
       if (!hostnameChecker.test(observableData.value)) return 'Valid hostname';

@@ -129,6 +129,7 @@ import {
   utcDate,
   yearFormat,
 } from '../utils/format';
+import { checkObservableSyntax } from '../utils/syntax';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1287,6 +1288,13 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     // noinspection UnnecessaryLocalVariableJS
     const data = await updateAttributeRaw(user, instance, inputs, options);
     const { updatedInstance, impactedInputs } = data;
+    // Check the consistency of the observable.
+    if (isStixCyberObservable(instance.entity_type)) {
+      const observableSyntaxResult = checkObservableSyntax(instance.entity_type, updatedInstance);
+      if (observableSyntaxResult !== true) {
+        throw FunctionalError(`Observable of type ${instance.entity_type} is not correctly formatted.`, { id, type });
+      }
+    }
     if (impactedInputs.length > 0) {
       const updateAsInstance = partialInstanceWithInputs(instance, impactedInputs);
       await elUpdateElement(updateAsInstance);

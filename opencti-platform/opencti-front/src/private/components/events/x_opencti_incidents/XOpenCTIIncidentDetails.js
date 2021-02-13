@@ -73,7 +73,7 @@ class XOpenCTIIncidentDetailsComponent extends Component {
             toTypes={['Stix-Cyber-Observable']}
             relationshipType="related-to"
             field="entity_type"
-            height={200}
+            height={260}
             variant="inEntity"
             isTo={true}
           />
