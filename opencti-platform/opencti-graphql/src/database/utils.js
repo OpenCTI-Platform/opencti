@@ -199,7 +199,7 @@ export const inferIndexFromConceptType = (conceptType) => {
 export const observableValue = (stixCyberObservable) => {
   switch (stixCyberObservable.entity_type) {
     case ENTITY_AUTONOMOUS_SYSTEM:
-      return stixCyberObservable.number || 'Unknown';
+      return stixCyberObservable.name || stixCyberObservable.number || 'Unknown';
     case ENTITY_DIRECTORY:
       return stixCyberObservable.path || 'Unknown';
     case ENTITY_EMAIL_MESSAGE:

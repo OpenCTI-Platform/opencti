@@ -5,7 +5,7 @@ export const checkObservableSyntax = (observableType, observableData) => {
   switch (observableType) {
     case C.ENTITY_AUTONOMOUS_SYSTEM:
       const systemChecker = /^\d{0,10}$/;
-      if (!systemChecker.test(observableData.number)) return 'AS followed by numbers';
+      if (!systemChecker.test(observableData.number)) return 'Must be numeric';
       break;
     case C.ENTITY_DIRECTORY:
       const directoryChecker = /^(\w+\.?)*\w+$/;
