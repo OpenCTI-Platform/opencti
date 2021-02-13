@@ -1,6 +1,6 @@
 {
   "name": "opencti-graphql",
-  "version": "4.2.1",
+  "version": "4.2.2",
   "main": "src/server.js",
   "author": "Luatix",
   "license": "Apache-2.0",
@@ -30,7 +30,7 @@
   "dependencies": {
     "@babel/core": "7.12.10",
     "@babel/runtime": "7.12.5",
-    "@elastic/elasticsearch": "7.10.0",
+    "@elastic/elasticsearch": "7.11.0",
     "amqplib": "0.6.0",
     "apollo-errors": "1.9.0",
     "apollo-server-express": "2.19.2",
