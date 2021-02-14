@@ -839,7 +839,7 @@ class StixDomainObject:
                     "error", "Cannot add Marking-Definition, entity not found"
                 )
                 return False
-            if marking_definition_id in stix_domain_object["markingDefinitionsIds"]:
+            if marking_definition_id in stix_domain_object["objectMarkingIds"]:
                 return True
             else:
                 self.opencti.log(

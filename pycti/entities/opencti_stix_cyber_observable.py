@@ -1250,7 +1250,7 @@ class StixCyberObservable:
                     "error", "Cannot add Marking-Definition, entity not found"
                 )
                 return False
-            if marking_definition_id in stix_cyber_observable["markingDefinitionsIds"]:
+            if marking_definition_id in stix_cyber_observable["objectMarkingIds"]:
                 return True
             else:
                 self.opencti.log(

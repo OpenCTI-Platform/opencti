@@ -589,7 +589,7 @@ class StixCoreRelationship:
                     "error", "Cannot add Marking-Definition, entity not found"
                 )
                 return False
-            if marking_definition_id in stix_core_relationship["markingDefinitionsIds"]:
+            if marking_definition_id in stix_core_relationship["objectMarkingIds"]:
                 return True
             else:
                 self.opencti.log(
