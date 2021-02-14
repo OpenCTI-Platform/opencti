@@ -114,7 +114,7 @@ import {
 } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCyberObservable } from '../schema/stixCyberObservable';
+import { isStixCyberObservable, stixCyberObservableFieldsToBeUpdated } from '../schema/stixCyberObservable';
 import { BUS_TOPICS, logger } from '../config/conf';
 import {
   dayFormat,
@@ -1483,6 +1483,24 @@ const upsertElementRaw = async (user, id, type, data) => {
   }
   if (isStixDomainObject(type) && data.update === true) {
     const fields = stixDomainObjectFieldsToBeUpdated[type];
+    if (fields) {
+      const patch = {};
+      for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
+        const fieldKey = fields[fieldIndex];
+        const inputData = data[fieldKey];
+        if (isNotEmptyField(inputData)) {
+          patch[fieldKey] = Array.isArray(inputData) ? inputData : [inputData];
+        }
+      }
+      if (!R.isEmpty(patch)) {
+        const patched = await patchAttributeRaw(user, element, patch);
+        impactedInputs.push(...patched.impactedInputs);
+        updatedReplaceInputs.push(...patched.updatedInputs);
+      }
+    }
+  }
+  if (isStixCyberObservable(type) && data.update === true) {
+    const fields = stixCyberObservableFieldsToBeUpdated[type];
     if (fields) {
       const patch = {};
       for (let fieldIndex = 0; fieldIndex < fields.length; fieldIndex += 1) {
