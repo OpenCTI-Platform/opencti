@@ -61,11 +61,13 @@ class EntityStixCoreRelationships extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       selectedEntityType: propOr('All', 'selectedEntityType', params),
-      selectedRelationshipType: propOr(
-        'All',
-        'selectedRelationshipType',
-        params,
-      ),
+      selectedRelationshipType:
+        props.relationshipTypes
+        && ['All', ...props.relationshipTypes].includes(
+          propOr('All', 'selectedRelationshipType', params),
+        )
+          ? propOr('All', 'selectedRelationshipType', params)
+          : 'All',
       numberOfElements: { number: 0, symbol: '' },
       openEntityType: false,
       openRelationshipType: false,
