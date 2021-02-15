@@ -198,15 +198,11 @@ class StixCoreRelationshipCreation extends Component {
       assoc('toId', this.props.to.id),
       assoc(
         'start_time',
-        values.start_time && values.start_time.length > 0
-          ? parse(values.start_time).format()
-          : null,
+        values.start_time ? parse(values.start_time).format() : null,
       ),
       assoc(
         'stop_time',
-        values.stop_time && values.stop_time.length > 0
-          ? parse(values.stop_time).format()
-          : null,
+        values.stop_time ? parse(values.stop_time).format() : null,
       ),
       assoc('createdBy', values.createdBy.value),
       assoc('killChainPhases', pluck('value', values.killChainPhases)),

@@ -323,7 +323,11 @@ class ContainerAddStixCoreObjects extends Component {
         color="secondary"
         style={{ marginLeft: '10px' }}
         label={t(`entity_${type}`)}
-        onDelete={this.onSearchTypeFilterDelete.bind(this, type)}
+        onDelete={
+          typeof this.props.onTypesChange === 'function'
+            ? this.onSearchTypeFilterDelete.bind(this, type)
+            : null
+        }
       />
     ));
 
