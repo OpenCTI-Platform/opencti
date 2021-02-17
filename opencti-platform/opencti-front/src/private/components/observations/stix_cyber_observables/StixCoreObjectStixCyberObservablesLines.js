@@ -60,8 +60,8 @@ StixCoreObjectStixCyberObservablesLines.propTypes = {
 
 export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
   query StixCoreObjectStixCyberObservablesLinesPaginationQuery(
-    $fromId: String
-    $toTypes: [String]
+    $toId: String
+    $fromTypes: [String]
     $relationship_type: String
     $startTimeStart: DateTime
     $startTimeStop: DateTime
@@ -75,8 +75,8 @@ export const stixCoreObjectStixCyberObservablesLinesQuery = graphql`
   ) {
     ...StixCoreObjectStixCyberObservablesLines_data
       @arguments(
-        fromId: $fromId
-        toTypes: $toTypes
+        toId: $toId
+        fromTypes: $fromTypes
         relationship_type: $relationship_type
         startTimeStart: $startTimeStart
         startTimeStop: $startTimeStop
@@ -97,8 +97,8 @@ export default createPaginationContainer(
     data: graphql`
       fragment StixCoreObjectStixCyberObservablesLines_data on Query
       @argumentDefinitions(
-        fromId: { type: "String" }
-        toTypes: { type: "[String]" }
+        toId: { type: "String" }
+        fromTypes: { type: "[String]" }
         relationship_type: { type: "String" }
         startTimeStart: { type: "DateTime" }
         startTimeStop: { type: "DateTime" }
@@ -114,8 +114,8 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         stixCoreRelationships(
-          fromId: $fromId
-          toTypes: $toTypes
+          toId: $toId
+          fromTypes: $fromTypes
           relationship_type: $relationship_type
           startTimeStart: $startTimeStart
           startTimeStop: $startTimeStop
@@ -154,8 +154,8 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        fromId: fragmentVariables.fromId,
-        toTypes: fragmentVariables.toTypes,
+        toId: fragmentVariables.fromId,
+        fromTypes: fragmentVariables.fromTypes,
         relationship_type: fragmentVariables.relationship_type,
         startTimeStart: fragmentVariables.startTimeStart,
         startTimeStop: fragmentVariables.startTimeStop,
