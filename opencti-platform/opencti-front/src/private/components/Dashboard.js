@@ -21,17 +21,18 @@ import {
   GraphOutline,
   HexagonMultipleOutline,
 } from 'mdi-material-ui';
-import Cell from 'recharts/lib/component/Cell';
-import AreaChart from 'recharts/lib/chart/AreaChart';
-import BarChart from 'recharts/lib/chart/BarChart';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import Bar from 'recharts/lib/cartesian/Bar';
-import Area from 'recharts/lib/cartesian/Area';
-import XAxis from 'recharts/lib/cartesian/XAxis';
-import YAxis from 'recharts/lib/cartesian/YAxis';
-import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Tooltip from 'recharts/lib/component/Tooltip';
-import { QueryRenderer } from '../../relay/environment';
+import {
+  BarChart,
+  AreaChart,
+  Cell,
+  Bar,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+} from 'recharts';import { QueryRenderer } from '../../relay/environment';
 import {
   yearsAgo, dayAgo, now, monthsAgo,
 } from '../../utils/Time';

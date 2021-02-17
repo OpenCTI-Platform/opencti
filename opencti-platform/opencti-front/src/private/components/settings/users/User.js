@@ -12,13 +12,9 @@ import Fab from '@material-ui/core/Fab';
 import { Edit, Group, Security } from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
-import AreaChart from 'recharts/lib/chart/AreaChart';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import Area from 'recharts/lib/cartesian/Area';
-import XAxis from 'recharts/lib/cartesian/XAxis';
-import YAxis from 'recharts/lib/cartesian/YAxis';
-import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Tooltip from 'recharts/lib/component/Tooltip';
+import {
+  AreaChart, ResponsiveContainer, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+} from 'recharts';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import inject18n from '../../../../components/i18n';

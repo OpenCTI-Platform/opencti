@@ -2,15 +2,14 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { assoc, compose, map } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import PieChart from 'recharts/lib/chart/PieChart';
-import Pie from 'recharts/lib/polar/Pie';
-import Cell from 'recharts/lib/component/Cell';
+import {
+  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+} from 'recharts';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import Legend from 'recharts/lib/component/Legend';
+
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';

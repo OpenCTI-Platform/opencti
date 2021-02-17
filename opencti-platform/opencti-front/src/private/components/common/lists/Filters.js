@@ -415,7 +415,7 @@ class Filters extends Component {
                   allowKeyboardControl={true}
                   format="YYYY-MM-DD"
                   inputVariant="outlined"
-                  size='small'
+                  size="small"
                   fullWidth={variant === 'dialog'}
                   onChange={this.handleChangeDate.bind(this, filterKey)}
                 />

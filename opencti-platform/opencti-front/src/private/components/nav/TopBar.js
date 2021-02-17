@@ -162,9 +162,7 @@ const TopBar = ({
         <div className={classes.menuContainer}>
           {location.pathname === '/dashboard'
             || (location.pathname === '/dashboard/import' && <TopMenuDashboard />)}
-          {location.pathname.includes('/dashboard/search') && (
-            <TopMenuSearch />
-          )}
+          {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
           {location.pathname === '/dashboard/analysis'
             || (location.pathname.match('/dashboard/analysis/[a-z_]+$') && (
               <TopMenuAnalysis />

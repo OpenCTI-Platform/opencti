@@ -2,12 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import AreaChart from 'recharts/lib/chart/AreaChart';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Area from 'recharts/lib/cartesian/Area';
-import XAxis from 'recharts/lib/cartesian/XAxis';
-import YAxis from 'recharts/lib/cartesian/YAxis';
+import {
+  AreaChart, ResponsiveContainer, CartesianGrid, Area, XAxis, YAxis,
+} from 'recharts';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';

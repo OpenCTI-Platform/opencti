@@ -2,11 +2,9 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import PieChart from 'recharts/lib/chart/PieChart';
-import Pie from 'recharts/lib/polar/Pie';
-import Cell from 'recharts/lib/component/Cell';
-import Legend from 'recharts/lib/component/Legend';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
+import {
+  PieChart, Pie, Cell, Legend, ResponsiveContainer,
+} from 'recharts';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';

@@ -204,7 +204,9 @@ class ListLines extends Component {
                   {map(
                     (n) => (
                       <span key={n.value}>
-                        {truncate(n.value, 15)}{' '}
+                        {n.value && n.value.length > 0
+                          ? truncate(n.value, 15)
+                          : t('No label')}{' '}
                         {last(currentFilter[1]).value !== n.value && (
                           <code>OR</code>
                         )}
