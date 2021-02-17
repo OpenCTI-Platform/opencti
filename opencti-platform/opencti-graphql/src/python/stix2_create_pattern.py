@@ -8,6 +8,7 @@ PATTERN_MAPPING = {
     "Directory": ["path"],
     "Domain-Name": ["value"],
     "Email-Addr": ["value"],
+    "File_name": ["name"],
     "File_md5": ["hashes", "MD5"],
     "File_sha1": ["hashes", "SHA-1"],
     "File_sha256": ["hashes", "SHA-256"],

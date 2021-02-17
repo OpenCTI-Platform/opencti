@@ -156,6 +156,8 @@ const createIndicatorFromObservable = async (user, input, observable) => {
         key = `${entityType}_sha1`;
       } else if (observable.hashes.MD5) {
         key = `${entityType}_md5`;
+      } else if (observable.name) {
+        key = `${entityType}_name`;
       }
     }
     if (observable.pid) {
