@@ -37,6 +37,8 @@ class OrganizationKnowledgeComponent extends Component {
           availableSections={[
             'organizations',
             'individuals',
+            'locations',
+            'sectors',
             'threat_actors',
             'intrusion_sets',
             'campaigns',
@@ -95,6 +97,34 @@ class OrganizationKnowledgeComponent extends Component {
               targetStixDomainObjectTypes={['Individual']}
               entityLink={link}
               isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/locations"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipTypes={['located-at']}
+              targetStixDomainObjectTypes={['Location']}
+              entityLink={link}
+              isRelationReversed={false}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/organizations/:organizationId/knowledge/sectors"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={organization.id}
+              relationshipTypes={['part-of']}
+              targetStixDomainObjectTypes={['Sector']}
+              entityLink={link}
+              isRelationReversed={false}
               {...routeProps}
             />
           )}
