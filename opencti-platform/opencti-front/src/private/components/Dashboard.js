@@ -32,7 +32,8 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-} from 'recharts';import { QueryRenderer } from '../../relay/environment';
+} from 'recharts';
+import { QueryRenderer } from '../../relay/environment';
 import {
   yearsAgo, dayAgo, now, monthsAgo,
 } from '../../utils/Time';

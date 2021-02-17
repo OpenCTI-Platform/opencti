@@ -11,7 +11,8 @@ import {
   Bar,
   ResponsiveContainer,
   Tooltip,
-} from 'recharts';import { withStyles } from '@material-ui/core/styles';
+} from 'recharts';
+import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';

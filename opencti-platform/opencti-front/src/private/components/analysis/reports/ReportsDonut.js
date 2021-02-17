@@ -4,7 +4,8 @@ import { assoc, compose, map } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import {
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
-} from 'recharts';import { withStyles } from '@material-ui/core/styles';
+} from 'recharts';
+import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';

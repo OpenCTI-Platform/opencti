@@ -3,7 +3,12 @@ import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  AreaChart, ResponsiveContainer, CartesianGrid, Area, XAxis, YAxis,
+  AreaChart,
+  ResponsiveContainer,
+  CartesianGrid,
+  Area,
+  XAxis,
+  YAxis,
 } from 'recharts';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';

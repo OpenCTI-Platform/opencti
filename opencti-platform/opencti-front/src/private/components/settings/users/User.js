@@ -13,7 +13,13 @@ import { Edit, Group, Security } from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import {
-  AreaChart, ResponsiveContainer, Area, XAxis, YAxis, CartesianGrid, Tooltip,
+  AreaChart,
+  ResponsiveContainer,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
 } from 'recharts';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
