@@ -7,10 +7,6 @@ export const checkObservableSyntax = (observableType, observableData) => {
       const systemChecker = /^\d{0,10}$/;
       if (!systemChecker.test(observableData.number)) return 'Must be numeric';
       break;
-    case C.ENTITY_DIRECTORY:
-      const directoryChecker = /^(\w+\.?)*\w+$/;
-      if (!directoryChecker.test(observableData.path)) return 'Valid directory chars';
-      break;
     case C.ENTITY_DOMAIN_NAME:
       const domainChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$/;
       if (!domainChecker.test(observableData.value)) return 'Valid domain name';
