@@ -31,10 +31,10 @@ class XOpenCTIIncidents extends Component {
       'view-x_opencti_incidents',
     );
     this.state = {
-      sortBy: propOr('name', 'sortBy', params),
-      orderAsc: propOr(true, 'orderAsc', params),
+      sortBy: propOr('created', 'sortBy', params),
+      orderAsc: propOr(false, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('cards', 'view', params),
+      view: propOr('lines', 'view', params),
       filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -113,7 +113,6 @@ class XOpenCTIIncidents extends Component {
       name: {
         label: 'Name',
       },
-
       created: {
         label: 'Creation date',
       },
@@ -133,7 +132,7 @@ class XOpenCTIIncidents extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Intrusion-Set"
+        exportEntityType="X-OpenCTI-Incident"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -206,7 +205,7 @@ class XOpenCTIIncidents extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="Intrusion-Set"
+        exportEntityType="X-OpenCTI-Incident"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
