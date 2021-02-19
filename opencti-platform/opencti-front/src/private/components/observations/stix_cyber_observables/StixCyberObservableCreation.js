@@ -101,6 +101,10 @@ export const booleanAttributes = [
   'is_multipart',
   'is_hidden',
   'is_active',
+  'is_disabled',
+  'is_privileged',
+  'is_service_account',
+  'can_escalate_privs',
 ];
 
 export const multipleAttributes = ['x_opencti_additional_names'];
