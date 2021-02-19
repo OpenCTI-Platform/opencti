@@ -78,7 +78,6 @@ const LoginForm = (props) => {
               variant="contained"
               color="primary"
               disabled={isSubmitting}
-              onClick={submitForm}
               style={{ marginTop: 30 }}
             >
               {t('Sign in')}
