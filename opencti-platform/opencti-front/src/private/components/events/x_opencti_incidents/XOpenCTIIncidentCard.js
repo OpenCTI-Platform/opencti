@@ -164,7 +164,7 @@ const XOpenCTIIncidentCardFragment = createFragmentContainer(
   },
 );
 
-export const XOpenCTIXOpenCTIIncidentCard = compose(
+export const XOpenCTIIncidentCard = compose(
   inject18n,
   withStyles(styles),
 )(XOpenCTIIncidentCardFragment);

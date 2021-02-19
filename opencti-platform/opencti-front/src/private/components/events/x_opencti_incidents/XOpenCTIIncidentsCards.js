@@ -5,19 +5,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListCardsContent from '../../../../components/list_cards/ListCardsContent';
 import {
-  XOpenCTIXOpenCTIIncidentCard,
+  XOpenCTIIncidentCard,
   XOpenCTIIncidentCardDummy,
 } from './XOpenCTIIncidentCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfCardsToLoad = 50;
 
-class XOpenCTIXOpenCTIIncidentsCards extends Component {
+class XOpenCTIIncidentsCards extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'XOpenCTIIncidents',
+      'xOpenCTIIncidents',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -36,7 +36,7 @@ class XOpenCTIXOpenCTIIncidentsCards extends Component {
           ['xOpenCTIIncidents', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        CardComponent={<XOpenCTIXOpenCTIIncidentCard />}
+        CardComponent={<XOpenCTIIncidentCard />}
         DummyCardComponent={<XOpenCTIIncidentCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
         onLabelClick={onLabelClick.bind(this)}
@@ -45,19 +45,15 @@ class XOpenCTIXOpenCTIIncidentsCards extends Component {
   }
 }
 
-XOpenCTIXOpenCTIIncidentsCards.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
+XOpenCTIIncidentsCards.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
-  XOpenCTIIncidents: PropTypes.object,
   initialLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
-export const XOpenCTIIncidentsCardsQuery = graphql`
+export const xOpenCTIIncidentsCardsQuery = graphql`
   query XOpenCTIIncidentsCardsPaginationQuery(
     $search: String
     $count: Int!
@@ -79,7 +75,7 @@ export const XOpenCTIIncidentsCardsQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  XOpenCTIXOpenCTIIncidentsCards,
+  XOpenCTIIncidentsCards,
   {
     data: graphql`
       fragment XOpenCTIIncidentsCards_data on Query
@@ -119,7 +115,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.XOpenCTIIncidents;
+      return props.data && props.data.xOpenCTIIncidents;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -137,6 +133,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: XOpenCTIIncidentsCardsQuery,
+    query: xOpenCTIIncidentsCardsQuery,
   },
 );

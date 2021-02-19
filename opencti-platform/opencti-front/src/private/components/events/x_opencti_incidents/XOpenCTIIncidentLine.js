@@ -140,7 +140,7 @@ const XOpenCTIIncidentLineFragment = createFragmentContainer(
   },
 );
 
-export const XOpenCTIXOpenCTIIncidentLine = compose(
+export const XOpenCTIIncidentLine = compose(
   inject18n,
   withStyles(styles),
 )(XOpenCTIIncidentLineFragment);

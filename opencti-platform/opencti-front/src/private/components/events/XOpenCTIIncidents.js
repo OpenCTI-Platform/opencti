@@ -14,27 +14,27 @@ import inject18n from '../../../components/i18n';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
 import XOpenCTIIncidentsCards, {
-  XOpenCTIIncidentsCardsQuery,
+  xOpenCTIIncidentsCardsQuery,
 } from './x_opencti_incidents/XOpenCTIIncidentsCards';
 import XOpenCTIIncidentsLines, {
-  XOpenCTIIncidentsLinesQuery,
+  xOpenCTIIncidentsLinesQuery,
 } from './x_opencti_incidents/XOpenCTIIncidentsLines';
 import XOpenCTIIncidentCreation from './x_opencti_incidents/XOpenCTIIncidentCreation';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
-class XOpenCTIXOpenCTIIncidents extends Component {
+class XOpenCTIIncidents extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-x_opencti_incident',
+      'view-x_opencti_incidents',
     );
     this.state = {
-      sortBy: propOr('created', 'sortBy', params),
-      orderAsc: propOr(false, 'orderAsc', params),
+      sortBy: propOr('name', 'sortBy', params),
+      orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
-      view: propOr('lines', 'view', params),
+      view: propOr('cards', 'view', params),
       filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
@@ -45,7 +45,7 @@ class XOpenCTIXOpenCTIIncidents extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-x_opencti_incident',
+      'view-x_opencti_incidents',
       this.state,
     );
   }
@@ -133,7 +133,7 @@ class XOpenCTIXOpenCTIIncidents extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="X-OpenCTI-Incident"
+        exportEntityType="Intrusion-Set"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -147,7 +147,7 @@ class XOpenCTIXOpenCTIIncidents extends Component {
         ]}
       >
         <QueryRenderer
-          query={XOpenCTIIncidentsCardsQuery}
+          query={xOpenCTIIncidentsCardsQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
             <XOpenCTIIncidentsCards
@@ -206,21 +206,21 @@ class XOpenCTIXOpenCTIIncidents extends Component {
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
-        exportEntityType="XOpenCTIXOpenCTIIncident"
+        exportEntityType="Intrusion-Set"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         availableFilterKeys={[
-          'labels',
-          'markingDefinitions',
+          'labelledBy',
+          'markedBy',
           'created_start_date',
           'created_end_date',
           'createdBy',
         ]}
       >
         <QueryRenderer
-          query={XOpenCTIIncidentsLinesQuery}
+          query={xOpenCTIIncidentsLinesQuery}
           variables={{ count: 25, ...paginationOptions }}
           render={({ props }) => (
             <XOpenCTIIncidentsLines
@@ -260,10 +260,9 @@ class XOpenCTIXOpenCTIIncidents extends Component {
   }
 }
 
-XOpenCTIXOpenCTIIncidents.propTypes = {
-  t: PropTypes.func,
+XOpenCTIIncidents.propTypes = {
   history: PropTypes.object,
   location: PropTypes.object,
 };
 
-export default compose(inject18n, withRouter)(XOpenCTIXOpenCTIIncidents);
+export default compose(inject18n, withRouter)(XOpenCTIIncidents);

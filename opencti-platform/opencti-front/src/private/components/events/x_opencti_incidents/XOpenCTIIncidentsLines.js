@@ -5,19 +5,19 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  XOpenCTIXOpenCTIIncidentLine,
+  XOpenCTIIncidentLine,
   XOpenCTIIncidentLineDummy,
 } from './XOpenCTIIncidentLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
 
-class XOpenCTIXOpenCTIIncidentsLines extends Component {
+class XOpenCTIIncidentsLines extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
       this.props,
-      'XOpenCTIIncidents',
+      'xOpenCTIIncidents',
       this.props.setNumberOfElements.bind(this),
     );
   }
@@ -38,7 +38,7 @@ class XOpenCTIXOpenCTIIncidentsLines extends Component {
           ['xOpenCTIIncidents', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
-        LineComponent={<XOpenCTIXOpenCTIIncidentLine />}
+        LineComponent={<XOpenCTIIncidentLine />}
         DummyLineComponent={<XOpenCTIIncidentLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
@@ -48,18 +48,20 @@ class XOpenCTIXOpenCTIIncidentsLines extends Component {
   }
 }
 
-XOpenCTIXOpenCTIIncidentsLines.propTypes = {
+XOpenCTIIncidentsLines.propTypes = {
   classes: PropTypes.object,
   paginationOptions: PropTypes.object,
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
+  xOpenCTIIncidents: PropTypes.object,
   initialLoading: PropTypes.bool,
+  searchTerm: PropTypes.string,
   onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
-export const XOpenCTIIncidentsLinesQuery = graphql`
+export const xOpenCTIIncidentsLinesQuery = graphql`
   query XOpenCTIIncidentsLinesPaginationQuery(
     $search: String
     $count: Int!
@@ -81,7 +83,7 @@ export const XOpenCTIIncidentsLinesQuery = graphql`
 `;
 
 export default createPaginationContainer(
-  XOpenCTIXOpenCTIIncidentsLines,
+  XOpenCTIIncidentsLines,
   {
     data: graphql`
       fragment XOpenCTIIncidentsLines_data on Query
@@ -121,7 +123,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.XOpenCTIIncidents;
+      return props.data && props.data.xOpenCTIIncidents;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -139,6 +141,6 @@ export default createPaginationContainer(
         filters: fragmentVariables.filters,
       };
     },
-    query: XOpenCTIIncidentsLinesQuery,
+    query: xOpenCTIIncidentsLinesQuery,
   },
 );
