@@ -914,6 +914,12 @@ class OpenCTIStix2:
         if LocationTypes.has_value(entity["entity_type"]):
             entity["entity_type"] = "Location"
 
+        # Indicators
+        if "pattern" in entity and "x-opencti-hostname" in entity["pattern"]:
+            entity["pattern"] = entity["pattern"].replace(
+                "x-opencti-hostname", "domain-name"
+            )
+
         # Flatten
         if "objectLabel" in entity and len(entity["objectLabel"]) > 0:
             entity["labels"] = []
@@ -958,6 +964,11 @@ class OpenCTIStix2:
         if "externalReferences" in entity:
             del entity["externalReferences"]
             del entity["externalReferencesIds"]
+        if "hashes" in entity:
+            hashes = entity["hashes"]
+            entity["hashes"] = {}
+            for hash in hashes:
+                entity["hashes"][hash["algorithm"]] = hash["hash"]
 
         # Final
         entity["x_opencti_id"] = entity["id"]
