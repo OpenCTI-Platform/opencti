@@ -5,11 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
-import Security, {
-  KNOWLEDGE,
-  MODULES,
-  SETTINGS,
-} from '../../../utils/Security';
+import Security, { KNOWLEDGE, MODULES } from '../../../utils/Security';
 
 const styles = (theme) => ({
   button: {
