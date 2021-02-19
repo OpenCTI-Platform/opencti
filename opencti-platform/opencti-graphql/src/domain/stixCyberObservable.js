@@ -150,12 +150,14 @@ const createIndicatorFromObservable = async (user, input, observable) => {
     const entityType = observable.entity_type;
     let key = entityType;
     if (isStixCyberObservableHashedObservable(entityType)) {
-      if (observable.hashes['SHA-256']) {
-        key = `${entityType}_sha256`;
-      } else if (observable.hashes['SHA-1']) {
-        key = `${entityType}_sha1`;
-      } else if (observable.hashes.MD5) {
-        key = `${entityType}_md5`;
+      if (observable.hashes) {
+        if (observable.hashes['SHA-256']) {
+          key = `${entityType}_sha256`;
+        } else if (observable.hashes['SHA-1']) {
+          key = `${entityType}_sha1`;
+        } else if (observable.hashes.MD5) {
+          key = `${entityType}_md5`;
+        }
       } else if (observable.name) {
         key = `${entityType}_name`;
       }
