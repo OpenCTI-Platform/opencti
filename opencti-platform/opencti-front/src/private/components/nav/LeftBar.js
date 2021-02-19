@@ -29,7 +29,11 @@ import {
   GlobeModel,
 } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
-import Security, { KNOWLEDGE, SETTINGS } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE,
+  SETTINGS,
+  MODULES,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -186,7 +190,7 @@ const LeftBar = ({ t, location, classes }) => {
           </Collapse>
         </Security>
       </MenuList>
-      <Security needs={[SETTINGS]}>
+      <Security needs={[SETTINGS, MODULES, KNOWLEDGE]}>
         <Divider />
         <MenuList component="nav">
           <MenuItem
@@ -201,19 +205,21 @@ const LeftBar = ({ t, location, classes }) => {
             </ListItemIcon>
             <ListItemText primary={t('Data')} />
           </MenuItem>
-          <MenuItem
-            component={Link}
-            to="/dashboard/settings"
-            selected={location.pathname.includes('/dashboard/settings')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-            style={{ marginBottom: 50 }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <CogOutline />
-            </ListItemIcon>
-            <ListItemText primary={t('Settings')} />
-          </MenuItem>
+          <Security needs={[SETTINGS]}>
+            <MenuItem
+              component={Link}
+              to="/dashboard/settings"
+              selected={location.pathname.includes('/dashboard/settings')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+              style={{ marginBottom: 50 }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <CogOutline />
+              </ListItemIcon>
+              <ListItemText primary={t('Settings')} />
+            </MenuItem>
+          </Security>
         </MenuList>
       </Security>
     </Drawer>
