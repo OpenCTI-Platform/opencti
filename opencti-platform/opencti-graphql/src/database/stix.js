@@ -99,7 +99,8 @@ const BASIC_FIELDS = [
   'stop_time',
   'hashes',
 ];
-export const stixDataConverter = (data) => {
+export const stixDataConverter = (data, args = {}) => {
+  const { diffMode = true } = args;
   let finalData = data;
   // Relationships
   if (finalData.from) {
@@ -170,7 +171,7 @@ export const stixDataConverter = (data) => {
   } else {
     finalData = R.dissoc('externalReferences', finalData);
   }
-  // Final filtering
+  // Attributes filtering
   const filteredData = {};
   const entries = Object.entries(finalData);
   for (let index = 0; index < entries.length; index += 1) {
@@ -183,13 +184,27 @@ export const stixDataConverter = (data) => {
       filteredData[targetKey] = val;
     } else if (!isMultipleAttribute(key) && !key.endsWith('_refs')) {
       filteredData[key] = Array.isArray(val) ? R.head(val) : val;
-    } else {
+    } else if (diffMode) {
+      // In diff mode, empty values must be available
+      filteredData[key] = val;
+    } else if (!isMultipleAttribute(key) || val.length > 0) {
       filteredData[key] = val;
     }
   }
-  return filteredData;
+  // Add x_ in extension
+  // https://docs.oasis-open.org/cti/stix/v2.1/cs01/stix-v2.1-cs01.html#_ct36xlv6obo7
+  const dataEntries = Object.entries(filteredData);
+  const opencti = {};
+  for (let attr = 0; attr < dataEntries.length; attr += 1) {
+    const [key, val] = dataEntries[attr];
+    if (key.startsWith('x_opencti_')) {
+      opencti[key.substring('x_opencti_'.length)] = val;
+    }
+  }
+  return { ...filteredData, extensions: { x_opencti: opencti } };
 };
-export const buildStixData = (data, onlyBase = false) => {
+export const buildStixData = (data, args = {}) => {
+  const { onlyBase = false } = args;
   const type = data.entity_type;
   // general
   const rawData = R.pipe(
@@ -212,7 +227,7 @@ export const buildStixData = (data, onlyBase = false) => {
     R.dissoc('toType'),
     R.dissoc('connections')
   )(data);
-  const stixData = stixDataConverter(rawData);
+  const stixData = stixDataConverter(rawData, args);
   if (onlyBase) {
     return R.pick(BASIC_FIELDS, stixData);
   }
@@ -221,7 +236,7 @@ export const buildStixData = (data, onlyBase = false) => {
 
 export const convertStixMetaRelationshipToStix = (data) => {
   const entityType = data.entity_type;
-  let finalData = buildStixData(data.from, true);
+  let finalData = buildStixData(data.from, { onlyBase: true });
   if (isStixInternalMetaRelationship(entityType)) {
     finalData = R.assoc(entityType.replace('-', '_'), [buildStixData(data.to)], finalData);
   } else {
@@ -236,7 +251,7 @@ export const convertStixMetaRelationshipToStix = (data) => {
 
 export const convertStixCyberObservableRelationshipToStix = (data) => {
   const entityType = data.entity_type;
-  let finalData = buildStixData(data.from, true);
+  let finalData = buildStixData(data.from, { onlyBase: true });
   finalData = R.assoc(`${entityType.replace('-', '_')}_ref`, data.to.standard_id, finalData);
   return finalData;
 };
@@ -250,13 +265,13 @@ export const convertDataToStix = (data, type) => {
   const onlyBase = type === 'delete';
   let finalData;
   if (isStixObject(entityType)) {
-    finalData = buildStixData(data, onlyBase);
+    finalData = buildStixData(data, { onlyBase });
   }
   if (isStixCoreRelationship(entityType)) {
-    finalData = buildStixData(data, onlyBase);
+    finalData = buildStixData(data, { onlyBase });
   }
   if (isStixSightingRelationship(entityType)) {
-    finalData = buildStixData(data, onlyBase);
+    finalData = buildStixData(data, { onlyBase });
   }
   if (isStixMetaRelationship(entityType)) {
     finalData = convertStixMetaRelationshipToStix(data);

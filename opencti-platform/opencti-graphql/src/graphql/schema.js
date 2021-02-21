@@ -54,6 +54,7 @@ import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
 import typeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
+import taxiiResolvers from '../resolvers/taxii';
 
 const createSchema = () => {
   const globalResolvers = {
@@ -63,6 +64,7 @@ const createSchema = () => {
   const resolvers = mergeResolvers([
     // INTERNAL
     globalResolvers,
+    taxiiResolvers,
     logResolvers,
     rabbitmqMetricsResolvers,
     attributeResolvers,

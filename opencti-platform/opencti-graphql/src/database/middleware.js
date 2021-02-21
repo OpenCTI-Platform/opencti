@@ -56,7 +56,6 @@ import {
   normalizeName,
   REVOKED,
   VALID_UNTIL,
-  X_MITRE_ID_FIELD,
 } from '../schema/identifier';
 import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
 import {
@@ -69,6 +68,8 @@ import {
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
   BASE_TYPE_RELATION,
   ID_INTERNAL,
@@ -105,7 +106,6 @@ import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import {
   ATTRIBUTE_ALIASES,
   ATTRIBUTE_ALIASES_OPENCTI,
-  ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CONTAINER_REPORT,
   isStixDomainObject,
   isStixObjectAliased,
@@ -402,20 +402,25 @@ const transformRawRelationsToAttributes = (data) => {
   return R.mergeAll(Object.entries(R.groupBy((a) => a.i_relation.entity_type, data)).map(([k, v]) => ({ [k]: v })));
 };
 const loadElementDependencies = async (user, element, args = {}) => {
-  const { onlyMarking = true, fullResolve = false } = args;
+  const {
+    onlyMarking = true,
+    dependencyType = ABSTRACT_STIX_RELATIONSHIP,
+    fullResolve = false,
+    minSource = true,
+  } = args;
   const elementId = element.internal_id;
-  const relType = onlyMarking ? 'object-marking' : 'stix-relationship';
+  const relType = onlyMarking ? RELATION_OBJECT_MARKING : dependencyType;
   // Resolve all relations
   // noinspection ES6MissingAwait
-  const toRelationsPromise = fullResolve ? listAllRelations(user, relType, { toId: elementId, minSource: true }) : [];
-  const fromRelationsPromise = listAllRelations(user, relType, { fromId: elementId, minSource: true });
+  const toRelationsPromise = fullResolve ? listAllRelations(user, relType, { toId: elementId, minSource }) : [];
+  const fromRelationsPromise = listAllRelations(user, relType, { fromId: elementId, minSource });
   const [fromRelations, toRelations] = await Promise.all([fromRelationsPromise, toRelationsPromise]);
   const data = {};
   // Parallel resolutions
   const toResolvedIds = R.uniq(fromRelations.map((rel) => rel.toId));
   const fromResolvedIds = R.uniq(toRelations.map((rel) => rel.fromId));
-  const toResolvedPromise = elFindByIds(user, toResolvedIds, { toMap: true, minSource: true });
-  const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true, minSource: true });
+  const toResolvedPromise = elFindByIds(user, toResolvedIds, { toMap: true, minSource });
+  const fromResolvedPromise = elFindByIds(user, fromResolvedIds, { toMap: true, minSource });
   const [toResolved, fromResolved] = await Promise.all([toResolvedPromise, fromResolvedPromise]);
   if (fromRelations.length > 0) {
     // Put the row data in internal attributes
@@ -465,7 +470,12 @@ export const markedLoadById = async (user, id, type = null) => {
 };
 // Get element with every elements connected element -> rel -> to
 export const stixLoadById = async (user, id, type = null) => {
-  return loadByIdWithDependencies(user, id, type, { onlyMarking: false, fullResolve: false });
+  return loadByIdWithDependencies(user, id, type, {
+    dependencyType: ABSTRACT_STIX_META_RELATIONSHIP,
+    onlyMarking: false,
+    fullResolve: false,
+    minSource: false,
+  });
 };
 export const stixElementLoader = async (user, id, type) => {
   const element = await stixLoadById(user, id, type);

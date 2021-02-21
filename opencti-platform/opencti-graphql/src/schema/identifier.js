@@ -127,6 +127,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
     [I.ENTITY_TYPE_WORKSPACE]: [{ src: IDENTIFIER_FIELD }],
+    [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: X_MITRE_ID_FIELD }],
     [D.ENTITY_TYPE_CAMPAIGN]: [{ src: NAME_FIELD }],

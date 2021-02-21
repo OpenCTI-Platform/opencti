@@ -7,7 +7,7 @@ import { isStorageAlive } from './database/minio';
 import { rabbitMQIsAlive } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
-import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER } from './domain/user';
+import { ROLE_ADMINISTRATOR, ROLE_DEFAULT, STREAMAPI, SYSTEM_USER, TAXIIAPI } from './domain/user';
 import { addCapability, addRole } from './domain/grant';
 import { addAttribute } from './domain/attribute';
 import { checkPythonStix2 } from './python/pythonBridge';
@@ -63,6 +63,12 @@ export const CAPABILITIES = [
     description: 'Access connectors',
     attribute_order: 2000,
     dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
+  },
+  {
+    name: TAXIIAPI,
+    attribute_order: 2500,
+    description: 'Access Taxii feed',
+    dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
   },
   {
     name: 'SETTINGS',

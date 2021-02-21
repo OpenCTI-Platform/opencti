@@ -7,7 +7,7 @@ import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
 import Security, {
   SETTINGS_SETACCESSES,
-  SETTINGS_SETMARKINGS,
+  SETTINGS_SETMARKINGS, TAXIIAPI_SETCOLLECTIONS,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -124,6 +124,26 @@ class TopMenuSettings extends Component {
         >
           {t('Labels & Attributes')}
         </Button>
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+            <Button
+                component={Link}
+                to="/dashboard/settings/taxii"
+                variant={
+                    location.pathname.includes('/dashboard/settings/taxii')
+                      ? 'contained'
+                      : 'text'
+                }
+                size="small"
+                color={
+                    location.pathname.includes('/dashboard/settings/taxii')
+                      ? 'primary'
+                      : 'inherit'
+                }
+                classes={{ root: classes.button }}
+            >
+                {t('Taxii')}
+            </Button>
+        </Security>
       </div>
     );
   }

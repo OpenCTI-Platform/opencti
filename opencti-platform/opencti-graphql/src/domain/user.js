@@ -64,6 +64,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 
 export const STREAMAPI = 'STREAMAPI';
+export const TAXIIAPI = 'TAXIIAPI';
 export const ROLE_DEFAULT = 'Default';
 export const ROLE_ADMINISTRATOR = 'Administrator';
 export const SYSTEM_USER = {
@@ -348,6 +349,7 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
 
 export const loginFromProvider = async (email, name) => {
   const user = await elLoadBy(SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
+  console.log('loginFromProvider', user);
   if (!user) {
     const newUser = { name, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
