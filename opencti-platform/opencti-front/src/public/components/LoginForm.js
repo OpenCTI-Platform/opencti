@@ -31,6 +31,7 @@ const loginValidation = (t) => Yup.object().shape({
 const LoginForm = (props) => {
   const { classes, t, demo } = props;
   const onSubmit = (values, { setSubmitting, setErrors }) => {
+    alert('test');
     commitMutation({
       mutation: loginMutation,
       variables: {
@@ -74,10 +75,10 @@ const LoginForm = (props) => {
               style={{ marginTop: 20 }}
             />
             <Button
-              type="submit"
               variant="contained"
               color="primary"
               disabled={isSubmitting}
+              onClick={submitForm}
               style={{ marginTop: 30 }}
             >
               {t('Sign in')}
