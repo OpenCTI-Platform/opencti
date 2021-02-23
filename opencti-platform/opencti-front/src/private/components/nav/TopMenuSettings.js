@@ -124,26 +124,6 @@ class TopMenuSettings extends Component {
         >
           {t('Labels & Attributes')}
         </Button>
-        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-            <Button
-                component={Link}
-                to="/dashboard/settings/taxii"
-                variant={
-                    location.pathname.includes('/dashboard/settings/taxii')
-                      ? 'contained'
-                      : 'text'
-                }
-                size="small"
-                color={
-                    location.pathname.includes('/dashboard/settings/taxii')
-                      ? 'primary'
-                      : 'inherit'
-                }
-                classes={{ root: classes.button }}
-            >
-                {t('Taxii')}
-            </Button>
-        </Security>
       </div>
     );
   }

@@ -10,7 +10,6 @@ import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
 import Labels from './Labels';
 import { BoundaryRoute } from '../Error';
-import Taxii from './Taxii';
 
 const Root = () => (
   <Switch>
@@ -63,11 +62,6 @@ const Root = () => (
       exact
       path="/dashboard/settings/attributes/:attributeKey"
       component={Attributes}
-    />
-    <BoundaryRoute
-      exact
-      path="/dashboard/settings/taxii"
-      component={Taxii}
     />
   </Switch>
 );

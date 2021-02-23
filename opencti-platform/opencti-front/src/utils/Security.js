@@ -21,7 +21,7 @@ export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
 
-const granted = (me, capabilities, matchAll = false) => {
+export const granted = (me, capabilities, matchAll = false) => {
   const userCapabilities = map((c) => c.name, me.capabilities);
   if (userCapabilities.includes(BYPASS)) return true;
   const availableCapabilities = [];

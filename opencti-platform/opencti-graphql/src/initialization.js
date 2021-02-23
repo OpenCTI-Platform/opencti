@@ -21,6 +21,12 @@ import { BYPASS } from './schema/general';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
+export const TAXII_CAPABILITIES = {
+  name: TAXIIAPI,
+  attribute_order: 2500,
+  description: 'Access Taxii feed',
+  dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
+};
 export const CAPABILITIES = [
   { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 },
   {
@@ -64,18 +70,12 @@ export const CAPABILITIES = [
     attribute_order: 2000,
     dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
   },
-  {
-    name: TAXIIAPI,
-    attribute_order: 2500,
-    description: 'Access Taxii feed',
-    dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
-  },
+  TAXII_CAPABILITIES,
   {
     name: 'SETTINGS',
     description: 'Access administration',
     attribute_order: 3000,
     dependencies: [
-      { name: 'SETINFERENCES', description: 'Manage inference rules', attribute_order: 3100 },
       { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
       { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
     ],

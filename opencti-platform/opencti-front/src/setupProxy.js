@@ -14,6 +14,12 @@ module.exports = function (app) {
     })
   );
   app.use(
+    createProxyMiddleware("/taxii2", {
+      target: "http://localhost:4000",
+      onError,
+    })
+  );
+  app.use(
     createProxyMiddleware("/storage", {
       target: "http://localhost:4000",
       onError,

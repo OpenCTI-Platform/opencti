@@ -64,6 +64,7 @@ import Security, {
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
 import Filters from '../common/lists/Filters';
+import TopMenuApi from './TopMenuApi';
 
 const styles = (theme) => ({
   appBar: {
@@ -263,6 +264,9 @@ const TopBar = ({
             <TopMenuPosition />
           )}
           {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
+          {location.pathname.includes('/dashboard/api') && (
+              <TopMenuApi />
+          )}
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
           )}
