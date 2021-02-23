@@ -55,8 +55,8 @@ const userResolvers = {
   User: {
     groups: (current, _, { user }) => groupsLoader.load(current.id, user),
     roles: (current, _, { user }) => rolesLoader.load(current.id, user),
-    allowed_marking: (current, _, { user }) => getMarkings(user, current.id),
-    capabilities: (current, _, { user }) => getCapabilities(user, current.id),
+    allowed_marking: (current, _, { user }) => getMarkings(current.id, user.capabilities),
+    capabilities: (current) => getCapabilities(current.id),
     token: (current, _, { user }) => token(user, current.id),
     editContext: (current) => fetchEditContext(current.id),
   },

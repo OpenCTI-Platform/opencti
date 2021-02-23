@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import { map } from 'ramda';
 import {
   clearUserAccessCache,
   delEditContext,
@@ -132,16 +133,18 @@ export const batchRoles = async (user, userId) => {
   return batchListThroughGetTo(user, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
-export const getMarkings = async (user, userId) => {
+export const getMarkings = async (userId, capabilities) => {
   const userGroups = await listThroughGetTo(SYSTEM_USER, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const groupIds = userGroups.map((r) => r.id);
-  const userMarkingsPromise = listThroughGetTo(
-    SYSTEM_USER,
-    groupIds,
-    RELATION_ACCESSES_TO,
-    ENTITY_TYPE_MARKING_DEFINITION
-  );
-  const allMarkingsPromise = allMarkings(user).then((data) => R.map((i) => i.node, data.edges));
+  const userCapabilities = map((c) => c.name, capabilities);
+  const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
+  const allMarkingsPromise = allMarkings(SYSTEM_USER).then((data) => R.map((i) => i.node, data.edges));
+  let userMarkingsPromise;
+  if (shouldBypass) {
+    userMarkingsPromise = allMarkingsPromise;
+  } else {
+    userMarkingsPromise = listThroughGetTo(SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
+  }
   const [userMarkings, markings] = await Promise.all([userMarkingsPromise, allMarkingsPromise]);
   const computedMarkings = [];
   for (let index = 0; index < userMarkings.length; index += 1) {
@@ -157,10 +160,10 @@ export const getMarkings = async (user, userId) => {
   return R.uniqBy((m) => m.id, computedMarkings);
 };
 
-export const getCapabilities = async (user, userId) => {
-  const roles = await listThroughGetTo(user, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
+export const getCapabilities = async (userId) => {
+  const roles = await listThroughGetTo(SYSTEM_USER, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
   const roleIds = roles.map((r) => r.id);
-  const capabilities = await listThroughGetTo(user, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
+  const capabilities = await listThroughGetTo(SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY);
   if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
@@ -421,8 +424,8 @@ export const findByTokenUUID = async (tokenValue) => {
     const users = await listThroughGetFrom(SYSTEM_USER, userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
     if (users.length === 0 || users.length > 1) return undefined;
     const client = R.head(users);
-    const capabilities = await getCapabilities(SYSTEM_USER, client.id);
-    const markings = await getMarkings(SYSTEM_USER, client.id);
+    const capabilities = await getCapabilities(client.id);
+    const markings = await getMarkings(client.id, capabilities);
     user = { ...client, token: userToken, capabilities, allowed_marking: markings };
     await storeUserAccessCache(tokenValue, user);
   }
