@@ -31,7 +31,6 @@ const loginValidation = (t) => Yup.object().shape({
 const LoginForm = (props) => {
   const { classes, t, demo } = props;
   const onSubmit = (values, { setSubmitting, setErrors }) => {
-    alert('test');
     commitMutation({
       mutation: loginMutation,
       variables: {
