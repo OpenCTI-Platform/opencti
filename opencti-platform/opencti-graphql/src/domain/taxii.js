@@ -8,7 +8,7 @@ import { deleteElementById, listEntities, loadById, stixLoadById, updateAttribut
 import { buildStixData } from '../database/stix';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
-import { FunctionalError, MissingReferenceError, ResourceNotFoundError } from '../config/errors';
+import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 
@@ -98,7 +98,7 @@ const collectionQuery = async (user, collectionId, args) => {
     const filterEntries = Object.entries(filters);
     for (let index = 0; index < filterEntries.length; index += 1) {
       const [key, val] = filterEntries[index];
-      queryFilters.push({ key: GlobalFilters[key], values: [R.head(val).id] });
+      queryFilters.push({ key: GlobalFilters[key] || key, values: val.map((v) => v.id) });
     }
   }
   if (added_after) {

@@ -1,17 +1,23 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import { compose, pickAll } from 'ramda';
+import {
+  assoc,
+  compose, dissoc, last, map, pickAll, prop, toPairs, uniqBy,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 import IconButton from '@material-ui/core/IconButton';
 import { Close } from '@material-ui/icons';
 import * as Yup from 'yup';
+import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import Filters from '../../common/lists/Filters';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   header: {
@@ -61,40 +67,68 @@ const taxiiCollectionValidation = (t) => Yup.object().shape({
   description: Yup.string(),
 });
 
-class TaxiiCollectionEditionContainer extends Component {
-  handleSubmitField(name, value) {
-    taxiiCollectionValidation(this.props.t)
+const TaxiiCollectionEditionContainer = (props) => {
+  const {
+    t, classes, handleClose, taxiiCollection,
+  } = props;
+  const initialValues = pickAll(['name', 'description'], taxiiCollection);
+  const [filters, setFilters] = useState(JSON.parse(props.taxiiCollection.filters));
+  const handleSubmitField = (name, value) => {
+    taxiiCollectionValidation(props.t)
       .validateAt(name, { [name]: value })
       .then(() => {
         commitMutation({
           mutation: taxiiCollectionMutationFieldPatch,
           variables: {
-            id: this.props.taxiiCollection.id,
+            id: props.taxiiCollection.id,
             input: { key: name, value },
           },
         });
       })
       .catch(() => false);
-  }
+  };
+  const handleAddFilter = (key, id, value) => {
+    let newFilters;
+    if (filters[key] && filters[key].length > 0) {
+      newFilters = assoc(key, uniqBy(prop('id'), [{ id, value }, ...filters[key]]), filters);
+    } else {
+      newFilters = assoc(key, [{ id, value }], filters);
+    }
+    const jsonFilters = JSON.stringify(newFilters);
+    commitMutation({
+      mutation: taxiiCollectionMutationFieldPatch,
+      variables: {
+        id: props.taxiiCollection.id,
+        input: { key: 'filters', value: jsonFilters },
+      },
+      onCompleted: () => {
+        setFilters(newFilters);
+      },
+    });
+  };
+  const handleRemoveFilter = (key) => {
+    const newFilters = dissoc(key, filters);
+    const jsonFilters = JSON.stringify(newFilters);
+    const variables = {
+      id: props.taxiiCollection.id,
+      input: { key: 'filters', value: jsonFilters },
+    };
+    commitMutation({
+      mutation: taxiiCollectionMutationFieldPatch,
+      variables,
+      onCompleted: () => {
+        setFilters(newFilters);
+      },
+    });
+  };
 
-  render() {
-    const {
-      t, classes, handleClose, taxiiCollection,
-    } = this.props;
-    const initialValues = pickAll(
-      ['name', 'description'],
-      taxiiCollection,
-    );
-    console.log(initialValues);
-
-    return (
+  return (
       <div>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-          >
+            onClick={handleClose.bind(this)}>
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -115,7 +149,7 @@ class TaxiiCollectionEditionContainer extends Component {
                   name="name"
                   label={t('Collection name')}
                   fullWidth={true}
-                  onSubmit={this.handleSubmitField.bind(this)}
+                  onSubmit={handleSubmitField}
                 />
                 <Field
                   component={TextField}
@@ -123,16 +157,62 @@ class TaxiiCollectionEditionContainer extends Component {
                   label={t('Collection description')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
-                  onSubmit={this.handleSubmitField.bind(this)}
+                  onSubmit={handleSubmitField}
                 />
+                <div style={{ marginTop: 25 }}>
+                  <Filters availableFilterKeys={['entity_type', 'markedBy']}
+                      currentFilters={[]}
+                      handleAddFilter={handleAddFilter}
+                  />
+                  <div className={classes.filters}>
+                    {map((currentFilter) => {
+                      const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+                      const values = (
+                          <span>
+                              {map(
+                                (n) => (
+                                      <span key={n.value}>
+                                        {n.value && n.value.length > 0
+                                          ? truncate(n.value, 15)
+                                          : t('No label')}{' '}
+                                        {last(currentFilter[1]).value !== n.value && (
+                                            <code>OR</code>
+                                        )}{' '}
+                                      </span>
+                                ),
+                                currentFilter[1],
+                              )}
+                            </span>
+                      );
+                      return (
+                          <span>
+                              <Chip
+                                  key={currentFilter[0]}
+                                  classes={{ root: classes.filter }}
+                                  label={
+                                    <div>
+                                      <strong>{label}</strong>: {values}
+                                    </div>
+                                  }
+                                  onDelete={() => handleRemoveFilter(currentFilter[0])}/>
+                            {last(toPairs(filters))[0] !== currentFilter[0] && (
+                                <Chip
+                                    classes={{ root: classes.operator }}
+                                    label={t('AND')}
+                                />
+                            )}
+                            </span>
+                      );
+                    }, toPairs(filters))}
+                  </div>
+                </div>
               </Form>
             )}
           </Formik>
         </div>
       </div>
-    );
-  }
-}
+  );
+};
 
 TaxiiCollectionEditionContainer.propTypes = {
   handleClose: PropTypes.func,

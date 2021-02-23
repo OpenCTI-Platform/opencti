@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
@@ -8,13 +8,18 @@ import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
 import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
-import { assoc, compose, pipe } from 'ramda';
+import {
+  assoc, compose, dissoc, last, map, prop, toPairs, uniqBy,
+} from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
 import { ConnectionHandler } from 'relay-runtime';
+import Chip from '@material-ui/core/Chip';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import Filters from '../../common/lists/Filters';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -82,25 +87,24 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class TaxiiCollectionCreation extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const TaxiiCollectionCreation = (props) => {
+  const { t, classes } = props;
+  const [open, setOpen] = useState(false);
+  const [filters, setFilters] = useState({});
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
+  const handleOpen = () => {
+    setOpen(true);
+  };
+  const handleClose = () => {
+    setOpen(false);
+  };
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  onSubmit(values, { setSubmitting, resetForm }) {
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
+    const jsonFilters = JSON.stringify(filters);
     commitMutation({
       mutation: TaxiiCollectionCreationMutation,
       variables: {
-        input: values,
+        input: { ...values, filters: jsonFilters },
       },
       updater: (store) => {
         const payload = store.getRootField('taxiiCollectionAdd');
@@ -109,7 +113,7 @@ class TaxiiCollectionCreation extends Component {
         sharedUpdater(
           store,
           container.getDataID(),
-          this.props.paginationOptions,
+          props.paginationOptions,
           newEdge,
         );
       },
@@ -117,21 +121,30 @@ class TaxiiCollectionCreation extends Component {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.handleClose();
+        handleClose();
       },
     });
-  }
+  };
 
-  onReset() {
-    this.handleClose();
-  }
+  const onReset = () => {
+    handleClose();
+  };
 
-  render() {
-    const { t, classes } = this.props;
-    return (
+  const handleAddFilter = (key, id, value) => {
+    if (filters[key] && filters[key].length > 0) {
+      setFilters(assoc(key, uniqBy(prop('id'), [{ id, value }, ...filters[key]]), filters));
+    } else {
+      setFilters(assoc(key, [{ id, value }], filters));
+    }
+  };
+  const handleRemoveFilter = (key) => {
+    setFilters(dissoc(key, filters));
+  };
+
+  return (
       <div>
         <Fab
-          onClick={this.handleOpen.bind(this)}
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -139,21 +152,21 @@ class TaxiiCollectionCreation extends Component {
           <Add />
         </Fab>
         <Drawer
-          open={this.state.open}
+          open={open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          onClose={handleClose}
         >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
+              onClick={handleClose}
             >
               <Close fontSize="small" />
             </IconButton>
             <Typography variant="h6">
-              {t('Create a kill chain phase')}
+              {t('Create a Taxii collection')}
             </Typography>
           </div>
           <div className={classes.container}>
@@ -163,8 +176,8 @@ class TaxiiCollectionCreation extends Component {
                 description: '',
               }}
               validationSchema={taxiiCollectionCreationValidation(t)}
-              onSubmit={this.onSubmit.bind(this)}
-              onReset={this.onReset.bind(this)}
+              onSubmit={onSubmit}
+              onReset={onReset}
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
@@ -181,6 +194,53 @@ class TaxiiCollectionCreation extends Component {
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
+                  <div style={{ marginTop: 25 }}>
+                    <Filters availableFilterKeys={['entity_type', 'markedBy']}
+                        currentFilters={[]}
+                        handleAddFilter={handleAddFilter}
+                    />
+                    <div className={classes.filters}>
+                      {map((currentFilter) => {
+                        const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+                        const values = (
+                            <span>
+                              {map(
+                                (n) => (
+                                      <span key={n.value}>
+                                        {n.value && n.value.length > 0
+                                          ? truncate(n.value, 15)
+                                          : t('No label')}{' '}
+                                            {last(currentFilter[1]).value !== n.value && (
+                                                <code>OR</code>
+                                            )}{' '}
+                                      </span>
+                                ),
+                                currentFilter[1],
+                              )}
+                            </span>
+                        );
+                        return (
+                            <span>
+                              <Chip
+                                  key={currentFilter[0]}
+                                  classes={{ root: classes.filter }}
+                                  label={
+                                    <div>
+                                      <strong>{label}</strong>: {values}
+                                    </div>
+                                  }
+                                  onDelete={() => handleRemoveFilter(currentFilter[0])}/>
+                                        {last(toPairs(filters))[0] !== currentFilter[0] && (
+                                            <Chip
+                                                classes={{ root: classes.operator }}
+                                                label={t('AND')}
+                                            />
+                                        )}
+                            </span>
+                        );
+                      }, toPairs(filters))}
+                    </div>
+                  </div>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -206,9 +266,8 @@ class TaxiiCollectionCreation extends Component {
           </div>
         </Drawer>
       </div>
-    );
-  }
-}
+  );
+};
 
 TaxiiCollectionCreation.propTypes = {
   paginationOptions: PropTypes.object,

@@ -58,6 +58,7 @@ const taxiiCollectionEditionQuery = graphql`
       id
       name
       description
+      filters
     }
   }
 `;
