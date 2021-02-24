@@ -24,7 +24,6 @@ import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import Loader from '../components/Loader';
 import { UserContext } from '../utils/Security';
-import RootApi from './components/api/Root';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -142,7 +141,6 @@ const Root = () => {
                         path="/dashboard/settings"
                         component={RootSettings}
                       />
-                      <BoundaryRoute path="/dashboard/api" component={RootApi}/>
                       <BoundaryRoute
                         exact
                         path="/dashboard/profile"

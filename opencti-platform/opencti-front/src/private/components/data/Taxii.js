@@ -49,13 +49,16 @@ class Taxii extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '30%',
+        width: '15%',
         isSortable: true,
       },
       description: {
         label: 'Description',
-        width: '70%',
+        width: '20%',
         isSortable: true,
+      },
+      filters: {
+        label: 'Filters',
       },
     };
     return (

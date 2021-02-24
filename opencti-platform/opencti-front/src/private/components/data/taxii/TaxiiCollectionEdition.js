@@ -5,7 +5,14 @@ import { createFragmentContainer } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import {
   assoc,
-  compose, dissoc, last, map, pickAll, prop, toPairs, uniqBy,
+  compose,
+  dissoc,
+  last,
+  map,
+  pickAll,
+  prop,
+  toPairs,
+  uniqBy,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -47,6 +54,18 @@ const styles = (theme) => ({
   title: {
     float: 'left',
   },
+  filters: {
+    float: 'left',
+    margin: '-8px 0 0 -5px',
+  },
+  filter: {
+    marginRight: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    marginRight: 10,
+  },
 });
 
 const taxiiCollectionMutationFieldPatch = graphql`
@@ -72,7 +91,9 @@ const TaxiiCollectionEditionContainer = (props) => {
     t, classes, handleClose, taxiiCollection,
   } = props;
   const initialValues = pickAll(['name', 'description'], taxiiCollection);
-  const [filters, setFilters] = useState(JSON.parse(props.taxiiCollection.filters));
+  const [filters, setFilters] = useState(
+    JSON.parse(props.taxiiCollection.filters),
+  );
   const handleSubmitField = (name, value) => {
     taxiiCollectionValidation(props.t)
       .validateAt(name, { [name]: value })
@@ -90,7 +111,11 @@ const TaxiiCollectionEditionContainer = (props) => {
   const handleAddFilter = (key, id, value) => {
     let newFilters;
     if (filters[key] && filters[key].length > 0) {
-      newFilters = assoc(key, uniqBy(prop('id'), [{ id, value }, ...filters[key]]), filters);
+      newFilters = assoc(
+        key,
+        uniqBy(prop('id'), [{ id, value }, ...filters[key]]),
+        filters,
+      );
     } else {
       newFilters = assoc(key, [{ id, value }], filters);
     }
@@ -123,94 +148,106 @@ const TaxiiCollectionEditionContainer = (props) => {
   };
 
   return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
-            <Close fontSize="small" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a taxii collection')}
-          </Typography>
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={taxiiCollectionValidation(t)}
-          >
-            {() => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  name="name"
-                  label={t('Collection name')}
-                  fullWidth={true}
-                  onSubmit={handleSubmitField}
-                />
-                <Field
-                  component={TextField}
-                  name="description"
-                  label={t('Collection description')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                  onSubmit={handleSubmitField}
-                />
-                <div style={{ marginTop: 25 }}>
-                  <Filters availableFilterKeys={['entity_type', 'markedBy']}
-                      currentFilters={[]}
-                      handleAddFilter={handleAddFilter}
-                  />
-                  <div className={classes.filters}>
-                    {map((currentFilter) => {
-                      const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-                      const values = (
-                          <span>
-                              {map(
-                                (n) => (
-                                      <span key={n.value}>
-                                        {n.value && n.value.length > 0
-                                          ? truncate(n.value, 15)
-                                          : t('No label')}{' '}
-                                        {last(currentFilter[1]).value !== n.value && (
-                                            <code>OR</code>
-                                        )}{' '}
-                                      </span>
-                                ),
-                                currentFilter[1],
-                              )}
-                            </span>
-                      );
-                      return (
-                          <span>
-                              <Chip
-                                  key={currentFilter[0]}
-                                  classes={{ root: classes.filter }}
-                                  label={
-                                    <div>
-                                      <strong>{label}</strong>: {values}
-                                    </div>
-                                  }
-                                  onDelete={() => handleRemoveFilter(currentFilter[0])}/>
-                            {last(toPairs(filters))[0] !== currentFilter[0] && (
-                                <Chip
-                                    classes={{ root: classes.operator }}
-                                    label={t('AND')}
-                                />
-                            )}
-                            </span>
-                      );
-                    }, toPairs(filters))}
-                  </div>
-                </div>
-              </Form>
-            )}
-          </Formik>
-        </div>
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose.bind(this)}
+        >
+          <Close fontSize="small" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update a TAXII collection')}
+        </Typography>
+        <div className="clearfix" />
       </div>
+      <div className={classes.container}>
+        <Formik
+          enableReinitialize={true}
+          initialValues={initialValues}
+          validationSchema={taxiiCollectionValidation(t)}
+        >
+          {() => (
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={TextField}
+                name="name"
+                label={t('Collection name')}
+                fullWidth={true}
+                onSubmit={handleSubmitField}
+              />
+              <Field
+                component={TextField}
+                name="description"
+                label={t('Collection description')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onSubmit={handleSubmitField}
+              />
+              <div style={{ marginTop: 35 }}>
+                <Filters
+                  variant="text"
+                  availableFilterKeys={[
+                    'entity_type',
+                    'markedBy',
+                    'labelledBy',
+                    'createdBy',
+                  ]}
+                  currentFilters={[]}
+                  handleAddFilter={handleAddFilter}
+                />
+                <div className={classes.filters}>
+                  {map((currentFilter) => {
+                    const label = `${truncate(
+                      t(`filter_${currentFilter[0]}`),
+                      20,
+                    )}`;
+                    const values = (
+                      <span>
+                        {map(
+                          (n) => (
+                            <span key={n.value}>
+                              {n.value && n.value.length > 0
+                                ? truncate(n.value, 15)
+                                : t('No label')}{' '}
+                              {last(currentFilter[1]).value !== n.value && (
+                                <code>OR</code>
+                              )}{' '}
+                            </span>
+                          ),
+                          currentFilter[1],
+                        )}
+                      </span>
+                    );
+                    return (
+                      <span>
+                        <Chip
+                          key={currentFilter[0]}
+                          classes={{ root: classes.filter }}
+                          label={
+                            <div>
+                              <strong>{label}</strong>: {values}
+                            </div>
+                          }
+                          onDelete={() => handleRemoveFilter(currentFilter[0])}
+                        />
+                        {last(toPairs(filters))[0] !== currentFilter[0] && (
+                          <Chip
+                            classes={{ root: classes.operator }}
+                            label={t('AND')}
+                          />
+                        )}
+                      </span>
+                    );
+                  }, toPairs(filters))}
+                </div>
+              </div>
+            </Form>
+          )}
+        </Formik>
+      </div>
+    </div>
   );
 };
 

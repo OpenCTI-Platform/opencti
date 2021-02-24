@@ -19,7 +19,6 @@ import {
   ExpandMore,
 } from '@material-ui/icons';
 import {
-  CallSplit,
   CogOutline,
   Database,
   Binoculars,
@@ -33,7 +32,10 @@ import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE,
   SETTINGS,
-  MODULES, TAXIIAPI_SETCOLLECTIONS, UserContext, granted,
+  MODULES,
+  TAXIIAPI_SETCOLLECTIONS,
+  UserContext,
+  granted,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -71,6 +73,14 @@ const LeftBar = ({ t, location, classes }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
+  let toData = null;
+  if (granted(me, [MODULES])) {
+    toData = '/dashboard/data/connectors';
+  } else if (granted(me, [KNOWLEDGE])) {
+    toData = '/dashboard/data/curation';
+  } else {
+    toData = '/dashboard/data/taxii';
+  }
   return (
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
       <Toolbar />
@@ -195,29 +205,18 @@ const LeftBar = ({ t, location, classes }) => {
       <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
         <MenuList component="nav">
-          <Security needs={[MODULES, KNOWLEDGE]}>
+          <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
             <MenuItem
               component={Link}
-              to={ granted(me, [MODULES]) ? '/dashboard/data/connectors' : '/dashboard/data/curation' }
+              to={toData}
               selected={location.pathname.includes('/dashboard/data')}
               dense={false}
-              classes={{ root: classes.menuItem }}>
+              classes={{ root: classes.menuItem }}
+            >
               <ListItemIcon style={{ minWidth: 35 }}>
                 <Database />
               </ListItemIcon>
               <ListItemText primary={t('Data')} />
-            </MenuItem>
-          </Security>
-          <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
-            <MenuItem component={Link}
-                to="/dashboard/api/taxii"
-                selected={location.pathname.includes('/dashboard/api')}
-                dense={false}
-                classes={{ root: classes.menuItem }}>
-              <ListItemIcon style={{ minWidth: 35 }}>
-                <CallSplit />
-              </ListItemIcon>
-              <ListItemText primary={t('Api')} />
             </MenuItem>
           </Security>
           <Security needs={[SETTINGS]}>

@@ -7,7 +7,7 @@ import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
 import Security, {
   SETTINGS_SETACCESSES,
-  SETTINGS_SETMARKINGS, TAXIIAPI_SETCOLLECTIONS,
+  SETTINGS_SETMARKINGS,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({

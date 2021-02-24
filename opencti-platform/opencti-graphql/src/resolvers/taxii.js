@@ -11,7 +11,7 @@ import {
 const taxiiResolvers = {
   Query: {
     taxiiCollection: (_, { id }, { user }) => findById(user, id),
-    taxiiCollections: (_, __, { user }) => findAll(user),
+    taxiiCollections: (_, args, { user }) => findAll(user, args),
   },
   Mutation: {
     taxiiCollectionAdd: (_, { input }, { user }) => createTaxiiCollection(user, input),

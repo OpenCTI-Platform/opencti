@@ -8,16 +8,26 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import { MoreVert } from '@material-ui/icons';
-import { Launch } from 'mdi-material-ui';
-import { compose } from 'ramda';
-import inject18n from '../../../../components/i18n';
+import { DatabaseExportOutline } from 'mdi-material-ui';
+import {
+  compose, last, map, toPairs,
+} from 'ramda';
+import Chip from '@material-ui/core/Chip';
+import Slide from '@material-ui/core/Slide';
+import { Link } from 'react-router-dom';
+import { truncate } from '../../../../utils/String';
 import TaxiiPopover from './TaxiiPopover';
+import inject18n from '../../../../components/i18n';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -42,17 +52,37 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  filter: {
+    fontSize: 12,
+    lineHeight: '12px',
+    height: 20,
+    marginRight: 7,
+    borderRadius: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    height: 20,
+    marginRight: 10,
+  },
 });
 
 class TaxiiLineLineComponent extends Component {
   render() {
     const {
-      classes, node, dataColumns, paginationOptions,
+      t, classes, node, dataColumns, paginationOptions,
     } = this.props;
+    const filters = JSON.parse(node.filters);
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component='a'
+        href={`/taxii2/root/collections/${node.id}/objects`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <Launch />
+          <DatabaseExportOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -69,13 +99,60 @@ class TaxiiLineLineComponent extends Component {
               >
                 {node.description}
               </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                {map((currentFilter) => {
+                  const label = `${truncate(
+                    t(`filter_${currentFilter[0]}`),
+                    20,
+                  )}`;
+                  const values = (
+                    <span>
+                      {map(
+                        (n) => (
+                          <span key={n.value}>
+                            {n.value && n.value.length > 0
+                              ? truncate(n.value, 15)
+                              : t('No label')}{' '}
+                            {last(currentFilter[1]).value !== n.value && (
+                              <code>OR</code>
+                            )}{' '}
+                          </span>
+                        ),
+                        currentFilter[1],
+                      )}
+                    </span>
+                  );
+                  return (
+                    <span>
+                      <Chip
+                        key={currentFilter[0]}
+                        classes={{ root: classes.filter }}
+                        label={
+                          <div>
+                            <strong>{label}</strong>: {values}
+                          </div>
+                        }
+                      />
+                      {last(toPairs(filters))[0] !== currentFilter[0] && (
+                        <Chip
+                          classes={{ root: classes.operator }}
+                          label={t('AND')}
+                        />
+                      )}
+                    </span>
+                  );
+                }, toPairs(filters))}
+              </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
           <TaxiiPopover
-              taxiiCollectionId={node.id}
-              paginationOptions={paginationOptions}
+            taxiiCollectionId={node.id}
+            paginationOptions={paginationOptions}
           />
         </ListItemSecondaryAction>
       </ListItem>
@@ -92,18 +169,16 @@ TaxiiLineLineComponent.propTypes = {
   fd: PropTypes.func,
 };
 
-const TaxiiLineFragment = createFragmentContainer(
-  TaxiiLineLineComponent,
-  {
-    node: graphql`
-      fragment TaxiiLine_node on TaxiiCollection {
-        id
-        name
-        description
-      }
-    `,
-  },
-);
+const TaxiiLineFragment = createFragmentContainer(TaxiiLineLineComponent, {
+  node: graphql`
+    fragment TaxiiLine_node on TaxiiCollection {
+      id
+      name
+      description
+      filters
+    }
+  `,
+});
 
 export const TaxiiLine = compose(
   inject18n,
@@ -116,7 +191,7 @@ class TaxiiDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Launch />
+          <DatabaseExportOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -132,6 +207,12 @@ class TaxiiDummyComponent extends Component {
                 style={{ width: dataColumns.description.width }}
               >
                 <div className="fakeItem" style={{ width: '70%' }} />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.filters.width }}
+              >
+                <div className="fakeItem" style={{ width: '80%' }} />
               </div>
             </div>
           }

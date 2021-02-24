@@ -6,7 +6,7 @@ import { generateStandardId } from '../schema/identifier';
 
 export const up = async (next) => {
   // Create taxii capabilities
-  await createCapabilities(TAXII_CAPABILITIES);
+  await createCapabilities([TAXII_CAPABILITIES]);
   // Delete old inference capability
   const inferenceCapabilityId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'SETTINGS_SETINFERENCES' });
   await deleteElementById(SYSTEM_USER, inferenceCapabilityId, ENTITY_TYPE_CAPABILITY);

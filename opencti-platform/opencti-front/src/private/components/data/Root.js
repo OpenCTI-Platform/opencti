@@ -2,6 +2,7 @@ import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import Connectors from './Connectors';
 import Curation from './Curation';
+import Taxii from './Taxii';
 import { BoundaryRoute } from '../Error';
 import RootConnector from './connectors/Root';
 
@@ -22,6 +23,7 @@ const Root = () => (
       render={(routeProps) => <RootConnector {...routeProps} />}
     />
     <BoundaryRoute exact path="/dashboard/data/curation" component={Curation} />
+    <BoundaryRoute exact path="/dashboard/data/taxii" component={Taxii} />
   </Switch>
 );
 
