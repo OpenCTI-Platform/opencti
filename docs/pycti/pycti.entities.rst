@@ -30,7 +30,7 @@ Submodules
    pycti.entities.opencti_stix_domain_object
    pycti.entities.opencti_stix_entity
    pycti.entities.opencti_stix_observable
-   pycti.entities.opencti_stix_observable_relation
+   pycti.entities.opencti_stix_observable_relationship
    pycti.entities.opencti_stix_relation
    pycti.entities.opencti_stix_sighting
    pycti.entities.opencti_tag

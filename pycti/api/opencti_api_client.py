@@ -25,8 +25,8 @@ from pycti.entities.opencti_stix_domain_object import StixDomainObject
 from pycti.entities.opencti_stix_cyber_observable import StixCyberObservable
 from pycti.entities.opencti_stix_core_relationship import StixCoreRelationship
 from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
-from pycti.entities.opencti_stix_cyber_observable_relation import (
-    StixCyberObservableRelation,
+from pycti.entities.opencti_stix_cyber_observable_relationship import (
+    StixCyberObservableRelationship,
 )
 from pycti.entities.opencti_identity import Identity
 from pycti.entities.opencti_location import Location
@@ -119,7 +119,7 @@ class OpenCTIApiClient:
         self.stix_cyber_observable = StixCyberObservable(self, File)
         self.stix_core_relationship = StixCoreRelationship(self)
         self.stix_sighting_relationship = StixSightingRelationship(self)
-        self.stix_observable_relation = StixCyberObservableRelation(self)
+        self.stix_observable_relationship = StixCyberObservableRelationship(self)
         self.identity = Identity(self)
         self.location = Location(self)
         self.threat_actor = ThreatActor(self)
