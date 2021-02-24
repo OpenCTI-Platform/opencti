@@ -1,41 +1,46 @@
 # coding: utf-8
 
 
-class StixCyberObservableRelation:
+class StixCyberObservableRelationship:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
             id
-            stix_id
             entity_type
-            relationship_type
-            description
-            weight
-            role_played
-            first_seen
-            last_seen
-            created
-            modified
+            parent_types
+            spec_version
             created_at
             updated_at
+            standard_id
+            relationship_type
+            start_time
+            stop_time
+            revoked
+            confidence
+            lang
+            created
+            modified
             from {
                 id
-                stix_id
+                standard_id
                 entity_type
+                parent_types
                 observable_value
             }
             to {
                 id
-                stix_id
+                standard_id
                 entity_type
+                parent_types
                 observable_value
             }
-            createdBy {
-                node {
+                        createdBy {
+                ... on Identity {
                     id
+                    standard_id
                     entity_type
-                    stix_id
-                    stix_label
+                    parent_types
+                    spec_version
                     name
                     description
                     roles
@@ -43,63 +48,40 @@ class StixCyberObservableRelation:
                     x_opencti_aliases
                     created
                     modified
+                    objectLabel {
+                        edges {
+                            node {
+                                id
+                                value
+                                color
+                            }
+                        }
+                    }                    
                 }
-                relation {
-                    id
+                ... on Organization {
+                    x_opencti_organization_type
+                    x_opencti_reliability
                 }
-            }
-            markingDefinitions {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        stix_id
-                        definition_type
-                        definition
-                        level
-                        color
-                        created
-                        modified
-                    }
-                    relation {
-                       id
-                    }
-                }
-            }
-            externalReferences {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        stix_id
-                        source_name
-                        description
-                        url
-                        hash
-                        external_id
-                        created
-                        modified
-                    }
-                    relation {
-                        id
-                    }
+                ... on Individual {
+                    x_opencti_firstname
+                    x_opencti_lastname
                 }
             }
         """
 
     """
-        List stix_observable_relation objects
+        List stix_observable_relationship objects
 
         :param fromId: the id of the source entity of the relation
         :param toId: the id of the target entity of the relation
         :param relationship_type: the relation type
-        :param firstSeenStart: the first_seen date start filter
-        :param firstSeenStop: the first_seen date stop filter
-        :param lastSeenStart: the last_seen date start filter
-        :param lastSeenStop: the last_seen date stop filter
+        :param startTimeStart: the first_seen date start filter
+        :param startTimeStop: the first_seen date stop filter
+        :param stopTimeStart: the last_seen date start filter
+        :param stopTimeStop: the last_seen date stop filter
         :param first: return the first n rows from the after ID (or the beginning if not set)
         :param after: ID of the first row for pagination
-        :return List of stix_observable_relation objects
+        :return List of stix_observable_relationship objects
     """
 
     def list(self, **kwargs):
@@ -108,10 +90,10 @@ class StixCyberObservableRelation:
         to_id = kwargs.get("toId", None)
         to_types = kwargs.get("toTypes", None)
         relationship_type = kwargs.get("relationship_type", None)
-        first_seen_start = kwargs.get("firstSeenStart", None)
-        first_seen_stop = kwargs.get("firstSeenStop", None)
-        last_seen_start = kwargs.get("lastSeenStart", None)
-        last_seen_stop = kwargs.get("lastSeenStop", None)
+        first_seen_start = kwargs.get("startTimeStart", None)
+        first_seen_stop = kwargs.get("startTimeStop", None)
+        last_seen_start = kwargs.get("stopTimeStart", None)
+        last_seen_stop = kwargs.get("stopTimeStop", None)
         first = kwargs.get("first", 500)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
@@ -123,7 +105,7 @@ class StixCyberObservableRelation:
 
         self.opencti.log(
             "info",
-            "Listing stix_observable_relations with {type: "
+            "Listing stix_observable_relationships with {type: "
             + str(relationship_type)
             + ", from_id: "
             + str(from_id)
@@ -133,8 +115,8 @@ class StixCyberObservableRelation:
         )
         query = (
             """
-            query StixCyberObservableRelations($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $firstSeenStart: DateTime, $firstSeenStop: DateTime, $lastSeenStart: DateTime, $lastSeenStop: DateTime, $first: Int, $after: ID, $orderBy: StixCyberObservableRelationsOrdering, $orderMode: OrderingMode) {
-                StixCyberObservableRelations(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, firstSeenStart: $firstSeenStart, firstSeenStop: $firstSeenStop, lastSeenStart: $lastSeenStart, lastSeenStop: $lastSeenStop, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query StixCyberObservableRelationships($fromId: String, $fromTypes: [String], $toId: String, $toTypes: [String], $relationship_type: String, $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $first: Int, $after: ID, $orderBy: StixCyberObservableRelationshipsOrdering, $orderMode: OrderingMode) {
+                StixCyberObservableRelationships(fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -162,10 +144,10 @@ class StixCyberObservableRelation:
                 "toId": to_id,
                 "toTypes": to_types,
                 "relationship_type": relationship_type,
-                "firstSeenStart": first_seen_start,
-                "firstSeenStop": first_seen_stop,
-                "lastSeenStart": last_seen_start,
-                "lastSeenStop": last_seen_stop,
+                "Start": first_seen_start,
+                "startTimeStop": first_seen_stop,
+                "stopTimeStart": last_seen_start,
+                "stopTimeStop": last_seen_stop,
                 "first": first,
                 "after": after,
                 "orderBy": order_by,
@@ -173,22 +155,22 @@ class StixCyberObservableRelation:
             },
         )
         return self.opencti.process_multiple(
-            result["data"]["StixCyberObservableRelations"], with_pagination
+            result["data"]["StixCyberObservableRelationships"], with_pagination
         )
 
     """
-        Read a stix_observable_relation object
+        Read a stix_observable_relationship object
 
-        :param id: the id of the stix_observable_relation
-        :param stix_id: the STIX id of the stix_observable_relation
+        :param id: the id of the stix_observable_relationship
+        :param stix_id: the STIX id of the stix_observable_relationship
         :param fromId: the id of the source entity of the relation
         :param toId: the id of the target entity of the relation
         :param relationship_type: the relation type
-        :param firstSeenStart: the first_seen date start filter
-        :param firstSeenStop: the first_seen date stop filter
-        :param lastSeenStart: the last_seen date start filter
-        :param lastSeenStop: the last_seen date stop filter
-        :return stix_observable_relation object
+        :param startTimeStart: the first_seen date start filter
+        :param startTimeStop: the first_seen date stop filter
+        :param stopTimeStart: the last_seen date start filter
+        :param stopTimeStop: the last_seen date stop filter
+        :return stix_observable_relationship object
     """
 
     def read(self, **kwargs):
@@ -196,17 +178,19 @@ class StixCyberObservableRelation:
         from_id = kwargs.get("fromId", None)
         to_id = kwargs.get("toId", None)
         relationship_type = kwargs.get("relationship_type", None)
-        first_seen_start = kwargs.get("firstSeenStart", None)
-        first_seen_stop = kwargs.get("firstSeenStop", None)
-        last_seen_start = kwargs.get("lastSeenStart", None)
-        last_seen_stop = kwargs.get("lastSeenStop", None)
+        first_seen_start = kwargs.get("startTimeStart", None)
+        first_seen_stop = kwargs.get("startTimeStop", None)
+        last_seen_start = kwargs.get("stopTimeStart", None)
+        last_seen_stop = kwargs.get("stopTimeStop", None)
         custom_attributes = kwargs.get("customAttributes", None)
         if id is not None:
-            self.opencti.log("info", "Reading stix_observable_relation {" + id + "}.")
+            self.opencti.log(
+                "info", "Reading stix_observable_relationship {" + id + "}."
+            )
             query = (
                 """
-                query StixCyberObservableRelation($id: String!) {
-                    StixCyberObservableRelation(id: $id) {
+                query StixCyberObservableRelationship($id: String!) {
+                    StixCyberObservableRelationship(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -220,17 +204,17 @@ class StixCyberObservableRelation:
             )
             result = self.opencti.query(query, {"id": id})
             return self.opencti.process_multiple_fields(
-                result["data"]["StixCyberObservableRelation"]
+                result["data"]["StixCyberObservableRelationship"]
             )
         else:
             result = self.list(
                 fromId=from_id,
                 toId=to_id,
                 relationship_type=relationship_type,
-                firstSeenStart=first_seen_start,
-                firstSeenStop=first_seen_stop,
-                lastSeenStart=last_seen_start,
-                lastSeenStop=last_seen_stop,
+                startTimeStart=first_seen_start,
+                startTimeStop=first_seen_stop,
+                stopTimeStart=last_seen_start,
+                stopTimeStop=last_seen_stop,
             )
             if len(result) > 0:
                 return result[0]
@@ -238,10 +222,10 @@ class StixCyberObservableRelation:
                 return None
 
     """
-        Create a stix_observable_relation object
+        Create a stix_observable_relationship object
 
         :param from_id: id of the source entity
-        :return stix_observable_relation object
+        :return stix_observable_relationship object
     """
 
     def create(self, **kwargs):
@@ -251,11 +235,8 @@ class StixCyberObservableRelation:
         to_role = kwargs.get("toRole", None)
         relationship_type = kwargs.get("relationship_type", None)
         description = kwargs.get("description", None)
-        role_played = kwargs.get("role_played", None)
-        first_seen = kwargs.get("first_seen", None)
-        last_seen = kwargs.get("last_seen", None)
-        weight = kwargs.get("weight", None)
-        id = kwargs.get("id", None)
+        start_time = kwargs.get("start_time", None)
+        stop_time = kwargs.get("stop_time", None)
         stix_id = kwargs.get("stix_id", None)
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
@@ -265,7 +246,7 @@ class StixCyberObservableRelation:
 
         self.opencti.log(
             "info",
-            "Creating stix_observable_relation {"
+            "Creating stix_observable_relationship {"
             + from_role
             + ": "
             + from_id
@@ -276,10 +257,10 @@ class StixCyberObservableRelation:
             + "}.",
         )
         query = """
-                mutation StixCyberObservableRelationAdd($input: StixCyberObservableStixMetaRelationshipAddInput!) {
-                    StixCyberObservableRelationAdd(input: $input) {
+                mutation StixCyberObservableRelationshipAdd($input: StixCyberObservableStixMetaRelationshipAddInput!) {
+                    StixCyberObservableRelationshipAdd(input: $input) {
                         id
-                        stix_id
+                        standard_id
                         entity_type
                         parent_types
                     }
@@ -290,16 +271,11 @@ class StixCyberObservableRelation:
             {
                 "input": {
                     "fromId": from_id,
-                    "fromRole": from_role,
                     "toId": to_id,
-                    "toRole": to_role,
                     "relationship_type": relationship_type,
                     "description": description,
-                    "role_played": role_played,
-                    "first_seen": first_seen,
-                    "last_seen": last_seen,
-                    "weight": weight,
-                    "internal_id_key": id,
+                    "start_time": start_time,
+                    "stop_time": stop_time,
                     "stix_id": stix_id,
                     "created": created,
                     "modified": modified,
@@ -310,16 +286,16 @@ class StixCyberObservableRelation:
             },
         )
         return self.opencti.process_multiple_fields(
-            result["data"]["StixCyberObservableRelationAdd"]
+            result["data"]["StixCyberObservableRelationshipAdd"]
         )
 
     """
-        Update a stix_observable_relation object field
+        Update a stix_observable_relationship object field
 
-        :param id: the stix_observable_relation id
+        :param id: the stix_observable_relationship id
         :param key: the key of the field
         :param value: the value of the field
-        :return The updated stix_observable_relation object
+        :return The updated stix_observable_relationship object
     """
 
     def update_field(self, **kwargs):
@@ -329,12 +305,16 @@ class StixCyberObservableRelation:
         if id is not None and key is not None and value is not None:
             self.opencti.log(
                 "info",
-                "Updating stix_observable_relation {" + id + "} field {" + key + "}.",
+                "Updating stix_observable_relationship {"
+                + id
+                + "} field {"
+                + key
+                + "}.",
             )
             query = (
                 """
-                mutation StixCyberObservableRelationEdit($id: ID!, $input: EditInput!) {
-                    StixCyberObservableRelationEdit(id: $id) {
+                mutation StixCyberObservableRelationshipEdit($id: ID!, $input: EditInput!) {
+                    StixCyberObservableRelationshipEdit(id: $id) {
                         fieldPatch(input: $input) {
                             """
                 + self.properties
@@ -348,7 +328,7 @@ class StixCyberObservableRelation:
                 query, {"id": id, "input": {"key": key, "value": value}}
             )
             return self.opencti.process_multiple_fields(
-                result["data"]["StixCyberObservableRelationEdit"]["fieldPatch"]
+                result["data"]["StixCyberObservableRelationshipEdit"]["fieldPatch"]
             )
         else:
             self.opencti.log("error", "Missing parameters: id and key and value")
