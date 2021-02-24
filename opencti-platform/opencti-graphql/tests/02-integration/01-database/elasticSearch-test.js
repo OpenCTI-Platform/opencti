@@ -1,5 +1,5 @@
 /* eslint-disable no-underscore-dangle */
-import { assoc, find, head, includes, map, propEq, uniq } from 'ramda';
+import { assoc, find, head, map, propEq, uniq } from 'ramda';
 import moment from 'moment';
 import {
   elAggregationCount,
