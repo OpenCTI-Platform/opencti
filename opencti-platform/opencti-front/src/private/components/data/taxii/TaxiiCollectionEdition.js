@@ -153,7 +153,7 @@ const TaxiiCollectionEditionContainer = (props) => {
         <IconButton
           aria-label="Close"
           className={classes.closeButton}
-          onClick={handleClose.bind(this)}
+          onClick={handleClose}
         >
           <Close fontSize="small" />
         </IconButton>

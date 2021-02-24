@@ -148,7 +148,7 @@ const initTaxiiApi = (basePath, app) => {
       const data = R.head(stix.objects);
       res.set('X-TAXII-Date-Added-First', data?.updated_at);
       res.set('X-TAXII-Date-Added-Last', data?.updated_at);
-      const versions = [data.updated_at];
+      const versions = data ? [data.updated_at] : [];
       res.json({ versions });
     } catch (e) {
       const error = errorConverter(e);

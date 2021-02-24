@@ -65,7 +65,7 @@ const prepareStixElement = async (user, data) => {
   const element = await stixLoadById(user, data.internal_id);
   return buildStixData(element, { diffMode: false });
 };
-const prepareManifestElement = async (user, data) => {
+const prepareManifestElement = async (data) => {
   return {
     id: data.standard_id,
     date_added: data.created_at,
@@ -131,14 +131,14 @@ export const restCollectionStix = async (user, id, args) => {
 };
 export const restCollectionManifest = async (user, id, args) => {
   const { edges, pageInfo } = await collectionQuery(user, id, args);
-  const objects = await Promise.all(edges.map((e) => prepareManifestElement(user, e.node)));
+  const objects = await Promise.all(edges.map((e) => prepareManifestElement(e.node)));
   return {
     more: pageInfo.hasNextPage,
     next: R.last(edges)?.cursor || '',
     objects,
   };
 };
-const restBuildCollection = async (user, collection) => {
+const restBuildCollection = async (collection) => {
   return {
     id: collection.id,
     title: collection.name,
@@ -153,12 +153,12 @@ export const restLoadCollectionById = async (user, collectionId) => {
   if (!collection) {
     throw ResourceNotFoundError({ id: collectionId });
   }
-  return restBuildCollection(user, collection);
+  return restBuildCollection(collection);
 };
 export const restAllCollections = async (user) => {
   const collections = await elPaginate(user, READ_INDEX_INTERNAL_OBJECTS, {
     types: [ENTITY_TYPE_TAXII_COLLECTION],
     connectionFormat: false,
   });
-  return Promise.all(collections.map(async (c) => restBuildCollection(user, c)));
+  return Promise.all(collections.map(async (c) => restBuildCollection(c)));
 };

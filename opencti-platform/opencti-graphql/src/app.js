@@ -17,14 +17,11 @@ import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
 import { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
-import { authentication, setAuthenticationCookie, TAXIIAPI } from './domain/user';
+import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
-import { restAllCollections, restCollectionManifest, restCollectionStix, restLoadCollectionById } from './domain/taxii';
-import { BYPASS } from './schema/general';
-import { AuthRequired, ForbiddenAccess, UnsupportedError } from './config/errors';
 import initTaxiiApi from './taxiiApi';
 
 const createApp = async (apolloServer, broadcaster) => {
