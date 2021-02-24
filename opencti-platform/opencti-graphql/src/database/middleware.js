@@ -402,12 +402,8 @@ const transformRawRelationsToAttributes = (data) => {
   return R.mergeAll(Object.entries(R.groupBy((a) => a.i_relation.entity_type, data)).map(([k, v]) => ({ [k]: v })));
 };
 const loadElementDependencies = async (user, element, args = {}) => {
-  const {
-    onlyMarking = true,
-    dependencyType = ABSTRACT_STIX_RELATIONSHIP,
-    fullResolve = false,
-    minSource = true,
-  } = args;
+  const { dependencyType = ABSTRACT_STIX_RELATIONSHIP } = args;
+  const { onlyMarking = true, fullResolve = false, minSource = true } = args;
   const elementId = element.internal_id;
   const relType = onlyMarking ? RELATION_OBJECT_MARKING : dependencyType;
   // Resolve all relations
@@ -459,7 +455,7 @@ const loadByIdWithDependencies = async (user, id, type, args = {}) => {
   const deps = await depsPromise;
   return R.mergeRight(element, { ...deps });
 };
-// Dangerous call because get everything related. (Limited to merging today
+// Dangerous call because get everything related. (Limited to merging)
 export const fullLoadById = async (user, id, type = null) => {
   const element = await loadByIdWithDependencies(user, id, type, { onlyMarking: false, fullResolve: true });
   return { ...element, i_fully_resolved: true };

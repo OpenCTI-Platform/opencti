@@ -15,10 +15,10 @@ import {
   querySubTypes,
   REL_CONNECTED_SUFFIX,
   markedLoadById,
-  stixLoadById,
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
+  fullLoadById,
 } from '../../../src/database/middleware';
 import { attributeEditField, findAll as findAllAttributes } from '../../../src/domain/attribute';
 import { el, elFindByIds, elLoadByIds, ES_IGNORE_THROTTLED } from '../../../src/database/elasticSearch';
@@ -55,6 +55,7 @@ import {
   yearFormat,
 } from '../../../src/utils/format';
 import { READ_DATA_INDICES } from '../../../src/database/utils';
+import { INTERNAL_FROM_FIELD } from '../../../src/schema/identifier';
 
 describe('Basic and utils', () => {
   it('should escape according to grakn needs', () => {
@@ -937,7 +938,7 @@ describe('Upsert and merge entities', () => {
       source05.internal_id,
       source06.internal_id,
     ]);
-    const loadedThreat = await stixLoadById(ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR);
+    const loadedThreat = await fullLoadById(ADMIN_USER, merged.id, ENTITY_TYPE_THREAT_ACTOR);
     // List of ids that should disappears
     const idsThatShouldNotExists = [
       source01.internal_id,
@@ -955,9 +956,9 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat.aliases.length).toEqual(6); // [THREAT_SOURCE_01, THREAT_SOURCE_02, THREAT_SOURCE_03, THREAT_SOURCE_04, THREAT_SOURCE_05, THREAT_SOURCE_06]
     expect(loadedThreat.i_aliases_ids.length).toEqual(7);
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
-    expect(loadedThreat.objectMarking.length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
-    expect(loadedThreat.objectLabel.length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
-    expect(loadedThreat.uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
+    expect(loadedThreat[INTERNAL_FROM_FIELD]['object-marking'].length).toEqual(3); // [testMarking, whiteMarking, mitreMarking]
+    expect(loadedThreat[INTERNAL_FROM_FIELD]['object-label'].length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
+    expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
     // Cleanup
     await deleteElementById(ADMIN_USER, malware01.id, ENTITY_TYPE_MALWARE);
     await deleteElementById(ADMIN_USER, malware02.id, ENTITY_TYPE_MALWARE);
