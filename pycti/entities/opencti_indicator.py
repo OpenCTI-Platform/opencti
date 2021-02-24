@@ -41,7 +41,7 @@ class Indicator:
                                 color
                             }
                         }
-                    }                    
+                    }
                 }
                 ... on Organization {
                     x_opencti_organization_type
@@ -112,7 +112,7 @@ class Indicator:
                 edges {
                     node {
                         id
-                        standard_id                            
+                        standard_id
                         entity_type
                         kill_chain_name
                         phase_name
@@ -139,6 +139,9 @@ class Indicator:
         :param list customAttributes: (optional) list of attributes keys to return
         :param bool getAll: (optional) switch to return all entries (be careful to use this without any other filters)
         :param bool withPagination: (optional) switch to use pagination
+
+        :return: List of Indicators
+        :rtype: list
         """
 
         filters = kwargs.get("filters", None)
@@ -228,6 +231,9 @@ class Indicator:
 
         :param str id: the id of the Threat-Actor
         :param list filters: the filters to apply if no id provided
+
+        :return: Indicator object
+        :rtype: Indicator
         """
 
         id = kwargs.get("id", None)
@@ -264,14 +270,17 @@ class Indicator:
             )
             return None
 
-    """
-        Create a Indicator object
-
-        :param name: the name of the Indicator
-        :return Indicator object
-    """
-
     def create(self, **kwargs):
+        """
+        Create an Indicator object
+
+        :param str name: the name of the Indicator
+        :param str pattern: stix indicator pattern
+        :param str x_opencti_main_observable_type: type of the observable
+
+        :return: Indicator object
+        :rtype: Indicator
+        """
         stix_id = kwargs.get("stix_id", None)
         created_by = kwargs.get("createdBy", None)
         object_marking = kwargs.get("objectMarking", None)
@@ -364,15 +373,16 @@ class Indicator:
                 "[opencti_indicator] Missing parameters: name or pattern or x_opencti_main_observable_type",
             )
 
-    """
+    def add_stix_observable(self, **kwargs):
+        """
         Add a Stix-Observable object to Indicator object (based-on)
 
         :param id: the id of the Indicator
-        :param entity_id: the id of the Stix-Observable
-        :return Boolean
-    """
+        :param indicator: Indicator object
+        :param stix_cyber_observable_id: the id of the Stix-Observable
 
-    def add_stix_observable(self, **kwargs):
+        :return: Boolean True if there has been no import error
+        """
         id = kwargs.get("id", None)
         indicator = kwargs.get("indicator", None)
         stix_cyber_observable_id = kwargs.get("stix_cyber_observable_id", None)
@@ -423,14 +433,17 @@ class Indicator:
             )
             return False
 
-    """
+    def import_from_stix2(self, **kwargs):
+        """
         Import an Indicator object from a STIX2 object
 
         :param stixObject: the Stix-Object Indicator
-        :return Indicator object
-    """
+        :param extras: extra dict
+        :param bool update: set the update flag on import
 
-    def import_from_stix2(self, **kwargs):
+        :return: Indicator object
+        :rtype: Indicator
+        """
         stix_object = kwargs.get("stixObject", None)
         extras = kwargs.get("extras", {})
         update = kwargs.get("update", False)

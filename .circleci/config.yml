@@ -3,7 +3,7 @@ version: 2.1
 jobs:
   ensure_formatting:
     docker:
-      - image: circleci/python:3.7.7
+      - image: circleci/python:3.9
     working_directory: ~/repo
     steps:
       - checkout
@@ -25,10 +25,24 @@ jobs:
       - run:
           name: flake8
           command: flake8 --ignore=E,W ~/repo
+  tests:
+    docker:
+      - image: circleci/python:3.9
+    steps:
+      - checkout
+      - run:
+          name: install dependencies
+          command: pip3 install -r requirements.txt --user
+      - run:
+          name: install pytest
+          command: pip3 install pytest pytest-cov --user
+      - run:
+          name: run pytest
+          command: python3 -m pytest --cov=pycti
   build:
     working_directory: ~/opencti-client
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.9
     steps:
       - checkout
       - run:
@@ -44,7 +58,7 @@ jobs:
   deploy:
     working_directory: ~/opencti-client
     docker:
-      - image: circleci/python:3.6
+      - image: circleci/python:3.9
     steps:
       - checkout
       - attach_workspace:
@@ -74,6 +88,7 @@ workflows:
     jobs:
       - ensure_formatting
       - linter
+      - tests
   opencti_client_python:
     jobs:
       - build:

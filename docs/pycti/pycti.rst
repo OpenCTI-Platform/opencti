@@ -29,7 +29,7 @@ Classes
 - :py:class:`OpenCTIApiConnector`:
   OpenCTIApiConnector
 
-- :py:class:`OpenCTIApiJob`:
+- :py:class:`OpenCTIApiWork`:
   OpenCTIApiJob
 
 - :py:class:`ConnectorType`:
@@ -128,8 +128,17 @@ Classes
 - :py:class:`OpenCTIStix2Splitter`:
   Undocumented.
 
+- :py:class:`OpenCTIStix2Update`:
+  Python API for Stix2 Update in OpenCTI
+
+- :py:class:`OpenCTIStix2Utils`:
+  Undocumented.
+
 - :py:class:`StixCyberObservableTypes`:
   An enumeration.
+
+- :py:class:`SimpleObservable`:
+  Base class for STIX object types
 
 
 .. autoclass:: OpenCTIApiClient
@@ -146,11 +155,11 @@ Classes
    .. inheritance-diagram:: OpenCTIApiConnector
       :parts: 1
 
-.. autoclass:: OpenCTIApiJob
+.. autoclass:: OpenCTIApiWork
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: OpenCTIApiJob
+   .. inheritance-diagram:: OpenCTIApiWork
       :parts: 1
 
 .. autoclass:: ConnectorType
@@ -377,9 +386,30 @@ Classes
    .. inheritance-diagram:: OpenCTIStix2Splitter
       :parts: 1
 
+.. autoclass:: OpenCTIStix2Update
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: OpenCTIStix2Update
+      :parts: 1
+
+.. autoclass:: OpenCTIStix2Utils
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: OpenCTIStix2Utils
+      :parts: 1
+
 .. autoclass:: StixCyberObservableTypes
    :members:
 
    .. rubric:: Inheritance
    .. inheritance-diagram:: StixCyberObservableTypes
+      :parts: 1
+
+.. autoclass:: SimpleObservable
+   :members:
+
+   .. rubric:: Inheritance
+   .. inheritance-diagram:: SimpleObservable
       :parts: 1
