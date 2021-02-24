@@ -23,7 +23,7 @@ copyright = "2020, OpenCTI Project"
 author = "OpenCTI Project"
 
 # The full version, including alpha/beta/rc tags
-release = "3.3.3"
+release = "4.2.0"
 
 master_doc = "index"
 

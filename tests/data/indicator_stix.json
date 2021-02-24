@@ -1,0 +1,48 @@
+{
+    "type": "bundle",
+    "id": "bundle--3e0921e7-0d87-49c4-8121-ec28db0f535f",
+    "objects": [
+        {
+            "id": "indicator--39915430-6d24-4f9d-a871-76a264169674",
+            "type": "indicator",
+            "spec_version": "2.1",
+            "name": "103.83.192.6",
+            "labels": [
+                "indicator"
+            ],
+            "pattern": "[ipv4-addr:value = '103.83.192.6']",
+            "valid_from": "2020-04-17T09:50:27.000Z",
+            "valid_until": "2021-04-17T09:50:27.000Z",
+            "x_opencti_pattern_type": "stix",
+            "created": "2020-04-30T06:29:41.232Z",
+            "modified": "2020-04-30T06:29:41.232Z",
+            "x_opencti_score": 50,
+            "x_opencti_id": "40caf0b8-0632-4f62-9ba6-dc10c093a63e",
+            "created_by_ref": "identity--26926631-96e9-40e9-9ac0-ab93384f0ce7",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        },
+        {
+            "id": "indicator--41be0c61-43b3-4233-aea0-7077a8981c77",
+            "type": "indicator",
+            "spec_version": "2.1",
+            "name": "192.185.46.253",
+            "labels": [
+                "indicator"
+            ],
+            "pattern": "[ipv4-addr:value = '192.185.46.253']",
+            "valid_from": "2020-04-17T09:50:27.000Z",
+            "valid_until": "2021-04-17T09:50:27.000Z",
+            "x_opencti_pattern_type": "stix",
+            "created": "2020-04-30T06:29:41.303Z",
+            "modified": "2020-04-30T06:29:41.303Z",
+            "x_opencti_score": 50,
+            "x_opencti_id": "2962d903-76ad-4092-b4e0-2021a30db0cb",
+            "created_by_ref": "identity--26926631-96e9-40e9-9ac0-ab93384f0ce7",
+            "object_marking_refs": [
+                "marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9"
+            ]
+        }
+    ]
+}
