@@ -14,7 +14,6 @@ import {
 } from 'ramda';
 import Chip from '@material-ui/core/Chip';
 import Slide from '@material-ui/core/Slide';
-import { Link } from 'react-router-dom';
 import { truncate } from '../../../../utils/String';
 import TaxiiPopover from './TaxiiPopover';
 import inject18n from '../../../../components/i18n';
