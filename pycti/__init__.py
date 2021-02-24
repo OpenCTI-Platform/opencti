@@ -21,7 +21,9 @@ from .entities.opencti_stix_domain_object import StixDomainObject
 from .entities.opencti_stix_cyber_observable import StixCyberObservable
 from .entities.opencti_stix_core_relationship import StixCoreRelationship
 from .entities.opencti_stix_sighting_relationship import StixSightingRelationship
-from .entities.opencti_stix_cyber_observable_relationship import StixCyberObservableRelationship
+from .entities.opencti_stix_cyber_observable_relationship import (
+    StixCyberObservableRelationship,
+)
 from .entities.opencti_identity import Identity
 from .entities.opencti_location import Location
 from .entities.opencti_threat_actor import ThreatActor
