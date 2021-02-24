@@ -17,16 +17,25 @@ export const AuthenticationFailure = (reason, data) =>
 
 // TYPE_AUTH
 export const AUTH_REQUIRED = 'AuthRequired';
-export const AuthRequired = (reason, data) =>
+export const AuthRequired = (data) =>
   error(AUTH_REQUIRED, 'You must be logged in to do this.', {
     category: CATEGORY_TECHNICAL,
+    http_status: 401,
     ...data,
   });
 
 export const FORBIDDEN_ACCESS = 'ForbiddenAccess';
-export const ForbiddenAccess = (reason, data) =>
+export const ForbiddenAccess = (data) =>
   error(FORBIDDEN_ACCESS, 'You are not allowed to do this.', {
     category: CATEGORY_TECHNICAL,
+    http_status: 403,
+    ...data,
+  });
+
+const RESOURCE_NOT_FOUND_ERROR = 'ResourceNotFound';
+export const ResourceNotFoundError = (data) =>
+  error(RESOURCE_NOT_FOUND_ERROR, 'Resource not found', {
+    http_status: 404,
     ...data,
   });
 
@@ -54,8 +63,9 @@ export const UnknownError = (reason, data) =>
 
 export const UNSUPPORTED_ERROR = 'UnsupportedError';
 export const UnsupportedError = (reason, data) =>
-  error(UNSUPPORTED_ERROR, 'Unsupported element', {
+  error(UNSUPPORTED_ERROR, 'Unsupported operation', {
     reason: reason || 'No reason specify',
+    http_status: 501,
     category: CATEGORY_BUSINESS,
     ...data,
   });
@@ -64,6 +74,7 @@ export const FunctionalError = (reason, data) =>
   error('FunctionalError', 'Business validation', {
     reason: reason || 'No reason specify',
     category: CATEGORY_BUSINESS,
+    http_status: 400,
     ...data,
   });
 
@@ -87,6 +98,7 @@ export const MISSING_REF_ERROR = 'MissingReferenceError';
 export const MissingReferenceError = (data) =>
   error(MISSING_REF_ERROR, 'Element not found', {
     reason: 'Missing reference to handle creation',
+    http_status: 404,
     category: CATEGORY_BUSINESS,
     ...data,
   });

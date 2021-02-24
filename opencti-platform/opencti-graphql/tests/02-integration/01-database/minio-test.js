@@ -47,7 +47,6 @@ describe('Minio file listing', () => {
     expect(file.name).toEqual(exportFileName);
     expect(file.size).toEqual(10513);
     expect(file.metaData).not.toBeNull();
-    expect(file.metaData['content-type']).toEqual('binary/octet-stream');
     expect(file.metaData.encoding).toEqual('7bit');
     expect(file.metaData.filename).toEqual(exportFileName.replace(/\s/g, '%20'));
     expect(file.metaData.mimetype).toEqual('text/plain');

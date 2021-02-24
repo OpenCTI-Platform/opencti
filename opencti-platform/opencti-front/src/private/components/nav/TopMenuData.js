@@ -5,7 +5,11 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
-import Security, { KNOWLEDGE, MODULES } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE,
+  MODULES,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   button: {
@@ -63,6 +67,26 @@ class TopMenuData extends Component {
             classes={{ root: classes.button }}
           >
             {t('Data curation')}
+          </Button>
+        </Security>
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <Button
+            component={Link}
+            to="/dashboard/data/taxii"
+            variant={
+              location.pathname === '/dashboard/data/taxii'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/data/taxii'
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('TAXII API')}
           </Button>
         </Security>
       </div>

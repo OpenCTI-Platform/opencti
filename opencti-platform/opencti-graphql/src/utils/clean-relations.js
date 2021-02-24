@@ -4,6 +4,7 @@ import { logger } from '../config/conf';
 import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { loadById } from '../database/middleware';
 import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils';
+import { SYSTEM_USER } from '../domain/user';
 
 const average = (arr) => arr.reduce((p, c) => p + c, 0) / arr.length;
 const computeMissingRelationsForType = async (relationType) => {
@@ -101,12 +102,12 @@ export const cleanInconsistentRelations = async () => {
   // Fix missing deleted data
   // In case of relation to relation, some deletion was not executed.
   // For each relations of the platform we need to check if the from and the to are available.
-  logger.info('[MIGRATION] Starting migration to fix missing deletion');
+  logger.info('[TOOLS] Starting script to fix missing deletion');
   const relations = await getMissingRelations();
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
-    const element = await loadById(user, relation.internal_id, relation.entity_type);
-    await elDeleteElement(user, element);
+    const element = await loadById(SYSTEM_USER, relation.internal_id, relation.entity_type);
+    await elDeleteElement(SYSTEM_USER, element);
   }
-  logger.info('[MIGRATION] Fix missing deletion migration done');
+  logger.info('[TOOLS] Fix missing script migration done');
 };

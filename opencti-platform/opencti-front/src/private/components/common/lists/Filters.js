@@ -468,13 +468,26 @@ class Filters extends Component {
     const { open, anchorEl, entities } = this.state;
     return (
       <div className={classes.filters}>
-        <IconButton
-          color="primary"
-          onClick={this.handleOpenFilters.bind(this)}
-          style={{ float: 'left' }}
-        >
-          <FilterListOutlined />
-        </IconButton>
+        {this.props.variant === 'text' ? (
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={this.handleOpenFilters.bind(this)}
+            startIcon={<FilterListOutlined />}
+            size="small"
+            style={{ float: 'left', margin: '0 15px 0 7px' }}
+          >
+            {t('Filters')}
+          </Button>
+        ) : (
+          <IconButton
+            color="primary"
+            onClick={this.handleOpenFilters.bind(this)}
+            style={{ float: 'left' }}
+          >
+            <FilterListOutlined />
+          </IconButton>
+        )}
         <Popover
           classes={{ paper: classes.container }}
           open={open}

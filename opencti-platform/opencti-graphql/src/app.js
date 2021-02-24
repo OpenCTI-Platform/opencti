@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import express from 'express';
 import * as R from 'ramda';
 // noinspection NodeCoreCodingAssistance
@@ -21,10 +22,12 @@ import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
+import initTaxiiApi from './taxiiApi';
 
 const createApp = async (apolloServer, broadcaster) => {
   // Init the http server
   const app = express();
+  app.set('json spaces', 2);
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     max: nconf.get('app:rate_protection:max_requests'),
@@ -74,6 +77,9 @@ const createApp = async (apolloServer, broadcaster) => {
   const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;
   const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
+
+  // -- Init Taxii rest api
+  initTaxiiApi(basePath, app);
 
   // -- Generated CSS with correct base path
   app.get(`${basePath}/static/css/*`, (req, res) => {
@@ -129,10 +135,13 @@ const createApp = async (apolloServer, broadcaster) => {
     })(req, res, next);
   });
 
+  // -- HealthCheck
   const serverHealthCheck = () => checkSystemDependencies().then(() => getSettings());
+
+  // Apply middleware to answer to graphql call
   apolloServer.applyMiddleware({ app, onHealthCheck: serverHealthCheck, path: `${basePath}/graphql` });
 
-  // Other routes
+  // Other routes - Render index.html
   app.get('*', (req, res) => {
     const data = readFileSync(`${__dirname}/../public/index.html`, 'utf8');
     const withOptionValued = data.replace(/%BASE_PATH%/g, basePath);

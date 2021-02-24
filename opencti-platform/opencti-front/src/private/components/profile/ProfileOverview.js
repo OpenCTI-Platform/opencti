@@ -184,11 +184,9 @@ class ProfileOverviewComponent extends Component {
             </Typography>
             <pre>{me.token}</pre>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Example')}
+              {t('Required headers')}
             </Typography>
             <pre>
-              GET /graphql/reports
-              <br />
               Content-Type: application/json
               <br />
               Authorization: Bearer {me.token}

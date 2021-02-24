@@ -8,7 +8,7 @@ import {
   isNotEmptyField,
   offsetToCursor,
   pascalize,
-  PLATFORM_INDICES,
+  WRITE_PLATFORM_INDICES,
   READ_DATA_INDICES,
   READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   READ_INDEX_STIX_DOMAIN_OBJECTS,
@@ -50,6 +50,7 @@ import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 const MIN_DATA_FIELDS = ['name', 'internal_id', 'standard_id', 'base_type', 'entity_type', 'connections'];
 export const ES_MAX_CONCURRENCY = conf.get('elasticsearch:max_concurrency');
 export const ES_IGNORE_THROTTLED = conf.get('elasticsearch:search_ignore_throttled');
+export const ES_MAX_PAGINATION = conf.get('elasticsearch:max_pagination_result');
 const ES_RETRY_ON_CONFLICT = 5;
 export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
 export const BULK_TIMEOUT = '5m';
@@ -139,7 +140,7 @@ export const elIndexExists = async (indexName) => {
   const existIndex = await el.indices.exists({ index: indexName });
   return existIndex.body === true;
 };
-export const elCreateIndexes = async (indexesToCreate = PLATFORM_INDICES) => {
+export const elCreateIndexes = async (indexesToCreate = WRITE_PLATFORM_INDICES) => {
   const defaultIndexPattern = conf.get('elasticsearch:index_creation_pattern');
   return Promise.all(
     indexesToCreate.map((index) => {
@@ -950,7 +951,7 @@ export const specialElasticCharsEscape = (query) => {
 };
 export const elPaginate = async (user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
-  const { first = 200, after, orderBy = null, orderMode = 'asc', minSource = false } = options;
+  const { ids = [], first = 200, after, orderBy = null, orderMode = 'asc', minSource = false } = options;
   const { types = null, filters = [], filterMode = 'and', search = null, connectionFormat = true } = options;
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let must = [];
@@ -1015,6 +1016,19 @@ export const elPaginate = async (user, indexName, options = {}) => {
       },
     };
     must = R.append(bool, must);
+  }
+  if (ids.length > 0) {
+    const idsTermsPerType = [];
+    const elementTypes = [ID_STANDARD, IDS_STIX];
+    for (let i = 0; i < ids.length; i += 1) {
+      const id = ids[i];
+      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+        const elementType = elementTypes[indexType];
+        const term = { [`${elementType}.keyword`]: id };
+        idsTermsPerType.push({ term });
+      }
+    }
+    must = R.append({ bool: { should: idsTermsPerType, minimum_should_match: 1 } }, must);
   }
   if (types !== null && types.length > 0) {
     const should = R.flatten(
@@ -1121,8 +1135,9 @@ export const elPaginate = async (user, indexName, options = {}) => {
     // Default ordering by id
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
+  const querySize = first || 10;
   let body = {
-    size: first || 10,
+    size: querySize,
     sort: ordering,
     query: {
       bool: {
@@ -1133,6 +1148,10 @@ export const elPaginate = async (user, indexName, options = {}) => {
   };
   if (searchAfter) {
     body = { ...body, search_after: searchAfter };
+  }
+  if (querySize > ES_MAX_PAGINATION) {
+    const message = `You cannot ask for more than ${ES_MAX_PAGINATION} results. If you need more, please use pagination`;
+    throw DatabaseError(message, { body });
   }
   const query = {
     index: indexName,

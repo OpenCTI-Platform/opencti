@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import { withRouter, Link } from 'react-router-dom';
 import { assoc, compose } from 'ramda';
@@ -33,6 +33,9 @@ import Security, {
   KNOWLEDGE,
   SETTINGS,
   MODULES,
+  TAXIIAPI_SETCOLLECTIONS,
+  UserContext,
+  granted,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -69,6 +72,15 @@ const styles = (theme) => ({
 const LeftBar = ({ t, location, classes }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
+  const { me } = useContext(UserContext);
+  let toData = null;
+  if (granted(me, [MODULES])) {
+    toData = '/dashboard/data/connectors';
+  } else if (granted(me, [KNOWLEDGE])) {
+    toData = '/dashboard/data/curation';
+  } else {
+    toData = '/dashboard/data/taxii';
+  }
   return (
     <Drawer variant="permanent" classes={{ paper: classes.drawerPaper }}>
       <Toolbar />
@@ -190,21 +202,23 @@ const LeftBar = ({ t, location, classes }) => {
           </Collapse>
         </Security>
       </MenuList>
-      <Security needs={[SETTINGS, MODULES, KNOWLEDGE]}>
+      <Security needs={[SETTINGS, MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
         <Divider />
         <MenuList component="nav">
-          <MenuItem
-            component={Link}
-            to="/dashboard/data"
-            selected={location.pathname.includes('/dashboard/data')}
-            dense={false}
-            classes={{ root: classes.menuItem }}
-          >
-            <ListItemIcon style={{ minWidth: 35 }}>
-              <Database />
-            </ListItemIcon>
-            <ListItemText primary={t('Data')} />
-          </MenuItem>
+          <Security needs={[MODULES, KNOWLEDGE, TAXIIAPI_SETCOLLECTIONS]}>
+            <MenuItem
+              component={Link}
+              to={toData}
+              selected={location.pathname.includes('/dashboard/data')}
+              dense={false}
+              classes={{ root: classes.menuItem }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <Database />
+              </ListItemIcon>
+              <ListItemText primary={t('Data')} />
+            </MenuItem>
+          </Security>
           <Security needs={[SETTINGS]}>
             <MenuItem
               component={Link}

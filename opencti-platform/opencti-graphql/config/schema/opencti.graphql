@@ -48,6 +48,7 @@ enum Capabilities {
   SETTINGS
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
+  TAXIIAPI_SETCOLLECTIONS
 }
 
 ### RELAY
@@ -322,6 +323,31 @@ input WorkspaceAddInput {
   name: String!
   description: String
   tags: [String]
+}
+
+############## Taxii
+type TaxiiCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+}
+type TaxiiCollectionConnection {
+  pageInfo: PageInfo!
+  edges: [TaxiiCollectionEdge]
+}
+type TaxiiCollectionEdge {
+  cursor: String!
+  node: TaxiiCollection!
+}
+input TaxiiCollectionAddInput {
+  name: String!
+  description: String
+  filters: String
+}
+enum TaxiiCollectionOrdering {
+  name
+  description
 }
 
 ############## SubTypes
@@ -7338,6 +7364,14 @@ type Query {
     filterMode: FilterMode
     search: String
   ): WorkspaceConnection @auth(for: [EXPLORE])
+  taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  taxiiCollections(
+    first: Int
+    after: ID
+    orderBy: TaxiiCollectionOrdering
+    orderMode: OrderingMode
+    search: String
+  ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT ENTITIES
 
@@ -8086,6 +8120,11 @@ type WorkspaceEditMutations {
   contextClean: Workspace
 }
 
+type TaxiiCollectionEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput, operation: EditOperation): TaxiiCollection
+}
+
 ######## STIX OBJECT ENTITIES
 
 ######## STIX META OBJECT ENTITIES
@@ -8426,6 +8465,8 @@ type Mutation {
   attributeEdit(id: ID!): AttributeEditMutations @auth(for: [SETTINGS])
   workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
   workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
+  taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT ENTITIES
 
