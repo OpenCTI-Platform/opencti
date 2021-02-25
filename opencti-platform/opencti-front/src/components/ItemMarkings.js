@@ -84,6 +84,7 @@ class ItemMarkings extends Component {
             case 'TLP:RED':
               return (
                 <Chip
+                  key={markingDefinition.definition}
                   className={className}
                   style={inlineStyles.red}
                   label={label}
@@ -92,6 +93,7 @@ class ItemMarkings extends Component {
             case 'TLP:AMBER':
               return (
                 <Chip
+                  key={markingDefinition.definition}
                   className={className}
                   style={inlineStyles.orange}
                   label={label}
@@ -101,6 +103,7 @@ class ItemMarkings extends Component {
             case 'TLP:GREEN':
               return (
                 <Chip
+                  key={markingDefinition.definition}
                   className={className}
                   style={inlineStyles.green}
                   label={label}
@@ -109,6 +112,7 @@ class ItemMarkings extends Component {
             case 'TLP:WHITE':
               return (
                 <Chip
+                  key={markingDefinition.definition}
                   className={className}
                   style={inlineStyles.white}
                   label={label}
@@ -117,6 +121,7 @@ class ItemMarkings extends Component {
             case 'SF':
               return (
                 <Chip
+                  key={markingDefinition.definition}
                   className={className}
                   style={inlineStyles.blue}
                   label={label}
@@ -125,6 +130,7 @@ class ItemMarkings extends Component {
             default:
               return (
                 <Chip
+                  key={markingDefinition.definition}
                   className={className}
                   style={inlineStyles.white}
                   label={label}

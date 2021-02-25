@@ -109,7 +109,9 @@ class Filters extends Component {
 
   searchEntities(filterKey, event) {
     const { t } = this.props;
-    this.setState({ value: event.target.value });
+    if (event && event.target.value !== 0) {
+      this.setState({ value: event.target.value });
+    }
     switch (filterKey) {
       case 'createdBy':
         fetchQuery(identityCreationIdentitiesSearchQuery, {
