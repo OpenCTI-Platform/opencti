@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { el, elDeleteElement, ES_IGNORE_THROTTLED } from '../database/elasticSearch';
 import { logger } from '../config/conf';
-import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 import { loadById } from '../database/middleware';
 import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { SYSTEM_USER } from '../domain/user';
@@ -94,7 +94,7 @@ const computeMissingRelationsForType = async (relationType) => {
   return relationsToTakeCare;
 };
 const getMissingRelations = async () => {
-  const data = await computeMissingRelationsForType(ABSTRACT_STIX_META_RELATIONSHIP);
+  const data = await computeMissingRelationsForType(ABSTRACT_BASIC_RELATIONSHIP);
   return R.flatten(data);
 };
 // eslint-disable-next-line import/prefer-default-export
