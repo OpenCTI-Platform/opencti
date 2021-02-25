@@ -960,63 +960,6 @@ export const elPaginate = async (user, indexName, options = {}) => {
   const markingRestrictions = buildMarkingRestriction(user);
   must.push(...markingRestrictions.must);
   mustnot.push(...markingRestrictions.must_not);
-  if (search !== null && search.length > 0) {
-    // Try to decode before search
-    let decodedSearch;
-    try {
-      decodedSearch = decodeURIComponent(search);
-    } catch (e) {
-      decodedSearch = search;
-    }
-    const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
-    let finalSearch;
-    if (cleanSearch.startsWith('http\\://')) {
-      finalSearch = `"*${cleanSearch.replace('http\\://', '')}*"`;
-    } else if (cleanSearch.startsWith('https\\://')) {
-      finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
-    } else if (cleanSearch.startsWith('"')) {
-      finalSearch = `${cleanSearch}`;
-    } else {
-      const splitSearch = cleanSearch.split(/[\s/]+/);
-      finalSearch = R.pipe(
-        R.map((n) => `*${n}*`),
-        R.join(' ')
-      )(splitSearch);
-    }
-    const bool = {
-      bool: {
-        should: [
-          {
-            query_string: {
-              query: finalSearch,
-              analyze_wildcard: true,
-              fields: ['name^5', '*'],
-            },
-          },
-          {
-            nested: {
-              path: 'connections',
-              query: {
-                bool: {
-                  must: [
-                    {
-                      query_string: {
-                        query: finalSearch,
-                        analyze_wildcard: true,
-                        fields: ['connections.name^5', 'connections.*'],
-                      },
-                    },
-                  ],
-                },
-              },
-            },
-          },
-        ],
-        minimum_should_match: 1,
-      },
-    };
-    must = R.append(bool, must);
-  }
   if (ids.length > 0) {
     const idsTermsPerType = [];
     const elementTypes = [ID_STANDARD, IDS_STIX];
@@ -1123,6 +1066,63 @@ export const elPaginate = async (user, indexName, options = {}) => {
     must = R.append({ bool: { should: mustFilters, minimum_should_match: 1 } }, must);
   } else {
     must = [...must, ...mustFilters];
+  }
+  if (search !== null && search.length > 0) {
+    // Try to decode before search
+    let decodedSearch;
+    try {
+      decodedSearch = decodeURIComponent(search);
+    } catch (e) {
+      decodedSearch = search;
+    }
+    const cleanSearch = specialElasticCharsEscape(decodedSearch.trim());
+    let finalSearch;
+    if (cleanSearch.startsWith('http\\://')) {
+      finalSearch = `"*${cleanSearch.replace('http\\://', '')}*"`;
+    } else if (cleanSearch.startsWith('https\\://')) {
+      finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
+    } else if (cleanSearch.startsWith('"')) {
+      finalSearch = `${cleanSearch}`;
+    } else {
+      const splitSearch = cleanSearch.split(/[\s/]+/);
+      finalSearch = R.pipe(
+        R.map((n) => `*${n}*`),
+        R.join(' ')
+      )(splitSearch);
+    }
+    const bool = {
+      bool: {
+        should: [
+          {
+            query_string: {
+              query: finalSearch,
+              analyze_wildcard: true,
+              fields: ['name^5', '*'],
+            },
+          },
+          {
+            nested: {
+              path: 'connections',
+              query: {
+                bool: {
+                  must: [
+                    {
+                      query_string: {
+                        query: finalSearch,
+                        analyze_wildcard: true,
+                        fields: ['connections.name^5', 'connections.*'],
+                      },
+                    },
+                  ],
+                },
+              },
+            },
+          },
+        ],
+        minimum_should_match: 1,
+      },
+    };
+    must = R.append(bool, must);
   }
   if (orderBy !== null && orderBy.length > 0) {
     const order = {};
