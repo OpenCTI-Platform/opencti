@@ -64,6 +64,7 @@ class ItemMarkings extends Component {
           if (markingDefinition.x_opencti_color) {
             return (
               <Chip
+                key={markingDefinition.definition}
                 className={className}
                 style={{
                   backgroundColor: markingDefinition.x_opencti_color,

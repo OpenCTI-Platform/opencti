@@ -1974,13 +1974,13 @@ export const createEntity = async (user, input, type) => {
 // endregion
 
 // region mutation deletion
-export const deleteElementById = async (user, elementId, type, options = {}) => {
+export const deleteElementById = async (user, elementId, type) => {
   if (R.isNil(type)) {
     /* istanbul ignore next */
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   // Check consistency
-  const element = await markedLoadById(user, elementId, type, options);
+  const element = await markedLoadById(user, elementId, type);
   await elDeleteElement(user, element);
   await storeDeleteEvent(user, element);
   // Return id
@@ -1997,7 +1997,7 @@ export const deleteRelationsByFromAndTo = async (user, fromId, toId, relationshi
   const relationsToDelete = await elFindByFromAndTo(user, fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {
     const r = relationsToDelete[i];
-    await deleteElementById(user, r.internal_id, r.entity_type, opts);
+    await deleteElementById(user, r.internal_id, r.entity_type);
   }
   return true;
 };

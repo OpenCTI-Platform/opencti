@@ -176,7 +176,7 @@ export const lockResource = async (resources, automaticExtension = true) => {
   };
   const queue = () => {
     const timeToWait = expiration - Date.now() - automaticExtensionThreshold;
-    timeout = setTimeout(() => extend(maxTtl), timeToWait);
+    timeout = setTimeout(() => extend(), timeToWait);
   };
   if (automaticExtension) {
     queue();
