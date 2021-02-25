@@ -56,7 +56,7 @@ jobs:
   package_rolling:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:12.21.0-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -79,7 +79,7 @@ jobs:
   package_rolling_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:12.21.0-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -102,7 +102,7 @@ jobs:
   deploy_demo:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:12.21.0-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -139,7 +139,7 @@ jobs:
   deploy_reference:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:12.21.0-stretch
     steps:
       - attach_workspace:
           at: ~/
