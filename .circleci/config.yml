@@ -179,7 +179,8 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
@@ -203,7 +204,8 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
