@@ -201,6 +201,9 @@ export const stixDataConverter = (data, args = {}) => {
       opencti[key.substring('x_opencti_'.length)] = val;
     }
   }
+  if (diffMode) {
+    return filteredData;
+  }
   return { ...filteredData, extensions: { x_opencti: opencti } };
 };
 export const buildStixData = (data, args = {}) => {
