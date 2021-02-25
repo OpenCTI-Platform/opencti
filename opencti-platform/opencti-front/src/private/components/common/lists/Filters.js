@@ -14,6 +14,8 @@ import {
   isEmpty,
   uniqBy,
   prop,
+  sortWith,
+  ascend,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -311,10 +313,15 @@ class Filters extends Component {
               this.state.entities,
               pipe(
                 map((n) => ({
-                  label: t(`entity_${n.toString()}`),
+                  label: t(
+                    n.toString()[0] === n.toString()[0].toUpperCase()
+                      ? `entity_${n.toString()}`
+                      : `relationship_${n.toString()}`,
+                  ),
                   value: n,
                   type: n,
                 })),
+                sortWith([ascend(prop('label'))]),
               )([
                 'Attack-Pattern',
                 'Campaign',
@@ -339,6 +346,11 @@ class Filters extends Component {
                 'Vulnerability',
                 'X-OpenCTI-Incident',
                 'Stix-Cyber-Observable',
+                'Stix-Core-Relationship',
+                'indicates',
+                'targets',
+                'uses',
+                'located-at',
               ]),
             ),
           },

@@ -94,11 +94,16 @@ const collectionQuery = async (user, collectionId, args) => {
   }
   const queryFilters = [];
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
+  const types = [];
   if (filters) {
     const filterEntries = Object.entries(filters);
     for (let index = 0; index < filterEntries.length; index += 1) {
       const [key, val] = filterEntries[index];
-      queryFilters.push({ key: GlobalFilters[key] || key, values: val.map((v) => v.id) });
+      if (key === 'entity_type') {
+        types.push(...val.map((v) => v.id));
+      } else {
+        queryFilters.push({ key: GlobalFilters[key] || key, values: val.map((v) => v.id) });
+      }
     }
   }
   if (added_after) {
@@ -110,6 +115,7 @@ const collectionQuery = async (user, collectionId, args) => {
     maxSize = paramLimit > 100 ? 100 : paramLimit;
   }
   const options = {
+    types,
     first: maxSize,
     orderMode: 'asc',
     orderBy: 'updated_at',

@@ -150,9 +150,11 @@ const iconSelector = (type, variant, fontSize, color) => {
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;
+    case 'Stix-Core-Relationship':
     case 'stix-core-relationship':
     case 'targets':
     case 'uses':
+    case 'located-at':
     case 'related-to':
     case 'mitigates':
     case 'impersonates':
