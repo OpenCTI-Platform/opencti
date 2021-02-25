@@ -109,6 +109,7 @@ class Filters extends Component {
 
   searchEntities(filterKey, event) {
     const { t } = this.props;
+    this.setState({ value: event.target.value });
     switch (filterKey) {
       case 'createdBy':
         fetchQuery(identityCreationIdentitiesSearchQuery, {
@@ -368,6 +369,7 @@ class Filters extends Component {
       } else {
         this.props.handleAddFilter(filterKey, value.value, value.label, event);
       }
+      this.setState({});
     }
   }
 
@@ -444,6 +446,7 @@ class Filters extends Component {
                 noOptionsText={t('No available options')}
                 options={entities[filterKey] ? entities[filterKey] : []}
                 onInputChange={this.searchEntities.bind(this, filterKey)}
+                inputValue={this.state.value}
                 onChange={this.handleChange.bind(this, filterKey)}
                 getOptionSelected={(option, value) => option.value === value}
                 renderInput={(params) => (
