@@ -148,6 +148,18 @@ const relationsTypesMapping = {
   Country_Region: ['located-at'],
   City_Country: ['located-at'],
   Position_City: ['located-at'],
+  'IPv4-Addr_Region': ['located-at'],
+  'IPv4-Addr_Country': ['located-at'],
+  'IPv4-Addr_City': ['located-at'],
+  'IPv4-Addr_Position': ['located-at'],
+  'IPv6-Addr_Region': ['located-at'],
+  'IPv6-Addr_Country': ['located-at'],
+  'IPv6-Addr_City': ['located-at'],
+  'IPv6-Addr_Position': ['located-at'],
+  targets_City: ['located-at'],
+};
+
+const stixCyberObservableRelationshipTypesMapping = {
   Directory_Directory: ['contains'],
   Directory_StixFile: ['contains'],
   'Email-Addr_User-Account': ['belongs-to'],
@@ -157,25 +169,16 @@ const relationsTypesMapping = {
   'Email-Mime-Part-Type_Artifact': ['body-raw'],
   StixFile_Directory: ['parent-directory', 'contains'],
   StixFile_Artifact: ['relation-content'],
-  'IPv4-Addr_Domain-Name': ['resolves-to'],
-  'IPv4-Addr_Mac-Addr': ['belongs-to'],
+  'Domain-Name_IPv4-Addr': ['resolves-to'],
+  'Domain-Name_IPv6-Addr': ['resolves-to'],
+  'IPv4-Addr_Mac-Addr': ['resolves-to'],
   'IPv4-Addr_Autonomous-System': ['belongs-to'],
-  'IPv4-Addr_Region': ['located-at'],
-  'IPv4-Addr_Country': ['located-at'],
-  'IPv4-Addr_City': ['located-at'],
-  'IPv4-Addr_Position': ['located-at'],
-  'IPv6-Addr_Domain-Name': ['resolves-to'],
-  'IPv6-Addr_Mac-Addr': ['belongs-to'],
+  'IPv6-Addr_Mac-Addr': ['resolves-to'],
   'IPv6-Addr_Autonomous-System': ['belongs-to'],
-  'IPv6-Addr_Region': ['located-at'],
-  'IPv6-Addr_Country': ['located-at'],
-  'IPv6-Addr_City': ['located-at'],
-  'IPv6-Addr_Position': ['located-at'],
   'Network-Traffic_IPv4-Addr': ['src', 'dst'],
   'Network-Traffic_IPv6-Addr': ['src', 'dst'],
   'Network-Traffic_Network-Traffic': ['encapsulates'],
   'Network-Traffic_Artifact': ['src-payload', 'dst-payload'],
-  targets_City: ['located-at'],
 };
 
 export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
@@ -189,10 +192,23 @@ export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
     : [];
 };
 
+export const resolveStixCyberObservableRelationshipsTypes = (
+  fromType,
+  toType,
+) => (stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
+  ? stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
+  : []);
+
 export const resolveTargetTypes = (fromType) => pipe(
   keys,
   filter((n) => n.includes(fromType)),
   map((n) => split('_', n)[1]),
 )(relationsTypesMapping);
+
+export const resolveStixCyberObservableRelationshipsTargetTypes = (fromType) => pipe(
+  keys,
+  filter((n) => n.includes(fromType)),
+  map((n) => split('_', n)[1]),
+)(stixCyberObservableRelationshipTypesMapping);
 
 export const hasKillChainPhase = (type) => includes(type, ['uses', 'exploits', 'drops', 'indicates']);

@@ -40,6 +40,6 @@ export const stixCyberObservableRelationshipEditField = async (user, relationshi
     ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
     input
   );
-  return notify(BUS_TOPICS.StixCyberObservableRelationship.EDIT_TOPIC, stixRelationship, user);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP].EDIT_TOPIC, stixRelationship, user);
 };
 // endregion

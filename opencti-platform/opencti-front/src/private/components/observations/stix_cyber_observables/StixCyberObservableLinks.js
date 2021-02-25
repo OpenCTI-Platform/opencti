@@ -101,11 +101,11 @@ class StixCyberObservableLinksComponent extends Component {
           {data && data.stixCyberObservableRelationships
             ? data.stixCyberObservableRelationships.edges.map(
               (stixCyberObservableRelationEdge) => {
-                const stixCyberObservableRelation = stixCyberObservableRelationEdge.node;
-                const stixCyberObservable = stixCyberObservableRelation.from.id
+                const stixCyberObservableRelationshipId = stixCyberObservableRelationEdge.node;
+                const stixCyberObservable = stixCyberObservableRelationshipId.from.id
                     === stixCyberObservableId
-                  ? stixCyberObservableRelation.to
-                  : stixCyberObservableRelation.from;
+                  ? stixCyberObservableRelationshipId.to
+                  : stixCyberObservableRelationshipId.from;
                 const link = `${resolveLink(
                   stixCyberObservable.entity_type,
                 )}/${stixCyberObservable.id}`;
@@ -126,9 +126,11 @@ class StixCyberObservableLinksComponent extends Component {
                           <div>
                             <div
                               className={classes.bodyItem}
-                              style={{ width: '10%' }}
+                              style={{ width: '15%' }}
                             >
-                              {stixCyberObservableRelation.relationship_type}
+                              {
+                                stixCyberObservableRelationshipId.relationship_type
+                              }
                             </div>
                             <div
                               className={classes.bodyItem}
@@ -138,7 +140,7 @@ class StixCyberObservableLinksComponent extends Component {
                             </div>
                             <div
                               className={classes.bodyItem}
-                              style={{ width: '40%' }}
+                              style={{ width: '35%' }}
                             >
                               {stixCyberObservable.observable_value}
                             </div>
@@ -146,21 +148,23 @@ class StixCyberObservableLinksComponent extends Component {
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {nsd(stixCyberObservableRelation.start_time)}
+                              {nsd(
+                                stixCyberObservableRelationshipId.start_time,
+                              )}
                             </div>
                             <div
                               className={classes.bodyItem}
                               style={{ width: '15%' }}
                             >
-                              {nsd(stixCyberObservableRelation.stop_time)}
+                              {nsd(stixCyberObservableRelationshipId.stop_time)}
                             </div>
                           </div>
                         }
                       />
                       <ListItemSecondaryAction>
                         <StixCyberObservableRelationPopover
-                          stixCyberObservableRelationId={
-                            stixCyberObservableRelation.id
+                          stixCyberObservableRelationshipId={
+                            stixCyberObservableRelationshipId.id
                           }
                           paginationOptions={paginationOptions}
                         />

@@ -26,8 +26,8 @@ import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import {
-  resolveRelationsTypes,
-  resolveTargetTypes,
+  resolveStixCyberObservableRelationshipsTargetTypes,
+  resolveStixCyberObservableRelationshipsTypes,
 } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
@@ -380,7 +380,9 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
   renderSelectEntity() {
     const { search } = this.state;
     const { classes, t, entityType } = this.props;
-    const types = resolveTargetTypes(entityType);
+    const types = resolveStixCyberObservableRelationshipsTargetTypes(
+      entityType,
+    );
     const paginationOptions = {
       search,
       types,
@@ -462,10 +464,9 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
     const { targetEntity } = this.state;
     const fromEntity = sourceEntity;
     const toEntity = targetEntity;
-    const relationshipTypes = resolveRelationsTypes(
+    const relationshipTypes = resolveStixCyberObservableRelationshipsTypes(
       fromEntity.entity_type,
       toEntity.entity_type,
-      false,
     );
     const defaultRelationshipType = head(relationshipTypes)
       ? head(relationshipTypes)

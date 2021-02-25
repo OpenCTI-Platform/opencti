@@ -145,7 +145,7 @@ class StixCyberObservableRelationshipPopover extends Component {
         </Menu>
         <StixCyberObservableRelationshipEdition
           variant="noGraph"
-          stixCyberObservableRelationId={stixCyberObservableRelationshipId}
+          stixCyberObservableRelationshipId={stixCyberObservableRelationshipId}
           open={this.state.displayUpdate}
           handleClose={this.handleCloseUpdate.bind(this)}
           handleDelete={() => true}
@@ -184,7 +184,7 @@ class StixCyberObservableRelationshipPopover extends Component {
 }
 
 StixCyberObservableRelationshipPopover.propTypes = {
-  stixCyberObservableRelatioshipnId: PropTypes.string,
+  stixCyberObservableRelationshipId: PropTypes.string,
   disabled: PropTypes.bool,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,

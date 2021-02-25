@@ -18,7 +18,7 @@ import { ExpandMore } from '@material-ui/icons';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { resolveRelationsTypes } from '../../../../utils/Relation';
+import { resolveStixCyberObservableRelationshipsTypes } from '../../../../utils/Relation';
 
 const styles = (theme) => ({
   container: {
@@ -79,7 +79,10 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
     const stixCyberObservablesNodes = pipe(
       map((n) => n.node),
       filter(
-        (n) => resolveRelationsTypes(entityType, n.entity_type, false).length > 0,
+        (n) => resolveStixCyberObservableRelationshipsTypes(
+          entityType,
+          n.entity_type,
+        ).length > 0,
       ),
     )(data.stixCyberObservables.edges);
     const byType = groupBy(

@@ -20,10 +20,6 @@ import {
   commitMutation,
   requestSubscription,
 } from '../../../../relay/environment';
-import {
-  SubscriptionAvatars,
-  SubscriptionFocus,
-} from '../../../../components/Subscription';
 import DatePickerField from '../../../../components/DatePickerField';
 
 const styles = (theme) => ({
@@ -162,11 +158,9 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
       t,
       classes,
       handleClose,
-      handleDelete,
       stixCyberObservableRelationship,
       stixDomainObject,
     } = this.props;
-    const { editContext } = stixCyberObservableRelationship;
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
@@ -207,7 +201,6 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
           <Typography variant="h6" classes={{ root: classes.title }}>
             {t('Update a relationship')}
           </Typography>
-          <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
@@ -225,15 +218,8 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
                     'The value must be a date (YYYY-MM-DD)',
                   )}
                   fullWidth={true}
-                  style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="start_time"
-                    />
-                  }
                 />
                 <Field
                   component={DatePickerField}
@@ -246,12 +232,6 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
                   style={{ marginTop: 20 }}
                   onFocus={this.handleChangeFocus.bind(this)}
                   onSubmit={this.handleSubmitField.bind(this)}
-                  helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="stop_time"
-                    />
-                  }
                 />
               </Form>
             )}
@@ -265,17 +245,6 @@ class StixCyberObservableRelationshipEditionContainer extends Component {
               classes={{ root: classes.buttonLeft }}
             >
               {t('Details')}
-            </Button>
-          ) : (
-            ''
-          )}
-          {typeof handleDelete === 'function' ? (
-            <Button
-              variant="contained"
-              onClick={handleDelete.bind(this)}
-              classes={{ root: classes.button }}
-            >
-              {t('Delete')}
             </Button>
           ) : (
             ''
