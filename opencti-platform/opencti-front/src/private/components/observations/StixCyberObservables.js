@@ -145,7 +145,7 @@ class StixCyberObservables extends Component {
       observable_value: {
         label: 'Value',
         width: '35%',
-        isSortable: true,
+        isSortable: false,
       },
       objectLabel: {
         label: 'Labels',
