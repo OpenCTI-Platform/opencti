@@ -70,7 +70,22 @@ const UNIMPACTED_ENTITIES_ROLE = [
 export const isImpactedTypeAndSide = (type, side) => !UNIMPACTED_ENTITIES_ROLE.includes(`${type}_${side}`);
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
-export const el = new Client({ node: conf.get('elasticsearch:url') });
+export const el = new Client({
+  node: conf.get('elasticsearch:url'),
+  proxy: conf.get('elasticsearch:proxy') || null,
+  auth: {
+    username: conf.get('elasticsearch:username') || null,
+    password: conf.get('elasticsearch:password') || null,
+    apiKey: conf.get('elasticsearch:api_Key') || null,
+  },
+  maxRetries: conf.get('elasticsearch:max_retries') || 3,
+  requestTimeout: conf.get('elasticsearch:request_timeout') || 30000,
+  sniffOnStart: conf.get('elasticsearch:sniff_on_start') || false,
+  ssl: {
+    ca: conf.get('elasticsearch:ssl:ca') || null,
+    rejectUnauthorized: conf.get('elasticsearch:ssl:reject_unauthorized') || true,
+  },
+});
 
 const buildMarkingRestriction = (user) => {
   const must = [];
