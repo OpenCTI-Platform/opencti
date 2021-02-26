@@ -2883,7 +2883,7 @@ type Infrastructure implements BasicObject & StixObject & StixCoreObject & StixD
   name: String!
   aliases: [String]
   description: String
-  infrastructure_types: String
+  infrastructure_types: [String]
   first_seen: DateTime
   last_seen: DateTime
   killChainPhases: KillChainPhaseConnection
