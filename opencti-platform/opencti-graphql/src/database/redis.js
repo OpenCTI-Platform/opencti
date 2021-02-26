@@ -31,6 +31,7 @@ const redisOptions = (database) => ({
   db: database,
   port: conf.get('redis:port'),
   host: conf.get('redis:hostname'),
+  username: conf.get('redis:username'),
   password: conf.get('redis:password'),
   retryStrategy: /* istanbul ignore next */ (times) => Math.min(times * 50, 2000),
   maxRetriesPerRequest: 2,
