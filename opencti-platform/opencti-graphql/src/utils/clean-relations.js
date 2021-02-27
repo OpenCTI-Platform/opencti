@@ -1,8 +1,8 @@
 import * as R from 'ramda';
-import { el, elDeleteElement, ES_IGNORE_THROTTLED } from '../database/elasticSearch';
+import { el, ES_IGNORE_THROTTLED } from '../database/elasticSearch';
 import { logger } from '../config/conf';
 import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
-import { loadById } from '../database/middleware';
+import { deleteElementById } from '../database/middleware';
 import { READ_DATA_INDICES, READ_RELATIONSHIPS_INDICES } from '../database/utils';
 import { SYSTEM_USER } from '../domain/user';
 
@@ -106,8 +106,7 @@ export const cleanInconsistentRelations = async () => {
   const relations = await getMissingRelations();
   for (let index = 0; index < relations.length; index += 1) {
     const relation = relations[index];
-    const element = await loadById(SYSTEM_USER, relation.internal_id, relation.entity_type);
-    await elDeleteElement(SYSTEM_USER, element);
+    await deleteElementById(SYSTEM_USER, relation.internal_id, relation.entity_type);
   }
   logger.info('[TOOLS] Fix missing script migration done');
 };

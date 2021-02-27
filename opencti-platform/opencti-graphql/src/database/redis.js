@@ -17,7 +17,7 @@ import { isStixRelationship } from '../schema/stixRelationship';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_MERGE, EVENT_TYPE_UPDATE } from './rabbitmq';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { buildStixData, convertTypeToStixType, stixDataConverter } from './stix';
-import { DatabaseError } from '../config/errors';
+import { DatabaseError, FunctionalError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
@@ -74,20 +74,11 @@ export const notify = (topic, instance, user, context) => {
 };
 
 // region user context (clientContext)
-export const setEditContext = async (user, instanceId, input) => {
-  const data = R.assoc('name', user.user_email, input);
-  return clientContext.set(
-    `edit:${instanceId}:${user.id}`,
-    JSON.stringify(data),
-    'ex',
-    5 * 60 // Key will be remove if user is not active during 5 minutes
-  );
-};
-export const fetchEditContext = async (instanceId) => {
+const contextFetchMatch = async (match) => {
   return new Promise((resolve, reject) => {
     const elementsPromise = [];
     const stream = clientContext.scanStream({
-      match: `edit:${instanceId}:*`,
+      match,
       count: 100,
     });
     stream.on('data', (resultKeys) => {
@@ -106,6 +97,18 @@ export const fetchEditContext = async (instanceId) => {
       });
     });
   });
+};
+export const setEditContext = async (user, instanceId, input) => {
+  const data = R.assoc('name', user.user_email, input);
+  return clientContext.set(
+    `edit:${instanceId}:${user.id}`,
+    JSON.stringify(data),
+    'ex',
+    5 * 60 // Key will be remove if user is not active during 5 minutes
+  );
+};
+export const fetchEditContext = async (instanceId) => {
+  return contextFetchMatch(`edit:${instanceId}:*`);
 };
 export const delEditContext = async (user, instanceId) => {
   return clientContext.del(`edit:${instanceId}:${user.id}`);
@@ -151,7 +154,48 @@ export const clearUserAccessCache = async (tokenUUID) => {
 };
 // endregion
 
+// region basic operations
+export const redisTx = async (client, callback) => {
+  const tx = client.multi();
+  try {
+    await callback(tx);
+    return tx.exec();
+  } catch (e) {
+    throw DatabaseError('Redis Tx error', { error: e });
+  }
+};
+export const updateObjectRaw = async (tx, id, input) => {
+  const data = R.flatten(R.toPairs(input));
+  await tx.call('HSET', id, data);
+};
+export const updateObjectCounterRaw = async (tx, id, field, number) => {
+  await tx.call('HINCRBY', id, field, number);
+};
+// endregion
+
+// region concurrent deletion
+export const redisAddDeletions = async (internalIds) => {
+  const deletionId = new Date().getTime();
+  const ids = Array.isArray(internalIds) ? internalIds : [internalIds];
+  return redisTx(clientContext, (tx) => {
+    tx.call('SETEX', `deletion-${deletionId}`, REDIS_EXPIRE_TIME, JSON.stringify(ids));
+  });
+};
+export const redisFetchLatestDeletions = async () => {
+  const keys = await contextFetchMatch('deletion-*');
+  return R.uniq(R.flatten(keys));
+};
+// endregion
+
 // region locking (clientContext)
+const checkParticipantsDeletion = async (participantIds) => {
+  const latestDeletions = await redisFetchLatestDeletions();
+  const deletedParticipantsIds = participantIds.filter((x) => latestDeletions.includes(x));
+  if (deletedParticipantsIds.length > 0) {
+    // noinspection ExceptionCaughtLocallyJS
+    throw FunctionalError('Cant create an element based on deleted dependencies', { deletedParticipantsIds });
+  }
+};
 export const lockResource = async (resources, automaticExtension = true) => {
   let timeout;
   const locks = R.uniq(resources);
@@ -161,6 +205,7 @@ export const lockResource = async (resources, automaticExtension = true) => {
   const retryJitter = conf.get('app:concurrency:retry_jitter');
   const maxTtl = conf.get('app:concurrency:max_ttl');
   const redlock = new Redlock([clientContext], { retryCount, retryDelay, retryJitter });
+  // Get the lock
   const lock = await redlock.lock(locks, maxTtl); // Force unlock after maxTtl
   let expiration = Date.now() + maxTtl;
   const extend = async () => {
@@ -182,6 +227,9 @@ export const lockResource = async (resources, automaticExtension = true) => {
   if (automaticExtension) {
     queue();
   }
+  // If lock succeed we need to be sure that delete occurred just before the resolution/lock
+  await checkParticipantsDeletion(resources);
+  // Return the lock and capable actions
   return {
     extend,
     unlock: async () => {
@@ -296,7 +344,7 @@ export const storeCreateEvent = async (user, instance, input) => {
         entity_type: instance.entity_type,
       };
       // Convert the input to data
-      const data = buildStixData({ ...identifiers, ...input });
+      const data = buildStixData({ ...identifiers, ...input }, { diffMode: false });
       // Generate the message
       const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
       // Build and send the event
@@ -433,25 +481,6 @@ export const getStreamRange = async (from, limit, callback) => {
     const lastResult = R.last(results);
     return { lastEventId: R.head(lastResult) };
   });
-};
-// endregion
-
-// region basic operations
-export const redisTx = async (client, callback) => {
-  const tx = client.multi();
-  try {
-    await callback(tx);
-    return tx.exec();
-  } catch (e) {
-    throw DatabaseError('Redis Tx error', { error: e });
-  }
-};
-export const updateObjectRaw = async (tx, id, input) => {
-  const data = R.flatten(R.toPairs(input));
-  await tx.call('HSET', id, data);
-};
-export const updateObjectCounterRaw = async (tx, id, field, number) => {
-  await tx.call('HINCRBY', id, field, number);
 };
 // endregion
 

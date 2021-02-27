@@ -26,7 +26,6 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
-  elDeleteElement,
   elDeleteElements,
   elFindByFromAndTo,
   elFindByIds,
@@ -57,7 +56,15 @@ import {
   REVOKED,
   VALID_UNTIL,
 } from '../schema/identifier';
-import { lockResource, notify, storeCreateEvent, storeDeleteEvent, storeMergeEvent, storeUpdateEvent } from './redis';
+import {
+  lockResource,
+  notify,
+  redisAddDeletions,
+  storeCreateEvent,
+  storeDeleteEvent,
+  storeMergeEvent,
+  storeUpdateEvent,
+} from './redis';
 import {
   buildStixData,
   checkStixCoreRelationshipMapping,
@@ -1058,6 +1065,8 @@ export const mergeEntities = async (user, targetEntityId, sourceEntityIds, opts 
     // - TRANSACTION PART
     await mergeEntitiesRaw(user, target, sources, opts);
     await storeMergeEvent(user, target, sources);
+    // Temporary stored the deleted elements to prevent concurrent problem at creation
+    await redisAddDeletions(sources.map((s) => s.internal_id));
     // - END TRANSACTION
     return loadById(user, target.id, ABSTRACT_STIX_CORE_OBJECT).then((finalStixCoreObject) =>
       notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, finalStixCoreObject, user)
@@ -1975,14 +1984,32 @@ export const createEntity = async (user, input, type) => {
 
 // region mutation deletion
 export const deleteElementById = async (user, elementId, type) => {
+  let lock;
   if (R.isNil(type)) {
     /* istanbul ignore next */
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   // Check consistency
   const element = await markedLoadById(user, elementId, type);
-  await elDeleteElement(user, element);
-  await storeDeleteEvent(user, element);
+  if (!element) {
+    throw FunctionalError('Cant find element to delete', { elementId });
+  }
+  const participantIds = [element.internal_id];
+  try {
+    // Try to get the lock in redis
+    lock = await lockResource(participantIds);
+    await elDeleteElements(user, [element]);
+    await storeDeleteEvent(user, element);
+    // Temporary stored the deleted elements to prevent concurrent problem at creation
+    await redisAddDeletions(participantIds);
+  } catch (err) {
+    if (err.name === TYPE_LOCK_ERROR) {
+      throw LockTimeoutError({ participantIds });
+    }
+    throw err;
+  } finally {
+    if (lock) await lock.unlock();
+  }
   // Return id
   return elementId;
 };

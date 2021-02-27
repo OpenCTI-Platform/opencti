@@ -99,18 +99,30 @@ const BASIC_FIELDS = [
   'stop_time',
   'hashes',
 ];
+const isDefinedValue = (element, diffMode) => {
+  if (element) {
+    // Element is defined, empty or not we need to add it in the result
+    if (diffMode) return true;
+    // If not in diff mode, we only take into account none empty element
+    const isArray = Array.isArray(element);
+    if (isArray) return isArray.length > 0;
+    // If not array, check if empty
+    return !R.isEmpty(element);
+  }
+  return false;
+};
 export const stixDataConverter = (data, args = {}) => {
   const { diffMode = true } = args;
   let finalData = data;
   // Relationships
-  if (finalData.from) {
+  if (isDefinedValue(finalData.from, diffMode)) {
     finalData = R.pipe(
       R.dissoc('from'),
       R.assoc('source_ref', data.from.standard_id),
       R.assoc('x_opencti_source_ref', data.from.internal_id)
     )(finalData);
   }
-  if (finalData.to) {
+  if (isDefinedValue(finalData.to, diffMode)) {
     finalData = R.pipe(
       R.dissoc('to'),
       R.assoc('target_ref', data.to.standard_id),
@@ -118,48 +130,48 @@ export const stixDataConverter = (data, args = {}) => {
     )(finalData);
   }
   // Specific input cases
-  if (finalData.stix_id) {
+  if (isDefinedValue(finalData.stix_id, diffMode)) {
     finalData = R.pipe(R.dissoc('stix_id'), R.assoc('x_opencti_stix_ids', [data.stix_id]))(finalData);
   } else {
     finalData = R.dissoc('stix_id', finalData);
   }
   // Inner relations
-  if (finalData.object) {
+  if (isDefinedValue(finalData.object, diffMode)) {
     const objectSet = Array.isArray(finalData.object) ? finalData.object : [finalData.object];
     const objects = R.map((m) => m.standard_id, objectSet);
     finalData = R.pipe(R.dissoc('object'), R.assoc('object_refs', objects))(finalData);
   } else {
     finalData = R.dissoc('object', finalData);
   }
-  if (finalData.objectMarking) {
+  if (isDefinedValue(finalData.objectMarking, diffMode)) {
     const markingSet = Array.isArray(finalData.objectMarking) ? finalData.objectMarking : [finalData.objectMarking];
     const markings = R.map((m) => m.standard_id, markingSet);
     finalData = R.pipe(R.dissoc('objectMarking'), R.assoc('object_marking_refs', markings))(finalData);
   } else {
     finalData = R.dissoc('objectMarking', finalData);
   }
-  if (finalData.createdBy) {
+  if (isDefinedValue(finalData.createdBy, diffMode)) {
     const creator = Array.isArray(finalData.createdBy) ? R.head(finalData.createdBy) : finalData.createdBy;
     finalData = R.pipe(R.dissoc('createdBy'), R.assoc('created_by_ref', creator.standard_id))(finalData);
   } else {
     finalData = R.dissoc('createdBy', finalData);
   }
   // Embedded relations
-  if (finalData.objectLabel) {
+  if (isDefinedValue(finalData.objectLabel, diffMode)) {
     const labelSet = Array.isArray(finalData.objectLabel) ? finalData.objectLabel : [finalData.objectLabel];
     const labels = R.map((m) => m.value, labelSet);
     finalData = R.pipe(R.dissoc('objectLabel'), R.assoc('labels', labels))(finalData);
   } else {
     finalData = R.dissoc('objectLabel', finalData);
   }
-  if (finalData.killChainPhases) {
+  if (isDefinedValue(finalData.killChainPhases, diffMode)) {
     const killSet = Array.isArray(finalData.killChainPhases) ? finalData.killChainPhases : [finalData.killChainPhases];
     const kills = R.map((k) => R.pick(['kill_chain_name', 'phase_name'], k), killSet);
     finalData = R.pipe(R.dissoc('killChainPhases'), R.assoc('kill_chain_phases', kills))(finalData);
   } else {
     finalData = R.dissoc('killChainPhases', finalData);
   }
-  if (finalData.externalReferences) {
+  if (isDefinedValue(finalData.externalReferences, diffMode)) {
     const externalSet = Array.isArray(finalData.externalReferences)
       ? finalData.externalReferences
       : [finalData.externalReferences];

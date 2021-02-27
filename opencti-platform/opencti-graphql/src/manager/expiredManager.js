@@ -25,7 +25,7 @@ const expireHandler = async () => {
     logger.debug('[OPENCTI] Expiration manager lock acquired');
     // Execute the cleaning
     const callback = async (elements) => {
-      logger.info(`[OPENCTI] Expiration manager will clear ${elements.length} elements`);
+      logger.info(`[OPENCTI] Expiration manager will revoke ${elements.length} elements`);
       const concurrentUpdate = async (element) => {
         const patch = { revoked: true };
         await patchAttribute(SYSTEM_USER, element.id, element.entity_type, patch);

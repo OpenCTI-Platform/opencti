@@ -1426,26 +1426,26 @@ const elRemoveRelationConnection = async (user, relsFromTo) => {
   const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
     const type = `${REL_INDEX_PREFIX + relation.entity_type}.internal_id`;
     const updates = [];
-    if (isFromCleanup) {
-      const index = indexCache[relation.fromId];
+    const fromIndex = indexCache[relation.fromId];
+    if (isFromCleanup && fromIndex) {
       const script = {
         source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
         params: { key: relation.toId },
       };
       updates.push([
-        { update: { _index: index, _id: relation.fromId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { update: { _index: fromIndex, _id: relation.fromId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
         { script },
       ]);
     }
     // Update to to entity
-    if (isToCleanup) {
-      const index = indexCache[relation.toId];
+    const toIndex = indexCache[relation.toId];
+    if (isToCleanup && toIndex) {
       const script = {
         source: `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`,
         params: { key: relation.fromId },
       };
       updates.push([
-        { update: { _index: index, _id: relation.toId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
+        { update: { _index: toIndex, _id: relation.toId, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
         { script },
       ]);
     }
@@ -1489,9 +1489,6 @@ export const elDeleteElements = async (user, elements) => {
   await Promise.map(groupsOfDeletions, concurrentDeletions, { concurrency: ES_MAX_CONCURRENCY });
   // Remove the elements
   await elDeleteInstanceIds(elements); // Bulk
-};
-export const elDeleteElement = async (user, element) => {
-  return elDeleteElements(user, [element]);
 };
 
 export const prepareElementForIndexing = (element) => {
