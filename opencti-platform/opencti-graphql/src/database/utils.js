@@ -306,13 +306,23 @@ export const generateLogMessage = (type, instance, input = null) => {
   }
   if (type === EVENT_TYPE_CREATE || type === EVENT_TYPE_DELETE) {
     if (isStixObject(instance.entity_type)) {
-      return `${type}s a ${instance.entity_type} \`${name}\``;
+      let entityType = instance.entity_type;
+      if (entityType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+        entityType = 'File';
+      }
+      return `${type}s a ${entityType} \`${name}\``;
     }
     // Relation
     const from = extractEntityMainValue(instance.from);
-    const fromType = instance.from.entity_type;
+    let fromType = instance.from.entity_type;
+    if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+      fromType = 'File';
+    }
     const to = extractEntityMainValue(instance.to);
-    const toType = instance.to.entity_type;
+    let toType = instance.to.entity_type;
+    if (toType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {
+      toType = 'File';
+    }
     return `${type}s the relation ${instance.entity_type} from \`${from}\` (${fromType}) to \`${to}\` (${toType})`;
   }
   if (

@@ -600,7 +600,7 @@ const i18n = {
       'Force now': 'Forcer maintenant',
       Type: 'Type',
       'Email address': 'Adresse email',
-      name: "Nom d'utilisateur",
+      name: 'Nom',
       Revoked: 'Révoqué',
       'STIX Version': 'Version STIX',
       Firstname: 'Prénom',
