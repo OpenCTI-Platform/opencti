@@ -471,7 +471,7 @@ class StixCyberObservable:
         elif type.lower() == "x-opencti-cryptographic-key":
             type = "X-OpenCTI-Cryptographic-Key"
         elif type.lower() == "x-opencti-text":
-            type = "X-OpenCTI-text"
+            type = "X-OpenCTI-Text"
 
         x_opencti_description = (
             observable_data["x_opencti_description"]
