@@ -21,7 +21,27 @@ $ pip3 install pycti
 ## Local development
 
 ```bash
-$ pip3 install . --user --force --upgrade
+# Fork the current repository, then clone your fork
+$ git clone https://github.com/YOUR-USERNAME/client-python
+$ cd client-python
+$ git remote add upstream https://github.com/OpenCTI-Platform/client-python.git
+# Create a branch for your feature/fix
+$ git checkout -b [branch-name]
+# Create a virtualenv
+$ python3 -m venv .venv
+$ source .venv/bin/activate
+# Install the client-python and dependencies for the development and the documentation
+$ python3 -m pip install -e .[dev,doc]
+# Set up the git hook scripts
+$ pre-commit install
+# Create your feature/fix
+# Create tests for your changes
+$ pytest
+# Push you feature/fix on Github
+$ git add [file(s)]
+$ git commit -m "[descriptive message]"
+$ git push origin [branch-name]
+# Open a pull request
 ```
 
 ## Documentation
