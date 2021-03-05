@@ -10,7 +10,7 @@ import * as M from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isStixMetaObject } from './stixMetaObject';
-import { isStixDomainObject } from './stixDomainObject';
+import { isStixDomainObject, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
 import { isStixCyberObservable } from './stixCyberObservable';
 import { isInternalObject } from './internalObject';
 import { isInternalRelationship } from './internalRelationship';
@@ -140,15 +140,15 @@ const stixEntityContribution = {
     [D.ENTITY_TYPE_CONTAINER_OPINION]: [{ src: OPINION_FIELD }],
     [D.ENTITY_TYPE_CONTAINER_REPORT]: [{ src: NAME_FIELD }, { src: 'published' }],
     [D.ENTITY_TYPE_COURSE_OF_ACTION]: [[{ src: X_MITRE_ID_FIELD }], [{ src: NAME_FIELD }]],
-    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_IDENTITY_INDIVIDUAL]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
+    [D.ENTITY_TYPE_IDENTITY_ORGANIZATION]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
+    [D.ENTITY_TYPE_IDENTITY_SECTOR]: [{ src: NAME_FIELD }, { src: 'identity_class' }],
     [D.ENTITY_TYPE_INDICATOR]: [{ src: 'pattern' }],
     [D.ENTITY_TYPE_INFRASTRUCTURE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_INTRUSION_SET]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }],
-    [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }],
+    [D.ENTITY_TYPE_LOCATION_CITY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
+    [D.ENTITY_TYPE_LOCATION_COUNTRY]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
+    [D.ENTITY_TYPE_LOCATION_REGION]: [{ src: NAME_FIELD }, { src: 'x_opencti_location_type' }],
     [D.ENTITY_TYPE_LOCATION_POSITION]: [{ src: NAME_FIELD }, { src: 'latitude' }, { src: 'longitude' }],
     [D.ENTITY_TYPE_MALWARE]: [{ src: NAME_FIELD }],
     [D.ENTITY_TYPE_THREAT_ACTOR]: [{ src: NAME_FIELD }],
