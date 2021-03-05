@@ -2161,7 +2161,7 @@ enum IdentitiesFilter {
   entity_type
   identity_class
   name
-  aliases
+  x_opencti_aliases
   confidence
   created
   modified
