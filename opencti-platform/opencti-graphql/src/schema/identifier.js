@@ -51,7 +51,7 @@ const stixCyberObservableContribution = {
   definition: {
     // Observables
     [C.ENTITY_AUTONOMOUS_SYSTEM]: [{ src: 'number' }],
-    [C.ENTITY_DIRECTORY]: [{ src: NAME_FIELD }],
+    [C.ENTITY_DIRECTORY]: [{ src: 'path' }],
     [C.ENTITY_DOMAIN_NAME]: [{ src: 'value' }],
     [C.ENTITY_EMAIL_ADDR]: [{ src: 'value' }],
     [C.ENTITY_EMAIL_MESSAGE]: [{ src: 'from', dest: 'from_ref' }, { src: 'subject' }, { src: 'body' }],
