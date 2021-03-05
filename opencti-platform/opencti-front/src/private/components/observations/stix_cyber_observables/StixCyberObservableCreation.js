@@ -208,6 +208,7 @@ const stixCyberObservableMutation = graphql`
     $WindowsRegistryKey: WindowsRegistryKeyAddInput
     $WindowsRegistryValueType: WindowsRegistryValueTypeAddInput
     $X509V3ExtensionsType: X509V3ExtensionsTypeAddInput
+    $XOpenCTIHostname: XOpenCTIHostnameAddInput
     $XOpenCTICryptographicKey: XOpenCTICryptographicKeyAddInput
     $XOpenCTICryptocurrencyWallet: XOpenCTICryptocurrencyWalletAddInput
     $XOpenCTIText: XOpenCTITextAddInput
@@ -243,6 +244,7 @@ const stixCyberObservableMutation = graphql`
       WindowsRegistryKey: $WindowsRegistryKey
       WindowsRegistryValueType: $WindowsRegistryValueType
       X509V3ExtensionsType: $X509V3ExtensionsType
+      XOpenCTIHostname: $XOpenCTIHostname
       XOpenCTICryptographicKey: $XOpenCTICryptographicKey
       XOpenCTICryptocurrencyWallet: $XOpenCTICryptocurrencyWallet
       XOpenCTIText: $XOpenCTIText
