@@ -21,13 +21,13 @@ observable = opencti_api_client.stix_cyber_observable.create(
 )
 
 process = opencti_api_client.stix_cyber_observable.create(
-    observableData = {
+    observableData={
         "type": "Process",
         "x_opencti_description": "A process",
         "cwd": "C:\Process.exe",
         "pid": "19000",
         "command_line": "--run exe",
-        "x_opencti_score": 90
+        "x_opencti_score": 90,
     }
 )
 
@@ -45,5 +45,5 @@ opencti_api_client.stix_core_relationship.create(
     confidence=90,
     createdBy=author["id"],
     relationship_type="related-to",
-    description="Relation between the File and Process objects"
+    description="Relation between the File and Process objects",
 )
