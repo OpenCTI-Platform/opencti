@@ -119,7 +119,7 @@ class OpenCTIApiClient:
         self.stix_cyber_observable = StixCyberObservable(self, File)
         self.stix_core_relationship = StixCoreRelationship(self)
         self.stix_sighting_relationship = StixSightingRelationship(self)
-        self.stix_observable_relationship = StixCyberObservableRelationship(self)
+        self.stix_cyber_observable_relationship = StixCyberObservableRelationship(self)
         self.identity = Identity(self)
         self.location = Location(self)
         self.threat_actor = ThreatActor(self)
@@ -263,7 +263,11 @@ class OpenCTIApiClient:
             result = r.json()
             if "errors" in result:
                 main_error = result["errors"][0]
-                error_name = main_error["name"]
+                error_name = (
+                    main_error["name"]
+                    if "name" in main_error
+                    else main_error["message"]
+                )
                 if "data" in main_error and "reason" in main_error["data"]:
                     logging.error(main_error["data"]["reason"])
                     raise ValueError(
