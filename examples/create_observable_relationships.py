@@ -39,9 +39,7 @@ author = opencti_api_client.identity.create(
 
 opencti_api_client.stix_core_relationship.create(
     toId=observable["id"],
-    toType="StixFile",
     fromId=process["id"],
-    fromType="Process",
     confidence=90,
     createdBy=author["id"],
     relationship_type="related-to",
