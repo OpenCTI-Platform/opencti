@@ -1582,8 +1582,8 @@ const createRelationRaw = async (user, input) => {
       listingArgs.startTimeStop = prepareDate(moment(input.start_time).add(1, 'months').utc());
     }
     if (!R.isNil(input.stop_time)) {
-      listingArgs.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months'));
-      listingArgs.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months'));
+      listingArgs.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
+      listingArgs.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
     }
   } else if (isStixSightingRelationship(relationshipType)) {
     if (!R.isNil(input.first_seen)) {
@@ -1591,8 +1591,8 @@ const createRelationRaw = async (user, input) => {
       listingArgs.firstSeenStop = prepareDate(moment(input.first_seen).add(1, 'months').utc());
     }
     if (!R.isNil(input.last_seen)) {
-      listingArgs.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months'));
-      listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months'));
+      listingArgs.lastSeenStart = prepareDate(moment(input.last_seen).subtract(1, 'months').utc());
+      listingArgs.lastSeenStop = prepareDate(moment(input.last_seen).add(1, 'months').utc());
     }
   }
   const existingRelationships = await listRelations(user, relationshipType, listingArgs);
