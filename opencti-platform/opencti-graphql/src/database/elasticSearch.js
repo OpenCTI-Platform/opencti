@@ -1252,9 +1252,11 @@ export const elLoadBy = async (user, field, value, type = null, indices = READ_D
 export const elAttributeValues = async (user, field) => {
   const markingRestrictions = buildMarkingRestriction(user);
   const body = {
-    bool: {
-      must: markingRestrictions.must,
-      must_not: markingRestrictions.must_not,
+    query: {
+      bool: {
+        must: markingRestrictions.must,
+        must_not: markingRestrictions.must_not,
+      },
     },
     aggs: {
       values: {
