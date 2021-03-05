@@ -2,6 +2,7 @@ import nconf from 'nconf';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
+import { isEmpty } from 'ramda';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -164,4 +165,9 @@ export const logger = {
   warn: (message, meta) => loggerInstance.warn(message, addBasicMetaInformation(meta)),
   error: (message, meta) => loggerInstance.error(message, addBasicMetaInformation(meta)),
 };
+
+const AppBasePath = nconf.get('app:base_path').trim();
+const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;
+export const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+
 export default nconf;

@@ -2,7 +2,7 @@
 import * as R from 'ramda';
 import { BYPASS } from './schema/general';
 import { authentication, TAXIIAPI } from './domain/user';
-import { OPENCTI_TOKEN } from './config/conf';
+import { basePath, OPENCTI_TOKEN } from './config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from './config/errors';
 import { restAllCollections, restCollectionManifest, restCollectionStix, restLoadCollectionById } from './domain/taxii';
 import { extractTokenFromBearer } from './graphql/graphql';
@@ -44,7 +44,7 @@ const rebuildParamsForObject = (id, req) => {
   return { added_after, limit, next, match: argsMatch };
 };
 
-const initTaxiiApi = (basePath, app) => {
+const initTaxiiApi = (app) => {
   // Discovery api
   app.get(`${basePath}/taxii2`, async (req, res) => {
     try {

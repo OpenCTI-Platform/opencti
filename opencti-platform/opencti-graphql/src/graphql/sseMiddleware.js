@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import * as bodyParser from 'body-parser';
-import { logger, OPENCTI_TOKEN } from '../config/conf';
+import { basePath, logger, OPENCTI_TOKEN } from '../config/conf';
 import { authentication, STREAMAPI } from '../domain/user';
 import { extractTokenFromBearer } from './graphql';
 import { getStreamRange, createStreamProcessor } from '../database/redis';
@@ -173,10 +173,10 @@ const createSeeMiddleware = (broadcaster) => {
       broadcaster.shutdown();
     },
     applyMiddleware: ({ app }) => {
-      app.use('/stream', authenticate);
-      app.get('/stream', eventsHandler);
-      app.use('/stream/history', bodyParser.json());
-      app.post('/stream/history', streamHistoryHandler);
+      app.use(`${basePath}/stream`, authenticate);
+      app.get(`${basePath}/stream`, eventsHandler);
+      app.use(`${basePath}/stream/history`, bodyParser.json());
+      app.post(`${basePath}/stream/history`, streamHistoryHandler);
     },
   };
 };

@@ -10,7 +10,7 @@ import * as M from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isStixMetaObject } from './stixMetaObject';
-import { isStixDomainObject, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
+import { isStixDomainObject } from './stixDomainObject';
 import { isStixCyberObservable } from './stixCyberObservable';
 import { isInternalObject } from './internalObject';
 import { isInternalRelationship } from './internalRelationship';

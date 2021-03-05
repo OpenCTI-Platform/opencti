@@ -10,12 +10,11 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import compression from 'compression';
 import helmet from 'helmet';
-import { isEmpty } from 'ramda';
 import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
+import { basePath, DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
 import passport from './config/providers';
 import { authentication, setAuthenticationCookie } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
@@ -73,13 +72,11 @@ const createApp = async (apolloServer, broadcaster) => {
   }
 
   const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
-  const AppBasePath = nconf.get('app:base_path').trim();
-  const contextPath = isEmpty(AppBasePath) || AppBasePath === '/' ? '' : AppBasePath;
-  const basePath = isEmpty(AppBasePath) || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
+
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
 
   // -- Init Taxii rest api
-  initTaxiiApi(basePath, app);
+  initTaxiiApi(app);
 
   // -- Generated CSS with correct base path
   app.get(`${basePath}/static/css/*`, (req, res) => {

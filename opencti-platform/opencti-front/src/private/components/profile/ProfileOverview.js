@@ -10,6 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -194,10 +195,10 @@ class ProfileOverviewComponent extends Component {
             <Button
               variant="contained"
               color="primary"
-              component="a"
-              href="/graphql"
-              style={{ marginTop: 20 }}
-            >
+              component={Link}
+              to="/graphql"
+              target="_blank"
+              style={{ marginTop: 20 }}>
               {t('Playground')}
             </Button>
           </div>
