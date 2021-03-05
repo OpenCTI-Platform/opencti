@@ -112,11 +112,11 @@ describe('Sector resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.sector).not.toBeNull();
-    expect(queryResult.data.sector.standard_id).toEqual('identity--4fbfb4dc-d39c-55a2-8cfe-f602c762c3bb');
+    expect(queryResult.data.sector.standard_id).toEqual('identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff');
     expect(queryResult.data.sector.isSubSector).toBeFalsy();
     expect(queryResult.data.sector.subSectors.edges.length).toEqual(1);
     expect(queryResult.data.sector.subSectors.edges[0].node.standard_id).toEqual(
-      'identity--abb02dd8-1af7-56d2-8d99-986599579351'
+      'identity--bcd45704-00ab-5e55-b6b2-176bba1717bd'
     );
   });
   it('should sector parent sectors be accurate', async () => {
@@ -127,11 +127,11 @@ describe('Sector resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.sector).not.toBeNull();
-    expect(queryResult.data.sector.standard_id).toEqual('identity--abb02dd8-1af7-56d2-8d99-986599579351');
+    expect(queryResult.data.sector.standard_id).toEqual('identity--bcd45704-00ab-5e55-b6b2-176bba1717bd');
     expect(queryResult.data.sector.isSubSector).toBeTruthy();
     expect(queryResult.data.sector.parentSectors.edges.length).toEqual(1);
     expect(queryResult.data.sector.parentSectors.edges[0].node.standard_id).toEqual(
-      'identity--4fbfb4dc-d39c-55a2-8cfe-f602c762c3bb'
+      'identity--6e24d2a6-6ce1-5fbb-b3c6-e37f1dc381ff'
     );
   });
   it('should list sectors', async () => {

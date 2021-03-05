@@ -1,5 +1,5 @@
 import gql from 'graphql-tag';
-import {ADMIN_USER, queryAsAdmin} from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 
 const LIST_QUERY = gql`
@@ -98,9 +98,9 @@ describe('Country resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.country).not.toBeNull();
-    expect(queryResult.data.country.standard_id).toEqual('location--57dbce2d-8b33-5671-aada-05850948ed30');
+    expect(queryResult.data.country.standard_id).toEqual('location--b8d0549f-de06-5ebd-a6e9-d31a581dba5d');
     expect(queryResult.data.country.region).not.toBeNull();
-    expect(queryResult.data.country.region.standard_id).toEqual('location--5f92df88-37cd-5060-9aa8-bc58053a572b');
+    expect(queryResult.data.country.region.standard_id).toEqual('location--a25f43bf-3e2d-55fe-ba09-c63a210f169d');
   });
   it('should list countries', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });

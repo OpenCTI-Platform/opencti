@@ -112,11 +112,11 @@ describe('Region resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.region).not.toBeNull();
-    expect(queryResult.data.region.standard_id).toEqual('location--18b66e49-2a27-5a87-a91c-4e45f789fdde');
+    expect(queryResult.data.region.standard_id).toEqual('location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2');
     expect(queryResult.data.region.isSubRegion).toBeFalsy();
     expect(queryResult.data.region.subRegions.edges.length).toEqual(1);
     expect(queryResult.data.region.subRegions.edges[0].node.standard_id).toEqual(
-      'location--5f92df88-37cd-5060-9aa8-bc58053a572b'
+      'location--a25f43bf-3e2d-55fe-ba09-c63a210f169d'
     );
   });
   it('should region parent regions be accurate', async () => {
@@ -127,11 +127,11 @@ describe('Region resolver standard behavior', () => {
     });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.region).not.toBeNull();
-    expect(queryResult.data.region.standard_id).toEqual('location--5f92df88-37cd-5060-9aa8-bc58053a572b');
+    expect(queryResult.data.region.standard_id).toEqual('location--a25f43bf-3e2d-55fe-ba09-c63a210f169d');
     expect(queryResult.data.region.isSubRegion).toBeTruthy();
     expect(queryResult.data.region.parentRegions.edges.length).toEqual(1);
     expect(queryResult.data.region.parentRegions.edges[0].node.standard_id).toEqual(
-      'location--18b66e49-2a27-5a87-a91c-4e45f789fdde'
+      'location--2e9ef300-a1ab-5c9f-9297-dde66b71cae2'
     );
   });
   it('should list regions', async () => {
