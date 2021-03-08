@@ -59,6 +59,11 @@ export const loadFile = async (filename) => {
   };
 };
 
+const htmlDecode = (str) => {
+  return str.replace(/&#(\d+);/g, (match, dec) => {
+    return String.fromCharCode(dec);
+  });
+};
 const rawFilesListing = (directory) => {
   return new Promise((resolve, reject) => {
     const files = [];
@@ -75,7 +80,12 @@ const rawFilesListing = (directory) => {
     });
     stream.on('end', () => resolve(files));
   }).then((files) => {
-    return Promise.all(map((elem) => loadFile(elem.name), files));
+    return Promise.all(
+      map((elem) => {
+        const filename = htmlDecode(elem.name);
+        return loadFile(filename);
+      }, files)
+    );
   });
 };
 
