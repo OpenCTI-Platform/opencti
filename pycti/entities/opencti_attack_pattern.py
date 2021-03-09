@@ -330,7 +330,7 @@ class AttackPattern:
         update = kwargs.get("update", False)
         if stix_object is not None:
             # Extract external ID
-            x_mitre_id = "Unknown"
+            x_mitre_id = None
             if "x_mitre_id" in stix_object:
                 x_mitre_id = stix_object["x_mitre_id"]
             if "external_references" in stix_object:
