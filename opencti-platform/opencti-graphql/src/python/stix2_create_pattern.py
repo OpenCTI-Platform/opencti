@@ -20,6 +20,7 @@ PATTERN_MAPPING = {
     "IPv6-Addr": ["value"],
     "Mac-Addr": ["value"],
     "Mutex": ["name"],
+    "X-OpenCTI-Text": ["value"],
     "Network-Traffic": ["dst_port"],
     "Process": ["command_line"],
     "Process_pid": ["pid"],
