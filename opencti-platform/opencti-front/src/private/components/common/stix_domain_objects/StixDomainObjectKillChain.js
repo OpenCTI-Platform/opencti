@@ -9,15 +9,9 @@ import StixDomainObjectKillChainLines, {
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     marginTop: 15,
-  },
-  bottomNav: {
-    zIndex: 1000,
-    padding: '10px 200px 10px 205px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
   },
 });
 

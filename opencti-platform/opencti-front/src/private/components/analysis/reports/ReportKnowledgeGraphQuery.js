@@ -8,8 +8,15 @@ export const reportKnowledgeGraphtMutationRelationAddMutation = graphql`
     reportEdit(id: $id) {
       relationAdd(input: $input) {
         id
-        from {
-          ...ReportKnowledgeGraph_report
+        to {
+          ... on BasicObject {
+            id
+            entity_type
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+          }
         }
       }
     }
@@ -24,7 +31,7 @@ export const reportKnowledgeGraphtMutationRelationDeleteMutation = graphql`
   ) {
     reportEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...ReportKnowledgeGraph_report
+        id
       }
     }
   }

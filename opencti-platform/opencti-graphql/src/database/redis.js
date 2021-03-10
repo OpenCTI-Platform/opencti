@@ -193,7 +193,7 @@ const checkParticipantsDeletion = async (participantIds) => {
   const deletedParticipantsIds = participantIds.filter((x) => latestDeletions.includes(x));
   if (deletedParticipantsIds.length > 0) {
     // noinspection ExceptionCaughtLocallyJS
-    throw FunctionalError('Cant create an element based on deleted dependencies', { deletedParticipantsIds });
+    throw FunctionalError('Cant update an element based on deleted dependencies', { deletedParticipantsIds });
   }
 };
 export const lockResource = async (resources, automaticExtension = true) => {

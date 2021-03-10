@@ -12,19 +12,13 @@ import StixCyberObservableEntitiesLines, {
 } from './StixCyberObservableEntitiesLines';
 import StixCoreRelationshipCreationFromEntity from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '100%',
     margin: 0,
     padding: '25px 15px 15px 15px',
     borderRadius: 6,
-  },
-  bottomNav: {
-    zIndex: 1000,
-    padding: '10px 200px 10px 205px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
   },
 });
 

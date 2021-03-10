@@ -3,10 +3,6 @@
   font-family: "Roboto", sans-serif;
 }
 
-svg {
-  overflow: visible !important;
-}
-
 :focus {
   outline: 0;
 }
@@ -168,36 +164,6 @@ div.markdown p {
   );
   transform: translateX(-100%);
   animation: loading 1s infinite;
-}
-
-div.srd-node {
-  border: none !important;
-  border-left-color: transparent !important;
-  border-right-color: transparent !important;
-  border-top-color: transparent !important;
-  border-bottom-color: transparent !important;
-  box-sizing: content-box !important;
-  border-radius: 10px !important;
-  background: none !important;
-}
-
-div.srd-port {
-  z-index: 0 !important;
-  background-color: transparent !important;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-div.srd-port:hover {
-  background-color: transparent !important;
-}
-
-.srd-default-link-marker {
-  fill: rgb(165, 165, 165) !important;
-}
-
-.srd-default-link__label {
-  overflow: visible;
 }
 
 .leaflet-container {

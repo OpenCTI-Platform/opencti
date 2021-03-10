@@ -107,6 +107,21 @@ const stixDomainObjectCreationMutation = graphql`
       id
       entity_type
       parent_types
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+          }
+        }
+      }
       ... on AttackPattern {
         name
         description

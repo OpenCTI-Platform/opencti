@@ -1,11 +1,5 @@
-import { loadById } from '../database/middleware';
-import { ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP } from '../schema/general';
+import { elLoadByIds } from '../database/elasticSearch';
+import { READ_PLATFORM_INDICES } from '../database/utils';
 
 // eslint-disable-next-line import/prefer-default-export
-export const findById = async (user, id) => {
-  let data = await loadById(user, id, ABSTRACT_STIX_OBJECT);
-  if (!data) {
-    data = await loadById(user, id, ABSTRACT_STIX_RELATIONSHIP);
-  }
-  return data;
-};
+export const findById = async (user, id) => elLoadByIds(user, id, null, READ_PLATFORM_INDICES);

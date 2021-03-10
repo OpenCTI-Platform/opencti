@@ -58,7 +58,7 @@ class ReportEditionContainer extends Component {
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update an report')}
+            {t('Update a report')}
           </Typography>
           <SubscriptionAvatars context={editContext} />
           <div className="clearfix" />

@@ -6,7 +6,6 @@ import {
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
-import { DiagramEngine } from 'storm-react-diagrams';
 import { createFragmentContainer } from 'react-relay';
 import Markdown from 'react-markdown';
 import Grid from '@material-ui/core/Grid';
@@ -24,10 +23,6 @@ import StixCoreRelationshipEdition, {
   stixCoreRelationshipEditionDeleteMutation,
 } from './StixCoreRelationshipEdition';
 import { commitMutation } from '../../../../relay/environment';
-import SimpleLabelFactory from '../../../../components/graph_node/SimpleLabelFactory';
-import SimpleLinkFactory from '../../../../components/graph_node/SimpleLinkFactory';
-import EntityNodeFactory from '../../../../components/graph_node/EntityNodeFactory';
-import GlobalPortFactory from '../../../../components/graph_node/GlobalPortFactory';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
@@ -111,13 +106,7 @@ const styles = () => ({
 class StixCoreRelationshipContainer extends Component {
   constructor(props) {
     super(props);
-    const engine = new DiagramEngine();
-    engine.installDefaultFactories();
-    engine.registerPortFactory(new GlobalPortFactory());
-    engine.registerNodeFactory(new EntityNodeFactory());
-    engine.registerLinkFactory(new SimpleLinkFactory());
-    engine.registerLabelFactory(new SimpleLabelFactory());
-    this.state = { openEdit: false, engine };
+    this.state = { openEdit: false };
   }
 
   handleOpenEdition() {

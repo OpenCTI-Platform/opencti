@@ -257,7 +257,13 @@ class EntityStixCoreRelationshipsDonut extends Component {
                   margin={{
                     top: variant === 'inEntity' ? 40 : 0,
                     right: 0,
-                    bottom: variant === 'inLine' ? 20 : 0,
+                    bottom:
+                      // eslint-disable-next-line no-nested-ternary
+                      variant === 'inLine'
+                        ? 20
+                        : variant === 'inEntity'
+                          ? 30
+                          : 0,
                     left: 0,
                   }}
                 >

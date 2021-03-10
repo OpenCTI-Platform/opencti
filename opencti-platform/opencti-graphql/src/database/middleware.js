@@ -16,6 +16,7 @@ import {
   inferIndexFromConceptType,
   isEmptyField,
   isNotEmptyField,
+  READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
   READ_RELATIONSHIPS_INDICES,
   relationTypeToInputName,
@@ -364,6 +365,19 @@ const buildRelationsFilter = (relationshipType, args) => {
   if (endDate) finalFilters.push({ key: 'created_at', values: [endDate], operator: 'lt' });
   if (confidences && confidences.length > 0) finalFilters.push({ key: 'confidence', values: confidences });
   return R.pipe(R.assoc('types', [relationToGet]), R.assoc('filters', finalFilters))(args);
+};
+const buildThingsFilter = (thingsTypes, args) => {
+  return R.assoc('types', thingsTypes, args);
+};
+export const listThings = async (user, thingsTypes, args = {}) => {
+  const paginateArgs = buildThingsFilter(thingsTypes, args);
+  return elPaginate(user, READ_DATA_INDICES, paginateArgs);
+};
+export const listAllThings = async (user, thingsTypes, args = {}) => {
+  const paginateArgs = buildThingsFilter(thingsTypes, args);
+  const result = await elList(user, READ_DATA_INDICES, paginateArgs);
+  const nodeResult = result.map((n) => ({ node: n }));
+  return buildPagination(0, null, nodeResult, nodeResult.length);
 };
 const buildEntitiesFilter = (entityTypes, args) => {
   return R.assoc('types', entityTypes, args);

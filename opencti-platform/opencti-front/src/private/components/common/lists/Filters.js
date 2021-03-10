@@ -89,7 +89,6 @@ const directFilters = ['report_types'];
 class Filters extends Component {
   constructor(props) {
     super(props);
-    this.anchorEl = React.createRef();
     this.state = {
       open: false,
       anchorEl: null,

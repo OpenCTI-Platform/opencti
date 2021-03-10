@@ -49,11 +49,14 @@ import ItemMarking from '../../../../components/ItemMarking';
 const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
-    padding: '10px 240px 10px 180px',
+    padding: '0 230px 0 180px',
     backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
+    height: 50,
   },
   title: {
     flex: '1 1 100%',
+    fontSize: '12px',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -260,7 +263,7 @@ class CurationToolBar extends Component {
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
       >
-        <Toolbar>
+        <Toolbar style={{ minHeight: 54 }}>
           <Typography
             className={classes.title}
             color="inherit"

@@ -1526,6 +1526,7 @@ interface Container {
     filterMode: FilterMode
     search: String
     types: [String]
+    all: Boolean
   ): StixObjectOrStixRelationshipConnection
 }
 
@@ -1622,6 +1623,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
     filterMode: FilterMode
     search: String
     types: [String]
+    all: Boolean
   ): StixObjectOrStixRelationshipConnection
   # Note
   attribute_abstract: String
@@ -1748,6 +1750,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
     filterMode: FilterMode
     search: String
     types: [String]
+    all: Boolean
   ): StixObjectOrStixRelationshipConnection
   # ObservedData
   first_observed: DateTime!
@@ -1872,6 +1875,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     filterMode: FilterMode
     search: String
     types: [String]
+    all: Boolean
   ): StixObjectOrStixRelationshipConnection
   # Opinion
   explanation: String
@@ -2000,6 +2004,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
     filterMode: FilterMode
     search: String
     types: [String]
+    all: Boolean
   ): StixObjectOrStixRelationshipConnection
   # Report
   name: String!

@@ -55,12 +55,6 @@ const styles = (theme) => ({
     top: 35,
     right: 20,
   },
-  bottomNav: {
-    zIndex: 1000,
-    padding: '10px 200px 10px 205px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-  },
   paper: {
     height: '100%',
     minHeight: '100%',

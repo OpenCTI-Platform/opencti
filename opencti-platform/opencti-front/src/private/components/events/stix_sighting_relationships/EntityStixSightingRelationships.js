@@ -22,9 +22,10 @@ const styles = (theme) => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '10px 200px 10px 205px',
+    padding: '0 200px 0 205px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
+    height: 50,
   },
   chips: {
     display: 'flex',

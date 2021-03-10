@@ -14,12 +14,6 @@ const styles = (theme) => ({
     marginTop: 15,
     paddingBottom: 70,
   },
-  bottomNav: {
-    zIndex: 1000,
-    padding: '10px 274px 10px 84px',
-    backgroundColor: theme.palette.navBottom.background,
-    display: 'flex',
-  },
   chips: {
     display: 'flex',
     flexWrap: 'wrap',

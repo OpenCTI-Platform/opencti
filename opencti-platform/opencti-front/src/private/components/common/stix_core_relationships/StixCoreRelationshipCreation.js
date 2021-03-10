@@ -147,6 +147,26 @@ export const stixCoreRelationshipCreationQuery = graphql`
           confidence
           start_time
           stop_time
+          from {
+            ... on BasicObject {
+              id
+              entity_type
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+            }
+          }
+          to {
+            ... on BasicObject {
+              id
+              entity_type
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+            }
+          }
         }
       }
     }
@@ -163,6 +183,26 @@ const stixCoreRelationshipCreationMutation = graphql`
       confidence
       start_time
       stop_time
+      from {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+      }
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+        }
+      }
     }
   }
 `;
@@ -217,18 +257,20 @@ class StixCoreRelationshipCreation extends Component {
       onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
-        this.setState({ existingRelations: [], step: 0 });
         this.props.handleResult(response.stixCoreRelationshipAdd);
+        this.handleClose();
       },
     });
   }
 
   componentDidUpdate(prevProps) {
     if (
-      this.props.from !== prevProps.from
-      && this.props.to !== prevProps.to
+      this.props.open === true
       && this.props.from !== null
       && this.props.to !== null
+      && (prevProps.open !== this.props.open
+        || prevProps.from !== this.props.from
+        || prevProps.to !== this.props.to)
     ) {
       fetchQuery(stixCoreRelationshipCreationQuery, {
         fromId: this.props.from.id,
@@ -247,12 +289,16 @@ class StixCoreRelationshipCreation extends Component {
   }
 
   handleSelectRelation(relation) {
-    this.setState({ existingRelations: [], step: 0 });
     this.props.handleResult(relation);
+    this.handleClose();
   }
 
   handleChangeStep() {
     this.setState({ step: 2 });
+  }
+
+  handleReverseRelation() {
+    this.setState({ existingRelations: [], step: 0 }, () => this.props.handleReverseRelation());
   }
 
   handleClose() {
@@ -272,7 +318,10 @@ class StixCoreRelationshipCreation extends Component {
       defaultCreatedBy,
       defaultMarkingDefinitions,
     } = this.props;
-    const relationshipTypes = resolveRelationsTypes(from.type, to.type);
+    const relationshipTypes = resolveRelationsTypes(
+      from.entity_type,
+      to.entity_type,
+    );
     // eslint-disable-next-line no-nested-ternary
     const defaultRelationshipType = head(relationshipTypes)
       ? head(relationshipTypes)
@@ -331,7 +380,7 @@ class StixCoreRelationshipCreation extends Component {
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(from.type)}`,
+                    border: `2px solid ${itemColor(from.entity_type)}`,
                     top: 10,
                     left: 0,
                   }}
@@ -339,18 +388,18 @@ class StixCoreRelationshipCreation extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(from.type)}`,
+                      borderBottom: `1px solid ${itemColor(from.entity_type)}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={from.type}
-                        color={itemColor(from.type)}
+                        type={from.entity_type}
+                        color={itemColor(from.entity_type)}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {t(`entity_${from.type}`)}
+                      {t(`entity_${from.entity_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
@@ -361,11 +410,20 @@ class StixCoreRelationshipCreation extends Component {
                 </div>
                 <div className={classes.middle} style={{ paddingTop: 25 }}>
                   <ArrowRightAlt fontSize="large" />
+                  <br />
+                  <Button
+                    variant="outlined"
+                    onClick={this.handleReverseRelation.bind(this)}
+                    color="secondary"
+                    size='small'
+                  >
+                    {t('Reverse')}
+                  </Button>
                 </div>
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(to.type)}`,
+                    border: `2px solid ${itemColor(to.entity_type)}`,
                     top: 10,
                     right: 0,
                   }}
@@ -373,17 +431,19 @@ class StixCoreRelationshipCreation extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(to.type)}`,
+                      borderBottom: `1px solid ${itemColor(to.entity_type)}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={to.type}
-                        color={itemColor(to.type)}
+                        type={to.entity_type}
+                        color={itemColor(to.entity_type)}
                         size="small"
                       />
                     </div>
-                    <div className={classes.type}>{t(`entity_${to.type}`)}</div>
+                    <div className={classes.type}>
+                      {t(`entity_${to.entity_type}`)}
+                    </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
@@ -506,7 +566,7 @@ class StixCoreRelationshipCreation extends Component {
               <div
                 className={classes.item}
                 style={{
-                  border: `2px solid ${itemColor(from.type)}`,
+                  border: `2px solid ${itemColor(from.entity_type)}`,
                   top: 10,
                   left: 0,
                 }}
@@ -514,17 +574,19 @@ class StixCoreRelationshipCreation extends Component {
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(from.type)}`,
+                    borderBottom: `1px solid ${itemColor(from.entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
                     <ItemIcon
-                      type={from.type}
-                      color={itemColor(from.type)}
+                      type={from.entity_type}
+                      color={itemColor(from.entity_type)}
                       size="small"
                     />
                   </div>
-                  <div className={classes.type}>{t(`entity_${from.type}`)}</div>
+                  <div className={classes.type}>
+                    {t(`entity_${from.entity_type}`)}
+                  </div>
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>{from.name}</span>
@@ -558,7 +620,7 @@ class StixCoreRelationshipCreation extends Component {
               <div
                 className={classes.item}
                 style={{
-                  border: `2px solid ${itemColor(to.type)}`,
+                  border: `2px solid ${itemColor(to.entity_type)}`,
                   top: 10,
                   right: 0,
                 }}
@@ -566,17 +628,19 @@ class StixCoreRelationshipCreation extends Component {
                 <div
                   className={classes.itemHeader}
                   style={{
-                    borderBottom: `1px solid ${itemColor(to.type)}`,
+                    borderBottom: `1px solid ${itemColor(to.entity_type)}`,
                   }}
                 >
                   <div className={classes.icon}>
                     <ItemIcon
-                      type={to.type}
-                      color={itemColor(to.type)}
+                      type={to.entity_type}
+                      color={itemColor(to.entity_type)}
                       size="small"
                     />
                   </div>
-                  <div className={classes.type}>{t(`entity_${to.type}`)}</div>
+                  <div className={classes.type}>
+                    {t(`entity_${to.entity_type}`)}
+                  </div>
                 </div>
                 <div className={classes.content}>
                   <span className={classes.name}>{to.name}</span>
@@ -604,9 +668,15 @@ class StixCoreRelationshipCreation extends Component {
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon type={from.type} color="#263238" size="small" />
+                  <ItemIcon
+                    type={from.entity_type}
+                    color="#263238"
+                    size="small"
+                  />
                 </div>
-                <div className={classes.type}>{t(`entity_${from.type}`)}</div>
+                <div className={classes.type}>
+                  {t(`entity_${from.entity_type}`)}
+                </div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>{from.name}</span>
@@ -642,9 +712,15 @@ class StixCoreRelationshipCreation extends Component {
                 }}
               >
                 <div className={classes.icon}>
-                  <ItemIcon type={to.type} color="#263238" size="small" />
+                  <ItemIcon
+                    type={to.entity_type}
+                    color="#263238"
+                    size="small"
+                  />
                 </div>
-                <div className={classes.type}>{t(`entity_${to.type}`)}</div>
+                <div className={classes.type}>
+                  {t(`entity_${to.entity_type}`)}
+                </div>
               </div>
               <div className={classes.content}>
                 <span className={classes.name}>{to.name}</span>
@@ -701,7 +777,6 @@ StixCoreRelationshipCreation.propTypes = {
   from: PropTypes.object,
   to: PropTypes.object,
   handleResult: PropTypes.func,
-  handleClose: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   nsd: PropTypes.func,
@@ -710,6 +785,8 @@ StixCoreRelationshipCreation.propTypes = {
   confidence: PropTypes.number,
   defaultCreatedBy: PropTypes.object,
   defaultMarkingDefinitions: PropTypes.object,
+  handleClose: PropTypes.func,
+  handleReverseRelation: PropTypes.func,
 };
 
 export default compose(

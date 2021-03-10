@@ -118,7 +118,13 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const { containerId, paginationOptions, knowledgeGraph } = this.props;
+    const {
+      containerId,
+      paginationOptions,
+      knowledgeGraph,
+      onAdd,
+      onDelete,
+    } = this.props;
     const { addedStixCoreObjects } = this.state;
     const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
@@ -140,6 +146,9 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                 this.state.addedStixCoreObjects,
               ),
             });
+            if (typeof onDelete === 'function') {
+              onDelete(stixCoreObject);
+            }
           },
         });
       } else {
@@ -187,6 +196,9 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                 this.state.addedStixCoreObjects,
               ),
             });
+            if (typeof onAdd === 'function') {
+              onAdd(stixCoreObject);
+            }
           },
         });
       } else {
@@ -351,6 +363,8 @@ ContainerAddStixCoreObjectsLinesContainer.propTypes = {
   paginationOptions: PropTypes.object,
   knowledgeGraph: PropTypes.bool,
   containerStixCoreObjects: PropTypes.array,
+  onAdd: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
@@ -399,6 +413,21 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
             node {
               id
               entity_type
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
               ... on AttackPattern {
                 name
                 description

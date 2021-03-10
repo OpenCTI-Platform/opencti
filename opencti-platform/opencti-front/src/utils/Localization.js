@@ -27,6 +27,8 @@ const i18n = {
       // Interface
       Login: "Nom d'utilisateur",
       Search: 'Rechercher',
+      'Advanced search': 'Recherche avancée',
+      'Global keyword': 'Mot-clé global',
       'Search for a threat...': 'Rechercher une menace...',
       'Do you want to delete this user?':
         'Souahitez-vous supprimer cet utilisateur ?',
@@ -378,6 +380,8 @@ const i18n = {
       Report: 'Report',
       Indicator: 'Indicateur',
       Indicators: 'Indicateurs',
+      'Custom dashboards': 'Tableaux de bord personnalisés',
+      'Unique identifier': 'Identifiant unique',
       'Related entities': 'Entités liées',
       'Indicators composed with this observable':
         'Indicateurs composés avec cet observable',
@@ -441,6 +445,10 @@ const i18n = {
       Threats: 'Menaces',
       Connected: 'Connecté',
       Disconnected: 'Déconnecté',
+      'Toggle 3D mode': 'Basculer en mode 3D',
+      'Fit graph to canvas': "Dimensionner le graphe à l'espace",
+      'Filter entity types': "Filtrer les types d'entité",
+      'Filter authors (created by)': 'Filtrer les auteurs (créé par)',
       'All observables': 'Tous les observables',
       'Autonomous system': 'Système autonome',
       'Domain names': 'Noms de domaine',
@@ -727,13 +735,6 @@ const i18n = {
       'Linked threat(s)': 'Menace(s) liée(s)',
       'Linked threat': 'Menace liée',
       // Statistics
-      '[Victimology] Distribution': '[Victimologie] Répartition',
-      '[Victimology] Timeseries': '[Victimologie] Séries temporelles',
-      '[Campaigns] Timeseries': '[Campagnes] Séries temporelles',
-      '[Incidents] Timeseries': '[Incidents] Séries temporelles',
-      '[TTPs] Distribution': '[TTPs] Répartition',
-      '[Killchain] Tactics and procedures':
-        '[Killchain] Tactiques et procédures',
       'No widget in this workspace': 'Aucun widget dans cet espace de travail',
       'Averages of context relations': 'Moyennes des relations de contexte',
       'Synthesis of knowledge': 'Synthèse de la connaissance',
@@ -771,6 +772,7 @@ const i18n = {
       'Total direct relations': 'Nombre de relations directes',
       'Top Labels (3 last months)': 'Top Labels (3 derniers mois)',
       'Last ingested analysis': 'Dernières analyses ajoutées',
+      'Distribution of entities': 'Distribution des entités',
       'Observables distribution': 'Distribution des observables',
       'Distribution of relations (including inferred)':
         'Répartition des relations (inférences incluses)',

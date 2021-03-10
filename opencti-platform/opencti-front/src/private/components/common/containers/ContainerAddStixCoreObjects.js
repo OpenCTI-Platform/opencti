@@ -14,6 +14,7 @@ import Fab from '@material-ui/core/Fab';
 import { Add, Close } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Alert from '@material-ui/lab/Alert';
+import Tooltip from '@material-ui/core/Tooltip';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
@@ -139,9 +140,7 @@ class ContainerAddStixCoreObjects extends Component {
 
   renderObservableCreation(paginationOptions) {
     const { defaultCreatedBy, defaultMarkingDefinitions } = this.props;
-
     const { open, search } = this.state;
-
     return (
       <StixCyberObservableCreation
         display={open}
@@ -166,7 +165,6 @@ class ContainerAddStixCoreObjects extends Component {
     ) {
       return this.renderDomainObjectCreation(paginationOptions);
     }
-
     if (
       targetStixCoreObjectTypes
       && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
@@ -174,7 +172,6 @@ class ContainerAddStixCoreObjects extends Component {
     ) {
       return this.renderObservableCreation(paginationOptions);
     }
-
     if (
       !targetStixCoreObjectTypes
       || (ContainerAddStixCoreObjects.isTypeObservable(
@@ -186,7 +183,6 @@ class ContainerAddStixCoreObjects extends Component {
     ) {
       return this.renderDomainObjectCreation(paginationOptions);
     }
-
     return null;
   }
 
@@ -226,6 +222,8 @@ class ContainerAddStixCoreObjects extends Component {
                   paginationOptions={this.props.paginationOptions}
                   knowledgeGraph={knowledgeGraph}
                   containerStixCoreObjects={containerStixCoreObjects}
+                  onAdd={this.props.onAdd}
+                  onDelete={this.props.onDelete}
                 />
               );
             }
@@ -340,12 +338,23 @@ class ContainerAddStixCoreObjects extends Component {
 
   render() {
     const {
-      t, classes, withPadding, simple,
+      t, classes, withPadding, simple, knowledgeGraph,
     } = this.props;
     const paginationOptions = this.getPaginationOptions();
     return (
       <div>
-        {simple ? (
+        {/* eslint-disable-next-line no-nested-ternary */}
+        {knowledgeGraph ? (
+          <Tooltip title={t('Add an entity to this container')}>
+            <IconButton
+              color="primary"
+              aria-label="Add"
+              onClick={this.handleOpen.bind(this)}
+            >
+              <Add />
+            </IconButton>
+          </Tooltip>
+        ) : simple ? (
           <IconButton
             color="secondary"
             aria-label="Add"
@@ -405,8 +414,8 @@ class ContainerAddStixCoreObjects extends Component {
           <div className={classes.container}>
             {this.renderSearch(paginationOptions)}
           </div>
+          {this.renderEntityCreation(paginationOptions)}
         </Drawer>
-        {this.renderEntityCreation(paginationOptions)}
       </div>
     );
   }
@@ -426,6 +435,8 @@ ContainerAddStixCoreObjects.propTypes = {
   simple: PropTypes.bool,
   targetStixCoreObjectTypes: PropTypes.array,
   onTypesChange: PropTypes.func,
+  onAdd: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export default compose(

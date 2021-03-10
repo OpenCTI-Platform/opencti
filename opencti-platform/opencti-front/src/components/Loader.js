@@ -7,6 +7,7 @@ const styles = () => ({
   container: {
     width: '100vh',
     height: 'calc(100vh-180px)',
+    padding: '0 0 0 180px',
   },
   containerInElement: {
     width: '100%',

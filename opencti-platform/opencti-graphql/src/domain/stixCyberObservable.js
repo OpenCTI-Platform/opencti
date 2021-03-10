@@ -38,6 +38,7 @@ import {
   ENTITY_SOFTWARE,
   ENTITY_USER_ACCOUNT,
   ENTITY_WINDOWS_REGISTRY_KEY,
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   isStixCyberObservable,
   isStixCyberObservableHashedObservable,
   stixCyberObservableOptions,
@@ -140,6 +141,8 @@ export const observableValue = (stixCyberObservable) => {
       return stixCyberObservable.account_login || 'Unknown';
     case ENTITY_WINDOWS_REGISTRY_KEY:
       return stixCyberObservable.attribute_key || 'Unknown';
+    case ENTITY_WINDOWS_REGISTRY_VALUE_TYPE:
+      return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
     default:
       return stixCyberObservable.value || 'Unknown';
   }

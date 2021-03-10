@@ -16,8 +16,10 @@ export const saveViewParameters = (
   localStorageKey,
   params,
 ) => {
-  localStorage.setItem(localStorageKey, JSON.stringify(params));
+  const storageParams = pipe(dissoc('graphData'))(params);
+  localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
   let urlParams = pipe(
+    dissoc('graphData'),
     dissoc('view'),
     dissoc('types'),
     dissoc('openExports'),
@@ -29,7 +31,12 @@ export const saveViewParameters = (
   if (params.filters) {
     urlParams = assoc('filters', JSON.stringify(params.filters), urlParams);
   }
-  history.replace(
+  if (params.zoom) {
+    urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
+  }
+  window.history.replaceState(
+    null,
+    '',
     `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
   );
   return params;
@@ -54,6 +61,12 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.orderAsc) {
     finalParams.orderAsc = finalParams.orderAsc.toString() === 'true';
   }
+  if (finalParams.mode3D) {
+    finalParams.mode3D = finalParams.mode3D.toString() === 'true';
+  }
+  if (finalParams.modeTree) {
+    finalParams.modeTree = finalParams.modeTree.toString() === 'true';
+  }
   if (typeof finalParams.stixDomainObjectsTypes === 'string') {
     finalParams.stixDomainObjectsTypes = finalParams.stixDomainObjectsTypes
       ? (finalParams.stixDomainObjectsTypes = split(
@@ -76,6 +89,24 @@ export const buildViewParamsFromUrlAndStorage = (
     finalParams.filters = finalParams.filters
       ? JSON.parse(finalParams.filters)
       : {};
+  }
+  if (typeof finalParams.zoom === 'string') {
+    finalParams.zoom = finalParams.zoom ? JSON.parse(finalParams.zoom) : {};
+  }
+  if (typeof finalParams.stixCoreObjectsTypes === 'string') {
+    finalParams.stixCoreObjectsTypes = finalParams.stixCoreObjectsTypes
+      ? split(',', finalParams.stixCoreObjectsTypes)
+      : '';
+  }
+  if (typeof finalParams.markedBy === 'string') {
+    finalParams.markedBy = finalParams.markedBy
+      ? split(',', finalParams.markedBy)
+      : '';
+  }
+  if (typeof finalParams.createdBy === 'string') {
+    finalParams.createdBy = finalParams.createdBy
+      ? split(',', finalParams.createdBy)
+      : '';
   }
   saveViewParameters(history, location, localStorageKey, finalParams);
   return finalParams;
