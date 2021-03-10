@@ -92,15 +92,39 @@ const buildMarkingRestriction = (user) => {
   // eslint-disable-next-line camelcase
   const must_not = [];
   // Check user rights
-  const userMarkings = user.allowed_marking.map((m) => m.internal_id);
   const isBypass = R.find((s) => s.name === BYPASS, user.capabilities || []) !== undefined;
   if (!isBypass) {
-    if (userMarkings.length === 0) {
+    if (user.allowed_marking.length === 0) {
       // If user have no marking, he can only access to data with no markings.
       must_not.push({ exists: { field: 'rel_object-marking.internal_id' } });
     } else {
+      // Markings should be group by types for restriction
+      const userGroupedMarkings = R.groupBy((m) => m.definition_type, user.allowed_marking);
+      const allGroupedMarkings = R.groupBy((m) => m.definition_type, user.all_marking);
+      const markingGroups = Object.keys(allGroupedMarkings);
+      const mustNotHaveOneOf = [];
+      for (let index = 0; index < markingGroups.length; index += 1) {
+        const markingGroup = markingGroups[index];
+        const markingsForGroup = allGroupedMarkings[markingGroup].map((i) => i.internal_id);
+        const userMarkingsForGroup = (userGroupedMarkings[markingGroup] || []).map((i) => i.internal_id);
+        // Get all markings the user has no access for this group
+        const res = markingsForGroup.filter((m) => !userMarkingsForGroup.includes(m));
+        if (res.length > 0) {
+          mustNotHaveOneOf.push(res);
+        }
+      }
       // If use have marking, he can access to data with no marking && data with according marking
-      const shouldMarkingTerms = userMarkings.map((m) => ({ match: { 'rel_object-marking.internal_id': m } }));
+      const mustNotMarkingTerms = [];
+      for (let i = 0; i < mustNotHaveOneOf.length; i += 1) {
+        const markings = mustNotHaveOneOf[i];
+        const should = markings.map((m) => ({ match: { 'rel_object-marking.internal_id': m } }));
+        mustNotMarkingTerms.push({
+          bool: {
+            should,
+            minimum_should_match: 1,
+          },
+        });
+      }
       const markingBool = {
         bool: {
           should: [
@@ -111,8 +135,7 @@ const buildMarkingRestriction = (user) => {
             },
             {
               bool: {
-                should: shouldMarkingTerms,
-                minimum_should_match: 1,
+                must_not: mustNotMarkingTerms,
               },
             },
           ],

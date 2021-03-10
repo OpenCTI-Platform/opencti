@@ -133,7 +133,7 @@ export const batchRoles = async (user, userId) => {
   return batchListThroughGetTo(user, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
-export const getMarkings = async (userId, capabilities) => {
+export const getUserAndGlobalMarkings = async (userId, capabilities) => {
   const userGroups = await listThroughGetTo(SYSTEM_USER, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const groupIds = userGroups.map((r) => r.id);
   const userCapabilities = map((c) => c.name, capabilities);
@@ -157,7 +157,12 @@ export const getMarkings = async (userId, capabilities) => {
     }, markings);
     computedMarkings.push(...matchingMarkings);
   }
-  return R.uniqBy((m) => m.id, computedMarkings);
+  return { user: R.uniqBy((m) => m.id, computedMarkings), all: markings };
+};
+
+export const getMarkings = async (userId, capabilities) => {
+  const marking = await getUserAndGlobalMarkings(userId, capabilities);
+  return marking.user;
 };
 
 export const getCapabilities = async (userId) => {
@@ -425,8 +430,8 @@ export const findByTokenUUID = async (tokenValue) => {
     if (users.length === 0 || users.length > 1) return undefined;
     const client = R.head(users);
     const capabilities = await getCapabilities(client.id);
-    const markings = await getMarkings(client.id, capabilities);
-    user = { ...client, token: userToken, capabilities, allowed_marking: markings };
+    const marking = await getUserAndGlobalMarkings(client.id, capabilities);
+    user = { ...client, token: userToken, capabilities, allowed_marking: marking.user, all_marking: marking.all };
     await storeUserAccessCache(tokenValue, user);
   }
   const { created_at: createdAt } = user.token;

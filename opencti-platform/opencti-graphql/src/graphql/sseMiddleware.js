@@ -24,7 +24,7 @@ const createBroadcastClient = (client) => {
       // Granted if:
       // - Event concern directly a marking definition
       // - Event has no specified markings
-      // - Use have all event markings
+      // - User have all event markings
       // - User have the bypass capabilities
       const isGrantedForData = isMarkingObject || isUserHaveAccess;
       if (isGrantedForData || isBypass) {
