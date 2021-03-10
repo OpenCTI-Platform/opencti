@@ -25,7 +25,11 @@ const MarkDownField = (props) => {
   const onBlur = (event) => {
     setTouched(name, true);
     const { value } = event.target;
-    if (typeof onSubmit === 'function' && value && value.length > 3) {
+    if (
+      typeof onSubmit === 'function'
+      && value !== null
+      && value !== undefined
+    ) {
       onSubmit(name, value);
     }
   };
