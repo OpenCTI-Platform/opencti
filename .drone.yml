@@ -32,7 +32,6 @@ steps:
   - cd opencti-platform/opencti-front
   - yarn install
   - yarn build
-  - yarn test
 
 - name: build-circleci
   image: curlimages/curl
