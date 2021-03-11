@@ -240,6 +240,7 @@ class ReportKnowledgeGraphComponent extends Component {
       if (this.zoom && this.zoom.k && !this.state.mode3D) {
         this.graph.current.zoom(this.zoom.k, 400);
       }
+      this.graph.current.d3Force('link').distance(50);
     }
     this.initialized = true;
   }
