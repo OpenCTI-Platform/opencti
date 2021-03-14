@@ -100,7 +100,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use('local', localStrategy);
-      providers.push({ name: providerName, type: AUTH_FORM, provider: 'local' });
+      providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'local' });
     }
     if (strategy === 'LdapStrategy') {
       // eslint-disable-next-line
@@ -127,7 +127,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         }
       });
       passport.use('ldapauth', ldapStrategy);
-      providers.push({ name: providerName, type: AUTH_FORM, provider: 'ldapauth' });
+      providers.push({ name: providerName, type: AUTH_FORM, strategy, provider: 'ldapauth' });
     }
     if (strategy === 'OpenIDConnectStrategy') {
       // Here we use directly the config and not the mapped one.
@@ -149,7 +149,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             });
         });
         passport.use('oic', openIDStrategy);
-        providers.push({ name: providerName, type: AUTH_SSO, provider: 'oic' });
+        providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'oic' });
       });
     }
     if (strategy === 'FacebookStrategy') {
@@ -170,7 +170,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use('facebook', facebookStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, provider: 'facebook' });
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'facebook' });
     }
     if (strategy === 'GoogleStrategy') {
       const specificConfig = { scope: 'email' };
@@ -190,7 +190,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use(googleStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, provider: 'google' });
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'google' });
     }
     if (strategy === 'GithubStrategy') {
       const specificConfig = { scope: 'user:email' };
@@ -210,7 +210,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use('github', githubStrategy);
-      providers.push({ name: providerName, type: AUTH_SSO, provider: 'github' });
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'github' });
     }
     if (strategy === 'Auth0Strategy') {
       const auth0Strategy = new Auth0Strategy(mappedConfig, (accessToken, refreshToken, extraParams, profile, done) => {
@@ -227,7 +227,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           });
       });
       passport.use('auth0', auth0Strategy);
-      providers.push({ name: providerName, type: AUTH_SSO, provider: 'auth0' });
+      providers.push({ name: providerName, type: AUTH_SSO, strategy, provider: 'auth0' });
     }
   }
 }

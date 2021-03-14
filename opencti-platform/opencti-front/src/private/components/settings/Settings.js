@@ -3,7 +3,7 @@ import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { Form, Formik, Field } from 'formik';
-import { compose, pick, values } from 'ramda';
+import { compose, pick } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -47,7 +47,10 @@ const settingsQuery = graphql`
       platform_email
       platform_url
       platform_language
-      platform_parameters
+      platform_providers {
+        name
+        strategy
+      }
       editContext {
         name
         focusOn
@@ -129,24 +132,6 @@ class Settings extends Component {
       .catch(() => false);
   }
 
-  // eslint-disable-next-line class-methods-use-this
-  getProviderConfig(provider) {
-    switch (provider.strategy) {
-      case 'LocalStrategy':
-        return '';
-      case 'LdapStrategy':
-        return provider.config.url;
-      case 'FacebookStrategy':
-        return provider.config.callback_url;
-      case 'GoogleStrategy':
-        return provider.config.callback_url;
-      case 'GithubStrategy':
-        return provider.config.callback_url;
-      default:
-        return 'Unknown';
-    }
-  }
-
   render() {
     const { t, classes } = this.props;
     return (
@@ -166,8 +151,7 @@ class Settings extends Component {
                 ],
                 settings,
               );
-              const parameters = JSON.parse(settings.platform_parameters);
-              const authProviders = values(parameters.providers);
+              const authProviders = settings.platform_providers;
               let i = 0;
               return (
                 <div>
@@ -297,8 +281,8 @@ class Settings extends Component {
                                   <Avatar>{i}</Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
-                                  primary={provider.strategy}
-                                  secondary={this.getProviderConfig(provider)}
+                                  primary={provider.name}
+                                  secondary={provider.strategy}
                                 />
                               </ListItem>
                             );

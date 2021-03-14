@@ -1,7 +1,6 @@
-import { assoc, dissocPath, pipe } from 'ramda';
 import { getHeapStatistics } from 'v8';
-import { createEntity, loadById, updateAttribute, listEntities } from '../database/middleware';
-import conf, { BUS_TOPICS } from '../config/conf';
+import { createEntity, loadById, updateAttribute, loadEntity } from '../database/middleware';
+import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { elVersion } from '../database/elasticSearch';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -26,23 +25,7 @@ export const getApplicationInfo = () => ({
 });
 
 export const getSettings = async () => {
-  const settingsList = await listEntities(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
-  const settings = settingsList.edges.length > 0 ? settingsList.edges[0].node : null;
-  if (settings === null) return null;
-  const config = pipe(
-    dissocPath(['app', 'admin']),
-    dissocPath(['rabbitmq', 'password']),
-    dissocPath(['elasticsearch', 'url']),
-    dissocPath(['minio', 'access_key']),
-    dissocPath(['minio', 'secret_key']),
-    dissocPath(['jwt']),
-    dissocPath(['providers', 'ldap', 'config', 'bind_credentials']),
-    dissocPath(['providers', 'google', 'config', 'client_secret']),
-    dissocPath(['providers', 'facebook', 'config', 'client_secret']),
-    dissocPath(['providers', 'github', 'config', 'client_secret']),
-    dissocPath(['providers', 'openid', 'config', 'client_secret'])
-  )(conf.get());
-  return assoc('platform_parameters', JSON.stringify(config), settings);
+  return loadEntity(SYSTEM_USER, [ENTITY_TYPE_SETTINGS]);
 };
 
 export const addSettings = async (user, settings) => {
