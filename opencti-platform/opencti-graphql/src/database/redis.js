@@ -44,7 +44,11 @@ export const pubsub = new RedisPubSub({
 });
 const createRedisClient = async (database = BASE_DATABASE) => {
   const client = new Redis(redisOptions(database));
-  if (client.status !== 'ready') await client.connect();
+  if (client.status !== 'ready') {
+    await client.connect().catch(() => {
+      throw DatabaseError('Redis seems down');
+    });
+  }
   client.on('connect', () => logger.debug('[REDIS] Redis client connected'));
   return client;
 };
