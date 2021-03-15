@@ -173,6 +173,7 @@ class Filters extends Component {
         break;
       case 'x_opencti_base_score_gt':
         this.setState({
+          freeSolo: true,
           entities: {
             x_opencti_base_score_gt: union(
               this.state.entities,
@@ -365,10 +366,14 @@ class Filters extends Component {
 
   handleChange(filterKey, event, value) {
     if (value) {
+      let realValue = value;
+      if (typeof (value) === 'string') {
+        realValue = { value, label: value };
+      }
       if (this.props.variant === 'dialog') {
-        this.handleAddFilter(filterKey, value.value, value.label, event);
+        this.handleAddFilter(filterKey, realValue.value, realValue.label, event);
       } else {
-        this.props.handleAddFilter(filterKey, value.value, value.label, event);
+        this.props.handleAddFilter(filterKey, realValue.value, realValue.label, event);
       }
       this.setState({});
     }
@@ -396,7 +401,7 @@ class Filters extends Component {
       currentFilters,
       variant,
     } = this.props;
-    const { entities, keyword } = this.state;
+    const { entities, keyword, freeSolo } = this.state;
     return (
       <Grid container={true} spacing={2}>
         {variant === 'dialog' && (
@@ -444,12 +449,12 @@ class Filters extends Component {
                   selectOnFocus={true}
                   autoSelect={false}
                   autoHighlight={true}
+                  freeSolo={freeSolo || false}
                   getOptionLabel={(option) => (option.label ? option.label : '')
                   }
                   noOptionsText={t('No available options')}
                   options={entities[filterKey] ? entities[filterKey] : []}
                   onInputChange={this.searchEntities.bind(this, filterKey)}
-                  inputValue={this.state.value}
                   onChange={this.handleChange.bind(this, filterKey)}
                   getOptionSelected={(option, value) => option.value === value}
                   renderInput={(params) => (
@@ -484,7 +489,9 @@ class Filters extends Component {
 
   renderListFilters() {
     const { t, classes, availableFilterKeys } = this.props;
-    const { open, anchorEl, entities } = this.state;
+    const {
+      open, anchorEl, entities,
+    } = this.state;
     return (
       <div className={classes.filters}>
         {this.props.variant === 'text' ? (
