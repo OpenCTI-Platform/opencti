@@ -60,11 +60,7 @@ describe('Settings resolver standard behavior', () => {
     expect(settings.platform_demo).toEqual(false);
     expect(settings.platform_email).toEqual('admin@opencti.io');
     expect(settings.platform_language).toEqual('auto');
-    expect(settings.platform_parameters).not.toBeUndefined();
     expect(settings.editContext.length).toEqual(0);
-    const parameters = JSON.parse(settings.platform_parameters);
-    expect(parameters.app.port).toEqual(4000);
-    expect(parameters.providers.local).not.toBeUndefined();
   });
   it('should update settings', async () => {
     const UPDATE_QUERY = gql`
