@@ -23,7 +23,6 @@ const READ_QUERY = gql`
       platform_demo
       platform_email
       platform_language
-      platform_parameters
       platform_providers {
         name
         provider
