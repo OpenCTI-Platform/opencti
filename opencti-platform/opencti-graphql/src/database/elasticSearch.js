@@ -75,7 +75,7 @@ export const el = new Client({
   proxy: conf.get('elasticsearch:proxy') || null,
   cloud: {
     id: conf.get('elasticsearch:cloud_id') || null,
-  }
+  },
   auth: {
     username: conf.get('elasticsearch:username') || null,
     password: conf.get('elasticsearch:password') || null,
