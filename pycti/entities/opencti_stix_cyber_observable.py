@@ -291,7 +291,7 @@ class StixCyberObservable:
         types = kwargs.get("types", None)
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
+        first = kwargs.get("first", 100)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
@@ -300,7 +300,7 @@ class StixCyberObservable:
         with_pagination = kwargs.get("withPagination", False)
 
         if get_all:
-            first = 500
+            first = 100
 
         self.opencti.log(
             "info",

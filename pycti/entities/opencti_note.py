@@ -192,7 +192,7 @@ class Note:
     def list(self, **kwargs):
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
+        first = kwargs.get("first", 100)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
@@ -200,7 +200,7 @@ class Note:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         self.opencti.log(
             "info", "Listing Notes with filters " + json.dumps(filters) + "."
@@ -238,7 +238,31 @@ class Note:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["notes"], with_pagination)
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["notes"])
+            final_data = final_data + data
+            while result["data"]["notes"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["notes"]["pageInfo"]["endCursor"]
+                self.opencti.log("info", "Listing Notes after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["notes"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["notes"], with_pagination
+            )
 
     """
         Read a Note object

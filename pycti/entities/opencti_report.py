@@ -197,7 +197,7 @@ class Report:
     def list(self, **kwargs):
         filters = kwargs.get("filters", None)
         search = kwargs.get("search", None)
-        first = kwargs.get("first", 500)
+        first = kwargs.get("first", 100)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
@@ -205,7 +205,7 @@ class Report:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         self.opencti.log(
             "info", "Listing Reports with filters " + json.dumps(filters) + "."
@@ -243,7 +243,31 @@ class Report:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(result["data"]["reports"], with_pagination)
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(result["data"]["reports"])
+            final_data = final_data + data
+            while result["data"]["reports"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["reports"]["pageInfo"]["endCursor"]
+                self.opencti.log("info", "Listing Reports after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "filters": filters,
+                        "search": search,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(result["data"]["reports"])
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["reports"], with_pagination
+            )
 
     """
         Read a Report object

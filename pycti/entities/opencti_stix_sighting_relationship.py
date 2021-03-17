@@ -281,14 +281,14 @@ class StixSightingRelationship:
         last_seen_start = kwargs.get("lastSeenStart", None)
         last_seen_stop = kwargs.get("lastSeenStop", None)
         filters = kwargs.get("filters", [])
-        first = kwargs.get("first", 500)
+        first = kwargs.get("first", 100)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         self.opencti.log(
             "info",
@@ -339,9 +339,49 @@ class StixSightingRelationship:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["stixSightingRelationships"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(
+                result["data"]["stixSightingRelationships"]
+            )
+            final_data = final_data + data
+            while result["data"]["stixSightingRelationships"]["pageInfo"][
+                "hasNextPage"
+            ]:
+                after = result["data"]["stixSightingRelationships"]["pageInfo"][
+                    "endCursor"
+                ]
+                self.opencti.log(
+                    "info", "Listing StixSightingRelationships after " + after
+                )
+                result = self.opencti.query(
+                    query,
+                    {
+                        "elementId": element_id,
+                        "fromId": from_id,
+                        "fromTypes": from_types,
+                        "toId": to_id,
+                        "toTypes": to_types,
+                        "firstSeenStart": first_seen_start,
+                        "firstSeenStop": first_seen_stop,
+                        "lastSeenStart": last_seen_start,
+                        "lastSeenStop": last_seen_stop,
+                        "filters": filters,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(
+                    result["data"]["stixSightingRelationships"]
+                )
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["stixSightingRelationships"], with_pagination
+            )
 
     """
         Read a stix_sighting object
