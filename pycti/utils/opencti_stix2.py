@@ -912,6 +912,13 @@ class OpenCTIStix2:
 
         # Locations
         if LocationTypes.has_value(entity["entity_type"]):
+            entity["x_opencti_location_type"] = entity["entity_type"]
+            if entity["entity_type"] == "City":
+                entity["city"] = entity["name"]
+            elif entity["entity_type"] == "Country":
+                entity["country"] = entity["name"]
+            elif entity["entity_type"] == "Region":
+                entity["region"] = entity["name"]
             entity["entity_type"] = "Location"
 
         # Indicators
