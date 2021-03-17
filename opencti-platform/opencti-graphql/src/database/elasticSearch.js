@@ -71,8 +71,11 @@ export const isImpactedTypeAndSide = (type, side) => !UNIMPACTED_ENTITIES_ROLE.i
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
 export const el = new Client({
-  node: conf.get('elasticsearch:url'),
+  node: conf.get('elasticsearch:url') || null,
   proxy: conf.get('elasticsearch:proxy') || null,
+  cloud: {
+    id: conf.get('elasticsearch:cloud_id') || null,
+  }
   auth: {
     username: conf.get('elasticsearch:username') || null,
     password: conf.get('elasticsearch:password') || null,
