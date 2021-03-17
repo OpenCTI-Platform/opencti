@@ -154,7 +154,7 @@ class Indicator:
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         self.opencti.log(
             "info", "Listing Indicators with filters " + json.dumps(filters) + "."
@@ -192,7 +192,6 @@ class Indicator:
                 "orderMode": order_mode,
             },
         )
-
         if get_all:
             final_data = []
             data = self.opencti.process_multiple(result["data"]["indicators"])

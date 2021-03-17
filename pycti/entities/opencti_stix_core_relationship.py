@@ -285,14 +285,14 @@ class StixCoreRelationship:
         stop_time_start = kwargs.get("stopTimeStart", None)
         stop_time_stop = kwargs.get("stopTimeStop", None)
         filters = kwargs.get("filters", [])
-        first = kwargs.get("first", 500)
+        first = kwargs.get("first", 100)
         after = kwargs.get("after", None)
         order_by = kwargs.get("orderBy", None)
         order_mode = kwargs.get("orderMode", None)
         get_all = kwargs.get("getAll", False)
         with_pagination = kwargs.get("withPagination", False)
         if get_all:
-            first = 500
+            first = 100
 
         self.opencti.log(
             "info",
@@ -346,9 +346,44 @@ class StixCoreRelationship:
                 "orderMode": order_mode,
             },
         )
-        return self.opencti.process_multiple(
-            result["data"]["stixCoreRelationships"], with_pagination
-        )
+        if get_all:
+            final_data = []
+            data = self.opencti.process_multiple(
+                result["data"]["stixCoreRelationships"]
+            )
+            final_data = final_data + data
+            while result["data"]["stixCoreRelationships"]["pageInfo"]["hasNextPage"]:
+                after = result["data"]["stixCoreRelationships"]["pageInfo"]["endCursor"]
+                self.opencti.log("info", "Listing StixCoreRelationships after " + after)
+                result = self.opencti.query(
+                    query,
+                    {
+                        "elementId": element_id,
+                        "fromId": from_id,
+                        "fromTypes": from_types,
+                        "toId": to_id,
+                        "toTypes": to_types,
+                        "relationship_type": relationship_type,
+                        "startTimeStart": start_time_start,
+                        "startTimeStop": start_time_stop,
+                        "stopTimeStart": stop_time_start,
+                        "stopTimeStop": stop_time_stop,
+                        "filters": filters,
+                        "first": first,
+                        "after": after,
+                        "orderBy": order_by,
+                        "orderMode": order_mode,
+                    },
+                )
+                data = self.opencti.process_multiple(
+                    result["data"]["stixCoreRelationships"]
+                )
+                final_data = final_data + data
+            return final_data
+        else:
+            return self.opencti.process_multiple(
+                result["data"]["stixCoreRelationships"], with_pagination
+            )
 
     """
         Read a stix_core_relationship object
