@@ -162,8 +162,8 @@ class AddNotesLinesContainer extends Component {
                 {pathOr('', ['createdBy', 'name'], note)}
               </div>
               <div style={{ marginRight: 50 }}>
-                {pathOr([], ['objectMarking', 'edges'], note).length > 0 ? (
-                  map(
+                {pathOr([], ['objectMarking', 'edges'], note).length > 0
+                  && map(
                     (markingDefinition) => (
                       <ItemMarking
                         key={markingDefinition.node.id}
@@ -172,10 +172,7 @@ class AddNotesLinesContainer extends Component {
                       />
                     ),
                     note.objectMarking.edges,
-                  )
-                ) : (
-                  <ItemMarking label="TLP:WHITE" variant="inList" />
-                )}
+                  )}
               </div>
             </ListItem>
           );
@@ -219,6 +216,15 @@ const AddNotesLines = createPaginationContainer(
               id
               attribute_abstract
               content
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                    x_opencti_color
+                  }
+                }
+              }
             }
           }
         }
