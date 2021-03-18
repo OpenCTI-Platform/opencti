@@ -344,7 +344,12 @@ class OpenCTIApiClient:
             query LogsWorkerConfig {
                 logsWorkerConfig {
                     elasticsearch_url
+                    elasticsearch_proxy
                     elasticsearch_index
+                    elasticsearch_username
+                    elasticsearch_password
+                    elasticsearch_api_key
+                    elasticsearch_ssl_reject_unauthorized
                 }
             }
         """
