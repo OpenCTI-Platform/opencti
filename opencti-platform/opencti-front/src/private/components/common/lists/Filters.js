@@ -95,6 +95,7 @@ class Filters extends Component {
       entities: {},
       filters: {},
       keyword: '',
+      inputValues: {},
     };
   }
 
@@ -109,7 +110,13 @@ class Filters extends Component {
   searchEntities(filterKey, event) {
     const { t } = this.props;
     if (event && event.target.value !== 0) {
-      this.setState({ value: event.target.value });
+      this.setState({
+        inputValues: assoc(
+          filterKey,
+          event.target.value,
+          this.state.inputValues,
+        ),
+      });
     }
     switch (filterKey) {
       case 'createdBy':
@@ -182,7 +189,7 @@ class Filters extends Component {
                   value: n,
                   type: 'attribute',
                 })),
-              )(['2', '4', '6', '8']),
+              )(['1', '2', '3', '4', '5', '6', '7', '8', '9']),
             ),
           },
         });
@@ -370,7 +377,6 @@ class Filters extends Component {
       } else {
         this.props.handleAddFilter(filterKey, value.value, value.label, event);
       }
-      this.setState({});
     }
   }
 
@@ -396,7 +402,7 @@ class Filters extends Component {
       currentFilters,
       variant,
     } = this.props;
-    const { entities, keyword } = this.state;
+    const { entities, keyword, inputValues } = this.state;
     return (
       <Grid container={true} spacing={2}>
         {variant === 'dialog' && (
@@ -449,7 +455,7 @@ class Filters extends Component {
                   noOptionsText={t('No available options')}
                   options={entities[filterKey] ? entities[filterKey] : []}
                   onInputChange={this.searchEntities.bind(this, filterKey)}
-                  inputValue={this.state.value}
+                  inputValue={inputValues[filterKey] || ''}
                   onChange={this.handleChange.bind(this, filterKey)}
                   getOptionSelected={(option, value) => option.value === value}
                   renderInput={(params) => (
@@ -484,7 +490,9 @@ class Filters extends Component {
 
   renderListFilters() {
     const { t, classes, availableFilterKeys } = this.props;
-    const { open, anchorEl, entities } = this.state;
+    const {
+      open, anchorEl, entities, inputValues,
+    } = this.state;
     return (
       <div className={classes.filters}>
         {this.props.variant === 'text' ? (
@@ -537,9 +545,11 @@ class Filters extends Component {
               onInputChange={this.searchEntities.bind(this, filterKey)}
               onChange={this.handleChange.bind(this, filterKey)}
               getOptionSelected={(option, value) => option.value === value}
+              inputValue={inputValues[filterKey] || ''}
               renderInput={(params) => (
                 <TextField
                   {...params}
+                  name={filterKey}
                   label={t(`filter_${filterKey}`)}
                   variant="outlined"
                   size="small"
