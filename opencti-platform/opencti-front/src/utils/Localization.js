@@ -609,6 +609,7 @@ const i18n = {
       Type: 'Type',
       'Email address': 'Adresse email',
       name: 'Nom',
+      'Threat actor types': "Type d'acteur",
       Revoked: 'Révoqué',
       'STIX Version': 'Version STIX',
       Firstname: 'Prénom',

@@ -14,7 +14,7 @@ import {
   EditOutlined,
   InfoOutlined,
 } from '@material-ui/icons';
-import { Video3D, GraphOutline, SelectAll } from 'mdi-material-ui';
+import { Video3D, SelectAll } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -136,12 +136,10 @@ class GraphBar extends Component {
       t,
       classes,
       currentMode3D,
-      currentModeTree,
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
       handleToggle3DMode,
-      handleToggleTreeMode,
       handleToggleCreatedBy,
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,

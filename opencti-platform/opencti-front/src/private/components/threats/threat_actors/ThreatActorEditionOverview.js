@@ -15,6 +15,7 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -22,6 +23,7 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import SelectField from '../../../../components/SelectField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -106,6 +108,7 @@ const threatActorMutationRelationDelete = graphql`
 
 const threatActorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  threat_actor_types: Yup.array(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -246,8 +249,13 @@ class ThreatActorEditionOverviewComponent extends Component {
       assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
       assoc('objectMarking', objectMarking),
+      assoc(
+        'threat_actor_types',
+        threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
+      ),
       pick([
         'name',
+        'threat_actor_types',
         'description',
         'createdBy',
         'killChainPhases',
@@ -274,6 +282,59 @@ class ThreatActorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
+            <Field
+              component={SelectField}
+              name="threat_actor_types"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Threat actor types')}
+              fullWidth={true}
+              multiple={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="threat_actor_types"
+                />
+              }
+            >
+              <MenuItem key="activist" value="activist">
+                {t('activist')}
+              </MenuItem>
+              <MenuItem key="competitor" value="competitor">
+                {t('competitor')}
+              </MenuItem>
+              <MenuItem key="crime-syndicate" value="crime-syndicate">
+                {t('crime-syndicate')}
+              </MenuItem>
+              <MenuItem key="criminal'" value="criminal'">
+                {t('criminal')}
+              </MenuItem>
+              <MenuItem key="hacker" value="hacker">
+                {t('hacker')}
+              </MenuItem>
+              <MenuItem key="insider-accidental" value="insider-accidental">
+                {t('insider-accidental')}
+              </MenuItem>
+              <MenuItem key="insider-disgruntled" value="insider-disgruntled">
+                {t('insider-disgruntled')}
+              </MenuItem>
+              <MenuItem key="nation-state" value="nation-state">
+                {t('nation-state')}
+              </MenuItem>
+              <MenuItem key="sensationalist" value="sensationalist">
+                {t('sensationalist')}
+              </MenuItem>
+              <MenuItem key="spy" value="spy">
+                {t('spy')}
+              </MenuItem>
+              <MenuItem key="terrorist" value="terrorist">
+                {t('terrorist')}
+              </MenuItem>
+              <MenuItem key="unknown" value="unknown">
+                {t('unknown')}
+              </MenuItem>
+            </Field>
             <Field
               component={MarkDownField}
               name="description"
@@ -330,6 +391,7 @@ const ThreatActorEditionOverview = createFragmentContainer(
       fragment ThreatActorEditionOverview_threatActor on ThreatActor {
         id
         name
+        threat_actor_types
         description
         createdBy {
           ... on Identity {
