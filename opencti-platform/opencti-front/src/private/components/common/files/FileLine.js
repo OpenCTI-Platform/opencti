@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose, filter, pipe, split, drop, join, propOr,
-} from 'ramda';
+import { compose, filter, propOr } from 'ramda';
 import moment from 'moment';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -120,9 +118,7 @@ class FileLineComponent extends Component {
     const isProgress = uploadStatus === 'progress' || uploadStatus === 'wait';
     const isOutdated = isProgress && lastModifiedSinceMin > 1;
     const isImportActive = () => connectors && filter((x) => x.data.active, connectors).length > 0;
-    const fileName = propOr('', 'name', file).includes('_')
-      ? pipe(split('_'), drop(1), join('_'))(file.name)
-      : file.name;
+    const fileName = file.name;
     const toolTip = [...messages, ...errors].map((s) => s.message).join(', ');
     return (
       <div>

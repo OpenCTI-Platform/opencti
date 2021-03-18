@@ -18,10 +18,11 @@ const styles = () => ({
 class ThreatVictimologyAll extends Component {
   render() {
     const {
-      t, startDate, endDate, widget,
+      t, startDate, endDate, widget, mapReload,
     } = this.props;
     switch (widget.visualizationType) {
       case 'map':
+        if (mapReload) return <div />;
         return (
           <GlobalVictimologyMap
             title={`${t('Victimology')} - ${t('Global')}`}
@@ -100,6 +101,7 @@ ThreatVictimologyAll.propTypes = {
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  mapReload: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ThreatVictimologyAll);

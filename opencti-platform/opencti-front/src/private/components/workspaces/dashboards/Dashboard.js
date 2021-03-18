@@ -18,7 +18,7 @@ import {
   monthsAgo,
   parse,
   yearsAgo,
-  now,
+  dayStartDate,
 } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import WorkspaceHeader from '../WorkspaceHeader';
@@ -54,10 +54,10 @@ const styles = (theme) => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '0 274px 0 215px',
+    padding: '7px 274px 0 215px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
-    height: 50,
+    height: 64,
   },
   paper: {
     height: '100%',
@@ -71,7 +71,7 @@ const styles = (theme) => ({
 class DashboardComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { openConfig: false, currentWidget: {} };
+    this.state = { openConfig: false, currentWidget: {}, mapReload: false };
   }
 
   saveManifest(manifest) {
@@ -176,6 +176,7 @@ class DashboardComponent extends Component {
       R.map((n) => R.assoc('layout', layoutsObject[n.id], n), manifest.widgets),
       manifest,
     );
+    this.setState({ mapReload: true }, () => this.setState({ mapReload: false }));
     this.saveManifest(newManifest);
   }
 
@@ -185,7 +186,7 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? now() : config.endDate;
+    const endDate = relativeDate ? dayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -209,6 +210,7 @@ class DashboardComponent extends Component {
             startDate={startDate}
             endDate={endDate}
             widget={widget}
+            mapReload={this.state.mapReload}
           />
         );
       case 'intrusion-sets':
@@ -246,7 +248,7 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? now() : config.endDate;
+    const endDate = relativeDate ? dayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (
@@ -270,6 +272,7 @@ class DashboardComponent extends Component {
             startDate={startDate}
             endDate={endDate}
             widget={widget}
+            mapReload={this.state.mapReload}
           />
         );
       case 'campaigns':
@@ -321,7 +324,7 @@ class DashboardComponent extends Component {
     const startDate = relativeDate
       ? this.computerRelativeDate(relativeDate)
       : config.startDate;
-    const endDate = relativeDate ? now() : config.endDate;
+    const endDate = relativeDate ? dayStartDate() : config.endDate;
     switch (widget.dataType) {
       case 'all':
         return (

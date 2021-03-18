@@ -82,7 +82,7 @@ const LocationMiniMapTargets = (props) => {
     ? filter((n) => n.latitude && n.longitude, cities)
     : [];
   return (
-    <div style={{ height: '100%' }}>
+    <div style={{ width: '100%', height: '100%' }}>
       <Map
         center={center}
         zoom={zoom}

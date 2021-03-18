@@ -18,7 +18,7 @@ const styles = () => ({
 class ThreatVictimologyAll extends Component {
   render() {
     const {
-      t, widget, startDate, endDate,
+      t, widget, startDate, endDate, mapReload,
     } = this.props;
     switch (widget.visualizationType) {
       case 'horizontal-bar':
@@ -48,6 +48,7 @@ class ThreatVictimologyAll extends Component {
           />
         );
       case 'map':
+        if (mapReload) return <div />;
         return (
           <StixDomainObjectVictimologyMap
             title={`${t('Victimology (countries)')} - ${widget.entity.name}`}
@@ -105,6 +106,7 @@ ThreatVictimologyAll.propTypes = {
   widget: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  mapReload: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ThreatVictimologyAll);
