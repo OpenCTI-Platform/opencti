@@ -19,7 +19,13 @@ import { upload } from '../database/minio';
 import { workToExportFile } from './work';
 import { FunctionalError } from '../config/errors';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
-import { isStixDomainObject, stixDomainObjectOptions } from '../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_IDENTITY_SECTOR,
+  isStixDomainObject,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
+  stixDomainObjectOptions,
+} from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
@@ -97,7 +103,15 @@ export const stixDomainObjectImportPush = async (user, entityId, file) => {
 
 export const addStixDomainObject = async (user, stixDomainObject) => {
   const innerType = stixDomainObject.type;
-  const created = await createEntity(user, dissoc('type', stixDomainObject), innerType);
+  let data = stixDomainObject;
+  if (isStixDomainObjectIdentity(innerType)) {
+    const identityClass = innerType === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : innerType.toLowerCase();
+    data = assoc('identity_class', identityClass, data);
+  }
+  if (isStixDomainObjectLocation(innerType)) {
+    data = assoc('x_opencti_location_type', innerType.toLowerCase(), data);
+  }
+  const created = await createEntity(user, dissoc('type', data), innerType);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
