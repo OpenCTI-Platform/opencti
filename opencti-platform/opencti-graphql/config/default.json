@@ -32,7 +32,8 @@
   },
   "redis": {
     "hostname": "localhost",
-    "port": 6379
+    "port": 6379,
+    "trimming": 0
   },
   "elasticsearch": {
     "url": "http://localhost:9200",

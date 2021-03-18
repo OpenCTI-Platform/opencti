@@ -254,6 +254,7 @@ export const lockResource = async (resources, automaticExtension = true) => {
 // endregion
 
 // region opencti stream
+const streamTrimming = conf.get('redis:trimming') || 0;
 const mapJSToStream = (event) => {
   const cmdArgs = [];
   Object.keys(event).forEach((key) => {
@@ -277,6 +278,12 @@ const buildEvent = (eventType, user, markings, message, data) => {
     data,
   };
 };
+const pushToStream = (client, event) => {
+  if (streamTrimming) {
+    return client.call('XADD', OPENCTI_STREAM, 'MAXLEN', '~', streamTrimming, '*', ...mapJSToStream(event));
+  }
+  return client.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+};
 export const storeMergeEvent = async (user, instance, sourceEntities) => {
   try {
     const message = generateLogMessage(EVENT_TYPE_MERGE, instance, sourceEntities);
@@ -287,7 +294,7 @@ export const storeMergeEvent = async (user, instance, sourceEntities) => {
       source_ids: R.map((s) => s.standard_id, sourceEntities),
     };
     const event = buildEvent(EVENT_TYPE_MERGE, user, instance.objectMarking, message, data);
-    return clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+    return pushToStream(clientBase, event);
   } catch (e) {
     throw DatabaseError('Error in store merge event', { error: e });
   }
@@ -322,7 +329,7 @@ export const storeUpdateEvent = async (user, instance, updateEvents) => {
       const message = generateLogMessage(operation, instance, messageInput);
       // Build and send the event
       const event = buildEvent(EVENT_TYPE_UPDATE, user, instance.objectMarking, message, data);
-      await clientBase.xadd(OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store update event', { error: e });
     }
@@ -353,7 +360,7 @@ export const storeCreateEvent = async (user, instance, input) => {
       const message = generateLogMessage(EVENT_TYPE_CREATE, instance, data);
       // Build and send the event
       const event = buildEvent(EVENT_TYPE_CREATE, user, input.objectMarking, message, data);
-      await clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return pushToStream(clientBase, event);
     } catch (e) {
       throw DatabaseError('Error in store create event', { error: e });
     }
@@ -373,7 +380,7 @@ export const storeDeleteEvent = async (user, instance) => {
         data.hashes = instance.hashes;
       }
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-      return clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return pushToStream(clientBase, event);
     }
     if (isStixRelationship(instance.entity_type)) {
       const isCore = isStixCoreRelationship(instance.entity_type);
@@ -395,7 +402,7 @@ export const storeDeleteEvent = async (user, instance) => {
         x_opencti_target_ref: instance.to.internal_id,
       };
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
-      return clientBase.call('XADD', OPENCTI_STREAM, '*', ...mapJSToStream(event));
+      return pushToStream(clientBase, event);
     }
   } catch (e) {
     throw DatabaseError('Error in store delete event', { error: e });
