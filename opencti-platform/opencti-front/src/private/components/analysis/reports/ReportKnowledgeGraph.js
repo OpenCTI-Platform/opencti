@@ -217,7 +217,7 @@ class ReportKnowledgeGraphComponent extends Component {
     const createdBy = R.propOr([], 'createdBy', params);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
-      modeTree: R.propOr(false, 'modeTree', params),
+      modeTree: false,
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
@@ -382,6 +382,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleNodeClick(node, event) {
+    this.selectedLinks.clear();
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedNodes.has(node)) {
         this.selectedNodes.delete(node);
@@ -391,13 +392,16 @@ class ReportKnowledgeGraphComponent extends Component {
     } else {
       const untoggle = this.selectedNodes.has(node) && this.selectedNodes.size === 1;
       this.selectedNodes.clear();
-      this.selectedLinks.clear();
       if (!untoggle) this.selectedNodes.add(node);
     }
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    this.setState({
+      numberOfSelectedNodes: this.selectedNodes.size,
+      numberOfSelectedLinks: this.selectedLinks.size,
+    });
   }
 
   handleLinkClick(link, event) {
+    this.selectedNodes.clear();
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedLinks.has(link)) {
         this.selectedLinks.delete(link);
@@ -407,12 +411,14 @@ class ReportKnowledgeGraphComponent extends Component {
     } else {
       const untoggle = this.selectedLinks.has(link) && this.selectedLinks.size === 1;
       this.selectedLinks.clear();
-      this.selectedNodes.clear();
       if (!untoggle) {
         this.selectedLinks.add(link);
       }
     }
-    this.setState({ numberOfSelectedLinks: this.selectedLinks.size });
+    this.setState({
+      numberOfSelectedNodes: this.selectedNodes.size,
+      numberOfSelectedLinks: this.selectedLinks.size,
+    });
   }
 
   handleBackgroundClick() {

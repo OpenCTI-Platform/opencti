@@ -194,16 +194,6 @@ class GraphBar extends Component {
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title={t('Toggle tree mode')}>
-              <span>
-                <IconButton
-                  color={currentModeTree ? 'secondary' : 'primary'}
-                  onClick={handleToggleTreeMode.bind(this)}
-                >
-                  <GraphOutline />
-                </IconButton>
-              </span>
-            </Tooltip>
             <Tooltip title={t('Fit graph to canvas')}>
               <span>
                 <IconButton
