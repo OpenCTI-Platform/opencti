@@ -8,25 +8,14 @@ import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { pathOr } from 'ramda';
-import locale from '../utils/BrowserLanguage';
+import locale, { DEFAULT_LANG } from '../utils/BrowserLanguage';
 import i18n from '../utils/Localization';
 import { UserContext } from '../utils/Security';
 
 const AppIntlProvider = (props) => {
   const { children } = props;
   const { me } = useContext(UserContext);
-  const intlError = (error) => {
-    const matchingLocale = /for locale: "([a-z]+)"/gm;
-    const regMatch = matchingLocale.exec(error);
-    const currentLocale = regMatch !== null ? regMatch[1] : null;
-    // eslint-disable-next-line no-console
-    if (currentLocale && currentLocale !== 'en') console.error(error);
-  };
-  const platformLanguage = pathOr(
-    null,
-    ['settings', 'platform_language'],
-    props,
-  );
+  const platformLanguage = pathOr(null, ['settings', 'platform_language'], props);
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? props.settings.platform_language
     : locale;
@@ -36,18 +25,10 @@ const AppIntlProvider = (props) => {
     && me.language !== 'auto'
     ? me.language
     : platformLang;
+  const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
   return (
-    <IntlProvider
-      locale={lang}
-      onError={intlError}
-      key={lang}
-      messages={i18n.messages[lang]}
-    >
-      <MuiPickersUtilsProvider
-        utils={MomentUtils}
-        locale={lang}
-        moment={moment}
-      >
+    <IntlProvider locale={lang} key={lang} messages={baseMessages}>
+      <MuiPickersUtilsProvider utils={MomentUtils} locale={lang} moment={moment}>
         {children}
       </MuiPickersUtilsProvider>
     </IntlProvider>
