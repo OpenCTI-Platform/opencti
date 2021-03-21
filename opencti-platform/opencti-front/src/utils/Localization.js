@@ -42,6 +42,9 @@ const i18n = {
         'Souhaitez-vous supprimer cette campagne ?',
       'Do you want to delete this incident?':
         'Souhaitez-vous supprimer cet incident ?',
+      'Do you want to browse this external link?':
+        'Souhaitez-vous naviguer vers ce lien externe?',
+      'Browse the link': 'Naviguer vers le lien',
       'Do you want to delete this malware?':
         'Souhaitez-vous supprimer ce code malveillant ?',
       'Do you want to delete this marking definition?':

@@ -62,6 +62,8 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
     super(props);
     this.state = {
       displayDialog: false,
+      displayExternalLink: false,
+      externalLink: null,
       removeExternalReference: null,
       removing: false,
     };
@@ -86,6 +88,19 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
   handleRemoval() {
     this.setState({ removing: true });
     this.removeExternalReference(this.state.removeExternalReference);
+  }
+
+  handleOpenExternalLink(url) {
+    this.setState({ displayExternalLink: true, externalLink: url });
+  }
+
+  handleCloseExternalLink() {
+    this.setState({ displayExternalLink: false, externalLink: null });
+  }
+
+  handleBrowseExternalLink() {
+    window.open(this.state.externalLink, '_blank');
+    this.setState({ displayExternalLink: false, externalLink: null });
   }
 
   removeExternalReference(externalReferenceEdge) {
@@ -157,9 +172,10 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
                         dense={true}
                         divider={true}
                         button={true}
-                        component="a"
-                        href={externalReference.url}
-                        target="_blank"
+                        onClick={this.handleOpenExternalLink.bind(
+                          this,
+                          externalReference.url,
+                        )}
                       >
                         <ListItemIcon>
                           <Avatar classes={{ root: classes.avatar }}>
@@ -255,6 +271,33 @@ class StixCoreObjectExternalReferencesLinesContainer extends Component {
               disabled={this.state.removing}
             >
               {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayExternalLink}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseExternalLink.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to browse this external link?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseExternalLink.bind(this)}
+              color="primary"
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              button={true}
+              color="secondary"
+              onClick={this.handleBrowseExternalLink.bind(this)}
+            >
+              {t('Browse the link')}
             </Button>
           </DialogActions>
         </Dialog>
