@@ -15,7 +15,11 @@ import { UserContext } from '../utils/Security';
 const AppIntlProvider = (props) => {
   const { children } = props;
   const { me } = useContext(UserContext);
-  const platformLanguage = pathOr(null, ['settings', 'platform_language'], props);
+  const platformLanguage = pathOr(
+    null,
+    ['settings', 'platform_language'],
+    props,
+  );
   const platformLang = platformLanguage !== null && platformLanguage !== 'auto'
     ? props.settings.platform_language
     : locale;
@@ -27,8 +31,22 @@ const AppIntlProvider = (props) => {
     : platformLang;
   const baseMessages = i18n.messages[lang] || i18n.messages[DEFAULT_LANG];
   return (
-    <IntlProvider locale={lang} key={lang} messages={baseMessages}>
-      <MuiPickersUtilsProvider utils={MomentUtils} locale={lang} moment={moment}>
+    <IntlProvider
+      locale={lang}
+      key={lang}
+      messages={baseMessages}
+      onError={(err) => {
+        if (err.code === 'MISSING_TRANSLATION') {
+          return;
+        }
+        throw err;
+      }}
+    >
+      <MuiPickersUtilsProvider
+        utils={MomentUtils}
+        locale={lang}
+        moment={moment}
+      >
         {children}
       </MuiPickersUtilsProvider>
     </IntlProvider>

@@ -16,27 +16,31 @@ const MarkDownField = (props) => {
   const {
     form: { setFieldValue, setTouched },
     field: { name },
+    onFocus,
     onSubmit,
     label,
     style,
   } = props;
   const [selectedTab, setSelectedTab] = React.useState('write');
   const [field, meta] = useField(name);
-  const onBlur = (event) => {
-    setTouched(name, true);
-    const { value } = event.target;
-    if (
-      typeof onSubmit === 'function'
-      && value !== null
-      && value !== undefined
-    ) {
-      onSubmit(name, value);
+  const internalOnFocus = React.useCallback(() => {
+    if (typeof onFocus === 'function') {
+      onFocus(name);
     }
-  };
+  }, [onFocus, name]);
+  const internalOnBlur = React.useCallback(
+    (event) => {
+      const { value } = event.target;
+      setTouched(true);
+      if (typeof onSubmit === 'function') {
+        onSubmit(name, value || '');
+      }
+    },
+    [onSubmit, setTouched, name],
+  );
   return (
     <div
       style={style}
-      onBlur={onBlur}
       className={meta.touched && meta.error ? 'error' : 'main'}
     >
       <InputLabel style={{ fontSize: 10, marginBottom: 10 }}>
@@ -49,6 +53,12 @@ const MarkDownField = (props) => {
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) => Promise.resolve(converter.makeHtml(markdown))
         }
+        childProps={{
+          textArea: {
+            onBlur: internalOnBlur,
+            onFocus: internalOnFocus,
+          },
+        }}
       />
       {meta.touched ? (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
