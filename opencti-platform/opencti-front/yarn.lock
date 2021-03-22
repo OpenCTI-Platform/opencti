@@ -7552,7 +7552,7 @@ for-in@^1.0.2:
   resolved "https://registry.yarnpkg.com/for-in/-/for-in-1.0.2.tgz#81068d295a8142ec0ac726c6e2200c30fb6d5e80"
   integrity sha1-gQaNKVqBQuwKxybG4iAMMPttXoA=
 
-force-graph@^1.36.2:
+force-graph@^1.39.2:
   version "1.39.2"
   resolved "https://registry.yarnpkg.com/force-graph/-/force-graph-1.39.2.tgz#7ba9cc517dbbc248c7b74e50040bcf995de26b61"
   integrity sha512-8hMG0wBhOwT3Vj5AOnHodys8LVjJJ1oo7oUHVNMaY5Zteo9NIN/kD+4AO/HDehCmJw6lgQSreajtdLbWA3/vdQ==
@@ -13000,12 +13000,12 @@ react-fast-compare@^3.0.1, react-fast-compare@^3.2.0:
   resolved "https://registry.yarnpkg.com/react-fast-compare/-/react-fast-compare-3.2.0.tgz#641a9da81b6a6320f270e89724fb45a0b39e43bb"
   integrity sha512-rtGImPZ0YyLrscKI9xTpV8psd6I8VAtjKCzQDlzyDvqJA8XOW78TXYQwNRNd8g8JZnDu8q9Fu/1v4HPAVwVdHA==
 
-react-force-graph-2d@1.19.1:
-  version "1.19.1"
-  resolved "https://registry.yarnpkg.com/react-force-graph-2d/-/react-force-graph-2d-1.19.1.tgz#62b6fa48703a7cd743bd00dc8fd22bca81f99a25"
-  integrity sha512-ez9L+kV5PPBjjYq1jeI12XuKleoNIJE/sTpibL3TKSt0m0Nka3VGcruu7nEPtE8z+GB57aw/WrWZTyZ8RaB/Tg==
+react-force-graph-2d@1.22.1:
+  version "1.22.1"
+  resolved "https://registry.yarnpkg.com/react-force-graph-2d/-/react-force-graph-2d-1.22.1.tgz#561f5585ee2715def1e1b3f505c472949559105b"
+  integrity sha512-XlLUnlQYsvay3NAzfYMh/y6fq3uzePBWOJu9zi5yU1BKSvajRnklUFHMoOfJ2l7QHYJhEgLBb62T9WfYdn9nmw==
   dependencies:
-    force-graph "^1.36.2"
+    force-graph "^1.39.2"
     prop-types "^15.7.2"
     react-kapsule "^2.2.1"
 
