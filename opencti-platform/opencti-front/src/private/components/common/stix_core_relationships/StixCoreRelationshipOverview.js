@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
-import {
-  compose, includes, map, propOr,
-} from 'ramda';
+import { compose, map, propOr } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
@@ -156,16 +154,13 @@ class StixCoreRelationshipContainer extends Component {
     } = this.props;
     const { from } = stixCoreRelationship;
     const { to } = stixCoreRelationship;
-    const linkFrom = from.entity_type === 'stix-relation'
-      || from.entity_type === 'stix_relation'
+    const linkFrom = from.relationship_type
       ? `${resolveLink(from.from.entity_type)}/${
         from.from.id
       }/knowledge/relations`
       : resolveLink(from.entity_type);
-    const linkTo = to.entity_type === 'stix-relation' || to.entity_type === 'stix_relation'
-      ? `${resolveLink(to.from.entity_type)}/${
-        to.from.id
-      }/knowledge/relations`
+    const linkTo = to.relationship_type
+      ? `${resolveLink(to.from.entity_type)}/${to.from.id}/knowledge/relations`
       : resolveLink(to.entity_type);
     return (
       <div className={classes.container}>
@@ -192,30 +187,18 @@ class StixCoreRelationshipContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {includes('Stix-Cyber-Observable', from.parent_types)
-                  ? t(`entity_${from.entity_type}`)
-                  : t(
-                    `entity_${
-                      from.entity_type === 'stix_relation'
-                        || from.entity_type === 'stix-relation'
-                        ? from.parent_types[0]
-                        : from.entity_type
-                    }`,
-                  )}
+                {from.relationship_type
+                  ? t('Relationship')
+                  : t(`entity_${from.entity_type}`)}
               </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  /* eslint-disable-next-line no-nested-ternary */
-                  includes('Stix-Cyber-Observable', from.parent_types)
-                    ? from.observable_value
-                    : from.entity_type === 'stix_relation'
-                      || from.entity_type === 'stix-relation'
-                      ? `${from.from.name} ${String.fromCharCode(8594)} ${
-                        from.to.name
-                      }`
-                      : from.name,
+                  from.name
+                    || from.observable_value
+                    || from.abstract
+                    || t(`relationship_${from.entity_type}`),
                   50,
                 )}
               </span>
@@ -262,30 +245,18 @@ class StixCoreRelationshipContainer extends Component {
                 />
               </div>
               <div className={classes.type}>
-                {includes('Stix-Cyber-Observable', to.parent_types)
-                  ? t(`entity_${to.entity_type}`)
-                  : t(
-                    `entity_${
-                      to.entity_type === 'stix_relation'
-                        || to.entity_type === 'stix-relation'
-                        ? to.parent_types[0]
-                        : to.entity_type
-                    }`,
-                  )}
+                {to.relationship_type
+                  ? t('Relationship')
+                  : t(`entity_${to.entity_type}`)}
               </div>
             </div>
             <div className={classes.content}>
               <span className={classes.name}>
                 {truncate(
-                  /* eslint-disable-next-line no-nested-ternary */
-                  includes('Stix-Cyber-Observable', to.parent_types)
-                    ? to.observable_value
-                    : to.entity_type === 'stix_relation'
-                      || to.entity_type === 'stix-relation'
-                      ? `${to.from.name} ${String.fromCharCode(8594)} ${
-                        to.to.name
-                      }`
-                      : to.name,
+                  to.name
+                    || to.observable_value
+                    || to.abstract
+                    || t(`relationship_${to.entity_type}`),
                   50,
                 )}
               </span>
@@ -541,6 +512,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             observable_value
           }
           ... on StixCoreRelationship {
+            id
+            entity_type
+            relationship_type
             from {
               ... on BasicObject {
                 id
@@ -740,6 +714,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             observable_value
           }
           ... on StixCoreRelationship {
+            id
+            entity_type
+            relationship_type
             from {
               ... on BasicObject {
                 id

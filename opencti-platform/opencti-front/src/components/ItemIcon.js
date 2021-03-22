@@ -151,6 +151,7 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Core-Relationship':
+    case 'Relationship':
     case 'stix-core-relationship':
     case 'targets':
     case 'uses':

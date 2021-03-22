@@ -157,6 +157,9 @@ const relationsTypesMapping = {
   'IPv6-Addr_City': ['located-at'],
   'IPv6-Addr_Position': ['located-at'],
   targets_City: ['located-at'],
+  targets_Country: ['located-at'],
+  targets_Region: ['located-at'],
+  targets_Position: ['located-at'],
 };
 
 const stixCyberObservableRelationshipTypesMapping = {

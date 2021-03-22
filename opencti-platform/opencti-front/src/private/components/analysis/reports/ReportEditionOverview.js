@@ -50,6 +50,7 @@ export const reportMutationFieldPatch = graphql`
   ) {
     reportEdit(id: $id) {
       fieldPatch(input: $input) {
+        x_opencti_graph_data
         ...ReportEditionOverview_report
       }
     }

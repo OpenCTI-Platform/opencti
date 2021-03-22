@@ -86,13 +86,13 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {t(`entity_${element.entity_type}`)}
+                {element.relationship_type ? t(`relationship_${element.entity_type}`) : t(`entity_${element.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {element.name || element.abstract || element.observable_value}
+                {element.name || element.abstract || element.observable_value || t('Relationship')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -314,14 +314,13 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               }
             }
           }
-        }
-        killChainPhases {
-          edges {
-            node {
-              id
-              phase_name
-              x_opencti_order
-            }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
           }
         }
         to {
@@ -491,6 +490,14 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
                 }
               }
             }
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
           }
         }
         killChainPhases {

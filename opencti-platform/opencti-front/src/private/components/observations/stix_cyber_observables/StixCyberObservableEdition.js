@@ -63,7 +63,7 @@ class StixCyberObservableEdition extends Component {
   }
 
   render() {
-    const { classes, stixCyberObservableId } = this.props;
+    const { classes, stixCyberObservableId, variant } = this.props;
     return (
       <div>
         <Fab
@@ -87,6 +87,7 @@ class StixCyberObservableEdition extends Component {
               if (props) {
                 return (
                   <StixCyberObservableEditionContainer
+                    variant={variant}
                     stixCyberObservable={props.stixCyberObservable}
                     handleClose={this.handleClose.bind(this)}
                   />
@@ -103,6 +104,7 @@ class StixCyberObservableEdition extends Component {
 
 StixCyberObservableEdition.propTypes = {
   stixCyberObservableId: PropTypes.string,
+  variant: PropTypes.string,
   me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,

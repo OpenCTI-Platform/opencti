@@ -24,8 +24,11 @@ import Tool from '../resources/images/entities/tool_dark.svg';
 import Vulnerability from '../resources/images/entities/vulnerability_dark.svg';
 import XOpenCTIIncident from '../resources/images/entities/incident_dark.svg';
 import StixCyberObservable from '../resources/images/entities/stix-cyber-observable_dark.svg';
+import relationship from '../resources/images/entities/relationship.svg';
 import { itemColor } from './Colors';
 import Theme from '../components/ThemeDark';
+import { dateFormat } from './Time';
+import { isNone } from '../components/i18n';
 
 const genImage = (src) => {
   const img = new Image();
@@ -81,6 +84,7 @@ export const graphImages = {
   'X-OpenCTI-Cryptocurrency-Wallet': genImage(StixCyberObservable),
   'X-OpenCTI-Hostname': genImage(StixCyberObservable),
   'X-OpenCTI-User-Agent': genImage(StixCyberObservable),
+  relationship: genImage(relationship),
 };
 
 export const graphLevel = {
@@ -131,6 +135,7 @@ export const graphLevel = {
   'X-OpenCTI-Cryptocurrency-Wallet': 1,
   'X-OpenCTI-Hostname': 1,
   'X-OpenCTI-User-Agent': 1,
+  relationship: 1,
 };
 
 export const graphRawImages = {
@@ -197,21 +202,43 @@ export const decodeGraphData = (encodedGraphData) => {
   return {};
 };
 
-export const buildGraphData = (objects, graphData) => {
+export const buildGraphData = (objects, graphData, t) => {
+  const relationshipsIdsInNestedRelationship = R.pipe(
+    R.filter((n) => n.from?.relationship_type || n.to?.relationship_type),
+    R.map((n) => (n.from?.relationship_type ? n.from.id : n.to.id)),
+  )(objects);
   const nodes = R.pipe(
-    R.map((n) => n.node),
-    R.filter((n) => !n.relationship_type),
+    R.filter(
+      (n) => !n.relationship_type
+        || R.includes(n.id, relationshipsIdsInNestedRelationship),
+    ),
     R.map((n) => ({
       id: n.id,
-      val: graphLevel[n.entity_type],
-      name: truncate(
-        n.name || n.observable_value || n.attribute_abstract || n.opinion,
-        20,
-      ),
-      img: graphImages[n.entity_type],
-      rawImg: graphRawImages[n.entity_type],
+      val: graphLevel[n.relationship_type ? 'relationship' : n.entity_type],
+      name: n.relationship_type
+        ? `${t('Start time')} ${
+          isNone(n.start_time) ? '-' : dateFormat(n.start_time)
+        }\n${t('Stop time')} ${
+          isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
+        }`
+        : n.name || n.observable_value || n.attribute_abstract || n.opinion,
+      label: n.relationship_type
+        ? t(`relationship_${n.relationship_type}`)
+        : truncate(
+          n.name || n.observable_value || n.attribute_abstract || n.opinion,
+          20,
+        ),
+      img: graphImages[n.relationship_type ? 'relationship' : n.entity_type],
+      rawImg:
+        graphRawImages[n.relationship_type ? 'relationship' : n.entity_type],
       color: itemColor(n.entity_type, false),
       entity_type: n.entity_type,
+      relationship_type: n.relationship_type,
+      fromId: n.from?.id,
+      fromType: n.from?.entity_type,
+      toId: n.to?.id,
+      toType: n.to?.entity_type,
+      isObservable: !!n.observable_value,
       markedBy: R.map(
         (m) => ({ id: m.node.id, definition: m.node.definition }),
         n.objectMarking.edges,
@@ -222,64 +249,66 @@ export const buildGraphData = (objects, graphData) => {
       fx: graphData[n.id] && graphData[n.id].x ? graphData[n.id].x : null,
       fy: graphData[n.id] && graphData[n.id].y ? graphData[n.id].y : null,
     })),
-  )(objects.edges);
-  const links = R.pipe(
-    R.map((n) => n.node),
-    R.filter((n) => n.relationship_type),
+  )(objects);
+  const normalLinks = R.pipe(
+    R.filter(
+      (n) => n.relationship_type
+        && !R.includes(n.id, relationshipsIdsInNestedRelationship),
+    ),
     R.map((n) => ({
       id: n.id,
+      entity_type: n.entity_type,
+      relationship_type: n.relationship_type,
       source: n.from.id,
       target: n.to.id,
-      name: n.relationship_type,
+      label: t(`relationship_${n.relationship_type}`),
+      name: `${t('Start time')} ${
+        isNone(n.start_time) ? '-' : dateFormat(n.start_time)
+      }\n${t('Stop time')} ${
+        isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
+      }`,
       source_id: n.from.id,
       target_id: n.to.id,
-      start_time: n.start_time,
-      stop_time: n.stop_time,
     })),
-  )(objects.edges);
+  )(objects);
+  const nestedLinks = R.pipe(
+    R.filter((n) => R.includes(n.id, relationshipsIdsInNestedRelationship)),
+    R.map((n) => [
+      {
+        id: n.id,
+        entity_type: n.entity_type,
+        relationship_type: n.relationship_type,
+        source: n.from.id,
+        target: n.id,
+        label: '',
+        name: '',
+        source_id: n.from.id,
+        target_id: n.id,
+        start_time: '',
+        stop_time: '',
+      },
+      {
+        id: n.id,
+        entity_type: n.entity_type,
+        relationship_type: n.relationship_type,
+        source: n.id,
+        target: n.to.id,
+        label: '',
+        name: '',
+        source_id: n.id,
+        target_id: n.to.id,
+        start_time: '',
+        stop_time: '',
+      },
+    ]),
+    R.flatten,
+  )(objects);
+  const links = R.concat(normalLinks, nestedLinks);
   return {
     nodes,
     links,
   };
 };
-
-export const buildNodeData = (entity, node = null) => ({
-  id: entity.id,
-  val: graphLevel[entity.entity_type],
-  name: truncate(
-    entity.name
-      || entity.observable_value
-      || entity.attribute_abstract
-      || entity.opinion,
-    20,
-  ),
-  img: graphImages[entity.entity_type],
-  rawImg: graphRawImages[entity.entity_type],
-  color: itemColor(entity.entity_type, false),
-  entity_type: entity.entity_type,
-  markedBy: R.map(
-    (m) => ({ id: m.node.id, definition: m.node.definition }),
-    entity.objectMarking.edges,
-  ),
-  createdBy: entity.createdBy
-    ? entity.createdBy
-    : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: 'Unknown' },
-  fx: node && node.fx ? node.fx : undefined,
-  fy: node && node.fy ? node.fy : undefined,
-  x: node && node.x ? node.x : undefined,
-  y: node && node.y ? node.y : undefined,
-});
-
-export const buildLinkData = (relation) => ({
-  id: relation.id,
-  source: relation.from.id,
-  target: relation.to.id,
-  name: relation.relationship_type,
-  source_id: relation.from.id,
-  target_id: relation.to.id,
-  start_time: relation.start_time,
-  stop_time: relation.stop_time,
-});
 
 export const applyFilters = (
   graphData,
@@ -318,7 +347,7 @@ export const applyFilters = (
 
 export const nodePaint = (
   {
-    name, img, x, y,
+    label, img, x, y,
   },
   color,
   ctx,
@@ -338,7 +367,7 @@ export const nodePaint = (
   ctx.font = '4px Roboto';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.fillText(name, x, y + 10);
+  ctx.fillText(label, x, y + 10);
 };
 
 export const nodeAreaPaint = ({ name, x, y }, color, ctx) => {
@@ -373,12 +402,12 @@ export const linkPaint = (link, ctx) => {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#ffffff';
-  ctx.fillText(link.name, 0, 0);
+  ctx.fillText(link.label, 0, 0);
   ctx.restore();
 };
 
 export const nodeThreePaint = (node) => {
-  const sprite = new SpriteText(node.name);
+  const sprite = new SpriteText(node.label);
   sprite.color = '#ffffff';
   sprite.textHeight = 1.5;
   return sprite;

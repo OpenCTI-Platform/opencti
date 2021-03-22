@@ -68,11 +68,7 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
               (stixCoreRelationshipEdge) => {
                 const stixCoreRelationship = stixCoreRelationshipEdge.node;
                 const link = `${resolveLink(
-                  stixCoreRelationship.to.parent_types.includes(
-                    'Stix-Cyber-Observable',
-                  )
-                    ? 'observable'
-                    : stixCoreRelationship.to.entity_type,
+                  stixCoreRelationship.to.entity_type,
                 )}/${stixCoreRelationship.to.id}`;
                 return (
                   <ListItem
@@ -88,21 +84,13 @@ class StixCoreRelationshipStixCoreRelationshipsLinesContainer extends Component 
                     </ListItemIcon>
                     <ListItemText
                       primary={
-                        stixCoreRelationship.to.parent_types.includes(
-                          'Stix-Cyber-Observable',
-                        )
+                        stixCoreRelationship.to.observable_value
                           ? stixCoreRelationship.to.observable_value
                           : stixCoreRelationship.to.name
                       }
-                      secondary={
-                        stixCoreRelationship.to.parent_types.includes(
-                          'Stix-Cyber-Observable',
-                        )
-                          ? t(
-                            `observable_${stixCoreRelationship.to.entity_type}`,
-                          )
-                          : t(`entity_${stixCoreRelationship.to.entity_type}`)
-                      }
+                      secondary={t(
+                        `entity_${stixCoreRelationship.to.entity_type}`,
+                      )}
                     />
                     <ListItemSecondaryAction>
                       <StixCoreRelationshipPopover

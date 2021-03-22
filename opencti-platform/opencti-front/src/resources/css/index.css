@@ -231,3 +231,17 @@ div.markdown p {
   max-width: 100%;
   margin-bottom: 80px !important;
 }
+
+.force-graph-container .graph-tooltip {
+  position: absolute;
+  transform: translate(-50%, 25px);
+  font-size: 12px !important;
+  padding: 8px !important;
+  border-radius: 3px;
+  color: #eee;
+  background: rgba(0,0,0,0.65);
+  visibility: hidden; /* by default */
+  display: block;
+  unicode-bidi: embed;
+  white-space: pre;
+}

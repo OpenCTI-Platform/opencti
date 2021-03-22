@@ -142,6 +142,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
       edges {
         node {
           id
+          entity_type
           relationship_type
           description
           confidence
@@ -151,20 +152,47 @@ export const stixCoreRelationshipCreationQuery = graphql`
             ... on BasicObject {
               id
               entity_type
+              parent_types
             }
             ... on BasicRelationship {
               id
               entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
             }
           }
           to {
             ... on BasicObject {
               id
               entity_type
+              parent_types
             }
             ... on BasicRelationship {
               id
               entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+            }
+          }
+          created_at
+          updated_at
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition
+              }
             }
           }
         }
@@ -179,6 +207,7 @@ const stixCoreRelationshipCreationMutation = graphql`
   ) {
     stixCoreRelationshipAdd(input: $input) {
       id
+      entity_type
       relationship_type
       confidence
       start_time
@@ -187,20 +216,47 @@ const stixCoreRelationshipCreationMutation = graphql`
         ... on BasicObject {
           id
           entity_type
+          parent_types
         }
         ... on BasicRelationship {
           id
           entity_type
+          parent_types
+        }
+        ... on StixCoreRelationship {
+          relationship_type
         }
       }
       to {
         ... on BasicObject {
           id
           entity_type
+          parent_types
         }
         ... on BasicRelationship {
           id
           entity_type
+          parent_types
+        }
+        ... on StixCoreRelationship {
+          relationship_type
+        }
+      }
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+          }
         }
       }
     }
@@ -399,12 +455,16 @@ class StixCoreRelationshipCreation extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {t(`entity_${from.entity_type}`)}
+                      {from.relationship_type
+                        ? t('Relationship')
+                        : t(`entity_${from.entity_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(from.name, 20)}
+                      {from.relationship_type
+                        ? t(`relationship_${from.relationship_type}`)
+                        : truncate(from.name, 20)}
                     </span>
                   </div>
                 </div>
@@ -415,7 +475,7 @@ class StixCoreRelationshipCreation extends Component {
                     variant="outlined"
                     onClick={this.handleReverseRelation.bind(this)}
                     color="secondary"
-                    size='small'
+                    size="small"
                   >
                     {t('Reverse')}
                   </Button>
@@ -442,12 +502,16 @@ class StixCoreRelationshipCreation extends Component {
                       />
                     </div>
                     <div className={classes.type}>
-                      {t(`entity_${to.entity_type}`)}
+                      {to.relationship_type
+                        ? t('Relationship')
+                        : t(`entity_${to.entity_type}`)}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(to.name, 20)}
+                      {to.relationship_type
+                        ? t(`relationship_${to.relationship_type}`)
+                        : truncate(to.name, 20)}
                     </span>
                   </div>
                 </div>
@@ -585,7 +649,9 @@ class StixCoreRelationshipCreation extends Component {
                     />
                   </div>
                   <div className={classes.type}>
-                    {t(`entity_${from.entity_type}`)}
+                    {from.relationship_type
+                      ? t('Relationship')
+                      : t(`entity_${from.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>
@@ -639,7 +705,9 @@ class StixCoreRelationshipCreation extends Component {
                     />
                   </div>
                   <div className={classes.type}>
-                    {t(`entity_${to.entity_type}`)}
+                    {to.relationship_type
+                      ? t('Relationship')
+                      : t(`entity_${to.entity_type}`)}
                   </div>
                 </div>
                 <div className={classes.content}>

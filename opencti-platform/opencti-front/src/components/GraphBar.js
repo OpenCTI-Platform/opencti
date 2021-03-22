@@ -110,9 +110,15 @@ class GraphBar extends Component {
   }
 
   handleOpenEditItem() {
-    if (this.props.numberOfSelectedNodes === 1) {
+    if (
+      this.props.numberOfSelectedNodes === 1
+      && !this.props.selectedNodes[0].relationship_type
+    ) {
       this.setState({ openEditEntity: true });
-    } else if (this.props.numberOfSelectedLinks === 1) {
+    } else if (
+      this.props.numberOfSelectedLinks === 1
+      || this.props.selectedNodes[0].relationship_type
+    ) {
       this.setState({ openEditRelation: true });
     }
   }
@@ -172,8 +178,44 @@ class GraphBar extends Component {
       openEditRelation,
       openEditEntity,
     } = this.state;
-    const editionEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
+    const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
       || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
+    let viewLink = null;
+    if (viewEnabled) {
+      if (numberOfSelectedNodes === 1) {
+        if (selectedNodes[0].relationship_type) {
+          viewLink = `${resolveLink(selectedNodes[0].fromType)}/${
+            selectedNodes[0].fromId
+          }/knowledge/relations/${selectedNodes[0].id}`;
+        } else {
+          viewLink = `${resolveLink(selectedNodes[0].entity_type)}/${
+            selectedNodes[0].id
+          }`;
+        }
+      } else if (numberOfSelectedLinks === 1) {
+        const remoteRelevant = selectedLinks[0].source.relationship_type
+          ? selectedLinks[0].target
+          : selectedLinks[0].source;
+        viewLink = `${resolveLink(remoteRelevant.entity_type)}/${
+          remoteRelevant.id
+        }/knowledge/relations/${selectedLinks[0].id}`;
+      }
+    }
+    const editionEnabled = (numberOfSelectedNodes === 1
+        && numberOfSelectedLinks === 0
+        && !selectedNodes[0].isObservable)
+      || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
+    const relationEnabled = (numberOfSelectedNodes === 2 && numberOfSelectedLinks === 0)
+      || (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1);
+    let relationFrom = null;
+    let relationTo = null;
+    if (numberOfSelectedNodes === 2) {
+      relationFrom = relationReversed ? selectedNodes[1] : selectedNodes[0];
+      relationTo = relationReversed ? selectedNodes[0] : selectedNodes[1];
+    } else if (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 1) {
+      relationFrom = relationReversed ? selectedNodes[0] : selectedLinks[0];
+      relationTo = relationReversed ? selectedLinks[0] : selectedNodes[0];
+    }
     return (
       <Drawer
         anchor="bottom"
@@ -376,16 +418,14 @@ class GraphBar extends Component {
                 onAdd={onAdd}
                 onDelete={onDelete}
               />
-              <Tooltip title={t('View the entity')}>
+              <Tooltip title={t('View the item')}>
                 <span>
                   <IconButton
                     color="primary"
                     component={Link}
                     target="_blank"
-                    to={`${resolveLink(
-                      R.propOr(null, 'entity_type', selectedNodes[0]),
-                    )}/${R.propOr(null, 'id', selectedNodes[0])}`}
-                    disabled={numberOfSelectedNodes !== 1}
+                    to={viewLink}
+                    disabled={!viewEnabled}
                   >
                     <InfoOutlined />
                   </IconButton>
@@ -409,7 +449,10 @@ class GraphBar extends Component {
               />
               <StixCoreRelationshipEdition
                 open={openEditRelation}
-                stixCoreRelationshipId={R.propOr(null, 'id', selectedLinks[0])}
+                stixCoreRelationshipId={
+                  R.propOr(null, 'id', selectedNodes[0])
+                  || R.propOr(null, 'id', selectedLinks[0])
+                }
                 handleClose={this.handleCloseRelationEdition.bind(this)}
               />
               <Tooltip title={t('Create a relationship')}>
@@ -417,7 +460,7 @@ class GraphBar extends Component {
                   <IconButton
                     color="primary"
                     onClick={this.handleOpenCreateRelationship.bind(this)}
-                    disabled={numberOfSelectedNodes !== 2}
+                    disabled={!relationEnabled}
                   >
                     <LinkOutlined />
                   </IconButton>
@@ -425,8 +468,8 @@ class GraphBar extends Component {
               </Tooltip>
               <StixCoreRelationshipCreation
                 open={openCreatedRelation}
-                from={relationReversed ? selectedNodes[1] : selectedNodes[0]}
-                to={relationReversed ? selectedNodes[0] : selectedNodes[1]}
+                from={relationFrom}
+                to={relationTo}
                 firstSeen={lastLinkFirstSeen || dateFormat(report.published)}
                 lastSeen={lastLinkLastSeen || dateFormat(report.published)}
                 weight={report.confidence}

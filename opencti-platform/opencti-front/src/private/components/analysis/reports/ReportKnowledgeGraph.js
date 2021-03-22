@@ -16,8 +16,6 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import {
   applyFilters,
   buildGraphData,
-  buildLinkData,
-  buildNodeData,
   decodeGraphData,
   encodeGraphData,
   linkPaint,
@@ -35,6 +33,7 @@ import {
   reportKnowledgeGraphtMutationRelationAddMutation,
   reportKnowledgeGraphtMutationRelationDeleteMutation,
 } from './ReportKnowledgeGraphQuery';
+import { stixCoreRelationshipEditionDeleteMutation } from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 
 const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
 
@@ -56,6 +55,21 @@ export const reportKnowledgeGraphQuery = graphql`
   query ReportKnowledgeGraphQuery($id: String) {
     report(id: $id) {
       ...ReportKnowledgeGraph_report
+    }
+  }
+`;
+
+const reportKnowledgeGraphCheckRelationQuery = graphql`
+  query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
+    stixCoreRelationship(id: $id) {
+      id
+      reports {
+        edges {
+          node {
+            id
+          }
+        }
+      }
     }
   }
 `;
@@ -178,6 +192,9 @@ const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
           entity_type
           parent_types
         }
+        ... on StixCoreRelationship {
+          relationship_type
+        }
       }
       to {
         ... on BasicObject {
@@ -189,6 +206,26 @@ const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
           id
           entity_type
           parent_types
+        }
+        ... on StixCoreRelationship {
+          relationship_type
+        }
+      }
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition
+          }
         }
       }
     }
@@ -208,9 +245,11 @@ class ReportKnowledgeGraphComponent extends Component {
       `view-report-${this.props.report.id}-knowledge`,
     );
     this.zoom = R.propOr(null, 'zoom', params);
+    this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
     this.graphData = buildGraphData(
-      props.report.objects,
+      this.graphObjects,
       decodeGraphData(props.report.x_opencti_graph_data),
+      props.t,
     );
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
     const markedBy = R.propOr([], 'markedBy', params);
@@ -382,7 +421,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleNodeClick(node, event) {
-    this.selectedLinks.clear();
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedNodes.has(node)) {
         this.selectedNodes.delete(node);
@@ -392,6 +430,7 @@ class ReportKnowledgeGraphComponent extends Component {
     } else {
       const untoggle = this.selectedNodes.has(node) && this.selectedNodes.size === 1;
       this.selectedNodes.clear();
+      this.selectedLinks.clear();
       if (!untoggle) this.selectedNodes.add(node);
     }
     this.setState({
@@ -401,7 +440,6 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleLinkClick(link, event) {
-    this.selectedNodes.clear();
     if (event.ctrlKey || event.shiftKey || event.altKey) {
       if (this.selectedLinks.has(link)) {
         this.selectedLinks.delete(link);
@@ -410,6 +448,7 @@ class ReportKnowledgeGraphComponent extends Component {
       }
     } else {
       const untoggle = this.selectedLinks.has(link) && this.selectedLinks.size === 1;
+      this.selectedNodes.clear();
       this.selectedLinks.clear();
       if (!untoggle) {
         this.selectedLinks.add(link);
@@ -431,10 +470,12 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleAddEntity(stixCoreObject) {
-    this.graphData = {
-      nodes: [buildNodeData(stixCoreObject), ...this.graphData.nodes],
-      links: this.graphData.links,
-    };
+    this.graphObjects = [stixCoreObject, ...this.graphObjects];
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.report.x_opencti_graph_data),
+      this.props.t,
+    );
     this.setState(
       {
         graphData: applyFilters(
@@ -463,10 +504,12 @@ class ReportKnowledgeGraphComponent extends Component {
         input,
       },
       onCompleted: () => {
-        this.graphData = {
-          nodes: this.graphData.nodes,
-          links: [buildLinkData(stixCoreRelationship), ...this.graphData.links],
-        };
+        this.graphObjects = [stixCoreRelationship, ...this.graphObjects];
+        this.graphData = buildGraphData(
+          this.graphObjects,
+          decodeGraphData(this.props.report.x_opencti_graph_data),
+          this.props.t,
+        );
         this.setState({
           graphData: applyFilters(
             this.graphData,
@@ -481,17 +524,20 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleDelete(stixCoreObject) {
-    const nodes = R.filter(
-      (n) => n.id !== stixCoreObject.id,
-      this.graphData.nodes,
+    const relationshipsToRemove = R.filter(
+      (n) => n.from?.id === stixCoreObject.id || n.to?.id === stixCoreObject.id,
+      this.graphObjects,
     );
-    const links = R.filter(
-      (n) => n.source.id !== stixCoreObject.id && n.target.id !== stixCoreObject.id,
-      this.graphData.links,
+    this.graphObjects = R.filter(
+      (n) => n.id !== stixCoreObject.id
+        && n.from?.id !== stixCoreObject.id
+        && n.to?.id !== stixCoreObject.id,
+      this.graphObjects,
     );
-    const linksToRemove = R.filter(
-      (n) => n.source.id === stixCoreObject.id || n.target.id === stixCoreObject.id,
-      this.graphData.links,
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.report.x_opencti_graph_data),
+      this.props.t,
     );
     R.forEach((n) => {
       commitMutation({
@@ -502,8 +548,7 @@ class ReportKnowledgeGraphComponent extends Component {
           relationship_type: 'object',
         },
       });
-    }, linksToRemove);
-    this.graphData = { nodes, links };
+    }, relationshipsToRemove);
     this.setState({
       graphData: applyFilters(
         this.graphData,
@@ -520,37 +565,47 @@ class ReportKnowledgeGraphComponent extends Component {
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
     R.forEach((n) => {
-      commitMutation({
-        mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
-        variables: {
-          id: this.props.report.id,
-          toId: n.id,
-          relationship_type: 'object',
-        },
+      fetchQuery(reportKnowledgeGraphCheckRelationQuery, {
+        id: n.id,
+      }).then((data) => {
+        if (data.stixCoreRelationship.reports.edges.length === 1) {
+          commitMutation({
+            mutation: stixCoreRelationshipEditionDeleteMutation,
+            variables: {
+              id: n.id,
+            },
+          });
+        } else {
+          commitMutation({
+            mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
+            variables: {
+              id: this.props.report.id,
+              toId: n.id,
+              relationship_type: 'object',
+            },
+          });
+        }
       });
     }, this.selectedLinks);
-    let links = R.filter(
+    this.graphObjects = R.filter(
       (n) => !R.includes(n.id, selectedLinksIds),
-      this.graphData.links,
+      this.graphObjects,
     );
     this.selectedLinks.clear();
 
     // Remove selected nodes
     const selectedNodes = Array.from(this.selectedNodes);
     const selectedNodesIds = R.map((n) => n.id, selectedNodes);
-    const nodes = R.filter(
-      (n) => !R.includes(n.id, selectedNodesIds),
-      this.graphData.nodes,
+    const relationshipsToRemove = R.filter(
+      (n) => R.includes(n.from?.id, selectedNodesIds)
+        || R.includes(n.to?.id, selectedNodesIds),
+      this.graphObjects,
     );
-    const linksToRemove = R.filter(
-      (n) => R.includes(n.source.id, selectedNodesIds)
-        || R.includes(n.target.id, selectedNodesIds),
-      links,
-    );
-    links = R.filter(
-      (n) => !R.includes(n.source.id, selectedNodesIds)
-        && !R.includes(n.target.id, selectedNodesIds),
-      links,
+    this.graphObjects = R.filter(
+      (n) => !R.includes(n.id, selectedNodesIds)
+        && !R.includes(n.from?.id, selectedNodesIds)
+        && !R.includes(n.to?.id, selectedNodesIds),
+      this.graphObjects,
     );
     R.forEach((n) => {
       commitMutation({
@@ -561,7 +616,7 @@ class ReportKnowledgeGraphComponent extends Component {
           relationship_type: 'object',
         },
       });
-    }, linksToRemove);
+    }, relationshipsToRemove);
     R.forEach((n) => {
       commitMutation({
         mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
@@ -572,8 +627,12 @@ class ReportKnowledgeGraphComponent extends Component {
         },
       });
     }, selectedNodes);
-    this.graphData = { nodes, links };
     this.selectedNodes.clear();
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.report.x_opencti_graph_data),
+      this.props.t,
+    );
     this.setState({
       graphData: applyFilters(
         this.graphData,
@@ -593,15 +652,15 @@ class ReportKnowledgeGraphComponent extends Component {
         id: entityId,
       }).then((data) => {
         const { stixCoreObject } = data;
-        // eslint-disable-next-line max-len
-        const nodes = R.map(
-          (n) => (n.id === stixCoreObject.id ? buildNodeData(stixCoreObject, n) : n),
-          this.graphData.nodes,
+        this.graphObjects = R.map(
+          (n) => (n.id === stixCoreObject.id ? stixCoreObject : n),
+          this.graphObjects,
         );
-        this.graphData = {
-          nodes,
-          links: this.graphData.links,
-        };
+        this.graphData = buildGraphData(
+          this.graphObjects,
+          decodeGraphData(this.props.report.x_opencti_graph_data),
+          this.props.t,
+        );
         this.setState({
           graphData: applyFilters(
             this.graphData,
@@ -621,16 +680,15 @@ class ReportKnowledgeGraphComponent extends Component {
         id: relationId,
       }).then((data) => {
         const { stixCoreRelationship } = data;
-        const links = R.map(
-          (n) => (n.id === stixCoreRelationship.id
-            ? buildLinkData(stixCoreRelationship)
-            : n),
-          this.graphData.links,
+        this.graphObjects = R.map(
+          (n) => (n.id === stixCoreRelationship.id ? stixCoreRelationship : n),
+          this.graphObjects,
         );
-        this.graphData = {
-          nodes: this.graphData.nodes,
-          links,
-        };
+        this.graphData = buildGraphData(
+          this.graphObjects,
+          decodeGraphData(this.props.report.x_opencti_graph_data),
+          this.props.t,
+        );
         this.setState({
           graphData: applyFilters(
             this.graphData,
@@ -728,7 +786,7 @@ class ReportKnowledgeGraphComponent extends Component {
             linkDirectionalArrowRelPos={0.99}
             linkThreeObjectExtend={true}
             linkThreeObject={(link) => {
-              const sprite = new SpriteText(link.name);
+              const sprite = new SpriteText(link.label);
               sprite.color = 'lightgrey';
               sprite.textHeight = 1.5;
               return sprite;
@@ -791,7 +849,6 @@ class ReportKnowledgeGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            dagMode={modeTree ? 'td' : undefined}
           />
         ) : (
           <ForceGraph2D
@@ -861,7 +918,6 @@ class ReportKnowledgeGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            dagMode={modeTree ? 'td' : undefined}
           />
         )}
       </div>
@@ -1021,6 +1077,9 @@ const ReportKnowledgeGraph = createFragmentContainer(
                     entity_type
                     parent_types
                   }
+                  ... on StixCoreRelationship {
+                    relationship_type
+                  }
                 }
                 to {
                   ... on BasicObject {
@@ -1032,6 +1091,26 @@ const ReportKnowledgeGraph = createFragmentContainer(
                     id
                     entity_type
                     parent_types
+                  }
+                  ... on StixCoreRelationship {
+                    relationship_type
+                  }
+                }
+                created_at
+                updated_at
+                createdBy {
+                  ... on Identity {
+                    id
+                    name
+                    entity_type
+                  }
+                }
+                objectMarking {
+                  edges {
+                    node {
+                      id
+                      definition
+                    }
                   }
                 }
               }

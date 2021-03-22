@@ -494,6 +494,7 @@ type Settings implements InternalObject & BasicObject {
 ############## Groups
 enum GroupsOrdering {
   name
+  default_assignation
   created_at
   updated_at
 }
@@ -598,6 +599,7 @@ input UserLoginInput {
 ############## Roles
 enum RolesOrdering {
   name
+  default_assignation
   created_at
   updated_at
 }
