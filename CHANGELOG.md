@@ -1,6 +1,44 @@
 # Changelog
 
-## Version 4.2.0 (11/02/2021)
+## Version 4.3.1 (23/03/2021)
+
+#### Bug Fixes:
+
+- [#153](https://github.com/OpenCTI-Platform/client-python/issues/153) Cant get all reports via pycti
+- [#154](https://github.com/OpenCTI-Platform/client-python/issues/154) Location objects in reports are not imported
+
+---
+
+## Version 4.3.0 (11/03/2021)
+
+#### Bug Fixes:
+
+- [#148](https://github.com/OpenCTI-Platform/client-python/issues/148) Cant import text observables from pycti
+- [#144](https://github.com/OpenCTI-Platform/client-python/issues/144) Error while listing stix_observable_relationship
+- [#143](https://github.com/OpenCTI-Platform/client-python/issues/143) api stix_core_relationship error query
+- [#141](https://github.com/OpenCTI-Platform/client-python/issues/141) Failure to Create Location / Threat actor
+
+---
+
+## Version 4.2.4 (25/02/2021)
+*No changelog for this release.*
+
+---
+
+## Version 4.2.3 (17/02/2021)
+
+#### Bug Fixes:
+
+- [#140](https://github.com/OpenCTI-Platform/client-python/issues/140) Can't add marking definitions using stix_cyber_observable.add_marking_definition() function
+
+---
+
+## Version 4.2.2 (15/02/2021)
+*No changelog for this release.*
+
+---
+
+## Version 4.2.1 (11/02/2021)
 *No changelog for this release.*
 
 ---
@@ -154,36 +192,4 @@
 ---
 
 ## Version 3.1.2 (27/04/2020)
-*No changelog for this release.*
-
----
-
-## Version 3.1.1 (27/04/2020)
-
-#### Enhancements:
-
-- [#73](https://github.com/OpenCTI-Platform/client-python/issues/73) Introduce notes & opinions
-
----
-
-## Version 3.1.0 (01/04/2020)
-
-#### Bug Fixes:
-
-- [#68](https://github.com/OpenCTI-Platform/client-python/issues/68) opencti connector - reports with incoherent dates
-- [#66](https://github.com/OpenCTI-Platform/client-python/issues/66) Some report dates are in the future on MITRE report creation/ingestion 
-
----
-
-## Version 3.0.3 (09/03/2020)
-*No changelog for this release.*
-
----
-
-## Version 3.0.2 (23/02/2020)
-*No changelog for this release.*
-
----
-
-## Version 3.0.1 (20/02/2020)
 *No changelog for this release.*
