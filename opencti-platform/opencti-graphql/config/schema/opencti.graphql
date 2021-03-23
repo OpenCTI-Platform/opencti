@@ -4279,7 +4279,11 @@ enum StixCyberObservablesFilter {
   objectContained
   hasExternalReference
   value
+  name
   confidence
+  hashes_MD5
+  hashes_SHA1
+  hashes_SHA256
 }
 input StixCyberObservablesFiltering {
   key: StixCyberObservablesFilter!
