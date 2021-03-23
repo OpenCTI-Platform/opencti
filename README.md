@@ -59,6 +59,9 @@ All you need to install the OpenCTI platform can be found in the [official docum
 <p align="left">
   <a href="https://www.intrinsec.com" alt="Intrinsec"><img src="https://www.luatix.org/wp-content/uploads/2020/12/intrinsec.png" width="80" /></a>
   <a href="https://www.thalesgroup.com" alt="Thales"><img src="https://www.luatix.org/wp-content/uploads/2020/04/Thales.png" width="80" /></a>
+  <a href="https://www.tanium.com" alt="Tanium"><img src="https://www.luatix.org/wp-content/uploads/2021/01/tanium.png" width="80" /></a>
+  <a href="https://www1.nyc.gov/site/cyber/index.page" alt="New York City Cyber Command"><img src="https://www.luatix.org/wp-content/uploads/2020/11/nyc.png" width="80" /></a>
+  <a href="https://www.gatewatcher.com" alt="Gatewatcher"><img src="https://www.luatix.org/wp-content/uploads/2021/03/gatewatcher.png" width="80" /></a>
 </p>
 
 ## Contributing
