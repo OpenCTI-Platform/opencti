@@ -80,25 +80,19 @@
 ---
 
 ## Version 4.0.3 (31/12/2020)
-
 *No changelog for this release.*
 ---
 
 ## Version 4.0.4 (31/12/2020)
-
 *No changelog for this release.*
 ---
 
 ## Version 4.0.2 (17/12/2020)
-
 *No changelog for this release.*
-
 ---
 
 ## Version 4.0.1 (16/12/2020)
-
 *No changelog for this release.*
-
 ---
 
 ## Version 4.0.0 (15/12/2020)
