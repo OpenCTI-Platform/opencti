@@ -7,7 +7,6 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import bodyParser from 'body-parser';
 import cookieParser from 'cookie-parser';
-import session from 'express-session';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
@@ -34,10 +33,10 @@ const createApp = async (apolloServer, broadcaster) => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
-  const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
   const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/'];
-  if (DEV_MODE) scriptSrc.push("'unsafe-eval'");
-  app.use(session({ secret: sessionSecret, saveUninitialized: true, resave: true }));
+  if (DEV_MODE) {
+    scriptSrc.push("'unsafe-eval'");
+  }
   app.use(cookieParser());
   app.use(compression());
   app.use(helmet());
