@@ -254,14 +254,14 @@ class ThreatActorEditionDetailsComponent extends Component {
                   >
                     {t('motivation_organizational-gain')}
                   </MenuItem>
-                  <MenuItem key="individualal-gain" value="individualal-gain">
-                    {t('motivation_individualal-gain')}
+                  <MenuItem key="personal-gain" value="personal-gain">
+                    {t('motivation_personal-gain')}
                   </MenuItem>
                   <MenuItem
-                    key="individualal-satisfaction"
-                    value="individualal-satisfaction"
+                    key="personal-satisfaction"
+                    value="personal-satisfaction"
                   >
-                    {t('motivation_individualal-satisfaction')}
+                    {t('motivation_personal-satisfaction')}
                   </MenuItem>
                   <MenuItem key="revenge" value="revenge">
                     {t('motivation_revenge')}
@@ -310,14 +310,14 @@ class ThreatActorEditionDetailsComponent extends Component {
                   >
                     {t('motivation_organizational-gain')}
                   </MenuItem>
-                  <MenuItem key="individualal-gain" value="individualal-gain">
-                    {t('motivation_individualal-gain')}
+                  <MenuItem key="personal-gain" value="personal-gain">
+                    {t('motivation_personal-gain')}
                   </MenuItem>
                   <MenuItem
-                    key="individualal-satisfaction"
-                    value="individualal-satisfaction"
+                    key="personal-satisfaction"
+                    value="personal-satisfaction"
                   >
-                    {t('motivation_individualal-satisfaction')}
+                    {t('motivation_personal-satisfaction')}
                   </MenuItem>
                   <MenuItem key="revenge" value="revenge">
                     {t('motivation_revenge')}
@@ -366,14 +366,14 @@ class ThreatActorEditionDetailsComponent extends Component {
                   >
                     {t('motivation_organizational-gain')}
                   </MenuItem>
-                  <MenuItem key="individualal-gain" value="individualal-gain">
-                    {t('motivation_individualal-gain')}
+                  <MenuItem key="personal-gain" value="personal-gain">
+                    {t('motivation_personal-gain')}
                   </MenuItem>
                   <MenuItem
-                    key="individualal-satisfaction"
-                    value="individualal-satisfaction"
+                    key="personal-satisfaction"
+                    value="personal-satisfaction"
                   >
-                    {t('motivation_individualal-satisfaction')}
+                    {t('motivation_personal-satisfaction')}
                   </MenuItem>
                   <MenuItem key="revenge" value="revenge">
                     {t('motivation_revenge')}

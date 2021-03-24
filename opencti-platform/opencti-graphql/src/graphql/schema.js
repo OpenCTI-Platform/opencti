@@ -15,6 +15,7 @@ import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
 import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
 import internalRelationshipResolvers from '../resolvers/internalRelationship';
+import stixRelationshipResolvers from '../resolvers/stixRelationship';
 import stixMetaRelationshipResolvers from '../resolvers/stixMetaRelationship';
 import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
 import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelationship';
@@ -120,6 +121,8 @@ const createSchema = () => {
     stixCyberObservableResolvers,
     // INTERNAL RELATIONSHIPS
     internalRelationshipResolvers,
+    // STIX RELATIONSHIPS
+    stixRelationshipResolvers,
     // STIX META RELATIONSHIPS
     stixMetaRelationshipResolvers,
     // STIX CORE RELATIONSHIPS

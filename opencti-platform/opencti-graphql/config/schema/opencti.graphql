@@ -211,8 +211,8 @@ type LogsWorkerConfig {
   elasticsearch_index: String!
   elasticsearch_username: String
   elasticsearch_password: String
-  elasticsearch_api_key: String,
-  elasticsearch_ssl_reject_unauthorized: Boolean,
+  elasticsearch_api_key: String
+  elasticsearch_ssl_reject_unauthorized: Boolean
 }
 enum LogsOrdering {
   event
@@ -321,6 +321,18 @@ type Workspace {
   created_at: DateTime
   updated_at: DateTime
   editContext: [EditUserContext]
+  objects(
+    first: Int
+    after: ID
+    orderBy: StixObjectOrStixRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [StixObjectOrStixRelationshipsFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+    all: Boolean
+  ): StixObjectOrStixRelationshipConnection
+  graph_data: String
 }
 input WorkspaceAddInput {
   identifier: String!
@@ -6939,6 +6951,52 @@ union StixCoreObjectOrStixCoreRelationship =
   | XOpenCTIText
   | XOpenCTIUserAgent ### Stix Relationships
   | StixCoreRelationship
+
+enum StixRelationshipsOrdering {
+  entity_type
+  relationship_type
+  confidence
+  start_time
+  stop_time
+  created
+  modified
+  created_at
+  updated_at
+  objectMarking
+  objectLabel
+  killChainPhase
+  toName
+  toValidFrom
+  toValidUntil
+  toPatternType
+}
+enum StixRelationshipsFilter {
+  created
+  modified
+  created_at
+  confidence
+  createdBy
+  markedBy
+  labelledBy
+  toName
+  toCreatedAt
+  toPatternType
+  toMainObservableType
+}
+input StixRelationshipsFiltering {
+  key: StixRelationshipsFilter!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+type StixRelationshipConnection {
+  pageInfo: PageInfo!
+  edges: [StixRelationshipEdge]
+}
+type StixRelationshipEdge {
+  cursor: String!
+  node: StixRelationship!
+}
 interface StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
@@ -7909,6 +7967,38 @@ type Query {
     order: String
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixMetaRelationshipsNumber(type: String, fromId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
+
+  ######## STIX RELATIONSHIPS
+  stixRelationship(id: String): StixRelationship @auth(for: [KNOWLEDGE])
+  stixRelationships(
+    first: Int
+    after: ID
+    orderBy: StixRelationshipsOrdering
+    orderMode: OrderingMode
+    elementId: String
+    fromId: String
+    fromRole: String
+    fromTypes: [String]
+    toId: String
+    toRole: String
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    startDate: DateTime
+    endDate: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixRelationshipsFiltering]
+    filterMode: FilterMode
+    stix: Boolean
+  ): StixRelationshipConnection @auth(for: [KNOWLEDGE])
 
   ######## STIX CORE RELATIONSHIPS
 
