@@ -1119,10 +1119,10 @@ export const elPaginate = async (user, indexName, options = {}) => {
       finalSearch = `"*${cleanSearch.replace('http\\://', '')}*"`;
     } else if (cleanSearch.startsWith('https\\://')) {
       finalSearch = `"*${cleanSearch.replace('https\\://', '')}*"`;
-    } else if (cleanSearch.startsWith('"')) {
+    } else if (cleanSearch.startsWith('"') && cleanSearch.endsWith('"')) {
       finalSearch = `${cleanSearch}`;
     } else {
-      const splitSearch = cleanSearch.split(/[\s/]+/);
+      const splitSearch = cleanSearch.replace('"', '\\"').split(/[\s/]+/);
       finalSearch = R.pipe(
         R.map((n) => `*${n}*`),
         R.join(' ')
@@ -1169,8 +1169,9 @@ export const elPaginate = async (user, indexName, options = {}) => {
     order[orderKeyword] = orderMode;
     ordering = R.append(order, ordering);
     must = R.append({ exists: { field: orderKeyword } }, must);
+  } else if (search !== null && search.length > 0) {
+    ordering.push({ _score: 'desc' });
   } else {
-    // Default ordering by id
     ordering.push({ 'standard_id.keyword': 'asc' });
   }
   const querySize = first || 10;

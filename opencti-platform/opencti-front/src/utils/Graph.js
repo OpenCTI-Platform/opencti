@@ -209,12 +209,17 @@ export const buildGraphData = (objects, graphData, t) => {
   )(objects);
   const nodes = R.pipe(
     R.filter(
-      (n) => !n.relationship_type
+      (n) => !n.parent_types.includes('basic-relationship')
         || R.includes(n.id, relationshipsIdsInNestedRelationship),
     ),
     R.map((n) => ({
       id: n.id,
-      val: graphLevel[n.relationship_type ? 'relationship' : n.entity_type],
+      val:
+        graphLevel[
+          n.parent_types.includes('basic-relationship')
+            ? 'relationship'
+            : n.entity_type
+        ],
       name: n.relationship_type
         ? `${t('Start time')} ${
           isNone(n.start_time) ? '-' : dateFormat(n.start_time)
@@ -222,16 +227,26 @@ export const buildGraphData = (objects, graphData, t) => {
           isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
         }`
         : n.name || n.observable_value || n.attribute_abstract || n.opinion,
-      label: n.relationship_type
+      label: n.parent_types.includes('basic-relationship')
         ? t(`relationship_${n.relationship_type}`)
         : truncate(
           n.name || n.observable_value || n.attribute_abstract || n.opinion,
           20,
         ),
-      img: graphImages[n.relationship_type ? 'relationship' : n.entity_type],
+      img:
+        graphImages[
+          n.parent_types.includes('basic-relationship')
+            ? 'relationship'
+            : n.entity_type
+        ],
       rawImg:
-        graphRawImages[n.relationship_type ? 'relationship' : n.entity_type],
+        graphRawImages[
+          n.parent_types.includes('basic-relationship')
+            ? 'relationship'
+            : n.entity_type
+        ],
       color: itemColor(n.entity_type, false),
+      parent_types: n.parent_types,
       entity_type: n.entity_type,
       relationship_type: n.relationship_type,
       fromId: n.from?.id,
@@ -241,7 +256,7 @@ export const buildGraphData = (objects, graphData, t) => {
       isObservable: !!n.observable_value,
       markedBy: R.map(
         (m) => ({ id: m.node.id, definition: m.node.definition }),
-        n.objectMarking.edges,
+        R.pathOr([], ['objectMarking', 'edges'], n),
       ),
       createdBy: n.createdBy
         ? n.createdBy
@@ -252,16 +267,17 @@ export const buildGraphData = (objects, graphData, t) => {
   )(objects);
   const normalLinks = R.pipe(
     R.filter(
-      (n) => n.relationship_type
+      (n) => n.parent_types.includes('basic-relationship')
         && !R.includes(n.id, relationshipsIdsInNestedRelationship),
     ),
     R.map((n) => ({
       id: n.id,
+      parent_types: n.parent_types,
       entity_type: n.entity_type,
       relationship_type: n.relationship_type,
       source: n.from.id,
       target: n.to.id,
-      label: t(`relationship_${n.relationship_type}`),
+      label: t(`relationship_${n.entity_type}`),
       name: `${t('Start time')} ${
         isNone(n.start_time) ? '-' : dateFormat(n.start_time)
       }\n${t('Stop time')} ${
@@ -276,6 +292,7 @@ export const buildGraphData = (objects, graphData, t) => {
     R.map((n) => [
       {
         id: n.id,
+        parent_types: n.parent_types,
         entity_type: n.entity_type,
         relationship_type: n.relationship_type,
         source: n.from.id,
@@ -289,6 +306,7 @@ export const buildGraphData = (objects, graphData, t) => {
       },
       {
         id: n.id,
+        parent_types: n.parent_types,
         entity_type: n.entity_type,
         relationship_type: n.relationship_type,
         source: n.id,

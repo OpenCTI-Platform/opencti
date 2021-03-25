@@ -127,7 +127,7 @@ export default createPaginationContainer(
   {
     direction: 'forward',
     getConnectionFromProps(props) {
-      return props.data && props.data.stixCoreRelationships;
+      return props.data && props.data.indicators;
     },
     getFragmentVariables(prevVars, totalCount) {
       return {
@@ -137,9 +137,9 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        search: fragmentVariables.search,
         count,
         cursor,
+        search: fragmentVariables.search,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
         filters: fragmentVariables.filters,

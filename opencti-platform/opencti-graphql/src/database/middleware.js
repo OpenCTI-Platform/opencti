@@ -274,7 +274,18 @@ export const loadThroughGetTo = async (user, sources, relationType, targetEntity
 // Standard listing
 const buildRelationsFilter = (relationshipType, args) => {
   const { relationFilter = false } = args;
-  const { filters = [], search, elementId, fromId, fromRole, toId, toRole, fromTypes = [], toTypes = [] } = args;
+  const {
+    filters = [],
+    search,
+    elementId,
+    fromId,
+    fromRole,
+    toId,
+    toRole,
+    fromTypes = [],
+    toTypes = [],
+    elementWithTargetTypes = [],
+  } = args;
   const {
     startTimeStart,
     startTimeStop,
@@ -294,9 +305,13 @@ const buildRelationsFilter = (relationshipType, args) => {
   const definedRoles = !R.isNil(fromRole) || !R.isNil(toRole);
   const askForConnections = !R.isNil(elementId) || !R.isNil(fromId) || !R.isNil(toId) || definedRoles;
   const haveTargetFilters = filters && filters.length > 0; // For now filters only contains target to filtering
+  const elementWithTargetTypesFilter = elementWithTargetTypes && elementWithTargetTypes.length > 0;
   const fromTypesFilter = fromTypes && fromTypes.length > 0;
   const toTypesFilter = toTypes && toTypes.length > 0;
-  if (askForConnections === false && (haveTargetFilters || fromTypesFilter || toTypesFilter || search)) {
+  if (
+    askForConnections === false &&
+    (haveTargetFilters || fromTypesFilter || toTypesFilter || elementWithTargetTypesFilter || search)
+  ) {
     throw DatabaseError('Cant list relation with types filtering or search if from or to id are not specified');
   }
   // Handle relation type(s)
@@ -310,8 +325,19 @@ const buildRelationsFilter = (relationshipType, args) => {
       finalFilters.push({ key: `internal_id`, values: [relationId] });
     }
   }
+  const nestedElement = [];
   if (elementId) {
-    finalFilters.push({ key: 'connections', nested: [{ key: 'internal_id', values: [elementId] }] });
+    nestedElement.push({ key: 'internal_id', values: [elementId] });
+  }
+  if (nestedElement.length > 0) {
+    finalFilters.push({ key: 'connections', nested: nestedElement });
+  }
+  const nestedElementTypes = [];
+  if (elementWithTargetTypes && elementWithTargetTypes.length > 0) {
+    nestedElementTypes.push({ key: 'types', values: elementWithTargetTypes });
+  }
+  if (nestedElementTypes.length > 0) {
+    finalFilters.push({ key: 'connections', nested: nestedElementTypes });
   }
   // region from filtering
   const nestedFrom = [];

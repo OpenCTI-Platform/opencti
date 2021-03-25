@@ -8,14 +8,18 @@ export const reportKnowledgeGraphtMutationRelationAddMutation = graphql`
     reportEdit(id: $id) {
       relationAdd(input: $input) {
         id
+        entity_type
+        parent_types
         to {
           ... on BasicObject {
             id
             entity_type
+            parent_types
           }
           ... on BasicRelationship {
             id
             entity_type
+            parent_types
           }
         }
       }

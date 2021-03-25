@@ -7,28 +7,28 @@ import {
   requestSubscription,
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
-import Dashboard from './Dashboard';
+import Investigation from './Investigation';
 import Loader from '../../../../components/Loader';
 
 const subscription = graphql`
-  subscription RootDashboardSubscription($id: ID!) {
+  subscription RootInvestigationSubscription($id: ID!) {
     workspace(id: $id) {
-      ...Dashboard_workspace
+      ...Investigation_workspace
     }
   }
 `;
 
-const dashboardQuery = graphql`
-  query RootDashboardQuery($id: String!) {
+const investigationQuery = graphql`
+  query RootInvestigationQuery($id: String!) {
     workspace(id: $id) {
       id
       name
-      ...Dashboard_workspace
+      ...Investigation_workspace
     }
   }
 `;
 
-class RootDashboard extends Component {
+class RootInvestigation extends Component {
   componentDidMount() {
     const {
       match: {
@@ -57,20 +57,21 @@ class RootDashboard extends Component {
       <div>
         <TopBar me={me || null} />
         <QueryRenderer
-          query={dashboardQuery}
+          query={investigationQuery}
           variables={{ id: workspaceId }}
           render={({ props }) => {
             if (props && props.workspace) {
               return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/workspaces/dashboards/:workspaceId"
-                    render={(routeProps) => (
-                      <Dashboard {...routeProps} workspace={props.workspace} />
-                    )}
-                  />
-                </div>
+                <Route
+                  exact
+                  path="/dashboard/workspaces/investigations/:workspaceId"
+                  render={(routeProps) => (
+                    <Investigation
+                      {...routeProps}
+                      workspace={props.workspace}
+                    />
+                  )}
+                />
               );
             }
             return <Loader />;
@@ -81,10 +82,10 @@ class RootDashboard extends Component {
   }
 }
 
-RootDashboard.propTypes = {
+RootInvestigation.propTypes = {
   children: PropTypes.node,
   match: PropTypes.object,
   me: PropTypes.object,
 };
 
-export default withRouter(RootDashboard);
+export default withRouter(RootInvestigation);

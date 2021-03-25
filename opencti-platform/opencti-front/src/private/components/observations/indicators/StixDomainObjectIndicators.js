@@ -194,7 +194,7 @@ class StixDomainObjectIndicators extends Component {
         keyword={searchTerm}
         secondaryAction={true}
         numberOfElements={numberOfElements}
-        availableFilterKeys={['toCreatedAt_start_date', 'toCreatedAt_end_date']}
+        availableFilterKeys={['created_start_date', 'created_end_date']}
       >
         <QueryRenderer
           query={stixDomainObjectIndicatorsLinesQuery}

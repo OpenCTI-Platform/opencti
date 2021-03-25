@@ -6,7 +6,9 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   internalLoadById,
+  listAllThings,
   listEntities,
+  listThings,
   loadById,
   updateAttribute,
 } from '../database/middleware';
@@ -15,8 +17,8 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { FunctionalError } from '../config/errors';
-import { ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import { ABSTRACT_STIX_META_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
+import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 
 export const findById = (user, workspaceId) => {
   return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -24,6 +26,19 @@ export const findById = (user, workspaceId) => {
 
 export const findAll = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_WORKSPACE], args);
+};
+
+export const objects = async (user, workspaceId, args) => {
+  const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
+  let types = ['Stix-Core-Object', 'stix-core-relationship'];
+  if (args.types) {
+    types = args.types;
+  }
+  const filters = [{ key, values: [workspaceId] }, ...(args.filters || [])];
+  if (args.all) {
+    return listAllThings(user, types, R.assoc('filters', filters, args));
+  }
+  return listThings(user, types, R.assoc('filters', filters, args));
 };
 
 export const addWorkspace = async (user, workspace) => {

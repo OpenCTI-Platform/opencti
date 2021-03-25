@@ -163,6 +163,7 @@ export const internalObjectsAttributes = {
     'owner',
     'type',
     'tags',
+    'graph_data',
     'created_at',
     'i_created_at_day',
     'i_created_at_month',

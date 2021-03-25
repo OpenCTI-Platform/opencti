@@ -82,6 +82,7 @@ class SearchInput extends Component {
                 : classes.searchInputNoAnimation,
         }}
         disableUnderline={true}
+        autoComplete="off"
       />
     );
   }

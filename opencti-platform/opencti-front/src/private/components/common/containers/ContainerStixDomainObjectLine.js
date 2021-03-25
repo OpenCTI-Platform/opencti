@@ -140,6 +140,7 @@ const ContainerStixDomainObjectLineFragment = createFragmentContainer(
       fragment ContainerStixDomainObjectLine_node on StixDomainObject {
         id
         entity_type
+        parent_types
         created_at
         ... on AttackPattern {
           name

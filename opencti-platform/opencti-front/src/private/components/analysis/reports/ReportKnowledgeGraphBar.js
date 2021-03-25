@@ -24,14 +24,14 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import Popover from '@material-ui/core/Popover';
 import Toolbar from '@material-ui/core/Toolbar';
-import inject18n from './i18n';
-import ContainerAddStixCoreObjects from '../private/components/common/containers/ContainerAddStixCoreObjects';
-import StixCoreRelationshipCreation from '../private/components/common/stix_core_relationships/StixCoreRelationshipCreation';
-import { dateFormat } from '../utils/Time';
-import { truncate } from '../utils/String';
-import StixCoreRelationshipEdition from '../private/components/common/stix_core_relationships/StixCoreRelationshipEdition';
-import StixDomainObjectEdition from '../private/components/common/stix_domain_objects/StixDomainObjectEdition';
-import { resolveLink } from '../utils/Entity';
+import inject18n from '../../../../components/i18n';
+import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
+import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
+import { dateFormat } from '../../../../utils/Time';
+import { truncate } from '../../../../utils/String';
+import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
+import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
+import { resolveLink } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   bottomNav: {
@@ -44,7 +44,7 @@ const styles = (theme) => ({
   },
 });
 
-class GraphBar extends Component {
+class ReportKnowledgeGraphBar extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -503,7 +503,7 @@ class GraphBar extends Component {
   }
 }
 
-GraphBar.propTypes = {
+ReportKnowledgeGraphBar.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   report: PropTypes.object,
@@ -536,4 +536,7 @@ GraphBar.propTypes = {
   handleSelectAll: PropTypes.func,
 };
 
-export default R.compose(inject18n, withStyles(styles))(GraphBar);
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(ReportKnowledgeGraphBar);

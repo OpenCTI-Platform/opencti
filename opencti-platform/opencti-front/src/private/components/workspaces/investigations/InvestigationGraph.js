@@ -1,18 +1,21 @@
 import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import SpriteText from 'three-spritetext';
-import { debounce } from 'rxjs/operators';
-import { Subject, timer } from 'rxjs';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import ForceGraph2D from 'react-force-graph-2d';
-import ForceGraph3D from 'react-force-graph-3d';
 import { withStyles } from '@material-ui/core/styles';
+import ForceGraph3D from 'react-force-graph-3d';
+import SpriteText from 'three-spritetext';
+import ForceGraph2D from 'react-force-graph-2d';
+import { Subject, timer } from 'rxjs';
+import { debounce } from 'rxjs/operators';
 import { withRouter } from 'react-router-dom';
-import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import InvestigationGraphBar from './InvestigationGraphBar';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import {
   applyFilters,
   buildGraphData,
@@ -23,19 +26,10 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
-import { reportMutationFieldPatch } from './ReportEditionOverview';
-import {
-  reportKnowledgeGraphtMutationRelationAddMutation,
-  reportKnowledgeGraphtMutationRelationDeleteMutation,
-} from './ReportKnowledgeGraphQuery';
-import { stixCoreRelationshipEditionDeleteMutation } from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
-
-const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import Theme from '../../../../components/ThemeDark';
+import { investigationAddStixCoreObjectsLinesRelationDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
+import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -43,39 +37,23 @@ const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
-    padding: '0 200px 0 205px',
+    padding: '7px 274px 0 215px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
-    height: 50,
-    overflow: 'hidden',
+    height: 64,
   },
 });
 
-export const reportKnowledgeGraphQuery = graphql`
-  query ReportKnowledgeGraphQuery($id: String) {
-    report(id: $id) {
-      ...ReportKnowledgeGraph_report
+export const investigationGraphQuery = graphql`
+  query InvestigationGraphQuery($id: String) {
+    workspace(id: $id) {
+      ...InvestigationGraph_workspace
     }
   }
 `;
 
-const reportKnowledgeGraphCheckRelationQuery = graphql`
-  query ReportKnowledgeGraphCheckRelationQuery($id: String!) {
-    stixCoreRelationship(id: $id) {
-      id
-      reports {
-        edges {
-          node {
-            id
-          }
-        }
-      }
-    }
-  }
-`;
-
-const reportKnowledgeGraphStixCoreObjectQuery = graphql`
-  query ReportKnowledgeGraphStixCoreObjectQuery($id: String!) {
+const investigationGraphStixCoreObjectQuery = graphql`
+  query InvestigationGraphStixCoreObjectQuery($id: String!) {
     stixCoreObject(id: $id) {
       id
       entity_type
@@ -104,6 +82,20 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
         description
       }
       ... on CourseOfAction {
+        name
+        description
+      }
+      ... on Note {
+        attribute_abstract
+      }
+      ... on ObservedData {
+        first_observed
+        last_observed
+      }
+      ... on Opinion {
+        opinion
+      }
+      ... on Report {
         name
         description
       }
@@ -174,8 +166,8 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
   }
 `;
 
-const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
-  query ReportKnowledgeGraphStixCoreRelationshipQuery($id: String!) {
+const investigationGraphStixCoreRelationshipQuery = graphql`
+  query InvestigationGraphStixCoreRelationshipQuery($id: String!) {
     stixCoreRelationship(id: $id) {
       id
       entity_type
@@ -235,7 +227,441 @@ const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
   }
 `;
 
-class ReportKnowledgeGraphComponent extends Component {
+const investigationGraphStixRelationshipsQuery = graphql`
+  query InvestigationGraphStixRelationshipsQuery(
+    $elementId: String!
+    $relationship_type: String
+    $elementWithTargetTypes: [String]
+    $count: Int
+  ) {
+    stixRelationships(
+      elementId: $elementId
+      relationship_type: $relationship_type
+      elementWithTargetTypes: $elementWithTargetTypes
+      first: $count
+    ) {
+      edges {
+        node {
+          id
+          entity_type
+          parent_types
+          ... on StixCoreRelationship {
+            start_time
+            stop_time
+            confidence
+            relationship_type
+            created_at
+            updated_at
+            createdBy {
+              ... on Identity {
+                id
+                name
+                entity_type
+              }
+            }
+            objectMarking {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+          }
+          ... on StixSightingRelationship {
+            first_seen
+            last_seen
+            created_at
+            updated_at
+            createdBy {
+              ... on Identity {
+                id
+                name
+                entity_type
+              }
+            }
+            objectMarking {
+              edges {
+                node {
+                  id
+                  definition
+                }
+              }
+            }
+          }
+          ... on StixCyberObservableRelationship {
+            start_time
+            stop_time
+            relationship_type
+            created_at
+            updated_at
+          }
+          from {
+            ... on BasicObject {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreObject {
+              created_at
+              updated_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+            ... on AttackPattern {
+              name
+              description
+            }
+            ... on Campaign {
+              name
+              description
+            }
+            ... on CourseOfAction {
+              name
+              description
+            }
+            ... on Note {
+              attribute_abstract
+            }
+            ... on ObservedData {
+              first_observed
+              last_observed
+            }
+            ... on Opinion {
+              opinion
+            }
+            ... on Report {
+              name
+              description
+            }
+            ... on Individual {
+              name
+              description
+            }
+            ... on Organization {
+              name
+              description
+            }
+            ... on Sector {
+              name
+              description
+            }
+            ... on Indicator {
+              name
+              description
+            }
+            ... on Infrastructure {
+              name
+              description
+            }
+            ... on IntrusionSet {
+              name
+              description
+            }
+            ... on Position {
+              name
+              description
+            }
+            ... on City {
+              name
+              description
+            }
+            ... on Country {
+              name
+              description
+            }
+            ... on Region {
+              name
+              description
+            }
+            ... on Malware {
+              name
+              description
+            }
+            ... on ThreatActor {
+              name
+              description
+            }
+            ... on Tool {
+              name
+              description
+            }
+            ... on Vulnerability {
+              name
+              description
+            }
+            ... on XOpenCTIIncident {
+              name
+              description
+            }
+            ... on StixCyberObservable {
+              observable_value
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+              start_time
+              stop_time
+              confidence
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              created_at
+              updated_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+          }
+          to {
+            ... on BasicObject {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreObject {
+              created_at
+              updated_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+            ... on AttackPattern {
+              name
+              description
+            }
+            ... on Campaign {
+              name
+              description
+            }
+            ... on CourseOfAction {
+              name
+              description
+            }
+            ... on Note {
+              attribute_abstract
+            }
+            ... on ObservedData {
+              first_observed
+              last_observed
+            }
+            ... on Opinion {
+              opinion
+            }
+            ... on Report {
+              name
+              description
+            }
+            ... on Individual {
+              name
+              description
+            }
+            ... on Organization {
+              name
+              description
+            }
+            ... on Sector {
+              name
+              description
+            }
+            ... on Indicator {
+              name
+              description
+            }
+            ... on Infrastructure {
+              name
+              description
+            }
+            ... on IntrusionSet {
+              name
+              description
+            }
+            ... on Position {
+              name
+              description
+            }
+            ... on City {
+              name
+              description
+            }
+            ... on Country {
+              name
+              description
+            }
+            ... on Region {
+              name
+              description
+            }
+            ... on Malware {
+              name
+              description
+            }
+            ... on ThreatActor {
+              name
+              description
+            }
+            ... on Tool {
+              name
+              description
+            }
+            ... on Vulnerability {
+              name
+              description
+            }
+            ... on XOpenCTIIncident {
+              name
+              description
+            }
+            ... on StixCyberObservable {
+              observable_value
+            }
+            ... on BasicRelationship {
+              id
+              entity_type
+              parent_types
+            }
+            ... on StixCoreRelationship {
+              relationship_type
+              start_time
+              stop_time
+              confidence
+              from {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              to {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                }
+              }
+              created_at
+              updated_at
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+              objectMarking {
+                edges {
+                  node {
+                    id
+                    definition
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const investigationGraphRelationsAddMutation = graphql`
+  mutation InvestigationGraphRelationsAddMutation(
+    $id: ID!
+    $input: StixMetaRelationshipsAddInput
+  ) {
+    workspaceEdit(id: $id) {
+      relationsAdd(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
+class InvestigationGraphComponent extends Component {
   constructor(props) {
     super(props);
     this.initialized = false;
@@ -245,13 +671,13 @@ class ReportKnowledgeGraphComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-report-${this.props.report.id}-knowledge`,
+      `view-workspace-${this.props.workspace.id}-investigation`,
     );
     this.zoom = R.propOr(null, 'zoom', params);
-    this.graphObjects = R.map((n) => n.node, props.report.objects.edges);
+    this.graphObjects = R.map((n) => n.node, props.workspace.objects.edges);
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(props.report.x_opencti_graph_data),
+      decodeGraphData(props.workspace.graph_data),
       props.t,
     );
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
@@ -268,7 +694,6 @@ class ReportKnowledgeGraphComponent extends Component {
         stixCoreObjectsTypes,
         markedBy,
         createdBy,
-        ignoredStixCoreObjectsTypes,
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
@@ -305,7 +730,7 @@ class ReportKnowledgeGraphComponent extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      `view-report-${this.props.report.id}-knowledge`,
+      `view-workspace-${this.props.workspace.id}-investigation`,
       { zoom: this.zoom, ...this.state },
     );
     if (refreshGraphData) {
@@ -315,7 +740,6 @@ class ReportKnowledgeGraphComponent extends Component {
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
-          ignoredStixCoreObjectsTypes,
         ),
       });
     }
@@ -332,11 +756,11 @@ class ReportKnowledgeGraphComponent extends Component {
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
-      mutation: reportMutationFieldPatch,
+      mutation: workspaceMutationFieldPatch,
       variables: {
-        id: this.props.report.id,
+        id: this.props.workspace.id,
         input: {
-          key: 'x_opencti_graph_data',
+          key: 'graph_data',
           value: encodeGraphData(positions),
         },
       },
@@ -477,7 +901,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.graphObjects = [stixCoreObject, ...this.graphObjects];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
+      decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
     this.setState(
@@ -487,44 +911,12 @@ class ReportKnowledgeGraphComponent extends Component {
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
-          ignoredStixCoreObjectsTypes,
         ),
       },
       () => {
         setTimeout(() => this.handleZoomToFit(), 1000);
       },
     );
-  }
-
-  handleAddRelation(stixCoreRelationship) {
-    const input = {
-      toId: stixCoreRelationship.id,
-      relationship_type: 'object',
-    };
-    commitMutation({
-      mutation: reportKnowledgeGraphtMutationRelationAddMutation,
-      variables: {
-        id: this.props.report.id,
-        input,
-      },
-      onCompleted: () => {
-        this.graphObjects = [stixCoreRelationship, ...this.graphObjects];
-        this.graphData = buildGraphData(
-          this.graphObjects,
-          decodeGraphData(this.props.report.x_opencti_graph_data),
-          this.props.t,
-        );
-        this.setState({
-          graphData: applyFilters(
-            this.graphData,
-            this.state.stixCoreObjectsTypes,
-            this.state.markedBy,
-            this.state.createdBy,
-            ignoredStixCoreObjectsTypes,
-          ),
-        });
-      },
-    });
   }
 
   handleDelete(stixCoreObject) {
@@ -540,14 +932,14 @@ class ReportKnowledgeGraphComponent extends Component {
     );
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
+      decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
     R.forEach((n) => {
       commitMutation({
-        mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
+        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
         variables: {
-          id: this.props.report.id,
+          id: this.props.workspace.id,
           toId: n.id,
           relationship_type: 'object',
         },
@@ -559,7 +951,6 @@ class ReportKnowledgeGraphComponent extends Component {
         this.state.stixCoreObjectsTypes,
         this.state.markedBy,
         this.state.createdBy,
-        ignoredStixCoreObjectsTypes,
       ),
     });
   }
@@ -568,29 +959,17 @@ class ReportKnowledgeGraphComponent extends Component {
     // Remove selected links
     const selectedLinks = Array.from(this.selectedLinks);
     const selectedLinksIds = R.map((n) => n.id, selectedLinks);
-    R.forEach((n) => {
-      fetchQuery(reportKnowledgeGraphCheckRelationQuery, {
-        id: n.id,
-      }).then((data) => {
-        if (data.stixCoreRelationship.reports.edges.length === 1) {
-          commitMutation({
-            mutation: stixCoreRelationshipEditionDeleteMutation,
-            variables: {
-              id: n.id,
-            },
-          });
-        } else {
-          commitMutation({
-            mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
-            variables: {
-              id: this.props.report.id,
-              toId: n.id,
-              relationship_type: 'object',
-            },
-          });
-        }
-      });
-    }, this.selectedLinks);
+    R.forEach(
+      (n) => commitMutation({
+        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
+        variables: {
+          id: this.props.workspace.id,
+          toId: n.id,
+          relationship_type: 'object',
+        },
+      }),
+      this.selectedLinks,
+    );
     this.graphObjects = R.filter(
       (n) => !R.includes(n.id, selectedLinksIds),
       this.graphObjects,
@@ -613,9 +992,9 @@ class ReportKnowledgeGraphComponent extends Component {
     );
     R.forEach((n) => {
       commitMutation({
-        mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
+        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
         variables: {
-          id: this.props.report.id,
+          id: this.props.workspace.id,
           toId: n.id,
           relationship_type: 'object',
         },
@@ -623,9 +1002,9 @@ class ReportKnowledgeGraphComponent extends Component {
     }, relationshipsToRemove);
     R.forEach((n) => {
       commitMutation({
-        mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
+        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
         variables: {
-          id: this.props.report.id,
+          id: this.props.workspace.id,
           toId: n.id,
           relationship_type: 'object',
         },
@@ -634,7 +1013,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.selectedNodes.clear();
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
+      decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
     this.setState({
@@ -643,7 +1022,6 @@ class ReportKnowledgeGraphComponent extends Component {
         this.state.stixCoreObjectsTypes,
         this.state.markedBy,
         this.state.createdBy,
-        ignoredStixCoreObjectsTypes,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
@@ -652,7 +1030,7 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleCloseEntityEdition(entityId) {
     setTimeout(() => {
-      fetchQuery(reportKnowledgeGraphStixCoreObjectQuery, {
+      fetchQuery(investigationGraphStixCoreObjectQuery, {
         id: entityId,
       }).then((data) => {
         const { stixCoreObject } = data;
@@ -662,7 +1040,7 @@ class ReportKnowledgeGraphComponent extends Component {
         );
         this.graphData = buildGraphData(
           this.graphObjects,
-          decodeGraphData(this.props.report.x_opencti_graph_data),
+          decodeGraphData(this.props.workspace.graph_data),
           this.props.t,
         );
         this.setState({
@@ -671,7 +1049,6 @@ class ReportKnowledgeGraphComponent extends Component {
             this.state.stixCoreObjectsTypes,
             this.state.markedBy,
             this.state.createdBy,
-            ignoredStixCoreObjectsTypes,
           ),
         });
       });
@@ -680,7 +1057,7 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleCloseRelationEdition(relationId) {
     setTimeout(() => {
-      fetchQuery(reportKnowledgeGraphStixCoreRelationshipQuery, {
+      fetchQuery(investigationGraphStixCoreRelationshipQuery, {
         id: relationId,
       }).then((data) => {
         const { stixCoreRelationship } = data;
@@ -690,7 +1067,7 @@ class ReportKnowledgeGraphComponent extends Component {
         );
         this.graphData = buildGraphData(
           this.graphObjects,
-          decodeGraphData(this.props.report.x_opencti_graph_data),
+          decodeGraphData(this.props.workspace.graph_data),
           this.props.t,
         );
         this.setState({
@@ -699,7 +1076,6 @@ class ReportKnowledgeGraphComponent extends Component {
             this.state.stixCoreObjectsTypes,
             this.state.markedBy,
             this.state.createdBy,
-            ignoredStixCoreObjectsTypes,
           ),
         });
       });
@@ -713,8 +1089,83 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
   }
 
+  handleSelectByType(type) {
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    R.map(
+      (n) => n.entity_type === type && this.selectedNodes.add(n),
+      this.state.graphData.nodes,
+    );
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+  }
+
+  // eslint-disable-next-line class-methods-use-this
+  async handleExpandElements(filters) {
+    const selectedNodes = Array.from(this.selectedNodes);
+    const selectedNodesIds = R.map((n) => n.id, selectedNodes);
+    let newElementsIds = [];
+    for (const n of selectedNodesIds) {
+      // eslint-disable-next-line no-await-in-loop
+      const newElements = await fetchQuery(
+        investigationGraphStixRelationshipsQuery,
+        {
+          elementId: n,
+          relationship_type:
+            filters.relationship_type === 'All'
+              ? null
+              : filters.relationship_type,
+          elementWithTargetTypes: [
+            filters.entity_type === 'All' ? null : filters.entity_type,
+          ],
+          count: filters.limit,
+        },
+      ).then((data) => {
+        const currentElementsIds = R.map((k) => k.id, this.graphObjects);
+        const newNodes = R.pipe(
+          R.map((k) => (k.node.from.id === n ? k.node.to : k.node.from)),
+          R.filter((k) => !currentElementsIds.includes(k.id)),
+        )(data.stixRelationships.edges);
+        const newRelationships = R.pipe(
+          R.map((k) => k.node),
+          R.filter((k) => !currentElementsIds.includes(k.id)),
+        )(data.stixRelationships.edges);
+        return [...newNodes, ...newRelationships];
+      });
+      newElementsIds = [...R.map((k) => k.id, newElements), ...newElementsIds];
+      this.graphObjects = [...newElements, ...this.graphObjects];
+    }
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.workspace.graph_data),
+      this.props.t,
+    );
+    this.setState(
+      {
+        graphData: applyFilters(
+          this.graphData,
+          this.state.stixCoreObjectsTypes,
+          this.state.markedBy,
+          this.state.createdBy,
+        ),
+      },
+      () => {
+        commitMutation({
+          mutation: investigationGraphRelationsAddMutation,
+          variables: {
+            id: this.props.workspace.id,
+            input: {
+              toIds: newElementsIds,
+              relationship_type: 'object',
+            },
+          },
+        });
+        setTimeout(() => this.handleZoomToFit(), 1000);
+      },
+    );
+  }
+
   render() {
-    const { report } = this.props;
+    const { workspace } = this.props;
     const {
       mode3D,
       modeTree,
@@ -740,7 +1191,7 @@ class ReportKnowledgeGraphComponent extends Component {
     );
     return (
       <div>
-        <ReportKnowledgeGraphBar
+        <InvestigationGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
           handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
@@ -758,10 +1209,11 @@ class ReportKnowledgeGraphComponent extends Component {
           createdBy={createdBy}
           currentCreatedBy={currentCreatedBy}
           handleSelectAll={this.handleSelectAll.bind(this)}
-          report={report}
+          handleSelectByType={this.handleSelectByType.bind(this)}
+          workspace={workspace}
           onAdd={this.handleAddEntity.bind(this)}
           onDelete={this.handleDelete.bind(this)}
-          onAddRelation={this.handleAddRelation.bind(this)}
+          handleExpandElements={this.handleExpandElements.bind(this)}
           handleDeleteSelected={this.handleDeleteSelected.bind(this)}
           selectedNodes={Array.from(this.selectedNodes)}
           selectedLinks={Array.from(this.selectedLinks)}
@@ -929,36 +1381,26 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 }
 
-ReportKnowledgeGraphComponent.propTypes = {
-  report: PropTypes.object,
+InvestigationGraphComponent.propTypes = {
+  workspace: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };
 
-const ReportKnowledgeGraph = createFragmentContainer(
-  ReportKnowledgeGraphComponent,
+const InvestigationGraph = createFragmentContainer(
+  InvestigationGraphComponent,
   {
-    report: graphql`
-      fragment ReportKnowledgeGraph_report on Report {
+    workspace: graphql`
+      fragment InvestigationGraph_workspace on Workspace {
         id
+        identifier
         name
-        x_opencti_graph_data
-        published
-        confidence
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition
-            }
-          }
+        description
+        manifest
+        tags
+        owner {
+          id
+          name
         }
         objects(all: true) {
           edges {
@@ -996,6 +1438,20 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 description
               }
               ... on CourseOfAction {
+                name
+                description
+              }
+              ... on Note {
+                attribute_abstract
+              }
+              ... on ObservedData {
+                first_observed
+                last_observed
+              }
+              ... on Opinion {
+                opinion
+              }
+              ... on Report {
                 name
                 description
               }
@@ -1132,4 +1588,4 @@ export default R.compose(
   inject18n,
   withRouter,
   withStyles(styles),
-)(ReportKnowledgeGraph);
+)(InvestigationGraph);
