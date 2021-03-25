@@ -127,7 +127,7 @@ class XOpenCTIIncident:
         )
         query = (
             """
-            query XOpenCTIIncidents($filters: [IncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: XOpenCTIIncidentsOrdering, $orderMode: OrderingMode) {
+            query XOpenCTIIncidents($filters: [XopenCTIIncidentsFiltering], $search: String, $first: Int, $after: ID, $orderBy: XOpenCTIIncidentsOrdering, $orderMode: OrderingMode) {
                 xOpenCTIIncidents(filters: $filters, search: $search, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
