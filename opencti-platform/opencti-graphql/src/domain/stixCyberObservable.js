@@ -13,6 +13,7 @@ import {
   timeSeriesEntities,
   updateAttribute,
   batchListThroughGetFrom,
+  listThroughGetFrom,
 } from '../database/middleware';
 import { BUS_TOPICS, logger } from '../config/conf';
 import { elCount } from '../database/elasticSearch';
@@ -183,6 +184,7 @@ const createIndicatorFromObservable = async (user, input, observable) => {
           ? observable.x_opencti_description
           : `Simple indicator of observable {${indicatorName}}`,
         basedOn: [observable.id],
+        x_opencti_score: observable.x_opencti_score,
         createdBy: input.createdBy,
         objectMarking: input.objectMarking,
         objectLabel: input.objectLabel,
@@ -294,6 +296,17 @@ export const stixCyberObservableEditField = async (user, stixCyberObservableId, 
     input,
     options
   );
+  if (input.key === 'x_opencti_score') {
+    const indicators = await listThroughGetFrom(
+      user,
+      [stixCyberObservableId],
+      RELATION_BASED_ON,
+      ENTITY_TYPE_INDICATOR
+    );
+    await Promise.all(
+      indicators.map((indicator) => updateAttribute(user, indicator.id, ENTITY_TYPE_INDICATOR, input, options))
+    );
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
 };
 // endregion

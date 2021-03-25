@@ -10,6 +10,8 @@ import {
   distributionEntities,
   internalLoadById,
   listEntities,
+  listThroughGetFrom,
+  listThroughGetTo,
   loadById,
   timeSeriesEntities,
   updateAttribute,
@@ -21,16 +23,22 @@ import { FunctionalError } from '../config/errors';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import {
   ENTITY_TYPE_IDENTITY_SECTOR,
+  ENTITY_TYPE_INDICATOR,
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
   stixDomainObjectOptions,
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP } from '../schema/general';
+import {
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_RELATIONSHIP,
+} from '../schema/general';
 import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { addAttribute, find as findAttribute } from './attribute';
 import { escape } from '../utils/format';
+import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 
 export const findAll = async (user, args) => {
   let types = [];
@@ -199,6 +207,19 @@ export const stixDomainObjectEditField = async (user, stixDomainObjectId, input,
     input,
     options
   );
+  if (stixDomainObject.entity_type === ENTITY_TYPE_INDICATOR && input.key === 'x_opencti_score') {
+    const observables = await listThroughGetTo(
+      user,
+      [stixDomainObjectId],
+      RELATION_BASED_ON,
+      ABSTRACT_STIX_CYBER_OBSERVABLE
+    );
+    await Promise.all(
+      observables.map((observable) =>
+        updateAttribute(user, observable.id, ABSTRACT_STIX_CYBER_OBSERVABLE, input, options)
+      )
+    );
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, updatedStixDomainObject, user);
 };
 
