@@ -10,7 +10,6 @@ import {
   assoc,
   compose,
   append,
-  pipe,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Accordion from '@material-ui/core/Accordion';
@@ -22,19 +21,14 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import Typography from '@material-ui/core/Typography';
 import { ExpandMore, CheckCircle } from '@material-ui/icons';
-import { ConnectionHandler } from 'relay-runtime';
 import Markdown from 'react-markdown';
 import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import {
-  reportKnowledgeGraphtMutationRelationAddMutation,
-  reportKnowledgeGraphtMutationRelationDeleteMutation,
-} from '../../analysis/reports/ReportKnowledgeGraphQuery';
 
 const styles = (theme) => ({
-  container: {
+  investigation: {
     padding: '20px 0 20px 0',
   },
   expansionPanel: {
@@ -69,20 +63,24 @@ const styles = (theme) => ({
   },
 });
 
-export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
-  mutation ContainerAddStixCoreObjectsLinesRelationAddMutation(
+export const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
+  mutation InvestigationAddStixCoreObjectsLinesRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput
   ) {
-    containerEdit(id: $id) {
+    workspaceEdit(id: $id) {
       relationAdd(input: $input) {
         id
         to {
-          ... on StixDomainObject {
-            ...ContainerStixDomainObjectLine_node
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
           }
-          ... on StixCyberObservable {
-            ...ContainerStixCyberObservableLine_node
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
           }
         }
       }
@@ -90,13 +88,13 @@ export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
   }
 `;
 
-export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
-  mutation ContainerAddStixCoreObjectsLinesRelationDeleteMutation(
+export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
+  mutation InvestigationAddStixCoreObjectsLinesRelationDeleteMutation(
     $id: ID!
     $toId: String!
     $relationship_type: String!
   ) {
-    containerEdit(id: $id) {
+    workspaceEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: $relationship_type) {
         id
       }
@@ -104,133 +102,67 @@ export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
   }
 `;
 
-class ContainerAddStixCoreObjectsLinesContainer extends Component {
+class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {}, addedStixCoreObjects: [] };
   }
 
-  getContainerStixCoreObjectsIds() {
-    const { containerStixCoreObjects } = this.props;
-
+  getWorkspaceStixCoreObjectsIds() {
+    const { workspaceStixCoreObjects } = this.props;
     // eslint-disable-next-line no-underscore-dangle
-    return map((n) => n.node.__id, containerStixCoreObjects || []);
+    return map((n) => n.node.__id, workspaceStixCoreObjects || []);
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const {
-      containerId,
-      paginationOptions,
-      knowledgeGraph,
-      onAdd,
-      onDelete,
-    } = this.props;
+    const { workspaceId, onAdd, onDelete } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
+    const workspaceStixCoreObjectsIds = this.getWorkspaceStixCoreObjectsIds();
     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-      || containerStixCoreObjectsIds.includes(stixCoreObject.id);
-
+      || workspaceStixCoreObjectsIds.includes(stixCoreObject.id);
     if (alreadyAdded) {
-      if (knowledgeGraph) {
-        commitMutation({
-          mutation: reportKnowledgeGraphtMutationRelationDeleteMutation,
-          variables: {
-            id: containerId,
-            toId: stixCoreObject.id,
-            relationship_type: 'object',
-          },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: filter(
-                (n) => n !== stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-            if (typeof onDelete === 'function') {
-              onDelete(stixCoreObject);
-            }
-          },
-        });
-      } else {
-        commitMutation({
-          mutation: containerAddStixCoreObjectsLinesRelationDeleteMutation,
-          variables: {
-            id: containerId,
-            toId: stixCoreObject.id,
-            relationship_type: 'object',
-          },
-          updater: (store) => {
-            const conn = ConnectionHandler.getConnection(
-              store.get(containerId),
-              'Pagination_objects',
-              this.props.paginationOptions,
-            );
-            ConnectionHandler.deleteNode(conn, stixCoreObject.id);
-          },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: filter(
-                (n) => n !== stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-          },
-        });
-      }
+      commitMutation({
+        mutation: investigationAddStixCoreObjectsLinesRelationDeleteMutation,
+        variables: {
+          id: workspaceId,
+          toId: stixCoreObject.id,
+          relationship_type: 'object',
+        },
+        onCompleted: () => {
+          this.setState({
+            addedStixCoreObjects: filter(
+              (n) => n !== stixCoreObject.id,
+              this.state.addedStixCoreObjects,
+            ),
+          });
+          if (typeof onDelete === 'function') {
+            onDelete(stixCoreObject);
+          }
+        },
+      });
     } else {
       const input = {
         toId: stixCoreObject.id,
         relationship_type: 'object',
       };
-      if (knowledgeGraph) {
-        commitMutation({
-          mutation: reportKnowledgeGraphtMutationRelationAddMutation,
-          variables: {
-            id: containerId,
-            input,
-          },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: append(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-            if (typeof onAdd === 'function') {
-              onAdd(stixCoreObject);
-            }
-          },
-        });
-      } else {
-        commitMutation({
-          mutation: containerAddStixCoreObjectsLinesRelationAddMutation,
-          variables: {
-            id: containerId,
-            input,
-          },
-          updater: (store) => {
-            const payload = store
-              .getRootField('containerEdit')
-              .getLinkedRecord('relationAdd', { input })
-              .getLinkedRecord('to');
-            const newEdge = payload.setLinkedRecord(payload, 'node');
-            const conn = ConnectionHandler.getConnection(
-              store.get(containerId),
-              'Pagination_objects',
-              paginationOptions,
-            );
-            ConnectionHandler.insertEdgeBefore(conn, newEdge);
-          },
-          onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: append(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
-          },
-        });
-      }
+      commitMutation({
+        mutation: investigationAddStixCoreObjectsLinesRelationAddMutation,
+        variables: {
+          id: workspaceId,
+          input,
+        },
+        onCompleted: () => {
+          this.setState({
+            addedStixCoreObjects: append(
+              stixCoreObject.id,
+              this.state.addedStixCoreObjects,
+            ),
+          });
+          if (typeof onAdd === 'function') {
+            onAdd(stixCoreObject);
+          }
+        },
+      });
     }
   }
 
@@ -255,21 +187,13 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
       t, classes, data, fd,
     } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const stixCoreObjectsNodes = pipe(
-      map((n) => n.node),
-      filter(
-        (n) => n.entity_type !== 'Note'
-          && n.entity_type !== 'Opinion'
-          && n.entity_type !== 'Report',
-      ),
-    )(data.stixCoreObjects.edges);
+    const stixCoreObjectsNodes = map((n) => n.node, data.stixCoreObjects.edges);
     const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
     const stixCoreObjects = byType(stixCoreObjectsNodes);
     const stixCoreObjectsTypes = keys(stixCoreObjects);
-    const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
-
+    const workspaceStixCoreObjectsIds = this.getWorkspaceStixCoreObjectsIds();
     return (
-      <div className={classes.container}>
+      <div className={classes.investigation}>
         {stixCoreObjectsTypes.length > 0 ? (
           stixCoreObjectsTypes.map((type) => (
             <Accordion
@@ -296,7 +220,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                 <List classes={{ root: classes.list }}>
                   {stixCoreObjects[type].map((stixCoreObject) => {
                     const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-                      || containerStixCoreObjectsIds.includes(stixCoreObject.id);
+                      || workspaceStixCoreObjectsIds.includes(stixCoreObject.id);
                     return (
                       <ListItem
                         key={stixCoreObject.id}
@@ -353,22 +277,21 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 }
 
-ContainerAddStixCoreObjectsLinesContainer.propTypes = {
-  containerId: PropTypes.string,
+InvestigationAddStixCoreObjectsLinesInvestigation.propTypes = {
+  workspaceId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
   paginationOptions: PropTypes.object,
-  knowledgeGraph: PropTypes.bool,
-  containerStixCoreObjects: PropTypes.array,
+  workspaceStixCoreObjects: PropTypes.array,
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
 };
 
-export const containerAddStixCoreObjectsLinesQuery = graphql`
-  query ContainerAddStixCoreObjectsLinesQuery(
+export const investigationAddStixCoreObjectsLinesQuery = graphql`
+  query InvestigationAddStixCoreObjectsLinesQuery(
     $types: [String]
     $search: String
     $count: Int!
@@ -376,7 +299,7 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    ...ContainerAddStixCoreObjectsLines_data
+    ...InvestigationAddStixCoreObjectsLines_data
       @arguments(
         types: $types
         search: $search
@@ -388,11 +311,11 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
   }
 `;
 
-const ContainerAddStixCoreObjectsLines = createPaginationContainer(
-  ContainerAddStixCoreObjectsLinesContainer,
+const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
+  InvestigationAddStixCoreObjectsLinesInvestigation,
   {
     data: graphql`
-      fragment ContainerAddStixCoreObjectsLines_data on Query
+      fragment InvestigationAddStixCoreObjectsLines_data on Query
       @argumentDefinitions(
         types: { type: "[String]" }
         search: { type: "String" }
@@ -544,11 +467,11 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: containerAddStixCoreObjectsLinesQuery,
+    query: investigationAddStixCoreObjectsLinesQuery,
   },
 );
 
 export default compose(
   inject18n,
   withStyles(styles),
-)(ContainerAddStixCoreObjectsLines);
+)(InvestigationAddStixCoreObjectsLines);

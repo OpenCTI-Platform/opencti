@@ -1108,16 +1108,16 @@
     enabled "2.0.x"
     kuler "^2.0.0"
 
-"@elastic/elasticsearch@7.11.0":
-  version "7.11.0"
-  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.11.0.tgz#e196243d0ed026742fc160d72cc5b4b5b6c7807d"
-  integrity sha512-AFVVuANIdbV1qYjuOi4hnsX/DehWYG+bbhQO4amq9K4/NnzU7mpGWOPgVlRQTiX+vBfBkx7SL6h4QEjIlM3ztA==
+"@elastic/elasticsearch@7.12.0":
+  version "7.12.0"
+  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.12.0.tgz#dbb51a2841f644b670a56d8c15899e860928856f"
+  integrity sha512-GquUEytCijFRPEk3DKkkDdyhspB3qbucVQOwih9uNyz3iz804I+nGBUsFo2LwVvLQmQfEM0IY2+yoYfEz5wMug==
   dependencies:
-    debug "^4.1.1"
+    debug "^4.3.1"
     hpagent "^0.1.1"
-    ms "^2.1.1"
+    ms "^2.1.3"
     pump "^3.0.0"
-    secure-json-parse "^2.1.0"
+    secure-json-parse "^2.3.1"
 
 "@eslint/eslintrc@^0.2.2":
   version "0.2.2"
@@ -7426,7 +7426,7 @@ ms@2.1.2:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-ms@^2.1.1:
+ms@^2.1.1, ms@^2.1.3:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
@@ -9004,7 +9004,7 @@ schema-utils@^3.0.0:
     ajv "^6.12.5"
     ajv-keywords "^3.5.2"
 
-secure-json-parse@^2.1.0:
+secure-json-parse@^2.3.1:
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/secure-json-parse/-/secure-json-parse-2.3.2.tgz#0284c9525c6f24d38774f13727addff80634c2e9"
   integrity sha512-4oUSFU0w2d8/XQb7NO9dbMYyp/hxIwZPcZcGAlAAEziMRHs+NbUcx2Z5dda/z8o+avyQ8gpuYnTMlGh8SVwg9g==

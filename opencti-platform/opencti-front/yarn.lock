@@ -13023,10 +13023,10 @@ react-force-graph-3d@1.18.9:
     prop-types "^15.7.2"
     react-kapsule "^2.2.1"
 
-react-grid-layout@1.2.2:
-  version "1.2.2"
-  resolved "https://registry.yarnpkg.com/react-grid-layout/-/react-grid-layout-1.2.2.tgz#42cdb4b27fcdc4fad1655d8862b9d54c6f011d6d"
-  integrity sha512-i5/xPkyi0llA6PCEW2B26e7pTY+JLp0zPvs6MYbbEXWaO1FWG0xr6Q/FqPrh6K86glV5ZRU7DEbvnedZVdFglg==
+react-grid-layout@1.2.4:
+  version "1.2.4"
+  resolved "https://registry.yarnpkg.com/react-grid-layout/-/react-grid-layout-1.2.4.tgz#d04f9784fe47b27d0dcd3eb92f20e1a17454003c"
+  integrity sha512-AWorwRmkEyOPWF516BDbEhMjGhTCPf6zALQ3HIYrJdRmbbj1n5PDPNEI1eI818zhB07KwGVtF0WBxq2CmA2CNA==
   dependencies:
     classnames "2.x"
     lodash.isequal "^4.0.0"

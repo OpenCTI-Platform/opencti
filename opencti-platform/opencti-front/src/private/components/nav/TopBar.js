@@ -63,6 +63,7 @@ import Security, {
 } from '../../../utils/Security';
 import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
+import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
 import Filters from '../common/lists/Filters';
 
 const styles = (theme) => ({
@@ -269,6 +270,9 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/workspaces/dashboards') && (
             <TopMenuWorkspacesDashboards />
           )}
+          {location.pathname.includes(
+            '/dashboard/workspaces/investigations',
+          ) && <TopMenuWorkspacesInvestigations />}
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
         <div className={classes.barRight}>
@@ -320,18 +324,21 @@ const TopBar = ({
                   <InsertChartOutlined fontSize="default" />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={t('Investigate')}>
+              <Tooltip title={t('Investigations')}>
                 <IconButton
-                  disabled={true}
                   component={Link}
-                  to="/dashboard/investigate"
+                  to="/dashboard/workspaces/investigations"
                   variant={
-                    location.pathname === '/dashboard/investigate'
+                    location.pathname.includes(
+                      '/dashboard/workspaces/investigations',
+                    )
                       ? 'contained'
                       : 'text'
                   }
                   color={
-                    location.pathname === '/dashboard/investigate'
+                    location.pathname.includes(
+                      '/dashboard/workspaces/investigations',
+                    )
                       ? 'primary'
                       : 'inherit'
                   }

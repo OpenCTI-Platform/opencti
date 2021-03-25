@@ -38,7 +38,7 @@ import { ADMIN_USER } from '../../utils/testQuery';
 describe('Elasticsearch configuration test', () => {
   it('should configuration correct', () => {
     expect(elIsAlive()).resolves.toBeTruthy();
-    expect(elVersion()).resolves.toContain('7.11');
+    expect(elVersion()).resolves.toContain('7.12');
     expect(elIndexExists(READ_INDEX_INTERNAL_OBJECTS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_SIGHTING_RELATIONSHIPS)).toBeTruthy();
     expect(elIndexExists(READ_INDEX_STIX_CORE_RELATIONSHIPS)).toBeTruthy();

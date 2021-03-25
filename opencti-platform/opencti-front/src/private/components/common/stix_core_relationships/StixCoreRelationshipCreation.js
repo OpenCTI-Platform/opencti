@@ -208,6 +208,7 @@ const stixCoreRelationshipCreationMutation = graphql`
     stixCoreRelationshipAdd(input: $input) {
       id
       entity_type
+      parent_types
       relationship_type
       confidence
       start_time

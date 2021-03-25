@@ -7976,6 +7976,7 @@ type Query {
     orderBy: StixRelationshipsOrdering
     orderMode: OrderingMode
     elementId: String
+    elementWithTargetTypes: [String]
     fromId: String
     fromRole: String
     fromTypes: [String]
@@ -8223,6 +8224,9 @@ type AttributeEditMutations {
 type WorkspaceEditMutations {
   delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
   fieldPatch(input: EditInput, operation: EditOperation): Workspace
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [EXPLORE_EXUPDATE])
+  relationsAdd(input: StixMetaRelationshipsAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
+  relationDelete(toId: String!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
   contextPatch(input: EditContext): Workspace
   contextClean: Workspace
 }

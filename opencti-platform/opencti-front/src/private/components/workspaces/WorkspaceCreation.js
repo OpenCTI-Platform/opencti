@@ -106,7 +106,7 @@ class WorkspaceCreation extends Component {
     commitMutation({
       mutation: workspaceMutation,
       variables: {
-        input: assoc('type', 'dashboard', values),
+        input: assoc('type', this.props.type, values),
       },
       updater: (store) => {
         const payload = store.getRootField('workspaceAdd');

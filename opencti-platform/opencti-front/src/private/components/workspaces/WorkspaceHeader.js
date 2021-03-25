@@ -129,7 +129,7 @@ class WorkspaceHeader extends Component {
     const { t, classes, workspace } = this.props;
     const tags = propOr([], 'tags', workspace);
     return (
-      <div style={{ margin: '0 15px 0 20px' }}>
+      <div>
         <Typography
           variant="h1"
           gutterBottom={true}
@@ -203,6 +203,7 @@ class WorkspaceHeader extends Component {
             </div>
           </Slide>
         </div>
+        <div className="clearfix" />
       </div>
     );
   }

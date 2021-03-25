@@ -144,6 +144,7 @@ const ContainerStixCyberObservableLineFragment = createFragmentContainer(
         id
         observable_value
         entity_type
+        parent_types
         created_at
         createdBy {
           ... on Identity {

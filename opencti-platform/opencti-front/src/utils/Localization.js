@@ -924,6 +924,7 @@ const i18n = {
       'entity_X-Opencti-User-Agent': 'User agent',
       // Relations
       relationship_All: 'Tous les types de relation',
+      relationship_object: 'référence',
       'relationship_revoked-by': 'révoqué par',
       relationship_delivers: 'délivre',
       relationship_targets: 'cible',
@@ -1113,6 +1114,7 @@ const i18n = {
       'entity_X-OpenCTI-User-Agent': 'User agent',
       // Relations
       relationship_All: 'All types of relationship',
+      relationship_object: 'references',
       'relationship_revoked-by': 'revoked by',
       relationship_delivers: 'delivers',
       relationship_targets: 'targets',
