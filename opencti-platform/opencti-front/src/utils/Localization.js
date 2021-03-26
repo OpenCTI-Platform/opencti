@@ -454,6 +454,7 @@ const i18n = {
       'Filter authors (created by)': 'Filtrer les auteurs (créé par)',
       'Filter marking definitions': 'Filtrer les marquages',
       'Select all nodes': 'Sélectionner tous les noeuds',
+      'Select by type': 'Sélectionner par type',
       'Add an entity to this container': 'Ajouter une entité à ce conteneur',
       'Edit the selected item': "Editer l'élément sélectionné",
       'Remove selected items': 'Supprimer les éléments sélectionnés',

@@ -14,7 +14,7 @@ import {
   EditOutlined,
   InfoOutlined,
 } from '@material-ui/icons';
-import { Video3D, SelectAll } from 'mdi-material-ui';
+import { Video3D, SelectAll, SelectGroup } from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -24,6 +24,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import Popover from '@material-ui/core/Popover';
 import Toolbar from '@material-ui/core/Toolbar';
+import Divider from '@material-ui/core/Divider';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -42,6 +43,12 @@ const styles = (theme) => ({
     height: 50,
     overflow: 'hidden',
   },
+  divider: {
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    height: '100%',
+    margin: '0 5px 0 5px',
+  },
 });
 
 class ReportKnowledgeGraphBar extends Component {
@@ -54,6 +61,8 @@ class ReportKnowledgeGraphBar extends Component {
       anchorElMarkedBy: null,
       openCreatedBy: false,
       anchorElCreatedBy: null,
+      openSelectByType: false,
+      anchorElSelectByType: null,
       openCreatedRelation: false,
       relationReversed: false,
       openEditRelation: false,
@@ -90,6 +99,20 @@ class ReportKnowledgeGraphBar extends Component {
     this.setState({
       openMarkedBy: true,
       anchorElMarkedBy: event.currentTarget,
+    });
+  }
+
+  handleOpenSelectByType(event) {
+    this.setState({
+      openSelectByType: true,
+      anchorElSelectByType: event.currentTarget,
+    });
+  }
+
+  handleCloseSelectByType() {
+    this.setState({
+      openSelectByType: false,
+      anchorElSelectByType: null,
     });
   }
 
@@ -137,6 +160,11 @@ class ReportKnowledgeGraphBar extends Component {
     );
   }
 
+  handleSelectByType(type) {
+    this.props.handleSelectByType(type);
+    this.handleCloseSelectByType();
+  }
+
   render() {
     const {
       t,
@@ -173,6 +201,8 @@ class ReportKnowledgeGraphBar extends Component {
       anchorElMarkedBy,
       openCreatedBy,
       anchorElCreatedBy,
+      openSelectByType,
+      anchorElSelectByType,
       openCreatedRelation,
       relationReversed,
       openEditRelation,
@@ -223,7 +253,7 @@ class ReportKnowledgeGraphBar extends Component {
         classes={{ paper: classes.bottomNav }}
       >
         <Toolbar style={{ minHeight: 54 }}>
-          <div style={{ position: 'absolute', left: 0 }}>
+          <div style={{ position: 'absolute', left: 0, height: '100%' }}>
             <Tooltip title={t('Toggle 3D mode')}>
               <span>
                 <IconButton
@@ -244,6 +274,7 @@ class ReportKnowledgeGraphBar extends Component {
                 </IconButton>
               </span>
             </Tooltip>
+            <Divider className={classes.divider} orientation="vertical" />
             <Tooltip title={t('Filter entity types')}>
               <span>
                 <IconButton
@@ -385,6 +416,48 @@ class ReportKnowledgeGraphBar extends Component {
                       />
                     </ListItemIcon>
                     <ListItemText primary={createdByRef.name} />
+                  </ListItem>
+                ))}
+              </List>
+            </Popover>
+            <Divider className={classes.divider} orientation="vertical" />
+            <Tooltip title={t('Select by entity type')}>
+              <span>
+                <IconButton
+                  color="primary"
+                  onClick={this.handleOpenSelectByType.bind(this)}
+                >
+                  <SelectGroup />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Popover
+              classes={{ paper: classes.container }}
+              open={openSelectByType}
+              anchorEl={anchorElSelectByType}
+              onClose={this.handleCloseSelectByType.bind(this)}
+              anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+              }}
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'center',
+              }}
+            >
+              <List>
+                {stixCoreObjectsTypes.map((stixCoreObjectType) => (
+                  <ListItem
+                    key={stixCoreObjectType}
+                    role={undefined}
+                    dense={true}
+                    button={true}
+                    onClick={this.handleSelectByType.bind(
+                      this,
+                      stixCoreObjectType,
+                    )}
+                  >
+                    <ListItemText primary={t(`entity_${stixCoreObjectType}`)} />
                   </ListItem>
                 ))}
               </List>
@@ -534,6 +607,7 @@ ReportKnowledgeGraphBar.propTypes = {
   handleCloseEntityEdition: PropTypes.func,
   handleCloseRelationEdition: PropTypes.func,
   handleSelectAll: PropTypes.func,
+  handleSelectByType: PropTypes.func,
 };
 
 export default R.compose(

@@ -278,13 +278,14 @@ class ReportKnowledgeGraphComponent extends Component {
   initialize() {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
-      this.graph.current.zoomToFit(0, 150);
+      this.graph.current.d3Force('link').distance(50);
       if (this.zoom && this.zoom.k && !this.state.mode3D) {
         this.graph.current.zoom(this.zoom.k, 400);
+      } else {
+        setTimeout(() => this.graph.current.zoomToFit(0, 150), 1200);
       }
-      this.graph.current.d3Force('link').distance(50);
+      this.initialized = true;
     }
-    this.initialized = true;
   }
 
   componentDidMount() {
@@ -294,7 +295,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.subscription = POSITIONS$.subscribe({
       next: () => this.savePositions(),
     });
-    setTimeout(() => this.initialize(), 1500);
+    this.initialize();
   }
 
   componentWillUnmount() {
@@ -403,7 +404,11 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+    if (this.graphObjects.length === 1) {
+      this.graph.current.zoomToFit(400, 300);
+    } else {
+      this.graph.current.zoomToFit(400, 150);
+    }
   }
 
   handleZoomEnd(zoom) {
@@ -474,7 +479,7 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleAddEntity(stixCoreObject) {
     if (R.map((n) => n.id, this.graphObjects).includes(stixCoreObject.id)) return;
-    this.graphObjects = [stixCoreObject, ...this.graphObjects];
+    this.graphObjects = [...this.graphObjects, stixCoreObject];
     this.graphData = buildGraphData(
       this.graphObjects,
       decodeGraphData(this.props.report.x_opencti_graph_data),
@@ -508,7 +513,7 @@ class ReportKnowledgeGraphComponent extends Component {
         input,
       },
       onCompleted: () => {
-        this.graphObjects = [stixCoreRelationship, ...this.graphObjects];
+        this.graphObjects = [...this.graphObjects, stixCoreRelationship];
         this.graphData = buildGraphData(
           this.graphObjects,
           decodeGraphData(this.props.report.x_opencti_graph_data),
@@ -713,6 +718,16 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
   }
 
+  handleSelectByType(type) {
+    this.selectedLinks.clear();
+    this.selectedNodes.clear();
+    R.map(
+      (n) => n.entity_type === type && this.selectedNodes.add(n),
+      this.state.graphData.nodes,
+    );
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+  }
+
   render() {
     const { report } = this.props;
     const {
@@ -758,6 +773,7 @@ class ReportKnowledgeGraphComponent extends Component {
           createdBy={createdBy}
           currentCreatedBy={currentCreatedBy}
           handleSelectAll={this.handleSelectAll.bind(this)}
+          handleSelectByType={this.handleSelectByType.bind(this)}
           report={report}
           onAdd={this.handleAddEntity.bind(this)}
           onDelete={this.handleDelete.bind(this)}

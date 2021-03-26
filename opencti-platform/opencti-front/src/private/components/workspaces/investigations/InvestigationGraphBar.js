@@ -241,7 +241,9 @@ class InvestigationGraphBar extends Component {
     const editionEnabled = (numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
         && !selectedNodes[0].isObservable)
-      || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
+      || (numberOfSelectedNodes === 0
+        && numberOfSelectedLinks === 1
+        && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
     const expandEnabled = numberOfSelectedNodes > 0 || numberOfSelectedLinks > 0;
     return (
       <Drawer
@@ -449,7 +451,10 @@ class InvestigationGraphBar extends Component {
                     role={undefined}
                     dense={true}
                     button={true}
-                    onClick={this.handleSelectByType.bind(this, stixCoreObjectType)}
+                    onClick={this.handleSelectByType.bind(
+                      this,
+                      stixCoreObjectType,
+                    )}
                   >
                     <ListItemText primary={t(`entity_${stixCoreObjectType}`)} />
                   </ListItem>

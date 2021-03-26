@@ -1275,6 +1275,7 @@ export const elLoadBy = async (user, field, value, type = null, indices = READ_D
 };
 export const elAttributeValues = async (user, field) => {
   const markingRestrictions = buildMarkingRestriction(user);
+  const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes.includes(field);
   const body = {
     query: {
       bool: {
@@ -1285,7 +1286,7 @@ export const elAttributeValues = async (user, field) => {
     aggs: {
       values: {
         terms: {
-          field: `${field}.keyword`,
+          field: isDateOrNumber ? field : `${field}.keyword`,
         },
       },
     },

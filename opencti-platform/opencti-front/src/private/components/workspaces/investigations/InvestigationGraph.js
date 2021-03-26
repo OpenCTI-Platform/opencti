@@ -703,13 +703,14 @@ class InvestigationGraphComponent extends Component {
   initialize() {
     if (this.initialized) return;
     if (this.graph && this.graph.current) {
-      this.graph.current.zoomToFit(0, 150);
+      this.graph.current.d3Force('link').distance(50);
       if (this.zoom && this.zoom.k && !this.state.mode3D) {
         this.graph.current.zoom(this.zoom.k, 400);
+      } else {
+        setTimeout(() => this.graph.current.zoomToFit(0, 150), 1200);
       }
-      this.graph.current.d3Force('link').distance(50);
+      this.initialized = true;
     }
-    this.initialized = true;
   }
 
   componentDidMount() {
@@ -719,7 +720,7 @@ class InvestigationGraphComponent extends Component {
     this.subscription = POSITIONS$.subscribe({
       next: () => this.savePositions(),
     });
-    setTimeout(() => this.initialize(), 1500);
+    this.initialize();
   }
 
   componentWillUnmount() {
@@ -806,7 +807,9 @@ class InvestigationGraphComponent extends Component {
       );
     } else {
       // eslint-disable-next-line max-len
-      this.setState({ markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true));
+      this.setState(
+        { markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true),
+      );
     }
   }
 
@@ -898,7 +901,7 @@ class InvestigationGraphComponent extends Component {
 
   handleAddEntity(stixCoreObject) {
     if (R.map((n) => n.id, this.graphObjects).includes(stixCoreObject.id)) return;
-    this.graphObjects = [stixCoreObject, ...this.graphObjects];
+    this.graphObjects = [...this.graphObjects, stixCoreObject];
     this.graphData = buildGraphData(
       this.graphObjects,
       decodeGraphData(this.props.workspace.graph_data),
@@ -1397,6 +1400,7 @@ const InvestigationGraph = createFragmentContainer(
         name
         description
         manifest
+        graph_data
         tags
         owner {
           id
