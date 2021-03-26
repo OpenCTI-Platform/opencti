@@ -26,6 +26,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import TypesField from '../TypesField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -130,6 +131,7 @@ class IndicatorCreation extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
     const adaptedValues = evolve(
       {
+        killChainPhases: pluck('value'),
         createdBy: path(['value']),
         objectMarking: pluck('value'),
         objectLabel: pluck('value'),
@@ -208,6 +210,7 @@ class IndicatorCreation extends Component {
                 description: '',
                 createdBy: '',
                 objectMarking: [],
+                killChainPhases: [],
                 objectLabel: [],
                 x_opencti_detection: false,
               }}
@@ -300,6 +303,10 @@ class IndicatorCreation extends Component {
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <KillChainPhasesField
+                    name="killChainPhases"
+                    style={{ marginTop: 20, width: '100%' }}
                   />
                   <CreatedByField
                     name="createdBy"
