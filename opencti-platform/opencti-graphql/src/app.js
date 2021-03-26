@@ -10,6 +10,7 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
+import { v4 as uuidv4 } from 'uuid';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
@@ -25,6 +26,23 @@ import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
 import { getRedisSessionClient } from './database/redis';
 
+const RedisStore = connectRedis(session);
+const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
+export const sessionMiddleware = () =>
+  session({
+    genid: () => uuidv4(),
+    name: OPENCTI_SESSION,
+    store: new RedisStore({ client: getRedisSessionClient() }),
+    secret: sessionSecret,
+    proxy: true,
+    rolling: true,
+    saveUninitialized: false,
+    resave: false,
+    cookie: {
+      secure: conf.get('app:cookie_secure'),
+      _expires: conf.get('app:session_timeout'),
+    },
+  });
 const createApp = async (apolloServer, broadcaster) => {
   // Init the http server
   const app = express();
@@ -36,28 +54,14 @@ const createApp = async (apolloServer, broadcaster) => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
-  const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
   const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/'];
-  const RedisStore = connectRedis(session);
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
-  app.set('trust proxy', true); // trust first proxy
-  app.use(
-    session({
-      name: OPENCTI_SESSION,
-      store: new RedisStore({ client: getRedisSessionClient() }),
-      secret: sessionSecret,
-      proxy: true,
-      rolling: true,
-      saveUninitialized: false,
-      resave: false,
-      cookie: {
-        secure: conf.get('app:cookie_secure'),
-        _expires: conf.get('app:session_timeout'),
-      },
-    })
-  );
+  app.use(bodyParser.json({ limit: '100mb' }));
+  app.use(cookieParser());
+  app.use(compression());
+  app.use(sessionMiddleware());
   app.use(cookieParser());
   app.use(compression());
   app.use(helmet());
@@ -133,6 +137,7 @@ const createApp = async (apolloServer, broadcaster) => {
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     const { provider } = req.params;
+    req.session.referer = req.headers.referer;
     passport.authenticate(provider, {}, () => {})(req, res, next);
   });
 
@@ -145,7 +150,9 @@ const createApp = async (apolloServer, broadcaster) => {
       }
       // noinspection UnnecessaryLocalVariableJS
       await authenticateUser(req, token.uuid);
-      return res.redirect('/dashboard');
+      const { referer } = req.session;
+      req.session.referer = null;
+      return res.redirect(referer);
     })(req, res, next);
   });
 
