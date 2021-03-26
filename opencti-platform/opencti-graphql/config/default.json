@@ -1,6 +1,10 @@
 {
   "app": {
     "port": 4000,
+    "https_cert": {
+      "key": null,
+      "crt": null
+    },
     "logs": "./logs",
     "logs_level": "info",
     "request_timeout": 120000,
