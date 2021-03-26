@@ -21,9 +21,10 @@ import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } f
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { REL_INDEX_PREFIX } from '../schema/general';
 import { distributionEntities, batchLoader } from '../database/middleware';
-
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
 
+const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const batchObservablesLoader = batchLoader(batchObservables);
 
 const indicatorResolvers = {
@@ -57,6 +58,7 @@ const indicatorResolvers = {
     indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
+    killChainPhases: (indicator, _, { user }) => killChainPhasesLoader.load(indicator.id, user),
     observables: (indicator, _, { user }) => batchObservablesLoader.load(indicator.id, user),
     indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },

@@ -27,6 +27,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -151,6 +152,44 @@ class IndicatorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
+  handleChangeKillChainPhases(name, values) {
+    const { indicator } = this.props;
+    const currentKillChainPhases = pipe(
+      pathOr([], ['killChainPhases', 'edges']),
+      map((n) => ({
+        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+        value: n.node.id,
+      })),
+    )(indicator);
+
+    const added = difference(values, currentKillChainPhases);
+    const removed = difference(currentKillChainPhases, values);
+
+    if (added.length > 0) {
+      commitMutation({
+        mutation: indicatorMutationRelationAdd,
+        variables: {
+          id: this.props.indicator.id,
+          input: {
+            toId: head(added).value,
+            relationship_type: 'kill-chain-phase',
+          },
+        },
+      });
+    }
+
+    if (removed.length > 0) {
+      commitMutation({
+        mutation: indicatorMutationRelationDelete,
+        variables: {
+          id: this.props.indicator.id,
+          toId: head(removed).value,
+          relationship_type: 'kill-chain-phase',
+        },
+      });
+    }
+  }
+
   handleChangeCreatedBy(name, value) {
     const { indicator } = this.props;
     const currentCreatedBy = {
@@ -232,6 +271,13 @@ class IndicatorEditionOverviewComponent extends Component {
 
   render() {
     const { t, indicator, context } = this.props;
+    const killChainPhases = pipe(
+      pathOr([], ['killChainPhases', 'edges']),
+      map((n) => ({
+        label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+        value: n.node.id,
+      })),
+    )(indicator);
     const createdBy = pathOr(null, ['createdBy', 'name'], indicator) === null
       ? ''
       : {
@@ -246,6 +292,7 @@ class IndicatorEditionOverviewComponent extends Component {
       })),
     )(indicator);
     const initialValues = pipe(
+      assoc('killChainPhases', killChainPhases),
       assoc('createdBy', createdBy),
       assoc('objectMarking', objectMarking),
       assoc('x_mitre_platforms', propOr([], 'x_mitre_platforms', indicator)),
@@ -258,6 +305,7 @@ class IndicatorEditionOverviewComponent extends Component {
         'x_opencti_score',
         'x_opencti_detection',
         'x_mitre_platforms',
+        'killChainPhases',
         'createdBy',
         'killChainPhases',
         'objectMarking',
@@ -374,6 +422,18 @@ class IndicatorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
+            <KillChainPhasesField
+              name="killChainPhases"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="killChainPhases"
+                />
+              }
+              onChange={this.handleChangeKillChainPhases.bind(this)}
+            />
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
@@ -443,6 +503,16 @@ const IndicatorEditionOverview = createFragmentContainer(
             id
             name
             entity_type
+          }
+        }
+        killChainPhases {
+          edges {
+            node {
+              id
+              kill_chain_name
+              phase_name
+              x_opencti_order
+            }
           }
         }
         objectMarking {
