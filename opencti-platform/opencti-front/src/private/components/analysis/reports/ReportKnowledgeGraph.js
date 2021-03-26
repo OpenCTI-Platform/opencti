@@ -259,7 +259,8 @@ class ReportKnowledgeGraphComponent extends Component {
     const createdBy = R.propOr([], 'createdBy', params);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
-      modeTree: false,
+      modeFixed: R.propOr(false, 'modeFixed', params),
+      modeTree: R.propOr(false, 'modeTree', params),
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
@@ -350,6 +351,15 @@ class ReportKnowledgeGraphComponent extends Component {
 
   handleToggleTreeMode() {
     this.setState({ modeTree: !this.state.modeTree }, () => this.saveParameters());
+  }
+
+  handleToggleFixedMode() {
+    this.setState({ modeFixed: !this.state.modeFixed }, () => {
+      this.saveParameters();
+      this.handleDragEnd();
+      this.forceUpdate();
+      this.graph.current.d3ReheatSimulation();
+    });
   }
 
   handleToggleStixCoreObjectType(type) {
@@ -728,10 +738,36 @@ class ReportKnowledgeGraphComponent extends Component {
     this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
   }
 
+  handleResetLayout() {
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      {},
+      this.props.t,
+    );
+    this.setState(
+      {
+        graphData: applyFilters(
+          this.graphData,
+          this.state.stixCoreObjectsTypes,
+          this.state.markedBy,
+          this.state.createdBy,
+          ignoredStixCoreObjectsTypes,
+        ),
+      },
+      () => {
+        this.handleDragEnd();
+        this.forceUpdate();
+        this.graph.current.d3ReheatSimulation();
+        POSITIONS$.next({ action: 'SavePositions' });
+      },
+    );
+  }
+
   render() {
     const { report } = this.props;
     const {
       mode3D,
+      modeFixed,
       modeTree,
       stixCoreObjectsTypes: currentStixCoreObjectsTypes,
       markedBy: currentMarkedBy,
@@ -760,6 +796,8 @@ class ReportKnowledgeGraphComponent extends Component {
           currentMode3D={mode3D}
           handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
           currentModeTree={modeTree}
+          handleToggleFixedMode={this.handleToggleFixedMode.bind(this)}
+          currentModeFixed={modeFixed}
           handleZoomToFit={this.handleZoomToFit.bind(this)}
           handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
           handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
@@ -787,6 +825,7 @@ class ReportKnowledgeGraphComponent extends Component {
           handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
             this,
           )}
+          handleResetLayout={this.handleResetLayout.bind(this)}
         />
         {mode3D ? (
           <ForceGraph3D
@@ -869,6 +908,8 @@ class ReportKnowledgeGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
+            cooldownTicks={modeFixed ? 0 : 'Infinity'}
+            dagMode={modeTree ? 'td' : undefined}
           />
         ) : (
           <ForceGraph2D
@@ -938,6 +979,8 @@ class ReportKnowledgeGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
+            cooldownTicks={modeFixed ? 0 : 'Infinity'}
+            dagMode={modeTree ? 'td' : undefined}
           />
         )}
       </div>

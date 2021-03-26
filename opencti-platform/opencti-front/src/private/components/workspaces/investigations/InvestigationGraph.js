@@ -685,7 +685,8 @@ class InvestigationGraphComponent extends Component {
     const createdBy = R.propOr([], 'createdBy', params);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
-      modeTree: false,
+      modeFixed: R.propOr(false, 'modeFixed', params),
+      modeTree: R.propOr(false, 'modeTree', params),
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
@@ -776,6 +777,15 @@ class InvestigationGraphComponent extends Component {
     this.setState({ modeTree: !this.state.modeTree }, () => this.saveParameters());
   }
 
+  handleToggleFixedMode() {
+    this.setState({ modeFixed: !this.state.modeFixed }, () => {
+      this.saveParameters();
+      this.handleDragEnd();
+      this.forceUpdate();
+      this.graph.current.d3ReheatSimulation();
+    });
+  }
+
   handleToggleStixCoreObjectType(type) {
     const { stixCoreObjectsTypes } = this.state;
     if (stixCoreObjectsTypes.includes(type)) {
@@ -807,9 +817,7 @@ class InvestigationGraphComponent extends Component {
       );
     } else {
       // eslint-disable-next-line max-len
-      this.setState(
-        { markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true),
-      );
+      this.setState({ markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true));
     }
   }
 
@@ -1167,10 +1175,31 @@ class InvestigationGraphComponent extends Component {
     );
   }
 
+  handleResetLayout() {
+    this.graphData = buildGraphData(this.graphObjects, {}, this.props.t);
+    this.setState(
+      {
+        graphData: applyFilters(
+          this.graphData,
+          this.state.stixCoreObjectsTypes,
+          this.state.markedBy,
+          this.state.createdBy,
+        ),
+      },
+      () => {
+        this.handleDragEnd();
+        this.forceUpdate();
+        this.graph.current.d3ReheatSimulation();
+        POSITIONS$.next({ action: 'SavePositions' });
+      },
+    );
+  }
+
   render() {
     const { workspace } = this.props;
     const {
       mode3D,
+      modeFixed,
       modeTree,
       stixCoreObjectsTypes: currentStixCoreObjectsTypes,
       markedBy: currentMarkedBy,
@@ -1199,6 +1228,8 @@ class InvestigationGraphComponent extends Component {
           currentMode3D={mode3D}
           handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
           currentModeTree={modeTree}
+          handleToggleFixedMode={this.handleToggleFixedMode.bind(this)}
+          currentModeFixed={modeFixed}
           handleZoomToFit={this.handleZoomToFit.bind(this)}
           handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
           handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
@@ -1226,6 +1257,7 @@ class InvestigationGraphComponent extends Component {
           handleCloseRelationEdition={this.handleCloseRelationEdition.bind(
             this,
           )}
+          handleResetLayout={this.handleResetLayout.bind(this)}
         />
         {mode3D ? (
           <ForceGraph3D
@@ -1308,6 +1340,8 @@ class InvestigationGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
+            cooldownTicks={modeFixed ? 0 : 'Infinity'}
+            dagMode={modeTree ? 'td' : undefined}
           />
         ) : (
           <ForceGraph2D
@@ -1377,6 +1411,8 @@ class InvestigationGraphComponent extends Component {
             }}
             onLinkClick={this.handleLinkClick.bind(this)}
             onBackgroundClick={this.handleBackgroundClick.bind(this)}
+            cooldownTicks={modeFixed ? 0 : 'Infinity'}
+            dagMode={modeTree ? 'td' : undefined}
           />
         )}
       </div>

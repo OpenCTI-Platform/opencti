@@ -67,6 +67,9 @@ export const buildViewParamsFromUrlAndStorage = (
   if (finalParams.modeTree) {
     finalParams.modeTree = finalParams.modeTree.toString() === 'true';
   }
+  if (finalParams.modeFixed) {
+    finalParams.modeFixed = finalParams.modeFixed.toString() === 'true';
+  }
   if (typeof finalParams.stixDomainObjectsTypes === 'string') {
     finalParams.stixDomainObjectsTypes = finalParams.stixDomainObjectsTypes
       ? (finalParams.stixDomainObjectsTypes = split(

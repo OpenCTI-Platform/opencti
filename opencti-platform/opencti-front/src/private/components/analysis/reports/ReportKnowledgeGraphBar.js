@@ -13,8 +13,11 @@ import {
   CenterFocusStrongOutlined,
   EditOutlined,
   InfoOutlined,
+  ScatterPlotOutlined,
 } from '@material-ui/icons';
-import { Video3D, SelectAll, SelectGroup } from 'mdi-material-ui';
+import {
+  Video3D, SelectAll, SelectGroup, GraphOutline, AutoFix,
+} from 'mdi-material-ui';
 import Tooltip from '@material-ui/core/Tooltip';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -170,10 +173,14 @@ class ReportKnowledgeGraphBar extends Component {
       t,
       classes,
       currentMode3D,
+      currentModeTree,
+      currentModeFixed,
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
       handleToggle3DMode,
+      handleToggleTreeMode,
+      handleToggleFixedMode,
       handleToggleCreatedBy,
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,
@@ -193,6 +200,7 @@ class ReportKnowledgeGraphBar extends Component {
       lastLinkLastSeen,
       onAddRelation,
       handleSelectAll,
+      handleResetLayout,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -254,13 +262,34 @@ class ReportKnowledgeGraphBar extends Component {
       >
         <Toolbar style={{ minHeight: 54 }}>
           <div style={{ position: 'absolute', left: 0, height: '100%' }}>
-            <Tooltip title={t('Toggle 3D mode')}>
+            <Tooltip title={currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')}>
               <span>
                 <IconButton
                   color={currentMode3D ? 'secondary' : 'primary'}
                   onClick={handleToggle3DMode.bind(this)}
                 >
                   <Video3D />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={currentModeTree ? t('Disable tree mode') : t('Enable tree mode')}>
+              <span>
+                <IconButton
+                  color={currentModeTree ? 'secondary' : 'primary'}
+                  onClick={handleToggleTreeMode.bind(this)}
+                  disabled={currentModeFixed}
+                >
+                  <GraphOutline />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={currentModeFixed ? t('Enable forces') : t('Disable forces')}>
+              <span>
+                <IconButton
+                  color={currentModeFixed ? 'primary' : 'secondary'}
+                  onClick={handleToggleFixedMode.bind(this)}
+                >
+                  <ScatterPlotOutlined />
                 </IconButton>
               </span>
             </Tooltip>
@@ -271,6 +300,17 @@ class ReportKnowledgeGraphBar extends Component {
                   onClick={handleZoomToFit.bind(this)}
                 >
                   <AspectRatio />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip title={t('Unfix the nodes and re-apply forces')}>
+              <span>
+                <IconButton
+                  color="primary"
+                  onClick={handleResetLayout.bind(this)}
+                  disabled={currentModeFixed}
+                >
+                  <AutoFix />
                 </IconButton>
               </span>
             </Tooltip>
@@ -584,6 +624,8 @@ ReportKnowledgeGraphBar.propTypes = {
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
   currentModeTree: PropTypes.bool,
+  currentModeFixed: PropTypes.bool,
+  handleToggleFixedMode: PropTypes.func,
   handleZoomToFit: PropTypes.func,
   handleToggleStixCoreObjectType: PropTypes.func,
   stixCoreObjectsTypes: PropTypes.array,
@@ -608,6 +650,7 @@ ReportKnowledgeGraphBar.propTypes = {
   handleCloseRelationEdition: PropTypes.func,
   handleSelectAll: PropTypes.func,
   handleSelectByType: PropTypes.func,
+  handleResetLayout: PropTypes.func,
 };
 
 export default R.compose(
