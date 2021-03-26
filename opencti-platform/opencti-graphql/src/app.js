@@ -15,7 +15,7 @@ import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
 import session from 'express-session';
 import connectRedis from 'connect-redis';
-import conf, {basePath, DEV_MODE, logger, OPENCTI_SESSION} from './config/conf';
+import conf, { basePath, DEV_MODE, logger, OPENCTI_SESSION } from './config/conf';
 import passport from './config/providers';
 import { authenticateUser } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
@@ -51,7 +51,7 @@ const createApp = async (apolloServer, broadcaster) => {
       resave: false,
       cookie: {
         secure: conf.get('app:cookie_secure'),
-        _expires: 60 * 1000 * 5,
+        _expires: conf.get('app:session_timeout'),
       },
     })
   );
