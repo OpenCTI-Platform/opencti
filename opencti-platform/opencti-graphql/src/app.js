@@ -42,12 +42,13 @@ const createApp = async (apolloServer, broadcaster) => {
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
-  app.set('trust proxy', 1); // trust first proxy
+  app.set('trust proxy', true); // trust first proxy
   app.use(
     session({
       name: OPENCTI_SESSION,
       store: new RedisStore({ client: getRedisSessionClient() }),
       secret: sessionSecret,
+      proxy: true,
       rolling: true,
       saveUninitialized: false,
       resave: false,
