@@ -163,7 +163,6 @@ class WorkspaceCreation extends Component {
           <div className={classes.container}>
             <Formik
               initialValues={{
-                identifier: '',
                 name: '',
                 description: '',
               }}
@@ -173,12 +172,6 @@ class WorkspaceCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    name="identifier"
-                    label={t('Unique identifier')}
-                    fullWidth={true}
-                  />
                   <Field
                     component={TextField}
                     name="name"

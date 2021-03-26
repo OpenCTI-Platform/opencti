@@ -698,6 +698,7 @@ class InvestigationGraphComponent extends Component {
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
+      displayProgress: false,
     };
   }
 
@@ -786,6 +787,10 @@ class InvestigationGraphComponent extends Component {
     });
   }
 
+  handleToggleDisplayProgress() {
+    this.setState({ displayProgress: !this.state.displayProgress });
+  }
+
   handleToggleStixCoreObjectType(type) {
     const { stixCoreObjectsTypes } = this.state;
     if (stixCoreObjectsTypes.includes(type)) {
@@ -838,7 +843,11 @@ class InvestigationGraphComponent extends Component {
   }
 
   handleZoomToFit() {
-    this.graph.current.zoomToFit(400, 150);
+    if (this.graphObjects.length === 1) {
+      this.graph.current.zoomToFit(400, 300);
+    } else {
+      this.graph.current.zoomToFit(400, 150);
+    }
   }
 
   handleZoomEnd(zoom) {
@@ -1112,6 +1121,7 @@ class InvestigationGraphComponent extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   async handleExpandElements(filters) {
+    this.handleToggleDisplayProgress();
     const selectedNodes = Array.from(this.selectedNodes);
     const selectedNodesIds = R.map((n) => n.id, selectedNodes);
     let newElementsIds = [];
@@ -1173,6 +1183,7 @@ class InvestigationGraphComponent extends Component {
         setTimeout(() => this.handleZoomToFit(), 1000);
       },
     );
+    this.handleToggleDisplayProgress();
   }
 
   handleResetLayout() {
@@ -1207,6 +1218,7 @@ class InvestigationGraphComponent extends Component {
       graphData,
       numberOfSelectedNodes,
       numberOfSelectedLinks,
+      displayProgress,
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
@@ -1224,6 +1236,7 @@ class InvestigationGraphComponent extends Component {
     return (
       <div>
         <InvestigationGraphBar
+          displayProgress={displayProgress}
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
           handleToggleTreeMode={this.handleToggleTreeMode.bind(this)}
@@ -1432,7 +1445,6 @@ const InvestigationGraph = createFragmentContainer(
     workspace: graphql`
       fragment InvestigationGraph_workspace on Workspace {
         id
-        identifier
         name
         description
         manifest
@@ -1563,11 +1575,7 @@ const InvestigationGraph = createFragmentContainer(
                 entity_type
                 parent_types
               }
-              ... on StixCoreRelationship {
-                relationship_type
-                start_time
-                stop_time
-                confidence
+              ... on StixRelationship {
                 from {
                   ... on BasicObject {
                     id
@@ -1598,6 +1606,12 @@ const InvestigationGraph = createFragmentContainer(
                     relationship_type
                   }
                 }
+              }
+              ... on StixCoreRelationship {
+                relationship_type
+                start_time
+                stop_time
+                confidence
                 created_at
                 updated_at
                 createdBy {

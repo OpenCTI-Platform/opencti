@@ -739,11 +739,7 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleResetLayout() {
-    this.graphData = buildGraphData(
-      this.graphObjects,
-      {},
-      this.props.t,
-    );
+    this.graphData = buildGraphData(this.graphObjects, {}, this.props.t);
     this.setState(
       {
         graphData: applyFilters(

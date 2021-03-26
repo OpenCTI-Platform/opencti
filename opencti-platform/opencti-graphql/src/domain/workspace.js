@@ -30,7 +30,7 @@ export const findAll = (user, args) => {
 
 export const objects = async (user, workspaceId, args) => {
   const key = `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`;
-  let types = ['Stix-Core-Object', 'stix-core-relationship'];
+  let types = ['Stix-Core-Object', 'stix-relationship'];
   if (args.types) {
     types = args.types;
   }

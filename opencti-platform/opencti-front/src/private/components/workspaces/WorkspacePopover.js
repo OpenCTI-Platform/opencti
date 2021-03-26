@@ -91,7 +91,7 @@ class WorkspacePopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/workspaces/dashboards');
+        this.props.history.push(`/dashboard/workspaces/${this.props.type}s`);
       },
     });
   }
@@ -194,6 +194,7 @@ WorkspacePopover.propTypes = {
   t: PropTypes.func,
   history: PropTypes.object,
   disabled: PropTypes.bool,
+  type: PropTypes.string,
 };
 
 export default compose(

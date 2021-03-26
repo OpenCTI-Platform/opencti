@@ -54,6 +54,7 @@ const Investigation = createFragmentContainer(InvestigationComponent, {
   workspace: graphql`
     fragment Investigation_workspace on Workspace {
       id
+      type
       name
       description
       tags
