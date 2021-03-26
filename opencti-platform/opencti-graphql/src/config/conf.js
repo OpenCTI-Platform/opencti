@@ -17,7 +17,7 @@ import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 const pjson = require('../../package.json');
 
 const DEFAULT_ENV = 'production';
-export const OPENCTI_TOKEN = 'opencti_token';
+export const OPENCTI_SESSION = 'opencti_session';
 export const OPENCTI_WEB_TOKEN = 'Default';
 export const OPENCTI_ISSUER = 'OpenCTI';
 export const OPENCTI_DEFAULT_DURATION = 'P99Y';

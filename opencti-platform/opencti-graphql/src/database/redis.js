@@ -70,6 +70,7 @@ export const redisIsAlive = async () => {
 export const getRedisVersion = async () => {
   return clientBase.serverInfo.redis_version;
 };
+export const getRedisSessionClient = () => clientContext;
 
 /* istanbul ignore next */
 export const notify = (topic, instance, user, context) => {
@@ -87,7 +88,8 @@ const contextFetchMatch = async (match) => {
     });
     stream.on('data', (resultKeys) => {
       for (let i = 0; i < resultKeys.length; i += 1) {
-        elementsPromise.push(clientContext.get(resultKeys[i]));
+        const resultKey = resultKeys[i];
+        elementsPromise.push(clientContext.get(resultKey).then((d) => ({ key: resultKey, value: d })));
       }
     });
     stream.on('error', (error) => {
@@ -96,7 +98,7 @@ const contextFetchMatch = async (match) => {
     });
     stream.on('end', () => {
       Promise.all(elementsPromise).then((data) => {
-        const elements = R.map((d) => JSON.parse(d), data);
+        const elements = R.map((d) => ({ redis_key: d.key, ...JSON.parse(d.value) }), data);
         resolve(elements);
       });
     });
@@ -143,18 +145,13 @@ export const delUserContext = async (user) => {
 };
 // endregion
 
-// region cache for access token (clientContext)
-export const getAccessCache = async (tokenUUID) => {
-  const data = await clientContext.get(`access-${tokenUUID}`);
-  return data && JSON.parse(data);
-};
-export const storeUserAccessCache = async (tokenUUID, access, expiration = REDIS_EXPIRE_TIME) => {
-  const val = JSON.stringify(access);
-  await clientContext.set(`access-${tokenUUID}`, val, 'ex', expiration);
-  return access;
-};
-export const clearUserAccessCache = async (tokenUUID) => {
-  await clientContext.del(`access-${tokenUUID}`);
+// region session
+export const clearUsersSession = async (userIds) => {
+  const sessions = await contextFetchMatch(`sess:*`);
+  const keysToInvalidate = sessions.filter((s) => userIds.includes(s.user_id)).map((s) => s.redis_key);
+  if (keysToInvalidate.length > 0) {
+    clientContext.del(keysToInvalidate);
+  }
 };
 // endregion
 

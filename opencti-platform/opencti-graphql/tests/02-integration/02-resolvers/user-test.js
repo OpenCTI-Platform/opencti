@@ -1,6 +1,6 @@
 import gql from 'graphql-tag';
 import { ADMIN_USER, queryAsAdmin } from '../../utils/testQuery';
-import { authentication } from '../../../src/domain/user';
+import { authenticateUser } from '../../../src/domain/user';
 import { elLoadByIds } from '../../../src/database/elasticSearch';
 import { generateStandardId } from '../../../src/schema/identifier';
 import { ENTITY_TYPE_ROLE } from '../../../src/schema/internalObject';
@@ -169,7 +169,7 @@ describe('User resolver standard behavior', () => {
     expect(res).not.toBeNull();
     expect(res.data).not.toBeNull();
     expect(res.data.token).toBeDefined();
-    const user = await authentication(res.data.token);
+    const user = await authenticateUser(null, res.data.token);
     expect(user.user_email).toBe('user@mail.com');
     userToken = res.data.token;
   });

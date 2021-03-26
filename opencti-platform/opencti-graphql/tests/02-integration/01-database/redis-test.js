@@ -1,16 +1,13 @@
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
-  clearUserAccessCache,
   delEditContext,
   delUserContext,
   fetchEditContext,
-  getAccessCache,
   getRedisVersion,
   lockResource,
   redisInitializeClients,
   setEditContext,
-  storeUserAccessCache,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
@@ -44,7 +41,7 @@ describe('Redis context management', () => {
     const setContext = await setEditContext(user, contextInstanceId, input);
     expect(setContext).toEqual('OK');
     let getContext = await fetchEditContext(contextInstanceId);
-    expect(input).toEqual(head(getContext));
+    expect(input.data).toEqual(head(getContext).data);
     const deletedContext = await delEditContext(user, contextInstanceId);
     expect(deletedContext).toEqual(1);
     getContext = await fetchEditContext(contextInstanceId);
@@ -56,34 +53,13 @@ describe('Redis context management', () => {
     await setEditContext(user, contextInstanceId, input);
     await setEditContext(user, secondContextId, input);
     let getContext = await fetchEditContext(contextInstanceId);
-    expect(input).toEqual(head(getContext));
+    expect(input.data).toEqual(head(getContext).data);
     getContext = await fetchEditContext(secondContextId);
-    expect(input).toEqual(head(getContext));
+    expect(input.data).toEqual(head(getContext).data);
     await delUserContext(user);
     getContext = await fetchEditContext(contextInstanceId);
     expect(getContext).toEqual([]);
     getContext = await fetchEditContext(secondContextId);
     expect(getContext).toEqual([]);
-  });
-
-  it('should use redis as connection cache ', async () => {
-    const tokenUUID = uuid();
-    const accessData = { token: OPENCTI_ADMIN_UUID };
-    let data = await getAccessCache(tokenUUID);
-    expect(data).toBeNull();
-    await storeUserAccessCache(tokenUUID, accessData, 5);
-    data = await getAccessCache(tokenUUID);
-    expect(data).toEqual(accessData);
-    // Wait expiration time
-    await (async () => new Promise((resolve) => setTimeout(resolve, 6000)))();
-    data = await getAccessCache(tokenUUID);
-    expect(data).toBeNull();
-    // Manual clean
-    await storeUserAccessCache(tokenUUID, accessData);
-    data = await getAccessCache(tokenUUID);
-    expect(data).toEqual(accessData);
-    await clearUserAccessCache(tokenUUID);
-    data = await getAccessCache(tokenUUID);
-    expect(data).toBeNull();
   });
 });

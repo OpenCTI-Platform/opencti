@@ -12,7 +12,6 @@ import {
   batchRoles,
   logout,
   meEditField,
-  setAuthenticationCookie,
   token,
   roleEditField,
   roleDelete,
@@ -29,6 +28,7 @@ import {
   userEditContext,
   userCleanContext,
   getMarkings,
+  authenticateUser,
 } from '../domain/user';
 import { BUS_TOPICS, logger } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -65,7 +65,7 @@ const userResolvers = {
     capabilities: (role, _, { user }) => rolesCapabilitiesLoader.load(role.id, user),
   },
   Mutation: {
-    token: async (_, { input }, context) => {
+    token: async (_, { input }, { req }) => {
       // We need to iterate on each provider to find one that validated the credentials
       const formProviders = filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
@@ -74,7 +74,7 @@ const userResolvers = {
       for (let index = 0; index < formProviders.length; index += 1) {
         const auth = formProviders[index];
         const loginToken = await new Promise((resolve) => {
-          passport.authenticate(auth.provider, { session: false }, (err, tokenAuth, info) => {
+          passport.authenticate(auth.provider, {}, (err, tokenAuth, info) => {
             if (err || info) {
               logger.warn(`[AUTH] ${auth.provider}`, { error: err, info });
             }
@@ -83,14 +83,14 @@ const userResolvers = {
         });
         // As soon as credential is validated, set the cookie and return.
         if (loginToken) {
-          setAuthenticationCookie(loginToken, context.res);
+          await authenticateUser(req, loginToken.uuid);
           return loginToken.uuid;
         }
       }
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
     },
-    logout: (_, args, context) => logout(context.user, context.res),
+    logout: (_, args, context) => logout(context.user, context.req, context.res),
     roleEdit: (_, { id }, { user }) => ({
       delete: () => roleDelete(user, id),
       fieldPatch: ({ input }) => roleEditField(user, id, input),

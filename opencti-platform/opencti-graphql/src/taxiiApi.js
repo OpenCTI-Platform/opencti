@@ -1,11 +1,10 @@
 /* eslint-disable camelcase */
 import * as R from 'ramda';
 import { BYPASS } from './schema/general';
-import { authentication, TAXIIAPI } from './domain/user';
-import { basePath, OPENCTI_TOKEN } from './config/conf';
+import { authenticateUser, TAXIIAPI } from './domain/user';
+import { basePath } from './config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from './config/errors';
 import { restAllCollections, restCollectionManifest, restCollectionStix, restLoadCollectionById } from './domain/taxii';
-import { extractTokenFromBearer } from './graphql/graphql';
 
 const TAXII_VERSION = 'application/taxii+json;version=2.1';
 
@@ -25,12 +24,10 @@ const userHaveAccess = (user) => {
 };
 const extractUser = async (req, res) => {
   res.setHeader('content-type', TAXII_VERSION);
-  let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
-  token = token || extractTokenFromBearer(req.headers.authorization);
   // noinspection UnnecessaryLocalVariableJS
-  const user = await authentication(token);
+  const user = await authenticateUser(req);
   if (!user) {
-    res.setHeader('WWW-Authenticate', 'Bearer, Cookie');
+    res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();
   }
   if (!userHaveAccess(user)) throw ForbiddenAccess();

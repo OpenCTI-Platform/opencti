@@ -13,14 +13,17 @@ import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import { basePath, DEV_MODE, logger, OPENCTI_TOKEN } from './config/conf';
+import session from 'express-session';
+import connectRedis from 'connect-redis';
+import conf, { basePath, DEV_MODE, logger, OPENCTI_SESSION } from './config/conf';
 import passport from './config/providers';
-import { authentication, setAuthenticationCookie } from './domain/user';
+import { authenticateUser } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
 import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
+import { getRedisSessionClient } from './database/redis';
 
 const createApp = async (apolloServer, broadcaster) => {
   // Init the http server
@@ -33,10 +36,26 @@ const createApp = async (apolloServer, broadcaster) => {
       res.status(429).send({ message: 'Too many requests, please try again later.' });
     },
   });
+  const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
   const scriptSrc = ["'self'", "'unsafe-inline'", 'http://cdn.jsdelivr.net/npm/@apollographql/'];
+  const RedisStore = connectRedis(session);
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
+  app.use(
+    session({
+      name: OPENCTI_SESSION,
+      store: new RedisStore({ client: getRedisSessionClient() }),
+      secret: sessionSecret,
+      rolling: true,
+      saveUninitialized: false,
+      resave: false,
+      cookie: {
+        secure: conf.get('app:cookie_secure'),
+        _expires: conf.get('app:session_timeout'),
+      },
+    })
+  );
   app.use(cookieParser());
   app.use(compression());
   app.use(helmet());
@@ -62,6 +81,8 @@ const createApp = async (apolloServer, broadcaster) => {
     })
   );
   app.use(bodyParser.json({ limit: '100mb' }));
+  app.use(passport.initialize());
+  app.use(passport.session());
   app.use(limiter);
 
   let seeMiddleware;
@@ -69,8 +90,6 @@ const createApp = async (apolloServer, broadcaster) => {
     seeMiddleware = createSeeMiddleware(broadcaster);
     seeMiddleware.applyMiddleware({ app });
   }
-
-  const extractTokenFromBearer = (bearer) => (bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null);
 
   const urlencodedParser = bodyParser.urlencoded({ extended: true });
 
@@ -89,9 +108,7 @@ const createApp = async (apolloServer, broadcaster) => {
 
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
-    let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
-    token = token || extractTokenFromBearer(req.headers.authorization);
-    const auth = await authentication(token);
+    const auth = await authenticateUser(req);
     if (!auth) res.sendStatus(403);
     const { file } = req.params;
     const stream = await downloadFile(file);
@@ -101,9 +118,7 @@ const createApp = async (apolloServer, broadcaster) => {
 
   // -- File view
   app.get(`${basePath}/storage/view/:file(*)`, async (req, res) => {
-    let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
-    token = token || extractTokenFromBearer(req.headers.authorization);
-    const auth = await authentication(token);
+    const auth = await authenticateUser(req);
     if (!auth) res.sendStatus(403);
     const { file } = req.params;
     const data = await loadFile(file);
@@ -116,17 +131,18 @@ const createApp = async (apolloServer, broadcaster) => {
   // -- Passport login
   app.get(`${basePath}/auth/:provider`, (req, res, next) => {
     const { provider } = req.params;
-    passport.authenticate(provider)(req, res, next);
+    passport.authenticate(provider, {}, () => {})(req, res, next);
   });
 
   // -- Passport callback
-  app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize(), (req, res, next) => {
+  app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, (req, res, next) => {
     const { provider } = req.params;
-    passport.authenticate(provider, (err, token) => {
+    passport.authenticate(provider, {}, async (err, token) => {
       if (err || !token) {
         return res.redirect(`/dashboard?message=${err.message}`);
       }
-      setAuthenticationCookie(token, res);
+      // noinspection UnnecessaryLocalVariableJS
+      await authenticateUser(req, token.uuid);
       return res.redirect('/dashboard');
     })(req, res, next);
   });
