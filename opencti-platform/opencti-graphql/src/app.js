@@ -42,6 +42,7 @@ const createApp = async (apolloServer, broadcaster) => {
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
+  app.set('trust proxy', 1); // trust first proxy
   app.use(
     session({
       name: OPENCTI_SESSION,
