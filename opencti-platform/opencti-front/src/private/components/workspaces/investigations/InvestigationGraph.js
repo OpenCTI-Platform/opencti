@@ -410,6 +410,16 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on StixCyberObservable {
               observable_value
             }
+            ... on Label {
+              value
+            }
+            ... on MarkingDefinition {
+              definition
+            }
+            ... on ExternalReference {
+              url
+              source_name
+            }
             ... on BasicRelationship {
               id
               entity_type
@@ -582,6 +592,16 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on StixCyberObservable {
               observable_value
+            }
+            ... on Label {
+              value
+            }
+            ... on MarkingDefinition {
+              definition
+            }
+            ... on ExternalReference {
+              url
+              source_name
             }
             ... on BasicRelationship {
               id
@@ -961,7 +981,7 @@ class InvestigationGraphComponent extends Component {
         variables: {
           id: this.props.workspace.id,
           toId: n.id,
-          relationship_type: 'object',
+          relationship_type: 'has-reference',
         },
       });
     }, relationshipsToRemove);
@@ -985,7 +1005,7 @@ class InvestigationGraphComponent extends Component {
         variables: {
           id: this.props.workspace.id,
           toId: n.id,
-          relationship_type: 'object',
+          relationship_type: 'has-reference',
         },
       }),
       this.selectedLinks,
@@ -1016,7 +1036,7 @@ class InvestigationGraphComponent extends Component {
         variables: {
           id: this.props.workspace.id,
           toId: n.id,
-          relationship_type: 'object',
+          relationship_type: 'has-reference',
         },
       });
     }, relationshipsToRemove);
@@ -1026,7 +1046,7 @@ class InvestigationGraphComponent extends Component {
         variables: {
           id: this.props.workspace.id,
           toId: n.id,
-          relationship_type: 'object',
+          relationship_type: 'has-reference',
         },
       });
     }, selectedNodes);
@@ -1135,9 +1155,8 @@ class InvestigationGraphComponent extends Component {
             filters.relationship_type === 'All'
               ? null
               : filters.relationship_type,
-          elementWithTargetTypes: [
-            filters.entity_type === 'All' ? null : filters.entity_type,
-          ],
+          elementWithTargetTypes:
+            filters.entity_type === 'All' ? null : [filters.entity_type],
           count: filters.limit,
         },
       ).then((data) => {
@@ -1176,7 +1195,7 @@ class InvestigationGraphComponent extends Component {
             id: this.props.workspace.id,
             input: {
               toIds: newElementsIds,
-              relationship_type: 'object',
+              relationship_type: 'has-reference',
             },
           },
         });
@@ -1569,6 +1588,16 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
+              }
+              ... on Label {
+                value
+              }
+              ... on MarkingDefinition {
+                definition
+              }
+              ... on ExternalReference {
+                url
+                source_name
               }
               ... on BasicRelationship {
                 id

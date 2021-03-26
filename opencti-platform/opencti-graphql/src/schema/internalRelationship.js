@@ -8,6 +8,7 @@ export const RELATION_ALLOWED_BY = 'allowed-by';
 export const RELATION_HAS_ROLE = 'has-role';
 export const RELATION_HAS_CAPABILITY = 'has-capability';
 export const RELATION_ACCESSES_TO = 'accesses-to';
+export const RELATION_HAS_REFERENCE = 'has-reference';
 const INTERNAL_RELATIONSHIPS = [
   RELATION_AUTHORIZED_BY,
   RELATION_MIGRATES,
@@ -16,6 +17,7 @@ const INTERNAL_RELATIONSHIPS = [
   RELATION_HAS_ROLE,
   RELATION_HAS_CAPABILITY,
   RELATION_ACCESSES_TO,
+  RELATION_HAS_REFERENCE,
 ];
 schemaTypes.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
 export const isInternalRelationship = (type) => R.includes(type, INTERNAL_RELATIONSHIPS);
@@ -83,6 +85,16 @@ export const internalRelationshipsAttributes = {
     'updated_at',
   ],
   [RELATION_HAS_CAPABILITY]: [
+    'internal_id',
+    'standard_id',
+    'entity_type',
+    'created_at',
+    'i_created_at_day',
+    'i_created_at_month',
+    'i_created_at_year',
+    'updated_at',
+  ],
+  [RELATION_HAS_REFERENCE]: [
     'internal_id',
     'standard_id',
     'entity_type',

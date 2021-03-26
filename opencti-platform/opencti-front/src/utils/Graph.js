@@ -1,6 +1,9 @@
 import * as R from 'ramda';
 import SpriteText from 'three-spritetext';
 import { truncate } from './String';
+import MarkingDefinition from '../resources/images/entities/marking-definition_dark.svg';
+import Label from '../resources/images/entities/label_dark.svg';
+import ExternalReference from '../resources/images/entities/external-reference_dark.svg';
 import AttackPattern from '../resources/images/entities/attack-pattern_dark.svg';
 import Campaign from '../resources/images/entities/campaign_dark.svg';
 import Note from '../resources/images/entities/note_dark.svg';
@@ -37,6 +40,9 @@ const genImage = (src) => {
 };
 
 export const graphImages = {
+  'Marking-Definition': genImage(MarkingDefinition),
+  'External-Reference': genImage(ExternalReference),
+  Label: genImage(Label),
   'Attack-Pattern': genImage(AttackPattern),
   Campaign: genImage(Campaign),
   Note: genImage(Note),
@@ -139,6 +145,9 @@ export const graphLevel = {
 };
 
 export const graphRawImages = {
+  'Marking-Definition': MarkingDefinition,
+  'External-Reference': ExternalReference,
+  Label,
   'Attack-Pattern': AttackPattern,
   Campaign,
   Note,
@@ -226,11 +235,21 @@ export const buildGraphData = (objects, graphData, t) => {
         }\n${t('Stop time')} ${
           isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
         }`
-        : n.name || n.observable_value || n.attribute_abstract || n.opinion,
+        : n.name
+          || n.observable_value
+          || n.attribute_abstract
+          || n.opinion
+          || n.value
+          || n.definition,
       label: n.parent_types.includes('basic-relationship')
         ? t(`relationship_${n.relationship_type}`)
         : truncate(
-          n.name || n.observable_value || n.attribute_abstract || n.opinion,
+          n.name
+              || n.observable_value
+              || n.attribute_abstract
+              || n.opinion
+              || n.value
+              || n.definition,
           20,
         ),
       img:
@@ -365,7 +384,11 @@ export const applyFilters = (
 
 export const nodePaint = (
   {
-    label, img, x, y,
+    // eslint-disable-next-line camelcase
+    label,
+    img,
+    x,
+    y,
   },
   color,
   ctx,

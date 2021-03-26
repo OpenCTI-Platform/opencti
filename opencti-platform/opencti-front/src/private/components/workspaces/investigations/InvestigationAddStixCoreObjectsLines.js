@@ -126,7 +126,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
         variables: {
           id: workspaceId,
           toId: stixCoreObject.id,
-          relationship_type: 'object',
+          relationship_type: 'has-reference',
         },
         onCompleted: () => {
           this.setState({
@@ -143,7 +143,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
     } else {
       const input = {
         toId: stixCoreObject.id,
-        relationship_type: 'object',
+        relationship_type: 'has-reference',
       };
       commitMutation({
         mutation: investigationAddStixCoreObjectsLinesRelationAddMutation,
