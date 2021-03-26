@@ -41,7 +41,7 @@ describe('Redis context management', () => {
     const setContext = await setEditContext(user, contextInstanceId, input);
     expect(setContext).toEqual('OK');
     let getContext = await fetchEditContext(contextInstanceId);
-    expect(input).toEqual(head(getContext));
+    expect(input.data).toEqual(head(getContext).data);
     const deletedContext = await delEditContext(user, contextInstanceId);
     expect(deletedContext).toEqual(1);
     getContext = await fetchEditContext(contextInstanceId);
@@ -53,9 +53,9 @@ describe('Redis context management', () => {
     await setEditContext(user, contextInstanceId, input);
     await setEditContext(user, secondContextId, input);
     let getContext = await fetchEditContext(contextInstanceId);
-    expect(input).toEqual(head(getContext));
+    expect(input.data).toEqual(head(getContext).data);
     getContext = await fetchEditContext(secondContextId);
-    expect(input).toEqual(head(getContext));
+    expect(input.data).toEqual(head(getContext).data);
     await delUserContext(user);
     getContext = await fetchEditContext(contextInstanceId);
     expect(getContext).toEqual([]);
