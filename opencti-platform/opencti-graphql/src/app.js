@@ -47,6 +47,7 @@ const createApp = async (apolloServer, broadcaster) => {
       name: OPENCTI_SESSION,
       store: new RedisStore({ client: getRedisSessionClient() }),
       secret: sessionSecret,
+      rolling: true,
       saveUninitialized: false,
       resave: false,
       cookie: {
