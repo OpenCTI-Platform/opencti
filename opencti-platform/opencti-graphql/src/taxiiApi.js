@@ -27,7 +27,7 @@ const extractUser = async (req, res) => {
   // noinspection UnnecessaryLocalVariableJS
   const user = await authenticateUser(req);
   if (!user) {
-    res.setHeader('WWW-Authenticate', 'Bearer, Cookie');
+    res.setHeader('WWW-Authenticate', 'Basic, Bearer');
     throw AuthRequired();
   }
   if (!userHaveAccess(user)) throw ForbiddenAccess();
