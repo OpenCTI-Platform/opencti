@@ -1,8 +1,7 @@
 import * as R from 'ramda';
 import * as bodyParser from 'body-parser';
-import { basePath, logger, OPENCTI_TOKEN } from '../config/conf';
-import { authentication, STREAMAPI } from '../domain/user';
-import { extractTokenFromBearer } from './graphql';
+import { basePath, logger } from '../config/conf';
+import { authenticateUser, STREAMAPI } from '../domain/user';
 import { getStreamRange, createStreamProcessor } from '../database/redis';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { generateInternalId } from '../schema/identifier';
@@ -76,9 +75,7 @@ export const broadcast = (event, data) => {
 };
 
 const authenticate = async (req, res, next) => {
-  let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
-  token = token || extractTokenFromBearer(req.headers.authorization);
-  const auth = await authentication(token);
+  const auth = await authenticateUser(req);
   const capabilityControl = (s) => s.name === BYPASS || s.name === STREAMAPI;
   const isUserGranted = auth && R.find(capabilityControl, auth.capabilities || []) !== undefined;
   if (isUserGranted) {

@@ -40,6 +40,7 @@
     "bytes": "3.1.0",
     "canonicalize": "1.0.5",
     "compression": "1.7.4",
+    "connect-redis": "^5.1.0",
     "content-disposition": "0.5.3",
     "cookie": "0.4.1",
     "cookie-parser": "1.4.5",
@@ -89,13 +90,13 @@
     "winston-daily-rotate-file": "4.5.0"
   },
   "devDependencies": {
-    "@babel/core": "7.12.17",
-    "@babel/runtime": "7.12.18",
     "@babel/cli": "7.12.1",
+    "@babel/core": "7.12.17",
     "@babel/node": "7.12.17",
     "@babel/plugin-proposal-optional-chaining": "7.12.17",
     "@babel/plugin-transform-runtime": "7.12.17",
     "@babel/preset-env": "7.12.1",
+    "@babel/runtime": "7.12.18",
     "apollo-server-testing": "2.21.1",
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.2",

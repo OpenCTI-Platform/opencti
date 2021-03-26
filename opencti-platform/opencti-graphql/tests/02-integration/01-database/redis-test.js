@@ -1,16 +1,13 @@
 import { v4 as uuid } from 'uuid';
 import { head } from 'ramda';
 import {
-  clearUserAccessCache,
   delEditContext,
   delUserContext,
   fetchEditContext,
-  getAccessCache,
   getRedisVersion,
   lockResource,
   redisInitializeClients,
   setEditContext,
-  storeUserAccessCache,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
 
@@ -64,26 +61,5 @@ describe('Redis context management', () => {
     expect(getContext).toEqual([]);
     getContext = await fetchEditContext(secondContextId);
     expect(getContext).toEqual([]);
-  });
-
-  it('should use redis as connection cache ', async () => {
-    const tokenUUID = uuid();
-    const accessData = { token: OPENCTI_ADMIN_UUID };
-    let data = await getAccessCache(tokenUUID);
-    expect(data).toBeNull();
-    await storeUserAccessCache(tokenUUID, accessData, 5);
-    data = await getAccessCache(tokenUUID);
-    expect(data).toEqual(accessData);
-    // Wait expiration time
-    await (async () => new Promise((resolve) => setTimeout(resolve, 6000)))();
-    data = await getAccessCache(tokenUUID);
-    expect(data).toBeNull();
-    // Manual clean
-    await storeUserAccessCache(tokenUUID, accessData);
-    data = await getAccessCache(tokenUUID);
-    expect(data).toEqual(accessData);
-    await clearUserAccessCache(tokenUUID);
-    data = await getAccessCache(tokenUUID);
-    expect(data).toBeNull();
   });
 });

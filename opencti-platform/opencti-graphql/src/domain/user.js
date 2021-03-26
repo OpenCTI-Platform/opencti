@@ -3,22 +3,14 @@ import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { map } from 'ramda';
-import {
-  clearUserAccessCache,
-  delEditContext,
-  delUserContext,
-  getAccessCache,
-  notify,
-  setEditContext,
-  storeUserAccessCache,
-} from '../database/redis';
+import { clearUsersSession, delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
-import conf, {
+import {
   BUS_TOPICS,
   logger,
   OPENCTI_DEFAULT_DURATION,
   OPENCTI_ISSUER,
-  OPENCTI_TOKEN,
+  OPENCTI_SESSION,
   OPENCTI_WEB_TOKEN,
 } from '../config/conf';
 import {
@@ -64,6 +56,8 @@ import { elLoadBy } from '../database/elasticSearch';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
 
+const BEARER = 'Bearer ';
+const BASIC = 'Basic ';
 export const STREAMAPI = 'STREAMAPI';
 export const TAXIIAPI = 'TAXIIAPI';
 export const ROLE_DEFAULT = 'Default';
@@ -77,6 +71,23 @@ export const SYSTEM_USER = {
   allowed_marking: [],
 };
 
+const extractTokenFromBearer = (authorization) => {
+  const isBearer = authorization && authorization.startsWith(BEARER);
+  return isBearer ? authorization.substring(BEARER.length) : null;
+};
+
+const extractTokenFromBasicAuth = async (authorization) => {
+  const isBasic = authorization && authorization.startsWith(BASIC);
+  if (isBasic) {
+    const b64auth = authorization.substring(BASIC.length);
+    const [username, password] = Buffer.from(b64auth, 'base64').toString().split(':');
+    // eslint-disable-next-line no-use-before-define
+    const token = await login(username, password);
+    return token?.uuid;
+  }
+  return null;
+};
+
 export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   uuid: tokenValue,
   name: OPENCTI_WEB_TOKEN,
@@ -85,19 +96,6 @@ export const generateOpenCTIWebToken = (tokenValue = uuid()) => ({
   revoked: false,
   duration: OPENCTI_DEFAULT_DURATION, // 99 years per default
 });
-
-export const setAuthenticationCookie = (token, res) => {
-  const creation = moment(token.created_at);
-  const maxDuration = moment.duration(token.duration);
-  const expires = creation.add(maxDuration).toDate();
-  if (res) {
-    res.cookie('opencti_token', token.uuid, {
-      httpOnly: true,
-      expires,
-      secure: conf.get('app:cookie_secure'),
-    });
-  }
-};
 
 export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
@@ -123,10 +121,6 @@ export const token = async (user, userId) => {
 
 const internalGetToken = async (userId) => {
   return loadThroughGetTo(SYSTEM_USER, userId, RELATION_AUTHORIZED_BY, ENTITY_TYPE_TOKEN);
-};
-
-const clearUserTokenCache = (userId) => {
-  return internalGetToken(userId).then((tokenValue) => clearUserAccessCache(tokenValue.uuid));
 };
 
 export const batchRoles = async (user, userId) => {
@@ -198,7 +192,8 @@ export const roleDelete = async (user, roleId) => {
   const impactedUsers = await findAll(user, {
     filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
   });
-  await Promise.all(R.map((e) => clearUserTokenCache(e.node.id), impactedUsers.edges));
+  const userIds = impactedUsers.edges.map((e) => e.node.id);
+  await clearUsersSession(userIds);
   return deleteElementById(user, roleId, ENTITY_TYPE_ROLE);
 };
 
@@ -321,9 +316,9 @@ export const userDelete = async (user, userId) => {
   const userToken = await internalGetToken(userId);
   if (userToken) {
     await deleteElementById(user, userToken.id, ENTITY_TYPE_TOKEN);
-    await clearUserAccessCache(userToken.uuid);
   }
   await deleteElementById(user, userId, ENTITY_TYPE_USER);
+  await clearUsersSession([userId]);
   return userId;
 };
 
@@ -351,13 +346,12 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  await clearUserTokenCache(userId);
+  await clearUsersSession([userId]);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
 
 export const loginFromProvider = async (email, name) => {
   const user = await elLoadBy(SYSTEM_USER, 'user_email', email, ENTITY_TYPE_USER);
-  console.log('loginFromProvider', user);
   if (!user) {
     const newUser = { name, user_email: email.toLowerCase(), external: true };
     return addUser(SYSTEM_USER, newUser).then(() => loginFromProvider(email, name));
@@ -368,7 +362,6 @@ export const loginFromProvider = async (email, name) => {
   await userEditField(SYSTEM_USER, user.id, inputName);
   const inputExternal = { key: 'external', value: [true] };
   await userEditField(SYSTEM_USER, user.id, inputExternal);
-  await clearUserAccessCache(userToken.id);
   return userToken;
 };
 
@@ -380,14 +373,14 @@ export const login = async (email, password) => {
   const dbPassword = user.password;
   const match = bcrypt.compareSync(password, dbPassword);
   if (!match) throw AuthenticationFailure();
-  await clearUserAccessCache(userToken.uuid);
+  // await clearUsersSession(userToken.uuid);
   return userToken;
 };
 
-export const logout = async (user, res) => {
-  res.clearCookie(OPENCTI_TOKEN);
-  await clearUserAccessCache(user.token.uuid);
+export const logout = async (user, req, res) => {
   await delUserContext(user);
+  res.clearCookie(OPENCTI_SESSION);
+  req.session.destroy();
   return user.id;
 };
 
@@ -421,19 +414,18 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   return loadById(user, userId, ENTITY_TYPE_USER);
 };
 
-export const findByTokenUUID = async (tokenValue) => {
-  let user = await getAccessCache(tokenValue);
-  if (!user) {
-    const userToken = await elLoadBy(SYSTEM_USER, 'uuid', tokenValue, ENTITY_TYPE_TOKEN);
-    if (!userToken || userToken.revoked === true) return undefined;
-    const users = await listThroughGetFrom(SYSTEM_USER, userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
-    if (users.length === 0 || users.length > 1) return undefined;
-    const client = R.head(users);
-    const capabilities = await getCapabilities(client.id);
-    const marking = await getUserAndGlobalMarkings(client.id, capabilities);
-    user = { ...client, token: userToken, capabilities, allowed_marking: marking.user, all_marking: marking.all };
-    await storeUserAccessCache(tokenValue, user);
-  }
+const findByTokenUUID = async (tokenValue) => {
+  const userToken = await elLoadBy(SYSTEM_USER, 'uuid', tokenValue, ENTITY_TYPE_TOKEN);
+  // If token is revoked
+  if (!userToken || userToken.revoked === true) return undefined;
+  // If token is expired
+  //  TODO
+  const users = await listThroughGetFrom(SYSTEM_USER, userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
+  if (users.length === 0 || users.length > 1) return undefined;
+  const client = R.head(users);
+  const capabilities = await getCapabilities(client.id);
+  const marking = await getUserAndGlobalMarkings(client.id, capabilities);
+  const user = { ...client, token: userToken, capabilities, allowed_marking: marking.user, all_marking: marking.all };
   const { created_at: createdAt } = user.token;
   const maxDuration = moment.duration(user.token.duration);
   const currentDuration = moment.duration(moment().diff(createdAt));
@@ -442,14 +434,36 @@ export const findByTokenUUID = async (tokenValue) => {
 };
 
 // Authentication process
-export const authentication = async (tokenUUID) => {
-  if (!tokenUUID) return undefined;
-  try {
-    return await findByTokenUUID(tokenUUID);
-  } catch (err) {
-    logger.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
-    return undefined;
+export const authenticateUser = async (req, resolvedTokenUuid = null) => {
+  const auth = req?.session?.user;
+  if (auth) {
+    // User already identified
+    return auth;
   }
+  // If user not identified, try to extract token from request
+  let tokenUUID = resolvedTokenUuid;
+  // If no specified token, try first the bearer
+  if (!tokenUUID) {
+    tokenUUID = extractTokenFromBearer(req?.headers.authorization);
+  }
+  // If no bearer specified, try with basic auth
+  if (!tokenUUID) {
+    tokenUUID = await extractTokenFromBasicAuth(req?.headers.authorization);
+  }
+  // Get user from the token if found
+  if (tokenUUID) {
+    try {
+      const user = await findByTokenUUID(tokenUUID);
+      if (req) {
+        req.session.user_id = user.id;
+        req.session.user = user;
+      }
+      return user;
+    } catch (err) {
+      logger.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
+    }
+  }
+  return undefined;
 };
 
 export const initAdmin = async (email, password, tokenValue) => {

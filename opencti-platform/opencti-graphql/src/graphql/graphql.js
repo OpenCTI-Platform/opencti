@@ -2,16 +2,26 @@ import { ApolloServer } from 'apollo-server-express';
 import { formatError as apolloFormatError } from 'apollo-errors';
 import { GraphQLError } from 'graphql';
 import { dissocPath } from 'ramda';
-import cookie from 'cookie';
 import createSchema from './schema';
-import { DEV_MODE, OPENCTI_TOKEN } from '../config/conf';
-import { authentication } from '../domain/user';
+import { DEV_MODE } from '../config/conf';
+import { authenticateUser } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
 
-export const extractTokenFromBearer = (bearer) =>
-  bearer && bearer.length > 10 ? bearer.substring('Bearer '.length) : null;
+const buildContext = (user, req, res) => {
+  const workId = req.headers['opencti-work-id'];
+  if (user) {
+    const origin = {
+      ip: req.ip,
+      user_id: user.id,
+      applicant_id: req.headers['opencti-applicant-id'],
+      call_retry_number: req.headers['opencti-retry-number'],
+    };
+    return { req, res, user: { ...user, origin }, workId };
+  }
+  return { req, res, user, workId };
+};
 const createApolloServer = () => {
   return new ApolloServer({
     schema: createSchema(),
@@ -22,20 +32,14 @@ const createApolloServer = () => {
       },
     },
     async context({ req, res, connection }) {
-      if (connection) return { user: connection.context.user }; // For websocket connection.
-      let token = req.cookies ? req.cookies[OPENCTI_TOKEN] : null;
-      token = token || extractTokenFromBearer(req.headers.authorization);
-      const auth = await authentication(token);
-      if (!auth) return { res, user: auth };
-      const origin = {
-        ip: req.ip,
-        user_id: auth.id,
-        applicant_id: req.headers['opencti-applicant-id'],
-        call_retry_number: req.headers['opencti-retry-number'],
-      };
-      const workId = req.headers['opencti-work-id'];
-      const authMeta = { ...auth, origin };
-      return { res, user: authMeta, workId };
+      // For websocket connection.
+      if (connection) {
+        return buildContext(connection.context.user, req, res);
+      }
+      // If session already open
+      const user = await authenticateUser(req);
+      // Return the context
+      return buildContext(user, req, res);
     },
     tracing: DEV_MODE,
     plugins: [loggerPlugin, httpResponsePlugin],
@@ -56,12 +60,8 @@ const createApolloServer = () => {
     },
     subscriptions: {
       // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
-      onConnect: async (connectionParams, webSocket) => {
-        const cookies = webSocket.upgradeReq.headers.cookie;
-        const parsedCookies = cookies ? cookie.parse(cookies) : null;
-        let token = parsedCookies ? parsedCookies[OPENCTI_TOKEN] : null;
-        token = token || extractTokenFromBearer(connectionParams.authorization);
-        const user = await authentication(token);
+      onConnect: async (connectionParams, webSocket, { request }) => {
+        const user = await authenticateUser(request);
         return { user };
       },
     },
