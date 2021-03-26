@@ -149,7 +149,7 @@ class Individuals extends Component {
       >
         <QueryRenderer
           query={individualsLinesQuery}
-          variables={{ count: 25, ...paginationOptions }}
+          variables={{ count: 1, ...paginationOptions }}
           render={({ props }) => (
             <IndividualsLines
               data={props}

@@ -133,6 +133,7 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        search: fragmentVariables.search,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
