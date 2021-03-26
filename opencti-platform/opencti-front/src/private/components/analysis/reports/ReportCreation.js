@@ -27,6 +27,7 @@ import Loader from '../../../../components/Loader';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -85,6 +86,7 @@ const reportValidation = (t) => Yup.object().shape({
   published: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
+  confidence: Yup.number().required(t('This field is required')),
   report_types: Yup.string().required(t('This field is required')),
   description: Yup.string(),
 });
@@ -195,6 +197,7 @@ class ReportCreation extends Component {
                         initialValues={{
                           name: '',
                           published: dayStartDate(),
+                          confidence: 15,
                           description: '',
                           report_types: '',
                           createdBy: '',
@@ -248,6 +251,12 @@ class ReportCreation extends Component {
                                 </MenuItem>
                               ))}
                             </Field>
+                            <ConfidenceField
+                              name="confidence"
+                              label={t('Confidence')}
+                              fullWidth={true}
+                              containerstyle={{ width: '100%', marginTop: 20 }}
+                            />
                             <Field
                               component={MarkDownField}
                               name="description"

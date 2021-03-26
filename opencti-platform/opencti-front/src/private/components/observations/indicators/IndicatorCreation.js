@@ -27,6 +27,7 @@ import TypesField from '../TypesField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -94,6 +95,7 @@ const indicatorMutation = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number(),
   description: Yup.string(),
   pattern: Yup.string().required(t('This field is required')),
   pattern_type: Yup.string().required(t('This field is required')),
@@ -201,6 +203,7 @@ class IndicatorCreation extends Component {
             <Formik
               initialValues={{
                 name: '',
+                confidence: 15,
                 pattern: '',
                 pattern_type: '',
                 x_opencti_main_observable_type: '',
@@ -231,6 +234,12 @@ class IndicatorCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
                   />
                   <Field
                     component={SelectField}

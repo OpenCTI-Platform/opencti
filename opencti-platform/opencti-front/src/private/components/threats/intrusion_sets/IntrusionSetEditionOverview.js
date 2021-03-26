@@ -22,6 +22,7 @@ import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -106,6 +107,7 @@ const intrusionSetMutationRelationDelete = graphql`
 
 const intrusionSetValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -248,6 +250,7 @@ class IntrusionSetEditionOverviewComponent extends Component {
       assoc('objectMarking', objectMarking),
       pick([
         'name',
+        'confidence',
         'description',
         'createdBy',
         'killChainPhases',
@@ -273,6 +276,16 @@ class IntrusionSetEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              editContext={context}
+              variant="edit"
             />
             <Field
               component={MarkDownField}
@@ -330,6 +343,7 @@ const IntrusionSetEditionOverview = createFragmentContainer(
       fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
         id
         name
+        confidence
         description
         createdBy {
           ... on Identity {

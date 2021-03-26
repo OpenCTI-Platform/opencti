@@ -177,7 +177,6 @@ class WorkspaceCreation extends Component {
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    style={{ marginTop: 20 }}
                   />
                   <Field
                     component={MarkDownField}

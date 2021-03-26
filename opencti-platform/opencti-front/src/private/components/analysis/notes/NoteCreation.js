@@ -24,6 +24,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -83,6 +84,7 @@ const noteCreationMutation = graphql`
 `;
 
 const noteValidation = (t) => Yup.object().shape({
+  confidence: Yup.number(),
   attribute_abstract: Yup.string().required(t('This field is required')),
   content: Yup.string().required(t('This field is required')),
 });
@@ -186,6 +188,7 @@ class NoteCreation extends Component {
               initialValues={{
                 attribute_abstract: '',
                 content: '',
+                confidence: 15,
                 createdBy: '',
                 objectMarking: [],
                 objectLabel: [],
@@ -216,6 +219,12 @@ class NoteCreation extends Component {
                     multiline={true}
                     rows="4"
                     style={{ marginTop: 20 }}
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
                   />
                   <CreatedByField
                     name="createdBy"

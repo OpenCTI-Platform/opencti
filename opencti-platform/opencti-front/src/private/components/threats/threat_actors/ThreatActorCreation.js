@@ -23,6 +23,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -78,6 +79,7 @@ const threatActorMutation = graphql`
 const threatActorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   threat_actor_types: Yup.array(),
+  confidence: Yup.number(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -165,6 +167,7 @@ class ThreatActorCreation extends Component {
               initialValues={{
                 name: '',
                 threat_actor_types: [],
+                confidence: 15,
                 description: '',
                 createdBy: '',
                 objectMarking: [],
@@ -245,6 +248,12 @@ class ThreatActorCreation extends Component {
                       {t('unknown')}
                     </MenuItem>
                   </Field>
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerstyle={{ width: '100%', marginTop: 20 }}
+                  />
                   <Field
                     component={MarkDownField}
                     name="description"

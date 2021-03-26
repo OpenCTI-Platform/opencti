@@ -37,7 +37,6 @@ export const INTERNAL_TO_FIELD = 'i_relations_to';
 export const NAME_FIELD = 'name';
 export const VALID_UNTIL = 'valid_until';
 export const REVOKED = 'revoked';
-export const IDENTIFIER_FIELD = 'identifier';
 export const CONTENT_FIELD = 'content';
 export const OPINION_FIELD = 'opinion';
 export const PID_FIELD = 'pid';
@@ -126,7 +125,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
-    [I.ENTITY_TYPE_WORKSPACE]: [{ src: IDENTIFIER_FIELD }],
+    [I.ENTITY_TYPE_WORKSPACE]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: X_MITRE_ID_FIELD }],

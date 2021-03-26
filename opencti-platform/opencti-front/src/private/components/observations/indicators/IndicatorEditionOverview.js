@@ -28,6 +28,7 @@ import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import SelectField from '../../../../components/SelectField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -111,6 +112,7 @@ const indicatorMutationRelationDelete = graphql`
 
 const indicatorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number(),
   pattern: Yup.string().required(t('This field is required')),
   valid_from: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
@@ -298,6 +300,7 @@ class IndicatorEditionOverviewComponent extends Component {
       assoc('x_mitre_platforms', propOr([], 'x_mitre_platforms', indicator)),
       pick([
         'name',
+        'confidence',
         'pattern',
         'description',
         'valid_from',
@@ -330,6 +333,16 @@ class IndicatorEditionOverviewComponent extends Component {
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              editContext={context}
+              variant="edit"
             />
             <Field
               component={TextField}
@@ -490,6 +503,7 @@ const IndicatorEditionOverview = createFragmentContainer(
       fragment IndicatorEditionOverview_indicator on Indicator {
         id
         name
+        confidence
         description
         pattern
         valid_from
