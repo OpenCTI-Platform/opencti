@@ -24,6 +24,7 @@ import Message from '../components/Message';
 import { NoMatch, BoundaryRoute } from './components/Error';
 import Loader from '../components/Loader';
 import { UserContext } from '../utils/Security';
+import AuthBoundaryComponent from './components/AuthBoundary';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -69,101 +70,103 @@ const rootQuery = graphql`
 const Root = () => {
   const classes = useStyles();
   return (
-    <QueryRenderer
-      query={rootQuery}
-      variables={{}}
-      render={({ props }) => {
-        if (props) {
-          return (
-            <UserContext.Provider
-              value={{ me: props.me, settings: props.settings }}
-            >
-              <ConnectedIntlProvider settings={props.settings}>
-                <div className={classes.root}>
-                  <TopBar />
-                  <LeftBar />
-                  <Message />
-                  <main
-                    className={classes.content}
-                    style={{ paddingRight: 24 }}
-                  >
-                    <div className={classes.toolbar} />
-                    <Switch>
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard"
-                        component={Dashboard}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/search"
-                        render={(routeProps) => (
-                          <Search {...routeProps} me={props.me} />
-                        )}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/search/:keyword"
-                        render={(routeProps) => (
-                          <Search {...routeProps} me={props.me} />
-                        )}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/analysis"
-                        component={RootAnalysis}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/events"
-                        component={RootEvents}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/observations"
-                        component={RootObservations}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/threats"
-                        component={RootThreats}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/arsenal"
-                        component={RootArsenal}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/entities"
-                        component={RootEntities}
-                      />
-                      <BoundaryRoute path="/dashboard/data" render={RootData} />
-                      <BoundaryRoute
-                        path="/dashboard/workspaces"
-                        component={RootWorkspaces}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/settings"
-                        component={RootSettings}
-                      />
-                      <BoundaryRoute
-                        exact
-                        path="/dashboard/profile"
-                        render={(routeProps) => (
-                          <Profile {...routeProps} me={props.me} />
-                        )}
-                      />
-                      <BoundaryRoute
-                        path="/dashboard/import"
-                        component={RootImport}
-                        me={props.me}
-                      />
-                      <Route component={NoMatch} />
-                    </Switch>
-                  </main>
-                </div>
-              </ConnectedIntlProvider>
-            </UserContext.Provider>
-          );
-        }
-        return <Loader />;
-      }}
-    />
+        <AuthBoundaryComponent>
+          <QueryRenderer
+              query={rootQuery}
+              variables={{}}
+              render={({ props }) => {
+                if (props) {
+                  return (
+                      <UserContext.Provider
+                          value={{ me: props.me, settings: props.settings }}
+                      >
+                        <ConnectedIntlProvider settings={props.settings}>
+                          <div className={classes.root}>
+                            <TopBar />
+                            <LeftBar />
+                            <Message />
+                            <main
+                                className={classes.content}
+                                style={{ paddingRight: 24 }}
+                            >
+                              <div className={classes.toolbar} />
+                              <Switch>
+                                <BoundaryRoute
+                                    exact
+                                    path="/dashboard"
+                                    component={Dashboard}
+                                />
+                                <BoundaryRoute
+                                    exact
+                                    path="/dashboard/search"
+                                    render={(routeProps) => (
+                                        <Search {...routeProps} me={props.me} />
+                                    )}
+                                />
+                                <BoundaryRoute
+                                    exact
+                                    path="/dashboard/search/:keyword"
+                                    render={(routeProps) => (
+                                        <Search {...routeProps} me={props.me} />
+                                    )}
+                                />
+                                <BoundaryRoute
+                                    path="/dashboard/analysis"
+                                    component={RootAnalysis}
+                                />
+                                <BoundaryRoute
+                                    path="/dashboard/events"
+                                    component={RootEvents}
+                                />
+                                <Route
+                                    path="/dashboard/observations"
+                                    component={RootObservations}
+                                />
+                                <BoundaryRoute
+                                    path="/dashboard/threats"
+                                    component={RootThreats}
+                                />
+                                <BoundaryRoute
+                                    path="/dashboard/arsenal"
+                                    component={RootArsenal}
+                                />
+                                <BoundaryRoute
+                                    path="/dashboard/entities"
+                                    component={RootEntities}
+                                />
+                                <BoundaryRoute path="/dashboard/data" render={RootData} />
+                                <BoundaryRoute
+                                    path="/dashboard/workspaces"
+                                    component={RootWorkspaces}
+                                />
+                                <BoundaryRoute
+                                    path="/dashboard/settings"
+                                    component={RootSettings}
+                                />
+                                <BoundaryRoute
+                                    exact
+                                    path="/dashboard/profile"
+                                    render={(routeProps) => (
+                                        <Profile {...routeProps} me={props.me} />
+                                    )}
+                                />
+                                <BoundaryRoute
+                                    path="/dashboard/import"
+                                    component={RootImport}
+                                    me={props.me}
+                                />
+                                <Route component={NoMatch} />
+                              </Switch>
+                            </main>
+                          </div>
+                        </ConnectedIntlProvider>
+                      </UserContext.Provider>
+                  );
+                }
+                return <Loader />;
+              }}
+          />
+        </AuthBoundaryComponent>
   );
 };
 

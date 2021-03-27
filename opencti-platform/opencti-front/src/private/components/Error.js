@@ -1,12 +1,11 @@
 import React from 'react';
-import { compose, includes, map } from 'ramda';
+import { compose, includes, dissoc } from 'ramda';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import Alert from '@material-ui/lab/Alert';
 import AlertTitle from '@material-ui/lab/AlertTitle';
-import { ApplicationError, IN_DEV_MODE } from '../../relay/environment';
+import { ApplicationError } from '../../relay/environment';
 import ErrorNotFound from '../../components/ErrorNotFound';
-import Login from '../../public/components/Login';
 
 class ErrorBoundaryComponent extends React.Component {
   constructor(props) {
@@ -21,24 +20,13 @@ class ErrorBoundaryComponent extends React.Component {
   render() {
     if (this.state.stack) {
       if (this.state.error instanceof ApplicationError) {
-        const types = map((e) => e.name, this.state.error.data.res.errors);
-        // If access is forbidden, just redirect to home page
-        if (includes('ForbiddenAccess', types)) window.location.href = '/';
-        // If user not authenticated, redirect to login with encoded path
-        if (includes('AuthRequired', types)) {
-          return <Login />;
+        const types = this.state.error.data.res.errors.map((e) => e.name);
+        // If auth problem propagate the error.
+        if (includes('ForbiddenAccess', types) || includes('AuthRequired', types)) {
+          throw this.state.error;
         }
-        // Return the error display element.
-        return this.props.display;
       }
-      return IN_DEV_MODE ? (
-        <div>
-          <h1>{this.state.error.message}</h1>
-          <div>{this.state.stack.componentStack}</div>
-        </div>
-      ) : (
-        this.props.children
-      );
+      return this.props.display;
     }
     return this.props.children;
   }
@@ -49,11 +37,38 @@ ErrorBoundaryComponent.propTypes = {
 };
 export const ErrorBoundary = compose(withRouter)(ErrorBoundaryComponent);
 
-export const BoundaryRoute = (props) => (
-  <ErrorBoundary display={props.display || <SimpleError />}>
-    <Route {...props} />
-  </ErrorBoundary>
-);
+export const wrapBound = (WrappedComponent) => {
+  class Wrapper extends React.PureComponent {
+    render() {
+      return (
+          <ErrorBoundary display={<SimpleError />}>
+              <WrappedComponent {...this.props}/>
+          </ErrorBoundary>
+      );
+    }
+  }
+  return Wrapper;
+};
+
+// eslint-disable-next-line max-len
+export const BoundaryRoute = (props) => {
+  if (props.component) {
+    const route = dissoc('component', props);
+    return <Route component={wrapBound(props.component)} {...route} />;
+  }
+  if (props.render) {
+    const route = dissoc('render', props);
+    return <Route render={(routeProps) => {
+      const comp = props.render(routeProps);
+      return (
+          <ErrorBoundary display={<SimpleError />}>
+            {comp}
+          </ErrorBoundary>
+      );
+    }} {...route} />;
+  }
+  return <Route {...props} />;
+};
 
 BoundaryRoute.propTypes = {
   display: PropTypes.object,
