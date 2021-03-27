@@ -1,9 +1,9 @@
-import { Environment, RecordSource, Store } from 'relay-runtime';
+import {
+  Environment, RecordSource, Store, Observable,
+} from 'relay-runtime';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installRelayDevTools } from 'relay-devtools';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
-import { execute } from 'apollo-link';
-import { WebSocketLink } from 'apollo-link-ws';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
@@ -58,11 +58,16 @@ const subscriptionClient = new SubscriptionClient(
     reconnect: true,
   },
 );
-const subscriptionLink = new WebSocketLink(subscriptionClient);
-const networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
-  query: operation.text,
-  variables,
-});
+
+const subscribeFn = (request, variables) => {
+  const subscribeObservable = subscriptionClient.request({
+    query: request.text,
+    operationName: request.name,
+    variables,
+  });
+  // Important: Convert subscriptions-transport-ws observable type to Relay's
+  return Observable.from(subscribeObservable);
+};
 
 const network = new RelayNetworkLayer(
   [
@@ -72,7 +77,7 @@ const network = new RelayNetworkLayer(
     }),
     uploadMiddleware(),
   ],
-  { subscribeFn: networkSubscriptions },
+  { subscribeFn },
 );
 
 const store = new Store(new RecordSource());

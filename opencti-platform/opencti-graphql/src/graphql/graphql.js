@@ -8,6 +8,7 @@ import { authenticateUser } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
+import { sessionMiddleware } from '../app';
 
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
@@ -34,7 +35,7 @@ const createApolloServer = () => {
     async context({ req, res, connection }) {
       // For websocket connection.
       if (connection) {
-        return buildContext(connection.context.user, req, res);
+        return { req, res, user: connection.context.user };
       }
       // If session already open
       const user = await authenticateUser(req);
@@ -59,10 +60,24 @@ const createApolloServer = () => {
       return DEV_MODE ? e : dissocPath(['extensions', 'exception'], e);
     },
     subscriptions: {
+      keepAlive: 10000,
       // https://www.apollographql.com/docs/apollo-server/features/subscriptions.html
-      onConnect: async (connectionParams, webSocket, { request }) => {
-        const user = await authenticateUser(request);
-        return { user };
+      onConnect: async (connectionParams, webSocket) => {
+        const wsSession = await new Promise((resolve) => {
+          // use same session parser as normal gql queries
+          sessionMiddleware()(webSocket.upgradeReq, {}, () => {
+            if (webSocket.upgradeReq.session) {
+              resolve(webSocket.upgradeReq.session);
+            }
+            return false;
+          });
+        });
+        // We have a good session. attach to context
+        if (wsSession.user_id) {
+          return { user: wsSession.user };
+        }
+        // throwing error rejects the connection
+        return { user: null };
       },
     },
   });
