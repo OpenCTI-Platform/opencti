@@ -4,6 +4,7 @@ import moment from 'moment-timezone';
 import { numberFormat } from '../utils/Number';
 
 export const isNone = (date) => {
+  if (!date) return true;
   const parsedDate = moment(date).format();
   return (
     parsedDate.startsWith('Invalid')

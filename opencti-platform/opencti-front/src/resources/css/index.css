@@ -234,14 +234,34 @@ div.markdown p {
 
 .force-graph-container .graph-tooltip {
   position: absolute;
+  text-align: center;
   transform: translate(-50%, 25px);
   font-size: 12px !important;
   padding: 8px !important;
   border-radius: 3px;
   color: #eee;
-  background: rgba(0,0,0,0.65);
+  background: rgba(0, 0, 0, 0.65);
   visibility: hidden; /* by default */
   display: block;
   unicode-bidi: embed;
   white-space: pre;
+}
+
+.timerange {
+  width: 100%;
+  height: 100%;
+}
+
+.react_time_range__rail__inner {
+  background-color: transparent !important;
+}
+
+.react_time_range__track {
+  background-color: rgba(1, 226, 255, 0.1) !important;
+  border-left: 1px solid #00bcd4 !important;
+  border-right: 1px solid #00bcd4 !important;
+}
+
+.react_time_range__handle_marker {
+  background-color: #00bcd4 !important;
 }

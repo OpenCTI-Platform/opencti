@@ -414,6 +414,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               id
               entity_type
               parent_types
+              created_at
               createdBy {
                 ... on Identity {
                   id
@@ -436,6 +437,8 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               ... on Campaign {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on Note {
                 attribute_abstract
@@ -449,6 +452,8 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               }
               ... on Report {
                 name
+                description
+                published
               }
               ... on CourseOfAction {
                 name
@@ -469,6 +474,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               ... on Indicator {
                 name
                 description
+                valid_from
               }
               ... on Infrastructure {
                 name
@@ -477,6 +483,8 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               ... on IntrusionSet {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on Position {
                 name
@@ -497,10 +505,14 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               ... on Malware {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on ThreatActor {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on Tool {
                 name
@@ -513,6 +525,8 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               ... on XOpenCTIIncident {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on StixCyberObservable {
                 observable_value

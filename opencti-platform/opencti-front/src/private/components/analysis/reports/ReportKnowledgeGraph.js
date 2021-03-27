@@ -16,6 +16,8 @@ import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import {
   applyFilters,
   buildGraphData,
+  computeTimeRangeInterval,
+  computeTimeRangeValues,
   decodeGraphData,
   encodeGraphData,
   linkPaint,
@@ -80,6 +82,7 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
       id
       entity_type
       parent_types
+      created_at
       createdBy {
         ... on Identity {
           id
@@ -95,77 +98,73 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
           }
         }
       }
+      ... on StixDomainObject {
+        created
+      }
       ... on AttackPattern {
         name
-        description
       }
       ... on Campaign {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on CourseOfAction {
         name
-        description
       }
       ... on Individual {
         name
-        description
       }
       ... on Organization {
         name
-        description
       }
       ... on Sector {
         name
-        description
       }
       ... on Indicator {
         name
-        description
+        valid_from
       }
       ... on Infrastructure {
         name
-        description
       }
       ... on IntrusionSet {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on Position {
         name
-        description
       }
       ... on City {
         name
-        description
       }
       ... on Country {
         name
-        description
       }
       ... on Region {
         name
-        description
       }
       ... on Malware {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on ThreatActor {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on Tool {
         name
-        description
       }
       ... on Vulnerability {
         name
-        description
       }
       ... on XOpenCTIIncident {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on StixCyberObservable {
         observable_value
@@ -182,6 +181,7 @@ const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
       parent_types
       start_time
       stop_time
+      created
       confidence
       relationship_type
       from {
@@ -215,7 +215,6 @@ const reportKnowledgeGraphStixCoreRelationshipQuery = graphql`
         }
       }
       created_at
-      updated_at
       createdBy {
         ... on Identity {
           id
@@ -257,10 +256,12 @@ class ReportKnowledgeGraphComponent extends Component {
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
     const markedBy = R.propOr([], 'markedBy', params);
     const createdBy = R.propOr([], 'createdBy', params);
+    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr(false, 'modeTree', params),
+      selectedTimeRangeInterval: timeRangeInterval,
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
@@ -360,6 +361,10 @@ class ReportKnowledgeGraphComponent extends Component {
       this.forceUpdate();
       this.graph.current.d3ReheatSimulation();
     });
+  }
+
+  handleToggleDisplayTimeRange() {
+    this.setState({ displayTimeRange: !this.state.displayTimeRange }, () => this.saveParameters());
   }
 
   handleToggleStixCoreObjectType(type) {
@@ -495,14 +500,19 @@ class ReportKnowledgeGraphComponent extends Component {
       decodeGraphData(this.props.report.x_opencti_graph_data),
       this.props.t,
     );
+    const selectedTimeRangeInterval = computeTimeRangeInterval(
+      this.graphObjects,
+    );
     this.setState(
       {
+        selectedTimeRangeInterval,
         graphData: applyFilters(
           this.graphData,
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
           ignoredStixCoreObjectsTypes,
+          selectedTimeRangeInterval,
         ),
       },
       () => {
@@ -529,13 +539,18 @@ class ReportKnowledgeGraphComponent extends Component {
           decodeGraphData(this.props.report.x_opencti_graph_data),
           this.props.t,
         );
+        const selectedTimeRangeInterval = computeTimeRangeInterval(
+          this.graphObjects,
+        );
         this.setState({
+          selectedTimeRangeInterval,
           graphData: applyFilters(
             this.graphData,
             this.state.stixCoreObjectsTypes,
             this.state.markedBy,
             this.state.createdBy,
             ignoredStixCoreObjectsTypes,
+            selectedTimeRangeInterval,
           ),
         });
       },
@@ -575,6 +590,7 @@ class ReportKnowledgeGraphComponent extends Component {
         this.state.markedBy,
         this.state.createdBy,
         ignoredStixCoreObjectsTypes,
+        this.state.selectedTimeRangeInterval,
       ),
     });
   }
@@ -659,6 +675,7 @@ class ReportKnowledgeGraphComponent extends Component {
         this.state.markedBy,
         this.state.createdBy,
         ignoredStixCoreObjectsTypes,
+        this.state.selectedTimeRangeInterval,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
@@ -687,6 +704,7 @@ class ReportKnowledgeGraphComponent extends Component {
             this.state.markedBy,
             this.state.createdBy,
             ignoredStixCoreObjectsTypes,
+            this.state.selectedTimeRangeInterval,
           ),
         });
       });
@@ -715,6 +733,7 @@ class ReportKnowledgeGraphComponent extends Component {
             this.state.markedBy,
             this.state.createdBy,
             ignoredStixCoreObjectsTypes,
+            this.state.selectedTimeRangeInterval,
           ),
         });
       });
@@ -748,6 +767,7 @@ class ReportKnowledgeGraphComponent extends Component {
           this.state.markedBy,
           this.state.createdBy,
           ignoredStixCoreObjectsTypes,
+          this.state.selectedTimeRangeInterval,
         ),
       },
       () => {
@@ -757,6 +777,20 @@ class ReportKnowledgeGraphComponent extends Component {
         POSITIONS$.next({ action: 'SavePositions' });
       },
     );
+  }
+
+  handleTimeRangeChange(selectedTimeRangeInterval) {
+    this.setState({
+      selectedTimeRangeInterval,
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        [],
+        selectedTimeRangeInterval,
+      ),
+    });
   }
 
   render() {
@@ -771,6 +805,8 @@ class ReportKnowledgeGraphComponent extends Component {
       graphData,
       numberOfSelectedNodes,
       numberOfSelectedLinks,
+      displayTimeRange,
+      selectedTimeRangeInterval,
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
@@ -784,6 +820,11 @@ class ReportKnowledgeGraphComponent extends Component {
     const createdBy = R.uniqBy(
       R.prop('id'),
       R.map((n) => n.createdBy, this.graphData.nodes),
+    );
+    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
+    const timeRangeValues = computeTimeRangeValues(
+      timeRangeInterval,
+      this.graphObjects,
     );
     return (
       <div>
@@ -822,6 +863,14 @@ class ReportKnowledgeGraphComponent extends Component {
             this,
           )}
           handleResetLayout={this.handleResetLayout.bind(this)}
+          displayTimeRange={displayTimeRange}
+          handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
+            this,
+          )}
+          timeRangeInterval={timeRangeInterval}
+          selectedTimeRangeInterval={selectedTimeRangeInterval}
+          handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
+          timeRangeValues={timeRangeValues}
         />
         {mode3D ? (
           <ForceGraph3D
@@ -1025,7 +1074,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
               }
               ... on StixCoreObject {
                 created_at
-                updated_at
                 createdBy {
                   ... on Identity {
                     id
@@ -1042,77 +1090,73 @@ const ReportKnowledgeGraph = createFragmentContainer(
                   }
                 }
               }
+              ... on StixDomainObject {
+                created
+              }
               ... on AttackPattern {
                 name
-                description
               }
               ... on Campaign {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on CourseOfAction {
                 name
-                description
               }
               ... on Individual {
                 name
-                description
               }
               ... on Organization {
                 name
-                description
               }
               ... on Sector {
                 name
-                description
               }
               ... on Indicator {
                 name
-                description
+                valid_from
               }
               ... on Infrastructure {
                 name
-                description
               }
               ... on IntrusionSet {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on Position {
                 name
-                description
               }
               ... on City {
                 name
-                description
               }
               ... on Country {
                 name
-                description
               }
               ... on Region {
                 name
-                description
               }
               ... on Malware {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on ThreatActor {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on Tool {
                 name
-                description
               }
               ... on Vulnerability {
                 name
-                description
               }
               ... on XOpenCTIIncident {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on StixCyberObservable {
                 observable_value
@@ -1127,6 +1171,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
                 start_time
                 stop_time
                 confidence
+                created
                 from {
                   ... on BasicObject {
                     id
@@ -1158,7 +1203,6 @@ const ReportKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 created_at
-                updated_at
                 createdBy {
                   ... on Identity {
                     id

@@ -30,7 +30,16 @@ import StixCyberObservable from '../resources/images/entities/stix-cyber-observa
 import relationship from '../resources/images/entities/relationship.svg';
 import { itemColor } from './Colors';
 import Theme from '../components/ThemeDark';
-import { dateFormat } from './Time';
+import {
+  dateFormat,
+  dayEndDate,
+  daysAfter,
+  daysAgo,
+  jsDate,
+  minutesBefore,
+  minutesBetweenDates,
+  timestamp,
+} from './Time';
 import { isNone } from '../components/i18n';
 
 const genImage = (src) => {
@@ -211,6 +220,82 @@ export const decodeGraphData = (encodedGraphData) => {
   return {};
 };
 
+export const defaultDate = (n) => {
+  if (!isNone(n.start_time)) {
+    return n.start_time;
+  }
+  if (!isNone(n.first_seen)) {
+    return n.first_seen;
+  }
+  if (!isNone(n.first_observed)) {
+    return n.first_observed;
+  }
+  if (!isNone(n.valid_from)) {
+    return n.valid_from;
+  }
+  if (!isNone(n.published)) {
+    return n.published;
+  }
+  if (!isNone(n.created)) {
+    return n.created;
+  }
+  if (!isNone(n.created_at)) {
+    return n.created_at;
+  }
+  return null;
+};
+
+export const defaultValue = (n) => n.name
+  || n.observable_value
+  || n.attribute_abstract
+  || n.opinion
+  || n.value
+  || n.definition
+  || n.source_name
+  || 'Unknown';
+
+export const computeTimeRangeInterval = (objects) => {
+  const elementsDates = R.map((n) => defaultDate(n), objects);
+  const orderedElementsDate = R.sort(
+    (a, b) => timestamp(a) - timestamp(b),
+    R.filter((n) => !R.isNil(n) && !isNone(n), elementsDates),
+  );
+  let startDate = jsDate(daysAgo(1));
+  let endDate = jsDate(dayEndDate());
+  if (orderedElementsDate.length >= 1) {
+    startDate = jsDate(daysAgo(1, orderedElementsDate[0]));
+    endDate = jsDate(daysAfter(1, orderedElementsDate[0]));
+  }
+  if (orderedElementsDate.length >= 2) {
+    endDate = jsDate(daysAfter(1, orderedElementsDate.slice(-1)[0]));
+  }
+  return [startDate, endDate];
+};
+
+export const computeTimeRangeValues = (interval, objects) => {
+  const elementsDates = R.map(
+    (n) => timestamp(defaultDate(n)),
+    R.filter((n) => !n.parent_types.includes('basic-relationship'), objects),
+  );
+  const minutes = minutesBetweenDates(interval[0], interval[1]);
+  const intervalInMinutes = Math.ceil(minutes / 100);
+  const intervalInSecondes = intervalInMinutes * 60;
+  const intervals = Array(100)
+    .fill()
+    .map((_, i) => timestamp(minutesBefore(minutes - i * intervalInMinutes, interval[1])));
+  return R.map(
+    (n) => ({
+      time: n,
+      index: 1,
+      value: R.filter(
+        (o) => o >= n && o <= n + intervalInSecondes,
+        elementsDates,
+      ).length,
+    }),
+    intervals,
+  );
+};
+
 export const buildGraphData = (objects, graphData, t) => {
   const relationshipsIdsInNestedRelationship = R.pipe(
     R.filter((n) => n.from?.relationship_type || n.to?.relationship_type),
@@ -229,29 +314,21 @@ export const buildGraphData = (objects, graphData, t) => {
             ? 'relationship'
             : n.entity_type
         ],
-      name: n.relationship_type
-        ? `${t('Start time')} ${
-          isNone(n.start_time) ? '-' : dateFormat(n.start_time)
-        }\n${t('Stop time')} ${
-          isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
-        }`
-        : n.name
-          || n.observable_value
-          || n.attribute_abstract
-          || n.opinion
-          || n.value
-          || n.definition,
+      name: `${
+        n.relationship_type
+          ? `${t('Start time')} ${
+            isNone(n.start_time)
+              ? dateFormat(defaultDate(n))
+              : dateFormat(n.start_time)
+          }\n${t('Stop time')} ${
+            isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
+          }`
+          : defaultValue(n)
+      }\n${dateFormat(defaultDate(n))}`,
+      defaultDate: jsDate(defaultDate(n)),
       label: n.parent_types.includes('basic-relationship')
         ? t(`relationship_${n.relationship_type}`)
-        : truncate(
-          n.name
-              || n.observable_value
-              || n.attribute_abstract
-              || n.opinion
-              || n.value
-              || n.definition,
-          20,
-        ),
+        : truncate(defaultValue(n), 20),
       img:
         graphImages[
           n.parent_types.includes('basic-relationship')
@@ -264,7 +341,7 @@ export const buildGraphData = (objects, graphData, t) => {
             ? 'relationship'
             : n.entity_type
         ],
-      color: itemColor(n.entity_type, false),
+      color: n.x_opencti_color || n.color || itemColor(n.entity_type, false),
       parent_types: n.parent_types,
       entity_type: n.entity_type,
       relationship_type: n.relationship_type,
@@ -298,12 +375,15 @@ export const buildGraphData = (objects, graphData, t) => {
       target: n.to.id,
       label: t(`relationship_${n.entity_type}`),
       name: `${t('Start time')} ${
-        isNone(n.start_time) ? '-' : dateFormat(n.start_time)
+        isNone(n.start_time)
+          ? dateFormat(defaultDate(n))
+          : dateFormat(n.start_time)
       }\n${t('Stop time')} ${
         isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
       }`,
       source_id: n.from.id,
       target_id: n.to.id,
+      defaultDate: jsDate(defaultDate(n)),
     })),
   )(objects);
   const nestedLinks = R.pipe(
@@ -322,6 +402,7 @@ export const buildGraphData = (objects, graphData, t) => {
         target_id: n.id,
         start_time: '',
         stop_time: '',
+        defaultDate: jsDate(defaultDate(n)),
       },
       {
         id: n.id,
@@ -336,6 +417,7 @@ export const buildGraphData = (objects, graphData, t) => {
         target_id: n.to.id,
         start_time: '',
         stop_time: '',
+        defaultDate: jsDate(defaultDate(n)),
       },
     ]),
     R.flatten,
@@ -353,6 +435,7 @@ export const applyFilters = (
   markedBy = [],
   createdBy = [],
   excludedStixCoreObjectsTypes = [],
+  interval = [],
 ) => {
   const nodes = R.pipe(
     R.filter(
@@ -370,12 +453,18 @@ export const applyFilters = (
     R.filter(
       (n) => createdBy.length === 0 || R.includes(n.createdBy.id, createdBy),
     ),
+    R.filter(
+      (n) => interval.length === 0
+        || isNone(n.defaultDate)
+        || (n.defaultDate >= interval[0] && n.defaultDate <= interval[1]),
+    ),
   )(graphData.nodes);
   const nodeIds = R.map((n) => n.id, nodes);
-  const links = R.filter(
-    (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
-    graphData.links,
-  );
+  const links = R.pipe(
+    R.filter(
+      (n) => R.includes(n.source_id, nodeIds) && R.includes(n.target_id, nodeIds),
+    ),
+  )(graphData.links);
   return {
     nodes,
     links,
@@ -453,3 +542,11 @@ export const nodeThreePaint = (node) => {
   sprite.textHeight = 1.5;
   return sprite;
 };
+
+export const parseDomain = (data) => [
+  0,
+  Math.max.apply(
+    null,
+    data.map((entry) => entry.value),
+  ),
+];

@@ -5,6 +5,13 @@ import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import {
+  YAxis,
+  ZAxis,
+  ResponsiveContainer,
+  ScatterChart,
+  Scatter,
+} from 'recharts';
+import {
   AspectRatio,
   FilterListOutlined,
   AccountBalanceOutlined,
@@ -14,6 +21,7 @@ import {
   InfoOutlined,
   OpenWithOutlined,
   ScatterPlotOutlined,
+  DateRangeOutlined,
 } from '@material-ui/icons';
 import {
   Video3D,
@@ -22,6 +30,7 @@ import {
   GraphOutline,
   AutoFix,
 } from 'mdi-material-ui';
+import TimeRange from 'react-timeline-range-slider';
 import LinearProgress from '@material-ui/core/LinearProgress';
 import Tooltip from '@material-ui/core/Tooltip';
 import List from '@material-ui/core/List';
@@ -31,7 +40,6 @@ import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
 import Popover from '@material-ui/core/Popover';
-import Toolbar from '@material-ui/core/Toolbar';
 import { Field, Form, Formik } from 'formik';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -48,13 +56,15 @@ import { resolveLink } from '../../../../utils/Entity';
 import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 import SelectField from '../../../../components/SelectField';
 import TextField from '../../../../components/TextField';
+import { dateFormat } from '../../../../utils/Time';
+import { parseDomain } from '../../../../utils/Graph';
+import ThemeDark from '../../../../components/ThemeDark';
 
 const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
-    height: 50,
     overflow: 'hidden',
   },
   divider: {
@@ -214,6 +224,12 @@ class InvestigationGraphBar extends Component {
       handleSelectAll,
       handleResetLayout,
       displayProgress,
+      displayTimeRange,
+      timeRangeInterval,
+      selectedTimeRangeInterval,
+      handleToggleDisplayTimeRange,
+      handleTimeRangeChange,
+      timeRangeValues,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -264,7 +280,13 @@ class InvestigationGraphBar extends Component {
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
       >
-        <Toolbar style={{ minHeight: 54 }}>
+        <div
+          style={{
+            height: displayTimeRange ? 134 : 54,
+            verticalAlign: 'top',
+            transition: 'height 0.2s linear',
+          }}
+        >
           <LinearProgress
             style={{
               width: '100%',
@@ -276,13 +298,20 @@ class InvestigationGraphBar extends Component {
           />
           <div
             style={{
+              verticalAlign: 'top',
               width: '100%',
-              height: '100%',
-              display: 'flex',
-              position: 'relative',
+              height: 54,
+              paddingTop: 3,
             }}
           >
-            <div style={{ position: 'absolute', left: 165, height: '100%' }}>
+            <div
+              style={{
+                float: 'left',
+                marginLeft: 185,
+                height: '100%',
+                display: 'flex',
+              }}
+            >
               <Tooltip
                 title={
                   currentMode3D ? t('Disable 3D mode') : t('Enable 3D mode')
@@ -325,6 +354,16 @@ class InvestigationGraphBar extends Component {
                     onClick={handleToggleFixedMode.bind(this)}
                   >
                     <ScatterPlotOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t('Display time range selector')}>
+                <span>
+                  <IconButton
+                    color={displayTimeRange ? 'secondary' : 'primary'}
+                    onClick={handleToggleDisplayTimeRange.bind(this)}
+                  >
+                    <DateRangeOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -558,7 +597,13 @@ class InvestigationGraphBar extends Component {
               </Tooltip>
             </div>
             {workspace && (
-              <div style={{ position: 'absolute', right: 0, display: 'flex' }}>
+              <div
+                style={{
+                  float: 'right',
+                  display: 'flex',
+                  height: '100%',
+                }}
+              >
                 <InvestigationAddStixCoreObjects
                   workspaceId={workspace.id}
                   workspaceStixCoreObjects={workspace.objects.edges}
@@ -752,7 +797,63 @@ class InvestigationGraphBar extends Component {
               </div>
             )}
           </div>
-        </Toolbar>
+          <div className="clearfix" />
+          <div style={{ height: '100%', padding: '30px 10px 0px 190px' }}>
+            <div
+              style={{
+                position: 'absolute',
+                width: '100%',
+                height: '100%',
+                bottom: -50,
+                left: 120,
+              }}
+            >
+              <ResponsiveContainer width="100%" height={60}>
+                <ScatterChart
+                  width="100%"
+                  height={60}
+                  margin={{
+                    top: 32,
+                    right: 150,
+                    bottom: 0,
+                    left: 0,
+                  }}
+                >
+                  <YAxis
+                    type="number"
+                    dataKey="index"
+                    name="scatter"
+                    height={10}
+                    width={80}
+                    tick={false}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <ZAxis
+                    type="number"
+                    dataKey="value"
+                    range={[15, 200]}
+                    domain={parseDomain(timeRangeValues)}
+                  />
+                  <Scatter
+                    data={timeRangeValues}
+                    fill={ThemeDark.palette.primary.main}
+                  />
+                </ScatterChart>
+              </ResponsiveContainer>
+            </div>
+            <TimeRange
+              ticksNumber={20}
+              selectedInterval={selectedTimeRangeInterval}
+              timelineInterval={timeRangeInterval}
+              onUpdateCallback={() => null}
+              onChangeCallback={handleTimeRangeChange}
+              formatTick={dateFormat}
+              containerClassName="timerange"
+              step={3 * 3600 * 1000}
+            />
+          </div>
+        </div>
       </Drawer>
     );
   }
@@ -782,6 +883,7 @@ InvestigationGraphBar.propTypes = {
   selectedLinks: PropTypes.array,
   numberOfSelectedNodes: PropTypes.number,
   numberOfSelectedLinks: PropTypes.number,
+  elementsDates: PropTypes.array,
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
   handleExpandElements: PropTypes.func,
@@ -791,6 +893,12 @@ InvestigationGraphBar.propTypes = {
   handleSelectAll: PropTypes.func,
   handleSelectByType: PropTypes.func,
   handleResetLayout: PropTypes.func,
+  displayTimeRange: PropTypes.bool,
+  handleToggleDisplayTimeRange: PropTypes.func,
+  handleTimeRangeChange: PropTypes.func,
+  timeRangeInterval: PropTypes.array,
+  selectedTimeRangeInterval: PropTypes.array,
+  timeRangeValues: PropTypes.array,
 };
 
 export default R.compose(inject18n, withStyles(styles))(InvestigationGraphBar);

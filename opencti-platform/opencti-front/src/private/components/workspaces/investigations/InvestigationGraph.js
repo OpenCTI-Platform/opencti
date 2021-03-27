@@ -19,6 +19,8 @@ import {
 import {
   applyFilters,
   buildGraphData,
+  computeTimeRangeInterval,
+  computeTimeRangeValues,
   decodeGraphData,
   encodeGraphData,
   linkPaint,
@@ -245,13 +247,16 @@ const investigationGraphStixRelationshipsQuery = graphql`
           id
           entity_type
           parent_types
+          ... on StixMetaRelationship {
+            created_at
+          }
           ... on StixCoreRelationship {
             start_time
             stop_time
             confidence
             relationship_type
+            created
             created_at
-            updated_at
             createdBy {
               ... on Identity {
                 id
@@ -272,7 +277,6 @@ const investigationGraphStixRelationshipsQuery = graphql`
             first_seen
             last_seen
             created_at
-            updated_at
             createdBy {
               ... on Identity {
                 id
@@ -294,7 +298,6 @@ const investigationGraphStixRelationshipsQuery = graphql`
             stop_time
             relationship_type
             created_at
-            updated_at
           }
           from {
             ... on BasicObject {
@@ -321,17 +324,19 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
             }
+            ... on StixDomainObject {
+              created
+            }
             ... on AttackPattern {
               name
-              description
             }
             ... on Campaign {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on CourseOfAction {
               name
-              description
             }
             ... on Note {
               attribute_abstract
@@ -345,35 +350,31 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on Report {
               name
-              description
+              published
             }
             ... on Individual {
               name
-              description
             }
             ... on Organization {
               name
-              description
             }
             ... on Sector {
               name
-              description
             }
             ... on Indicator {
               name
-              description
+              valid_from
             }
             ... on Infrastructure {
               name
-              description
             }
             ... on IntrusionSet {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on Position {
               name
-              description
             }
             ... on City {
               name
@@ -389,32 +390,38 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on Malware {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on ThreatActor {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on Tool {
               name
-              description
             }
             ... on Vulnerability {
               name
-              description
             }
             ... on XOpenCTIIncident {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on StixCyberObservable {
               observable_value
             }
+            ... on StixMetaObject {
+              created
+            }
             ... on Label {
               value
+              color
             }
             ... on MarkingDefinition {
               definition
+              x_opencti_color
             }
             ... on ExternalReference {
               url
@@ -430,6 +437,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
               start_time
               stop_time
               confidence
+              created
               from {
                 ... on BasicObject {
                   id
@@ -461,7 +469,6 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
               created_at
-              updated_at
               createdBy {
                 ... on Identity {
                   id
@@ -504,17 +511,19 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
             }
+            ... on StixDomainObject {
+              created
+            }
             ... on AttackPattern {
               name
-              description
             }
             ... on Campaign {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on CourseOfAction {
               name
-              description
             }
             ... on Note {
               attribute_abstract
@@ -528,76 +537,75 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on Report {
               name
-              description
+              published
             }
             ... on Individual {
               name
-              description
             }
             ... on Organization {
               name
-              description
             }
             ... on Sector {
               name
-              description
             }
             ... on Indicator {
               name
-              description
+              valid_from
             }
             ... on Infrastructure {
               name
-              description
             }
             ... on IntrusionSet {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on Position {
               name
-              description
             }
             ... on City {
               name
-              description
             }
             ... on Country {
               name
-              description
             }
             ... on Region {
               name
-              description
             }
             ... on Malware {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on ThreatActor {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on Tool {
               name
-              description
             }
             ... on Vulnerability {
               name
-              description
             }
             ... on XOpenCTIIncident {
               name
-              description
+              first_seen
+              last_seen
             }
             ... on StixCyberObservable {
               observable_value
             }
+            ... on StixMetaObject {
+              created
+            }
             ... on Label {
               value
+              color
             }
             ... on MarkingDefinition {
               definition
+              x_opencti_color
             }
             ... on ExternalReference {
               url
@@ -613,6 +621,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
               start_time
               stop_time
               confidence
+              created
               from {
                 ... on BasicObject {
                   id
@@ -644,7 +653,6 @@ const investigationGraphStixRelationshipsQuery = graphql`
                 }
               }
               created_at
-              updated_at
               createdBy {
                 ... on Identity {
                   id
@@ -703,10 +711,13 @@ class InvestigationGraphComponent extends Component {
     const stixCoreObjectsTypes = R.propOr([], 'stixCoreObjectsTypes', params);
     const markedBy = R.propOr([], 'markedBy', params);
     const createdBy = R.propOr([], 'createdBy', params);
+    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr(false, 'modeTree', params),
+      displayTimeRange: R.propOr(false, 'displayTimeRange', params),
+      selectedTimeRangeInterval: timeRangeInterval,
       stixCoreObjectsTypes,
       markedBy,
       createdBy,
@@ -715,6 +726,8 @@ class InvestigationGraphComponent extends Component {
         stixCoreObjectsTypes,
         markedBy,
         createdBy,
+        [],
+        timeRangeInterval,
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
@@ -763,6 +776,8 @@ class InvestigationGraphComponent extends Component {
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
+          [],
+          this.state.selectedTimeRangeInterval,
         ),
       });
     }
@@ -811,6 +826,10 @@ class InvestigationGraphComponent extends Component {
     this.setState({ displayProgress: !this.state.displayProgress });
   }
 
+  handleToggleDisplayTimeRange() {
+    this.setState({ displayTimeRange: !this.state.displayTimeRange }, () => this.saveParameters());
+  }
+
   handleToggleStixCoreObjectType(type) {
     const { stixCoreObjectsTypes } = this.state;
     if (stixCoreObjectsTypes.includes(type)) {
@@ -842,7 +861,9 @@ class InvestigationGraphComponent extends Component {
       );
     } else {
       // eslint-disable-next-line max-len
-      this.setState({ markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true));
+      this.setState(
+        { markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true),
+      );
     }
   }
 
@@ -944,13 +965,19 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
+    const selectedTimeRangeInterval = computeTimeRangeInterval(
+      this.graphObjects,
+    );
     this.setState(
       {
+        selectedTimeRangeInterval,
         graphData: applyFilters(
           this.graphData,
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
+          [],
+          selectedTimeRangeInterval,
         ),
       },
       () => {
@@ -991,6 +1018,8 @@ class InvestigationGraphComponent extends Component {
         this.state.stixCoreObjectsTypes,
         this.state.markedBy,
         this.state.createdBy,
+        [],
+        this.state.selectedTimeRangeInterval,
       ),
     });
   }
@@ -1062,6 +1091,8 @@ class InvestigationGraphComponent extends Component {
         this.state.stixCoreObjectsTypes,
         this.state.markedBy,
         this.state.createdBy,
+        [],
+        this.state.selectedTimeRangeInterval,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
@@ -1089,6 +1120,8 @@ class InvestigationGraphComponent extends Component {
             this.state.stixCoreObjectsTypes,
             this.state.markedBy,
             this.state.createdBy,
+            [],
+            this.state.selectedTimeRangeInterval,
           ),
         });
       });
@@ -1116,6 +1149,8 @@ class InvestigationGraphComponent extends Component {
             this.state.stixCoreObjectsTypes,
             this.state.markedBy,
             this.state.createdBy,
+            [],
+            this.state.selectedTimeRangeInterval,
           ),
         });
       });
@@ -1179,13 +1214,19 @@ class InvestigationGraphComponent extends Component {
       decodeGraphData(this.props.workspace.graph_data),
       this.props.t,
     );
+    const selectedTimeRangeInterval = computeTimeRangeInterval(
+      this.graphObjects,
+    );
     this.setState(
       {
+        selectedTimeRangeInterval,
         graphData: applyFilters(
           this.graphData,
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
+          [],
+          selectedTimeRangeInterval,
         ),
       },
       () => {
@@ -1214,6 +1255,8 @@ class InvestigationGraphComponent extends Component {
           this.state.stixCoreObjectsTypes,
           this.state.markedBy,
           this.state.createdBy,
+          [],
+          this.state.selectedTimeRangeInterval,
         ),
       },
       () => {
@@ -1223,6 +1266,20 @@ class InvestigationGraphComponent extends Component {
         POSITIONS$.next({ action: 'SavePositions' });
       },
     );
+  }
+
+  handleTimeRangeChange(interval) {
+    this.setState({
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        [],
+        interval,
+      ),
+      selectedTimeRangeInterval: interval,
+    });
   }
 
   render() {
@@ -1238,6 +1295,8 @@ class InvestigationGraphComponent extends Component {
       numberOfSelectedNodes,
       numberOfSelectedLinks,
       displayProgress,
+      displayTimeRange,
+      selectedTimeRangeInterval,
     } = this.state;
     const width = window.innerWidth - 210;
     const height = window.innerHeight - 180;
@@ -1251,6 +1310,11 @@ class InvestigationGraphComponent extends Component {
     const createdBy = R.uniqBy(
       R.prop('id'),
       R.map((n) => n.createdBy, this.graphData.nodes),
+    );
+    const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
+    const timeRangeValues = computeTimeRangeValues(
+      timeRangeInterval,
+      this.graphObjects,
     );
     return (
       <div>
@@ -1290,6 +1354,14 @@ class InvestigationGraphComponent extends Component {
             this,
           )}
           handleResetLayout={this.handleResetLayout.bind(this)}
+          displayTimeRange={displayTimeRange}
+          handleToggleDisplayTimeRange={this.handleToggleDisplayTimeRange.bind(
+            this,
+          )}
+          timeRangeInterval={timeRangeInterval}
+          selectedTimeRangeInterval={selectedTimeRangeInterval}
+          handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
+          timeRangeValues={timeRangeValues}
         />
         {mode3D ? (
           <ForceGraph3D
@@ -1483,7 +1555,6 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on StixCoreObject {
                 created_at
-                updated_at
                 createdBy {
                   ... on Identity {
                     id
@@ -1500,17 +1571,18 @@ const InvestigationGraph = createFragmentContainer(
                   }
                 }
               }
+              ... on StixDomainObject {
+                created
+              }
               ... on AttackPattern {
                 name
-                description
               }
               ... on Campaign {
                 name
-                description
+                first_seen
               }
               ... on CourseOfAction {
                 name
-                description
               }
               ... on Note {
                 attribute_abstract
@@ -1524,76 +1596,73 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on Report {
                 name
-                description
+                published
               }
               ... on Individual {
                 name
-                description
               }
               ... on Organization {
                 name
-                description
               }
               ... on Sector {
                 name
-                description
               }
               ... on Indicator {
                 name
-                description
+                valid_from
               }
               ... on Infrastructure {
                 name
-                description
               }
               ... on IntrusionSet {
                 name
-                description
               }
               ... on Position {
                 name
-                description
               }
               ... on City {
                 name
-                description
               }
               ... on Country {
                 name
-                description
               }
               ... on Region {
                 name
-                description
               }
               ... on Malware {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on ThreatActor {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on Tool {
                 name
-                description
               }
               ... on Vulnerability {
                 name
-                description
               }
               ... on XOpenCTIIncident {
                 name
-                description
+                first_seen
+                last_seen
               }
               ... on StixCyberObservable {
                 observable_value
               }
+              ... on StixMetaObject {
+                created
+              }
               ... on Label {
                 value
+                color
               }
               ... on MarkingDefinition {
                 definition
+                x_opencti_color
               }
               ... on ExternalReference {
                 url
@@ -1636,13 +1705,16 @@ const InvestigationGraph = createFragmentContainer(
                   }
                 }
               }
+              ... on StixMetaRelationship {
+                created_at
+              }
               ... on StixCoreRelationship {
                 relationship_type
                 start_time
                 stop_time
                 confidence
+                created
                 created_at
-                updated_at
                 createdBy {
                   ... on Identity {
                     id

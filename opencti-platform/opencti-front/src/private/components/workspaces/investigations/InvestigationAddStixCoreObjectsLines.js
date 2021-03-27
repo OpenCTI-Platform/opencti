@@ -3,13 +3,7 @@ import * as PropTypes from 'prop-types';
 import { createPaginationContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import {
-  map,
-  filter,
-  keys,
-  groupBy,
-  assoc,
-  compose,
-  append,
+  map, filter, keys, groupBy, assoc, compose, append,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Accordion from '@material-ui/core/Accordion';
@@ -337,6 +331,7 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               id
               entity_type
               parent_types
+              created_at
               createdBy {
                 ... on Identity {
                   id
@@ -352,6 +347,9 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                   }
                 }
               }
+              ... on StixDomainObject {
+                created
+              }
               ... on AttackPattern {
                 name
                 description
@@ -359,6 +357,8 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               ... on Campaign {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on Note {
                 attribute_abstract
@@ -372,6 +372,8 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               }
               ... on Report {
                 name
+                description
+                published
               }
               ... on CourseOfAction {
                 name
@@ -392,6 +394,7 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               ... on Indicator {
                 name
                 description
+                valid_from
               }
               ... on Infrastructure {
                 name
@@ -400,6 +403,8 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               ... on IntrusionSet {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on Position {
                 name
@@ -420,10 +425,14 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               ... on Malware {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on ThreatActor {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on Tool {
                 name
@@ -436,6 +445,8 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               ... on XOpenCTIIncident {
                 name
                 description
+                first_seen
+                last_seen
               }
               ... on StixCyberObservable {
                 observable_value
