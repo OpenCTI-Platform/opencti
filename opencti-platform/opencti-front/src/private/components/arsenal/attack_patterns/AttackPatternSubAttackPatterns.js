@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
+import * as R from 'ramda';
 import Typography from '@material-ui/core/Typography';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -20,11 +20,11 @@ import inject18n from '../../../../components/i18n';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 
 class AttackPatternSubAttackPatternsComponent extends Component {
-  removeSubAttackPattern(subAttackPatternEdge) {
+  removeSubAttackPattern(subAttackPattern) {
     commitMutation({
       mutation: addSubAttackPatternsMutationRelationDelete,
       variables: {
-        fromId: subAttackPatternEdge.node.id,
+        fromId: subAttackPattern.id,
         toId: this.props.attackPattern.id,
         relationship_type: 'subtechnique-of',
       },
@@ -32,9 +32,8 @@ class AttackPatternSubAttackPatternsComponent extends Component {
         const node = store.get(this.props.attackPattern.id);
         const subAttackPatterns = node.getLinkedRecord('subAttackPatterns');
         const edges = subAttackPatterns.getLinkedRecords('edges');
-        const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id')
-            !== subAttackPatternEdge.node.id,
+        const newEdges = R.filter(
+          (n) => n.getLinkedRecord('node').getValue('id') !== subAttackPattern.id,
           edges,
         );
         subAttackPatterns.setLinkedRecords(newEdges, 'edges');
@@ -44,6 +43,13 @@ class AttackPatternSubAttackPatternsComponent extends Component {
 
   render() {
     const { t, attackPattern } = this.props;
+    const sortByXMitreIdCaseInsensitive = R.sortBy(
+      R.compose(R.toLower, R.prop('x_mitre_id')),
+    );
+    const subAttackPatterns = R.pipe(
+      R.map((n) => n.node),
+      sortByXMitreIdCaseInsensitive,
+    )(attackPattern.subAttackPatterns.edges);
     return (
       <div style={{ height: '100%', marginTop: 20 }}>
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
@@ -59,35 +65,34 @@ class AttackPatternSubAttackPatternsComponent extends Component {
         </Security>
         <div className="clearfix" />
         <List style={{ marginTop: -10 }}>
-          {attackPattern.subAttackPatterns.edges.map((subAttackPatternEdge) => {
-            const subAttackPattern = subAttackPatternEdge.node;
-            return (
-              <ListItem
-                key={subAttackPattern.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/arsenal/attack_patterns/${subAttackPattern.id}`}
-              >
-                <ListItemIcon>
-                  <LockPattern color="primary" />
-                </ListItemIcon>
-                <ListItemText primary={subAttackPattern.name} />
-                <ListItemSecondaryAction>
-                  <IconButton
-                    aria-label="Remove"
-                    onClick={this.removeSubAttackPattern.bind(
-                      this,
-                      subAttackPatternEdge,
-                    )}
-                  >
-                    <LinkOff />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            );
-          })}
+          {subAttackPatterns.map((subAttackPattern) => (
+            <ListItem
+              key={subAttackPattern.id}
+              dense={true}
+              divider={true}
+              button={true}
+              component={Link}
+              to={`/dashboard/arsenal/attack_patterns/${subAttackPattern.id}`}
+            >
+              <ListItemIcon>
+                <LockPattern color="primary" />
+              </ListItemIcon>
+              <ListItemText
+                primary={`[${subAttackPattern.x_mitre_id}] ${subAttackPattern.name}`}
+              />
+              <ListItemSecondaryAction>
+                <IconButton
+                  aria-label="Remove"
+                  onClick={this.removeSubAttackPattern.bind(
+                    this,
+                    subAttackPattern,
+                  )}
+                >
+                  <LinkOff />
+                </IconButton>
+              </ListItemSecondaryAction>
+            </ListItem>
+          ))}
         </List>
       </div>
     );
@@ -113,6 +118,7 @@ const AttackPatternSubAttackPatterns = createFragmentContainer(
               id
               name
               description
+              x_mitre_id
             }
           }
         }
@@ -121,4 +127,4 @@ const AttackPatternSubAttackPatterns = createFragmentContainer(
   },
 );
 
-export default compose(inject18n)(AttackPatternSubAttackPatterns);
+export default R.compose(inject18n)(AttackPatternSubAttackPatterns);

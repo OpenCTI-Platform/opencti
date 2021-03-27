@@ -245,14 +245,16 @@ export const defaultDate = (n) => {
   return null;
 };
 
-export const defaultValue = (n) => n.name
-  || n.observable_value
-  || n.attribute_abstract
-  || n.opinion
-  || n.value
-  || n.definition
-  || n.source_name
-  || 'Unknown';
+export const defaultValue = (n) => `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
+  n.name
+    || n.observable_value
+    || n.attribute_abstract
+    || n.opinion
+    || n.value
+    || n.definition
+    || n.source_name
+    || 'Unknown'
+}`;
 
 export const computeTimeRangeInterval = (objects) => {
   const elementsDates = R.map((n) => defaultDate(n), objects);
@@ -328,7 +330,10 @@ export const buildGraphData = (objects, graphData, t) => {
       defaultDate: jsDate(defaultDate(n)),
       label: n.parent_types.includes('basic-relationship')
         ? t(`relationship_${n.relationship_type}`)
-        : truncate(defaultValue(n), 20),
+        : truncate(
+          defaultValue(n),
+          n.entity_type === 'Attack-Pattern' ? 30 : 20,
+        ),
       img:
         graphImages[
           n.parent_types.includes('basic-relationship')

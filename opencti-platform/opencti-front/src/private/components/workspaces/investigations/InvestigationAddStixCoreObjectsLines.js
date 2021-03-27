@@ -234,7 +234,11 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                           )}
                         </ListItemIcon>
                         <ListItemText
-                          primary={
+                          primary={`${
+                            stixCoreObject.x_mitre_id
+                              ? `[${stixCoreObject.x_mitre_id}] `
+                              : ''
+                          }${
                             stixCoreObject.name
                             || stixCoreObject.observable_value
                             || stixCoreObject.attribute_abstract
@@ -242,7 +246,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                             || `${fd(stixCoreObject.first_observed)} - ${fd(
                               stixCoreObject.last_observed,
                             )}`
-                          }
+                          }`}
                           secondary={
                             <Markdown
                               className="markdown"
@@ -353,6 +357,7 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               ... on AttackPattern {
                 name
                 description
+                x_mitre_id
               }
               ... on Campaign {
                 name

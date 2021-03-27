@@ -77,15 +77,15 @@ const investigationGraphStixCoreObjectQuery = graphql`
       }
       ... on AttackPattern {
         name
-        description
+        x_mitre_id
       }
       ... on Campaign {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on CourseOfAction {
         name
-        description
       }
       ... on Note {
         attribute_abstract
@@ -99,67 +99,61 @@ const investigationGraphStixCoreObjectQuery = graphql`
       }
       ... on Report {
         name
-        description
+        published
       }
       ... on Individual {
         name
-        description
       }
       ... on Organization {
         name
-        description
       }
       ... on Sector {
         name
-        description
       }
       ... on Indicator {
         name
-        description
+        valid_from
       }
       ... on Infrastructure {
         name
-        description
       }
       ... on IntrusionSet {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on Position {
         name
-        description
       }
       ... on City {
         name
-        description
       }
       ... on Country {
         name
-        description
       }
       ... on Region {
         name
-        description
       }
       ... on Malware {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on ThreatActor {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on Tool {
         name
-        description
       }
       ... on Vulnerability {
         name
-        description
       }
       ... on XOpenCTIIncident {
         name
-        description
+        first_seen
+        last_seen
       }
       ... on StixCyberObservable {
         observable_value
@@ -329,6 +323,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on AttackPattern {
               name
+              x_mitre_id
             }
             ... on Campaign {
               name
@@ -516,6 +511,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on AttackPattern {
               name
+              x_mitre_id
             }
             ... on Campaign {
               name
@@ -861,9 +857,7 @@ class InvestigationGraphComponent extends Component {
       );
     } else {
       // eslint-disable-next-line max-len
-      this.setState(
-        { markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true),
-      );
+      this.setState({ markedBy: R.append(markingDefinition, markedBy) }, () => this.saveParameters(true));
     }
   }
 
@@ -1576,6 +1570,7 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on AttackPattern {
                 name
+                x_mitre_id
               }
               ... on Campaign {
                 name

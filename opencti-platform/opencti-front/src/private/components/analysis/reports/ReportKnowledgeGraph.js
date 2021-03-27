@@ -103,6 +103,7 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
       }
       ... on AttackPattern {
         name
+        x_mitre_id
       }
       ... on Campaign {
         name
@@ -1095,6 +1096,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
               }
               ... on AttackPattern {
                 name
+                x_mitre_id
               }
               ... on Campaign {
                 name

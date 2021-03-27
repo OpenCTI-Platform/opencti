@@ -36,7 +36,9 @@ class AttackPatternParentAttackPatternsComponent extends Component {
                   <ListItemIcon>
                     <LockPattern color="primary" />
                   </ListItemIcon>
-                  <ListItemText primary={parentAttackPattern.name} />
+                  <ListItemText
+                    pprimary={`[${parentAttackPattern.x_mitre_id}] ${parentAttackPattern.name}`}
+                  />
                 </ListItem>
               );
             },
@@ -66,6 +68,7 @@ const AttackPatternParentAttackPatterns = createFragmentContainer(
               id
               name
               description
+              x_mitre_id
             }
           }
         }
