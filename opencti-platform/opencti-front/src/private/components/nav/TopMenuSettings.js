@@ -8,6 +8,7 @@ import inject18n from '../../../components/i18n';
 import Security, {
   SETTINGS_SETACCESSES,
   SETTINGS_SETMARKINGS,
+  SETTINGS_SETLABELS,
 } from '../../../utils/Security';
 
 const styles = (theme) => ({
@@ -106,24 +107,26 @@ class TopMenuSettings extends Component {
         >
           {t('Kill chain phases')}
         </Button>
-        <Button
-          component={Link}
-          to="/dashboard/settings/attributes"
-          variant={
-            location.pathname.includes('/dashboard/settings/attributes')
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes('/dashboard/settings/attributes')
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Labels & Attributes')}
-        </Button>
+        <Security needs={[SETTINGS_SETLABELS]}>
+            <Button
+              component={Link}
+              to="/dashboard/settings/attributes"
+              variant={
+                location.pathname.includes('/dashboard/settings/attributes')
+                  ? 'contained'
+                  : 'text'
+              }
+              size="small"
+              color={
+                location.pathname.includes('/dashboard/settings/attributes')
+                  ? 'primary'
+                  : 'inherit'
+              }
+              classes={{ root: classes.button }}
+            >
+              {t('Labels & Attributes')}
+            </Button>
+        </Security>
       </div>
     );
   }

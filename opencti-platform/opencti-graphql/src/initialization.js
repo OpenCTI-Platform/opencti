@@ -21,36 +21,48 @@ import { BYPASS } from './schema/general';
 
 // Platform capabilities definition
 const KNOWLEDGE_CAPABILITY = 'KNOWLEDGE';
+const BYPASS_CAPABILITIES = { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 };
 export const TAXII_CAPABILITIES = {
   name: TAXIIAPI,
   attribute_order: 2500,
   description: 'Access Taxii feed',
   dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
 };
+const KNOWLEDGE_CAPABILITIES = {
+  name: KNOWLEDGE_CAPABILITY,
+  description: 'Access knowledge',
+  attribute_order: 100,
+  dependencies: [
+    {
+      name: 'KNUPDATE',
+      description: 'Create / Update knowledge',
+      attribute_order: 200,
+      dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 }],
+    },
+    { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
+    { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
+    {
+      name: 'KNGETEXPORT',
+      description: 'Download knowledge export',
+      attribute_order: 700,
+      dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
+    },
+    { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
+  ],
+};
+export const SETTINGS_CAPABILITIES = {
+  name: 'SETTINGS',
+  description: 'Access administration',
+  attribute_order: 3000,
+  dependencies: [
+    { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
+    { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
+    { name: 'SETLABELS', description: 'Manage labels & Attributes', attribute_order: 3400 },
+  ],
+};
 export const CAPABILITIES = [
-  { name: BYPASS, description: 'Bypass all capabilities', attribute_order: 1 },
-  {
-    name: KNOWLEDGE_CAPABILITY,
-    description: 'Access knowledge',
-    attribute_order: 100,
-    dependencies: [
-      {
-        name: 'KNUPDATE',
-        description: 'Create / Update knowledge',
-        attribute_order: 200,
-        dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 }],
-      },
-      { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
-      { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },
-      {
-        name: 'KNGETEXPORT',
-        description: 'Download knowledge export',
-        attribute_order: 700,
-        dependencies: [{ name: 'KNASKEXPORT', description: 'Generate knowledge export', attribute_order: 710 }],
-      },
-      { name: 'KNENRICHMENT', description: 'Ask for knowledge enrichment', attribute_order: 800 },
-    ],
-  },
+  BYPASS_CAPABILITIES,
+  KNOWLEDGE_CAPABILITIES,
   {
     name: 'EXPLORE',
     description: 'Access exploration',
@@ -71,15 +83,7 @@ export const CAPABILITIES = [
     dependencies: [{ name: 'MODMANAGE', description: 'Manage connector state', attribute_order: 2100 }],
   },
   TAXII_CAPABILITIES,
-  {
-    name: 'SETTINGS',
-    description: 'Access administration',
-    attribute_order: 3000,
-    dependencies: [
-      { name: 'SETACCESSES', description: 'Manage credentials', attribute_order: 3200 },
-      { name: 'SETMARKINGS', description: 'Manage marking definitions', attribute_order: 3300 },
-    ],
-  },
+  SETTINGS_CAPABILITIES,
   {
     name: 'CONNECTORAPI',
     attribute_order: 4000,

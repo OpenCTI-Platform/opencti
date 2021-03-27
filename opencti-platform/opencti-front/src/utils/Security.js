@@ -20,6 +20,7 @@ export const SETTINGS = 'SETTINGS';
 export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
+export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 
 export const granted = (me, capabilities, matchAll = false) => {
   const userCapabilities = map((c) => c.name, me.capabilities);

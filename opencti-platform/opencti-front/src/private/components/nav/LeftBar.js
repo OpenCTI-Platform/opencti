@@ -73,7 +73,7 @@ const LeftBar = ({ t, location, classes }) => {
   const [open, setOpen] = useState({ activities: true, knowledge: true });
   const toggle = (key) => setOpen(assoc(key, !open[key], open));
   const { me } = useContext(UserContext);
-  let toData = null;
+  let toData;
   if (granted(me, [MODULES])) {
     toData = '/dashboard/data/connectors';
   } else if (granted(me, [KNOWLEDGE])) {

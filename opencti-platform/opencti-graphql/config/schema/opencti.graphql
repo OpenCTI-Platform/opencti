@@ -48,6 +48,7 @@ enum Capabilities {
   SETTINGS
   SETTINGS_SETACCESSES
   SETTINGS_SETMARKINGS
+  SETTINGS_SETLABELS
   TAXIIAPI_SETCOLLECTIONS
 }
 
@@ -8581,8 +8582,8 @@ type Mutation {
   ######## STIX META OBJECT ENTITIES
   markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
   markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: [SETTINGS_SETMARKINGS])
-  labelAdd(input: LabelAddInput): Label @auth(for: [KNOWLEDGE_KNUPDATE])
-  labelEdit(id: ID!): LabelEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
+  labelAdd(input: LabelAddInput): Label @auth(for: [SETTINGS_SETLABELS])
+  labelEdit(id: ID!): LabelEditMutations @auth(for: [SETTINGS_SETLABELS])
   externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
   killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS])
