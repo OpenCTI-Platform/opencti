@@ -232,9 +232,14 @@ div.markdown p {
   margin-bottom: 80px !important;
 }
 
+.force-graph-container {
+  overflow: hidden !important;;
+}
+
 .force-graph-container .graph-tooltip {
   position: absolute;
   text-align: center;
+  overflow: hidden !important;;
   transform: translate(-50%, 25px);
   font-size: 12px !important;
   padding: 8px !important;
