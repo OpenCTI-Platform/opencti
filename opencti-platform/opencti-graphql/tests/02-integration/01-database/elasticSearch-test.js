@@ -413,7 +413,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES);
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(86);
+    expect(data.edges.length).toEqual(87);
     const filterBaseTypes = uniq(map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(head(filterBaseTypes)).toEqual('ENTITY');
@@ -477,7 +477,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(ADMIN_USER, READ_ENTITIES_INDICES, { filters });
-    expect(data.edges.length).toEqual(80); // The 4 Default TLP Marking definitions + 1
+    expect(data.edges.length).toEqual(81); // The 4 Default TLP Marking definitions + 1
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];
