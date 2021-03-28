@@ -151,34 +151,34 @@ class StixCoreObjectKnowledgeBar extends Component {
             ''
           )}
           {includes('locations', availableSections) ? (
-              <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/locations`}
-                  selected={location.pathname === `${stixCoreObjectLink}/locations`}
-                  dense={false}
-                  classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <FlagOutlined />
-                </ListItemIcon>
-                <ListItemText primary={t('Locations')} />
-              </MenuItem>
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/locations`}
+              selected={location.pathname === `${stixCoreObjectLink}/locations`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <FlagOutlined />
+              </ListItemIcon>
+              <ListItemText primary={t('Locations')} />
+            </MenuItem>
           ) : (
             ''
           )}
           {includes('sectors', availableSections) ? (
-              <MenuItem
-                  component={Link}
-                  to={`${stixCoreObjectLink}/sectors`}
-                  selected={location.pathname === `${stixCoreObjectLink}/sectors`}
-                  dense={false}
-                  classes={{ root: classes.item }}
-              >
-                <ListItemIcon style={{ minWidth: 35 }}>
-                  <DomainOutlined />
-                </ListItemIcon>
-                <ListItemText primary={t('Sectors')} />
-              </MenuItem>
+            <MenuItem
+              component={Link}
+              to={`${stixCoreObjectLink}/sectors`}
+              selected={location.pathname === `${stixCoreObjectLink}/sectors`}
+              dense={false}
+              classes={{ root: classes.item }}
+            >
+              <ListItemIcon style={{ minWidth: 35 }}>
+                <DomainOutlined />
+              </ListItemIcon>
+              <ListItemText primary={t('Sectors')} />
+            </MenuItem>
           ) : (
             ''
           )}

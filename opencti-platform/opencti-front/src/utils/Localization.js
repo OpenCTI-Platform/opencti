@@ -454,8 +454,10 @@ const i18n = {
       'Disable tree mode': 'Désactiver le mode arbre',
       'Enable forces': 'Activer les forces',
       'Disable forces': 'Désactiver les forces',
-      'Display time range selector': "Afficher le sélecteur d'intervalle de temps",
-      'Unfix the nodes and re-apply forces': 'Libérer les noeuds et ré-appliquer les forces',
+      'Display time range selector':
+        "Afficher le sélecteur d'intervalle de temps",
+      'Unfix the nodes and re-apply forces':
+        'Libérer les noeuds et ré-appliquer les forces',
       'Fit graph to canvas': "Dimensionner le graphe à l'espace",
       'Filter entity types': "Filtrer les types d'entité",
       'Filter authors (created by)': 'Filtrer les auteurs (créé par)',

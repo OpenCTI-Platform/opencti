@@ -117,6 +117,7 @@ const applyMigration = () => {
         if (migrationError) {
           logger.error('[MIGRATION] Error during migration');
           reject(migrationError);
+          return;
         }
         logger.info('[MIGRATION] Migration process completed');
         resolve();

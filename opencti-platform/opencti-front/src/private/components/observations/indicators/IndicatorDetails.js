@@ -71,28 +71,30 @@ class IndicatorDetailsComponent extends Component {
                 {t('Score')}
               </Typography>
               <ItemScore score={indicator.x_opencti_score} />
-              <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Kill chain phases')}
               </Typography>
               {indicator.killChainPhases.edges.length > 0 && (
                 <List>
-                  {indicator.killChainPhases.edges.map(
-                    (killChainPhaseEdge) => {
-                      const killChainPhase = killChainPhaseEdge.node;
-                      return (
-                        <ListItem
-                          key={killChainPhase.phase_name}
-                          dense={true}
-                          divider={true}
-                        >
-                          <ListItemIcon>
-                            <Launch />
-                          </ListItemIcon>
-                          <ListItemText primary={killChainPhase.phase_name} />
-                        </ListItem>
-                      );
-                    },
-                  )}
+                  {indicator.killChainPhases.edges.map((killChainPhaseEdge) => {
+                    const killChainPhase = killChainPhaseEdge.node;
+                    return (
+                      <ListItem
+                        key={killChainPhase.phase_name}
+                        dense={true}
+                        divider={true}
+                      >
+                        <ListItemIcon>
+                          <Launch />
+                        </ListItemIcon>
+                        <ListItemText primary={killChainPhase.phase_name} />
+                      </ListItem>
+                    );
+                  })}
                 </List>
               )}
               <Typography

@@ -22,7 +22,10 @@ class ErrorBoundaryComponent extends React.Component {
       if (this.state.error instanceof ApplicationError) {
         const types = this.state.error.data.res.errors.map((e) => e.name);
         // If auth problem propagate the error.
-        if (includes('ForbiddenAccess', types) || includes('AuthRequired', types)) {
+        if (
+          includes('ForbiddenAccess', types)
+          || includes('AuthRequired', types)
+        ) {
           throw this.state.error;
         }
       }
@@ -41,9 +44,9 @@ export const wrapBound = (WrappedComponent) => {
   class Wrapper extends React.PureComponent {
     render() {
       return (
-          <ErrorBoundary display={<SimpleError />}>
-              <WrappedComponent {...this.props}/>
-          </ErrorBoundary>
+        <ErrorBoundary display={<SimpleError />}>
+          <WrappedComponent {...this.props} />
+        </ErrorBoundary>
       );
     }
   }
@@ -58,14 +61,17 @@ export const BoundaryRoute = (props) => {
   }
   if (props.render) {
     const route = dissoc('render', props);
-    return <Route render={(routeProps) => {
-      const comp = props.render(routeProps);
-      return (
-          <ErrorBoundary display={<SimpleError />}>
-            {comp}
-          </ErrorBoundary>
-      );
-    }} {...route} />;
+    return (
+      <Route
+        render={(routeProps) => {
+          const comp = props.render(routeProps);
+          return (
+            <ErrorBoundary display={<SimpleError />}>{comp}</ErrorBoundary>
+          );
+        }}
+        {...route}
+      />
+    );
   }
   return <Route {...props} />;
 };

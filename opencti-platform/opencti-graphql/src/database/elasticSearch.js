@@ -1122,7 +1122,7 @@ export const elPaginate = async (user, indexName, options = {}) => {
     } else if (cleanSearch.startsWith('"') && cleanSearch.endsWith('"')) {
       finalSearch = `${cleanSearch}`;
     } else {
-      const splitSearch = cleanSearch.replace('"', '\\"').split(/[\s/]+/);
+      const splitSearch = cleanSearch.replaceAll('"', '\\"').split(/[\s/]+/);
       finalSearch = R.pipe(
         R.map((n) => `*${n}*`),
         R.join(' ')

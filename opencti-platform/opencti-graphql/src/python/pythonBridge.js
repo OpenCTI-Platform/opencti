@@ -31,8 +31,14 @@ export const execPython3 = async (scriptPath, scriptName, args) => {
         }
       });
       shell.end((err) => {
-        if (err) reject(err);
-        if (jsonResult.status !== 'success') reject(jsonResult);
+        if (err) {
+          reject(err);
+          return;
+        }
+        if (jsonResult.status !== 'success') {
+          reject(jsonResult);
+          return;
+        }
         resolve(jsonResult);
       });
     });

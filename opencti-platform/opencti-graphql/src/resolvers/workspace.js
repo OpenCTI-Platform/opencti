@@ -10,7 +10,7 @@ import {
   workspaceEditField,
   workspaceAddRelation,
   workspaceAddRelations,
-  workspaceDeleteRelation
+  workspaceDeleteRelation,
 } from '../domain/workspace';
 import { SYSTEM_USER, findById as findUserById } from '../domain/user';
 import { fetchEditContext, pubsub } from '../database/redis';

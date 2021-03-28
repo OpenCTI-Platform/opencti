@@ -198,7 +198,8 @@ class ProfileOverviewComponent extends Component {
               component={Link}
               to="/graphql"
               target="_blank"
-              style={{ marginTop: 20 }}>
+              style={{ marginTop: 20 }}
+            >
               {t('Playground')}
             </Button>
           </div>

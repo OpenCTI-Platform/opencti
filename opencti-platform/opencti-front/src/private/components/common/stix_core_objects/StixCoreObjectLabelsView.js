@@ -143,10 +143,7 @@ const StixCoreObjectLabelsView = (props) => {
 
   const handleCloseAdd = () => setOpenAdd(false);
   const onSubmit = (values, { setSubmitting, resetForm }) => {
-    const currentLabelsIds = map(
-      (label) => label.node.id,
-      labels.edges,
-    );
+    const currentLabelsIds = map((label) => label.node.id, labels.edges);
     const labelsIds = pipe(
       map((value) => value.value),
       filter((value) => !currentLabelsIds.includes(value)),
@@ -240,11 +237,7 @@ const StixCoreObjectLabelsView = (props) => {
         onReset={onReset}
       >
         {({
-          submitForm,
-          handleReset,
-          isSubmitting,
-          setFieldValue,
-          values,
+          submitForm, handleReset, isSubmitting, setFieldValue, values,
         }) => (
           <Dialog
             open={openAdd}

@@ -139,7 +139,7 @@ class WorkspaceHeader extends Component {
         </Typography>
         <Security needs={[EXPLORE_EXUPDATE]}>
           <div className={classes.popover}>
-            <WorkspacePopover id={workspace.id} type={workspace.type}/>
+            <WorkspacePopover id={workspace.id} type={workspace.type} />
           </div>
         </Security>
         <div className={classes.tags}>

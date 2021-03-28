@@ -77,7 +77,7 @@ class TaxiiLineLineComponent extends Component {
         classes={{ root: classes.item }}
         divider={true}
         button={true}
-        component='a'
+        component="a"
         href={`/taxii2/root/collections/${node.id}/objects`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>

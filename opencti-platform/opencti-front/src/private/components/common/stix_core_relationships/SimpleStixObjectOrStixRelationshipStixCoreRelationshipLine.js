@@ -86,13 +86,18 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.entity_type.width }}
               >
-                {element.relationship_type ? t(`relationship_${element.entity_type}`) : t(`entity_${element.entity_type}`)}
+                {element.relationship_type
+                  ? t(`relationship_${element.entity_type}`)
+                  : t(`entity_${element.entity_type}`)}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {element.name || element.abstract || element.observable_value || t('Relationship')}
+                {element.name
+                  || element.abstract
+                  || element.observable_value
+                  || t('Relationship')}
               </div>
               <div
                 className={classes.bodyItem}

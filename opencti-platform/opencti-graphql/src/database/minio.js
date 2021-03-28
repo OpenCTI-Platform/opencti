@@ -21,7 +21,10 @@ export const isStorageAlive = () => {
   return new Promise((resolve, reject) => {
     try {
       minioClient.bucketExists(bucketName, (existErr, exists) => {
-        if (existErr) reject(existErr);
+        if (existErr) {
+          reject(existErr);
+          return;
+        }
         if (!exists) {
           minioClient.makeBucket(bucketName, bucketRegion, (createErr) => {
             if (createErr) reject(createErr);
