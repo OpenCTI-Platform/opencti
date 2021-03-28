@@ -1303,8 +1303,8 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     if (aliasedInputs.length > 0) {
       const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
       let additionalFields = {};
-      if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: instance.identity_class };
-      if (isStixDomainObjectLocation(type))
+      if (isStixDomainObjectIdentity(instance.entity_type)) additionalFields = { identity_class: instance.identity_class };
+      if (isStixDomainObjectLocation(instance.entity_type))
         additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
       const aliasesIds = generateAliasesId(aliases, additionalFields);
       const existingEntities = await internalFindByIds(user, aliasesIds, { type: instance.entity_type });
