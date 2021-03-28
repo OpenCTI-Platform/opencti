@@ -16,13 +16,13 @@ export const up = async (next) => {
     const op = entities
       .map((entity) => {
         if (isStixDomainObjectIdentity(entity.entity_type)) {
-          const newAliasIds = generateAliasesId(entity.x_opencti_aliases || [], {
-            identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
-          });
-          const newId = generateStandardId(
+          const newStandardId = generateStandardId(
             entity.entity_type,
             R.assoc('identity_class', entity.identity_class === 'sector' ? 'class' : entity.identity_class, entity)
           );
+          const newAliasIds = generateAliasesId([entity.name, ...(entity.x_opencti_aliases || [])], {
+            identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
+          });
           return [
             { update: { _index: entity._index, _id: entity.id } },
             {
@@ -30,13 +30,13 @@ export const up = async (next) => {
                 i_aliases_ids: newAliasIds,
                 // Fix bad identity class....
                 identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
-                standard_id: newId,
+                standard_id: newStandardId,
                 x_opencti_stix_ids: [],
               },
             },
           ];
         }
-        const newAliasIds = generateAliasesId(entity.x_opencti_aliases || [], {
+        const newAliasIds = generateAliasesId([entity.name, ...(entity.x_opencti_aliases || [])], {
           x_opencti_location_type: entity.x_opencti_location_type,
         });
         return [{ update: { _index: entity._index, _id: entity.id } }, { doc: { i_aliases_ids: newAliasIds } }];
