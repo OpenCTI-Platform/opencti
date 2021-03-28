@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/elasticSearch';
-import { generateAliasesId } from '../schema/identifier';
+import { generateAliasesId, generateStandardId } from '../schema/identifier';
 import { logger } from '../config/conf';
 import { SYSTEM_USER } from '../domain/user';
 import { ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../schema/general';
@@ -19,6 +19,10 @@ export const up = async (next) => {
           const newAliasIds = generateAliasesId(entity.x_opencti_aliases || [], {
             identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
           });
+          const newId = generateStandardId(
+            entity.entity_type,
+            R.assoc('identity_class', entity.identity_class === 'sector' ? 'class' : entity.identity_class, entity)
+          );
           return [
             { update: { _index: entity._index, _id: entity.id } },
             {
@@ -26,6 +30,8 @@ export const up = async (next) => {
                 i_aliases_ids: newAliasIds,
                 // Fix bad identity class....
                 identity_class: entity.identity_class === 'sector' ? 'class' : entity.identity_class,
+                standard_id: newId,
+                x_opencti_stix_ids: [],
               },
             },
           ];

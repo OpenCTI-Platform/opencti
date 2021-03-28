@@ -46,6 +46,7 @@ export const workspaceMutationFieldPatch = graphql`
       fieldPatch(input: $input) {
         ...WorkspaceEditionOverview_workspace
         ...Dashboard_workspace
+        ...Investigation_workspace
       }
     }
   }

@@ -58,6 +58,7 @@ const Investigation = createFragmentContainer(InvestigationComponent, {
       name
       description
       tags
+      graph_data
       editContext {
         name
         focusOn
