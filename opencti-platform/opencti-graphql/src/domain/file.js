@@ -8,7 +8,7 @@ import { internalLoadById } from '../database/middleware';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { UnsupportedError } from '../config/errors';
 
-const uploadJobImport = async (user, fileId, fileMime, entityId) => {
+export const uploadJobImport = async (user, fileId, fileMime, entityId) => {
   let isImportInContainer = false;
   if (entityId) {
     const entity = await internalLoadById(user, entityId);

@@ -38,6 +38,7 @@ import { askEntityExport, askListExport, exportTransformFilters } from './stixCo
 import { addAttribute, find as findAttribute } from './attribute';
 import { escape } from '../utils/format';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { uploadJobImport } from "./file";
 
 export const findAll = async (user, args) => {
   let types = [];
@@ -105,7 +106,9 @@ export const stixDomainObjectExportPush = async (user, entityId, file) => {
 // region mutation
 export const stixDomainObjectImportPush = async (user, entityId, file) => {
   const entity = await internalLoadById(user, entityId);
-  return upload(user, `import/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  const up = await upload(user, `import/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  await uploadJobImport(user, up.id, up.metaData.mimetype, up.metaData.entity_id);
+  return up;
 };
 
 export const addStixDomainObject = async (user, stixDomainObject) => {
