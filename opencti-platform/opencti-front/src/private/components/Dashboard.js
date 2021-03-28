@@ -748,7 +748,7 @@ class Dashboard extends Component {
           <Grid container={true} spacing={3} style={{ marginTop: 20 }}>
             <Grid item={true} xs={8}>
               <Typography variant="h4" gutterBottom={true}>
-                {t('Last ingested analysis')}
+                {t('Last ingested analysis (creation date in the platform)')}
               </Typography>
               <Paper
                 classes={{ root: classes.paper }}
@@ -815,7 +815,7 @@ class Dashboard extends Component {
                                     )}
                                   </div>
                                   <div style={inlineStyles.itemDate}>
-                                    {nsd(stixDomainObject.modified)}
+                                    {nsd(stixDomainObject.created_at)}
                                   </div>
                                   <div
                                     style={{

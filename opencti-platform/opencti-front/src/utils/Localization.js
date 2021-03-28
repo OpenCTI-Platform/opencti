@@ -799,7 +799,8 @@ const i18n = {
       'Total indicators': "Nombre d'indicateurs",
       'Total direct relations': 'Nombre de relations directes',
       'Top Labels (3 last months)': 'Top Labels (3 derniers mois)',
-      'Last ingested analysis': 'Dernières analyses ajoutées',
+      'Last ingested analysis (creation date in the platform)':
+        'Dernières analyses ajoutées (date de création dans la plateforme)',
       'Distribution of entities': 'Distribution des entités',
       'Observables distribution': 'Distribution des observables',
       'Distribution of relations (including inferred)':
