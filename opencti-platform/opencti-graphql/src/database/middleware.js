@@ -51,7 +51,7 @@ import {
   INTERNAL_FROM_FIELD,
   INTERNAL_TO_FIELD,
   isFieldContributingToStandardId,
-  isNameOnlyContributorToStandardId,
+  isTypeHasAliasIDs,
   NAME_FIELD,
   normalizeName,
   REVOKED,
@@ -116,6 +116,8 @@ import {
   ATTRIBUTE_ALIASES_OPENCTI,
   ENTITY_TYPE_CONTAINER_REPORT,
   isStixDomainObject,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
   isStixObjectAliased,
   resolveAliasesField,
   stixDomainObjectFieldsToBeUpdated,
@@ -1224,14 +1226,14 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
       impactedInputs.push(...ins);
     }
     // If named entity name updated, modify the aliases ids
-    if (
-      isStixObjectAliased(instanceType) &&
-      isNameOnlyContributorToStandardId(instanceType) &&
-      input.key === NAME_FIELD
-    ) {
+    if (isStixObjectAliased(instanceType) && isTypeHasAliasIDs(instanceType) && input.key === NAME_FIELD) {
       const name = R.head(input.value);
       const aliases = [name, ...(instance[ATTRIBUTE_ALIASES] || []), ...(instance[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-      const aliasesId = generateAliasesId(aliases);
+      let additionalFields = {};
+      if (isStixDomainObjectIdentity(instanceType)) additionalFields = { identity_class: instance.identity_class };
+      if (isStixDomainObjectLocation(instanceType))
+        additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
+      const aliasesId = generateAliasesId(aliases, additionalFields);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
       impactedInputs.push(...aliasIns);
@@ -1250,8 +1252,12 @@ export const updateAttributeRaw = async (user, instance, inputs, options = {}) =
     // If input impact aliases (aliases or x_opencti_aliases), regenerate internal ids
     const aliasesAttrs = [ATTRIBUTE_ALIASES, ATTRIBUTE_ALIASES_OPENCTI];
     const isAliasesImpacted = aliasesAttrs.includes(input.key) && !R.isEmpty(ins.length);
-    if (isNameOnlyContributorToStandardId(instanceType) && isAliasesImpacted) {
-      const aliasesId = generateAliasesId([instance.name, ...input.value]);
+    if (isTypeHasAliasIDs(instanceType) && isAliasesImpacted) {
+      let additionalFields = {};
+      if (isStixDomainObjectIdentity(instanceType)) additionalFields = { identity_class: instance.identity_class };
+      if (isStixDomainObjectLocation(instanceType))
+        additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
+      const aliasesId = generateAliasesId([instance.name, ...input.value], additionalFields);
       const aliasInput = { key: INTERNAL_IDS_ALIASES, value: aliasesId };
       const aliasIns = await innerUpdateAttribute(user, instance, aliasInput, options);
       if (aliasIns.length > 0) {
@@ -1296,7 +1302,11 @@ export const updateAttribute = async (user, id, type, inputs, options = {}) => {
     const aliasedInputs = R.filter((input) => isInputAliases(input), elements);
     if (aliasedInputs.length > 0) {
       const aliases = R.uniq(R.flatten(R.map((a) => a.value, aliasedInputs)));
-      const aliasesIds = generateAliasesId(aliases);
+      let additionalFields = {};
+      if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: instance.identity_class };
+      if (isStixDomainObjectLocation(type))
+        additionalFields = { x_opencti_location_type: instance.x_opencti_location_type };
+      const aliasesIds = generateAliasesId(aliases, additionalFields);
       const existingEntities = await internalFindByIds(user, aliasesIds, { type: instance.entity_type });
       const differentEntities = R.filter((e) => e.internal_id !== id, existingEntities);
       if (differentEntities.length > 0) {
@@ -1388,9 +1398,12 @@ const getLocksFromInput = (type, input) => {
   if (isNotEmptyField(input.stix_id)) {
     lockIds.push(input.stix_id);
   }
-  if (isStixObjectAliased(type) && isNameOnlyContributorToStandardId(type)) {
+  if (isStixObjectAliased(type) && isTypeHasAliasIDs(type)) {
     const aliases = [input.name, ...(input.aliases || []), ...(input.x_opencti_aliases || [])];
-    lockIds.push(...generateAliasesId(aliases));
+    let additionalFields = {};
+    if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: input.identity_class };
+    if (isStixDomainObjectLocation(type)) additionalFields = { x_opencti_location_type: input.x_opencti_location_type };
+    lockIds.push(...generateAliasesId(aliases, additionalFields));
   }
   return lockIds;
 };
@@ -1947,9 +1960,12 @@ const createEntityRaw = async (user, standardId, participantIds, input, type) =>
     )(data);
   }
   // -- Aliased entities
-  if (isStixObjectAliased(type) && isNameOnlyContributorToStandardId(type)) {
+  if (isStixObjectAliased(type) && isTypeHasAliasIDs(type)) {
     const aliases = [input.name, ...(data[ATTRIBUTE_ALIASES] || []), ...(data[ATTRIBUTE_ALIASES_OPENCTI] || [])];
-    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesId(aliases), data);
+    let additionalFields = {};
+    if (isStixDomainObjectIdentity(type)) additionalFields = { identity_class: data.identity_class };
+    if (isStixDomainObjectLocation(type)) additionalFields = { x_opencti_location_type: data.x_opencti_location_type };
+    data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesId(aliases, additionalFields), data);
   }
   // Add the additional fields for dates (day, month, year)
   const dataKeys = Object.keys(data);

@@ -10,7 +10,7 @@ import * as M from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isStixMetaObject } from './stixMetaObject';
-import { isStixDomainObject } from './stixDomainObject';
+import { isStixDomainObject, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
 import { isStixCyberObservable } from './stixCyberObservable';
 import { isInternalObject } from './internalObject';
 import { isInternalRelationship } from './internalRelationship';
@@ -193,8 +193,9 @@ const idGen = (type, raw, data, namespace) => {
   const dataCanonicalize = jsonCanonicalize(data);
   return uuidv5(dataCanonicalize, namespace);
 };
-export const isNameOnlyContributorToStandardId = (entityType) => {
+export const isTypeHasAliasIDs = (entityType) => {
   if (isBasicRelationship(entityType)) return false;
+  if (isStixDomainObjectIdentity(entityType) || isStixDomainObjectLocation(entityType)) return true;
   const contrib = resolveContribution(entityType);
   const properties = contrib.definition[entityType];
   if (!properties) {
@@ -307,9 +308,9 @@ export const generateStandardId = (type, data) => {
   // Unknown
   throw UnsupportedError(`${type} is not supported by the platform`);
 };
-export const generateAliasesId = (aliases) => {
+export const generateAliasesId = (aliases, additionalFields = {}) => {
   return R.map((a) => {
-    const dataUUID = { name: normalizeName(a) };
+    const dataUUID = { name: normalizeName(a), ...additionalFields };
     const uuid = idGen('ALIAS', aliases, dataUUID, OPENCTI_NAMESPACE);
     return `aliases--${uuid}`;
   }, aliases);
