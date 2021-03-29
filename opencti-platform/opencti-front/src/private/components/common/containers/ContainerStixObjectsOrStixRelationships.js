@@ -62,6 +62,10 @@ class ContainerStixObjectsOrStixRelationshipsComponent extends Component {
             containerObjects={pathOr([], ['objects', 'edges'], container)}
             paginationOptions={paginationOptions}
             simple={true}
+            targetStixCoreObjectTypes={[
+              'Stix-Domain-Object',
+              'Stix-Cyber-Observable',
+            ]}
           />
         </Security>
         <div className="clearfix" />

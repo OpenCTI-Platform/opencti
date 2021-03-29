@@ -320,15 +320,16 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                             stixCoreObject.x_mitre_id
                               ? `[${stixCoreObject.x_mitre_id}] `
                               : ''
-                          }${
+                          }${truncate(
                             stixCoreObject.name
-                            || stixCoreObject.observable_value
-                            || stixCoreObject.attribute_abstract
-                            || stixCoreObject.opinion
-                            || `${fd(stixCoreObject.first_observed)} - ${fd(
-                              stixCoreObject.last_observed,
-                            )}`
-                          }`}
+                              || stixCoreObject.observable_value
+                              || stixCoreObject.attribute_abstract
+                              || stixCoreObject.opinion
+                              || `${fd(stixCoreObject.first_observed)} - ${fd(
+                                stixCoreObject.last_observed,
+                              )}`,
+                            60,
+                          )}`}
                           secondary={
                             <Markdown
                               className="markdown"
