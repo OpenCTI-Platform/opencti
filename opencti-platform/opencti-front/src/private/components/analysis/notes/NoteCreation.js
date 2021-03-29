@@ -85,7 +85,6 @@ const noteCreationMutation = graphql`
 
 const noteValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
-  attribute_abstract: Yup.string().required(t('This field is required')),
   content: Yup.string().required(t('This field is required')),
 });
 
@@ -287,8 +286,8 @@ class NoteCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              attribute_abstract: inputValue,
-              content: '',
+              attribute_abstract: '',
+              content: inputValue,
               createdBy: '',
               objectMarking: [],
               objectLabel: [],

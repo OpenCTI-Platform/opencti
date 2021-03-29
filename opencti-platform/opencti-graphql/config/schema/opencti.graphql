@@ -1655,7 +1655,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
 }
 input NoteAddInput {
   stix_id: String
-  attribute_abstract: String!
+  attribute_abstract: String
   content: String! @constraint(minLength: 2)
   authors: [String]
   revoked: Boolean
