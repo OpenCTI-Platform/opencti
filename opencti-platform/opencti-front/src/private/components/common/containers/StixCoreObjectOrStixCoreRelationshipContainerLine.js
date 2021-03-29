@@ -140,6 +140,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
         entity_type
         ... on Note {
           attribute_abstract
+          content
           created
         }
         ... on Opinion {

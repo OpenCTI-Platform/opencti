@@ -282,6 +282,7 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
           }
           ... on Note {
             attribute_abstract
+            content
           }
           ... on ObservedData {
             first_observed

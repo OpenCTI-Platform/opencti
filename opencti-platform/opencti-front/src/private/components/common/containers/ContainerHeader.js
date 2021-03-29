@@ -99,6 +99,7 @@ const ContainerHeader = createFragmentContainer(ContainerHeaderComponent, {
       }
       ... on Note {
         attribute_abstract
+        content
       }
       ... on Opinion {
         opinion
