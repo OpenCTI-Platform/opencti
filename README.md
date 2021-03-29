@@ -41,7 +41,7 @@ All you need to install the OpenCTI platform can be found in the [official docum
 
 * [Deploy the VM template](https://www.notion.so/luatix/Virtual-machine-template-1789b4442b414dbf87f748db51c85aa5)
 * [Use Docker](https://www.notion.so/luatix/Using-Docker-03d5c0592b9d4547800cc9f4ff7be2b8) (recommended)
-* [Use Terraform (AWS, GCP, Azure)](https://www.notion.so/luatix/Using-Terraform-AWS-GCP-Azure-05e38d1046f34b998a0bd2873537f8f0)
+* [Use Terraform](https://www.notion.so/luatix/Using-Terraform-AWS-GCP-Azure-05e38d1046f34b998a0bd2873537f8f0) (AWS, GCP, Azure)
 * [Install manually](https://www.notion.so/luatix/Manual-deployment-b911beba44234f179841582ab3894bb1)
 
 ## Luatix's members
