@@ -206,6 +206,7 @@ class StreamCatcher(threading.Thread):
         self.connector_last_event_id = connector_last_event_id
         self.last_event_id = last_event_id
         self.stream_connection_id = stream_connection_id
+        self.session = requests.session()
 
     def get_range(self, from_id):
         payload = {
@@ -214,7 +215,7 @@ class StreamCatcher(threading.Thread):
             "connectionId": self.stream_connection_id,
         }
         headers = {"Authorization": "Bearer " + self.opencti_token}
-        r = requests.post(
+        r = self.session.post(
             self.opencti_url + "/stream/history", json=payload, headers=headers
         )
         result = r.json()
