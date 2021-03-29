@@ -414,6 +414,7 @@ export const stixCyberObservablesAttributes = {
     'updated_at',
     'x_opencti_description',
     'x_opencti_score',
+    'hashes',
     'is_self_signed',
     'version',
     'serial_number',
