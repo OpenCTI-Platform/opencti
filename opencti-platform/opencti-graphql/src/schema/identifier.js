@@ -69,7 +69,7 @@ const stixCyberObservableContribution = {
       { src: 'dst_port' },
       { src: 'protocols' },
     ],
-    [C.ENTITY_PROCESS]: [{ src: PID_FIELD }],
+    [C.ENTITY_PROCESS]: [{ src: PID_FIELD }, { src: 'command_line' }],
     [C.ENTITY_SOFTWARE]: [{ src: NAME_FIELD }, { src: 'cpe' }, { src: 'vendor' }, { src: 'version' }],
     [C.ENTITY_URL]: [{ src: 'value' }],
     [C.ENTITY_USER_ACCOUNT]: [{ src: 'account_type' }, { src: 'user_id' }, { src: 'account_login' }],
@@ -86,6 +86,9 @@ const stixCyberObservableContribution = {
   },
   resolvers: {
     pid() {
+      return uuidv4();
+    },
+    command_line() {
       return uuidv4();
     },
     from(from) {

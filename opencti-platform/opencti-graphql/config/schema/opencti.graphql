@@ -5798,7 +5798,7 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 input ProcessAddInput {
   extensions: String
   is_hidden: Boolean
-  pid: Int!
+  pid: Int
   created_time: DateTime
   cwd: String
   command_line: String
