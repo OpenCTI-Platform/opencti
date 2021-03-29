@@ -148,6 +148,7 @@ class StixCoreRelationshipCreationFromRelationLinesContainer extends Component {
                           primary={
                             stixDomainObject.name
                             || stixDomainObject.attribute_abstract
+                            || truncate(stixDomainObject.content, 30)
                             || stixDomainObject.opinion
                           }
                           secondary={truncate(
@@ -234,6 +235,7 @@ const StixCoreRelationshipCreationFromRelationStixDomainObjectsLines = createPag
               }
               ... on Note {
                 attribute_abstract
+                content
               }
               ... on Opinion {
                 opinion

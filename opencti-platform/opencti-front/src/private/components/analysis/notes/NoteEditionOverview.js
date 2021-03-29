@@ -98,7 +98,7 @@ const noteMutationRelationDelete = graphql`
 `;
 
 const noteValidation = (t) => Yup.object().shape({
-  attribute_abstract: Yup.string().required(t('This field is required')),
+  attribute_abstract: Yup.string(),
   content: Yup.string().required(t('This field is required')),
   confidence: Yup.number(),
 });

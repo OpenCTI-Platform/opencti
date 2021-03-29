@@ -14,6 +14,7 @@ import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -68,7 +69,10 @@ class StixCoreObjectOrStixCoreRelationshipContainerLineComponent extends Compone
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name || node.attribute_abstract || node.opinion}
+                {node.name
+                  || node.attribute_abstract
+                  || truncate(node.content, 30)
+                  || node.opinion}
               </div>
               <div
                 className={classes.bodyItem}

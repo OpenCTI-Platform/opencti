@@ -11,6 +11,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -83,7 +84,10 @@ class CurationStixDomainObjectLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {node.name || node.attribute_abstract || node.opinion}
+                {node.name
+                  || node.attribute_abstract
+                  || truncate(node.content, 30)
+                  || node.opinion}
               </div>
               <div
                 className={classes.bodyItem}

@@ -242,6 +242,7 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                             stixCoreObject.name
                             || stixCoreObject.observable_value
                             || stixCoreObject.attribute_abstract
+                            || truncate(stixCoreObject.content, 30)
                             || stixCoreObject.opinion
                             || `${fd(stixCoreObject.first_observed)} - ${fd(
                               stixCoreObject.last_observed,
@@ -367,6 +368,7 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
               }
               ... on Note {
                 attribute_abstract
+                content
               }
               ... on ObservedData {
                 first_observed

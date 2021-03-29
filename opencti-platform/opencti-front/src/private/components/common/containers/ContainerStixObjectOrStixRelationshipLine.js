@@ -102,6 +102,7 @@ class ContainerStixObjectOrStixRelationshipLineComponent extends Component {
                   : node.name
                     || node.observable_value
                     || node.attribute_abstract
+                    || node.content
                     || node.opinion}
               </div>
               <div

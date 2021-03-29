@@ -85,7 +85,7 @@ const noteCreationMutation = graphql`
 
 const noteValidation = (t) => Yup.object().shape({
   confidence: Yup.number(),
-  attribute_abstract: Yup.string().required(t('This field is required')),
+  attribute_abstract: Yup.string(),
   content: Yup.string().required(t('This field is required')),
 });
 

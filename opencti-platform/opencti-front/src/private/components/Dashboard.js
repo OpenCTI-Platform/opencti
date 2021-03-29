@@ -277,6 +277,7 @@ const dashboardLastStixDomainObjectsQuery = graphql`
           }
           ... on Note {
             attribute_abstract
+            content
           }
           ... on Opinion {
             opinion
@@ -803,6 +804,10 @@ class Dashboard extends Component {
                                       <div className={classes.itemText}>
                                         {stixDomainObject.name
                                           || stixDomainObject.attribute_abstract
+                                          || truncate(
+                                            stixDomainObject.content,
+                                            30,
+                                          )
                                           || stixDomainObject.opinion}
                                       </div>
                                     }

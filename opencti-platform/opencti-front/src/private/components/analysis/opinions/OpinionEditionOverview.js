@@ -102,8 +102,8 @@ const opinionMutationRelationDelete = graphql`
 `;
 
 const opinionValidation = (t) => Yup.object().shape({
-  attribute_abstract: Yup.string().required(t('This field is required')),
-  content: Yup.string().required(t('This field is required')),
+  opinion: Yup.string().required(t('This field is required')),
+  explanation: Yup.string(),
   confidence: Yup.number(),
 });
 

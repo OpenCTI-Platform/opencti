@@ -105,8 +105,9 @@ const observedDataMutationRelationDelete = graphql`
 `;
 
 const observedDataValidation = (t) => Yup.object().shape({
-  attribute_abstract: Yup.string().required(t('This field is required')),
-  content: Yup.string().required(t('This field is required')),
+  first_observed: Yup.date().required(t('This field is required')),
+  last_observed: Yup.date().required(t('This field is required')),
+  number_observed: Yup.number().required(t('This field is required')),
   confidence: Yup.number(),
 });
 

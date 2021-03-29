@@ -16,6 +16,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixSightingRelationshipPopover from './StixSightingRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -115,6 +116,7 @@ class StixSightingRelationshipLineComponent extends Component {
               >
                 {node.from.name
                   || node.from.attribute_abstract
+                  || truncate(node.from.content, 30)
                   || node.from.observable_value
                   || `${fd(node.from.first_observed)} - ${fd(
                     node.from.last_observed,

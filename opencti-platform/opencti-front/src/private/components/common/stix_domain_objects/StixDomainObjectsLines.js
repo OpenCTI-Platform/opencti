@@ -149,6 +149,7 @@ class StixDomainObjectsContainer extends Component {
                                 ? `[${stixDomainObject.x_mitre_id}] ${stixDomainObject.name}`
                                 : stixDomainObject.name
                                     || stixDomainObject.attribute_abstract
+                                    || stixDomainObject.content
                                     || stixDomainObject.opinion
                                     || `${fd(
                                       stixDomainObject.first_observed,
@@ -418,6 +419,7 @@ const StixDomainObjectsLines = createPaginationContainer(
               }
               ... on Note {
                 attribute_abstract
+                content
               }
               ... on ObservedData {
                 first_observed

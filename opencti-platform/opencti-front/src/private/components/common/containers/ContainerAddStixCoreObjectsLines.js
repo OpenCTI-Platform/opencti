@@ -324,6 +324,7 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                             stixCoreObject.name
                               || stixCoreObject.observable_value
                               || stixCoreObject.attribute_abstract
+                              || stixCoreObject.content
                               || stixCoreObject.opinion
                               || `${fd(stixCoreObject.first_observed)} - ${fd(
                                 stixCoreObject.last_observed,

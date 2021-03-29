@@ -95,7 +95,8 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 style={{ width: dataColumns.name.width }}
               >
                 {element.name
-                  || element.abstract
+                  || element.attribute_abstract
+                  || element.content
                   || element.observable_value
                   || t('Relationship')}
               </div>

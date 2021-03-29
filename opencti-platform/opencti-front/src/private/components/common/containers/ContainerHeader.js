@@ -47,6 +47,7 @@ class ContainerHeaderComponent extends Component {
           {truncate(
             container.name
               || container.attribute_abstract
+              || container.content
               || container.opinion
               || `${fd(container.first_observed)} - ${fd(
                 container.last_observed,
