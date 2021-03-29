@@ -183,6 +183,7 @@ const StixCoreRelationshipStixCoreRelationshipsLines = createPaginationContainer
                   }
                   ... on Note {
                     attribute_abstract
+                    content
                   }
                   ... on Campaign {
                     name
