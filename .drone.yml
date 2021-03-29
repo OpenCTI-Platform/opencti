@@ -68,7 +68,7 @@ services:
     discovery.type: single-node
     ES_JAVA_OPTS: -Xms750m -Xmx750m
 - name: minio
-  image: minio/minio:RELEASE.2021-03-10T05-11-33Z
+  image: minio/minio:RELEASE.2021-03-26T00-00-41Z
   environment:
     MINIO_ACCESS_KEY: ChangeMe
     MINIO_SECRET_KEY: ChangeMe
