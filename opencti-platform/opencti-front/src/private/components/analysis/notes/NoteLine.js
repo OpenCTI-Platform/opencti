@@ -12,6 +12,7 @@ import { compose, pathOr, take } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import ItemMarking from '../../../../components/ItemMarking';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
+import { truncate } from '../../../../utils/String';
 
 const styles = (theme) => ({
   item: {
@@ -66,7 +67,12 @@ class NoteLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.attribute_abstract.width }}
               >
-                {node.attribute_abstract}
+                {truncate(
+                  node.attribute_abstract
+                    ? node.attribute_abstract
+                    : node.content,
+                  50,
+                )}
               </div>
               <div
                 className={classes.bodyItem}

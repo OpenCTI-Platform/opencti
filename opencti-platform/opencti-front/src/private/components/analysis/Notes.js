@@ -112,7 +112,7 @@ class Notes extends Component {
 
     const dataColumns = {
       attribute_abstract: {
-        label: 'Anstract',
+        label: 'Abstract',
         width: '40%',
         isSortable: true,
       },

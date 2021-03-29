@@ -287,8 +287,8 @@ class NoteCreation extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={{
-              attribute_abstract: inputValue,
-              content: '',
+              attribute_abstract: '',
+              content: inputValue,
               createdBy: '',
               objectMarking: [],
               objectLabel: [],
