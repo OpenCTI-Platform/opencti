@@ -65,7 +65,7 @@ const createApolloServer = () => {
       onConnect: async (connectionParams, webSocket) => {
         const wsSession = await new Promise((resolve) => {
           // use same session parser as normal gql queries
-          sessionMiddleware()(webSocket.upgradeReq, {}, () => {
+          sessionMiddleware(true)(webSocket.upgradeReq, {}, () => {
             if (webSocket.upgradeReq.session) {
               resolve(webSocket.upgradeReq.session);
             }

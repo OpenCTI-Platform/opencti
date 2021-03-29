@@ -2,6 +2,8 @@ import Redis from 'ioredis';
 import Redlock from 'redlock';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
+import connectRedis from 'connect-redis';
+import session from 'express-session';
 import conf, { logger } from '../config/conf';
 import {
   generateLogMessage,
@@ -55,10 +57,12 @@ const createRedisClient = async (database = BASE_DATABASE) => {
 
 let clientBase = null;
 let clientContext = null;
+const RedisStore = connectRedis(session);
 export const redisInitializeClients = async () => {
   clientBase = await createRedisClient(BASE_DATABASE);
   clientContext = await createRedisClient(CONTEXT_DATABASE);
 };
+export const redisSessionStore = (disableTouch) => new RedisStore({ client: clientContext, disableTouch });
 
 export const redisIsAlive = async () => {
   if (clientBase.status !== 'ready' || clientContext.status !== 'ready') {
@@ -70,7 +74,6 @@ export const redisIsAlive = async () => {
 export const getRedisVersion = async () => {
   return clientBase.serverInfo.redis_version;
 };
-export const getRedisSessionClient = () => clientContext;
 
 /* istanbul ignore next */
 export const notify = (topic, instance, user, context) => {

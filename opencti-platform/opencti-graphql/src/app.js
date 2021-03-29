@@ -15,7 +15,6 @@ import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
 import session from 'express-session';
-import connectRedis from 'connect-redis';
 import conf, { basePath, DEV_MODE, logger, OPENCTI_SESSION } from './config/conf';
 import passport from './config/providers';
 import { authenticateUser } from './domain/user';
@@ -24,18 +23,17 @@ import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
-import { getRedisSessionClient } from './database/redis';
+import { redisSessionStore } from './database/redis';
 
-const RedisStore = connectRedis(session);
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
-export const sessionMiddleware = () =>
+export const sessionMiddleware = (disableTouch) =>
   session({
     genid: () => uuidv4(),
     name: OPENCTI_SESSION,
-    store: new RedisStore({ client: getRedisSessionClient() }),
+    store: redisSessionStore(disableTouch),
     secret: sessionSecret,
     proxy: true,
-    rolling: true,
+    rolling: !disableTouch,
     saveUninitialized: false,
     resave: false,
     cookie: {
@@ -61,7 +59,12 @@ const createApp = async (apolloServer, broadcaster) => {
   app.use(bodyParser.json({ limit: '100mb' }));
   app.use(cookieParser());
   app.use(compression());
-  app.use(sessionMiddleware());
+  app.use((req, res, next) => {
+    // If no referer (web site), prevent session extension
+    // https://developer.mozilla.org/fr/docs/Web/HTTP/Headers/Referer
+    const disableTouch = !req.headers.referer;
+    return sessionMiddleware(disableTouch)(req, res, next);
+  });
   app.use(cookieParser());
   app.use(compression());
   app.use(helmet());
