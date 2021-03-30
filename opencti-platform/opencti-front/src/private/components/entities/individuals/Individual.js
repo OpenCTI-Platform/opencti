@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -17,6 +17,10 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 
 const styles = () => ({
   container: {
@@ -27,15 +31,48 @@ const styles = () => ({
   },
 });
 
+const VIEW_AS_KNOWLEDGE = 'knowledge';
+
 class IndividualComponent extends Component {
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-individual-${props.individual.id}`,
+    );
+    this.state = {
+      viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', params),
+    };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-individual-${this.props.individual.id}`,
+      this.state,
+    );
+  }
+
+  handleChangeViewAs(event) {
+    this.setState({ viewAs: event.target.value }, () => this.saveView());
+  }
+
   render() {
     const { classes, individual } = this.props;
+    const { viewAs } = this.state;
+    const lastReportsProps = viewAs === VIEW_AS_KNOWLEDGE
+      ? { stixCoreObjectOrStixCoreRelationshipId: individual.id }
+      : { authorId: individual.id };
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
           stixDomainObject={individual}
           isOpenctiAlias={true}
           PopoverComponent={<IndividualPopover />}
+          onViewAs={this.handleChangeViewAs.bind(this)}
+          viewAs={viewAs}
         />
         <Grid
           container={true}
@@ -55,15 +92,17 @@ class IndividualComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={individual.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/entities/individuals/${individual.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
+          {viewAs === VIEW_AS_KNOWLEDGE && (
+            <Grid item={true} xs={6}>
+              <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                stixObjectOrStixRelationshipId={individual.id}
+                stixObjectOrStixRelationshipLink={`/dashboard/entities/individuals/${individual.id}/knowledge`}
+              />
+            </Grid>
+          )}
+          <Grid item={true} xs={viewAs === VIEW_AS_KNOWLEDGE ? 6 : 12}>
             <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={individual.id}
+              {...lastReportsProps}
             />
           </Grid>
         </Grid>

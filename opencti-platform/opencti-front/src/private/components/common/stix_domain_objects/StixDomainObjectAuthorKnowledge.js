@@ -9,14 +9,23 @@ import Grid from '@material-ui/core/Grid';
 import { withStyles } from '@material-ui/core/styles';
 import { DescriptionOutlined, DeviceHubOutlined } from '@material-ui/icons';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
+import Typography from '@material-ui/core/Typography';
+import Paper from '@material-ui/core/Paper';
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { QueryRenderer } from '../../../../relay/environment';
-import { monthsAgo } from '../../../../utils/Time';
+import { monthsAgo, now, yearsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
-import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
-import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
-import EntityStixCoreRelationshipsHorizontalBars from '../stix_core_relationships/EntityStixCoreRelationshipsHorizontalBars';
-import EntityStixSightingRelationshipsDonut from '../../events/stix_sighting_relationships/EntityStixSightingRelationshipsDonut';
+import Theme from '../../../../components/ThemeDark';
+import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
   card: {
@@ -24,6 +33,11 @@ const styles = (theme) => ({
     marginBottom: 20,
     borderRadius: 6,
     position: 'relative',
+  },
+  paper: {
+    margin: '10px 0 0 0',
+    padding: '20px 20px 0 20px',
+    borderRadius: 6,
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -50,37 +64,30 @@ const styles = (theme) => ({
     top: 35,
     right: 20,
   },
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 70px 0',
-    padding: '15px 15px 15px 15px',
-    borderRadius: 6,
-  },
 });
 
-const stixDomainObjectKnowledgeReportsNumberQuery = graphql`
-  query StixDomainObjectKnowledgeReportsNumberQuery(
-    $objectId: String
+const stixDomainObjectAuthorKnowledgeReportsNumberQuery = graphql`
+  query StixDomainObjectAuthorKnowledgeReportsNumberQuery(
+    $authorId: String
     $endDate: DateTime
   ) {
-    reportsNumber(objectId: $objectId, endDate: $endDate) {
+    reportsNumber(authorId: $authorId, endDate: $endDate) {
       total
       count
     }
   }
 `;
 
-const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
-  query StixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery(
+const stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery = graphql`
+  query StixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery(
     $type: String
-    $fromId: String
+    $authorId: String
     $toTypes: [String]
     $endDate: DateTime
   ) {
     stixCoreRelationshipsNumber(
       type: $type
-      fromId: $fromId
+      authorId: $authorId
       toTypes: $toTypes
       endDate: $endDate
     ) {
@@ -90,10 +97,33 @@ const stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery = graphql`
   }
 `;
 
-class StixDomainObjectKnowledge extends Component {
+const stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery = graphql`
+  query StixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery(
+    $authorId: String
+    $field: String!
+    $operation: StatsOperation!
+    $startDate: DateTime!
+    $endDate: DateTime!
+    $interval: String!
+  ) {
+    stixDomainObjectsTimeSeries(
+      authorId: $authorId
+      field: $field
+      operation: $operation
+      startDate: $startDate
+      endDate: $endDate
+      interval: $interval
+    ) {
+      date
+      value
+    }
+  }
+`;
+
+class StixDomainObjectAuthorKnowledge extends Component {
   render() {
     const {
-      t, n, classes, stixDomainObjectId,
+      t, nsd, mtd, n, classes, stixDomainObjectId,
     } = this.props;
     return (
       <div>
@@ -105,9 +135,9 @@ class StixDomainObjectKnowledge extends Component {
               style={{ height: 120 }}
             >
               <QueryRenderer
-                query={stixDomainObjectKnowledgeReportsNumberQuery}
+                query={stixDomainObjectAuthorKnowledgeReportsNumberQuery}
                 variables={{
-                  objectId: stixDomainObjectId,
+                  authorId: stixDomainObjectId,
                   endDate: monthsAgo(1),
                 }}
                 render={({ props }) => {
@@ -147,10 +177,10 @@ class StixDomainObjectKnowledge extends Component {
             >
               <QueryRenderer
                 query={
-                  stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
+                  stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  fromId: stixDomainObjectId,
+                  authorId: stixDomainObjectId,
                   toTypes: ['Stix-Cyber-Observable'],
                   endDate: monthsAgo(1),
                 }}
@@ -191,10 +221,10 @@ class StixDomainObjectKnowledge extends Component {
             >
               <QueryRenderer
                 query={
-                  stixDomainObjectKnowledgeStixCoreRelationshipsNumberQuery
+                  stixDomainObjectAuthorKnowledgeStixCoreRelationshipsNumberQuery
                 }
                 variables={{
-                  fromId: stixDomainObjectId,
+                  authorId: stixDomainObjectId,
                   endDate: monthsAgo(1),
                 }}
                 render={({ props }) => {
@@ -225,42 +255,83 @@ class StixDomainObjectKnowledge extends Component {
           </Grid>
         </Grid>
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectReportsHorizontalBars
-              stixCoreObjectId={stixDomainObjectId}
-              field="created-by.internal_id"
-              title={t('Distribution of sources')}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectStixCoreRelationshipsCloud
-              stixCoreObjectId={stixDomainObjectId}
-              stixCoreObjectType="Stix-Domain-Object"
-              relationshipType="stix-core-relationship"
-              title={t('Distribution of relations')}
-              field="entity_type"
-              noDirection={true}
-            />
-          </Grid>
-        </Grid>
-        <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-          <Grid item={true} xs={6} style={{ height: 350 }}>
-            <EntityStixCoreRelationshipsHorizontalBars
-              stixCoreObjectId={stixDomainObjectId}
-              relationshipType="targets"
-              toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
-              title={t('Top 10 threats targeting this entity')}
-              field="internal_id"
-              isTo={true}
-            />
-          </Grid>
-          <Grid item={true} xs={6} style={{ height: 350 }}>
-            <EntityStixSightingRelationshipsDonut
-              entityId={stixDomainObjectId}
-              title={t('Sightings distribution')}
-              field="entity_type"
-              variant="inKnowledge"
-            />
+          <Grid item={true} xs={12}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Created entities')}
+            </Typography>
+            <Paper
+              classes={{ root: classes.paper }}
+              elevation={2}
+              style={{ height: 300 }}
+            >
+              <QueryRenderer
+                query={
+                  stixDomainObjectAuthorKnowledgeStixDomainObjectsTimeSeriesQuery
+                }
+                variables={{
+                  authorId: stixDomainObjectId,
+                  field: 'created_at',
+                  operation: 'count',
+                  startDate: yearsAgo(1),
+                  endDate: now(),
+                  interval: 'month',
+                }}
+                render={({ props }) => {
+                  if (props && props.stixDomainObjectsTimeSeries) {
+                    return (
+                      <div className={classes.graphContainer}>
+                        <ResponsiveContainer height={270} width="100%">
+                          <AreaChart
+                            data={props.stixDomainObjectsTimeSeries}
+                            margin={{
+                              top: 0,
+                              right: 0,
+                              bottom: 0,
+                              left: -10,
+                            }}
+                          >
+                            <CartesianGrid
+                              strokeDasharray="2 2"
+                              stroke="#0f181f"
+                            />
+                            <XAxis
+                              dataKey="date"
+                              stroke="#ffffff"
+                              interval={0}
+                              textAnchor="end"
+                              tickFormatter={mtd}
+                            />
+                            <YAxis stroke="#ffffff" />
+                            <Tooltip
+                              cursor={{
+                                fill: 'rgba(0, 0, 0, 0.2)',
+                                stroke: 'rgba(0, 0, 0, 0.2)',
+                                strokeWidth: 2,
+                              }}
+                              contentStyle={{
+                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                fontSize: 12,
+                                borderRadius: 10,
+                              }}
+                              labelFormatter={nsd}
+                            />
+                            <Area
+                              type="monotone"
+                              dataKey="value"
+                              stroke={Theme.palette.primary.main}
+                              strokeWidth={2}
+                              fill={Theme.palette.primary.main}
+                              fillOpacity={0.1}
+                            />
+                          </AreaChart>
+                        </ResponsiveContainer>
+                      </div>
+                    );
+                  }
+                  return <Loader variant="inElement" />;
+                }}
+              />
+            </Paper>
           </Grid>
         </Grid>
       </div>
@@ -268,7 +339,7 @@ class StixDomainObjectKnowledge extends Component {
   }
 }
 
-StixDomainObjectKnowledge.propTypes = {
+StixDomainObjectAuthorKnowledge.propTypes = {
   stixDomainObjectId: PropTypes.string,
   stixDomainObjectType: PropTypes.string,
   classes: PropTypes.object,
@@ -278,4 +349,4 @@ StixDomainObjectKnowledge.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixDomainObjectKnowledge);
+)(StixDomainObjectAuthorKnowledge);

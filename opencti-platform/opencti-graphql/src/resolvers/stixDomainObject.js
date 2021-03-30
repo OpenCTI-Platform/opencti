@@ -21,6 +21,7 @@ import {
   stixDomainObjectImportPush,
   stixDomainObjectsExportPush,
   stixDomainObjectsExportAsk,
+  stixDomainObjectsTimeSeriesByAuthor,
 } from '../domain/stixDomainObject';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -33,7 +34,12 @@ const stixDomainObjectResolvers = {
   Query: {
     stixDomainObject: (_, { id }, { user }) => findById(user, id),
     stixDomainObjects: (_, args, { user }) => findAll(user, args),
-    stixDomainObjectsTimeSeries: (_, args, { user }) => stixDomainObjectsTimeSeries(user, args),
+    stixDomainObjectsTimeSeries: (_, args, { user }) => {
+      if (args.authorId && args.authorId.length > 0) {
+        return stixDomainObjectsTimeSeriesByAuthor(user, args);
+      }
+      return stixDomainObjectsTimeSeries(user, args);
+    },
     stixDomainObjectsNumber: (_, args, { user }) => stixDomainObjectsNumber(user, args),
     stixDomainObjectsDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
-import { compose } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
@@ -14,42 +14,82 @@ import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainO
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
+import StixDomainObjectAuthorKnowledge from '../../common/stix_domain_objects/StixDomainObjectAuthorKnowledge';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: 0,
   },
 });
 
+const VIEW_AS_KNOWLEDGE = 'knowledge';
+
 class OrganizationKnowledgeComponent extends Component {
+  constructor(props) {
+    super(props);
+    const params = buildViewParamsFromUrlAndStorage(
+      props.history,
+      props.location,
+      `view-organization-${props.organization.id}`,
+    );
+    this.state = {
+      viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', params),
+    };
+  }
+
+  saveView() {
+    saveViewParameters(
+      this.props.history,
+      this.props.location,
+      `view-organization-${this.props.organization.id}`,
+      this.state,
+    );
+  }
+
+  handleChangeViewAs(event) {
+    this.setState({ viewAs: event.target.value }, () => this.saveView());
+  }
+
   render() {
     const { classes, organization } = this.props;
+    const { viewAs } = this.state;
     const link = `/dashboard/entities/organizations/${organization.id}/knowledge`;
     return (
-      <div className={classes.container}>
+      <div
+        className={classes.container}
+        style={{ paddingRight: viewAs === VIEW_AS_KNOWLEDGE ? 200 : 0 }}
+      >
         <StixDomainObjectHeader
           stixDomainObject={organization}
           PopoverComponent={<OrganizationPopover />}
+          onViewAs={this.handleChangeViewAs.bind(this)}
+          viewAs={viewAs}
         />
-        <StixCoreObjectKnowledgeBar
-          stixCoreObjectLink={link}
-          availableSections={[
-            'organizations',
-            'individuals',
-            'locations',
-            'sectors',
-            'threat_actors',
-            'intrusion_sets',
-            'campaigns',
-            'incidents',
-            'malwares',
-            'attack_patterns',
-            'tools',
-            'observables',
-            'sightings',
-          ]}
-        />
+        {viewAs === VIEW_AS_KNOWLEDGE && (
+          <StixCoreObjectKnowledgeBar
+            stixCoreObjectLink={link}
+            availableSections={[
+              'organizations',
+              'individuals',
+              'locations',
+              'sectors',
+              'threat_actors',
+              'intrusion_sets',
+              'campaigns',
+              'incidents',
+              'malwares',
+              'attack_patterns',
+              'tools',
+              'observables',
+              'sightings',
+            ]}
+          />
+        )}
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/relations/:relationId"
@@ -64,13 +104,20 @@ class OrganizationKnowledgeComponent extends Component {
         <Route
           exact
           path="/dashboard/entities/organizations/:organizationId/knowledge/overview"
-          render={(routeProps) => (
-            <StixDomainObjectKnowledge
-              stixDomainObjectId={organization.id}
-              stixDomainObjectType="Organization"
-              {...routeProps}
-            />
-          )}
+          render={(routeProps) => (viewAs === VIEW_AS_KNOWLEDGE ? (
+              <StixDomainObjectKnowledge
+                stixDomainObjectId={organization.id}
+                stixDomainObjectType="Organization"
+                {...routeProps}
+              />
+          ) : (
+              <StixDomainObjectAuthorKnowledge
+                stixDomainObjectId={organization.id}
+                stixDomainObjectType="Organization"
+                {...routeProps}
+              />
+          ))
+          }
         />
         <Route
           exact

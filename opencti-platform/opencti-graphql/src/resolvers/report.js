@@ -5,6 +5,7 @@ import {
   reportsDistributionByEntity,
   reportsNumber,
   reportsNumberByEntity,
+  reportsNumberByAuthor,
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
   reportsTimeSeriesByEntity,
@@ -44,6 +45,9 @@ const reportResolvers = {
     reportsNumber: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
         return reportsNumberByEntity(user, args);
+      }
+      if (args.authorId && args.authorId.length > 0) {
+        return reportsNumberByAuthor(user, args);
       }
       return reportsNumber(user, args);
     },

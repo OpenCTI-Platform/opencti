@@ -15,6 +15,7 @@ export const saveViewParameters = (
   location,
   localStorageKey,
   params,
+  noRedirect = false,
 ) => {
   const storageParams = pipe(dissoc('graphData'))(params);
   localStorage.setItem(localStorageKey, JSON.stringify(storageParams));
@@ -34,11 +35,13 @@ export const saveViewParameters = (
   if (params.zoom) {
     urlParams = assoc('zoom', JSON.stringify(params.zoom), urlParams);
   }
-  window.history.replaceState(
-    null,
-    '',
-    `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
-  );
+  if (!noRedirect) {
+    window.history.replaceState(
+      null,
+      '',
+      `${location.pathname}?${new URLSearchParams(urlParams).toString()}`,
+    );
+  }
   return params;
 };
 

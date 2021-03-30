@@ -161,13 +161,13 @@ const TopBar = ({
           </Link>
         </div>
         <div className={classes.menuContainer}>
-          {location.pathname === '/dashboard'
-            || (location.pathname === '/dashboard/import' && <TopMenuDashboard />)}
+          {(location.pathname === '/dashboard'
+            || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
           {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
-          {location.pathname === '/dashboard/analysis'
-            || (location.pathname.match('/dashboard/analysis/[a-z_]+$') && (
-              <TopMenuAnalysis />
-            ))}
+          {(location.pathname === '/dashboard/analysis'
+            || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
+            <TopMenuAnalysis />
+          )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -180,10 +180,10 @@ const TopBar = ({
           {location.pathname.includes(
             '/dashboard/analysis/external_references/',
           ) && <TopMenuExternalReference />}
-          {location.pathname === '/dashboard/events'
-            || (location.pathname.match('/dashboard/events/[a-z_]+$') && (
-              <TopMenuEvents />
-            ))}
+          {(location.pathname === '/dashboard/events'
+            || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
+            <TopMenuEvents />
+          )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuXOpenCTIIncident />
           )}
@@ -193,10 +193,10 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/events/sightings/') && (
             <TopMenuStixRelationshipSighting />
           )}
-          {location.pathname === '/dashboard/observations'
-            || (location.pathname.match('/dashboard/observations/[a-z_]+$') && (
-              <TopMenuObservations />
-            ))}
+          {(location.pathname === '/dashboard/observations'
+            || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
+            <TopMenuObservations />
+          )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
           ) && <TopMenuIndicator />}
@@ -206,10 +206,10 @@ const TopBar = ({
           {location.pathname.includes(
             '/dashboard/observations/observables/',
           ) && <TopMenuStixCyberObservable />}
-          {location.pathname === '/dashboard/threats'
-            || (location.pathname.match('/dashboard/threats/[a-z_]+$') && (
-              <TopMenuThreats />
-            ))}
+          {(location.pathname === '/dashboard/threats'
+            || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
+            <TopMenuThreats />
+          )}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
           )}
@@ -219,10 +219,10 @@ const TopBar = ({
           {location.pathname.includes('/dashboard/threats/campaigns/') && (
             <TopMenuCampaign />
           )}
-          {location.pathname === '/dashboard/arsenal'
-            || (location.pathname.match('/dashboard/arsenal/[a-z_]+$') && (
-              <TopMenuArsenal />
-            ))}
+          {(location.pathname === '/dashboard/arsenal'
+            || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
+            <TopMenuArsenal />
+          )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
           )}
@@ -238,10 +238,10 @@ const TopBar = ({
           {location.pathname.includes(
             '/dashboard/arsenal/vulnerabilities/',
           ) && <TopMenuVulnerability />}
-          {location.pathname === '/dashboard/entities'
-            || (location.pathname.match('/dashboard/entities/[a-z_]+$') && (
-              <TopMenuEntities />
-            ))}
+          {(location.pathname === '/dashboard/entities'
+            || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
+            <TopMenuEntities />
+          )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
           )}

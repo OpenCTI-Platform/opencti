@@ -14,7 +14,7 @@ import FileManager from '../../common/files/FileManager';
 import OrganizationPopover from './OrganizationPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import OrganizationAnalysis from './OrganizationAnalysis';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
@@ -113,18 +113,10 @@ class RootOrganization extends Component {
                     exact
                     path="/dashboard/entities/organizations/:organizationId/analysis"
                     render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.organization}
-                          PopoverComponent={<OrganizationPopover />}
-                        />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
-                          {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={
-                            organizationId
-                          }
-                        />
-                      </React.Fragment>
+                      <OrganizationAnalysis
+                        {...routeProps}
+                        organization={props.organization}
+                      />
                     )}
                   />
                   <Route
@@ -157,7 +149,7 @@ class RootOrganization extends Component {
                         />
                         <StixCoreObjectHistory
                           {...routeProps}
-                          entityId={organizationId}
+                          stixCoreObjectId={organizationId}
                         />
                       </React.Fragment>
                     )}

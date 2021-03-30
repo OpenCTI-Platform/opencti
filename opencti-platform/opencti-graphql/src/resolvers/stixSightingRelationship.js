@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
@@ -44,7 +45,11 @@ const stixSightingRelationshipResolvers = {
     stixSightingRelationship: (_, { id }, { user }) => findById(user, id),
     stixSightingRelationships: (_, args, { user }) => findAll(user, args),
     stixSightingRelationshipsTimeSeries: (_, args, { user }) => timeSeriesRelations(user, args),
-    stixSightingRelationshipsDistribution: async (_, args, { user }) => distributionRelations(user, args),
+    stixSightingRelationshipsDistribution: (_, args, { user }) =>
+      distributionRelations(
+        user,
+        R.pipe(R.assoc('relationship_type', 'stix-sighting-relationship'), R.assoc('isTo', true))(args)
+      ),
     stixSightingRelationshipsNumber: (_, args, { user }) => stixSightingRelationshipsNumber(user, args),
   },
   StixSightingRelationshipsOrdering: {

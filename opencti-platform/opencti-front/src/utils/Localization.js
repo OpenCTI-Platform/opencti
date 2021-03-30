@@ -394,6 +394,7 @@ const i18n = {
       'entitie(s)': 'entité(s)',
       Observables: 'Observables',
       Sightings: 'Détections',
+      'Sightings distribution': 'Répartition des détections',
       Category: 'Catégorie',
       Constituent: 'Bénéficiaire',
       Enabled: 'Activé',
@@ -811,6 +812,7 @@ const i18n = {
       'Last targeted organizations in this sector':
         'Dernières organisations ciblées dans ce secteur',
       'Ingested entities': 'Entités stockées',
+      'Created entities': 'Entités créées',
       '24 hours': '24 heures',
       '30 days': '30 jours',
       'No entities were found for this search.':

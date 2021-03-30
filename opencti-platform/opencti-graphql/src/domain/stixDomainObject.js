@@ -33,12 +33,12 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
 } from '../schema/general';
-import { isStixMetaRelationship, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stixCoreObject';
 import { addAttribute, find as findAttribute } from './attribute';
 import { escape } from '../utils/format';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { uploadJobImport } from "./file";
+import { uploadJobImport } from './file';
 
 export const findAll = async (user, args) => {
   let types = [];
@@ -59,8 +59,15 @@ export const reportsTimeSeries = (user, stixDomainObjectId, args) => {
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: stixDomainObjectId }];
   return timeSeriesEntities(user, 'Report', filters, args);
 };
+
 export const stixDomainObjectsTimeSeries = (user, args) => {
   return timeSeriesEntities(user, args.type ? escape(args.type) : ABSTRACT_STIX_DOMAIN_OBJECT, [], args);
+};
+
+export const stixDomainObjectsTimeSeriesByAuthor = (user, args) => {
+  const { authorId } = args;
+  const filters = [{ isRelation: true, type: RELATION_CREATED_BY, value: authorId }];
+  return timeSeriesEntities(user, args.type ? escape(args.type) : ABSTRACT_STIX_DOMAIN_OBJECT, filters, args);
 };
 
 export const stixDomainObjectsNumber = (user, args) => ({

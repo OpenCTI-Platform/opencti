@@ -7522,6 +7522,7 @@ type Query {
   stixDomainObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixDomainObjectsTimeSeries(
     type: String
+    authorId: String
     field: String!
     operation: StatsOperation!
     startDate: DateTime!
@@ -7692,9 +7693,11 @@ type Query {
     endDate: DateTime!
     interval: String!
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
-  reportsNumber(reportType: String, objectId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  reportsNumber(reportType: String, objectId: String, authorId: String, endDate: DateTime): Number
+    @auth(for: [KNOWLEDGE, EXPLORE])
   reportsDistribution(
     objectId: String
+    authorId: String
     field: String!
     operation: StatsOperation!
     limit: Int
@@ -7948,7 +7951,7 @@ type Query {
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
   stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
-  stixCyberObservablesNumber(types: [String], endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
     @auth(for: [KNOWLEDGE, EXPLORE])
@@ -8058,6 +8061,7 @@ type Query {
   stixCoreRelationshipsNumber(
     type: String
     fromId: String
+    authorId: String
     toTypes: [String]
     noDirection: Boolean
     endDate: DateTime

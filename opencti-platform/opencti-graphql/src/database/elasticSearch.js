@@ -357,6 +357,7 @@ export const elCount = (user, indexName, options = {}) => {
     endDate = null,
     types = null,
     relationshipType = null,
+    authorId = null,
     fromId = null,
     toTypes = null,
     isMetaRelationship = false,
@@ -405,6 +406,18 @@ export const elCount = (user, indexName, options = {}) => {
         bool: {
           should: {
             match_phrase: { 'relationship_type.keyword': relationshipType },
+          },
+        },
+      },
+      must
+    );
+  }
+  if (authorId !== null && !isMetaRelationship) {
+    must = R.append(
+      {
+        bool: {
+          should: {
+            match_phrase: { [`${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id.keyword`]: authorId },
           },
         },
       },

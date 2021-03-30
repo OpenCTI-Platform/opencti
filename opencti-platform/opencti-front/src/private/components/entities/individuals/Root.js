@@ -14,7 +14,7 @@ import FileManager from '../../common/files/FileManager';
 import IndividualPopover from './IndividualPopover';
 import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import IndividualAnalysis from './IndividualAnalysis';
 
 const subscription = graphql`
   subscription RootIndividualsSubscription($id: ID!) {
@@ -113,16 +113,10 @@ class RootIndividual extends Component {
                     exact
                     path="/dashboard/entities/individuals/:individualId/analysis"
                     render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.individual}
-                          PopoverComponent={<IndividualPopover />}
-                        />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
-                          {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={individualId}
-                        />
-                      </React.Fragment>
+                      <IndividualAnalysis
+                        {...routeProps}
+                        individual={props.individual}
+                      />
                     )}
                   />
                   <Route

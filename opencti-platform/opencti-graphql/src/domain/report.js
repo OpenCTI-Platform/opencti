@@ -86,6 +86,30 @@ export const reportsNumberByEntity = (user, args) => ({
   ),
 });
 
+export const reportsNumberByAuthor = (user, args) => ({
+  count: elCount(
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      assoc('relationshipType', RELATION_CREATED_BY),
+      assoc('fromId', args.authorId)
+    )(args)
+  ),
+  total: elCount(
+    user,
+    READ_INDEX_STIX_DOMAIN_OBJECTS,
+    pipe(
+      assoc('isMetaRelationship', true),
+      assoc('types', [ENTITY_TYPE_CONTAINER_REPORT]),
+      assoc('relationshipType', RELATION_CREATED_BY),
+      assoc('fromId', args.authorId),
+      dissoc('endDate')
+    )(args)
+  ),
+});
+
 export const reportsDistributionByEntity = async (user, args) => {
   const { objectId } = args;
   const filters = [{ isRelation: true, type: RELATION_OBJECT, value: objectId }];

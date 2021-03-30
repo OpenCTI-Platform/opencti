@@ -16,6 +16,8 @@ import StixCoreObjectOrStixCoreRelationshipContainersLines, {
 } from './StixCoreObjectOrStixCoreRelationshipContainersLines';
 import inject18n from '../../../../components/i18n';
 
+const VIEW_AS_KNOWLEDGE = 'knowledge';
+
 class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
   constructor(props) {
     super(props);
@@ -36,7 +38,14 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
+      viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', params),
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.viewAs !== this.props.viewAs) {
+      this.setState({ viewAs: this.props.viewAs }, () => this.saveView());
+    }
   }
 
   saveView() {
@@ -240,6 +249,7 @@ StixCoreObjectOrStixCoreRelationshipContainers.propTypes = {
   history: PropTypes.object,
   location: PropTypes.object,
   onChangeOpenExports: PropTypes.func,
+  viewAs: PropTypes.string,
 };
 
 export default compose(

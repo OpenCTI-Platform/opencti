@@ -36,13 +36,11 @@ const VIEW_AS_KNOWLEDGE = 'knowledge';
 class OrganizationComponent extends Component {
   constructor(props) {
     super(props);
-
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
       `view-organization-${props.organization.id}`,
     );
-
     this.state = {
       viewAs: propOr(VIEW_AS_KNOWLEDGE, 'viewAs', params),
     };
@@ -64,11 +62,9 @@ class OrganizationComponent extends Component {
   render() {
     const { classes, organization } = this.props;
     const { viewAs } = this.state;
-
     const lastReportsProps = viewAs === VIEW_AS_KNOWLEDGE
       ? { stixCoreObjectOrStixCoreRelationshipId: organization.id }
       : { authorId: organization.id };
-
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -96,13 +92,15 @@ class OrganizationComponent extends Component {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={organization.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/entities/organizations/${organization.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
+          {viewAs === VIEW_AS_KNOWLEDGE && (
+            <Grid item={true} xs={6}>
+              <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+                stixObjectOrStixRelationshipId={organization.id}
+                stixObjectOrStixRelationshipLink={`/dashboard/entities/organizations/${organization.id}/knowledge`}
+              />
+            </Grid>
+          )}
+          <Grid item={true} xs={viewAs === VIEW_AS_KNOWLEDGE ? 6 : 12}>
             <StixCoreObjectOrStixCoreRelationshipLastReports
               {...lastReportsProps}
             />
