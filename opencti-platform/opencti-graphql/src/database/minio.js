@@ -49,17 +49,22 @@ export const deleteFile = async (user, id) => {
 export const downloadFile = (id) => minioClient.getObject(bucketName, id);
 
 export const loadFile = async (filename) => {
-  const stat = await minioClient.statObject(bucketName, filename);
-  return {
-    id: filename,
-    name: querystring.unescape(stat.metaData.filename),
-    size: stat.size,
-    information: '',
-    lastModified: stat.lastModified,
-    lastModifiedSinceMin: sinceNowInMinutes(stat.lastModified),
-    metaData: { ...stat.metaData, messages: [], errors: [] },
-    uploadStatus: 'complete',
-  };
+  try {
+    const stat = await minioClient.statObject(bucketName, filename);
+    return {
+      id: filename,
+      name: querystring.unescape(stat.metaData.filename),
+      size: stat.size,
+      information: '',
+      lastModified: stat.lastModified,
+      lastModifiedSinceMin: sinceNowInMinutes(stat.lastModified),
+      metaData: { ...stat.metaData, messages: [], errors: [] },
+      uploadStatus: 'complete',
+    };
+  } catch (err) {
+    logger.info(`[OPENCTI] Cannot retrieve file on Miniuo`, { error: err });
+    return null;
+  }
 };
 
 const htmlDecode = (str) => {
