@@ -17,6 +17,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootCampaignSubscription($id: ID!) {
@@ -81,115 +82,118 @@ class RootCampaign extends Component {
           query={campaignQuery}
           variables={{ id: campaignId }}
           render={({ props }) => {
-            if (props && props.campaign) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/threats/campaigns/:campaignId"
-                    render={(routeProps) => (
-                      <Campaign {...routeProps} campaign={props.campaign} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/campaigns/:campaignId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/threats/campaigns/:campaignId/knowledge"
-                    render={(routeProps) => (
-                      <CampaignKnowledge
-                        {...routeProps}
-                        campaign={props.campaign}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/campaigns/:campaignId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.campaign}
-                          PopoverComponent={<CampaignPopover />}
+            if (props) {
+              if (props.campaign) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/threats/campaigns/:campaignId"
+                      render={(routeProps) => (
+                        <Campaign {...routeProps} campaign={props.campaign} />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/campaigns/:campaignId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/threats/campaigns/${campaignId}/knowledge/overview`}
                         />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/threats/campaigns/:campaignId/knowledge"
+                      render={(routeProps) => (
+                        <CampaignKnowledge
                           {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={campaignId}
+                          campaign={props.campaign}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/campaigns/:campaignId/indicators"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.campaign}
-                          PopoverComponent={<CampaignPopover />}
-                          variant="noaliases"
-                        />
-                        <StixDomainObjectIndicators
-                          {...routeProps}
-                          stixDomainObjectId={campaignId}
-                          stixDomainObjectLink={`/dashboard/threats/campaigns/${campaignId}/indicators`}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/campaigns/:campaignId/indicators/relations/:relationId"
-                    render={(routeProps) => (
-                      <StixCoreRelationship
-                        entityId={campaignId}
-                        {...routeProps}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/campaigns/:campaignId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.campaign}
-                          PopoverComponent={<CampaignPopover />}
-                        />
-                        <FileManager
-                          {...routeProps}
-                          id={campaignId}
-                          connectorsImport={[]}
-                          connectorsExport={props.connectorsForExport}
-                          entity={props.campaign}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/campaigns/:campaignId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.campaign}
-                          PopoverComponent={<CampaignPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/campaigns/:campaignId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.campaign}
+                            PopoverComponent={<CampaignPopover />}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixCoreObjectOrStixCoreRelationshipId={campaignId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/campaigns/:campaignId/indicators"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.campaign}
+                            PopoverComponent={<CampaignPopover />}
+                            variant="noaliases"
+                          />
+                          <StixDomainObjectIndicators
+                            {...routeProps}
+                            stixDomainObjectId={campaignId}
+                            stixDomainObjectLink={`/dashboard/threats/campaigns/${campaignId}/indicators`}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/campaigns/:campaignId/indicators/relations/:relationId"
+                      render={(routeProps) => (
+                        <StixCoreRelationship
                           entityId={campaignId}
+                          {...routeProps}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/campaigns/:campaignId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.campaign}
+                            PopoverComponent={<CampaignPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={campaignId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.campaign}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/campaigns/:campaignId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.campaign}
+                            PopoverComponent={<CampaignPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            entityId={campaignId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

@@ -14,6 +14,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import IndicatorHeader from './IndicatorHeader';
 import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 import IndicatorEntities from './IndicatorEntities';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootIndicatorSubscription($id: ID!) {
@@ -71,75 +72,81 @@ class RootIndicator extends Component {
           query={indicatorQuery}
           variables={{ id: indicatorId, relationship_type: 'indicates' }}
           render={({ props }) => {
-            if (props && props.indicator) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/observations/indicators/:indicatorId"
-                    render={(routeProps) => (
-                      <Indicator {...routeProps} indicator={props.indicator} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/indicators/:indicatorId/sightings"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <IndicatorHeader indicator={props.indicator} />
-                        <EntityStixSightingRelationships
+            if (props) {
+              if (props.indicator) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId"
+                      render={(routeProps) => (
+                        <Indicator
                           {...routeProps}
+                          indicator={props.indicator}
+                        />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId/sightings"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <IndicatorHeader indicator={props.indicator} />
+                          <EntityStixSightingRelationships
+                            {...routeProps}
+                            entityId={indicatorId}
+                            noPadding={true}
+                            targetStixDomainObjectTypes={[
+                              'Region',
+                              'Country',
+                              'City',
+                              'Organization',
+                              'User',
+                            ]}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <IndicatorHeader indicator={props.indicator} />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={indicatorId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId/knowledge"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <IndicatorHeader indicator={props.indicator} />
+                          <IndicatorEntities
+                            {...routeProps}
+                            indicatorId={indicatorId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/indicators/:indicatorId/knowledge/relations/:relationId"
+                      render={(routeProps) => (
+                        <StixCoreRelationship
                           entityId={indicatorId}
-                          noPadding={true}
-                          targetStixDomainObjectTypes={[
-                            'Region',
-                            'Country',
-                            'City',
-                            'Organization',
-                            'User',
-                          ]}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/indicators/:indicatorId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <IndicatorHeader indicator={props.indicator} />
-                        <StixCoreObjectHistory
                           {...routeProps}
-                          stixCoreObjectId={indicatorId}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/indicators/:indicatorId/knowledge"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <IndicatorHeader indicator={props.indicator} />
-                        <IndicatorEntities
-                          {...routeProps}
-                          indicatorId={indicatorId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/indicators/:indicatorId/knowledge/relations/:relationId"
-                    render={(routeProps) => (
-                      <StixCoreRelationship
-                        entityId={indicatorId}
-                        {...routeProps}
-                      />
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

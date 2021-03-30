@@ -82,7 +82,7 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
           render={({ props }) => {
             if (props) {
               if (props.stixObjectOrStixRelationship) {
-                let redirectLink = null;
+                let redirectLink;
                 const { stixObjectOrStixRelationship } = props;
                 if (stixObjectOrStixRelationship.relationship_type) {
                   if (stixObjectOrStixRelationship.from.relationship_type) {
@@ -90,14 +90,6 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
                       stixObjectOrStixRelationship.to.entity_type,
                     )}/${
                       stixObjectOrStixRelationship.to.id
-                    }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
-                  } else if (
-                    stixObjectOrStixRelationship.to.relationship_type
-                  ) {
-                    redirectLink = `${resolveLink(
-                      stixObjectOrStixRelationship.from.entity_type,
-                    )}/${
-                      stixObjectOrStixRelationship.from.id
                     }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
                   } else {
                     redirectLink = `${resolveLink(
@@ -111,11 +103,7 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
                     stixObjectOrStixRelationship.entity_type,
                   )}/${stixObjectOrStixRelationship.id}`;
                 }
-                if (redirectLink) {
-                  return (
-                    <Redirect exact from={`/id/${id}`} to={redirectLink} />
-                  );
-                }
+                return <Redirect exact from={`/id/${id}`} to={redirectLink} />;
               }
               return <ErrorNotFound />;
             }

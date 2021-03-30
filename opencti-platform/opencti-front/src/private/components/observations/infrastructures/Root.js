@@ -17,6 +17,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixDomainObjectIndicators from '../indicators/StixDomainObjectIndicators';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootInfrastructureSubscription($id: ID!) {
@@ -81,119 +82,122 @@ class RootInfrastructure extends Component {
           query={infrastructureQuery}
           variables={{ id: infrastructureId }}
           render={({ props }) => {
-            if (props && props.infrastructure) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/observations/infrastructures/:infrastructureId"
-                    render={(routeProps) => (
-                      <Infrastructure
-                        {...routeProps}
-                        infrastructure={props.infrastructure}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
-                    render={(routeProps) => (
-                      <InfrastructureKnowledge
-                        {...routeProps}
-                        infrastructure={props.infrastructure}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/infrastructures/:infrastructureId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.infrastructure}
-                          PopoverComponent={<InfrastructurePopover />}
-                        />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
+            if (props) {
+              if (props.infrastructure) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/observations/infrastructures/:infrastructureId"
+                      render={(routeProps) => (
+                        <Infrastructure
                           {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={
-                            infrastructureId
-                          }
+                          infrastructure={props.infrastructure}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/infrastructures/:infrastructureId/indicators"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.infrastructure}
-                          PopoverComponent={<InfrastructurePopover />}
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/observations/infrastructures/${infrastructureId}/knowledge/overview`}
                         />
-                        <StixDomainObjectIndicators
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/observations/infrastructures/:infrastructureId/knowledge"
+                      render={(routeProps) => (
+                        <InfrastructureKnowledge
                           {...routeProps}
-                          stixDomainObjectId={infrastructureId}
-                          stixDomainObjectLink={`/dashboard/observations/infrastructures/${infrastructureId}/indicators`}
+                          infrastructure={props.infrastructure}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/infrastructures/:infrastructureId/indicators/relations/:relationId"
-                    render={(routeProps) => (
-                      <StixCoreRelationship
-                        entityId={infrastructureId}
-                        {...routeProps}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/infrastructures/:infrastructureId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.infrastructure}
-                          PopoverComponent={<InfrastructurePopover />}
-                        />
-                        <FileManager
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/infrastructures/:infrastructureId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.infrastructure}
+                            PopoverComponent={<InfrastructurePopover />}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixCoreObjectOrStixCoreRelationshipId={
+                              infrastructureId
+                            }
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/infrastructures/:infrastructureId/indicators"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.infrastructure}
+                            PopoverComponent={<InfrastructurePopover />}
+                          />
+                          <StixDomainObjectIndicators
+                            {...routeProps}
+                            stixDomainObjectId={infrastructureId}
+                            stixDomainObjectLink={`/dashboard/observations/infrastructures/${infrastructureId}/indicators`}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/infrastructures/:infrastructureId/indicators/relations/:relationId"
+                      render={(routeProps) => (
+                        <StixCoreRelationship
+                          entityId={infrastructureId}
                           {...routeProps}
-                          id={infrastructureId}
-                          connectorsImport={[]}
-                          connectorsExport={props.connectorsForExport}
-                          entity={props.infrastructure}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/observations/infrastructures/:infrastructureId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.infrastructure}
-                          PopoverComponent={<InfrastructurePopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={infrastructureId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/infrastructures/:infrastructureId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.infrastructure}
+                            PopoverComponent={<InfrastructurePopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={infrastructureId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.infrastructure}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/observations/infrastructures/:infrastructureId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.infrastructure}
+                            PopoverComponent={<InfrastructurePopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={infrastructureId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

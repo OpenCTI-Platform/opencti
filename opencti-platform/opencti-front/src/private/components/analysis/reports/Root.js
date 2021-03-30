@@ -16,6 +16,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootReportSubscription($id: ID!) {
@@ -85,93 +86,99 @@ class RootReport extends Component {
           query={reportQuery}
           variables={{ id: reportId }}
           render={({ props }) => {
-            if (props && props.report) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/analysis/reports/:reportId"
-                    render={(routeProps) => (
-                      <Report {...routeProps} report={props.report} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/reports/:reportId/entities"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.report}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <ContainerStixDomainObjects
+            if (props) {
+              if (props.report) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId"
+                      render={(routeProps) => (
+                        <Report {...routeProps} report={props.report} />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId/entities"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.report}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <ContainerStixDomainObjects
+                            {...routeProps}
+                            container={props.report}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId/observables"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.report}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <ContainerStixCyberObservables
+                            {...routeProps}
+                            container={props.report}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId/knowledge"
+                      render={(routeProps) => (
+                        <ReportKnowledge
                           {...routeProps}
-                          container={props.report}
+                          report={props.report}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/reports/:reportId/observables"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.report}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <ContainerStixCyberObservables
-                          {...routeProps}
-                          container={props.report}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/reports/:reportId/knowledge"
-                    render={(routeProps) => (
-                      <ReportKnowledge {...routeProps} report={props.report} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/reports/:reportId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.report}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <FileManager
-                          {...routeProps}
-                          id={reportId}
-                          connectorsExport={props.connectorsForExport}
-                          connectorsImport={props.connectorsForImport}
-                          entity={props.report}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/reports/:reportId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.report}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={reportId}
-                          withoutRelations={true}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.report}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={reportId}
+                            connectorsExport={props.connectorsForExport}
+                            connectorsImport={props.connectorsForImport}
+                            entity={props.report}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.report}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={reportId}
+                            withoutRelations={true}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}
