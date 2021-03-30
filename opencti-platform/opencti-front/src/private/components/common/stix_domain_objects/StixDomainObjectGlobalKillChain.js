@@ -267,6 +267,8 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
           toTypes: $toTypes
           relationship_type: $relationship_type
           first: $first
+          orderBy: $orderBy
+          orderMode: $orderMode
         ) {
           edges {
             node {

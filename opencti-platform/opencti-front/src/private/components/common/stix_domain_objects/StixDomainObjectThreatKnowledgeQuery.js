@@ -8,6 +8,8 @@ export const stixDomainObjectThreatKnowledgeStixCoreRelationshipsQuery = graphql
     $toTypes: [String]
     $relationship_type: String
     $first: Int
+    $orderBy: StixCoreRelationshipsOrdering
+    $orderMode: OrderingMode
   ) {
     ...StixDomainObjectGlobalKillChain_data
     ...StixDomainObjectTimeline_data

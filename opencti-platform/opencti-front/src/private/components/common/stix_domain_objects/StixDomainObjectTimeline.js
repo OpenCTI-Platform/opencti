@@ -39,7 +39,7 @@ class StixDomainObjectTimelineComponent extends Component {
     } = this.props;
     const stixCoreRelationships = pipe(
       map((n) => n.node),
-      filter((n) => !isNone(n.start_time) && !isNone(n.stop_time)),
+      filter((n) => !isNone(n.start_time)),
       map((n) => (n.from.id === stixDomainObjectId
         ? assoc('targetEntity', n.to, n)
         : assoc('targetEntity', n.from, n))),
@@ -107,6 +107,8 @@ const StixDomainObjectTimeline = createRefetchContainer(
           toTypes: $toTypes
           relationship_type: $relationship_type
           first: $first
+          orderBy: $orderBy
+          orderMode: $orderMode
         ) {
           edges {
             node {

@@ -23,6 +23,7 @@ export const killChainPhasesSearchQuery = graphql`
           id
           kill_chain_name
           phase_name
+          x_opencti_order
         }
       }
     }

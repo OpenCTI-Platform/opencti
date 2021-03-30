@@ -43,7 +43,7 @@ class KillChainPhasesField extends Component {
     }).then((data) => {
       const killChainPhases = pipe(
         pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'order']))]),
+        sortWith([ascend(path(['node', 'x_opencti_order']))]),
         map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
