@@ -170,6 +170,9 @@ const reportKnowledgeGraphStixCoreObjectQuery = graphql`
       ... on StixCyberObservable {
         observable_value
       }
+      ... on StixFile {
+        observableName: name
+      }
     }
   }
 `;
@@ -1162,6 +1165,9 @@ const ReportKnowledgeGraph = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
+              }
+              ... on StixFile {
+                observableName: name
               }
               ... on BasicRelationship {
                 id

@@ -459,6 +459,9 @@ const InvestigationAddStixCoreObjectsLines = createPaginationContainer(
                 observable_value
                 x_opencti_description
               }
+              ... on StixFile {
+                observableName: name
+              }
             }
           }
         }

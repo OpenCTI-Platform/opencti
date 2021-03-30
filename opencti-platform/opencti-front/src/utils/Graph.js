@@ -245,8 +245,22 @@ export const defaultDate = (n) => {
   return null;
 };
 
-export const defaultValue = (n) => `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
-  n.name
+export const defaultValue = (n, tooltip = false) => {
+  if (tooltip) {
+    return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
+      n.name
+      || n.observable_value
+      || n.attribute_abstract
+      || n.opinion
+      || n.value
+      || n.definition
+      || n.source_name
+      || 'Unknown'
+    }`;
+  }
+  return `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}${
+    n.name
+    || n.observableName
     || n.observable_value
     || n.attribute_abstract
     || n.opinion
@@ -254,7 +268,8 @@ export const defaultValue = (n) => `${n.x_mitre_id ? `[${n.x_mitre_id}] ` : ''}$
     || n.definition
     || n.source_name
     || 'Unknown'
-}`;
+  }`;
+};
 
 export const computeTimeRangeInterval = (objects) => {
   const elementsDates = R.map((n) => defaultDate(n), objects);
@@ -325,7 +340,7 @@ export const buildGraphData = (objects, graphData, t) => {
           }\n${t('Stop time')} ${
             isNone(n.stop_time) ? '-' : dateFormat(n.stop_time)
           }`
-          : defaultValue(n)
+          : defaultValue(n, true)
       }\n${dateFormat(defaultDate(n))}`,
       defaultDate: jsDate(defaultDate(n)),
       label: n.parent_types.includes('basic-relationship')

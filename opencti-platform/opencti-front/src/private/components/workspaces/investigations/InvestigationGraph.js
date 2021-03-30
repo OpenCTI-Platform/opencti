@@ -159,6 +159,9 @@ const investigationGraphStixCoreObjectQuery = graphql`
       ... on StixCyberObservable {
         observable_value
       }
+      ... on StixFile {
+        observableName: name
+      }
     }
   }
 `;
@@ -409,6 +412,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
             ... on StixCyberObservable {
               observable_value
             }
+            ... on StixFile {
+              observableName: name
+            }
             ... on StixMetaObject {
               created
             }
@@ -593,6 +599,9 @@ const investigationGraphStixRelationshipsQuery = graphql`
             }
             ... on StixCyberObservable {
               observable_value
+            }
+            ... on StixFile {
+              observableName: name
             }
             ... on StixMetaObject {
               created
@@ -1650,6 +1659,9 @@ const InvestigationGraph = createFragmentContainer(
               }
               ... on StixCyberObservable {
                 observable_value
+              }
+              ... on StixFile {
+                observableName: name
               }
               ... on StixMetaObject {
                 created

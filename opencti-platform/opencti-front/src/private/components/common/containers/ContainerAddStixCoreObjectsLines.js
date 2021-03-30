@@ -84,6 +84,9 @@ export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
           ... on StixCyberObservable {
             ...ContainerStixCyberObservableLine_node
           }
+          ... on StixFile {
+            observableName: name
+          }
         }
       }
     }
