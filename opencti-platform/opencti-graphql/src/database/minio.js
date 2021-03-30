@@ -46,7 +46,14 @@ export const deleteFile = async (user, id) => {
   return true;
 };
 
-export const downloadFile = (id) => minioClient.getObject(bucketName, id);
+export const downloadFile = (id) => {
+  try {
+    return minioClient.getObject(bucketName, id);
+  } catch (err) {
+    logger.info(`[OPENCTI] Cannot retrieve file on MinIO`, { error: err });
+    return null;
+  }
+};
 
 export const loadFile = async (filename) => {
   try {
@@ -62,7 +69,7 @@ export const loadFile = async (filename) => {
       uploadStatus: 'complete',
     };
   } catch (err) {
-    logger.info(`[OPENCTI] Cannot retrieve file on Miniuo`, { error: err });
+    logger.info(`[OPENCTI] Cannot retrieve file on MinIO`, { error: err });
     return null;
   }
 };
