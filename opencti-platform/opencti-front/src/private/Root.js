@@ -25,6 +25,7 @@ import { NoMatch, BoundaryRoute } from './components/Error';
 import Loader from '../components/Loader';
 import { UserContext } from '../utils/Security';
 import AuthBoundaryComponent from './components/AuthBoundary';
+import StixCoreObjectOrStixCoreRelationship from './components/StixCoreObjectOrStixCoreRelationship';
 
 const useStyles = makeStyles((theme) => ({
   root: {
@@ -101,6 +102,16 @@ const Root = () => {
                           path="/dashboard/search"
                           render={(routeProps) => (
                             <Search {...routeProps} me={props.me} />
+                          )}
+                        />
+                        <BoundaryRoute
+                          exact
+                          path="/dashboard/id/:id"
+                          render={(routeProps) => (
+                            <StixCoreObjectOrStixCoreRelationship
+                              {...routeProps}
+                              me={props.me}
+                            />
                           )}
                         />
                         <BoundaryRoute
