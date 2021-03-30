@@ -9,6 +9,7 @@ import {
 import TopBar from '../../nav/TopBar';
 import Dashboard from './Dashboard';
 import Loader from '../../../../components/Loader';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootDashboardSubscription($id: ID!) {
@@ -60,18 +61,24 @@ class RootDashboard extends Component {
           query={dashboardQuery}
           variables={{ id: workspaceId }}
           render={({ props }) => {
-            if (props && props.workspace) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/workspaces/dashboards/:workspaceId"
-                    render={(routeProps) => (
-                      <Dashboard {...routeProps} workspace={props.workspace} />
-                    )}
-                  />
-                </div>
-              );
+            if (props) {
+              if (props.workspace) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/workspaces/dashboards/:workspaceId"
+                      render={(routeProps) => (
+                        <Dashboard
+                          {...routeProps}
+                          workspace={props.workspace}
+                        />
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

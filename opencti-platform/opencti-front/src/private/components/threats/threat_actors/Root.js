@@ -17,6 +17,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import StixDomainObjectIndicators from '../../observations/indicators/StixDomainObjectIndicators';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootThreatActorSubscription($id: ID!) {
@@ -81,118 +82,123 @@ class RootThreatActor extends Component {
           query={threatActorQuery}
           variables={{ id: threatActorId }}
           render={({ props }) => {
-            if (props && props.threatActor) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/threats/threat_actors/:threatActorId"
-                    render={(routeProps) => (
-                      <ThreatActor
-                        {...routeProps}
-                        threatActor={props.threatActor}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/threat_actors/:threatActorId/knowledge"
-                    render={() => (
-                      <Redirect
-                        to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/overview`}
-                      />
-                    )}
-                  />
-                  <Route
-                    path="/dashboard/threats/threat_actors/:threatActorId/knowledge"
-                    render={(routeProps) => (
-                      <ThreatActorKnowledge
-                        {...routeProps}
-                        threatActor={props.threatActor}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/threat_actors/:threatActorId/analysis"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.threatActor}
-                          PopoverComponent={<ThreatActorPopover />}
-                        />
-                        <StixCoreObjectOrStixCoreRelationshipContainers
+            if (props) {
+              if (props.threatActor) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/threats/threat_actors/:threatActorId"
+                      render={(routeProps) => (
+                        <ThreatActor
                           {...routeProps}
-                          stixCoreObjectOrStixCoreRelationshipId={threatActorId}
+                          threatActor={props.threatActor}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/threat_actors/:threatActorId/indicators"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.threatActor}
-                          PopoverComponent={<ThreatActorPopover />}
-                          variant="noaliases"
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/threat_actors/:threatActorId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/threats/threat_actors/${threatActorId}/knowledge/overview`}
                         />
-                        <StixDomainObjectIndicators
+                      )}
+                    />
+                    <Route
+                      path="/dashboard/threats/threat_actors/:threatActorId/knowledge"
+                      render={(routeProps) => (
+                        <ThreatActorKnowledge
                           {...routeProps}
-                          stixDomainObjectId={threatActorId}
-                          stixDomainObjectLink={`/dashboard/threats/threat_actors/${threatActorId}/indicators`}
+                          threatActor={props.threatActor}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/threat_actors/:threatActorId/indicators/relations/:relationId"
-                    render={(routeProps) => (
-                      <StixCoreRelationship
-                        entityId={threatActorId}
-                        {...routeProps}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/threat_actors/:threatActorId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.threatActor}
-                          PopoverComponent={<ThreatActorPopover />}
-                        />
-                        <FileManager
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/threat_actors/:threatActorId/analysis"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.threatActor}
+                            PopoverComponent={<ThreatActorPopover />}
+                          />
+                          <StixCoreObjectOrStixCoreRelationshipContainers
+                            {...routeProps}
+                            stixCoreObjectOrStixCoreRelationshipId={
+                              threatActorId
+                            }
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/threat_actors/:threatActorId/indicators"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.threatActor}
+                            PopoverComponent={<ThreatActorPopover />}
+                            variant="noaliases"
+                          />
+                          <StixDomainObjectIndicators
+                            {...routeProps}
+                            stixDomainObjectId={threatActorId}
+                            stixDomainObjectLink={`/dashboard/threats/threat_actors/${threatActorId}/indicators`}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/threat_actors/:threatActorId/indicators/relations/:relationId"
+                      render={(routeProps) => (
+                        <StixCoreRelationship
+                          entityId={threatActorId}
                           {...routeProps}
-                          id={threatActorId}
-                          connectorsImport={[]}
-                          connectorsExport={props.connectorsForExport}
-                          entity={props.threatActor}
                         />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/threats/threat_actors/:threatActorId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <StixDomainObjectHeader
-                          stixDomainObject={props.threatActor}
-                          PopoverComponent={<ThreatActorPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={threatActorId}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/threat_actors/:threatActorId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.threatActor}
+                            PopoverComponent={<ThreatActorPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={threatActorId}
+                            connectorsImport={[]}
+                            connectorsExport={props.connectorsForExport}
+                            entity={props.threatActor}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/threats/threat_actors/:threatActorId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <StixDomainObjectHeader
+                            stixDomainObject={props.threatActor}
+                            PopoverComponent={<ThreatActorPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={threatActorId}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

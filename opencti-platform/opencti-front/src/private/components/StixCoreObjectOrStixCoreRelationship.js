@@ -80,36 +80,42 @@ class StixCoreObjectOrStixCoreRelationship extends Component {
           }
           variables={{ id }}
           render={({ props }) => {
-            if (props && props.stixObjectOrStixRelationship) {
-              let redirectLink = null;
-              const { stixObjectOrStixRelationship } = props;
-              if (stixObjectOrStixRelationship.relationship_type) {
-                if (stixObjectOrStixRelationship.from.relationship_type) {
-                  redirectLink = `${resolveLink(
-                    stixObjectOrStixRelationship.to.entity_type,
-                  )}/${
-                    stixObjectOrStixRelationship.to.id
-                  }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
-                } else if (stixObjectOrStixRelationship.to.relationship_type) {
-                  redirectLink = `${resolveLink(
-                    stixObjectOrStixRelationship.from.entity_type,
-                  )}/${
-                    stixObjectOrStixRelationship.from.id
-                  }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
+            if (props) {
+              if (props.stixObjectOrStixRelationship) {
+                let redirectLink = null;
+                const { stixObjectOrStixRelationship } = props;
+                if (stixObjectOrStixRelationship.relationship_type) {
+                  if (stixObjectOrStixRelationship.from.relationship_type) {
+                    redirectLink = `${resolveLink(
+                      stixObjectOrStixRelationship.to.entity_type,
+                    )}/${
+                      stixObjectOrStixRelationship.to.id
+                    }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
+                  } else if (
+                    stixObjectOrStixRelationship.to.relationship_type
+                  ) {
+                    redirectLink = `${resolveLink(
+                      stixObjectOrStixRelationship.from.entity_type,
+                    )}/${
+                      stixObjectOrStixRelationship.from.id
+                    }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
+                  } else {
+                    redirectLink = `${resolveLink(
+                      stixObjectOrStixRelationship.from.entity_type,
+                    )}/${
+                      stixObjectOrStixRelationship.from.id
+                    }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
+                  }
                 } else {
                   redirectLink = `${resolveLink(
-                    stixObjectOrStixRelationship.from.entity_type,
-                  )}/${
-                    stixObjectOrStixRelationship.from.id
-                  }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
+                    stixObjectOrStixRelationship.entity_type,
+                  )}/${stixObjectOrStixRelationship.id}`;
                 }
-              } else {
-                redirectLink = `${resolveLink(
-                  stixObjectOrStixRelationship.entity_type,
-                )}/${stixObjectOrStixRelationship.id}`;
-              }
-              if (redirectLink) {
-                return <Redirect exact from={`/id/${id}`} to={redirectLink} />;
+                if (redirectLink) {
+                  return (
+                    <Redirect exact from={`/id/${id}`} to={redirectLink} />
+                  );
+                }
               }
               return <ErrorNotFound />;
             }

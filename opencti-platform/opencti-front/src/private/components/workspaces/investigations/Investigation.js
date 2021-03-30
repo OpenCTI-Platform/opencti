@@ -11,6 +11,7 @@ import InvestigationKnowledgeGraph, {
 } from './InvestigationGraph';
 import Loader from '../../../../components/Loader';
 import WorkspaceHeader from '../WorkspaceHeader';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const styles = () => ({
   container: {
@@ -31,10 +32,13 @@ class InvestigationComponent extends Component {
           query={investigationGraphQuery}
           variables={{ id: workspace.id }}
           render={({ props }) => {
-            if (props && props.workspace) {
-              return (
-                <InvestigationKnowledgeGraph workspace={props.workspace} />
-              );
+            if (props) {
+              if (props.workspace) {
+                return (
+                  <InvestigationKnowledgeGraph workspace={props.workspace} />
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

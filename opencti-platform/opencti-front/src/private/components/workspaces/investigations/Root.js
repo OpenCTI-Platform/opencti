@@ -9,6 +9,7 @@ import {
 import TopBar from '../../nav/TopBar';
 import Investigation from './Investigation';
 import Loader from '../../../../components/Loader';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootInvestigationSubscription($id: ID!) {
@@ -60,19 +61,22 @@ class RootInvestigation extends Component {
           query={investigationQuery}
           variables={{ id: workspaceId }}
           render={({ props }) => {
-            if (props && props.workspace) {
-              return (
-                <Route
-                  exact
-                  path="/dashboard/workspaces/investigations/:workspaceId"
-                  render={(routeProps) => (
-                    <Investigation
-                      {...routeProps}
-                      workspace={props.workspace}
-                    />
-                  )}
-                />
-              );
+            if (props) {
+              if (props.workspace) {
+                return (
+                  <Route
+                    exact
+                    path="/dashboard/workspaces/investigations/:workspaceId"
+                    render={(routeProps) => (
+                      <Investigation
+                        {...routeProps}
+                        workspace={props.workspace}
+                      />
+                    )}
+                  />
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}
