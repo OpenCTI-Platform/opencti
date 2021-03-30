@@ -75,6 +75,10 @@ class ContainerStixCyberObservablesComponent extends Component {
     }
   }
 
+  handleClear() {
+    this.setState({ types: [] }, () => this.saveView());
+  }
+
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
@@ -151,6 +155,7 @@ class ContainerStixCyberObservablesComponent extends Component {
         <StixCyberObservablesRightBar
           types={types}
           handleToggle={this.handleToggle.bind(this)}
+          handleClear={this.handleClear.bind(this)}
           openExports={openExports}
         />
       </div>

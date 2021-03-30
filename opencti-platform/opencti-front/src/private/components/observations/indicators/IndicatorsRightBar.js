@@ -10,6 +10,9 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
+import Tooltip from '@material-ui/core/Tooltip';
+import IconButton from '@material-ui/core/IconButton';
+import { FilterOffOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from '../stix_cyber_observables/StixCyberObservablesLines';
@@ -58,6 +61,7 @@ class IndicatorsRightBar extends Component {
       observableTypes,
       handleToggleIndicatorType = [],
       handleToggleObservableType = [],
+      handleClearObservableTypes,
       openExports,
     } = this.props;
     return (
@@ -182,7 +186,16 @@ class IndicatorsRightBar extends Component {
                 <List
                   subheader={
                     <ListSubheader component="div">
-                      {t('Main observable type')}
+                      {t('Observable type')}
+                      <Tooltip title={t('Clear filters')}>
+                        <IconButton
+                          onClick={handleClearObservableTypes.bind(this)}
+                          disabled={observableTypes.length === 0}
+                          color="primary"
+                        >
+                          <FilterOffOutline fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </ListSubheader>
                   }
                 >
@@ -221,6 +234,7 @@ IndicatorsRightBar.propTypes = {
   observableTypes: PropTypes.array,
   handleToggleIndicatorType: PropTypes.func,
   handleToggleObservableType: PropTypes.func,
+  handleClearObservableTypes: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   openExports: PropTypes.bool,

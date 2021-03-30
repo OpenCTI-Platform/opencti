@@ -10,6 +10,9 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import Checkbox from '@material-ui/core/Checkbox';
 import Drawer from '@material-ui/core/Drawer';
+import IconButton from '@material-ui/core/IconButton';
+import Tooltip from '@material-ui/core/Tooltip';
+import { FilterOffOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from './StixCyberObservablesLines';
@@ -52,7 +55,12 @@ const styles = (theme) => ({
 class StixCyberObservablesRightBar extends Component {
   render() {
     const {
-      classes, t, types = [], handleToggle, openExports,
+      classes,
+      t,
+      types = [],
+      handleToggle,
+      handleClear,
+      openExports,
     } = this.props;
     return (
       <Drawer
@@ -80,6 +88,15 @@ class StixCyberObservablesRightBar extends Component {
                   subheader={
                     <ListSubheader component="div">
                       {t('Observable types')}
+                      <Tooltip title={t('Clear filters')}>
+                        <IconButton
+                          onClick={handleClear.bind(this)}
+                          disabled={types.length === 0}
+                          color="primary"
+                        >
+                          <FilterOffOutline fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
                     </ListSubheader>
                   }
                 >
@@ -113,6 +130,7 @@ class StixCyberObservablesRightBar extends Component {
 StixCyberObservablesRightBar.propTypes = {
   types: PropTypes.array,
   handleToggle: PropTypes.func,
+  handleClear: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   openExports: PropTypes.bool,

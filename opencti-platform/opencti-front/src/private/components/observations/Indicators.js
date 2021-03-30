@@ -114,6 +114,10 @@ class Indicators extends Component {
     }
   }
 
+  handleClearObservableTypes() {
+    this.setState({ observableTypes: [] }, () => this.saveView());
+  }
+
   handleAddFilter(key, id, value, event = null) {
     if (event) {
       event.stopPropagation();
@@ -282,6 +286,9 @@ class Indicators extends Component {
           observableTypes={observableTypes}
           handleToggleIndicatorType={this.handleToggleIndicatorType.bind(this)}
           handleToggleObservableType={this.handleToggleObservableType.bind(
+            this,
+          )}
+          handleClearObservableTypes={this.handleClearObservableTypes.bind(
             this,
           )}
           openExports={openExports}

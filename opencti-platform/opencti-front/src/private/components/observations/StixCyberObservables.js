@@ -93,6 +93,10 @@ class StixCyberObservables extends Component {
     }
   }
 
+  handleClear() {
+    this.setState({ observableTypes: [] }, () => this.saveView());
+  }
+
   handleAddFilter(key, id, value, event = null) {
     if (event) {
       event.stopPropagation();
@@ -237,6 +241,7 @@ class StixCyberObservables extends Component {
         <StixCyberObservablesRightBar
           types={observableTypes}
           handleToggle={this.handleToggle.bind(this)}
+          handleClear={this.handleClear.bind(this)}
           openExports={openExports}
         />
       </div>

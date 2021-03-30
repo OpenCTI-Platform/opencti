@@ -825,6 +825,7 @@ const i18n = {
       'Most recent history': 'Historique récent',
       All: 'Tout',
       Clear: 'Effacer',
+      'Clear filters': 'Enlever les filtres',
       'has updated the field': 'a modifié le champ',
       'with the value': 'avec la valeur',
       'has created the entity': "a créé l'éntité",

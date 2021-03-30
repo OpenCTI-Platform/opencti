@@ -40,14 +40,6 @@ class StixCoreObjectStixCyberObservables extends Component {
     this.setState({ searchTerm: value });
   }
 
-  handleOpenToType() {
-    this.setState({ openToType: true });
-  }
-
-  handleCloseToType() {
-    this.setState({ openToType: false });
-  }
-
   handleToggle(type) {
     if (this.state.targetStixCyberObservableTypes.includes(type)) {
       this.setState({
@@ -71,6 +63,10 @@ class StixCoreObjectStixCyberObservables extends Component {
         ),
       });
     }
+  }
+
+  handleClear() {
+    this.setState({ targetStixCyberObservableTypes: [] }, () => this.saveView());
   }
 
   renderLines(paginationOptions) {
@@ -166,6 +162,7 @@ class StixCoreObjectStixCyberObservables extends Component {
           <StixCyberObservablesRightBar
             types={targetStixCyberObservableTypes}
             handleToggle={this.handleToggle.bind(this)}
+            handleClear={this.handleClear.bind(this)}
           />
         ) : (
           ''
