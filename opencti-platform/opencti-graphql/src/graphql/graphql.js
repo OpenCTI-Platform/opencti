@@ -8,7 +8,7 @@ import { authenticateUser } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
-import { sessionMiddleware } from '../app';
+import { getWebSession } from '../app';
 
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
@@ -65,7 +65,7 @@ const createApolloServer = () => {
       onConnect: async (connectionParams, webSocket) => {
         const wsSession = await new Promise((resolve) => {
           // use same session parser as normal gql queries
-          sessionMiddleware(true)(webSocket.upgradeReq, {}, () => {
+          getWebSession()(webSocket.upgradeReq, {}, () => {
             if (webSocket.upgradeReq.session) {
               resolve(webSocket.upgradeReq.session);
             }

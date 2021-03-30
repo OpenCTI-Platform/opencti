@@ -25,22 +25,25 @@ import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
 import { redisSessionStore } from './database/redis';
 
+const ONE_DAY_SESSION = 86400 * 1000;
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
-export const sessionMiddleware = (disableTouch) =>
+export const sessionMiddleware = (staticSession) =>
   session({
     genid: () => uuidv4(),
     name: OPENCTI_SESSION,
-    store: redisSessionStore(disableTouch),
+    store: redisSessionStore(staticSession),
     secret: sessionSecret,
     proxy: true,
-    rolling: !disableTouch,
+    rolling: !staticSession,
     saveUninitialized: false,
     resave: false,
     cookie: {
       secure: conf.get('app:cookie_secure'),
-      _expires: conf.get('app:session_timeout'),
+      _expires: staticSession ? ONE_DAY_SESSION : conf.get('app:session_timeout'),
     },
   });
+let webSession;
+let apiSession;
 const createApp = async (apolloServer, broadcaster) => {
   // Init the http server
   const app = express();
@@ -59,11 +62,13 @@ const createApp = async (apolloServer, broadcaster) => {
   app.use(bodyParser.json({ limit: '100mb' }));
   app.use(cookieParser());
   app.use(compression());
+  webSession = sessionMiddleware(false);
+  apiSession = sessionMiddleware(true);
   app.use((req, res, next) => {
     // If no referer (web site), prevent session extension
     // https://developer.mozilla.org/fr/docs/Web/HTTP/Headers/Referer
-    const disableTouch = !req.headers.referer;
-    return sessionMiddleware(disableTouch)(req, res, next);
+    const isApiSession = !req.headers.referer;
+    return isApiSession ? apiSession(req, res, next) : webSession(req, res, next);
   });
   app.use(cookieParser());
   app.use(compression());
@@ -185,4 +190,5 @@ const createApp = async (apolloServer, broadcaster) => {
   return { app, seeMiddleware };
 };
 
+export const getWebSession = () => webSession;
 export default createApp;

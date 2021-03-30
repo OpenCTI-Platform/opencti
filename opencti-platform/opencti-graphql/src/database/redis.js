@@ -62,7 +62,9 @@ export const redisInitializeClients = async () => {
   clientBase = await createRedisClient(BASE_DATABASE);
   clientContext = await createRedisClient(CONTEXT_DATABASE);
 };
-export const redisSessionStore = (disableTouch) => new RedisStore({ client: clientContext, disableTouch });
+export const redisSessionStore = (longSession) => {
+  return new RedisStore({ client: clientContext, disableTouch: longSession });
+};
 
 export const redisIsAlive = async () => {
   if (clientBase.status !== 'ready' || clientContext.status !== 'ready') {

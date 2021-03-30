@@ -456,7 +456,23 @@ export const authenticateUser = async (req, resolvedTokenUuid = null) => {
       const user = await findByTokenUUID(tokenUUID);
       if (req) {
         req.session.user_id = user.id;
-        req.session.user = user;
+        // Build the user session with only required fields
+        req.session.user = {
+          id: user.id,
+          internal_id: user.internal_id,
+          user_email: user.user_email,
+          capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
+          allowed_marking: user.allowed_marking.map((m) => ({
+            id: m.id,
+            internal_id: m.internal_id,
+            definition_type: m.definition_type,
+          })),
+          all_marking: user.all_marking.map((m) => ({
+            id: m.id,
+            internal_id: m.internal_id,
+            definition_type: m.definition_type,
+          })),
+        };
       }
       return user;
     } catch (err) {

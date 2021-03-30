@@ -21,11 +21,9 @@ MAX_PROCESSING_COUNT = 30
 
 
 class Consumer(threading.Thread):
-    def __init__(self, connector, opencti_url, opencti_token):
+    def __init__(self, connector, api):
         threading.Thread.__init__(self)
-        self.opencti_url = opencti_url
-        self.opencti_token = opencti_token
-        self.api = OpenCTIApiClient(self.opencti_url, self.opencti_token)
+        self.api = api
         self.queue_name = connector["config"]["push"]
         self.pika_credentials = pika.PlainCredentials(
             connector["config"]["connection"]["user"],
@@ -252,15 +250,13 @@ class Worker:
                             )
                             self.consumer_threads[queue] = Consumer(
                                 connector,
-                                self.opencti_url,
-                                self.opencti_token,
+                                self.api,
                             )
                             self.consumer_threads[queue].start()
                     else:
                         self.consumer_threads[queue] = Consumer(
                             connector,
-                            self.opencti_url,
-                            self.opencti_token,
+                            self.api,
                         )
                         self.consumer_threads[queue].start()
 
