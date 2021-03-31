@@ -23,7 +23,6 @@ class Connectors extends Component {
       <div className={classes.container}>
         <QueryRenderer
           query={workersStatusQuery}
-          variables={{ prefix: 'import-connectors' }}
           render={({ props }) => {
             if (props) {
               return <WorkersStatus data={props} />;
@@ -33,7 +32,6 @@ class Connectors extends Component {
         />
         <QueryRenderer
           query={connectorsStatusQuery}
-          variables={{ prefix: 'import-connectors' }}
           render={({ props }) => {
             if (props) {
               return <ConnectorsStatus data={props} />;

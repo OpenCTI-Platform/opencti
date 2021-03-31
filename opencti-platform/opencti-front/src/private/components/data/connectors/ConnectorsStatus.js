@@ -6,7 +6,6 @@ import {
   descend,
   prop,
   sortWith,
-  pipe,
   map,
   assoc,
   filter,
@@ -218,23 +217,24 @@ class ConnectorsStatusComponent extends Component {
       classes, t, n, nsdt, data,
     } = this.props;
     const { queues } = data.rabbitMQMetrics;
-    const connectors = pipe(
-      map((i) => assoc(
+    const connectors = map(
+      (i) => assoc(
         'messages',
         propOr(
           0,
           'messages',
           filter(
             (o) => o.name
-                === (n.connector_type === 'INTERNAL_ENRICHMENT'
+                === (i.connector_type === 'INTERNAL_ENRICHMENT'
                   ? `listen_${i.id}`
                   : `push_${i.id}`),
             queues,
           )[0],
         ),
         i,
-      )),
-    )(data.connectors);
+      ),
+      data.connectors,
+    );
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
@@ -368,8 +368,8 @@ ConnectorsStatusComponent.propTypes = {
 };
 
 export const connectorsStatusQuery = graphql`
-  query ConnectorsStatusQuery($prefix: String) {
-    ...ConnectorsStatus_data  @arguments(prefix: $prefix)
+  query ConnectorsStatusQuery {
+    ...ConnectorsStatus_data
   }
 `;
 
@@ -377,8 +377,7 @@ const ConnectorsStatus = createRefetchContainer(
   ConnectorsStatusComponent,
   {
     data: graphql`
-      fragment ConnectorsStatus_data on Query
-      @argumentDefinitions(prefix: { type: "String" }) {
+      fragment ConnectorsStatus_data on Query {
         connectors {
           id
           name
@@ -394,7 +393,7 @@ const ConnectorsStatus = createRefetchContainer(
             push_exchange
           }
         }
-        rabbitMQMetrics(prefix: $prefix) {
+        rabbitMQMetrics {
           queues {
             name
             messages

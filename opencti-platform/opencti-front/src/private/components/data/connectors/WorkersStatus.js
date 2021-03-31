@@ -130,8 +130,8 @@ WorkersStatusComponent.propTypes = {
 };
 
 export const workersStatusQuery = graphql`
-  query WorkersStatusQuery($prefix: String) {
-    ...WorkersStatus_data @arguments(prefix: $prefix)
+  query WorkersStatusQuery {
+    ...WorkersStatus_data
   }
 `;
 
@@ -139,9 +139,8 @@ const WorkersStatus = createRefetchContainer(
   WorkersStatusComponent,
   {
     data: graphql`
-      fragment WorkersStatus_data on Query
-      @argumentDefinitions(prefix: { type: "String" }) {
-        rabbitMQMetrics(prefix: $prefix) {
+      fragment WorkersStatus_data on Query {
+        rabbitMQMetrics {
           consumers
           overview {
             queue_totals {

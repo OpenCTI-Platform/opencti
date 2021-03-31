@@ -15,7 +15,7 @@ const completeConnector = (connector) => {
     return pipe(
       assoc('connector_scope', connector.connector_scope.split(',')),
       assoc('config', connectorConfig(connector.id)),
-      assoc('active', sinceNowInMinutes(connector.updated_at) < 2)
+      assoc('active', sinceNowInMinutes(connector.updated_at) < 5)
     )(connector);
   }
   return null;
