@@ -20,7 +20,6 @@
       "max_ttl": 30000,
       "extension_threshold": 5000
     },
-    "cookie_secure": false,
     "base_path": "",
     "platform_demo": false,
     "performance_logger": false,
