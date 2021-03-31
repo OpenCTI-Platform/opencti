@@ -142,6 +142,7 @@ export const stixCoreRelationshipCreationQuery = graphql`
       edges {
         node {
           id
+          parent_types
           entity_type
           relationship_type
           description

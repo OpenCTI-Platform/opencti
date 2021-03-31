@@ -368,8 +368,8 @@ ConnectorsStatusComponent.propTypes = {
 };
 
 export const connectorsStatusQuery = graphql`
-  query ConnectorsStatusQuery {
-    ...ConnectorsStatus_data
+  query ConnectorsStatusQuery($prefix: String) {
+    ...ConnectorsStatus_data  @arguments(prefix: $prefix)
   }
 `;
 

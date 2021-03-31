@@ -40,7 +40,7 @@ export const sessionMiddleware = () =>
     saveUninitialized: false,
     resave: false,
     cookie: {
-      secure: conf.get('app:cookie_secure'),
+      // secure: conf.get('app:cookie_secure'),
       _expires: conf.get('app:session_timeout'),
     },
   });
