@@ -10,10 +10,8 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
-import { v4 as uuidv4 } from 'uuid';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
-import createMemoryStore from 'memorystore';
 import contentDisposition from 'content-disposition';
 import session from 'express-session';
 import conf, { basePath, DEV_MODE, logger, OPENCTI_SESSION } from './config/conf';
@@ -24,12 +22,12 @@ import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
+import createMemoryStore from './database/memorystore';
 
 const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
 const MemoryStore = createMemoryStore(session);
 export const sessionMiddleware = () =>
   session({
-    genid: () => uuidv4(),
     name: OPENCTI_SESSION,
     store: new MemoryStore({
       checkPeriod: 3600000, // prune expired entries every 1h
@@ -62,7 +60,6 @@ const createApp = async (apolloServer, broadcaster) => {
   app.use(bodyParser.json({ limit: '100mb' }));
   app.use(cookieParser());
   app.use(compression());
-  app.use(sessionMiddleware());
   app.use(cookieParser());
   app.use(compression());
   app.use(helmet());
@@ -88,8 +85,7 @@ const createApp = async (apolloServer, broadcaster) => {
     })
   );
   app.use(bodyParser.json({ limit: '100mb' }));
-  app.use(passport.initialize());
-  app.use(passport.session());
+  app.use(sessionMiddleware());
   app.use(limiter);
 
   let seeMiddleware;
@@ -143,7 +139,7 @@ const createApp = async (apolloServer, broadcaster) => {
   });
 
   // -- Passport callback
-  app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, (req, res, next) => {
+  app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
     const { provider } = req.params;
     passport.authenticate(provider, {}, async (err, token) => {
       if (err || !token) {
@@ -179,7 +175,6 @@ const createApp = async (apolloServer, broadcaster) => {
     res.redirect('/');
     next();
   });
-
   return { app, seeMiddleware };
 };
 
