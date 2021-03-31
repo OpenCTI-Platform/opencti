@@ -6,7 +6,6 @@ import { readFileSync } from 'fs';
 // noinspection NodeCoreCodingAssistance
 import path from 'path';
 import bodyParser from 'body-parser';
-import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import helmet from 'helmet';
 import nconf from 'nconf';
@@ -42,10 +41,8 @@ export const sessionMiddleware = () =>
     },
   });
 
+const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 const createApp = async (apolloServer, broadcaster) => {
-  // Init the http server
-  const app = express();
-  app.set('json spaces', 2);
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     max: nconf.get('app:rate_protection:max_requests'),
@@ -57,17 +54,10 @@ const createApp = async (apolloServer, broadcaster) => {
   if (DEV_MODE) {
     scriptSrc.push("'unsafe-eval'");
   }
-  app.use(bodyParser.json({ limit: '100mb' }));
-  app.use(cookieParser());
-  app.use(compression());
-  app.use(cookieParser());
-  app.use(compression());
-  app.use(helmet());
-  app.use(helmet.frameguard());
-  app.use(helmet.expectCt({ enforce: true, maxAge: 30 }));
-  app.use(helmet.referrerPolicy({ policy: 'unsafe-url' }));
-  app.use(
-    helmet.contentSecurityPolicy({
+  const securityMiddleware = helmet({
+    expectCt: { enforce: true, maxAge: 30 },
+    referrerPolicy: { policy: 'unsafe-url' },
+    contentSecurityPolicy: {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc,
@@ -82,19 +72,25 @@ const createApp = async (apolloServer, broadcaster) => {
         connectSrc: ["'self'", 'wss://*', 'ws://*'],
         objectSrc: ["'none'"],
       },
-    })
-  );
-  app.use(bodyParser.json({ limit: '100mb' }));
+    },
+  });
+  // Init the http server
+  const app = express();
+  if (DEV_MODE) {
+    app.set('json spaces', 2);
+  }
+  app.use(securityMiddleware);
+  app.use(compression());
   app.use(sessionMiddleware());
+  apolloServer.applyMiddleware({ app, cors: false, onHealthCheck, path: `${basePath}/graphql` });
   app.use(limiter);
+  app.use(bodyParser.json({ limit: '100mb' }));
 
   let seeMiddleware;
   if (broadcaster) {
     seeMiddleware = createSeeMiddleware(broadcaster);
     seeMiddleware.applyMiddleware({ app });
   }
-
-  const urlencodedParser = bodyParser.urlencoded({ extended: true });
 
   // -- Init Taxii rest api
   initTaxiiApi(app);
@@ -139,6 +135,7 @@ const createApp = async (apolloServer, broadcaster) => {
   });
 
   // -- Passport callback
+  const urlencodedParser = bodyParser.urlencoded({ extended: true });
   app.get(`${basePath}/auth/:provider/callback`, urlencodedParser, passport.initialize({}), (req, res, next) => {
     const { provider } = req.params;
     passport.authenticate(provider, {}, async (err, token) => {
@@ -152,12 +149,6 @@ const createApp = async (apolloServer, broadcaster) => {
       return res.redirect(referer);
     })(req, res, next);
   });
-
-  // -- HealthCheck
-  const serverHealthCheck = () => checkSystemDependencies().then(() => getSettings());
-
-  // Apply middleware to answer to graphql call
-  apolloServer.applyMiddleware({ app, onHealthCheck: serverHealthCheck, path: `${basePath}/graphql` });
 
   // Other routes - Render index.html
   app.get('*', (req, res) => {

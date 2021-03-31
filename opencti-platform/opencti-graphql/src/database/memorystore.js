@@ -1,9 +1,4 @@
 /* eslint-disable */
-/*!
- * memorystore
- * Copyright(c) 2020 Rocco Musolino <@roccomuso>
- * MIT Licensed
- */
 
 var debug = require('debug')('memorystore')
 var LRU = require('lru-cache')
@@ -167,11 +162,11 @@ module.exports = function (session) {
    */
 
   MemoryStore.prototype.touch = function (sid, sess, fn) {
+    debug('SET EXPIRE "%s" ttl:%s', sid)
     var store = this.store
 
     var ttl = getTTL(this.options, sess, sid)
 
-    debug('EXPIRE "%s" ttl:%s', sid, ttl)
     var err = null
     if (store.get(sid) !== undefined) {
       try {
@@ -182,6 +177,7 @@ module.exports = function (session) {
         err = e
       }
     }
+    debug('EXPIRED "%s" ttl:%s', sid, ttl)
     fn && fn(err)
   }
 

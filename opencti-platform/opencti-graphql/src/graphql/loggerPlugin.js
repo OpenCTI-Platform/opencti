@@ -39,14 +39,17 @@ export default {
         op = context.operationName;
       },
       willSendResponse: async (context) => {
+        const isCallError = context.errors && context.errors.length > 0;
         const stop = Date.now();
         const elapsed = stop - start;
+        if (!isCallError && !perfLog) {
+          return;
+        }
         const size = Buffer.byteLength(JSON.stringify(context.request.variables));
         const isWrite = context.operation && context.operation.operation === 'mutation';
         const contextUser = context.context.user;
         const origin = contextUser ? contextUser.origin : undefined;
         const [variables] = await tryResolveKeyPromises(context.request.variables);
-        const isCallError = context.errors && context.errors.length > 0;
         // Compute inner relations
         let innerRelationCount = 0;
         if (isWrite) {
