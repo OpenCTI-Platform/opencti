@@ -40,6 +40,12 @@ import {
   YAxis,
   ZAxis,
 } from 'recharts';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import Slide from '@material-ui/core/Slide';
 import inject18n from '../../../../components/i18n';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
@@ -66,6 +72,11 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 class ReportKnowledgeGraphBar extends Component {
   constructor(props) {
     super(props);
@@ -82,7 +93,16 @@ class ReportKnowledgeGraphBar extends Component {
       relationReversed: false,
       openEditRelation: false,
       openEditEntity: false,
+      displayRemove: false,
     };
+  }
+
+  handleOpenRemove() {
+    this.setState({ displayRemove: true });
+  }
+
+  handleCloseRemove() {
+    this.setState({ displayRemove: false });
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -677,7 +697,7 @@ class ReportKnowledgeGraphBar extends Component {
                   <span>
                     <IconButton
                       color="primary"
-                      onClick={handleDeleteSelected.bind(this)}
+                      onClick={this.handleOpenRemove.bind(this)}
                       disabled={
                         numberOfSelectedNodes === 0
                         && numberOfSelectedLinks === 0
@@ -687,6 +707,37 @@ class ReportKnowledgeGraphBar extends Component {
                     </IconButton>
                   </span>
                 </Tooltip>
+                <Dialog
+                  open={this.state.displayRemove}
+                  keepMounted={true}
+                  TransitionComponent={Transition}
+                  onClose={this.handleCloseRemove.bind(this)}
+                >
+                  <DialogContent>
+                    <DialogContentText>
+                      {t(
+                        'Do you want to remove these elements from this report?',
+                      )}
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={this.handleCloseRemove.bind(this)}
+                      color="primary"
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        this.handleCloseRemove();
+                        handleDeleteSelected();
+                      }}
+                      color="primary"
+                    >
+                      {t('Remove')}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
               </div>
             )}
             <div className="clearfix" />

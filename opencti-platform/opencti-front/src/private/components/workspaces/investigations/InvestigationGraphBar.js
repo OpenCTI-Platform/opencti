@@ -48,6 +48,8 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import MenuItem from '@material-ui/core/MenuItem';
 import Divider from '@material-ui/core/Divider';
+import Slide from '@material-ui/core/Slide';
+import DialogContentText from '@material-ui/core/DialogContentText';
 import inject18n from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
@@ -75,6 +77,11 @@ const styles = (theme) => ({
   },
 });
 
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 class InvestigationGraphBar extends Component {
   constructor(props) {
     super(props);
@@ -90,7 +97,16 @@ class InvestigationGraphBar extends Component {
       openEditRelation: false,
       openEditEntity: false,
       openExpandElements: false,
+      displayRemove: false,
     };
+  }
+
+  handleOpenRemove() {
+    this.setState({ displayRemove: true });
+  }
+
+  handleCloseRemove() {
+    this.setState({ displayRemove: false });
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -671,7 +687,7 @@ class InvestigationGraphBar extends Component {
                   <span>
                     <IconButton
                       color="primary"
-                      onClick={handleDeleteSelected.bind(this)}
+                      onClick={this.handleOpenRemove.bind(this)}
                       disabled={
                         numberOfSelectedNodes === 0
                         && numberOfSelectedLinks === 0
@@ -681,6 +697,37 @@ class InvestigationGraphBar extends Component {
                     </IconButton>
                   </span>
                 </Tooltip>
+                <Dialog
+                  open={this.state.displayRemove}
+                  keepMounted={true}
+                  TransitionComponent={Transition}
+                  onClose={this.handleCloseRemove.bind(this)}
+                >
+                  <DialogContent>
+                    <DialogContentText>
+                      {t(
+                        'Do you want to remove these elements from this investigation?',
+                      )}
+                    </DialogContentText>
+                  </DialogContent>
+                  <DialogActions>
+                    <Button
+                      onClick={this.handleCloseRemove.bind(this)}
+                      color="primary"
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      onClick={() => {
+                        this.handleCloseRemove();
+                        handleDeleteSelected();
+                      }}
+                      color="primary"
+                    >
+                      {t('Remove')}
+                    </Button>
+                  </DialogActions>
+                </Dialog>
                 <Dialog
                   open={openExpandElements}
                   onClose={this.handleCloseExpandElements.bind(this)}
