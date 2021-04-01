@@ -108,6 +108,14 @@ class Indicator:
             x_opencti_detection
             x_opencti_main_observable_type
             x_mitre_platforms
+            observables {
+                edges {
+                    node {
+                        id
+                        observable_value
+                    }
+                }
+            }
             killChainPhases {
                 edges {
                     node {
@@ -372,9 +380,9 @@ class Indicator:
                 "[opencti_indicator] Missing parameters: name or pattern or x_opencti_main_observable_type",
             )
 
-    def add_stix_observable(self, **kwargs):
+    def add_stix_cyber_observable(self, **kwargs):
         """
-        Add a Stix-Observable object to Indicator object (based-on)
+        Add a Stix-Cyber-Observable object to Indicator object (based-on)
 
         :param id: the id of the Indicator
         :param indicator: Indicator object
@@ -406,21 +414,20 @@ class Indicator:
                     + "}",
                 )
                 query = """
-                   mutation IndicatorEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
-                       indicatorEdit(id: $id) {
-                            relationAdd(input: $input) {
-                                id
-                            }
-                       }
-                   }
+                    mutation StixCoreRelationshipAdd($input: StixCoreRelationshipAddInput!) {
+                        stixCoreRelationshipAdd(input: $input) {
+                            id
+                        }
+                    }
                 """
                 self.opencti.query(
                     query,
                     {
                         "id": id,
                         "input": {
+                            "fromId": id,
                             "toId": stix_cyber_observable_id,
-                            "through": "based-on",
+                            "relationship_type": "based-on",
                         },
                     },
                 )
