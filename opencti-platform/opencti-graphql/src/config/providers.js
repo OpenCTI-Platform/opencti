@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import passport from 'passport/lib';
 import FacebookStrategy from 'passport-facebook';
 import GithubStrategy from 'passport-github';
@@ -6,15 +7,15 @@ import LdapStrategy from 'passport-ldapauth';
 import Auth0Strategy from 'passport-auth0';
 import { Strategy as OpenIDStrategy, Issuer as OpenIDIssuer } from 'openid-client';
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
-import { assoc, head, anyPass, isNil, isEmpty } from 'ramda';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
 import conf, { logger } from './conf';
 import { ConfigurationError } from './errors';
 
+const empty = R.anyPass([R.isNil, R.isEmpty]);
+
 // Admin user initialization
 export const initializeAdminUser = async () => {
-  const empty = anyPass([isNil, isEmpty]);
   const DEFAULT_CONF_VALUE = 'ChangeMe';
   const adminEmail = conf.get('app:admin:email');
   const adminPassword = conf.get('app:admin:password');
@@ -105,7 +106,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
     if (strategy === 'LdapStrategy') {
       // eslint-disable-next-line
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
-      mappedConfig = assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
+      mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: mappedConfig };
       const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
         logger.debug(`[LDAP] Successfully logged`, { user });
@@ -116,7 +117,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           done(null);
         } else {
           logger.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
-          loginFromProvider(userMail, userName || userMail)
+          loginFromProvider(userMail, empty(userName) ? userMail : userName)
             .then((token) => {
               done(null, token);
             })
@@ -177,7 +178,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const googleOptions = { ...mappedConfig, ...specificConfig };
       const googleStrategy = new GoogleStrategy(googleOptions, (token, tokenSecret, profile, done) => {
         logger.debug(`[GOOGLE] Successfully logged`, { profile });
-        const email = head(profile.emails).value;
+        const email = R.head(profile.emails).value;
         const name = profile.displayNamel;
         // let picture = head(profile.photos).value;
         loginFromProvider(email, name || email)
@@ -198,7 +199,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const githubStrategy = new GithubStrategy(githubOptions, (token, tokenSecret, profile, done) => {
         logger.debug(`[GITHUB] Successfully logged`, { profile });
         const { displayName } = profile;
-        const email = head(profile.emails).value;
+        const email = R.head(profile.emails).value;
         // let picture = profile.avatar_url;
         loginFromProvider(email, displayName || email)
           .then((loggedToken) => {
@@ -216,7 +217,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const auth0Strategy = new Auth0Strategy(mappedConfig, (accessToken, refreshToken, extraParams, profile, done) => {
         logger.debug(`[AUTH0] Successfully logged`, { profile });
         const userName = profile.displayName;
-        const email = head(profile.emails).value;
+        const email = R.head(profile.emails).value;
         loginFromProvider(email, userName || email)
           .then((token) => {
             done(null, token);
