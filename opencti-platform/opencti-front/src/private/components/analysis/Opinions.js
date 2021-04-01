@@ -14,6 +14,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import inject18n from '../../../components/i18n';
 import OpinionCreation from './opinions/OpinionCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Opinions extends Component {
   constructor(props) {

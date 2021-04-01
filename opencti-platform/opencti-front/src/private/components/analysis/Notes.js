@@ -14,6 +14,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import NotesLines, { notesLinesQuery } from './notes/NotesLines';
 import inject18n from '../../../components/i18n';
 import NoteCreation from './notes/NoteCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class Notes extends Component {
   constructor(props) {

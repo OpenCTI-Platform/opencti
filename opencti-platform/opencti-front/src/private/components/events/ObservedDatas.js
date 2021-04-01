@@ -16,6 +16,7 @@ import ObservedDatasLines, {
 } from './observed_data/ObservedDatasLines';
 import inject18n from '../../../components/i18n';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../utils/Security';
 
 class ObservedDatas extends Component {
   constructor(props) {
