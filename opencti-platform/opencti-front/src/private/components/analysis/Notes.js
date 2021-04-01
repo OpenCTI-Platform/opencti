@@ -213,7 +213,9 @@ class Notes extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <NoteCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <NoteCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

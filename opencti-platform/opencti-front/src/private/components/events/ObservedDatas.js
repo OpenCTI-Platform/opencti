@@ -222,7 +222,9 @@ class ObservedDatas extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <ObservedDataCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ObservedDataCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

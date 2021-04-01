@@ -110,7 +110,9 @@ class ExternalReferences extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <ExternalReferenceCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ExternalReferenceCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }

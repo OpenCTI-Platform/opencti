@@ -213,7 +213,9 @@ class Opinions extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <OpinionCreation paginationOptions={paginationOptions} />
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <OpinionCreation paginationOptions={paginationOptions} />
+        </Security>
       </div>
     );
   }
