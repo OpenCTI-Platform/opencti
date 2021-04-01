@@ -140,7 +140,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const openIDStrategy = new OpenIDStrategy(options, (tokenset, userinfo, done) => {
           logger.debug(`[OPENID] Successfully logged`, { userinfo });
           const { email, name } = userinfo;
-          loginFromProvider(email, name || email)
+          loginFromProvider(email, empty(name) ? email : name)
             .then((token) => {
               done(null, token);
             })
@@ -161,7 +161,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         logger.debug(`[FACEBOOK] Successfully logged`, { profile: data });
         const name = `${data.last_name} ${data.first_name}`;
         const { email } = data;
-        loginFromProvider(email, data.first_name && data.last_name ? name : email)
+        loginFromProvider(email, empty(data.first_name) || empty(data.last_name) ? email : name)
           .then((token) => {
             done(null, token);
           })
@@ -181,7 +181,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const email = R.head(profile.emails).value;
         const name = profile.displayNamel;
         // let picture = head(profile.photos).value;
-        loginFromProvider(email, name || email)
+        loginFromProvider(email, empty(name) ? email : name)
           .then((loggedToken) => {
             done(null, loggedToken);
           })
@@ -201,7 +201,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const { displayName } = profile;
         const email = R.head(profile.emails).value;
         // let picture = profile.avatar_url;
-        loginFromProvider(email, displayName || email)
+        loginFromProvider(email, empty(displayName) ? email : displayName)
           .then((loggedToken) => {
             done(null, loggedToken);
           })
@@ -218,7 +218,7 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         logger.debug(`[AUTH0] Successfully logged`, { profile });
         const userName = profile.displayName;
         const email = R.head(profile.emails).value;
-        loginFromProvider(email, userName || email)
+        loginFromProvider(email, empty(userName) ? email : userName)
           .then((token) => {
             done(null, token);
           })
