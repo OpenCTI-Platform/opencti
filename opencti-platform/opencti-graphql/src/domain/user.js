@@ -3,7 +3,7 @@ import moment from 'moment';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { map } from 'ramda';
-import { clearUsersSession, delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
+import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import {
   BUS_TOPICS,
@@ -42,19 +42,14 @@ import {
   RELATION_HAS_ROLE,
   RELATION_MEMBER_OF,
 } from '../schema/internalRelationship';
-import {
-  ABSTRACT_INTERNAL_RELATIONSHIP,
-  BYPASS,
-  OPENCTI_ADMIN_UUID,
-  OPENCTI_SYSTEM_UUID,
-  REL_INDEX_PREFIX,
-} from '../schema/general';
+import { ABSTRACT_INTERNAL_RELATIONSHIP, BYPASS, OPENCTI_ADMIN_UUID, OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elLoadBy } from '../database/elasticSearch';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
+import { applicationSession } from '../database/session';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -182,18 +177,44 @@ export const findRoles = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_ROLE], args);
 };
 
+export const findSessions = () => {
+  const { store } = applicationSession();
+  return new Promise((accept) => {
+    store.all((err, result) => {
+      const sessionsPerUser = R.groupBy((s) => s.user.id, result);
+      const sessions = Object.entries(sessionsPerUser).map(([k, v]) => {
+        return {
+          user_id: k,
+          sessions: v.map((s) => ({ id: s.id, created: s.user.session_creation })),
+        };
+      });
+      accept(sessions);
+    });
+  });
+};
+export const fetchSessionTtl = (session) => {
+  const { store } = applicationSession();
+  return new Promise((accept) => {
+    store.expiration(session.id, (err, ttl) => {
+      accept(ttl);
+    });
+  });
+};
+export const killSession = (id) => {
+  const { store } = applicationSession();
+  return new Promise((accept) => {
+    store.destroy(id, () => {
+      accept(id);
+    });
+  });
+};
+
 export const findCapabilities = (user, args) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);
   return listEntities(user, [ENTITY_TYPE_CAPABILITY], finalArgs);
 };
 
 export const roleDelete = async (user, roleId) => {
-  // Clear cache of every user with this deleted role
-  const impactedUsers = await findAll(user, {
-    filters: [{ key: `${REL_INDEX_PREFIX}${RELATION_HAS_ROLE}.internal_id`, values: [roleId] }],
-  });
-  const userIds = impactedUsers.edges.map((e) => e.node.id);
-  await clearUsersSession(userIds);
   return deleteElementById(user, roleId, ENTITY_TYPE_ROLE);
 };
 
@@ -318,7 +339,6 @@ export const userDelete = async (user, userId) => {
     await deleteElementById(user, userToken.id, ENTITY_TYPE_TOKEN);
   }
   await deleteElementById(user, userId, ENTITY_TYPE_USER);
-  await clearUsersSession([userId]);
   return userId;
 };
 
@@ -346,7 +366,6 @@ export const userDeleteRelation = async (user, userId, toId, relationshipType) =
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(user, userId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  await clearUsersSession([userId]);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, userData, user);
 };
 
@@ -454,11 +473,12 @@ export const authenticateUser = async (req, resolvedTokenUuid = null) => {
   if (tokenUUID) {
     try {
       const user = await findByTokenUUID(tokenUUID);
-      if (req) {
-        req.session.user_id = user.id;
+      if (req && user) {
         // Build the user session with only required fields
         req.session.user = {
           id: user.id,
+          token_uuid: tokenUUID,
+          session_creation: now(),
           internal_id: user.internal_id,
           user_email: user.user_email,
           capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),

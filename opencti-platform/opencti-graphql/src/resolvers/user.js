@@ -29,6 +29,8 @@ import {
   userCleanContext,
   getMarkings,
   authenticateUser,
+  findSessions,
+  fetchSessionTtl, killSession,
 } from '../domain/user';
 import { BUS_TOPICS, logger } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -49,6 +51,7 @@ const userResolvers = {
     users: (_, args, { user }) => findAll(user, args),
     role: (_, { id }, { user }) => findRoleById(user, id),
     roles: (_, args, { user }) => findRoles(user, args),
+    sessions: () => findSessions(),
     capabilities: (_, args, { user }) => findCapabilities(user, args),
     me: (_, args, { user }) => findById(user, user.id),
   },
@@ -59,6 +62,12 @@ const userResolvers = {
     capabilities: (current) => getCapabilities(current.id),
     token: (current, _, { user }) => token(user, current.id),
     editContext: (current) => fetchEditContext(current.id),
+  },
+  UserSession: {
+    user: (session, _, { user }) => findById(user, session.user_id),
+  },
+  SessionDetail: {
+    ttl: (session) => fetchSessionTtl(session),
   },
   Role: {
     editContext: (role) => fetchEditContext(role.id),
@@ -90,6 +99,7 @@ const userResolvers = {
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
     },
+    sessionKill: (_, { id }) => killSession(id),
     logout: (_, args, context) => logout(context.user, context.req, context.res),
     roleEdit: (_, { id }, { user }) => ({
       delete: () => roleDelete(user, id),

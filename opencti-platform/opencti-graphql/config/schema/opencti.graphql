@@ -591,6 +591,15 @@ type User implements BasicObject & InternalObject {
   # Technical
   editContext: [EditUserContext]
 }
+type SessionDetail {
+  id: ID!
+  created: DateTime
+  ttl: Int
+}
+type UserSession {
+  user: User
+  sessions: [SessionDetail]
+}
 input UserAddInput {
   user_email: String @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 2)
@@ -7400,6 +7409,7 @@ type Query {
     search: String
     toStix: Boolean
   ): UserConnection @auth(for: [SETTINGS_SETACCESSES])
+  sessions: [UserSession] @auth(for: [SETTINGS_SETACCESSES])
   role(id: String!): Role @auth(for: [SETTINGS_SETACCESSES])
   capabilities(first: Int): CapabilityConnection @auth(for: [SETTINGS_SETACCESSES])
   connector(id: String!): Connector @auth(for: [MODULES])
@@ -8569,6 +8579,7 @@ type Mutation {
   meEdit(input: EditInput, operation: EditOperation): User @auth
   logout: ID @auth
   roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
+  sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])

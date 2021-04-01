@@ -8,7 +8,7 @@ import { authenticateUser } from '../domain/user';
 import { UnknownError, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
-import { sessionMiddleware } from '../app';
+import { applicationSession } from '../database/session';
 
 const buildContext = (user, req, res) => {
   const workId = req.headers['opencti-work-id'];
@@ -65,7 +65,8 @@ const createApolloServer = () => {
       onConnect: async (connectionParams, webSocket) => {
         const wsSession = await new Promise((resolve) => {
           // use same session parser as normal gql queries
-          sessionMiddleware()(webSocket.upgradeReq, {}, () => {
+          const { session } = applicationSession();
+          session(webSocket.upgradeReq, {}, () => {
             if (webSocket.upgradeReq.session) {
               resolve(webSocket.upgradeReq.session);
             }
@@ -73,7 +74,7 @@ const createApolloServer = () => {
           });
         });
         // We have a good session. attach to context
-        if (wsSession.user_id) {
+        if (wsSession.user) {
           return { user: wsSession.user };
         }
         // throwing error rejects the connection

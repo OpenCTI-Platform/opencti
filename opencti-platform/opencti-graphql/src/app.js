@@ -12,8 +12,7 @@ import nconf from 'nconf';
 import RateLimit from 'express-rate-limit';
 import sanitize from 'sanitize-filename';
 import contentDisposition from 'content-disposition';
-import session from 'express-session';
-import conf, { basePath, DEV_MODE, logger, OPENCTI_SESSION } from './config/conf';
+import { basePath, DEV_MODE, logger } from './config/conf';
 import passport from './config/providers';
 import { authenticateUser } from './domain/user';
 import { downloadFile, loadFile } from './database/minio';
@@ -21,28 +20,12 @@ import { checkSystemDependencies } from './initialization';
 import { getSettings } from './domain/settings';
 import createSeeMiddleware from './graphql/sseMiddleware';
 import initTaxiiApi from './taxiiApi';
-import createMemoryStore from './database/memorystore';
-
-const sessionSecret = nconf.get('app:session_secret') || nconf.get('app:admin:password');
-const MemoryStore = createMemoryStore(session);
-export const sessionMiddleware = () =>
-  session({
-    name: OPENCTI_SESSION,
-    store: new MemoryStore({
-      checkPeriod: 3600000, // prune expired entries every 1h
-    }),
-    secret: sessionSecret,
-    proxy: true,
-    rolling: true,
-    saveUninitialized: false,
-    resave: false,
-    cookie: {
-      _expires: conf.get('app:session_timeout'),
-    },
-  });
+import { initializeSession } from './database/session';
 
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
+
 const createApp = async (apolloServer, broadcaster) => {
+  const appSessionHandler = await initializeSession();
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     max: nconf.get('app:rate_protection:max_requests'),
@@ -76,24 +59,12 @@ const createApp = async (apolloServer, broadcaster) => {
   });
   // Init the http server
   const app = express();
+  app.use(limiter);
   if (DEV_MODE) {
     app.set('json spaces', 2);
   }
   app.use(securityMiddleware);
-  app.use(compression());
-  app.use(sessionMiddleware());
-  apolloServer.applyMiddleware({ app, cors: false, onHealthCheck, path: `${basePath}/graphql` });
-  app.use(limiter);
-  app.use(bodyParser.json({ limit: '100mb' }));
-
-  let seeMiddleware;
-  if (broadcaster) {
-    seeMiddleware = createSeeMiddleware(broadcaster);
-    seeMiddleware.applyMiddleware({ app });
-  }
-
-  // -- Init Taxii rest api
-  initTaxiiApi(app);
+  app.use(compression({}));
 
   // -- Generated CSS with correct base path
   app.get(`${basePath}/static/css/*`, (req, res) => {
@@ -104,6 +75,20 @@ const createApp = async (apolloServer, broadcaster) => {
     res.send(withBasePath);
   });
   app.use(`${basePath}/static`, express.static(path.join(__dirname, '../public/static')));
+
+  app.use(appSessionHandler.session);
+  // app.use(refreshSessionMiddleware);
+  apolloServer.applyMiddleware({ app, cors: false, onHealthCheck, path: `${basePath}/graphql` });
+  app.use(bodyParser.json({ limit: '100mb' }));
+
+  let seeMiddleware;
+  if (broadcaster) {
+    seeMiddleware = createSeeMiddleware(broadcaster);
+    seeMiddleware.applyMiddleware({ app });
+  }
+
+  // -- Init Taxii rest api
+  initTaxiiApi(app);
 
   // -- File download
   app.get(`${basePath}/storage/get/:file(*)`, async (req, res) => {
@@ -140,7 +125,7 @@ const createApp = async (apolloServer, broadcaster) => {
     const { provider } = req.params;
     passport.authenticate(provider, {}, async (err, token) => {
       if (err || !token) {
-        return res.redirect(`/dashboard?message=${err.message}`);
+        return res.redirect(`/dashboard?message=${err?.message}`);
       }
       // noinspection UnnecessaryLocalVariableJS
       await authenticateUser(req, token.uuid);

@@ -21,9 +21,12 @@ import { DatabaseError, FunctionalError } from '../config/errors';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { MARKING_DEFINITION_STATEMENT } from '../schema/stixMetaObject';
 import { now } from '../utils/format';
+import RedisStore from './sessionStore-redis';
+import SessionStoreMemory from './sessionStore-memory';
 
 const BASE_DATABASE = 0; // works key for tracking / stream
-const CONTEXT_DATABASE = 1; // locks / user context
+export const CONTEXT_DATABASE = 1; // locks / user context
+export const SESSION_DATABASE = 2; // locks / user context
 const OPENCTI_STREAM = 'stream.opencti';
 const REDIS_EXPIRE_TIME = 90;
 const redisOptions = (database) => ({
@@ -42,7 +45,7 @@ export const pubsub = new RedisPubSub({
   publisher: new Redis(redisOptions()),
   subscriber: new Redis(redisOptions()),
 });
-const createRedisClient = async (database = BASE_DATABASE) => {
+export const createRedisClient = async (database = BASE_DATABASE) => {
   const client = new Redis(redisOptions(database));
   if (client.status !== 'ready') {
     await client.connect().catch(() => {
@@ -58,6 +61,14 @@ let clientContext = null;
 export const redisInitializeClients = async () => {
   clientBase = await createRedisClient(BASE_DATABASE);
   clientContext = await createRedisClient(CONTEXT_DATABASE);
+};
+export const createMemorySessionStore = () => {
+  return new SessionStoreMemory({
+    checkPeriod: 3600000, // prune expired entries every 1h
+  });
+};
+export const createRedisSessionStore = () => {
+  return new RedisStore(clientContext);
 };
 
 export const redisIsAlive = async () => {
@@ -141,16 +152,6 @@ export const delUserContext = async (user) => {
       resolve();
     });
   });
-};
-// endregion
-
-// region session
-export const clearUsersSession = async (userIds) => {
-  const sessions = await contextFetchMatch(`sess:*`);
-  const keysToInvalidate = sessions.filter((s) => userIds.includes(s.user_id)).map((s) => s.redis_key);
-  if (keysToInvalidate.length > 0) {
-    clientContext.del(keysToInvalidate);
-  }
 };
 // endregion
 

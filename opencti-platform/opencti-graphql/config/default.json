@@ -9,6 +9,7 @@
     "logs_level": "info",
     "request_timeout": 120000,
     "session_timeout": 1200000,
+    "session_manager": "shared",
     "rate_protection": {
       "time_window": 1,
       "max_requests": 10000
