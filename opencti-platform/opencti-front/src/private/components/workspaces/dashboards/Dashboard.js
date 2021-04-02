@@ -54,10 +54,11 @@ const styles = (theme) => ({
   },
   bottomNav: {
     zIndex: 1000,
-    padding: '7px 274px 0 215px',
+    padding: '7px 0 0 205px',
     backgroundColor: theme.palette.navBottom.background,
     display: 'flex',
     height: 64,
+    overflow: 'hidden',
   },
   paper: {
     height: '100%',
@@ -385,7 +386,7 @@ class DashboardComponent extends Component {
     const relativeDate = R.propOr(null, 'relativeDate', manifest.config);
     return (
       <div className={classes.container}>
-        <WorkspaceHeader workspace={workspace} />
+        <WorkspaceHeader workspace={workspace} variant='dashboard' />
         <Drawer
           anchor="bottom"
           variant="permanent"
@@ -438,7 +439,6 @@ class DashboardComponent extends Component {
             </Grid>
           </Grid>
         </Drawer>
-        <br />
         <Security
           needs={[EXPLORE_EXUPDATE]}
           placeholder={

@@ -126,10 +126,12 @@ class WorkspaceHeader extends Component {
   }
 
   render() {
-    const { t, classes, workspace } = this.props;
+    const {
+      t, classes, workspace, variant,
+    } = this.props;
     const tags = propOr([], 'tags', workspace);
     return (
-      <div>
+      <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
         <Typography
           variant="h1"
           gutterBottom={true}
@@ -214,6 +216,7 @@ WorkspaceHeader.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  variant: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(WorkspaceHeader);
