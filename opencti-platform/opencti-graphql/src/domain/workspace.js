@@ -18,6 +18,7 @@ import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, REL_INDEX_PREFIX } from '../schema/general';
 import { isInternalRelationship, RELATION_HAS_REFERENCE } from '../schema/internalRelationship';
+import { generateInternalId } from '../schema/identifier';
 
 export const findById = (user, workspaceId) => {
   return loadById(user, workspaceId, ENTITY_TYPE_WORKSPACE);
@@ -41,7 +42,8 @@ export const objects = async (user, workspaceId, args) => {
 };
 
 export const addWorkspace = async (user, workspace) => {
-  const created = await createEntity(user, workspace, ENTITY_TYPE_WORKSPACE);
+  const workspaceToCreate = R.assoc('internal_id', generateInternalId(), workspace);
+  const created = await createEntity(user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
 

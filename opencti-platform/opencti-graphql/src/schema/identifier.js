@@ -12,7 +12,7 @@ import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFOR
 import { isStixMetaObject } from './stixMetaObject';
 import { isStixDomainObject, isStixDomainObjectIdentity, isStixDomainObjectLocation } from './stixDomainObject';
 import { isStixCyberObservable } from './stixCyberObservable';
-import { ENTITY_TYPE_WORKSPACE, isInternalObject } from './internalObject';
+import { isInternalObject } from './internalObject';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixMetaRelationship } from './stixMetaRelationship';
@@ -128,7 +128,7 @@ const stixEntityContribution = {
     [I.ENTITY_TYPE_CAPABILITY]: [{ src: NAME_FIELD }],
     [I.ENTITY_TYPE_CONNECTOR]: [{ src: 'internal_id' }],
     [I.ENTITY_TYPE_ATTRIBUTE]: [], // ALL
-    [I.ENTITY_TYPE_WORKSPACE]: [{ src: NAME_FIELD }],
+    [I.ENTITY_TYPE_WORKSPACE]: [], // ALL
     [I.ENTITY_TYPE_TAXII_COLLECTION]: [], // ALL
     // Stix Domain
     [D.ENTITY_TYPE_ATTACK_PATTERN]: [{ src: X_MITRE_ID_FIELD }],
@@ -298,8 +298,6 @@ export const generateInternalId = () => uuidv4();
 export const generateWorkId = () => `opencti-work--${generateInternalId()}`;
 export const generateStandardId = (type, data) => {
   // Entities
-  // V4 ID
-  if (type === ENTITY_TYPE_WORKSPACE) return `workspace--${generateInternalId()}`;
   if (isStixMetaObject(type)) return generateStixId(type, data);
   if (isStixDomainObject(type)) return generateStixId(type, data);
   if (isStixCyberObservable(type)) return generateStixId(type, data);
