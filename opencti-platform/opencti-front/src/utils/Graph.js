@@ -315,7 +315,9 @@ export const computeTimeRangeValues = (interval, objects) => {
 
 export const buildGraphData = (objects, graphData, t) => {
   const relationshipsIdsInNestedRelationship = R.pipe(
-    R.filter((n) => n.from?.relationship_type || n.to?.relationship_type),
+    R.filter(
+      (n) => n.from && n.to && (n.from.relationship_type || n.to.relationship_type),
+    ),
     R.map((n) => (n.from?.relationship_type ? n.from.id : n.to.id)),
   )(objects);
   const nodes = R.pipe(
@@ -384,7 +386,9 @@ export const buildGraphData = (objects, graphData, t) => {
   const normalLinks = R.pipe(
     R.filter(
       (n) => n.parent_types.includes('basic-relationship')
-        && !R.includes(n.id, relationshipsIdsInNestedRelationship),
+        && !R.includes(n.id, relationshipsIdsInNestedRelationship)
+        && n.from
+        && n.to,
     ),
     R.map((n) => ({
       id: n.id,
