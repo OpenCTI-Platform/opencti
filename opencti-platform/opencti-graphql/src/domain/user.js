@@ -177,6 +177,7 @@ export const findRoles = (user, args) => {
   return listEntities(user, [ENTITY_TYPE_ROLE], args);
 };
 
+// region session management
 export const findSessions = () => {
   const { store } = applicationSession();
   return new Promise((accept) => {
@@ -192,6 +193,16 @@ export const findSessions = () => {
     });
   });
 };
+
+export const findUserSessions = async (userId) => {
+  const sessions = await findSessions();
+  const userSessions = sessions.filter((s) => s.user_id === userId);
+  if (userSessions.length > 0) {
+    return R.head(userSessions).sessions;
+  }
+  return [];
+};
+
 export const fetchSessionTtl = (session) => {
   const { store } = applicationSession();
   return new Promise((accept) => {
@@ -200,6 +211,7 @@ export const fetchSessionTtl = (session) => {
     });
   });
 };
+
 export const killSession = (id) => {
   const { store } = applicationSession();
   return new Promise((accept) => {
@@ -208,6 +220,17 @@ export const killSession = (id) => {
     });
   });
 };
+
+export const killUserSessions = async (userId) => {
+  const sessions = await findUserSessions(userId);
+  const sessionsIds = sessions.map((s) => s.id);
+  for (let index = 0; index < sessionsIds.length; index += 1) {
+    const sessionId = sessionsIds[index];
+    await killSession(sessionId);
+  }
+  return sessionsIds;
+};
+// endregion
 
 export const findCapabilities = (user, args) => {
   const finalArgs = R.assoc('orderBy', 'attribute_order', args);

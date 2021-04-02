@@ -14,7 +14,7 @@ class RedisStore extends Store {
     this.scanCount = Number(options.scanCount) || 100;
     this.serializer = options.serializer || JSON;
     this.ttl = options.ttl || 86400; // One day in seconds.
-    this.cache = new LRU({ maxAge: 60000 }); // Force refresh the session every minute
+    this.cache = new LRU({ maxAge: 1 }); // Force refresh the session every sec
     this.touchCache = new LRU({ maxAge: 120000 }); // Touch the session every 2 minutes
     this.locker = new AsyncLock();
   }

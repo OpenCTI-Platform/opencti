@@ -30,7 +30,10 @@ import {
   getMarkings,
   authenticateUser,
   findSessions,
-  fetchSessionTtl, killSession,
+  fetchSessionTtl,
+  killSession,
+  findUserSessions,
+  killUserSessions,
 } from '../domain/user';
 import { BUS_TOPICS, logger } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -62,6 +65,7 @@ const userResolvers = {
     capabilities: (current) => getCapabilities(current.id),
     token: (current, _, { user }) => token(user, current.id),
     editContext: (current) => fetchEditContext(current.id),
+    sessions: (current) => findUserSessions(current.id),
   },
   UserSession: {
     user: (session, _, { user }) => findById(user, session.user_id),
@@ -100,6 +104,7 @@ const userResolvers = {
       throw AuthenticationFailure();
     },
     sessionKill: (_, { id }) => killSession(id),
+    userSessionsKill: (_, { id }) => killUserSessions(id),
     logout: (_, args, context) => logout(context.user, context.req, context.res),
     roleEdit: (_, { id }, { user }) => ({
       delete: () => roleDelete(user, id),

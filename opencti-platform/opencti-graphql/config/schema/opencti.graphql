@@ -588,6 +588,7 @@ type User implements BasicObject & InternalObject {
   created_at: DateTime!
   updated_at: DateTime!
   allowed_marking: [MarkingDefinition]
+  sessions: [SessionDetail]
   # Technical
   editContext: [EditUserContext]
 }
@@ -8582,6 +8583,7 @@ type Mutation {
   logout: ID @auth
   roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
+  userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
   pingConnector(id: ID!, state: String): Connector @auth(for: [CONNECTORAPI])
   registerConnector(input: RegisterConnectorInput): Connector @auth(for: [CONNECTORAPI])
