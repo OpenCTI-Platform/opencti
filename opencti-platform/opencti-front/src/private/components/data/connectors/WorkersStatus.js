@@ -86,7 +86,7 @@ class WorkersStatusComponent extends Component {
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {n(overview.queue_totals.messages_ready)}
+                  {n(pathOr(0, ['queue_totals', 'messages'], overview))}
                 </div>
                 <div className={classes.title}>{t('Queued messages')}</div>
               </div>
@@ -94,10 +94,12 @@ class WorkersStatusComponent extends Component {
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {pathOr(
-                    0,
-                    ['message_stats', 'ack_details', 'rate'],
-                    overview,
+                  {n(
+                    pathOr(
+                      0,
+                      ['message_stats', 'ack_details', 'rate'],
+                      overview,
+                    ),
                   )}
                   /s
                 </div>
@@ -144,7 +146,9 @@ const WorkersStatus = createRefetchContainer(
           consumers
           overview {
             queue_totals {
+              messages
               messages_ready
+              messages_unacknowledged
             }
             message_stats {
               ack

@@ -99,6 +99,7 @@ export const graphImages = {
   'X-OpenCTI-Cryptocurrency-Wallet': genImage(StixCyberObservable),
   'X-OpenCTI-Hostname': genImage(StixCyberObservable),
   'X-OpenCTI-User-Agent': genImage(StixCyberObservable),
+  'X-OpenCTI-Text': genImage(StixCyberObservable),
   relationship: genImage(relationship),
 };
 
@@ -150,6 +151,7 @@ export const graphLevel = {
   'X-OpenCTI-Cryptocurrency-Wallet': 1,
   'X-OpenCTI-Hostname': 1,
   'X-OpenCTI-User-Agent': 1,
+  'X-OpenCTI-Text': 1,
   relationship: 1,
 };
 
@@ -204,6 +206,7 @@ export const graphRawImages = {
   'X-OpenCTI-Cryptocurrency-Wallet': StixCyberObservable,
   'X-OpenCTI-Hostname': StixCyberObservable,
   'X-OpenCTI-User-Agent': StixCyberObservable,
+  'X-OpenCTI-Text': StixCyberObservable,
 };
 
 export const encodeGraphData = (graphData) => Buffer.from(JSON.stringify(graphData), 'ascii').toString('base64');

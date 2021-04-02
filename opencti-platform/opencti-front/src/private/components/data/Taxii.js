@@ -59,6 +59,7 @@ class Taxii extends Component {
       },
       filters: {
         label: 'Filters',
+        width: '60%',
       },
     };
     return (

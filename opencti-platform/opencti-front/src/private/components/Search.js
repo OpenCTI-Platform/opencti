@@ -47,12 +47,12 @@ const styles = () => ({
     margin: '-3px 0 0 15px',
   },
   filter: {
-    marginRight: 10,
+    margin: '0 10px 10px 0',
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: 'rgba(64, 193, 255, 0.2)',
-    marginRight: 10,
+    margin: '0 10px 10px 0',
   },
 });
 

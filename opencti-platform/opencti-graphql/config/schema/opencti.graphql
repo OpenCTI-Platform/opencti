@@ -1124,6 +1124,7 @@ enum StixDomainObjectsFilter {
   x_opencti_main_observable_type
   report_types
   x_opencti_report_status
+  x_opencti_organization_type
   published
 }
 input StixDomainObjectsFiltering {
@@ -4287,6 +4288,7 @@ enum StixCyberObservablesOrdering {
 enum StixCyberObservablesFilter {
   entity_type
   x_opencti_score
+  x_opencti_organization_type
   created
   modified
   created_at

@@ -75,12 +75,12 @@ const styles = (theme) => ({
     marginLeft: theme.spacing(2),
   },
   filter: {
-    marginRight: 10,
+    margin: '0 10px 10px 0',
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: 'rgba(64, 193, 255, 0.2)',
-    marginRight: 10,
+    margin: '0 10px 10px 0',
   },
 });
 
@@ -125,7 +125,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const createdByEntities = pipe(
             pathOr([], ['identities', 'edges']),
             map((n) => ({
               label: n.node.name,
@@ -134,7 +134,13 @@ class Filters extends Component {
             })),
           )(data);
           this.setState({
-            entities: { createdBy: union(this.state.entities, entities) },
+            entities: {
+              ...this.state.entities,
+              createdBy: union(
+                createdByEntities,
+                this.state.entities.createdBy,
+              ),
+            },
           });
         });
         break;
@@ -143,7 +149,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const markedByEntities = pipe(
             pathOr([], ['markingDefinitions', 'edges']),
             map((n) => ({
               label: n.node.definition,
@@ -154,7 +160,8 @@ class Filters extends Component {
           )(data);
           this.setState({
             entities: {
-              markedBy: union(this.state.entities, entities),
+              ...this.state.entities,
+              markedBy: union(markedByEntities, this.state.entities.markedBy),
             },
           });
         });
@@ -164,7 +171,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const labelledByEntities = pipe(
             pathOr([], ['labels', 'edges']),
             map((n) => ({
               label: n.node.value,
@@ -174,38 +181,50 @@ class Filters extends Component {
             })),
           )(data);
           this.setState({
-            entities: { labelledBy: union(this.state.entities, entities) },
+            entities: {
+              ...this.state.entities,
+              labelledBy: union(
+                labelledByEntities,
+                this.state.entities.labelledBy,
+              ),
+            },
           });
         });
         break;
       case 'x_opencti_base_score_gt':
+        // eslint-disable-next-line no-case-declarations
+        const baseScoreEntities = pipe(
+          map((n) => ({
+            label: n,
+            value: n,
+            type: 'attribute',
+          })),
+        )(['1', '2', '3', '4', '5', '6', '7', '8', '9']);
         this.setState({
           entities: {
+            ...this.state.entities,
             x_opencti_base_score_gt: union(
-              this.state.entities,
-              pipe(
-                map((n) => ({
-                  label: n,
-                  value: n,
-                  type: 'attribute',
-                })),
-              )(['1', '2', '3', '4', '5', '6', '7', '8', '9']),
+              baseScoreEntities,
+              this.state.entities.x_opencti_base_score_gt,
             ),
           },
         });
         break;
       case 'confidence_gt':
+        // eslint-disable-next-line no-case-declarations
+        const confidenceEntities = pipe(
+          map((n) => ({
+            label: t(`confidence_${n.toString()}`),
+            value: n,
+            type: 'attribute',
+          })),
+        )(['0', '15', '50', '75', '85']);
         this.setState({
           entities: {
+            ...this.state.entities,
             confidence_gt: union(
-              this.state.entities,
-              pipe(
-                map((n) => ({
-                  label: t(`confidence_${n.toString()}`),
-                  value: n,
-                  type: 'attribute',
-                })),
-              )(['0', '15', '50', '75', '85']),
+              confidenceEntities,
+              this.state.entities.confidence_gt,
             ),
           },
         });
@@ -216,7 +235,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const severityEntities = pipe(
             pathOr([], ['attributes', 'edges']),
             map((n) => ({
               label: n.node.value,
@@ -226,7 +245,11 @@ class Filters extends Component {
           )(data);
           this.setState({
             entities: {
-              x_opencti_base_severity: union(this.state.entities, entities),
+              ...this.state.entities,
+              x_opencti_base_severity: union(
+                severityEntities,
+                this.state.entities.x_opencti_base_severity,
+              ),
             },
           });
         });
@@ -237,7 +260,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const attackVectorEntities = pipe(
             pathOr([], ['attributes', 'edges']),
             map((n) => ({
               label: n.node.value,
@@ -247,7 +270,11 @@ class Filters extends Component {
           )(data);
           this.setState({
             entities: {
-              x_opencti_attack_vector: union(this.state.entities, entities),
+              ...this.state.entities,
+              x_opencti_attack_vector: union(
+                attackVectorEntities,
+                this.state.entities.x_opencti_attack_vector,
+              ),
             },
           });
         });
@@ -258,7 +285,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const reportStatusEntities = pipe(
             pathOr([], ['attributes', 'edges']),
             map((n) => ({
               label: t(`report_status_${n.node.value}`),
@@ -268,7 +295,11 @@ class Filters extends Component {
           )(data);
           this.setState({
             entities: {
-              x_opencti_report_status: union(this.state.entities, entities),
+              ...this.state.entities,
+              x_opencti_report_status: union(
+                reportStatusEntities,
+                this.state.entities.x_opencti_report_status,
+              ),
             },
           });
         });
@@ -279,7 +310,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const organizationTypeEntities = pipe(
             pathOr([], ['attributes', 'edges']),
             map((n) => ({
               label: n.node.value,
@@ -289,7 +320,11 @@ class Filters extends Component {
           )(data);
           this.setState({
             entities: {
-              x_opencti_organization_type: union(this.state.entities, entities),
+              ...this.state.entities,
+              x_opencti_organization_type: union(
+                organizationTypeEntities,
+                this.state.entities.x_opencti_organization_type,
+              ),
             },
           });
         });
@@ -300,7 +335,7 @@ class Filters extends Component {
           search: event && event.target.value !== 0 ? event.target.value : '',
           first: 10,
         }).then((data) => {
-          const entities = pipe(
+          const reportTypesEntities = pipe(
             pathOr([], ['attributes', 'edges']),
             map((n) => ({
               label: t(n.node.value),
@@ -310,58 +345,62 @@ class Filters extends Component {
           )(data);
           this.setState({
             entities: {
-              report_types: union(this.state.entities, entities),
+              ...this.state.entities,
+              report_types: union(
+                reportTypesEntities,
+                this.state.entities.report_types,
+              ),
             },
           });
         });
         break;
       case 'entity_type':
+        // eslint-disable-next-line no-case-declarations
+        const entitiesTypes = pipe(
+          map((n) => ({
+            label: t(
+              n.toString()[0] === n.toString()[0].toUpperCase()
+                ? `entity_${n.toString()}`
+                : `relationship_${n.toString()}`,
+            ),
+            value: n,
+            type: n,
+          })),
+          sortWith([ascend(prop('label'))]),
+        )([
+          'Attack-Pattern',
+          'Campaign',
+          'Note',
+          'Observed-Data',
+          'Opinion',
+          'Report',
+          'Course-Of-Action',
+          'Individual',
+          'Organization',
+          'Sector',
+          'Indicator',
+          'Infrastructure',
+          'Intrusion-Set',
+          'City',
+          'Country',
+          'Region',
+          'Position',
+          'Malware',
+          'Threat-Actor',
+          'Tool',
+          'Vulnerability',
+          'X-OpenCTI-Incident',
+          'Stix-Cyber-Observable',
+          'Stix-Core-Relationship',
+          'indicates',
+          'targets',
+          'uses',
+          'located-at',
+        ]);
         this.setState({
           entities: {
-            entity_type: union(
-              this.state.entities,
-              pipe(
-                map((n) => ({
-                  label: t(
-                    n.toString()[0] === n.toString()[0].toUpperCase()
-                      ? `entity_${n.toString()}`
-                      : `relationship_${n.toString()}`,
-                  ),
-                  value: n,
-                  type: n,
-                })),
-                sortWith([ascend(prop('label'))]),
-              )([
-                'Attack-Pattern',
-                'Campaign',
-                'Note',
-                'Observed-Data',
-                'Opinion',
-                'Report',
-                'Course-Of-Action',
-                'Individual',
-                'Organization',
-                'Sector',
-                'Indicator',
-                'Infrastructure',
-                'Intrusion-Set',
-                'City',
-                'Country',
-                'Region',
-                'Position',
-                'Malware',
-                'Threat-Actor',
-                'Tool',
-                'Vulnerability',
-                'X-OpenCTI-Incident',
-                'Stix-Cyber-Observable',
-                'Stix-Core-Relationship',
-                'indicates',
-                'targets',
-                'uses',
-                'located-at',
-              ]),
-            ),
+            ...this.state.entities,
+            entity_type: union(entitiesTypes, this.state.entities.entity_type),
           },
         });
         break;
@@ -448,6 +487,7 @@ class Filters extends Component {
               <Grid key={filterKey} item={true} xs={6}>
                 <Autocomplete
                   selectOnFocus={true}
+                  openOnFocus={true}
                   autoSelect={false}
                   autoHighlight={true}
                   getOptionLabel={(option) => (option.label ? option.label : '')

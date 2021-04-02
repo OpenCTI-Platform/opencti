@@ -29,7 +29,7 @@ import { truncate } from '../../../../utils/String';
 const styles = (theme) => ({
   header: {
     backgroundColor: theme.palette.navAlt.backgroundHeader,
-    padding: '20px 20px 20px 60px',
+    padding: '20px 0px 20px 60px',
   },
   closeButton: {
     position: 'absolute',
@@ -56,15 +56,15 @@ const styles = (theme) => ({
   },
   filters: {
     float: 'left',
-    margin: '-8px 0 0 -5px',
+    margin: '-8px 18px 0 -5px',
   },
   filter: {
-    marginRight: 10,
+    margin: '0 10px 10px 0',
   },
   operator: {
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: 'rgba(64, 193, 255, 0.2)',
-    marginRight: 10,
+    margin: '0 10px 10px 0',
   },
 });
 
@@ -160,6 +160,19 @@ const TaxiiCollectionEditionContainer = (props) => {
         <Typography variant="h6" classes={{ root: classes.title }}>
           {t('Update a TAXII collection')}
         </Typography>
+        <div style={{ float: 'right', margin: '10px 0 0 0' }}>
+          <Filters
+            variant="text"
+            availableFilterKeys={[
+              'entity_type',
+              'markedBy',
+              'labelledBy',
+              'createdBy',
+            ]}
+            currentFilters={[]}
+            handleAddFilter={handleAddFilter}
+          />
+        </div>
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
@@ -186,17 +199,6 @@ const TaxiiCollectionEditionContainer = (props) => {
                 onSubmit={handleSubmitField}
               />
               <div style={{ marginTop: 35 }}>
-                <Filters
-                  variant="text"
-                  availableFilterKeys={[
-                    'entity_type',
-                    'markedBy',
-                    'labelledBy',
-                    'createdBy',
-                  ]}
-                  currentFilters={[]}
-                  handleAddFilter={handleAddFilter}
-                />
                 <div className={classes.filters}>
                   {map((currentFilter) => {
                     const label = `${truncate(
