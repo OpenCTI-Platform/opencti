@@ -25,7 +25,7 @@ import { initializeSession } from './database/session';
 const onHealthCheck = () => checkSystemDependencies().then(() => getSettings());
 
 const createApp = async (apolloServer, broadcaster) => {
-  const appSessionHandler = await initializeSession();
+  const appSessionHandler = initializeSession();
   const limiter = new RateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
     max: nconf.get('app:rate_protection:max_requests'),
