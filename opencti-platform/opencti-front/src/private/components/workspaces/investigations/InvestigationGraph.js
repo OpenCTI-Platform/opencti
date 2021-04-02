@@ -1197,7 +1197,7 @@ class InvestigationGraphComponent extends Component {
               : filters.relationship_type,
           elementWithTargetTypes:
             filters.entity_type === 'All' ? null : [filters.entity_type],
-          count: filters.limit,
+          count: parseInt(filters.limit, 10),
         },
       ).then((data) => {
         const currentElementsIds = R.map((k) => k.id, this.graphObjects);
