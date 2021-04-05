@@ -81,11 +81,11 @@ const createApp = async (apolloServer, broadcaster) => {
   apolloServer.applyMiddleware({ app, cors: false, onHealthCheck, path: `${basePath}/graphql` });
   app.use(bodyParser.json({ limit: '100mb' }));
 
-  let seeMiddleware;
-  if (broadcaster) {
-    seeMiddleware = createSeeMiddleware(broadcaster);
-    seeMiddleware.applyMiddleware({ app });
-  }
+  // let seeMiddleware;
+  // if (broadcaster) {
+  const seeMiddleware = createSeeMiddleware(broadcaster);
+  seeMiddleware.applyMiddleware({ app });
+  // }
 
   // -- Init Taxii rest api
   initTaxiiApi(app);

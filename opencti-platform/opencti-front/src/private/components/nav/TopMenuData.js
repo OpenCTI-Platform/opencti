@@ -71,6 +71,26 @@ class TopMenuData extends Component {
         </Security>
         <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
           <Button
+              component={Link}
+              to="/dashboard/data/stream"
+              variant={
+                location.pathname === '/dashboard/data/stream'
+                  ? 'contained'
+                  : 'text'
+              }
+              size="small"
+              color={
+                location.pathname === '/dashboard/data/stream'
+                  ? 'primary'
+                  : 'inherit'
+              }
+              classes={{ root: classes.button }}
+          >
+            {t('Live streams')}
+          </Button>
+        </Security>
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <Button
             component={Link}
             to="/dashboard/data/taxii"
             variant={
@@ -86,7 +106,7 @@ class TopMenuData extends Component {
             }
             classes={{ root: classes.button }}
           >
-            {t('TAXII API')}
+            {t('Taxii feeds')}
           </Button>
         </Security>
       </div>

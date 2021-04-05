@@ -105,7 +105,7 @@ const isDefinedValue = (element, diffMode) => {
     if (diffMode) return true;
     // If not in diff mode, we only take into account none empty element
     const isArray = Array.isArray(element);
-    if (isArray) return isArray.length > 0;
+    if (isArray) return element.length > 0;
     // If not array, check if empty
     return !R.isEmpty(element);
   }

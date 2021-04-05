@@ -368,14 +368,7 @@ export const storeDeleteEvent = async (user, instance) => {
   try {
     if (isStixObject(instance.entity_type)) {
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = {
-        id: instance.standard_id,
-        x_opencti_id: instance.internal_id,
-        type: convertTypeToStixType(instance.entity_type),
-      };
-      if (instance.hashes) {
-        data.hashes = instance.hashes;
-      }
+      const data = stixDataConverter(instance, { diffMode: false });
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
       return pushToStream(clientBase, event);
     }
@@ -389,15 +382,7 @@ export const storeDeleteEvent = async (user, instance) => {
       }
       // for other deletion, just produce a delete event
       const message = generateLogMessage(EVENT_TYPE_DELETE, instance);
-      const data = {
-        id: instance.standard_id,
-        x_opencti_id: instance.internal_id,
-        type: convertTypeToStixType(instance.entity_type),
-        source_ref: instance.from.standard_id,
-        x_opencti_source_ref: instance.from.internal_id,
-        target_ref: instance.to.standard_id,
-        x_opencti_target_ref: instance.to.internal_id,
-      };
+      const data = stixDataConverter(instance, { diffMode: false });
       const event = buildEvent(EVENT_TYPE_DELETE, user, instance.objectMarking, message, data);
       return pushToStream(clientBase, event);
     }
@@ -426,23 +411,31 @@ const processStreamResult = async (results, callback) => {
   for (let index = 0; index < streamData.length; index += 1) {
     const dataElement = streamData[index];
     const { eventId, type, markings, origin, data, message } = dataElement;
-    const eventData = { markings, origin, data, message };
+    const eventData = { markings, origin, data, message, type };
     await callback(eventId, type, eventData);
   }
   return lastElement.eventId;
 };
 
 let processingLoopPromise;
-let streamListening = true;
 const MAX_RANGE_MESSAGES = 2000;
 const WAIT_TIME = 20000;
-export const createStreamProcessor = (callback) => {
+export const createStreamProcessor = (callback, start = 'live') => {
   let startEventId;
+  let streamListening = true;
   const processInfo = async () => {
     return fetchStreamInfo();
   };
   const processStep = async (client) => {
-    const streamResult = await client.xread('BLOCK', WAIT_TIME, 'COUNT', 1, 'STREAMS', OPENCTI_STREAM, startEventId);
+    const streamResult = await client.xread(
+      'BLOCK',
+      WAIT_TIME,
+      'COUNT',
+      MAX_RANGE_MESSAGES,
+      'STREAMS',
+      OPENCTI_STREAM,
+      startEventId
+    );
     // since previous call is async (and blocking) we should check if we are still running before processing the message
     if (!streamListening) {
       return false;
@@ -455,8 +448,9 @@ export const createStreamProcessor = (callback) => {
     return true;
   };
   const processingLoop = async (client) => {
-    const streamInfo = await processInfo();
-    startEventId = streamInfo.lastEventId;
+    startEventId = start === 'live' ? '$' : start;
+    // const streamInfo = await processInfo();
+    // startEventId = streamInfo.lastEventId;
     while (streamListening) {
       if (!(await processStep(client))) {
         break;

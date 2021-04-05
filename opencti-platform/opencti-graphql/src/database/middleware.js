@@ -2047,7 +2047,7 @@ export const deleteElementById = async (user, elementId, type) => {
     throw FunctionalError(`You need to specify a type when deleting an entity`);
   }
   // Check consistency
-  const element = await markedLoadById(user, elementId, type);
+  const element = await stixLoadById(user, elementId, type);
   if (!element) {
     throw FunctionalError('Cant find element to delete', { elementId });
   }

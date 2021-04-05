@@ -5,6 +5,7 @@ import Curation from './Curation';
 import Taxii from './Taxii';
 import { BoundaryRoute } from '../Error';
 import RootConnector from './connectors/Root';
+import Stream from './Stream';
 
 const Root = () => (
   <Switch>
@@ -24,6 +25,7 @@ const Root = () => (
     />
     <BoundaryRoute exact path="/dashboard/data/curation" component={Curation} />
     <BoundaryRoute exact path="/dashboard/data/taxii" component={Taxii} />
+    <BoundaryRoute exact path="/dashboard/data/stream" component={Stream} />
   </Switch>
 );
 

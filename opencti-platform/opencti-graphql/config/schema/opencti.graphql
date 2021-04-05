@@ -365,6 +365,31 @@ enum TaxiiCollectionOrdering {
   description
 }
 
+############## Stream
+type StreamCollection {
+  id: ID!
+  name: String
+  description: String
+  filters: String
+}
+type StreamCollectionConnection {
+  pageInfo: PageInfo!
+  edges: [StreamCollectionEdge]
+}
+type StreamCollectionEdge {
+  cursor: String!
+  node: StreamCollection!
+}
+input StreamCollectionAddInput {
+  name: String!
+  description: String
+  filters: String
+}
+enum StreamCollectionOrdering {
+  name
+  description
+}
+
 ############## SubTypes
 enum SubTypesOrdering {
   label
@@ -7457,6 +7482,14 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollection(id: String!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollections(
+    first: Int
+    after: ID
+    orderBy: StreamCollectionOrdering
+    orderMode: OrderingMode
+    search: String
+  ): StreamCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT ENTITIES
 
@@ -8251,6 +8284,11 @@ type TaxiiCollectionEditMutations {
   fieldPatch(input: EditInput, operation: EditOperation): TaxiiCollection
 }
 
+type StreamCollectionEditMutations {
+  delete: ID
+  fieldPatch(input: EditInput, operation: EditOperation): StreamCollection
+}
+
 ######## STIX OBJECT ENTITIES
 
 ######## STIX META OBJECT ENTITIES
@@ -8595,6 +8633,8 @@ type Mutation {
   workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
   taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT ENTITIES
 

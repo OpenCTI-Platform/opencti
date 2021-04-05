@@ -7,18 +7,18 @@ import { readFileSync } from 'fs';
 import conf, { logger } from './config/conf';
 import createApp from './app';
 import createApolloServer from './graphql/graphql';
-import { initBroadcaster } from './graphql/sseMiddleware';
+// import { initBroadcaster } from './graphql/sseMiddleware';
 import initExpiredManager from './manager/expiredManager';
 
 const PORT = conf.get('app:port');
 const REQ_TIMEOUT = conf.get('app:request_timeout');
 const CERT_KEY_PATH = conf.get('app:https_cert:key');
 const CERT_KEY_CERT = conf.get('app:https_cert:crt');
-const broadcaster = initBroadcaster();
+// const broadcaster = initBroadcaster();
 const expiredManager = initExpiredManager();
 const createHttpServer = async () => {
   const apolloServer = createApolloServer();
-  const { app, seeMiddleware } = await createApp(apolloServer, broadcaster);
+  const { app, seeMiddleware } = await createApp(apolloServer, null);
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
     const key = readFileSync(CERT_KEY_PATH);
@@ -29,7 +29,7 @@ const createHttpServer = async () => {
   }
   httpServer.setTimeout(REQ_TIMEOUT || 120000);
   apolloServer.installSubscriptionHandlers(httpServer);
-  await broadcaster.start();
+  // await broadcaster.start();
   await expiredManager.start();
   return { httpServer, seeMiddleware };
 };
@@ -66,7 +66,7 @@ export const restartServer = async (httpServer) => {
   });
 };
 export const stopServer = async (httpServer) => {
-  await broadcaster.shutdown();
+  // await broadcaster.shutdown();
   await expiredManager.shutdown();
   return new Promise((resolve) => {
     httpServer.close(() => {

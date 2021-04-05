@@ -14,6 +14,7 @@ export const ENTITY_TYPE_ATTRIBUTE = 'Attribute';
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
+export const ENTITY_TYPE_STREAM_COLLECTION = 'StreamCollection';
 const DATED_INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_TOKEN,
@@ -27,6 +28,7 @@ const DATED_INTERNAL_OBJECTS = [
 const INTERNAL_OBJECTS = [
   ENTITY_TYPE_SETTINGS,
   ENTITY_TYPE_TAXII_COLLECTION,
+  ENTITY_TYPE_STREAM_COLLECTION,
   ENTITY_TYPE_MIGRATION_STATUS,
   ENTITY_TYPE_MIGRATION_REFERENCE,
   ENTITY_TYPE_TOKEN,
@@ -171,5 +173,6 @@ export const internalObjectsAttributes = {
     'updated_at',
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
+  [ENTITY_TYPE_STREAM_COLLECTION]: ['internal_id', 'standard_id', 'name', 'description', 'filters'],
 };
 R.forEachObjIndexed((value, key) => schemaTypes.registerAttributes(key, value), internalObjectsAttributes);

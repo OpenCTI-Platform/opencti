@@ -122,6 +122,23 @@ export const batchRoles = async (user, userId) => {
   return batchListThroughGetTo(user, userId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
 };
 
+export const computeAvailableMarkings = (markings, all) => {
+  const computedMarkings = [];
+  for (let index = 0; index < markings.length; index += 1) {
+    const mark = markings[index];
+    // Find all marking of same type with rank <=
+    const { id } = mark;
+    const findMarking = R.find((m) => m.id === id, all);
+    computedMarkings.push(findMarking);
+    const { x_opencti_order: order, definition_type: type } = findMarking;
+    const matchingMarkings = R.filter((m) => {
+      return id !== m.id && m.definition_type === type && m.x_opencti_order <= order;
+    }, all);
+    computedMarkings.push(...matchingMarkings);
+  }
+  return R.uniqBy((m) => m.id, computedMarkings);
+};
+
 export const getUserAndGlobalMarkings = async (userId, capabilities) => {
   const userGroups = await listThroughGetTo(SYSTEM_USER, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP);
   const groupIds = userGroups.map((r) => r.id);
@@ -135,18 +152,8 @@ export const getUserAndGlobalMarkings = async (userId, capabilities) => {
     userMarkingsPromise = listThroughGetTo(SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
   }
   const [userMarkings, markings] = await Promise.all([userMarkingsPromise, allMarkingsPromise]);
-  const computedMarkings = [];
-  for (let index = 0; index < userMarkings.length; index += 1) {
-    const userMarking = userMarkings[index];
-    computedMarkings.push(userMarking);
-    // Find all marking of same type with rank <=
-    const { id, x_opencti_order: order, definition_type: type } = userMarking;
-    const matchingMarkings = R.filter((m) => {
-      return id !== m.id && m.definition_type === type && m.x_opencti_order <= order;
-    }, markings);
-    computedMarkings.push(...matchingMarkings);
-  }
-  return { user: R.uniqBy((m) => m.id, computedMarkings), all: markings };
+  const computedMarkings = computeAvailableMarkings(userMarkings, markings);
+  return { user: computedMarkings, all: markings };
 };
 
 export const getMarkings = async (userId, capabilities) => {
@@ -508,11 +515,13 @@ export const authenticateUser = async (req, resolvedTokenUuid = null) => {
           allowed_marking: user.allowed_marking.map((m) => ({
             id: m.id,
             internal_id: m.internal_id,
+            x_opencti_order: m.x_opencti_order,
             definition_type: m.definition_type,
           })),
           all_marking: user.all_marking.map((m) => ({
             id: m.id,
             internal_id: m.internal_id,
+            x_opencti_order: m.x_opencti_order,
             definition_type: m.definition_type,
           })),
         };
