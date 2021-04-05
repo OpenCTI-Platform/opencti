@@ -24,6 +24,7 @@ import {
   QueryRenderer,
 } from '../../../../relay/environment';
 import ConnectorWorks, { connectorWorksQuery } from './ConnectorWorks';
+import { truncate } from '../../../../utils/String';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -273,7 +274,7 @@ class ConnectorComponent extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('State')}
                   </Typography>
-                  <pre>{connector.connector_state}</pre>
+                  <pre>{truncate(connector.connector_state, 200)}</pre>
                 </Grid>
                 <Grid item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>

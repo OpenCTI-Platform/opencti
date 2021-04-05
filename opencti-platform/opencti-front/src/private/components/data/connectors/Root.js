@@ -5,6 +5,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Connector, { connectorQuery } from './Connector';
 import Loader from '../../../../components/Loader';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 class RootConnector extends Component {
   render() {
@@ -21,18 +22,24 @@ class RootConnector extends Component {
           query={connectorQuery}
           variables={{ id: connectorId }}
           render={({ props }) => {
-            if (props && props.connector) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/data/connectors/:connectorId"
-                    render={(routeProps) => (
-                      <Connector {...routeProps} connector={props.connector} />
-                    )}
-                  />
-                </div>
-              );
+            if (props) {
+              if (props.connector) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/data/connectors/:connectorId"
+                      render={(routeProps) => (
+                        <Connector
+                          {...routeProps}
+                          connector={props.connector}
+                        />
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

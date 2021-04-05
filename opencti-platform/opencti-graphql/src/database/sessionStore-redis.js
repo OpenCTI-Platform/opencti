@@ -51,9 +51,10 @@ class RedisStore extends Store {
     } catch (er) {
       return cb(er);
     }
+    args.push(this._getTTL(sess));
     args.push(value);
     const sessionSetter = (done) => {
-      return this.client.set(args, (err, data) => {
+      return this.client.setex(args, (err, data) => {
         cache.set(`get-${key}`, sess);
         return done(null, data);
       });

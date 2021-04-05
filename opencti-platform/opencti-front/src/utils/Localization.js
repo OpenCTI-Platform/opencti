@@ -53,6 +53,10 @@ const i18n = {
         'Souhaitez-vous supprimer cette étape de kill chain ?',
       'Do you want to delete this report?':
         'Souhaitez-vous supprimer ce rapport ?',
+      'Do you want to kill this session?':
+        'Souhaitez-vous supprimer cette session ?',
+      'Do you want to kill all the sessions of this user?':
+        'Souhaitez-vous supprimer toutes les sessions de cet utilisateur ?',
       'Do you want to delete this external reference?':
         'Souhaitez-vous supprimer cette référence externe ?',
       'Do you want to delete this region?':

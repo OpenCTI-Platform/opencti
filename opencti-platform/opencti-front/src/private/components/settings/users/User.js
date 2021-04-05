@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer } from 'react-relay';
+import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
@@ -9,7 +9,14 @@ import Typography from '@material-ui/core/Typography';
 import Paper from '@material-ui/core/Paper';
 import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
-import { Edit, Group, Security } from '@material-ui/icons';
+import {
+  Edit,
+  GroupOutlined,
+  Delete,
+  DeleteForeverOutlined,
+  SecurityOutlined,
+  ReceiptOutlined,
+} from '@material-ui/icons';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import {
@@ -23,21 +30,45 @@ import {
 } from 'recharts';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
+import IconButton from '@material-ui/core/IconButton';
+import Dialog from '@material-ui/core/Dialog';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogActions from '@material-ui/core/DialogActions';
+import Button from '@material-ui/core/Button';
+import Slide from '@material-ui/core/Slide';
+import { interval } from 'rxjs';
+import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import UserEdition from './UserEdition';
 import UserPopover, { userEditionQuery } from './UserPopover';
 import AccessesMenu from '../AccessesMenu';
-import { QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
-import { truncate } from '../../../../utils/String';
-import { now, yearsAgo } from '../../../../utils/Time';
+import {
+  FIVE_SECONDS, now, timestamp, yearsAgo,
+} from '../../../../utils/Time';
 import Theme from '../../../../components/ThemeDark';
 import UserHistory from './UserHistory';
+
+const Transition = React.forwardRef((props, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
+const interval$ = interval(FIVE_SECONDS);
+const startDate = yearsAgo(1);
+const endDate = now();
 
 const styles = (theme) => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
+  },
+  killAllSessionsButton: {
+    float: 'left',
+    marginTop: -15,
   },
   editButton: {
     position: 'fixed',
@@ -94,6 +125,18 @@ const styles = (theme) => ({
   },
 });
 
+export const userSessionKillMutation = graphql`
+  mutation UserSessionKillMutation($id: ID!) {
+    sessionKill(id: $id)
+  }
+`;
+
+export const userUserSessionsKillMutation = graphql`
+  mutation UserUserSessionsKillMutation($id: ID!) {
+    userSessionsKill(id: $id)
+  }
+`;
+
 const userLogsTimeSeriesQuery = graphql`
   query UserLogsTimeSeriesQuery(
     $field: String!
@@ -122,7 +165,20 @@ class UserComponent extends Component {
     super(props);
     this.state = {
       displayUpdate: false,
+      displayKillSession: false,
+      killing: false,
+      sessionToKill: null,
     };
+  }
+
+  componentDidMount() {
+    this.subscription = interval$.subscribe(() => {
+      this.props.relay.refetch({ id: this.props.user.id });
+    });
+  }
+
+  componentWillUnmount() {
+    this.subscription.unsubscribe();
   }
 
   handleOpenUpdate() {
@@ -133,10 +189,58 @@ class UserComponent extends Component {
     this.setState({ displayUpdate: false });
   }
 
+  handleOpenKillSession(session) {
+    this.setState({ displayKillSession: true, sessionToKill: session });
+  }
+
+  handleCloseKillSession() {
+    this.setState({ displayKillSession: false, sessionToKill: null });
+  }
+
+  submitKillSession() {
+    this.setState({ killing: true });
+    commitMutation({
+      mutation: userSessionKillMutation,
+      variables: {
+        id: this.state.sessionToKill,
+      },
+      onCompleted: () => {
+        this.setState({ killing: false });
+        this.handleCloseKillSession();
+      },
+    });
+  }
+
+  handleOpenKillSessions() {
+    this.setState({ displayKillSessions: true });
+  }
+
+  handleCloseKillSessions() {
+    this.setState({ displayKillSessions: false });
+  }
+
+  submitKillSessions() {
+    this.setState({ killing: true });
+    commitMutation({
+      mutation: userUserSessionsKillMutation,
+      variables: {
+        id: this.props.user.id,
+      },
+      onCompleted: () => {
+        this.setState({ killing: false });
+        this.handleCloseKillSessions();
+      },
+    });
+  }
+
   render() {
     const {
-      classes, user, t, mtd, nsd,
+      classes, user, t, mtd, nsd, nsdt,
     } = this.props;
+    const orderedSessions = R.sort(
+      (a, b) => timestamp(a.created) - timestamp(b.created),
+      user.sessions,
+    );
     return (
       <div className={classes.container}>
         <AccessesMenu />
@@ -210,12 +314,9 @@ class UserComponent extends Component {
                         button={false}
                       >
                         <ListItemIcon>
-                          <Security color="primary" />
+                          <SecurityOutlined color="primary" />
                         </ListItemIcon>
-                        <ListItemText
-                          primary={role.name}
-                          secondary={truncate(role.description, 50)}
-                        />
+                        <ListItemText primary={role.name} />
                       </ListItem>
                     ))}
                   </List>
@@ -233,12 +334,64 @@ class UserComponent extends Component {
                         button={false}
                       >
                         <ListItemIcon>
-                          <Group color="primary" />
+                          <GroupOutlined color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={groupEdge.node.name} />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Grid>
+                <Grid item={true} xs={12}>
+                  <Typography
+                    variant="h3"
+                    gutterBottom={true}
+                    style={{ float: 'left' }}
+                  >
+                    {t('Sessions')}
+                  </Typography>
+                  <IconButton
+                    color="secondary"
+                    aria-label="Delete all"
+                    onClick={this.handleOpenKillSessions.bind(this)}
+                    classes={{ root: classes.killAllSessionsButton }}
+                  >
+                    <DeleteForeverOutlined fontSize="small" />
+                  </IconButton>
+                  <div className="clearfix" />
+                  <List>
+                    {orderedSessions.map((session) => (
+                      <ListItem
+                        key={session.id}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon>
+                          <ReceiptOutlined color="primary" fontSize="small" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={groupEdge.node.name}
-                          secondary={truncate(groupEdge.node.description, 50)}
+                          primary={
+                            <div>
+                              <div style={{ float: 'left', width: '50%' }}>
+                                {nsdt(session.created)}
+                              </div>
+                              <div style={{ float: 'left', width: '20%' }}>
+                                {Math.round(session.ttl / 60)} {t('minutes')}
+                              </div>
+                            </div>
+                          }
                         />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            aria-label="Kill"
+                            onClick={this.handleOpenKillSession.bind(
+                              this,
+                              session.id,
+                            )}
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </ListItemSecondaryAction>
                       </ListItem>
                     ))}
                   </List>
@@ -267,8 +420,8 @@ class UserComponent extends Component {
                 variables={{
                   field: 'timestamp',
                   operation: 'count',
-                  startDate: yearsAgo(1),
-                  endDate: now(),
+                  startDate,
+                  endDate,
                   interval: 'month',
                   userId: user.id,
                 }}
@@ -361,6 +514,62 @@ class UserComponent extends Component {
             }}
           />
         </Drawer>
+        <Dialog
+          open={this.state.displayKillSession}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseKillSession.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to kill this session?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseKillSession.bind(this)}
+              color="primary"
+              disabled={this.state.killing}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitKillSession.bind(this)}
+              color="primary"
+              disabled={this.state.killing}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+        <Dialog
+          open={this.state.displayKillSessions}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseKillSessions.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to kill all the sessions of this user?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseKillSessions.bind(this)}
+              color="primary"
+              disabled={this.state.killing}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              onClick={this.submitKillSessions.bind(this)}
+              color="primary"
+              disabled={this.state.killing}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -372,34 +581,53 @@ UserComponent.propTypes = {
   t: PropTypes.func,
 };
 
-const User = createFragmentContainer(UserComponent, {
-  user: graphql`
-    fragment User_user on User {
+export const userQuery = graphql`
+  query UserQuery($id: String!) {
+    user(id: $id) {
       id
       name
-      description
-      external
-      user_email
-      firstname
-      lastname
-      language
-      token
-      roles {
+      ...User_user
+    }
+  }
+`;
+
+const User = createRefetchContainer(
+  UserComponent,
+  {
+    user: graphql`
+      fragment User_user on User {
         id
         name
         description
-      }
-      groups {
-        edges {
-          node {
-            id
-            name
-            description
+        external
+        user_email
+        firstname
+        lastname
+        language
+        token
+        roles {
+          id
+          name
+          description
+        }
+        groups {
+          edges {
+            node {
+              id
+              name
+              description
+            }
           }
         }
+        sessions {
+          id
+          created
+          ttl
+        }
       }
-    }
-  `,
-});
+    `,
+  },
+  userQuery,
+);
 
 export default compose(inject18n, withStyles(styles))(User);
