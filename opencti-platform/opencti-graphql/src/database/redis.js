@@ -486,6 +486,7 @@ export const getStreamRange = async (from, limit, callback) => {
     if (results && results.length > 0) {
       await processStreamResult(results, callback);
     }
+    await client.disconnect();
     const lastResult = R.last(results);
     return { lastEventId: R.head(lastResult) };
   });
