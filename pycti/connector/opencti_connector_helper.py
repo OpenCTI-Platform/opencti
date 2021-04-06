@@ -225,8 +225,20 @@ class StreamCatcher(threading.Thread):
     def run(self):
         if self.connector_last_event_id:
             from_event_id = self.connector_last_event_id
-            from_event_timestamp = 0
+            # If from event ID is "-", start from the beginning
+            if from_event_id == "-":
+                from_event_timestamp = 0
+            # If from event ID is a "pure" timestamp
+            elif "-" not in str(from_event_id):
+                from_event_timestamp = int(from_event_id)
+            elif "-" in str(from_event_id):
+                from_event_timestamp = int(str(from_event_id).split("-")[0])
+            else:
+                from_event_timestamp = 0
             last_event_timestamp = int(self.last_event_id.split("-")[0])
+            if from_event_timestamp > last_event_timestamp:
+                from_event_timestamp = last_event_timestamp - 1
+                from_event_id = str(from_event_timestamp) + "-0"
             while (
                 from_event_timestamp <= last_event_timestamp
                 and from_event_id != self.last_event_id

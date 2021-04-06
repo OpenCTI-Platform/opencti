@@ -997,7 +997,6 @@ class OpenCTIStix2:
         mode="simple",
         max_marking_definition_entity=None,
         no_custom_attributes=False,
-        description_as_id=False,
     ):
         if (
             self.check_max_marking_definition(
@@ -1029,19 +1028,12 @@ class OpenCTIStix2:
             del entity["createdBy"]
             del entity["createdById"]
 
-        if description_as_id:
-            if "description" in entity:
-                entity["description"] = entity["id"]
-            elif "x_opencti_description" in entity:
-                if no_custom_attributes:
-                    entity["description"] = entity["id"]
-                else:
-                    entity["x_opencti_description"] = entity["id"]
-            else:
-                entity["description"] = entity["id"]
-
         entity_copy = entity.copy()
         if no_custom_attributes:
+            if "observables" in entity:
+                del entity["observables"]
+            if "observablesIds" in entity:
+                del entity["observablesIds"]
             if "external_references" in entity:
                 del entity["external_references"]
             for key in entity_copy.keys():
@@ -1334,7 +1326,6 @@ class OpenCTIStix2:
         mode="simple",
         max_marking_definition=None,
         no_custom_attributes=False,
-        description_as_id=False,
     ):
         max_marking_definition_entity = (
             self.opencti.marking_definition.read(id=max_marking_definition)
@@ -1384,7 +1375,6 @@ class OpenCTIStix2:
             mode,
             max_marking_definition_entity,
             no_custom_attributes,
-            description_as_id,
         )
         if stix_objects is not None:
             bundle["objects"].extend(stix_objects)
