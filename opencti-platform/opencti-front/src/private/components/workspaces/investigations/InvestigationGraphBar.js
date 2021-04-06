@@ -890,14 +890,13 @@ class InvestigationGraphBar extends Component {
               </ResponsiveContainer>
             </div>
             <TimeRange
-              ticksNumber={20}
+              ticksNumber={15}
               selectedInterval={selectedTimeRangeInterval}
               timelineInterval={timeRangeInterval}
               onUpdateCallback={() => null}
               onChangeCallback={handleTimeRangeChange}
               formatTick={dateFormat}
               containerClassName="timerange"
-              step={3 * 3600 * 1000}
             />
           </div>
         </div>

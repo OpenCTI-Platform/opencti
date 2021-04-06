@@ -75,7 +75,6 @@ const LoginForm = (props) => {
             />
             <Button
               variant="contained"
-              type="submit"
               color="primary"
               disabled={isSubmitting}
               onClick={submitForm}
