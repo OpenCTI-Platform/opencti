@@ -30,7 +30,7 @@ export const checkObservableSyntax = (observableType, observableData) => {
       }
       break;
     case C.ENTITY_X_OPENCTI_HOSTNAME:
-      const hostnameChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-_]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-_]*[A-Za-z0-9])$/;
+      const hostnameChecker = /^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-_]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-_]*[A-Za-z0-9])$/;
       if (!hostnameChecker.test(observableData.value)) return 'Valid hostname';
       break;
     case C.ENTITY_EMAIL_ADDR:
