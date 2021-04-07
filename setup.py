@@ -58,7 +58,7 @@ setup(
         "pytz==2021.1",
         "pika==1.2.0",
         "sseclient==0.0.27",
-        "python-magic==0.4.18;sys.platform=='linux' or sys.platform=='darwin'",
+        "python-magic==0.4.22;sys.platform=='linux' or sys.platform=='darwin'",
         "python-magic-bin==0.4.14;sys.platform=='win32'",
     ],
     cmdclass={"verify": VerifyVersionCommand},
