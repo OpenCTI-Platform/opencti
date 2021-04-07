@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { IntrusionSetLine, IntrusionSetLineDummy } from './IntrusionSetLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class IntrusionSetsLines extends Component {
   componentDidUpdate(prevProps) {
@@ -21,7 +21,7 @@ class IntrusionSetsLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onTagClick,
+      initialLoading, dataColumns, relay, onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -39,7 +39,7 @@ class IntrusionSetsLines extends Component {
         DummyLineComponent={<IntrusionSetLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -54,7 +54,7 @@ IntrusionSetsLines.propTypes = {
   intrusionSets: PropTypes.object,
   initialLoading: PropTypes.bool,
   searchTerm: PropTypes.string,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -84,14 +84,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment IntrusionSetsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "IntrusionSetsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[IntrusionSetsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "IntrusionSetsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[IntrusionSetsFiltering]" }
+      ) {
         intrusionSets(
           search: $search
           first: $count

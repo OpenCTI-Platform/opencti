@@ -8,17 +8,17 @@ import {
 } from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Organization from './Organization';
-import OrganizationReports from './OrganizationReports';
 import OrganizationKnowledge from './OrganizationKnowledge';
-import OrganizationObservables from './OrganizationObservables';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import FileManager from '../../common/files/FileManager';
 import OrganizationPopover from './OrganizationPopover';
 import Loader from '../../../../components/Loader';
+import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
+import OrganizationAnalysis from './OrganizationAnalysis';
 
 const subscription = graphql`
   subscription RootOrganizationSubscription($id: ID!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ... on Organization {
         ...Organization_organization
         ...OrganizationEditionContainer_organization
@@ -34,11 +34,9 @@ const organizationQuery = graphql`
     organization(id: $id) {
       id
       name
-      alias
+      x_opencti_aliases
       ...Organization_organization
-      ...OrganizationReports_organization
       ...OrganizationKnowledge_organization
-      ...OrganizationObservables_organization
       ...FileImportViewer_entity
       ...FileExportViewer_entity
     }
@@ -95,16 +93,6 @@ class RootOrganization extends Component {
                   />
                   <Route
                     exact
-                    path="/dashboard/entities/organizations/:organizationId/reports"
-                    render={(routeProps) => (
-                      <OrganizationReports
-                        {...routeProps}
-                        organization={props.organization}
-                      />
-                    )}
-                  />
-                  <Route
-                    exact
                     path="/dashboard/entities/organizations/:organizationId/knowledge"
                     render={() => (
                       <Redirect
@@ -122,9 +110,10 @@ class RootOrganization extends Component {
                     )}
                   />
                   <Route
-                    path="/dashboard/entities/organizations/:organizationId/observables"
+                    exact
+                    path="/dashboard/entities/organizations/:organizationId/analysis"
                     render={(routeProps) => (
-                      <OrganizationObservables
+                      <OrganizationAnalysis
                         {...routeProps}
                         organization={props.organization}
                       />
@@ -135,15 +124,32 @@ class RootOrganization extends Component {
                     path="/dashboard/entities/organizations/:organizationId/files"
                     render={(routeProps) => (
                       <React.Fragment>
-                        <StixDomainEntityHeader
-                          stixDomainEntity={props.organization}
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.organization}
                           PopoverComponent={<OrganizationPopover />}
                         />
                         <FileManager
                           {...routeProps}
                           id={organizationId}
+                          connectorsImport={[]}
                           connectorsExport={props.connectorsForExport}
                           entity={props.organization}
+                        />
+                      </React.Fragment>
+                    )}
+                  />
+                  <Route
+                    exact
+                    path="/dashboard/entities/organizations/:organizationId/history"
+                    render={(routeProps) => (
+                      <React.Fragment>
+                        <StixDomainObjectHeader
+                          stixDomainObject={props.organization}
+                          PopoverComponent={<OrganizationPopover />}
+                        />
+                        <StixCoreObjectHistory
+                          {...routeProps}
+                          stixCoreObjectId={organizationId}
                         />
                       </React.Fragment>
                     )}

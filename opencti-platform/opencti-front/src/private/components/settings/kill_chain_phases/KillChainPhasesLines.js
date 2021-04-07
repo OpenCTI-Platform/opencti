@@ -9,7 +9,7 @@ import {
   KillChainPhaseLineDummy,
 } from './KillChainPhaseLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class KillChainPhasesLines extends Component {
   render() {
@@ -75,16 +75,13 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment KillChainPhasesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: {
-            type: "KillChainPhasesOrdering"
-            defaultValue: "phase_name"
-          }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "KillChainPhasesOrdering", defaultValue: phase_name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         killChainPhases(
           search: $search
           first: $count

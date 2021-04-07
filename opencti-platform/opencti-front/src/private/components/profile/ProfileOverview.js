@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
@@ -10,6 +10,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Paper from '@material-ui/core/Paper';
 import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
@@ -109,14 +110,16 @@ class ProfileOverviewComponent extends Component {
           >
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="name"
                   disabled={external}
                   label={t('Name')}
                   fullWidth={true}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="user_email"
                   disabled={true}
                   label={t('Email address')}
@@ -124,21 +127,24 @@ class ProfileOverviewComponent extends Component {
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="firstname"
                   label={t('Firstname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="lastname"
                   label={t('Lastname')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                   onSubmit={this.handleSubmitField.bind(this)}
                 />
-                <SelectField
+                <Field
+                  component={SelectField}
                   name="language"
                   label={t('Language')}
                   fullWidth={true}
@@ -154,8 +160,9 @@ class ProfileOverviewComponent extends Component {
                   </MenuItem>
                   <MenuItem value="en">English</MenuItem>
                   <MenuItem value="fr">Français</MenuItem>
-                </SelectField>
-                <TextField
+                </Field>
+                <Field
+                  component={TextField}
                   name="description"
                   label={t('Description')}
                   fullWidth={true}
@@ -178,11 +185,9 @@ class ProfileOverviewComponent extends Component {
             </Typography>
             <pre>{me.token}</pre>
             <Typography variant="h4" gutterBottom={true}>
-              {t('Example')}
+              {t('Required headers')}
             </Typography>
             <pre>
-              GET /graphql/reports
-              <br />
               Content-Type: application/json
               <br />
               Authorization: Bearer {me.token}
@@ -190,8 +195,9 @@ class ProfileOverviewComponent extends Component {
             <Button
               variant="contained"
               color="primary"
-              component="a"
-              href="/graphql"
+              component={Link}
+              to="/graphql"
+              target="_blank"
               style={{ marginTop: 20 }}
             >
               {t('Playground')}
@@ -211,13 +217,15 @@ class ProfileOverviewComponent extends Component {
             >
               {({ submitForm, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="password"
                     label={t('Password')}
                     type="password"
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="confirmation"
                     label={t('Confirmation')}
                     type="password"
@@ -257,13 +265,13 @@ const ProfileOverview = createFragmentContainer(ProfileOverviewComponent, {
   me: graphql`
     fragment ProfileOverview_me on User {
       name
-      description
       user_email
       external
       firstname
       lastname
       language
       token
+      description
     }
   `,
 });

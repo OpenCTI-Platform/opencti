@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import {
   assoc,
   map,
@@ -18,15 +18,12 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import {
-  commitMutation,
-  fetchQuery,
-  WS_ACTIVATED,
-} from '../../../../relay/environment';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import { now } from '../../../../utils/Time';
 import { sectorsSearchQuery } from '../Sectors';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
@@ -54,7 +51,7 @@ export const sectorEditionOverviewFocus = graphql`
 const sectorMutationRelationAdd = graphql`
   mutation SectorEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     sectorEdit(id: $id) {
       relationAdd(input: $input) {
@@ -69,10 +66,11 @@ const sectorMutationRelationAdd = graphql`
 const sectorMutationRelationDelete = graphql`
   mutation SectorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     sectorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...SectorEditionOverview_sector
       }
     }
@@ -111,17 +109,15 @@ class SectorEditionOverviewComponent extends Component {
   }
 
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: sectorEditionOverviewFocus,
-        variables: {
-          id: this.props.sector.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: sectorEditionOverviewFocus,
+      variables: {
+        id: this.props.sector.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
@@ -136,33 +132,30 @@ class SectorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { sector } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], sector),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], sector),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], sector),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], sector),
+      value: pathOr(null, ['createdBy', 'id'], sector),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: sectorMutationRelationAdd,
         variables: {
           id: this.props.sector.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: sectorMutationRelationDelete,
         variables: {
           id: this.props.sector.id,
-          relationId: currentCreatedByRef.relation,
+          relationId: currentCreatedBy.relation,
         },
       });
       if (value.value) {
@@ -171,10 +164,8 @@ class SectorEditionOverviewComponent extends Component {
           variables: {
             id: this.props.sector.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -182,14 +173,13 @@ class SectorEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { sector } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(sector);
 
@@ -202,10 +192,8 @@ class SectorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.sector.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -216,7 +204,8 @@ class SectorEditionOverviewComponent extends Component {
         mutation: sectorMutationRelationDelete,
         variables: {
           id: this.props.sector.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -229,7 +218,6 @@ class SectorEditionOverviewComponent extends Component {
       map((n) => ({
         label: n.node.name,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(sector);
 
@@ -242,10 +230,8 @@ class SectorEditionOverviewComponent extends Component {
         variables: {
           id: head(added).value,
           input: {
-            fromRole: 'part_of',
             toId: this.props.sector.id,
-            toRole: 'gather',
-            through: 'gathering',
+            relationship_type: 'part-of',
             first_seen: now(),
             last_seen: now(),
             weight: 4,
@@ -260,7 +246,8 @@ class SectorEditionOverviewComponent extends Component {
         mutation: sectorMutationRelationDelete,
         variables: {
           id: this.props.sector.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -268,25 +255,23 @@ class SectorEditionOverviewComponent extends Component {
 
   render() {
     const { t, sector, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], sector) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], sector) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], sector),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], sector),
-        relation: pathOr(null, ['createdByRef', 'relation', 'id'], sector),
+        label: pathOr(null, ['createdBy', 'name'], sector),
+        value: pathOr(null, ['createdBy', 'id'], sector),
       };
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(sector);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
-      assoc('markingDefinitions', markingDefinitions),
-      pick(['name', 'description', 'createdByRef', 'markingDefinitions']),
+      assoc('createdBy', createdBy),
+      assoc('objectMarking', objectMarking),
+      pick(['name', 'description', 'createdBy', 'objectMarking']),
     )(sector);
     return (
       <Formik
@@ -297,7 +282,8 @@ class SectorEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -307,7 +293,8 @@ class SectorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
-            <TextField
+            <Field
+              component={MarkDownField}
               name="description"
               label={t('Description')}
               fullWidth={true}
@@ -320,25 +307,25 @@ class SectorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -364,25 +351,19 @@ const SectorEditionOverview = createFragmentContainer(
         name
         description
         isSubSector
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

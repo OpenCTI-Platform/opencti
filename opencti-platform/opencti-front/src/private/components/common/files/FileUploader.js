@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
-import { CloudUpload } from '@material-ui/icons';
+import { CloudUploadOutlined } from '@material-ui/icons';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
 import CircularProgress from '@material-ui/core/CircularProgress';
@@ -9,7 +9,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 
 const FileUploaderGlobalMutation = graphql`
-  mutation FileUploaderEntityMutation($file: Upload!) {
+  mutation FileUploaderGlobalMutation($file: Upload!) {
     uploadImport(file: $file) {
       ...FileLine_file
     }
@@ -17,8 +17,8 @@ const FileUploaderGlobalMutation = graphql`
 `;
 
 const FileUploaderEntityMutation = graphql`
-  mutation FileUploaderGlobalMutation($id: ID!, $file: Upload!) {
-    stixDomainEntityEdit(id: $id) {
+  mutation FileUploaderEntityMutation($id: ID!, $file: Upload!) {
+    stixDomainObjectEdit(id: $id) {
       importPush(file: $file) {
         ...FileLine_file
       }
@@ -80,7 +80,7 @@ const FileUploader = (props) => {
             aria-haspopup="true"
             color="primary"
           >
-            <CloudUpload />
+            <CloudUploadOutlined />
           </IconButton>
         </Tooltip>
       )}

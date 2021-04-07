@@ -2,14 +2,16 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { compose, pick } from 'ramda';
 import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation } from '../../../../relay/environment';
+import SwitchField from '../../../../components/SwitchField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -62,6 +64,7 @@ const groupEditionOverviewFocus = graphql`
 const groupValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   description: Yup.string(),
+  default_assignation: Yup.bool(),
 });
 
 class GroupEditionOverviewComponent extends Component {
@@ -91,7 +94,10 @@ class GroupEditionOverviewComponent extends Component {
 
   render() {
     const { t, group, context } = this.props;
-    const initialValues = pick(['name', 'description'], group);
+    const initialValues = pick(
+      ['name', 'description', 'default_assignation'],
+      group,
+    );
     return (
       <div>
         <Formik
@@ -102,7 +108,8 @@ class GroupEditionOverviewComponent extends Component {
         >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <TextField
+              <Field
+                component={TextField}
                 name="name"
                 label={t('Name')}
                 fullWidth={true}
@@ -112,7 +119,8 @@ class GroupEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="name" />
                 }
               />
-              <TextField
+              <Field
+                component={MarkDownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
@@ -125,6 +133,20 @@ class GroupEditionOverviewComponent extends Component {
                   <SubscriptionFocus
                     context={context}
                     fieldName="description"
+                  />
+                }
+              />
+              <Field
+                component={SwitchField}
+                type="checkbox"
+                name="default_assignation"
+                label={t('Granted by default at user creation')}
+                containerstyle={{ marginTop: 20 }}
+                onChange={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="default_assignation"
                   />
                 }
               />
@@ -152,6 +174,7 @@ const GroupEditionOverview = createFragmentContainer(
         id
         name
         description
+        default_assignation
       }
     `,
   },

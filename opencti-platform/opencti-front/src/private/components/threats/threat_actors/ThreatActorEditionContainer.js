@@ -87,10 +87,16 @@ class ThreatActorEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <ThreatActorEditionOverview threatActor={this.props.threatActor} context={editContext}/>
+            <ThreatActorEditionOverview
+              threatActor={this.props.threatActor}
+              context={editContext}
+            />
           )}
           {this.state.currentTab === 1 && (
-            <ThreatActorEditionDetails threatActor={this.props.threatActor} context={editContext}/>
+            <ThreatActorEditionDetails
+              threatActor={this.props.threatActor}
+              context={editContext}
+            />
           )}
         </div>
       </div>

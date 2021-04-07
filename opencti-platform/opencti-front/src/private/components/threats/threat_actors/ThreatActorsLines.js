@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { ThreatActorLine, ThreatActorLineDummy } from './ThreatActorLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class ThreatActorsLines extends Component {
   componentDidUpdate(prevProps) {
@@ -21,7 +21,7 @@ class ThreatActorsLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onTagClick,
+      initialLoading, dataColumns, relay, onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -39,7 +39,7 @@ class ThreatActorsLines extends Component {
         DummyLineComponent={<ThreatActorLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -53,7 +53,7 @@ ThreatActorsLines.propTypes = {
   relay: PropTypes.object,
   threatActors: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -83,14 +83,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment ThreatActorsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "ThreatActorsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[ThreatActorsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "ThreatActorsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[ThreatActorsFiltering]" }
+      ) {
         threatActors(
           search: $search
           first: $count

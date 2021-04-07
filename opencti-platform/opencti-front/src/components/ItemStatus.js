@@ -6,13 +6,21 @@ import Chip from '@material-ui/core/Chip';
 const styles = () => ({
   chip: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 25,
     marginRight: 7,
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    width: 130,
   },
   chipInList: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 20,
     float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    width: 130,
   },
 });
 
@@ -22,27 +30,31 @@ const inlineStyles = {
     color: '#2b2b2b',
   },
   green: {
-    backgroundColor: '#1b5e20',
+    backgroundColor: 'rgba(76, 175, 80, 0.08)',
+    color: '#4caf50',
   },
   blue: {
-    backgroundColor: '#283593',
+    backgroundColor: 'rgba(92, 123, 245, 0.08)',
+    color: '#5c7bf5',
   },
   grey: {
-    backgroundColor: '#424242',
+    backgroundColor: 'rgba(96, 125, 139, 0.08)',
+    color: '#607d8b',
   },
   orange: {
-    backgroundColor: '#d84315',
+    backgroundColor: 'rgba(255, 152, 0, 0.08)',
+    color: '#ff9800',
   },
 };
 
-class ItemMarking extends Component {
+class ItemStatus extends Component {
   render() {
     const {
       classes, label, status, variant,
     } = this.props;
-    const style = (variant === 'inList') ? classes.chipInList : classes.chip;
+    const style = variant === 'inList' ? classes.chipInList : classes.chip;
     switch (status) {
-      case 0:
+      case 'progress':
         return (
           <Chip
             classes={{ root: style }}
@@ -50,7 +62,7 @@ class ItemMarking extends Component {
             label={label}
           />
         );
-      case 1:
+      case 'wait':
         return (
           <Chip
             classes={{ root: style }}
@@ -58,19 +70,11 @@ class ItemMarking extends Component {
             label={label}
           />
         );
-      case 2:
+      case 'complete':
         return (
           <Chip
             classes={{ root: style }}
             style={inlineStyles.green}
-            label={label}
-          />
-        );
-      case 3:
-        return (
-          <Chip
-            classes={{ root: style }}
-            style={inlineStyles.grey}
             label={label}
           />
         );
@@ -86,11 +90,11 @@ class ItemMarking extends Component {
   }
 }
 
-ItemMarking.propTypes = {
+ItemStatus.propTypes = {
   classes: PropTypes.object.isRequired,
-  status: PropTypes.number,
+  status: PropTypes.string,
   label: PropTypes.string,
   variant: PropTypes.string,
 };
 
-export default withStyles(styles)(ItemMarking);
+export default withStyles(styles)(ItemStatus);

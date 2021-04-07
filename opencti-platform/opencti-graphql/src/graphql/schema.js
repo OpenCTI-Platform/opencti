@@ -1,26 +1,35 @@
 import { GraphQLDateTime } from 'graphql-iso-date';
 import { mergeResolvers } from 'merge-graphql-schemas';
 import { makeExecutableSchema } from 'graphql-tools';
-import ConstraintDirective from 'graphql-constraint-directive';
+import { constraintDirective } from 'graphql-constraint-directive';
 import settingsResolvers from '../resolvers/settings';
-import inferenceResolvers from '../resolvers/inference';
+import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
-import tagResolvers from '../resolvers/tag';
-import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
-import globalObjectResolvers from '../resolvers/globalObject';
-import stixEntityResolvers from '../resolvers/stixEntity';
-import stixDomainEntityResolvers from '../resolvers/stixDomainEntity';
-import stixObservableResolvers from '../resolvers/stixObservable';
-import stixRelationResolvers from '../resolvers/stixRelation';
-import stixObservableRelationResolvers from '../resolvers/stixObservableRelation';
 import workspaceResolvers from '../resolvers/workspace';
+import subTypeResolvers from '../resolvers/subType';
+import labelResolvers from '../resolvers/label';
+import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
+import internalObjectResolvers from '../resolvers/internalObject';
+import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStixRelationship';
+import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
+import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
+import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
+import internalRelationshipResolvers from '../resolvers/internalRelationship';
+import stixRelationshipResolvers from '../resolvers/stixRelationship';
+import stixMetaRelationshipResolvers from '../resolvers/stixMetaRelationship';
+import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
+import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelationship';
+import stixCyberObservableRelationResolvers from '../resolvers/stixCyberObservableRelationship';
 import identityResolvers from '../resolvers/identity';
+import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
 import organizationResolvers from '../resolvers/organization';
 import sectorResolvers from '../resolvers/sector';
+import locationResolvers from '../resolvers/location';
 import cityResolvers from '../resolvers/city';
 import countryResolvers from '../resolvers/country';
 import regionResolvers from '../resolvers/region';
+import positionResolvers from '../resolvers/position';
 import groupResolvers from '../resolvers/group';
 import markingDefinitionResolvers from '../resolvers/markingDefinition';
 import externalReferenceResolvers from '../resolvers/externalReference';
@@ -29,61 +38,102 @@ import attackPatternResolvers from '../resolvers/attackPattern';
 import courseOfActionResolvers from '../resolvers/courseOfAction';
 import threatActorResolvers from '../resolvers/threatActor';
 import intrusionSetResolvers from '../resolvers/intrusionSet';
+import infrastructureResolvers from '../resolvers/infrastructure';
 import campaignResolvers from '../resolvers/campaign';
-import incidentResolvers from '../resolvers/incident';
 import malwareResolvers from '../resolvers/malware';
 import toolResolvers from '../resolvers/tool';
 import vulnerabilityResolvers from '../resolvers/vulnerability';
 import reportResolvers from '../resolvers/report';
+import containerResolvers from '../resolvers/container';
+import noteResolvers from '../resolvers/note';
+import observedDataResolvers from '../resolvers/observedData';
+import opinionResolvers from '../resolvers/opinion';
 import indicatorResolvers from '../resolvers/indicator';
+import xOpenCTIIncidentResolvers from '../resolvers/xOpenCTIIncident';
 import AuthDirectives, { AUTH_DIRECTIVE } from './authDirective';
 import connectorResolvers from '../resolvers/connector';
 import fileResolvers from '../resolvers/file';
 import typeDefs from '../../config/schema/opencti.graphql';
+import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
+import taxiiResolvers from '../resolvers/taxii';
 
 const createSchema = () => {
   const globalResolvers = {
-    DateTime: GraphQLDateTime
+    DateTime: GraphQLDateTime,
   };
 
   const resolvers = mergeResolvers([
+    // INTERNAL
     globalResolvers,
-    settingsResolvers,
-    inferenceResolvers,
-    attributeResolvers,
-    tagResolvers,
+    taxiiResolvers,
+    logResolvers,
     rabbitmqMetricsResolvers,
-    connectorResolvers,
-    fileResolvers,
-    globalObjectResolvers,
-    stixEntityResolvers,
-    stixDomainEntityResolvers,
-    stixObservableResolvers,
-    stixRelationResolvers,
-    stixObservableRelationResolvers,
+    attributeResolvers,
     workspaceResolvers,
-    identityResolvers,
+    subTypeResolvers,
+    fileResolvers,
+    // ENTITIES
+    // INTERNAL OBJECT ENTITIES
+    internalObjectResolvers,
+    settingsResolvers,
+    groupResolvers,
     userResolvers,
+    connectorResolvers,
+    // STIX OBJECT ENTITIES
+    // STIX META OBJECT ENTITIES
+    markingDefinitionResolvers,
+    labelResolvers,
+    externalReferenceResolvers,
+    killChainPhaseResolvers,
+    // STIX CORE OBJECT ENTITIES
+    stixCoreObjectResolvers,
+    // STIX DOMAIN OBJECT ENTITIES
+    stixDomainObjectResolvers,
+    attackPatternResolvers,
+    campaignResolvers,
+    // Containers
+    containerResolvers,
+    noteResolvers,
+    observedDataResolvers,
+    opinionResolvers,
+    reportResolvers,
+    courseOfActionResolvers,
+    // Identities
+    identityResolvers,
+    individualResolvers,
     organizationResolvers,
     sectorResolvers,
+    indicatorResolvers,
+    infrastructureResolvers,
+    intrusionSetResolvers,
+    // Locations
+    locationResolvers,
     cityResolvers,
     countryResolvers,
     regionResolvers,
-    groupResolvers,
-    markingDefinitionResolvers,
-    externalReferenceResolvers,
-    killChainPhaseResolvers,
-    attackPatternResolvers,
-    courseOfActionResolvers,
-    threatActorResolvers,
-    intrusionSetResolvers,
-    campaignResolvers,
-    incidentResolvers,
+    positionResolvers,
     malwareResolvers,
+    threatActorResolvers,
     toolResolvers,
     vulnerabilityResolvers,
-    reportResolvers,
-    indicatorResolvers
+    xOpenCTIIncidentResolvers,
+    // STIX CYBER OBSERVABLE ENTITIES
+    stixCyberObservableResolvers,
+    // INTERNAL RELATIONSHIPS
+    internalRelationshipResolvers,
+    // STIX RELATIONSHIPS
+    stixRelationshipResolvers,
+    // STIX META RELATIONSHIPS
+    stixMetaRelationshipResolvers,
+    // STIX CORE RELATIONSHIPS
+    stixCoreRelationshipResolvers,
+    // STIX SIGHTING RELATIONSHIPS
+    stixSightingRelationshipResolvers,
+    // STIX CYBER OBSERVABLE RELATIONSHIPS
+    stixCyberObservableRelationResolvers,
+    // ALL
+    organizationOrIndividualResolvers,
+    stixObjectOrStixRelationshipResolvers,
   ]);
 
   return makeExecutableSchema({
@@ -91,9 +141,9 @@ const createSchema = () => {
     resolvers,
     schemaDirectives: {
       [AUTH_DIRECTIVE]: AuthDirectives,
-      constraint: ConstraintDirective
     },
-    inheritResolversFromInterfaces: true
+    schemaTransforms: [constraintDirective()],
+    inheritResolversFromInterfaces: true,
   });
 };
 

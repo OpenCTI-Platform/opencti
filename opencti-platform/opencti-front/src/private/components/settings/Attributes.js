@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
 import { withRouter } from 'react-router-dom';
-import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import {
@@ -11,7 +10,7 @@ import {
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
-import TagsAttributesMenu from './TagsAttributesMenu';
+import LabelsAttributesMenu from './LabelsAttributesMenu';
 import AttributesLines, {
   attributesLinesQuery,
 } from './attributes/AttributesLines';
@@ -24,26 +23,13 @@ const styles = () => ({
   },
 });
 
-export const attributesSearchQuery = graphql`
-  query AttributesSearchQuery($search: String) {
-    attributes(search: $search) {
-      edges {
-        node {
-          id
-          value
-        }
-      }
-    }
-  }
-`;
-
 class Attributes extends Component {
   constructor(props) {
     super(props);
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Attributes-view',
+      'view-attributes',
     );
     this.state = {
       sortBy: propOr('definition', 'sortBy', params),
@@ -57,7 +43,7 @@ class Attributes extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Attributes-view',
+      'view-attributes',
       this.state,
     );
   }
@@ -110,21 +96,21 @@ class Attributes extends Component {
     const {
       classes,
       match: {
-        params: { attributeLabel },
+        params: { attributeKey },
       },
     } = this.props;
     const { view, searchTerm } = this.state;
     const paginationOptions = {
-      type: attributeLabel,
+      key: attributeKey,
       search: searchTerm,
     };
     return (
       <div className={classes.container}>
-        <TagsAttributesMenu />
+        <LabelsAttributesMenu />
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
         <AttributeCreation
           paginationOptions={paginationOptions}
-          attributeType={attributeLabel}
+          attributeKey={attributeKey}
         />
       </div>
     );
@@ -139,8 +125,4 @@ Attributes.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Attributes);
+export default compose(inject18n, withRouter, withStyles(styles))(Attributes);

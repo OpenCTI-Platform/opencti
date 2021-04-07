@@ -14,21 +14,24 @@ export const KNOWLEDGE_KNGETEXPORT_KNASKEXPORT = 'KNOWLEDGE_KNGETEXPORT_KNASKEXP
 export const KNOWLEDGE_KNENRICHMENT = 'KNOWLEDGE_KNENRICHMENT';
 export const EXPLORE = 'EXPLORE';
 export const EXPLORE_EXUPDATE = 'EXPLORE_EXUPDATE';
-export const EXPLORE_EXUPDATE_EXDELETE = 'EXPLORE_EXUPDATE_EXDELETE';
 export const MODULES = 'MODULES';
 export const MODULES_MODMANAGE = 'MODULES_MODMANAGE';
 export const SETTINGS = 'SETTINGS';
-export const SETTINGS_SETINFERENCES = 'SETTINGS_SETINFERENCES';
+export const TAXIIAPI_SETCOLLECTIONS = 'TAXIIAPI_SETCOLLECTIONS';
 export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
+export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 
-const granted = (me, capabilities, matchAll = false) => {
+export const granted = (me, capabilities, matchAll = false) => {
   const userCapabilities = map((c) => c.name, me.capabilities);
   if (userCapabilities.includes(BYPASS)) return true;
   const availableCapabilities = [];
   for (let index = 0; index < capabilities.length; index += 1) {
     const checkCapability = capabilities[index];
-    const matchingCapabilities = filter((r) => includes(checkCapability, r), userCapabilities);
+    const matchingCapabilities = filter(
+      (r) => includes(checkCapability, r),
+      userCapabilities,
+    );
     if (matchingCapabilities.length > 0) availableCapabilities.push(checkCapability);
   }
   if (matchAll) return availableCapabilities.length === capabilities.length;
@@ -39,7 +42,7 @@ const Security = ({
   needs, matchAll, children, placeholder = <span />,
 }) => (
   <UserContext.Consumer>
-    {(me) => {
+    {({ me }) => {
       if (granted(me, needs, matchAll)) return children;
       return placeholder;
     }}

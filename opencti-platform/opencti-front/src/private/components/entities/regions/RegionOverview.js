@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr } from 'ramda';
+import { compose, propOr } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import Markdown from 'react-markdown';
@@ -8,7 +8,7 @@ import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemAuthor from '../../../../components/ItemAuthor';
 
 const styles = () => ({
   paper: {
@@ -23,7 +23,7 @@ const styles = () => ({
 class RegionOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, region,
+      t, fldt, classes, region,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -34,7 +34,7 @@ class RegionOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Creation date')}
           </Typography>
-          {fld(region.created)}
+          {fldt(region.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -42,17 +42,15 @@ class RegionOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(region.modified)}
+          {fldt(region.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creator')}
+            {t('Author')}
           </Typography>
-          <ItemCreator
-            createdByRef={pathOr(null, ['createdByRef', 'node'], region)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', region)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -71,7 +69,7 @@ RegionOverviewComponent.propTypes = {
   region: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const RegionOverview = createFragmentContainer(RegionOverviewComponent, {
@@ -82,8 +80,8 @@ const RegionOverview = createFragmentContainer(RegionOverviewComponent, {
       description
       created
       modified
-      createdByRef {
-        node {
+      createdBy {
+        ... on Identity {
           id
           name
           entity_type
@@ -93,7 +91,4 @@ const RegionOverview = createFragmentContainer(RegionOverviewComponent, {
   `,
 });
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(RegionOverview);
+export default compose(inject18n, withStyles(styles))(RegionOverview);

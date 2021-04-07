@@ -4,9 +4,13 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { ProgressWrench } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -47,7 +51,7 @@ class TopMenuCourseOfAction extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/techniques/courses_of_action"
+          to="/dashboard/arsenal/courses_of_action"
           variant="contained"
           size="small"
           color="inherit"
@@ -56,20 +60,23 @@ class TopMenuCourseOfAction extends Component {
           <ProgressWrench className={classes.icon} fontSize="small" />
           {t('Courses of action')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}`}
+          to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}`}
           variant={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}`
               ? 'primary'
               : 'inherit'
           }
@@ -77,25 +84,47 @@ class TopMenuCourseOfAction extends Component {
         >
           {t('Overview')}
         </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
+          </Button>
+        </Security>
         <Button
           component={Link}
-          to={`/dashboard/techniques/courses_of_action/${courseOfActionId}/files`}
+          to={`/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`}
           variant={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/courses_of_action/${courseOfActionId}/files`
+            === `/dashboard/arsenal/courses_of_action/${courseOfActionId}/history`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Files')}
+          {t('History')}
         </Button>
       </div>
     );

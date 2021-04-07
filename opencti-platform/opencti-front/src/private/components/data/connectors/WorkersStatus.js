@@ -63,7 +63,6 @@ class WorkersStatusComponent extends Component {
     const { consumers, overview } = data.rabbitMQMetrics;
     return (
       <Card
-        raised={true}
         classes={{ root: classes.card }}
         style={{ maxHeight: '100vh', height: '100%' }}
       >
@@ -75,21 +74,19 @@ class WorkersStatusComponent extends Component {
         <CardContent style={{ paddingTop: 0, height: '100%' }}>
           <Grid
             container={true}
-            spacing={2}
+            spacing={3}
             style={{ paddingBottom: 0, height: '100%' }}
           >
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
-                <div className={classes.number}>
-                  {n(consumers)}
-                </div>
+                <div className={classes.number}>{n(consumers)}</div>
                 <div className={classes.title}>{t('Connected workers')}</div>
               </div>
             </Grid>
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {n(overview.queue_totals.messages_ready)}
+                  {n(pathOr(0, ['queue_totals', 'messages'], overview))}
                 </div>
                 <div className={classes.title}>{t('Queued messages')}</div>
               </div>
@@ -97,10 +94,12 @@ class WorkersStatusComponent extends Component {
             <Grid item={true} xs={3} style={{ height: '25%' }}>
               <div className={classes.metric}>
                 <div className={classes.number}>
-                  {pathOr(
-                    0,
-                    ['message_stats', 'ack_details', 'rate'],
-                    overview,
+                  {n(
+                    pathOr(
+                      0,
+                      ['message_stats', 'ack_details', 'rate'],
+                      overview,
+                    ),
                   )}
                   /s
                 </div>
@@ -133,8 +132,8 @@ WorkersStatusComponent.propTypes = {
 };
 
 export const workersStatusQuery = graphql`
-  query WorkersStatusQuery($prefix: String) {
-    ...WorkersStatus_data @arguments(prefix: $prefix)
+  query WorkersStatusQuery {
+    ...WorkersStatus_data
   }
 `;
 
@@ -142,13 +141,14 @@ const WorkersStatus = createRefetchContainer(
   WorkersStatusComponent,
   {
     data: graphql`
-      fragment WorkersStatus_data on Query
-        @argumentDefinitions(prefix: { type: "String" }) {
-        rabbitMQMetrics(prefix: $prefix) {
+      fragment WorkersStatus_data on Query {
+        rabbitMQMetrics {
           consumers
           overview {
             queue_totals {
+              messages
               messages_ready
+              messages_unacknowledged
             }
             message_stats {
               ack
@@ -164,7 +164,4 @@ const WorkersStatus = createRefetchContainer(
   workersStatusQuery,
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(WorkersStatus);
+export default compose(inject18n, withStyles(styles))(WorkersStatus);

@@ -1,45 +1,28 @@
-import { assoc, dissoc, map, pipe } from 'ramda';
-import { createEntity, listEntities, loadEntityById, loadEntityByStixId } from '../database/grakn';
+import { pipe, assoc, dissoc, filter } from 'ramda';
+import { createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_IDENTITY } from '../schema/general';
+import { ENTITY_TYPE_IDENTITY_SECTOR, isStixDomainObjectIdentity } from '../schema/stixDomainObject';
 
-export const findById = async identityId => {
-  let data = null;
-  if (identityId.match(/[a-z-]+--[\w-]{36}/g)) {
-    data = await loadEntityByStixId(identityId, 'Identity');
-  } else {
-    data = await loadEntityById(identityId, 'Identity');
-  }
-  if (!data) {
-    return data;
-  }
-  data = pipe(dissoc('user_email'), dissoc('password'))(data);
-  return data;
+export const findById = async (user, identityId) => {
+  return loadById(user, identityId, ENTITY_TYPE_IDENTITY);
 };
-export const findAll = async args => {
-  const noTypes = !args.types || args.types.length === 0;
-  const entityTypes = noTypes ? ['Identity'] : args.types;
-  const finalArgs = assoc('parentType', 'Stix-Domain-Entity', args);
-  let data = await listEntities(entityTypes, ['name', 'alias'], finalArgs);
-  data = assoc(
-    'edges',
-    map(
-      n => ({
-        cursor: n.cursor,
-        node: pipe(dissoc('user_email'), dissoc('password'))(n.node),
-        relation: n.relation
-      }),
-      data.edges
-    ),
-    data
-  );
-  return data;
+
+export const findAll = async (user, args) => {
+  let types = [];
+  if (args.types && args.types.length > 0) {
+    types = filter((type) => isStixDomainObjectIdentity(type), args.types);
+  }
+  if (types.length === 0) {
+    types.push(ENTITY_TYPE_IDENTITY);
+  }
+  return listEntities(user, types, args);
 };
 
 export const addIdentity = async (user, identity) => {
-  const identityToCreate = dissoc('type', identity);
-  const created = await createEntity(identityToCreate, identity.type, {
-    stixIdType: identity.type !== 'Threat-Actor' ? 'identity' : 'threat-actor'
-  });
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const identityClass = identity.type === ENTITY_TYPE_IDENTITY_SECTOR ? 'class' : identity.type.toLowerCase();
+  const identityToCreate = pipe(assoc('identity_class', identityClass), dissoc('type'))(identity);
+  const created = await createEntity(user, identityToCreate, identity.type);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

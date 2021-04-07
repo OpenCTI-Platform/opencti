@@ -2,80 +2,86 @@ import {
   addReport,
   findAll,
   findById,
-  objectRefs,
-  observableRefs,
-  relationRefs,
   reportsDistributionByEntity,
   reportsNumber,
   reportsNumberByEntity,
+  reportsNumberByAuthor,
   reportsTimeSeries,
   reportsTimeSeriesByAuthor,
-  reportsTimeSeriesByEntity
+  reportsTimeSeriesByEntity,
+  reportContainsStixObjectOrStixRelationship,
 } from '../domain/report';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext,
-  stixDomainEntityEditField
-} from '../domain/stixDomainEntity';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
+} from '../domain/stixDomainObject';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING,
+} from '../schema/stixMetaRelationship';
+import { REL_INDEX_PREFIX } from '../schema/general';
+import { distributionEntities } from '../database/middleware';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
 
 const reportResolvers = {
   Query: {
-    report: (_, { id }) => findById(id),
-    reports: (_, args) => findAll(args),
-    reportsTimeSeries: (_, args) => {
+    report: (_, { id }, { user }) => findById(user, id),
+    reports: (_, args, { user }) => findAll(user, args),
+    reportsTimeSeries: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsTimeSeriesByEntity(args);
+        return reportsTimeSeriesByEntity(user, args);
       }
       if (args.authorId && args.authorId.length > 0) {
-        return reportsTimeSeriesByAuthor(args);
+        return reportsTimeSeriesByAuthor(user, args);
       }
-      return reportsTimeSeries(args);
+      return reportsTimeSeries(user, args);
     },
-    reportsNumber: (_, args) => {
+    reportsNumber: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsNumberByEntity(args);
+        return reportsNumberByEntity(user, args);
       }
-      return reportsNumber(args);
+      if (args.authorId && args.authorId.length > 0) {
+        return reportsNumberByAuthor(user, args);
+      }
+      return reportsNumber(user, args);
     },
-    reportsDistribution: (_, args) => {
+    reportsDistribution: (_, args, { user }) => {
       if (args.objectId && args.objectId.length > 0) {
-        return reportsDistributionByEntity(args);
+        return reportsDistributionByEntity(user, args);
       }
-      return [];
-    }
+      return distributionEntities(user, ENTITY_TYPE_CONTAINER_REPORT, [], args);
+    },
+    reportContainsStixObjectOrStixRelationship: (_, args, { user }) => {
+      return reportContainsStixObjectOrStixRelationship(user, args.id, args.stixObjectOrStixRelationshipId);
+    },
   },
   ReportsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`,
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.name`
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.name`,
   },
   ReportsFilter: {
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`,
-    createdBy: `${REL_INDEX_PREFIX}created_by_ref.internal_id_key`,
-    knowledgeContains: `${REL_INDEX_PREFIX}object_refs.internal_id_key`,
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`
-  },
-  Report: {
-    objectRefs: (report, args) => objectRefs(report.id, args),
-    observableRefs: (report, args) => observableRefs(report.id, args),
-    relationRefs: (report, args) => relationRefs(report.id, args)
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    objectContains: `${REL_INDEX_PREFIX}${RELATION_OBJECT}.internal_id`,
   },
   Mutation: {
     reportEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId, toId, relationType }) =>
-        stixDomainEntityDeleteRelation(user, id, relationId, toId, relationType)
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
-    reportAdd: (_, { input }, { user }) => addReport(user, input)
-  }
+    reportAdd: (_, { input }, { user }) => addReport(user, input),
+  },
 };
 
 export default reportResolvers;

@@ -17,7 +17,7 @@ import { withStyles } from '@material-ui/core';
 import { ConnectionHandler } from 'relay-runtime';
 import MenuItem from '@material-ui/core/MenuItem';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import Dialog from '@material-ui/core/Dialog';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
@@ -58,7 +58,7 @@ export const FileManagerExportMutation = graphql`
     $exportType: String!
     $maxMarkingDefinition: String
   ) {
-    stixDomainEntityEdit(id: $id) {
+    stixDomainObjectEdit(id: $id) {
       exportAsk(
         format: $format
         exportType: $exportType
@@ -68,6 +68,16 @@ export const FileManagerExportMutation = graphql`
         name
         uploadStatus
         lastModifiedSinceMin
+        metaData {
+          messages {
+            timestamp
+            message
+          }
+          errors {
+            timestamp
+            message
+          }
+        }
       }
     }
   }
@@ -126,7 +136,7 @@ const FileManager = ({
         maxMarkingDefinition,
       },
       updater: (store) => {
-        const root = store.getRootField('stixDomainEntityEdit');
+        const root = store.getRootField('stixDomainObjectEdit');
         const payloads = root.getLinkedRecords('exportAsk', {
           format: values.format,
           exportType: values.type,
@@ -197,7 +207,8 @@ const FileManager = ({
                     if (props && props.markingDefinitions) {
                       return (
                         <DialogContent>
-                          <SelectField
+                          <Field
+                            component={SelectField}
                             name="format"
                             label={t('Export format')}
                             fullWidth={true}
@@ -212,8 +223,9 @@ const FileManager = ({
                                 {value}
                               </MenuItem>
                             ))}
-                          </SelectField>
-                          <SelectField
+                          </Field>
+                          <Field
+                            component={SelectField}
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
@@ -225,8 +237,9 @@ const FileManager = ({
                             <MenuItem value="full">
                               {t('Full export (entity and first neighbours)')}
                             </MenuItem>
-                          </SelectField>
-                          <SelectField
+                          </Field>
+                          <Field
+                            component={SelectField}
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}
@@ -244,7 +257,7 @@ const FileManager = ({
                               ),
                               props.markingDefinitions.edges,
                             )}
-                          </SelectField>
+                          </Field>
                         </DialogContent>
                       );
                     }

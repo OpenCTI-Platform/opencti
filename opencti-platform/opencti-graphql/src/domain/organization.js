@@ -1,38 +1,28 @@
-import {
-  createEntity,
-  escapeString,
-  findWithConnectedRelations,
-  listEntities,
-  loadEntityById,
-  loadEntityByStixId,
-  TYPE_STIX_DOMAIN_ENTITY
-} from '../database/grakn';
+import { assoc } from 'ramda';
+import { createEntity, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_IDENTITY_SECTOR } from '../schema/stixDomainObject';
+import { RELATION_PART_OF } from '../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
-export const findById = organizationId => {
-  if (organizationId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(organizationId, 'Organization');
-  }
-  return loadEntityById(organizationId, 'Organization');
+export const findById = (user, organizationId) => {
+  return loadById(user, organizationId, ENTITY_TYPE_IDENTITY_ORGANIZATION);
 };
-export const findAll = args => {
-  return listEntities(['Organization'], ['name', 'alias'], args);
+
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_IDENTITY_ORGANIZATION], args);
 };
-export const sectors = organizationId => {
-  return findWithConnectedRelations(
-    `match $to isa Sector; $rel(part_of:$from, gather:$to) isa gathering;
-     $from has internal_id_key "${escapeString(organizationId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then(data => buildPagination(0, 0, data, data.length));
+
+export const batchSectors = (user, organizationIds) => {
+  return batchListThroughGetTo(user, organizationIds, RELATION_PART_OF, ENTITY_TYPE_IDENTITY_SECTOR);
 };
 
 export const addOrganization = async (user, organization) => {
-  const created = await createEntity(organization, 'Organization', {
-    modelType: TYPE_STIX_DOMAIN_ENTITY,
-    stixIdType: 'identity'
-  });
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(
+    user,
+    assoc('identity_class', ENTITY_TYPE_IDENTITY_ORGANIZATION.toLowerCase(), organization),
+    ENTITY_TYPE_IDENTITY_ORGANIZATION
+  );
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

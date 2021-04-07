@@ -1,37 +1,28 @@
-import {
-  createEntity,
-  escapeString,
-  listEntities,
-  loadEntityById,
-  loadEntityByStixId,
-  loadWithConnectedRelations,
-  TYPE_STIX_DOMAIN_ENTITY
-} from '../database/grakn';
+import { assoc } from 'ramda';
+import { createEntity, listEntities, loadById, batchLoadThroughGetTo } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { ENTITY_TYPE_LOCATION_COUNTRY, ENTITY_TYPE_LOCATION_REGION } from '../schema/stixDomainObject';
+import { RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
-export const findById = countryId => {
-  if (countryId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(countryId, 'Country');
-  }
-  return loadEntityById(countryId, 'Country');
+export const findById = (user, countryId) => {
+  return loadById(user, countryId, ENTITY_TYPE_LOCATION_COUNTRY);
 };
-export const findAll = args => {
-  return listEntities(['Country'], ['name', 'alias'], args);
+
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_LOCATION_COUNTRY], args);
 };
-export const region = countryId => {
-  return loadWithConnectedRelations(
-    `match $to isa Region; $rel(localized:$from, location:$to) isa localization;
-   $from has internal_id_key "${escapeString(countryId)}"; get; offset 0; limit 1;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then(data => (data ? data.node : undefined));
+
+export const batchRegion = async (user, countryIds) => {
+  return batchLoadThroughGetTo(user, countryIds, RELATION_LOCATED_AT, ENTITY_TYPE_LOCATION_REGION);
 };
 
 export const addCountry = async (user, country) => {
-  const created = await createEntity(country, 'Country', {
-    modelType: TYPE_STIX_DOMAIN_ENTITY,
-    stixIdType: 'identity'
-  });
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(
+    user,
+    assoc('x_opencti_location_type', ENTITY_TYPE_LOCATION_COUNTRY, country),
+    ENTITY_TYPE_LOCATION_COUNTRY
+  );
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

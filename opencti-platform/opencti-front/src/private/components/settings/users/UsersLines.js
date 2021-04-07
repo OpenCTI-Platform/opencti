@@ -6,7 +6,21 @@ import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UserLine, UserLineDummy } from './UserLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
+
+export const usersLinesSearchQuery = graphql`
+  query UsersLinesSearchQuery($search: String) {
+    users(search: $search) {
+      edges {
+        node {
+          id
+          name
+          user_email
+        }
+      }
+    }
+  }
+`;
 
 class UsersLines extends Component {
   render() {
@@ -72,13 +86,13 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment UsersLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "UsersOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "UsersOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         users(
           search: $search
           first: $count

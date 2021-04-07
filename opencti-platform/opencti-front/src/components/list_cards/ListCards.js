@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, toPairs } from 'ramda';
+import {
+  compose, last, map, toPairs,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import FormControl from '@material-ui/core/FormControl';
@@ -10,16 +12,18 @@ import MenuItem from '@material-ui/core/MenuItem';
 import {
   ArrowDownward,
   ArrowUpward,
-  TableChart,
-  Dashboard,
+  TableChartOutlined,
+  DashboardOutlined,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
-import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
+import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
+import Filters from '../../private/components/common/lists/Filters';
+import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
   container: {
@@ -27,6 +31,7 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen,
     }),
+    marginLeft: -10,
   },
   containerOpenExports: {
     flexGrow: 1,
@@ -34,11 +39,11 @@ const styles = (theme) => ({
       easing: theme.transitions.easing.easeOut,
       duration: theme.transitions.duration.enteringScreen,
     }),
-    marginRight: 310,
+    margin: '0 300px 0 -10px',
   },
   parameters: {
     float: 'left',
-    marginTop: -10,
+    margin: '-10px 0 0 15px',
   },
   views: {
     display: 'flex',
@@ -64,6 +69,14 @@ const styles = (theme) => ({
     float: 'left',
     margin: '2px 0 0 15px',
   },
+  filter: {
+    marginRight: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    marginRight: 10,
+  },
 });
 
 class ListCards extends Component {
@@ -81,6 +94,7 @@ class ListCards extends Component {
       classes,
       handleSearch,
       handleChangeView,
+      handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
       openExports,
@@ -94,6 +108,7 @@ class ListCards extends Component {
       exportEntityType,
       exportContext,
       numberOfElements,
+      availableFilterKeys,
     } = this.props;
     return (
       <div
@@ -109,7 +124,22 @@ class ListCards extends Component {
               keyword={keyword}
             />
           </div>
-          <InputLabel classes={{ root: classes.sortFieldLabel }}>
+          {availableFilterKeys && availableFilterKeys.length > 0 ? (
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              handleAddFilter={handleAddFilter}
+              currentFilters={filters}
+            />
+          ) : (
+            ''
+          )}
+          <InputLabel
+            classes={{ root: classes.sortFieldLabel }}
+            style={{
+              marginLeft:
+                availableFilterKeys && availableFilterKeys.length > 0 ? 10 : 0,
+            }}
+          >
             {t('Sort by')}
           </InputLabel>
           <FormControl classes={{ root: classes.sortField }}>
@@ -137,22 +167,46 @@ class ListCards extends Component {
             {orderAsc ? <ArrowDownward /> : <ArrowUpward />}
           </IconButton>
           <div className={classes.filters}>
-            {map(
-              (filter) => map(
-                (f) => (
+            {map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {map(
+                    (n) => (
+                      <span key={n.value}>
+                        {n.value && n.value.length > 0
+                          ? truncate(n.value, 15)
+                          : t('No label')}{' '}
+                        {last(currentFilter[1]).value !== n.value && (
+                          <code>OR</code>
+                        )}{' '}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <span>
+                  <Chip
+                    key={currentFilter[0]}
+                    classes={{ root: classes.filter }}
+                    label={
+                      <div>
+                        <strong>{label}</strong>: {values}
+                      </div>
+                    }
+                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
+                  />
+                  {last(toPairs(filters))[0] !== currentFilter[0] && (
                     <Chip
-                      key={filter[0]}
-                      classes={{ root: classes.filter }}
-                      label={`${filter[0]}: ${
-                        f.value === null ? t('No tag') : f.value
-                      }`}
-                      onDelete={handleRemoveFilter.bind(this, filter[0])}
+                      classes={{ root: classes.operator }}
+                      label={t('AND')}
                     />
-                ),
-                filter[1],
-              ),
-              toPairs(filters),
-            )}
+                  )}
+                </span>
+              );
+            }, toPairs(filters))}
           </div>
         </div>
         <div className={classes.views}>
@@ -171,7 +225,7 @@ class ListCards extends Component {
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'cards')}
                 >
-                  <Dashboard />
+                  <DashboardOutlined />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -183,7 +237,7 @@ class ListCards extends Component {
                   color="primary"
                   onClick={handleChangeView.bind(this, 'lines')}
                 >
-                  <TableChart />
+                  <TableChartOutlined />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -209,7 +263,7 @@ class ListCards extends Component {
         <div className={classes.cardsContainer}>{children}</div>
         {typeof handleToggleExports === 'function' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixDomainEntitiesExports
+            <StixDomainObjectsExports
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
@@ -232,6 +286,7 @@ ListCards.propTypes = {
   handleSearch: PropTypes.func.isRequired,
   handleSort: PropTypes.func.isRequired,
   handleChangeView: PropTypes.func,
+  handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
@@ -245,6 +300,7 @@ ListCards.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   numberOfElements: PropTypes.object,
+  availableFilterKeys: PropTypes.array,
 };
 
 export default compose(inject18n, withStyles(styles))(ListCards);

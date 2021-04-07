@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
 import graphql from 'babel-plugin-relay/macro';
@@ -20,6 +20,7 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -65,8 +66,12 @@ const styles = (theme) => ({
 });
 
 export const identityCreationIdentitiesSearchQuery = graphql`
-  query IdentityCreationIdentitiesSearchQuery($search: String, $first: Int) {
-    identities(search: $search, first: $first) {
+  query IdentityCreationIdentitiesSearchQuery(
+    $types: [String]
+    $search: String
+    $first: Int
+  ) {
+    identities(types: $types, search: $search, first: $first) {
       edges {
         node {
           id
@@ -176,8 +181,15 @@ class IdentityCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                    detectDuplicate={['Organization', 'Individual']}
+                  />
+                  <Field
+                    component={MarkDownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -185,7 +197,8 @@ class IdentityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <SelectField
+                  <Field
+                    component={SelectField}
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
@@ -199,11 +212,8 @@ class IdentityCreation extends Component {
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                  </SelectField>
+                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                  </Field>
                   <div className={classes.buttons}>
                     <Button
                       variant="contained"
@@ -234,7 +244,7 @@ class IdentityCreation extends Component {
 
   renderContextual() {
     const {
-      t, classes, inputValue, open,
+      t, classes, inputValue, open, onlyAuthors,
     } = this.props;
     return (
       <div>
@@ -258,8 +268,15 @@ class IdentityCreation extends Component {
               >
                 <DialogTitle>{t('Create an entity')}</DialogTitle>
                 <DialogContent>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                    detectDuplicate={['Organization', 'Individual']}
+                  />
+                  <Field
+                    component={MarkDownField}
                     name="description"
                     label={t('Description')}
                     fullWidth={true}
@@ -267,21 +284,38 @@ class IdentityCreation extends Component {
                     rows="4"
                     style={{ marginTop: 20 }}
                   />
-                  <SelectField
+                  <Field
+                    component={SelectField}
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                    {!onlyAuthors ? (
+                      <MenuItem value="Sector">{t('Sector')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
-                    <MenuItem value="Region">{t('Region')}</MenuItem>
-                    <MenuItem value="Country">{t('Country')}</MenuItem>
-                    <MenuItem value="City">{t('City')}</MenuItem>
-                    <MenuItem value="User">{t('Person')}</MenuItem>
-                  </SelectField>
+                    {!onlyAuthors ? (
+                      <MenuItem value="Region">{t('Region')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {!onlyAuthors ? (
+                      <MenuItem value="Country">{t('Country')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    {!onlyAuthors ? (
+                      <MenuItem value="City">{t('City')}</MenuItem>
+                    ) : (
+                      ''
+                    )}
+                    <MenuItem value="Individual">{t('Individual')}</MenuItem>
+                  </Field>
                 </DialogContent>
                 <DialogActions>
                   <Button
@@ -323,6 +357,7 @@ IdentityCreation.propTypes = {
   theme: PropTypes.object,
   t: PropTypes.func,
   contextual: PropTypes.bool,
+  onlyAuthors: PropTypes.bool,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
   inputValue: PropTypes.string,

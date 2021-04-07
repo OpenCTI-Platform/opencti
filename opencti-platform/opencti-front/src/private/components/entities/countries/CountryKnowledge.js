@@ -6,17 +6,19 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CountryPopover from './CountryPopover';
-import CountryKnowledgeBar from './CountryKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
+    padding: '0 200px 0 0',
   },
 });
 
@@ -26,16 +28,30 @@ class CountryKnowledgeComponent extends Component {
     const link = `/dashboard/entities/countries/${country.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={country}
+        <StixDomainObjectHeader
+          stixDomainObject={country}
           PopoverComponent={<CountryPopover />}
+          variant="noaliases"
         />
-        <CountryKnowledgeBar countryId={country.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'cities',
+            'organizations',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={country.id}
               paddingRight={true}
               {...routeProps}
@@ -46,9 +62,9 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={country.id}
-              stixDomainEntityType="country"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={country.id}
+              stixDomainObjectType="Country"
               {...routeProps}
             />
           )}
@@ -57,12 +73,12 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/cities"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="localization"
-              targetEntityTypes={['City']}
+              relationshipTypes={['located-at']}
+              targetStixDomainObjectTypes={['City']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
@@ -71,33 +87,107 @@ class CountryKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/countries/:countryId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="localization"
-              targetEntityTypes={['Organization']}
+              relationshipTypes={['located-at']}
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/entities/countries/:countryId/knowledge/threats"
+          path="/dashboard/entities/countries/:countryId/knowledge/threat_actors"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={country.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Country',
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-              ]}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/countries/:countryId/knowledge/intrusion_sets"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['targets', 'originates-from']}
+              targetStixDomainObjectTypes={['Campaign', 'Intrusion-Set']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/countries/:countryId/knowledge/campaigns"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Campaign']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/countries/:countryId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/countries/:countryId/knowledge/malwares"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={country.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Malware']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/countries/:countryId/knowledge/observables"
+          render={(routeProps) => (
+            <StixCoreObjectStixCyberObservables
+              stixCoreObjectId={country.id}
+              stixCoreObjectLink={link}
+              noRightBar={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/countries/:countryId/knowledge/sightings"
+          render={(routeProps) => (
+            <EntityStixSightingRelationships
+              entityId={country.id}
+              entityLink={link}
+              noRightBar={true}
+              isTo={true}
               {...routeProps}
             />
           )}
@@ -118,7 +208,7 @@ const CountryKnowledge = createFragmentContainer(CountryKnowledgeComponent, {
     fragment CountryKnowledge_country on Country {
       id
       name
-      alias
+      x_opencti_aliases
     }
   `,
 });

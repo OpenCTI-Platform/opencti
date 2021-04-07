@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos, Domain } from '@material-ui/icons';
+import { ArrowForwardIosOutlined, DomainOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -56,10 +56,13 @@ class TopMenuSector extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Domain className={classes.icon} fontSize="small" />
+          <DomainOutlined className={classes.icon} fontSize="small" />
           {t('Sectors')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/sectors/${sectorId}`}
@@ -102,23 +105,23 @@ class TopMenuSector extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/sectors/${sectorId}/reports`}
+          to={`/dashboard/entities/sectors/${sectorId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/reports`
+            === `/dashboard/entities/sectors/${sectorId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/sectors/${sectorId}/reports`
+            === `/dashboard/entities/sectors/${sectorId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
@@ -142,6 +145,26 @@ class TopMenuSector extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/sectors/${sectorId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/sectors/${sectorId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/sectors/${sectorId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

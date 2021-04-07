@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Flag, ArrowForwardIos } from '@material-ui/icons';
+import { MapOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -56,10 +56,13 @@ class TopMenuCountry extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Flag className={classes.icon} fontSize="small" />
+          <MapOutlined className={classes.icon} fontSize="small" />
           {t('Countries')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/countries/${countryId}`}
@@ -102,45 +105,23 @@ class TopMenuCountry extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/countries/${countryId}/reports`}
+          to={`/dashboard/entities/countries/${countryId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/reports`
+            === `/dashboard/entities/countries/${countryId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/countries/${countryId}/reports`
+            === `/dashboard/entities/countries/${countryId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/countries/${countryId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/countries/${countryId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/countries/${countryId}/observables`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
+          {t('Analysis')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
@@ -164,6 +145,26 @@ class TopMenuCountry extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/countries/${countryId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/countries/${countryId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/countries/${countryId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

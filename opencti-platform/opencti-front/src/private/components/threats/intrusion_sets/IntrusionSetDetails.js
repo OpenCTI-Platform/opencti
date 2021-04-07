@@ -1,13 +1,20 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import { compose, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
+import Grid from '@material-ui/core/Grid';
+import List from '@material-ui/core/List';
+import ListItem from '@material-ui/core/ListItem';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
+import { BullseyeArrow, ArmFlexOutline } from 'mdi-material-ui';
+import ListItemText from '@material-ui/core/ListItemText';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
-import StixDomainEntityTags from '../../common/stix_domain_entities/StixDomainEntityTags';
+import IntrusionSetLocations from './IntrusionSetLocations';
 
 const styles = () => ({
   paper: {
@@ -17,92 +24,132 @@ const styles = () => ({
     padding: '15px',
     borderRadius: 6,
   },
+  chip: {
+    fontSize: 12,
+    lineHeight: '12px',
+    backgroundColor: 'rgba(0, 150, 136, 0.3)',
+    color: '#ffffff',
+    textTransform: 'uppercase',
+    borderRadius: '0',
+    margin: '0 5px 5px 0',
+  },
 });
 
 class IntrusionSetDetailsComponent extends Component {
   render() {
     const {
-      t, fld, classes, intrusionSet,
+      t, classes, intrusionSet, fd,
     } = this.props;
+    const secondaryMotivations = intrusionSet.secondary_motivations
+      ? map(
+        (secondaryMotivation) => t(`motivation_${secondaryMotivation}`),
+        intrusionSet.secondary_motivations,
+      )
+      : [t('motivation_unknown')];
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
           {t('Details')}
         </Typography>
         <Paper classes={{ root: classes.paper }} elevation={2}>
-          <StixDomainEntityTags tags={intrusionSet.tags} id={intrusionSet.id} />
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('First seen')}
-          </Typography>
-          {fld(intrusionSet.first_seen)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Last seen')}
-          </Typography>
-          {fld(intrusionSet.last_seen)}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Sophistication')}
-          </Typography>
-          {t(
-            `${
-              intrusionSet.sophistication
-                ? `sophistication_${intrusionSet.sophistication}`
-                : 'sophistication_unkown'
-            }`,
-          )}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Resource level')}
-          </Typography>
-          {t(
-            `${
-              intrusionSet.resource_level
-                ? `resource_${intrusionSet.resource_level}`
-                : 'resource_unkown'
-            }`,
-          )}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Primary motivation')}
-          </Typography>
-          {t(
-            `${
-              intrusionSet.primary_motivation
-                ? `motivation_${intrusionSet.primary_motivation}`
-                : 'motivation_unpredictable'
-            }`,
-          )}
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ marginTop: 20 }}
-          >
-            {t('Secondary motivation')}
-          </Typography>
-          {t(
-            `${
-              intrusionSet.secondary_motivation
-                ? `motivation_${intrusionSet.secondary_motivation}`
-                : 'motivation_unknown'
-            }`,
-          )}
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={6}>
+              <Typography variant="h3" gutterBottom={true}>
+                {t('Description')}
+              </Typography>
+              <ExpandableMarkdown
+                source={intrusionSet.description}
+                limit={400}
+              />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Resource level')}
+              </Typography>
+              {t(
+                `${
+                  intrusionSet.resource_level
+                    ? `resource_${intrusionSet.resource_level}`
+                    : 'resource_unkown'
+                }`,
+              )}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Goals')}
+              </Typography>
+              <List>
+                {intrusionSet.goals
+                  ? intrusionSet.goals
+                  : [t('Unknown')].map((goal) => (
+                      <ListItem key={goal} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <BullseyeArrow />
+                        </ListItemIcon>
+                        <ListItemText primary={goal} />
+                      </ListItem>
+                  ))}
+              </List>
+            </Grid>
+            <Grid item={true} xs={6}>
+              <IntrusionSetLocations intrusionSet={intrusionSet} />
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('First seen')}
+              </Typography>
+              {fd(intrusionSet.first_seen)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Last seen')}
+              </Typography>
+              {fd(intrusionSet.last_seen)}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Primary motivation')}
+              </Typography>
+              {t(
+                `${
+                  intrusionSet.primary_motivation
+                    ? `motivation_${intrusionSet.primary_motivation}`
+                    : 'motivation_unpredictable'
+                }`,
+              )}
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
+                {t('Secondary motivations')}
+              </Typography>
+              <List>
+                {secondaryMotivations.map((secondaryMotivation) => (
+                  <ListItem
+                    key={secondaryMotivation}
+                    dense={true}
+                    divider={true}
+                  >
+                    <ListItemIcon>
+                      <ArmFlexOutline />
+                    </ListItemIcon>
+                    <ListItemText primary={secondaryMotivation} />
+                  </ListItem>
+                ))}
+              </List>
+            </Grid>
+          </Grid>
         </Paper>
       </div>
     );
@@ -113,7 +160,7 @@ IntrusionSetDetailsComponent.propTypes = {
   intrusionSet: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fd: PropTypes.func,
 };
 
 const IntrusionSetDetails = createFragmentContainer(
@@ -124,29 +171,15 @@ const IntrusionSetDetails = createFragmentContainer(
         id
         first_seen
         last_seen
-        sophistication
+        description
         resource_level
         primary_motivation
-        secondary_motivation
-        tags {
-          edges {
-            node {
-              id
-              tag_type
-              value
-              color
-            }
-            relation {
-              id
-            }
-          }
-        }
+        secondary_motivations
+        goals
+        ...IntrusionSetLocations_intrusionSet
       }
     `,
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IntrusionSetDetails);
+export default compose(inject18n, withStyles(styles))(IntrusionSetDetails);

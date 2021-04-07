@@ -1,30 +1,36 @@
 import { Promise } from 'bluebird';
 import { map } from 'ramda';
-import { connectorsFor } from './connector';
+import { CONNECTOR_INTERNAL_ENRICHMENT, connectorsFor } from './connector';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 
-export const CONNECTOR_INTERNAL_ENRICHMENT = 'INTERNAL_ENRICHMENT'; // Entity types to support (Report, Hash, ...) -> enrich-
+export const connectorsForEnrichment = async (user, scope, onlyAlive = false, onlyAuto = false) =>
+  connectorsFor(user, CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive, onlyAuto);
 
-export const connectorsForEnrichment = async (scope, onlyAlive = false) =>
-  connectorsFor(CONNECTOR_INTERNAL_ENRICHMENT, scope, onlyAlive);
-
-export const askEnrich = async (observableId, scope) => {
+export const askEnrich = async (user, observableId, scope) => {
   // Get the list of compatible connectors
-  const targetConnectors = await connectorsForEnrichment(scope, true);
+  const targetConnectors = await connectorsForEnrichment(user, scope, true, true);
   // Create a work for each connector
   const workList = await Promise.all(
-    map(connector => {
-      return createWork(connector, 'Stix-Observable', observableId).then(({ job, work }) => {
-        return { connector, job, work };
+    map((connector) => {
+      return createWork(user, connector, `Enrichment (${observableId})`, observableId).then((work) => {
+        return { connector, work };
       });
     }, targetConnectors)
   );
   // Send message to all correct connectors queues
   await Promise.all(
-    map(data => {
-      const { connector, work, job } = data;
-      const message = { work_id: work.internal_id_key, job_id: job.internal_id_key, entity_id: observableId };
+    map((data) => {
+      const { connector, work } = data;
+      const message = {
+        internal: {
+          work_id: work.id, // Related action for history
+          applicant_id: null, // User asking for the import
+        },
+        event: {
+          entity_id: observableId,
+        },
+      };
       return pushToConnector(connector, message);
     }, workList)
   );

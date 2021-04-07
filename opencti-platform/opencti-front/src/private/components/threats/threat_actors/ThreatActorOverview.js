@@ -1,15 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, pathOr, map } from 'ramda';
+import { compose, propOr, map } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import Markdown from 'react-markdown';
 import { withStyles } from '@material-ui/core/styles';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import inject18n from '../../../../components/i18n';
-import ItemCreator from '../../../../components/ItemCreator';
+import ItemAuthor from '../../../../components/ItemAuthor';
 import ItemMarking from '../../../../components/ItemMarking';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -24,7 +24,7 @@ const styles = () => ({
 class ThreatActorOverviewComponent extends Component {
   render() {
     const {
-      t, fld, classes, threatActor,
+      t, fldt, classes, threatActor,
     } = this.props;
     return (
       <div style={{ height: '100%' }} className="break">
@@ -35,15 +35,16 @@ class ThreatActorOverviewComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Marking')}
           </Typography>
-          {threatActor.markingDefinitions.edges.length > 0 ? (
+          {threatActor.objectMarking.edges.length > 0 ? (
             map(
               (markingDefinition) => (
                 <ItemMarking
                   key={markingDefinition.node.id}
                   label={markingDefinition.node.definition}
+                  color={markingDefinition.node.x_opencti_color}
                 />
               ),
-              threatActor.markingDefinitions.edges,
+              threatActor.objectMarking.edges,
             )
           ) : (
             <ItemMarking label="TLP:WHITE" />
@@ -55,7 +56,7 @@ class ThreatActorOverviewComponent extends Component {
           >
             {t('Creation date')}
           </Typography>
-          {fld(threatActor.created)}
+          {fldt(threatActor.created)}
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -63,17 +64,15 @@ class ThreatActorOverviewComponent extends Component {
           >
             {t('Modification date')}
           </Typography>
-          {fld(threatActor.modified)}
+          {fldt(threatActor.modified)}
           <Typography
             variant="h3"
             gutterBottom={true}
             style={{ marginTop: 20 }}
           >
-            {t('Creator')}
+            {t('Author')}
           </Typography>
-          <ItemCreator
-            createdByRef={pathOr(null, ['createdByRef', 'node'], threatActor)}
-          />
+          <ItemAuthor createdBy={propOr(null, 'createdBy', threatActor)} />
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -81,7 +80,11 @@ class ThreatActorOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown className="markdown" source={threatActor.description} />
+          <ExpandableMarkdown
+            className="markdown"
+            source={threatActor.description}
+            limit={250}
+          />
         </Paper>
       </div>
     );
@@ -92,7 +95,7 @@ ThreatActorOverviewComponent.propTypes = {
   threatActor: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  fld: PropTypes.func,
+  fldt: PropTypes.func,
 };
 
 const ThreatActorOverview = createFragmentContainer(
@@ -105,16 +108,17 @@ const ThreatActorOverview = createFragmentContainer(
         description
         created
         modified
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
+              x_opencti_color
             }
           }
         }
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
@@ -125,7 +129,4 @@ const ThreatActorOverview = createFragmentContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(ThreatActorOverview);
+export default compose(inject18n, withStyles(styles))(ThreatActorOverview);

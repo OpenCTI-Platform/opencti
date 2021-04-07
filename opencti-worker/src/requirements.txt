@@ -1,5 +1,2 @@
-requests
-PyYAML
-pika
-pycti
-black
+pycti==4.3.4
+black==20.8b1

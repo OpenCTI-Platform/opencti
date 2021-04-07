@@ -7,10 +7,13 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, AccountBalance } from '@material-ui/icons';
+import {
+  KeyboardArrowRightOutlined,
+  AccountBalanceOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -30,8 +33,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -46,7 +48,7 @@ const styles = (theme) => ({
 class OrganizationLineComponent extends Component {
   render() {
     const {
-      t, fd, classes, dataColumns, node, onTagClick,
+      t, fd, classes, dataColumns, node, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -57,7 +59,7 @@ class OrganizationLineComponent extends Component {
         to={`/dashboard/entities/organizations/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <AccountBalance />
+          <AccountBalanceOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -70,20 +72,20 @@ class OrganizationLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.organization_class.width }}
+                style={{ width: dataColumns.x_opencti_organization_type.width }}
               >
-                {node.organization_class
-                  ? t(`organization_${node.organization_class}`)
+                {node.x_opencti_organization_type
+                  ? t(`organization_${node.x_opencti_organization_type}`)
                   : ''}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags
+                <StixCoreObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -102,7 +104,7 @@ class OrganizationLineComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );
@@ -114,7 +116,7 @@ OrganizationLineComponent.propTypes = {
   node: PropTypes.object,
   classes: PropTypes.object,
   fd: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const OrganizationLineFragment = createFragmentContainer(
@@ -123,20 +125,16 @@ const OrganizationLineFragment = createFragmentContainer(
     node: graphql`
       fragment OrganizationLine_node on Organization {
         id
-        organization_class
+        x_opencti_organization_type
         name
         created
         modified
-        tags {
+        objectLabel {
           edges {
             node {
               id
-              tag_type
               value
               color
-            }
-            relation {
-              id
             }
           }
         }
@@ -156,7 +154,7 @@ class OrganizationLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <AccountBalance />
+          <AccountBalanceOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -169,13 +167,13 @@ class OrganizationLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.organization_class.width }}
+                style={{ width: dataColumns.x_opencti_organization_type.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>
@@ -195,7 +193,7 @@ class OrganizationLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

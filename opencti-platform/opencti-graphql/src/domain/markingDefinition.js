@@ -1,72 +1,48 @@
 import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import {
-  createEntity,
-  createRelation,
-  deleteEntityById,
-  deleteRelationById,
-  executeWrite,
-  listEntities,
-  loadEntityById,
-  loadEntityByStixId,
-  TYPE_STIX_DOMAIN,
-  updateAttribute
-} from '../database/grakn';
+import { createEntity, deleteElementById, listEntities, loadById, updateAttribute } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
-export const findById = markingDefinitionId => {
-  if (markingDefinitionId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(markingDefinitionId, 'Marking-Definition');
-  }
-  return loadEntityById(markingDefinitionId, 'Marking-Definition');
+export const findById = (user, markingDefinitionId) => {
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const findAll = args => {
-  return listEntities(['Marking-Definition'], ['definition_type', 'definition'], args);
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_MARKING_DEFINITION], args);
 };
 
 export const addMarkingDefinition = async (user, markingDefinition) => {
-  const created = await createEntity(markingDefinition, 'Marking-Definition', { modelType: TYPE_STIX_DOMAIN });
-  return notify(BUS_TOPICS.MarkingDefinition.ADDED_TOPIC, created, user);
+  const created = await createEntity(
+    user,
+    assoc(
+      'x_opencti_color',
+      markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff',
+      markingDefinition
+    ),
+    ENTITY_TYPE_MARKING_DEFINITION
+  );
+  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
 
-export const markingDefinitionDelete = markingDefinitionId =>
-  deleteEntityById(markingDefinitionId, 'Marking-Definition');
-export const markingDefinitionAddRelation = (user, markingDefinitionId, input) => {
-  return createRelation(
-    markingDefinitionId,
-    assoc('through', 'object_marking_refs', input),
-    {},
-    null,
-    'Marking-Definition'
-  ).then(relationData => {
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
-};
-export const markingDefinitionDeleteRelation = async (user, markingDefinitionId, relationId) => {
-  await deleteRelationById(relationId, 'stix_relation_embedded');
-  const data = await loadEntityById(markingDefinitionId, 'Marking-Definition');
-  return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, data, user);
-};
-export const markingDefinitionEditField = (user, markingDefinitionId, input) => {
-  return executeWrite(wTx => {
-    return updateAttribute(markingDefinitionId, 'Marking-Definition', input, wTx);
-  }).then(async () => {
-    const markingDefinition = await loadEntityById(markingDefinitionId, 'Marking-Definition');
-    return notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user);
-  });
+export const markingDefinitionDelete = (user, markingDefinitionId) =>
+  deleteElementById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+
+export const markingDefinitionEditField = async (user, markingDefinitionId, input) => {
+  const markingDefinition = await updateAttribute(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user);
 };
 
-export const markingDefinitionCleanContext = (user, markingDefinitionId) => {
-  delEditContext(user, markingDefinitionId);
-  return loadEntityById(markingDefinitionId, 'Marking-Definition').then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
+export const markingDefinitionCleanContext = async (user, markingDefinitionId) => {
+  await delEditContext(user, markingDefinitionId);
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };
-export const markingDefinitionEditContext = (user, markingDefinitionId, input) => {
-  setEditContext(user, markingDefinitionId, input);
-  return loadEntityById(markingDefinitionId, 'Marking-Definition').then(markingDefinition =>
-    notify(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC, markingDefinition, user)
+
+export const markingDefinitionEditContext = async (user, markingDefinitionId, input) => {
+  await setEditContext(user, markingDefinitionId, input);
+  return loadById(user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION).then((markingDefinition) =>
+    notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, markingDefinition, user)
   );
 };

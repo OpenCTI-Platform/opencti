@@ -6,11 +6,13 @@ import Chip from '@material-ui/core/Chip';
 const styles = () => ({
   chip: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 25,
     marginRight: 7,
   },
   chipInList: {
     fontSize: 12,
+    lineHeight: '12px',
     height: 20,
     marginRight: 15,
   },
@@ -26,7 +28,7 @@ class ItemYears extends Component {
       <Chip
         classes={{ root: style }}
         color={disabled ? 'default' : 'secondary'}
-        label={years}
+        label={years === '1970 - 5138' ? '-' : years}
       />
     );
   }

@@ -14,7 +14,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
-import { ConnectionHandler } from 'relay-runtime';
+import { withRouter } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import UserEdition from './UserEdition';
@@ -51,7 +51,7 @@ const userPopoverDeletionMutation = graphql`
   }
 `;
 
-const userEditionQuery = graphql`
+export const userEditionQuery = graphql`
   query UserPopoverEditionQuery($id: String!) {
     user(id: $id) {
       ...UserEdition_user
@@ -103,29 +103,25 @@ class UserPopover extends Component {
       variables: {
         id: this.props.userId,
       },
-      updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('userEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_users',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
-      },
       onCompleted: () => {
         this.setState({ deleting: false });
-        this.handleCloseDelete();
+        this.handleClose();
+        this.props.history.push('/dashboard/settings/accesses/users');
       },
     });
   }
 
   render() {
-    const { classes, t, userId } = this.props;
+    const {
+      classes, t, userId, disabled,
+    } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
         <Menu
@@ -137,7 +133,10 @@ class UserPopover extends Component {
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <MenuItem onClick={this.handleOpenDelete.bind(this)}>
+          <MenuItem
+            onClick={this.handleOpenDelete.bind(this)}
+            disabled={disabled}
+          >
             {t('Delete')}
           </MenuItem>
         </Menu>
@@ -201,6 +200,7 @@ UserPopover.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
+  disabled: PropTypes.bool,
 };
 
-export default compose(inject18n, withStyles(styles))(UserPopover);
+export default compose(inject18n, withRouter, withStyles(styles))(UserPopover);

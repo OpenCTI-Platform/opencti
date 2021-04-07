@@ -1,15 +1,18 @@
 {
   "extends": ["airbnb-base", "plugin:react/recommended"],
   "parserOptions": {
-    "ecmaVersion": 2019
+    "ecmaVersion": 2020
   },
   "env": {
     "browser": true,
     "jest": true
   },
   "rules": {
+    "no-restricted-syntax": 0,
     "react/no-unused-prop-types": 0,
-    "react/prop-types": 0
+    "react/prop-types": 0,
+    "max-classes-per-file": ["error", 2],
+    "no-unused-vars": ["warn"]
   },
   "settings": {
     "react": {

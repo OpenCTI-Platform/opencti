@@ -53,7 +53,8 @@ class CityEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -63,7 +64,7 @@ class CityEditionContainer extends Component {
           <div className="clearfix" />
         </div>
         <div className={classes.container}>
-          <CityEditionOverview city={this.props.city} context={editContext}/>
+          <CityEditionOverview city={this.props.city} context={editContext} />
         </div>
       </div>
     );

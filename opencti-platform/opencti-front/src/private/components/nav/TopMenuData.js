@@ -5,8 +5,13 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import inject18n from '../../../components/i18n';
+import Security, {
+  KNOWLEDGE,
+  MODULES,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../../utils/Security';
 
-const styles = theme => ({
+const styles = (theme) => ({
   button: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -24,42 +29,66 @@ class TopMenuData extends Component {
     const { t, location, classes } = this.props;
     return (
       <div>
-        <Button
-          component={Link}
-          to="/dashboard/data/curation"
-          variant={
-            location.pathname === '/dashboard/data/curation'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/data/curation'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Data curation')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/data/connectors"
-          variant={
-            location.pathname === '/dashboard/data/connectors'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/data/connectors'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Connectors & workers')}
-        </Button>
+        <Security needs={[MODULES]}>
+          <Button
+            component={Link}
+            to="/dashboard/data/connectors"
+            variant={
+              location.pathname.includes('/dashboard/data/connectors')
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname.includes('/dashboard/data/connectors')
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Connectors & workers')}
+          </Button>
+        </Security>
+        <Security needs={[KNOWLEDGE]}>
+          <Button
+            component={Link}
+            to="/dashboard/data/curation"
+            variant={
+              location.pathname === '/dashboard/data/curation'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/data/curation'
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Data curation')}
+          </Button>
+        </Security>
+        <Security needs={[TAXIIAPI_SETCOLLECTIONS]}>
+          <Button
+            component={Link}
+            to="/dashboard/data/taxii"
+            variant={
+              location.pathname === '/dashboard/data/taxii'
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname === '/dashboard/data/taxii'
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('TAXII API')}
+          </Button>
+        </Security>
       </div>
     );
   }
@@ -72,8 +101,4 @@ TopMenuData.propTypes = {
   history: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(TopMenuData);
+export default compose(inject18n, withRouter, withStyles(styles))(TopMenuData);

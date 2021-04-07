@@ -7,7 +7,7 @@ import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, CenterFocusStrong } from '@material-ui/icons';
+import { MoreVert, CenterFocusStrongOutlined } from '@material-ui/icons';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 import MarkingDefinitionPopover from './MarkingDefinitionPopover';
@@ -31,8 +31,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -52,10 +51,10 @@ class MarkingDefinitionLineComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true} button={true}>
         <ListItemIcon
-          style={{ color: node.color }}
+          style={{ color: node.x_opencti_color }}
           classes={{ root: classes.itemIcon }}
         >
-          <CenterFocusStrong />
+          <CenterFocusStrongOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -74,15 +73,15 @@ class MarkingDefinitionLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.color.width }}
+                style={{ width: dataColumns.x_opencti_color.width }}
               >
-                {node.color}
+                {node.x_opencti_color}
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.level.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
-                {node.level}
+                {node.x_opencti_order}
               </div>
               <div
                 className={classes.bodyItem}
@@ -121,8 +120,8 @@ const MarkingDefinitionLineFragment = createFragmentContainer(
         id
         definition_type
         definition
-        level
-        color
+        x_opencti_order
+        x_opencti_color
         created
         modified
       }
@@ -141,7 +140,7 @@ class MarkingDefinitionLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <CenterFocusStrong />
+          <CenterFocusStrongOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -160,13 +159,13 @@ class MarkingDefinitionLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.color.width }}
+                style={{ width: dataColumns.x_opencti_color.width }}
               >
                 <div className="fakeItem" style={{ width: '60%' }} />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.level.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
                 <div className="fakeItem" style={{ width: '80%' }} />
               </div>

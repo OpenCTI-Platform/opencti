@@ -6,7 +6,7 @@ import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { GroupLine, GroupLineDummy } from './GroupLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class GroupsLines extends Component {
   render() {
@@ -72,13 +72,13 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment GroupsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "GroupsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "GroupsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         groups(
           search: $search
           first: $count

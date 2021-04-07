@@ -15,6 +15,8 @@ import {
   pathOr,
   tail,
   filter,
+  includes,
+  isNil,
 } from 'ramda';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
@@ -38,7 +40,7 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Radio from '@material-ui/core/Radio';
 import Alert from '@material-ui/lab/Alert/Alert';
 import Chip from '@material-ui/core/Chip';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
@@ -47,11 +49,14 @@ import ItemMarking from '../../../../components/ItemMarking';
 const styles = (theme) => ({
   bottomNav: {
     zIndex: 1000,
-    padding: '0 250px 0 74px',
+    padding: '0 230px 0 180px',
     backgroundColor: theme.palette.navBottom.background,
+    display: 'flex',
+    height: 50,
   },
   title: {
     flex: '1 1 100%',
+    fontSize: '12px',
   },
   drawerPaper: {
     minHeight: '100vh',
@@ -88,7 +93,7 @@ const styles = (theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  alias: {
+  aliases: {
     margin: '0 7px 7px 0',
   },
 });
@@ -100,21 +105,17 @@ Transition.displayName = 'TransitionSlide';
 
 const curationToolBarDeletionMutation = graphql`
   mutation CurationToolBarDeletionMutation($id: [ID]!) {
-    stixDomainEntitiesDelete(id: $id)
+    stixDomainObjectsDelete(id: $id)
   }
 `;
 
 const curationToolBarMergeMutation = graphql`
   mutation CurationToolBarMergeMutation(
     $id: ID!
-    $stixDomainEntitiesIds: [String]!
-    $alias: [String]
+    $stixCoreObjectsIds: [String]!
   ) {
-    stixDomainEntityEdit(id: $id) {
-      mergeEntities(
-        stixDomainEntitiesIds: $stixDomainEntitiesIds
-        alias: $alias
-      ) {
+    stixCoreObjectEdit(id: $id) {
+      merge(stixCoreObjectsIds: $stixCoreObjectsIds) {
         id
       }
     }
@@ -151,26 +152,30 @@ class CurationToolBar extends Component {
 
   submitDelete() {
     this.setState({ deleting: true });
-    const stixDomainEntitiesIds = Object.keys(this.props.selectedElements);
+    const stixDomainObjectsIds = Object.keys(this.props.selectedElements);
     commitMutation({
       mutation: curationToolBarDeletionMutation,
       variables: {
-        id: stixDomainEntitiesIds,
+        id: stixDomainObjectsIds,
       },
       updater: (store) => {
         const container = store.getRoot();
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_stixDomainEntities',
+          'Pagination_stixDomainObjects',
           this.props.paginationOptions,
         );
-        stixDomainEntitiesIds.map((id) => ConnectionHandler.deleteNode(conn, id));
+        stixDomainObjectsIds.map((id) => ConnectionHandler.deleteNode(conn, id));
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.props.handleResetSelectedElements();
         this.handleCloseDelete();
+
+        MESSAGING$.notifySuccess(
+          this.props.t('Successfully deleted selected entities'),
+        );
       },
     });
   }
@@ -183,38 +188,37 @@ class CurationToolBar extends Component {
     this.setState({ merging: true });
     const { selectedElements } = this.props;
     const { keptEntityId } = this.state;
-    const stixDomainEntitiesIds = Object.keys(selectedElements);
+    const stixDomainObjectsIds = Object.keys(selectedElements);
     const selectedElementsList = values(selectedElements);
     const keptElement = keptEntityId
       ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
       : head(selectedElementsList);
-    const names = pluck('name', selectedElementsList);
-    const aliases = flatten(pluck('alias', selectedElementsList));
-    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
-    const filteredStixDomainEntitiesIds = keptEntityId
-      ? filter((n) => n !== keptEntityId, stixDomainEntitiesIds)
-      : tail(stixDomainEntitiesIds);
+    const filteredStixDomainObjectsIds = keptEntityId
+      ? filter((n) => n !== keptEntityId, stixDomainObjectsIds)
+      : tail(stixDomainObjectsIds);
     commitMutation({
       mutation: curationToolBarMergeMutation,
       variables: {
         id: keptElement.id,
-        stixDomainEntitiesIds: filteredStixDomainEntitiesIds,
-        alias: newAliases,
+        stixCoreObjectsIds: filteredStixDomainObjectsIds,
       },
       updater: (store) => {
         const container = store.getRoot();
         const userProxy = store.get(container.getDataID());
         const conn = ConnectionHandler.getConnection(
           userProxy,
-          'Pagination_stixDomainEntities',
+          'Pagination_stixDomainObjects',
           this.props.paginationOptions,
         );
-        filteredStixDomainEntitiesIds.map((id) => ConnectionHandler.deleteNode(conn, id));
+        filteredStixDomainObjectsIds.map((id) => ConnectionHandler.deleteNode(conn, id));
       },
       onCompleted: () => {
         this.setState({ merging: false });
         this.props.handleResetSelectedElements();
         this.handleCloseMerge();
+        MESSAGING$.notifySuccess(
+          this.props.t('Successfully merged selected entities'),
+        );
       },
     });
   }
@@ -222,22 +226,44 @@ class CurationToolBar extends Component {
   render() {
     const { t, classes, selectedElements } = this.props;
     const { keptEntityId } = this.state;
+    const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Observed-Data'];
     const numberOfSelectedElements = Object.keys(selectedElements).length;
     const typesAreDifferent = uniq(map((n) => n.entity_type, values(selectedElements))).length > 1;
+    const typesAreNotMergable = includes(
+      uniq(map((n) => n.entity_type, values(selectedElements)))[0],
+      notMergableTypes,
+    );
     const selectedElementsList = values(selectedElements);
-    const keptElement = keptEntityId
-      ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
-      : head(selectedElementsList);
-    const names = pluck('name', selectedElementsList);
-    const aliases = flatten(pluck('alias', selectedElementsList));
-    const newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+    let keptElement = null;
+    let newAliases = [];
+    if (!typesAreNotMergable && !typesAreDifferent) {
+      keptElement = keptEntityId
+        ? head(filter((n) => n.id === keptEntityId, selectedElementsList))
+        : head(selectedElementsList);
+      if (keptElement) {
+        const names = filter(
+          (n) => n !== keptElement.name,
+          pluck('name', selectedElementsList),
+        );
+        const aliases = !isNil(keptElement.aliases)
+          ? filter(
+            (n) => !isNil(n),
+            flatten(pluck('aliases', selectedElementsList)),
+          )
+          : filter(
+            (n) => !isNil(n),
+            flatten(pluck('x_opencti_aliases', selectedElementsList)),
+          );
+        newAliases = filter((n) => n.length > 0, uniq(concat(names, aliases)));
+      }
+    }
     return (
       <Drawer
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
       >
-        <Toolbar>
+        <Toolbar style={{ minHeight: 54 }}>
           <Typography
             className={classes.title}
             color="inherit"
@@ -249,7 +275,11 @@ class CurationToolBar extends Component {
             <span>
               <IconButton
                 aria-label="merge"
-                disabled={typesAreDifferent || numberOfSelectedElements < 2}
+                disabled={
+                  typesAreNotMergable
+                  || typesAreDifferent
+                  || numberOfSelectedElements < 2
+                }
                 onClick={this.handleOpenMerge.bind(this)}
                 color="primary"
               >
@@ -288,7 +318,7 @@ class CurationToolBar extends Component {
           </div>
           <div className={classes.container}>
             <Typography
-              variant="h2"
+              variant="h4"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
@@ -305,17 +335,21 @@ class CurationToolBar extends Component {
                     secondary={truncate(element.description, 60)}
                   />
                   <div style={{ marginRight: 50 }}>
-                    {pathOr([], ['markingDefinitions', 'edges'], element)
-                      .length > 0 ? (
+                    {pathOr('', ['createdBy', 'name'], element)}
+                  </div>
+                  <div style={{ marginRight: 50 }}>
+                    {pathOr([], ['objectMarking', 'edges'], element).length
+                    > 0 ? (
                         map(
                           (markingDefinition) => (
                           <ItemMarking
                             key={markingDefinition.node.id}
                             label={markingDefinition.node.definition}
+                            color={markingDefinition.node.x_opencti_color}
                             variant="inList"
                           />
                           ),
-                          element.markingDefinitions.edges,
+                          element.objectMarking.edges,
                         )
                       ) : (
                       <ItemMarking label="TLP:WHITE" variant="inList" />
@@ -341,7 +375,7 @@ class CurationToolBar extends Component {
               ))}
             </List>
             <Typography
-              variant="h2"
+              variant="h4"
               gutterBottom={true}
               style={{ marginTop: 20 }}
             >
@@ -365,12 +399,20 @@ class CurationToolBar extends Component {
             {newAliases.map((label) => (label.length > 0 ? (
                 <Chip
                   key={label}
-                  classes={{ root: classes.alias }}
+                  classes={{ root: classes.aliases }}
                   label={label}
                 />
             ) : (
               ''
             )))}
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
+              {t('Author')}
+            </Typography>
+            {pathOr('', ['createdBy', 'name'], keptElement)}
             <Typography
               variant="h3"
               gutterBottom={true}
@@ -387,7 +429,7 @@ class CurationToolBar extends Component {
                     label={markingDefinition.node.definition}
                   />
                   ),
-                  keptElement.markingDefinitions.edges,
+                  pathOr([], ['objectMarking', 'edges'], keptElement),
                 )
               ) : (
               <ItemMarking label="TLP:WHITE" />

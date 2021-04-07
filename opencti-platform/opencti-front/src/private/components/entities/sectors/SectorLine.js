@@ -5,7 +5,7 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight, Domain } from '@material-ui/icons';
+import { KeyboardArrowRightOutlined, DomainOutlined } from '@material-ui/icons';
 import { compose, map } from 'ramda';
 import List from '@material-ui/core/List';
 import inject18n from '../../../../components/i18n';
@@ -36,11 +36,11 @@ const styles = (theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     color: '#a5a5a5',
+    fontSize: 12,
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -67,21 +67,13 @@ class SectorLineComponent extends Component {
           to={`/dashboard/entities/sectors/${node.id}`}
         >
           <ListItemIcon classes={{ root: classes.itemIcon }}>
-            <Domain fontSize={isSubSector ? 'small' : 'default'} />
+            <DomainOutlined fontSize={isSubSector ? 'small' : 'default'} />
           </ListItemIcon>
           <ListItemText
             primary={
               <div>
-                <div
-                  className={classes.name}
-                  style={{ fontSize: isSubSector ? 11 : 13 }}
-                >
-                  {node.name}
-                </div>
-                <div
-                  className={classes.description}
-                  style={{ fontSize: isSubSector ? 11 : 13 }}
-                >
+                <div className={classes.name}>{node.name}</div>
+                <div className={classes.description}>
                   {node.description.length > 0
                     ? node.description
                     : t('This sector does not have any description.')}
@@ -90,11 +82,11 @@ class SectorLineComponent extends Component {
             }
           />
           <ListItemIcon classes={{ root: classes.goIcon }}>
-            <KeyboardArrowRight />
+            <KeyboardArrowRightOutlined />
           </ListItemIcon>
         </ListItem>
-        {subSectors ? (
-          <List disablePadding={true}>
+        {subSectors && subSectors.length > 0 && (
+          <List style={{ margin: 0, padding: 0 }}>
             {map(
               (subSector) => (
                 <SectorLine
@@ -106,8 +98,6 @@ class SectorLineComponent extends Component {
               subSectors,
             )}
           </List>
-        ) : (
-          ''
         )}
       </div>
     );
@@ -133,13 +123,13 @@ class SectorLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Domain />
+          <DomainOutlined />
         </ListItemIcon>
         <ListItemText
           primary={<span className="fakeItem" style={{ width: '80%' }} />}
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

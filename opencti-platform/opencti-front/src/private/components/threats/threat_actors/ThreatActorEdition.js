@@ -6,11 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  commitMutation,
-  QueryRenderer,
-  WS_ACTIVATED,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ThreatActorEditionContainer from './ThreatActorEditionContainer';
 import { threatActorEditionOverviewFocus } from './ThreatActorEditionOverview';
@@ -55,15 +51,13 @@ class ThreatActorEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: threatActorEditionOverviewFocus,
-        variables: {
-          id: this.props.threatActorId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: threatActorEditionOverviewFocus,
+      variables: {
+        id: this.props.threatActorId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 
@@ -71,16 +65,20 @@ class ThreatActorEdition extends Component {
     const { classes, threatActorId } = this.props;
     return (
       <div>
-        <Fab onClick={this.handleOpen.bind(this)}
+        <Fab
+          onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}>
+          className={classes.editButton}
+        >
           <Edit />
         </Fab>
-        <Drawer open={this.state.open}
+        <Drawer
+          open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={threatActorEditionQuery}
             variables={{ id: threatActorId }}
@@ -93,7 +91,7 @@ class ThreatActorEdition extends Component {
                   />
                 );
               }
-              return <Loader variant='inElement' />;
+              return <Loader variant="inElement" />;
             }}
           />
         </Drawer>

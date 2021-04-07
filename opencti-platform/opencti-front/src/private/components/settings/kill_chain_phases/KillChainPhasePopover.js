@@ -125,13 +125,19 @@ class KillChainPhasePopover extends Component {
     const { classes, t, killChainPhaseId } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
-        <Menu anchorEl={this.state.anchorEl}
+        <Menu
+          anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
+          style={{ marginTop: 50 }}
+        >
           <MenuItem onClick={this.handleOpenUpdate.bind(this)}>
             {t('Update')}
           </MenuItem>
@@ -139,10 +145,12 @@ class KillChainPhasePopover extends Component {
             {t('Delete')}
           </MenuItem>
         </Menu>
-        <Drawer open={this.state.displayUpdate}
+        <Drawer
+          open={this.state.displayUpdate}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseUpdate.bind(this)}>
+          onClose={this.handleCloseUpdate.bind(this)}
+        >
           <QueryRenderer
             query={killChainPhaseEditionQuery}
             variables={{ id: killChainPhaseId }}
@@ -150,7 +158,8 @@ class KillChainPhasePopover extends Component {
               if (props) {
                 // Done
                 return (
-                  <KillChainPhaseEdition killChainPhase={props.killChainPhase}
+                  <KillChainPhaseEdition
+                    killChainPhase={props.killChainPhase}
                     handleClose={this.handleCloseUpdate.bind(this)}
                   />
                 );
@@ -159,24 +168,30 @@ class KillChainPhasePopover extends Component {
             }}
           />
         </Drawer>
-        <Dialog open={this.state.displayDelete}
+        <Dialog
+          open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}>
+          onClose={this.handleCloseDelete.bind(this)}
+        >
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this kill chain phase?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)}
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)}
+            <Button
+              onClick={this.submitDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>

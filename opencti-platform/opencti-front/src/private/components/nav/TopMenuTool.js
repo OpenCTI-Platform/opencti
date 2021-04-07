@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { Application } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
@@ -51,7 +51,7 @@ class TopMenuTool extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/techniques/tools"
+          to="/dashboard/arsenal/tools"
           variant="contained"
           size="small"
           color="inherit"
@@ -60,18 +60,21 @@ class TopMenuTool extends Component {
           <Application className={classes.icon} fontSize="small" />
           {t('Tools')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}`}
+          to={`/dashboard/arsenal/tools/${toolId}`}
           variant={
-            location.pathname === `/dashboard/techniques/tools/${toolId}`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/techniques/tools/${toolId}`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}`
               ? 'primary'
               : 'inherit'
           }
@@ -81,10 +84,10 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/knowledge`}
+          to={`/dashboard/arsenal/tools/${toolId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/knowledge`,
+              `/dashboard/arsenal/tools/${toolId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -92,7 +95,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/knowledge`,
+              `/dashboard/arsenal/tools/${toolId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -103,30 +106,28 @@ class TopMenuTool extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/reports`}
+          to={`/dashboard/arsenal/tools/${toolId}/analysis`}
           variant={
-            location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/techniques/tools/${toolId}/reports`
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/tools/${toolId}/indicators`}
+          to={`/dashboard/arsenal/tools/${toolId}/indicators`}
           variant={
             location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/indicators`,
+              `/dashboard/arsenal/tools/${toolId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -134,7 +135,7 @@ class TopMenuTool extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/techniques/tools/${toolId}/indicators`,
+              `/dashboard/arsenal/tools/${toolId}/indicators`,
             )
               ? 'primary'
               : 'inherit'
@@ -146,17 +147,15 @@ class TopMenuTool extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/techniques/tools/${toolId}/files`}
+            to={`/dashboard/arsenal/tools/${toolId}/files`}
             variant={
-              location.pathname
-              === `/dashboard/techniques/tools/${toolId}/files`
+              location.pathname === `/dashboard/arsenal/tools/${toolId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname
-              === `/dashboard/techniques/tools/${toolId}/files`
+              location.pathname === `/dashboard/arsenal/tools/${toolId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -165,6 +164,24 @@ class TopMenuTool extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/arsenal/tools/${toolId}/history`}
+          variant={
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === `/dashboard/arsenal/tools/${toolId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

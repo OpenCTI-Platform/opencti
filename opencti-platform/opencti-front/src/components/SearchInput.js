@@ -37,10 +37,17 @@ const styles = (theme) => ({
 class SearchInput extends Component {
   render() {
     const {
-      t, classes, onChange, onSubmit, variant, keyword,
+      t,
+      classes,
+      onChange,
+      onSubmit,
+      variant,
+      keyword,
+      fullWidth,
     } = this.props;
     return (
       <Input
+        fullWidth={fullWidth}
         name="keyword"
         defaultValue={keyword}
         placeholder={`${t('Search')}...`}
@@ -67,9 +74,15 @@ class SearchInput extends Component {
               ? classes.searchRootInDrawer
               : classes.searchRoot,
           input:
-            variant === 'small' ? classes.searchInputSmall : classes.searchInput,
+            // eslint-disable-next-line no-nested-ternary
+            variant === 'small'
+              ? classes.searchInputSmall
+              : variant !== 'noAnimation'
+                ? classes.searchInput
+                : classes.searchInputNoAnimation,
         }}
         disableUnderline={true}
+        autoComplete="off"
       />
     );
   }
@@ -82,9 +95,7 @@ SearchInput.propTypes = {
   onChange: PropTypes.func,
   onSubmit: PropTypes.func,
   variant: PropTypes.string,
+  fullWidth: PropTypes.bool,
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SearchInput);
+export default compose(inject18n, withStyles(styles))(SearchInput);

@@ -1,9 +1,9 @@
-import { Environment, RecordSource, Store } from 'relay-runtime';
+import {
+  Environment, RecordSource, Store, Observable,
+} from 'relay-runtime';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { installRelayDevTools } from 'relay-devtools';
 import { SubscriptionClient } from 'subscriptions-transport-ws';
-import { execute } from 'apollo-link';
-import { WebSocketLink } from 'apollo-link-ws';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import React, { Component } from 'react';
@@ -15,9 +15,12 @@ import {
 } from 'react-relay';
 import * as PropTypes from 'prop-types';
 import {
-  map, isEmpty, difference, filter, pathOr,
+  map, isEmpty, difference, filter, pathOr, isNil,
 } from 'ramda';
-import { urlMiddleware, RelayNetworkLayer } from 'react-relay-network-modern';
+import {
+  urlMiddleware,
+  RelayNetworkLayer,
+} from 'react-relay-network-modern/node8';
 import uploadMiddleware from './uploadMiddleware';
 
 // Dev tools
@@ -42,32 +45,29 @@ export class ApplicationError extends Error {
 }
 
 // Network
-const envBasePath = isEmpty(window.BASE_PATH) || window.BASE_PATH.startsWith('/')
-  ? window.BASE_PATH
-  : `/${window.BASE_PATH}`;
-export const APP_BASE_PATH = IN_DEV_MODE ? '' : envBasePath;
+const isEmptyPath = isNil(window.BASE_PATH) || isEmpty(window.BASE_PATH);
+const contextPath = isEmptyPath || window.BASE_PATH === '/' ? '' : window.BASE_PATH;
+export const APP_BASE_PATH = isEmptyPath || contextPath.startsWith('/') ? contextPath : `/${contextPath}`;
 
 // Subscription
-let networkSubscriptions = null;
-export const WS_ACTIVATED = IN_DEV_MODE
-  ? process.env.REACT_APP_WS_ACTIVATED === 'true'
-  : window.WS_ACTIVATED === 'true';
+const loc = window.location;
+const isSecure = loc.protocol === 'https:' ? 's' : '';
+const subscriptionClient = new SubscriptionClient(
+  `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
+  {
+    reconnect: true,
+  },
+);
 
-if (WS_ACTIVATED) {
-  const loc = window.location;
-  const isSecure = loc.protocol === 'https:' ? 's' : '';
-  const subscriptionClient = new SubscriptionClient(
-    `ws${isSecure}://${loc.host}${APP_BASE_PATH}/graphql`,
-    {
-      reconnect: true,
-    },
-  );
-  const subscriptionLink = new WebSocketLink(subscriptionClient);
-  networkSubscriptions = (operation, variables) => execute(subscriptionLink, {
-    query: operation.text,
+const subscribeFn = (request, variables) => {
+  const subscribeObservable = subscriptionClient.request({
+    query: request.text,
+    operationName: request.name,
     variables,
   });
-}
+  // Important: Convert subscriptions-transport-ws observable type to Relay's
+  return Observable.from(subscribeObservable);
+};
 
 const network = new RelayNetworkLayer(
   [
@@ -77,7 +77,7 @@ const network = new RelayNetworkLayer(
     }),
     uploadMiddleware(),
   ],
-  { subscribeFn: networkSubscriptions },
+  { subscribeFn },
 );
 
 const store = new Store(new RecordSource());
@@ -95,8 +95,10 @@ export class QueryRenderer extends Component {
       variables, query, render, managedErrorTypes,
     } = this.props;
     return (
-      <QR environment={environment}
-        query={query} variables={variables}
+      <QR
+        environment={environment}
+        query={query}
+        variables={variables}
         render={(data) => {
           const { error } = data;
           const types = error ? map((e) => e.name, error) : [];
@@ -140,12 +142,14 @@ export const commitMutation = ({
         error.res.errors,
       );
       if (!isEmpty(authRequired)) {
-        MESSAGING$.notifyError('Unauthorized action, please refresh your browser');
+        MESSAGING$.notifyError(
+          'Unauthorized action, please refresh your browser',
+        );
       } else {
         const messages = map(
           (e) => ({
             type: 'error',
-            text: pathOr(e.message, ['data', 'details'], e),
+            text: pathOr(e.message, ['data', 'reason'], e),
           }),
           error.res.errors,
         );
@@ -156,8 +160,6 @@ export const commitMutation = ({
   },
 });
 
-const deactivateSubscription = { dispose: () => undefined };
-// eslint-disable-next-line max-len
-export const requestSubscription = (args) => (WS_ACTIVATED ? RS(environment, args) : deactivateSubscription);
+export const requestSubscription = (args) => RS(environment, args);
 
 export const fetchQuery = (query, args) => FQ(environment, query, args);

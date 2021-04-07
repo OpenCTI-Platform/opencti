@@ -20,7 +20,7 @@ import {
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   drawer: {
     minHeight: '100vh',
     width: 260,
@@ -58,11 +58,13 @@ class CampaignKnowledgeBar extends Component {
             dense={false}
             classes={{ root: classes.item }}
           >
-
             <ListItemIcon>
               <Gauge />
             </ListItemIcon>
-            <ListItemText primary={t('Overview')} secondary={t('Synthesis of knowledge')} />
+            <ListItemText
+              primary={t('Overview')}
+              secondary={t('Synthesis of knowledge')}
+            />
           </MenuItem>
           <MenuItem
             component={Link}

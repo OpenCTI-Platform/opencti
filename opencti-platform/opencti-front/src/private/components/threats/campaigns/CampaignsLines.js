@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { CampaignLine, CampaignLineDummy } from './CampaignLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class CampaignsLines extends Component {
   componentDidUpdate(prevProps) {
@@ -21,7 +21,7 @@ class CampaignsLines extends Component {
 
   render() {
     const {
-      initialLoading, dataColumns, relay, onTagClick,
+      initialLoading, dataColumns, relay, onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -39,7 +39,7 @@ class CampaignsLines extends Component {
         DummyLineComponent={<CampaignLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -52,7 +52,7 @@ CampaignsLines.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -82,14 +82,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment CampaignsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "CampaignsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[CampaignsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "CampaignsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[CampaignsFiltering]" }
+      ) {
         campaigns(
           search: $search
           first: $count

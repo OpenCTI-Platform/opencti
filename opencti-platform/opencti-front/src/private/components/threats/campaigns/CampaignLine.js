@@ -11,7 +11,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { KeyboardArrowRight } from '@material-ui/icons';
 import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   item: {
@@ -31,8 +31,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -47,7 +46,7 @@ const styles = (theme) => ({
 class CampaignLineComponent extends Component {
   render() {
     const {
-      fd, classes, node, dataColumns, onTagClick,
+      fd, classes, node, dataColumns, onLabelClick,
     } = this.props;
     return (
       <ListItem
@@ -71,12 +70,12 @@ class CampaignLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
-                <StixObjectTags
+                <StixCoreObjectLabels
                   variant="inList"
-                  tags={node.tags}
-                  onClick={onTagClick.bind(this)}
+                  labels={node.objectLabel}
+                  onClick={onLabelClick.bind(this)}
                 />
               </div>
               <div
@@ -108,7 +107,7 @@ CampaignLineComponent.propTypes = {
   classes: PropTypes.object,
   fd: PropTypes.func,
   t: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const CampaignLineFragment = createFragmentContainer(CampaignLineComponent, {
@@ -118,24 +117,20 @@ const CampaignLineFragment = createFragmentContainer(CampaignLineComponent, {
       name
       created
       modified
-      tags {
-        edges {
-          node {
-            id
-            tag_type
-            value
-            color
-          }
-          relation {
-            id
-          }
-        }
-      }
-      markingDefinitions {
+      objectMarking {
         edges {
           node {
             id
             definition
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
           }
         }
       }
@@ -167,7 +162,7 @@ class CampaignLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.tags.width }}
+                style={{ width: dataColumns.objectLabel.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

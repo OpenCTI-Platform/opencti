@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -16,6 +16,7 @@ import Alert from '@material-ui/lab/Alert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -166,7 +167,9 @@ class UserCreation extends Component {
             <Typography variant="h6">{t('Create a user')}</Typography>
           </div>
           <div className={classes.container}>
-            <Alert severity="info">{t('User will be created with default roles.')}</Alert>
+            <Alert severity="info">
+              {t('User will be created with default roles.')}
+            </Alert>
             <br />
             <Formik
               initialValues={{
@@ -184,33 +187,52 @@ class UserCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form>
-                  <TextField name="name" label={t('Name')} fullWidth={true} />
-                  <TextField
+                  <Field
+                    component={TextField}
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                  />
+                  <Field
+                    component={TextField}
                     name="user_email"
                     label={t('Email address')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="firstname"
                     label={t('Firstname')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="lastname"
                     label={t('Lastname')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
+                  <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows={4}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
                     name="password"
                     label={t('Password')}
                     type="password"
                     style={{ marginTop: 20 }}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="confirmation"
                     label={t('Confirmation')}
                     type="password"

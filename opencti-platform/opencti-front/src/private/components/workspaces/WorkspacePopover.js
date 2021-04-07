@@ -16,11 +16,11 @@ import Slide from '@material-ui/core/Slide';
 import MoreVert from '@material-ui/icons/MoreVert';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../components/i18n';
-import { commitMutation, QueryRenderer } from '../../../relay/environment';
+import { QueryRenderer, commitMutation } from '../../../relay/environment';
 import { workspaceEditionQuery } from './WorkspaceEdition';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
 import Loader from '../../../components/Loader';
-import Security, { EXPLORE_EXUPDATE_EXDELETE } from '../../../utils/Security';
+import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -86,12 +86,12 @@ class WorkspacePopover extends Component {
     commitMutation({
       mutation: WorkspacePopoverDeletionMutation,
       variables: {
-        id: this.props.workspaceId,
+        id: this.props.id,
       },
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push(`/dashboard/${this.props.workspaceType}`);
+        this.props.history.push(`/dashboard/workspaces/${this.props.type}s`);
       },
     });
   }
@@ -106,43 +106,57 @@ class WorkspacePopover extends Component {
   }
 
   render() {
-    const { classes, t, workspaceId } = this.props;
+    const {
+      classes, t, id, disabled,
+    } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          disabled={disabled}
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+        >
           <MoreVert />
         </IconButton>
-        <Menu anchorEl={this.state.anchorEl}
+        <Menu
+          anchorEl={this.state.anchorEl}
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
-          style={{ marginTop: 50 }}>
+          style={{ marginTop: 50 }}
+        >
           <MenuItem onClick={this.handleOpenEdit.bind(this)}>
             {t('Update')}
           </MenuItem>
-          <Security needs={[EXPLORE_EXUPDATE_EXDELETE]}>
+          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
             <MenuItem onClick={this.handleOpenDelete.bind(this)}>
               {t('Delete')}
             </MenuItem>
           </Security>
         </Menu>
-        <Dialog open={this.state.displayDelete}
+        <Dialog
+          open={this.state.displayDelete}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}>
+          onClose={this.handleCloseDelete.bind(this)}
+        >
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this workspace?')}
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={this.handleCloseDelete.bind(this)}
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Cancel')}
             </Button>
-            <Button onClick={this.submitDelete.bind(this)}
+            <Button
+              onClick={this.submitDelete.bind(this)}
               color="primary"
-              disabled={this.state.deleting}>
+              disabled={this.state.deleting}
+            >
               {t('Delete')}
             </Button>
           </DialogActions>
@@ -155,11 +169,12 @@ class WorkspacePopover extends Component {
         >
           <QueryRenderer
             query={workspaceEditionQuery}
-            variables={{ id: workspaceId }}
+            variables={{ id }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <WorkspaceEditionContainer workspace={props.workspace}
+                  <WorkspaceEditionContainer
+                    workspace={props.workspace}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );
@@ -174,11 +189,12 @@ class WorkspacePopover extends Component {
 }
 
 WorkspacePopover.propTypes = {
-  workspaceId: PropTypes.string,
-  workspaceType: PropTypes.string,
+  id: PropTypes.string,
   classes: PropTypes.object,
   t: PropTypes.func,
   history: PropTypes.object,
+  disabled: PropTypes.bool,
+  type: PropTypes.string,
 };
 
 export default compose(

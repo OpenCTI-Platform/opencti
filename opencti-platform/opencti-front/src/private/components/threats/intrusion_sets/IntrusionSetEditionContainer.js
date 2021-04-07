@@ -66,7 +66,8 @@ class IntrusionSetEditionContainer extends Component {
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose.bind(this)}>
+            onClick={handleClose.bind(this)}
+          >
             <Close fontSize="small" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
@@ -86,10 +87,16 @@ class IntrusionSetEditionContainer extends Component {
             </Tabs>
           </AppBar>
           {this.state.currentTab === 0 && (
-            <IntrusionSetEditionOverview intrusionSet={intrusionSet} context={editContext}/>
+            <IntrusionSetEditionOverview
+              intrusionSet={intrusionSet}
+              context={editContext}
+            />
           )}
           {this.state.currentTab === 1 && (
-            <IntrusionSetEditionDetails intrusionSet={intrusionSet} context={editContext}/>
+            <IntrusionSetEditionDetails
+              intrusionSet={intrusionSet}
+              context={editContext}
+            />
           )}
         </div>
       </div>

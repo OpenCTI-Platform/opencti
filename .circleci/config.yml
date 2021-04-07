@@ -1,11 +1,13 @@
 version: 2.1
 
 jobs:
-  build:
+  build_platform:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: nikolaik/python-nodejs:python3.8-nodejs15
     steps:
+      - run:
+          command: apt-get update --allow-insecure-repositories --allow-unauthenticated && apt-get install -y build-essential libffi-dev
       - checkout
       - run: 
           working_directory: ~/opencti/opencti-platform/opencti-front
@@ -13,6 +15,7 @@ jobs:
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-front
           command: yarn build
+          no_output_timeout: 30m
       - run:
           working_directory: ~/opencti/opencti-platform/opencti-graphql
           command: yarn install
@@ -23,47 +26,37 @@ jobs:
           root: ~/
           paths:
             - opencti
-  test:
-    working_directory: ~/opencti
-    docker:
-      - image: circleci/node:12.13.1-stretch
-        environment:
-          APP__REACTIVE: false
-          GRAKN__HOSTNAME: 127.0.0.1
-          ELASTICSEARCH__HOSTNAME: 127.0.0.1
-      - image: graknlabs/grakn:1.6.2
-      - image: docker.elastic.co/elasticsearch/elasticsearch:7.5.2
-        environment:
-          - "discovery.type=single-node"
-          - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m"
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: install dockerize
-          command: wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz && rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-          environment:
-            DOCKERIZE_VERSION: v0.3.0
-      - run:
-          name: Wait for Grakn
-          command: dockerize -wait tcp://localhost:48555 -timeout 1m
-      - run:
-          name: Wait for ElasticSearch
-          command: dockerize -wait tcp://localhost:9200 -timeout 1m        
-      - run: 
-          name: Setup custom environment variables
-          command: |
-            echo 'export APP__ADMIN__PASSWORD="admin"' >> $BASH_ENV
-            echo 'export APP__ADMIN__TOKEN="bfa014e0-e02e-4aa6-a42b-603b19dcf159"' >> $BASH_ENV
-            source $BASH_ENV
-      - run:
-          working_directory: ~/opencti/opencti-platform/opencti-graphql
-          command: yarn test
 
+  build_platform_musl:
+    working_directory: ~/opencti_musl
+    docker:
+      - image: nikolaik/python-nodejs:python3.8-nodejs15-alpine
+    steps:
+      - run:
+          command: apk update && apk upgrade && apk --no-cache add git build-base libmagic libffi-dev
+      - checkout
+      - run: 
+          working_directory: ~/opencti_musl/opencti-platform/opencti-front
+          command: yarn install
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-front
+          command: yarn build
+          no_output_timeout: 30m          
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn install
+      - run:
+          working_directory: ~/opencti_musl/opencti-platform/opencti-graphql
+          command: yarn build
+      - persist_to_workspace:
+          root: ~/
+          paths:
+            - opencti_musl         
+            
   package_rolling:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:15.11.0-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -83,10 +76,33 @@ jobs:
           working_directory: ~/opencti/release
           command: scp "opencti-$(date '+%Y%m%d').tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
 
+  package_rolling_musl:
+    working_directory: ~/opencti_musl
+    docker:
+      - image: circleci/node:15.11.0-stretch
+    steps:
+      - attach_workspace:
+          at: ~/
+      - add_ssh_keys
+      - run: ssh-keyscan -H opencti.io >> ~/.ssh/known_hosts
+      - run: git config --global user.email "ci@opencti.io" && git config --global user.name "OpenCTI CircleCI"
+      - run: git remote add opencti ssh://git-OLOszi5F@opencti.io:/~/git-OLOszi5F.git && git push --force opencti master
+      - run: mkdir release
+      - run: cp -a ./opencti-platform/opencti-graphql release/opencti
+      - run: cp -a ./opencti-worker/src release/opencti/worker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/docker
+      - run: cd release/opencti && git clone https://github.com/OpenCTI-Platform/connectors
+      - run:
+          working_directory: ~/opencti_musl/release
+          command: tar -zcvf "opencti-$(date '+%Y%m%d')_musl.tar.gz" opencti
+      - run: 
+          working_directory: ~/opencti_musl/release
+          command: scp "opencti-$(date '+%Y%m%d')_musl.tar.gz" git-OLOszi5F@opencti.io:/dns/io/opencti/releases/
+
   deploy_demo:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:15.11.0-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -123,7 +139,7 @@ jobs:
   deploy_reference:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:12.13.1-stretch
+      - image: circleci/node:15.11.0-stretch
     steps:
       - attach_workspace:
           at: ~/
@@ -157,28 +173,14 @@ jobs:
           working_directory: ~/opencti/deploy
           command: git diff-index --quiet HEAD || git commit -a -m "[CircleCI-Workflow] Deploy new version" && git push origin master
 
-  deploy_documentation:
-    working_directory: ~/opencti
-    docker:
-      - image: circleci/node:12.13.1-stretch
-    steps:
-      - checkout
-      - run:
-          working_directory: ~/opencti/opencti-documentation
-          name: Deploying the documentation to Github pages
-          command: |
-            git config --global user.email "SamuelHassine@users.noreply.github.com"
-            git config --global user.name "Samuel Hassine"
-            echo "machine github.com login SamuelHassine password $GITHUB_TOKEN" > ~/.netrc
-            cd website && yarn install && ORGANIZATION_NAME=OpenCTI-Platform PROJECT_NAME=docs GIT_USER=SamuelHassine yarn run publish-gh-pages
-
   docker_build:
     working_directory: ~/opencti
     docker:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
@@ -202,11 +204,13 @@ jobs:
       - image: circleci/buildpack-deps:stretch
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 19.03.13
       - run:
           working_directory: ~/opencti/opencti-platform
           name: Build Docker image opencti/platform
           command: docker build -t opencti/platform:rolling .
+          no_output_timeout: 30m
       - run:
           working_directory: ~/opencti/opencti-worker
           name: Build Docker image opencti/worker
@@ -221,59 +225,52 @@ jobs:
 workflows:
   opencti:
     jobs:
-      - build:
+      - build_platform:
           filters:
             tags:
               only: /.*/
-      - test:
-          requires:
-            - build
+      - build_platform_musl:
           filters:
             tags:
-              only: /.*/
+              only: /.*/           
       - package_rolling:
           requires:
-            - build
-            - test
+            - build_platform
           filters:
             branches:
               only:
                 - master
-            tags:
-              only: /.*/
+      - package_rolling_musl:
+          requires:
+            - build_platform_musl
+          filters:
+            branches:
+              only:
+                - master                
       - deploy_demo:
           requires:
-            - build
-            - test
+            - build_platform
           filters:
             branches:
               only:
                 - master
       - deploy_reference:
           requires:
-            - build
-            - test
-          filters:
-            branches:
-              only:
-                - master             
-      - deploy_documentation:
+            - build_platform
           filters:
             branches:
               only:
                 - master
       - docker_build_rolling:
           requires:
-            - build
-            - test        
+            - build_platform  
           filters:
             branches:
               only:
                 - master
       - docker_build:
           requires:
-            - build
-            - test        
+            - build_platform   
           filters:
             tags:
               only: /[0-9]+(\.[0-9]+)+(\.[0-9]+)*/

@@ -77,7 +77,7 @@ class Users extends Component {
         width: '15%',
         isSortable: true,
       },
-      created: {
+      created_at: {
         label: 'Creation date',
         width: '15%',
         isSortable: true,
@@ -91,7 +91,7 @@ class Users extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
-        secondaryAction={true}
+        secondaryAction={false}
         keyword={searchTerm}
       >
         <QueryRenderer

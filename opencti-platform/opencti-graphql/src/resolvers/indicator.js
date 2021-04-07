@@ -1,42 +1,79 @@
-import { addIndicator, findAll, findById, observableRefs } from '../domain/indicator';
 import {
-  stixDomainEntityAddRelation,
-  stixDomainEntityCleanContext,
-  stixDomainEntityDelete,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityEditContext,
-  stixDomainEntityEditField
-} from '../domain/stixDomainEntity';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+  addIndicator,
+  findAll,
+  findById,
+  batchObservables,
+  indicatorsDistributionByEntity,
+  indicatorsNumber,
+  indicatorsNumberByEntity,
+  indicatorsTimeSeries,
+  indicatorsTimeSeriesByEntity,
+} from '../domain/indicator';
+import {
+  stixDomainObjectAddRelation,
+  stixDomainObjectCleanContext,
+  stixDomainObjectDelete,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectEditContext,
+  stixDomainObjectEditField,
+} from '../domain/stixDomainObject';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
+import { REL_INDEX_PREFIX } from '../schema/general';
+import { distributionEntities, batchLoader } from '../database/middleware';
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
+
+const killChainPhasesLoader = batchLoader(batchKillChainPhases);
+const batchObservablesLoader = batchLoader(batchObservables);
 
 const indicatorResolvers = {
   Query: {
-    indicator: (_, { id }) => findById(id),
-    indicators: (_, args) => findAll(args)
-  },
-  IndicatorsOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`
+    indicator: (_, { id }, { user }) => findById(user, id),
+    indicators: (_, args, { user }) => findAll(user, args),
+    indicatorsTimeSeries: (_, args, { user }) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return indicatorsTimeSeriesByEntity(user, args);
+      }
+      return indicatorsTimeSeries(user, args);
+    },
+    indicatorsNumber: (_, args, { user }) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return indicatorsNumberByEntity(user, args);
+      }
+      return indicatorsNumber(user, args);
+    },
+    indicatorsDistribution: (_, args, { user }) => {
+      if (args.objectId && args.objectId.length > 0) {
+        return indicatorsDistributionByEntity(user, args);
+      }
+      return distributionEntities(user, ENTITY_TYPE_INDICATOR, [], args);
+    },
   },
   IndicatorsFilter: {
-    observablesContains: `${REL_INDEX_PREFIX}observable_refs.internal_id_key`,
-    indicates: `${REL_INDEX_PREFIX}indicates.internal_id_key`,
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
+    createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
+    markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
+    labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
+    basedOn: `${REL_INDEX_PREFIX}${RELATION_BASED_ON}.internal_id`,
+    indicates: `${REL_INDEX_PREFIX}indicates.internal_id`,
   },
   Indicator: {
-    observableRefs: indicator => observableRefs(indicator.id)
+    killChainPhases: (indicator, _, { user }) => killChainPhasesLoader.load(indicator.id, user),
+    observables: (indicator, _, { user }) => batchObservablesLoader.load(indicator.id, user),
+    indicator_types: (indicator) => (indicator.indicator_types ? indicator.indicator_types : ['malicious-activity']),
   },
   Mutation: {
     indicatorEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
-    indicatorAdd: (_, { input }, { user }) => addIndicator(user, input)
-  }
+    indicatorAdd: (_, { input }, { user }) => addIndicator(user, input),
+  },
 };
 
 export default indicatorResolvers;

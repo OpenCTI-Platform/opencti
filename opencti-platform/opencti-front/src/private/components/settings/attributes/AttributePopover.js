@@ -13,7 +13,7 @@ import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import Slide from '@material-ui/core/Slide';
-import MoreVert from '@material-ui/icons/MoreVert';
+import { MoreVertOutlined } from '@material-ui/icons';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
@@ -125,8 +125,12 @@ class AttributePopover extends Component {
     } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
-          <MoreVert />
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
+          <MoreVertOutlined />
         </IconButton>
         <Menu
           anchorEl={this.state.anchorEl}

@@ -1,10 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import {
+  assoc, compose, dissoc, propOr, uniqBy, prop,
+} from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -19,7 +22,7 @@ class Cities extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Cities-view',
+      'view-cities',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -27,6 +30,7 @@ class Cities extends Component {
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
       openExports: false,
+      filters: propOr({}, 'filters', params),
       numberOfElements: { number: 0, symbol: '' },
     };
   }
@@ -35,7 +39,7 @@ class Cities extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Cities-view',
+      'view-cities',
       this.state,
     );
   }
@@ -52,6 +56,36 @@ class Cities extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: assoc(
+            key,
+            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
+  }
+
+  handleRemoveFilter(key) {
+    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
+  }
+
   setNumberOfElements(numberOfElements) {
     this.setState({ numberOfElements });
   }
@@ -61,6 +95,7 @@ class Cities extends Component {
       sortBy,
       orderAsc,
       searchTerm,
+      filters,
       openExports,
       numberOfElements,
     } = this.state;
@@ -88,12 +123,20 @@ class Cities extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
+        handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
         exportEntityType="City"
         keyword={searchTerm}
+        filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={citiesLinesQuery}
@@ -114,12 +157,14 @@ class Cities extends Component {
 
   render() {
     const {
-      view, sortBy, orderAsc, searchTerm,
+      view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
+      filters: finalFilters,
     };
     return (
       <div>

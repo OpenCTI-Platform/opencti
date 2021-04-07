@@ -92,10 +92,13 @@ class ListLinesContent extends Component {
       DummyLineComponent,
       paginationOptions,
       entityLink,
+      entityId,
       me,
-      onTagClick,
+      onLabelClick,
       selectedElements,
       onToggleEntity,
+      connectionKey,
+      isTo,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -114,11 +117,14 @@ class ListLinesContent extends Component {
           dataColumns,
           node,
           paginationOptions,
+          entityId,
           entityLink,
           me,
-          onTagClick,
+          onLabelClick,
           selectedElements,
           onToggleEntity,
+          connectionKey,
+          isTo,
         })}
       </div>
     );
@@ -131,6 +137,7 @@ class ListLinesContent extends Component {
       initialLoading,
       isLoading,
       nbOfRowsToLoad,
+      classes,
     } = this.props;
     const countWithLoading = isLoading()
       ? dataList.length + this.state.loadingRowCount
@@ -141,7 +148,7 @@ class ListLinesContent extends Component {
         {({
           height, isScrolling, onChildScroll, scrollTop,
         }) => (
-          <div className={styles.windowScrollerWrapper}>
+          <div className={classes.windowScrollerWrapper}>
             <InfiniteLoader
               isRowLoaded={this._isRowLoaded}
               loadMoreRows={this._loadMoreRows}
@@ -194,10 +201,13 @@ ListLinesContent.propTypes = {
   nbOfRowsToLoad: PropTypes.number,
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
+  entityId: PropTypes.string,
   entityLink: PropTypes.string,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   selectedElements: PropTypes.object,
   onToggleEntity: PropTypes.func,
+  connectionKey: PropTypes.string,
+  isTo: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLinesContent);

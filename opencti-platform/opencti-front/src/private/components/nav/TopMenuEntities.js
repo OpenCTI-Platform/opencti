@@ -5,9 +5,13 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import {
-  Person, AccountBalance, Flag, Domain, Map,
+  PersonOutlined,
+  AccountBalanceOutlined,
+  DomainOutlined,
+  MapOutlined,
+  PlaceOutlined,
 } from '@material-ui/icons';
-import { CityVariant } from 'mdi-material-ui';
+import { CityVariantOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
 const styles = (theme) => ({
@@ -44,27 +48,8 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Domain className={classes.icon} fontSize="small" />
+          <DomainOutlined className={classes.icon} fontSize="small" />
           {t('Sectors')}
-        </Button>
-        <Button
-          component={Link}
-          to="/dashboard/entities/regions"
-          variant={
-            location.pathname === '/dashboard/entities/regions'
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === '/dashboard/entities/regions'
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          <Map className={classes.icon} fontSize="small" />
-          {t('Regions')}
         </Button>
         <Button
           component={Link}
@@ -82,7 +67,7 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <Flag className={classes.icon} fontSize="small" />
+          <MapOutlined className={classes.icon} fontSize="small" />
           {t('Countries')}
         </Button>
         <Button
@@ -101,8 +86,27 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <CityVariant className={classes.icon} fontSize="small" />
+          <CityVariantOutline className={classes.icon} fontSize="small" />
           {t('Cities')}
+        </Button>
+        <Button
+          component={Link}
+          to="/dashboard/entities/positions"
+          variant={
+            location.pathname === '/dashboard/entities/positions'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/entities/positions'
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          <PlaceOutlined className={classes.icon} fontSize="small" />
+          {t('Positions')}
         </Button>
         <Button
           component={Link}
@@ -120,27 +124,27 @@ class TopMenuTechniques extends Component {
           }
           classes={{ root: classes.button }}
         >
-          <AccountBalance className={classes.icon} fontSize="small" />
+          <AccountBalanceOutlined className={classes.icon} fontSize="small" />
           {t('Organizations')}
         </Button>
         <Button
           component={Link}
-          to="/dashboard/entities/persons"
+          to="/dashboard/entities/individuals"
           variant={
-            location.pathname === '/dashboard/entities/persons'
+            location.pathname === '/dashboard/entities/individuals'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/entities/persons'
+            location.pathname === '/dashboard/entities/individuals'
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          <Person className={classes.icon} fontSize="small" />
-          {t('Persons')}
+          <PersonOutlined className={classes.icon} fontSize="small" />
+          {t('Individuals')}
         </Button>
       </div>
     );

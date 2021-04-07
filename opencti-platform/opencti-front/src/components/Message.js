@@ -56,13 +56,9 @@ class Message extends Component {
         ]}
       >
         {this.state.error ? (
-          <Alert variant="filled" severity="error">
-            {this.state.text}
-          </Alert>
+          <Alert severity="error">{this.state.text}</Alert>
         ) : (
-          <Alert variant="filled" severity="success">
-            {this.state.text}
-          </Alert>
+          <Alert severity="success">{this.state.text}</Alert>
         )}
       </Snackbar>
     );

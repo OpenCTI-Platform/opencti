@@ -4,9 +4,12 @@ import { Link, withRouter } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos, Public } from '@material-ui/icons';
+import { ArrowForwardIosOutlined, PublicOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
-import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from '../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPLOAD,
+} from '../../../utils/Security';
 
 const styles = (theme) => ({
   buttonHome: {
@@ -53,10 +56,13 @@ class TopMenuThreatActor extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Public className={classes.icon} fontSize="small" />
+          <PublicOutlined className={classes.icon} fontSize="small" />
           {t('Threat actors')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/threats/threat_actors/${threatActorId}`}
@@ -101,23 +107,23 @@ class TopMenuThreatActor extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/threat_actors/${threatActorId}/reports`}
+          to={`/dashboard/threats/threat_actors/${threatActorId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/reports`
+            === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/threat_actors/${threatActorId}/reports`
+            === `/dashboard/threats/threat_actors/${threatActorId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}
@@ -143,23 +149,46 @@ class TopMenuThreatActor extends Component {
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
-              component={Link}
-              to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
-              variant={
-                  location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                    ? 'contained'
-                    : 'text'
-              }
-              size="small"
-              color={
-                  location.pathname === `/dashboard/threats/threat_actors/${threatActorId}/files`
-                    ? 'primary'
-                    : 'inherit'
-              }
-              classes={{ root: classes.button }}>
-              {t('Files')}
+            component={Link}
+            to={`/dashboard/threats/threat_actors/${threatActorId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/threats/threat_actors/${threatActorId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/threats/threat_actors/${threatActorId}/files`
+                ? 'primary'
+                : 'inherit'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/threat_actors/${threatActorId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/threat_actors/${threatActorId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/threat_actors/${threatActorId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

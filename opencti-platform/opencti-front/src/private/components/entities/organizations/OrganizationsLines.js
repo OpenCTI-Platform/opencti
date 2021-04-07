@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { OrganizationLine, OrganizationLineDummy } from './OrganizationLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class OrganizationsLines extends Component {
   componentDidUpdate(prevProps) {
@@ -25,7 +25,7 @@ class OrganizationsLines extends Component {
       dataColumns,
       relay,
       paginationOptions,
-      onTagClick,
+      onLabelClick,
     } = this.props;
     return (
       <ListLinesContent
@@ -44,7 +44,7 @@ class OrganizationsLines extends Component {
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
         paginationOptions={paginationOptions}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -57,7 +57,7 @@ OrganizationsLines.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -87,14 +87,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment OrganizationsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "OrganizationsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[OrganizationsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "OrganizationsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[OrganizationsFiltering]" }
+      ) {
         organizations(
           search: $search
           first: $count

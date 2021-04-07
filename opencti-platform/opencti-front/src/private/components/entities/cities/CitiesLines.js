@@ -7,7 +7,7 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { CityLine, CityLineDummy } from './CityLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class CitiesLines extends Component {
   componentDidUpdate(prevProps) {
@@ -65,6 +65,7 @@ export const citiesLinesQuery = graphql`
     $cursor: ID
     $orderBy: CitiesOrdering
     $orderMode: OrderingMode
+    $filters: [CitiesFiltering]
   ) {
     ...CitiesLines_data
       @arguments(
@@ -73,6 +74,7 @@ export const citiesLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
       )
   }
 `;
@@ -82,19 +84,21 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment CitiesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "CitiesOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "CitiesOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[CitiesFiltering]" }
+      ) {
         cities(
           search: $search
           first: $count
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
         ) @connection(key: "Pagination_cities") {
           edges {
             node {
@@ -131,6 +135,7 @@ export default createPaginationContainer(
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
       };
     },
     query: citiesLinesQuery,

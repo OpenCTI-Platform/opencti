@@ -36,25 +36,27 @@ const SubscriptionAvatarsFocusStyles = () => ({
 
 const contextUsers = (me, context) => {
   const missingMe = find(propEq('name', me.user_email))(context) === undefined;
-  return missingMe
-    ? insert(0, { name: me.user_email }, context)
-    : context;
+  return missingMe ? insert(0, { name: me.user_email }, context) : context;
 };
 
 const SubscriptionAvatarsComponent = ({ classes, context, variant }) => {
-  const me = useContext(UserContext);
+  const { me } = useContext(UserContext);
   const users = contextUsers(me, context);
   return (
-      <div className={variant === 'inGraph' ? classes.avatarsGraph : classes.avatars}>
-        {users.map((user, i) => (
-          <Tooltip title={user.name} key={i}>
-            <Avatar classes={{ root: classes.avatar }}
-              style={{ backgroundColor: stringToColour(user.name) }}>
-              {user.name.charAt(0)}
-            </Avatar>
-          </Tooltip>
-        ))}
-      </div>
+    <div
+      className={variant === 'inGraph' ? classes.avatarsGraph : classes.avatars}
+    >
+      {users.map((user, i) => (
+        <Tooltip title={user.name} key={i}>
+          <Avatar
+            classes={{ root: classes.avatar }}
+            style={{ backgroundColor: stringToColour(user.name) }}
+          >
+            {user.name.charAt(0)}
+          </Avatar>
+        </Tooltip>
+      ))}
+    </div>
   );
 };
 
@@ -68,10 +70,8 @@ export const SubscriptionAvatars = withStyles(SubscriptionAvatarsStyles)(
   SubscriptionAvatarsComponent,
 );
 
-const SubscriptionFocusComponent = ({
-  t, fieldName, context,
-}) => {
-  const me = useContext(UserContext);
+const SubscriptionFocusComponent = ({ t, fieldName, context }) => {
+  const { me } = useContext(UserContext);
   const users = contextUsers(me, context);
   const focusedUsers = pipe(
     filter((n) => n.name !== me.user_email),
@@ -79,17 +79,15 @@ const SubscriptionFocusComponent = ({
   )(users);
   if (focusedUsers.length === 0) return <span />;
   return (
-      <span>
-        {focusedUsers.map((user, i) => (
-          <span key={i}>
-            <span style={{ color: stringToColour(user.name) }}>
-              {user.name}
-            </span>
-            <span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span>
-          </span>
-        ))}
-        {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
-      </span>
+    <span>
+      {focusedUsers.map((user, i) => (
+        <span key={i}>
+          <span style={{ color: stringToColour(user.name) }}>{user.name}</span>
+          <span>{i + 1 < focusedUsers.length ? ', ' : ' '}</span>
+        </span>
+      ))}
+      {focusedUsers.length > 1 ? t('are updating...') : t('is updating...')}
+    </span>
   );
 };
 

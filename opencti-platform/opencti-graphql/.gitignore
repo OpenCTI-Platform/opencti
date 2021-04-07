@@ -1,10 +1,13 @@
 .idea
 .env
+.clinic
 build
 dist
 node_modules
 public
+config/demo.json
 config/development.json
+config/development.json.bak
 config/production.json
 config/test.json
 config/local.json
@@ -12,3 +15,4 @@ coverage
 test-results
 logs
 yarn-error.log
+__pycache__

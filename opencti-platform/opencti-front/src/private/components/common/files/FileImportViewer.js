@@ -35,6 +35,7 @@ const FileImportViewerBase = ({
 }) => {
   const { id, importFiles } = entity;
   const { edges } = importFiles;
+  const isContainer = entity.entity_type !== 'Report';
   useEffect(() => {
     // Refresh the export viewer every interval
     const subscription = interval$.subscribe(() => {
@@ -68,13 +69,8 @@ const FileImportViewerBase = ({
                 {edges.map((file) => (
                   <FileLine
                     key={file.node.id}
-                    context={
-                      entity && entity.entity_type === 'report'
-                        ? entity.id
-                        : null
-                    }
                     dense={true}
-                    disableImport={disableImport}
+                    disableImport={isContainer || disableImport}
                     file={file.node}
                     connectors={
                       connectors && connectors[file.node.metaData.mimetype]
@@ -99,7 +95,7 @@ const FileImportViewerComponent = compose(
 
 const FileImportViewerRefetchQuery = graphql`
   query FileImportViewerRefetchQuery($id: String!) {
-    stixDomainEntity(id: $id) {
+    stixDomainObject(id: $id) {
       ...FileImportViewer_entity
     }
   }
@@ -109,7 +105,7 @@ const FileImportViewer = createRefetchContainer(
   FileImportViewerComponent,
   {
     entity: graphql`
-      fragment FileImportViewer_entity on StixDomainEntity {
+      fragment FileImportViewer_entity on StixDomainObject {
         id
         entity_type
         importFiles(first: 1000) @connection(key: "Pagination_importFiles") {
@@ -132,7 +128,7 @@ const FileImportViewer = createRefetchContainer(
 FileImportViewer.propTypes = {
   entity: PropTypes.object,
   disableImport: PropTypes.bool,
-  connectors: PropTypes.array,
+  connectors: PropTypes.object,
 };
 
 export default FileImportViewer;

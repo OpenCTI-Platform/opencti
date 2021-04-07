@@ -3,10 +3,6 @@
   font-family: "Roboto", sans-serif;
 }
 
-svg {
-  overflow: visible !important;
-}
-
 :focus {
   outline: 0;
 }
@@ -141,6 +137,8 @@ div.break {
 
 div.markdown p {
   margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .fakeItem {
@@ -168,37 +166,107 @@ div.markdown p {
   animation: loading 1s infinite;
 }
 
-div.srd-node {
-  border: none !important;
-  border-left-color: transparent !important;
-  border-right-color: transparent !important;
-  border-top-color: transparent !important;
-  border-bottom-color: transparent !important;
-  box-sizing: content-box !important;
-  border-radius: 10px !important;
-  background: none !important;
+.leaflet-container {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
 }
 
-div.srd-port {
-  z-index: 0 !important;
+.react-mde {
+  border: 0 !important;
+  border-bottom: 1px solid #b9bfc1 !important;
+}
+
+.error .react-mde {
+  border: 0 !important;
+  border-bottom: 2px solid #f44336 !important;
+  margin-bottom: -1px !important;
+}
+
+.react-mde:hover {
+  border-bottom: 2px solid #ffffff !important;
+  margin-bottom: -1px !important;
+}
+
+.error .react-mde:hover {
+  border: 0 !important;
+  border-bottom: 2px solid #f44336 !important;
+  margin-bottom: -1px !important;
+}
+
+.mde-header {
+  border: 0 !important;
   background-color: transparent !important;
-  width: 100% !important;
-  height: 100% !important;
+  color: #ffffff !important;
 }
 
-div.srd-port:hover {
+.mde-header-item button {
+  color: #ffffff !important;
+}
+
+.mde-tabs button {
+  color: #ffffff !important;
+}
+
+.mde-textarea-wrapper textarea {
+  color: #ffffff;
+  background-color: #14262c;
+}
+
+.MuiDialog-container .mde-textarea-wrapper textarea {
+  color: #ffffff !important;
+  background-color: #28353a !important;
+}
+
+.react-grid-item > .react-resizable-handle::after {
+  border-right: 2px solid rgba(255, 255, 255, 0.4) !important;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.react-grid-placeholder {
+  background-color: rgba(0, 188, 212, 0.8) !important;
+}
+
+.layout {
+  max-width: 100%;
+  margin-bottom: 80px !important;
+}
+
+.force-graph-container {
+  overflow: hidden !important;;
+}
+
+.force-graph-container .graph-tooltip {
+  position: absolute;
+  text-align: center;
+  overflow: hidden !important;;
+  transform: translate(-50%, 25px);
+  font-size: 12px !important;
+  padding: 8px !important;
+  border-radius: 3px;
+  color: #eee;
+  background: rgba(0, 0, 0, 0.65);
+  visibility: hidden; /* by default */
+  display: block;
+  unicode-bidi: embed;
+  white-space: pre;
+}
+
+.timerange {
+  width: 100%;
+  height: 100%;
+}
+
+.react_time_range__rail__inner {
   background-color: transparent !important;
 }
 
-.srd-default-link-marker {
-  fill: rgb(165,165,165) !important;
+.react_time_range__track {
+  background-color: rgba(1, 226, 255, 0.1) !important;
+  border-left: 1px solid #00bcd4 !important;
+  border-right: 1px solid #00bcd4 !important;
 }
 
-.srd-default-link--path-inferred {
-  stroke: #607d8b !important;
-  stroke-dasharray: 10, 2;
-}
-
-.srd-default-link__label {
-  overflow: visible;
+.react_time_range__handle_marker {
+  background-color: #00bcd4 !important;
 }

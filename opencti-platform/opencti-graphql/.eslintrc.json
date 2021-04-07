@@ -1,5 +1,6 @@
 {
   "extends": ["airbnb-base", "plugin:prettier/recommended"],
+  "parser": "babel-eslint",
   "env": {"jest": true},
   "rules": {
     "max-len": [
@@ -10,7 +11,9 @@
         "ignoreStrings": true,
         "ignoreTemplateLiterals": true
       }
-    ]
+    ],
+    "no-underscore-dangle": 0,
+    "no-await-in-loop": 0
   },
   "overrides": [
     {

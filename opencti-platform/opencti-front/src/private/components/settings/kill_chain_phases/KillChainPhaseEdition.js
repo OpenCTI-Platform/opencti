@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import {
   compose, defaultTo, lensProp, over, pickAll,
 } from 'ramda';
@@ -15,7 +15,6 @@ import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   requestSubscription,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import {
@@ -87,10 +86,9 @@ const killChainPhaseEditionFocus = graphql`
 const killChainPhaseValidation = (t) => Yup.object().shape({
   kill_chain_name: Yup.string().required(t('This field is required')),
   phase_name: Yup.string().required(t('This field is required')),
-  phase_order: Yup.number()
+  x_opencti_order: Yup.number()
     .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
+    .integer(t('The value must be a number')),
 });
 
 class KillChainPhaseEditionContainer extends Component {
@@ -99,7 +97,7 @@ class KillChainPhaseEditionContainer extends Component {
       subscription,
       variables: {
         // eslint-disable-next-line
-        id: this.props.killChainPhase.id
+        id: this.props.killChainPhase.id,
       },
     });
     this.setState({ sub });
@@ -110,17 +108,15 @@ class KillChainPhaseEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: killChainPhaseEditionFocus,
-        variables: {
-          id: this.props.killChainPhase.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: killChainPhaseEditionFocus,
+      variables: {
+        id: this.props.killChainPhase.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
@@ -144,9 +140,12 @@ class KillChainPhaseEditionContainer extends Component {
     } = this.props;
     const { editContext } = killChainPhase;
     const initialValues = over(
-      lensProp('phase_order'),
+      lensProp('x_opencti_order'),
       defaultTo(''),
-      pickAll(['kill_chain_name', 'phase_name', 'phase_order'], killChainPhase),
+      pickAll(
+        ['kill_chain_name', 'phase_name', 'x_opencti_order'],
+        killChainPhase,
+      ),
     );
     return (
       <div>
@@ -172,7 +171,8 @@ class KillChainPhaseEditionContainer extends Component {
           >
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="kill_chain_name"
                   label={t('Kill chain name')}
                   fullWidth={true}
@@ -185,7 +185,8 @@ class KillChainPhaseEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="phase_name"
                   label={t('Phase name')}
                   fullWidth={true}
@@ -199,8 +200,9 @@ class KillChainPhaseEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
-                  name="phase_order"
+                <Field
+                  component={TextField}
+                  name="x_opencti_order"
                   label={t('Order')}
                   fullWidth={true}
                   type="number"
@@ -210,7 +212,7 @@ class KillChainPhaseEditionContainer extends Component {
                   helperText={
                     <SubscriptionFocus
                       context={editContext}
-                      fieldName="phase_order"
+                      fieldName="x_opencti_order"
                     />
                   }
                 />
@@ -239,7 +241,7 @@ const KillChainPhaseEditionFragment = createFragmentContainer(
         id
         kill_chain_name
         phase_name
-        phase_order
+        x_opencti_order
         editContext {
           name
           focusOn

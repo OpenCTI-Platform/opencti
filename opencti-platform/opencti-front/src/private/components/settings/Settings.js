@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
-import { Form, Formik } from 'formik';
-import { compose, pick, values } from 'ramda';
+import { Form, Formik, Field } from 'formik';
+import { compose, pick } from 'ramda';
 import Grid from '@material-ui/core/Grid';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
@@ -20,13 +20,11 @@ import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
-import SettingsMenu from './SettingsMenu';
 import Loader from '../../../components/Loader';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
   },
   paper: {
     width: '100%',
@@ -49,7 +47,10 @@ const settingsQuery = graphql`
       platform_email
       platform_url
       platform_language
-      platform_parameters
+      platform_providers {
+        name
+        strategy
+      }
       editContext {
         name
         focusOn
@@ -106,7 +107,7 @@ const settingsValidation = (t) => Yup.object().shape({
 });
 
 class Settings extends Component {
-  // eslint-disable-next-line
+  // eslint-disable-next-line class-methods-use-this
   handleChangeFocus(id, name) {
     commitMutation({
       mutation: settingsFocus,
@@ -131,45 +132,10 @@ class Settings extends Component {
       .catch(() => false);
   }
 
-  getConfig(parameters, service) {
-    switch (service) {
-      case 'grakn':
-        return `${parameters.grakn.hostname}:${parameters.grakn.port}`;
-      case 'elasticsearch':
-        return parameters.elasticsearch.url;
-      case 'redis':
-        return `${parameters.redis.hostname}:${parameters.redis.port}`;
-      case 'minio':
-        return `${parameters.minio.endpoint}:${parameters.minio.port}`;
-      case 'rabbitmq':
-        return `${parameters.rabbitmq.hostname}:${parameters.rabbitmq.port}`;
-      default:
-        return 'Unknown';
-    }
-  }
-
-  getProviderConfig(provider) {
-    switch (provider.strategy) {
-      case 'LocalStrategy':
-        return '';
-      case 'LdapStrategy':
-        return provider.config.url;
-      case 'FacebookStrategy':
-        return provider.config.callback_url;
-      case 'GoogleStrategy':
-        return provider.config.callback_url;
-      case 'GithubStrategy':
-        return provider.config.callback_url;
-      default:
-        return 'Unknown';
-    }
-  }
-
   render() {
     const { t, classes } = this.props;
     return (
       <div className={classes.container}>
-        <SettingsMenu />
         <QueryRenderer
           query={settingsQuery}
           render={({ props }) => {
@@ -185,8 +151,7 @@ class Settings extends Component {
                 ],
                 settings,
               );
-              const parameters = JSON.parse(settings.platform_parameters);
-              const authProviders = values(parameters.providers);
+              const authProviders = settings.platform_providers;
               let i = 0;
               return (
                 <div>
@@ -204,7 +169,8 @@ class Settings extends Component {
                                 {t('Configuration')}
                               </Typography>
                               <Form style={{ marginTop: 20 }}>
-                                <TextField
+                                <Field
+                                  component={TextField}
                                   name="platform_title"
                                   label={t('Name')}
                                   fullWidth={true}
@@ -223,7 +189,8 @@ class Settings extends Component {
                                     />
                                   }
                                 />
-                                <TextField
+                                <Field
+                                  component={TextField}
                                   name="platform_email"
                                   label={t('Sender email address')}
                                   fullWidth={true}
@@ -243,7 +210,8 @@ class Settings extends Component {
                                     />
                                   }
                                 />
-                                <TextField
+                                <Field
+                                  component={TextField}
                                   name="platform_url"
                                   label={t('Base URL')}
                                   fullWidth={true}
@@ -263,7 +231,8 @@ class Settings extends Component {
                                     />
                                   }
                                 />
-                                <SelectField
+                                <Field
+                                  component={SelectField}
                                   name="platform_language"
                                   label={t('Language')}
                                   fullWidth={true}
@@ -291,7 +260,7 @@ class Settings extends Component {
                                   </MenuItem>
                                   <MenuItem value="en">English</MenuItem>
                                   <MenuItem value="fr">Français</MenuItem>
-                                </SelectField>
+                                </Field>
                               </Form>
                             </div>
                           )}
@@ -312,8 +281,8 @@ class Settings extends Component {
                                   <Avatar>{i}</Avatar>
                                 </ListItemAvatar>
                                 <ListItemText
-                                  primary={t(provider.strategy)}
-                                  secondary={this.getProviderConfig(provider)}
+                                  primary={provider.name}
+                                  secondary={provider.strategy}
                                 />
                               </ListItem>
                             );
@@ -327,9 +296,12 @@ class Settings extends Component {
                       <Paper classes={{ root: classes.paper }} elevation={2}>
                         <QueryRenderer
                           query={settingsAboutQuery}
-                          render={({ props }) => {
-                            if (props) {
-                              const { version, dependencies } = props.about;
+                          render={({ props: aboutProps }) => {
+                            if (aboutProps) {
+                              const {
+                                version,
+                                dependencies,
+                              } = aboutProps.about;
                               return (
                                 <div>
                                   <Typography variant="h1" gutterBottom={true}>
@@ -337,21 +309,12 @@ class Settings extends Component {
                                   </Typography>
                                   <List>
                                     <ListItem divider={true}>
-                                      <ListItemText
-                                        primary={'OpenCTI'}
-                                        secondary={`0.0.0.0:${parameters.app.port}`}
-                                      />
+                                      <ListItemText primary={'OpenCTI'} />
                                       <Chip label={version} />
                                     </ListItem>
                                     {dependencies.map((dep) => (
                                       <ListItem key={dep.name} divider={true}>
-                                        <ListItemText
-                                          primary={t(dep.name)}
-                                          secondary={this.getConfig(
-                                            parameters,
-                                            dep.name.toLowerCase(),
-                                          )}
-                                        />
+                                        <ListItemText primary={t(dep.name)} />
                                         <Chip label={dep.version} />
                                       </ListItem>
                                     ))}

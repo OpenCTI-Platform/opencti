@@ -6,13 +6,9 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
+import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import inject18n from '../../../components/i18n';
 import WorkspaceEditionContainer from './WorkspaceEditionContainer';
-import {
-  commitMutation,
-  QueryRenderer,
-  WS_ACTIVATED,
-} from '../../../relay/environment';
 import { workspaceEditionOverviewFocus } from './WorkspaceEditionOverview';
 import Loader from '../../../components/Loader';
 
@@ -55,15 +51,13 @@ class WorkspaceEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: workspaceEditionOverviewFocus,
-        variables: {
-          id: this.props.workspaceId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: workspaceEditionOverviewFocus,
+      variables: {
+        id: this.props.workspaceId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 
@@ -75,13 +69,16 @@ class WorkspaceEdition extends Component {
           onClick={this.handleOpen.bind(this)}
           color="secondary"
           aria-label="Edit"
-          className={classes.editButton}>
+          className={classes.editButton}
+        >
           <Edit />
         </Fab>
-        <Drawer open={this.state.open}
+        <Drawer
+          open={this.state.open}
           anchor="right"
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={workspaceEditionQuery}
             variables={{ id: workspaceId }}
@@ -105,7 +102,7 @@ class WorkspaceEdition extends Component {
 
 WorkspaceEdition.propTypes = {
   workspaceId: PropTypes.string,
-  workspace: PropTypes.object,
+  me: PropTypes.object,
   classes: PropTypes.object,
   theme: PropTypes.object,
   t: PropTypes.func,

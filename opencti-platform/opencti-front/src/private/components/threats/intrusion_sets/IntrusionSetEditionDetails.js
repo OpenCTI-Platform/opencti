@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import {
   assoc, compose, pick, pipe,
 } from 'ramda';
@@ -12,7 +12,7 @@ import inject18n from '../../../../components/i18n';
 import DatePickerField from '../../../../components/DatePickerField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
+import { commitMutation } from '../../../../relay/environment';
 import { dateFormat } from '../../../../utils/Time';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -48,26 +48,23 @@ const intrusionSetValidation = (t) => Yup.object().shape({
   last_seen: Yup.date()
     .typeError(t('The value must be a date (YYYY-MM-DD)'))
     .required(t('This field is required')),
-  sophistication: Yup.string(),
   resource_level: Yup.string(),
   primary_motivation: Yup.string(),
-  secondary_motivation: Yup.string(),
+  secondary_motivations: Yup.string(),
   goal: Yup.string(),
 });
 
 class IntrusionSetEditionDetailsComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: intrusionSetEditionDetailsFocus,
-        variables: {
-          id: this.props.intrusionSet.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: intrusionSetEditionDetailsFocus,
+      variables: {
+        id: this.props.intrusionSet.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
@@ -90,13 +87,18 @@ class IntrusionSetEditionDetailsComponent extends Component {
     const initialValues = pipe(
       assoc('first_seen', dateFormat(intrusionSet.first_seen)),
       assoc('last_seen', dateFormat(intrusionSet.last_seen)),
+      assoc(
+        'secondary_motivations',
+        intrusionSet.secondary_motivations
+          ? intrusionSet.secondary_motivations
+          : [],
+      ),
       pick([
         'first_seen',
         'last_seen',
-        'sophistication',
         'resource_level',
         'primary_motivation',
-        'secondary_motivation',
+        'secondary_motivations',
       ]),
     )(intrusionSet);
 
@@ -109,7 +111,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
       >
         {() => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="first_seen"
               label={t('First seen')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -120,7 +123,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="first_seen" />
               }
             />
-            <DatePickerField
+            <Field
+              component={DatePickerField}
               name="last_seen"
               label={t('Last seen')}
               invalidDateMessage={t('The value must be a date (YYYY-MM-DD)')}
@@ -132,43 +136,8 @@ class IntrusionSetEditionDetailsComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="last_seen" />
               }
             />
-            <SelectField
-              name="sophistication"
-              onFocus={this.handleChangeFocus.bind(this)}
-              onChange={this.handleSubmitField.bind(this)}
-              label={t('Sophistication')}
-              fullWidth={true}
-              containerstyle={{ width: '100%', marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="sophistication"
-                />
-              }
-            >
-              <MenuItem key="none" value="none">
-                {t('sophistication_none')}
-              </MenuItem>
-              <MenuItem key="minimal" value="minimal">
-                {t('sophistication_minimal')}
-              </MenuItem>
-              <MenuItem key="intermediate" value="intermediate">
-                {t('sophistication_intermediate')}
-              </MenuItem>
-              <MenuItem key="advanced" value="advanced">
-                {t('sophistication_advanced')}
-              </MenuItem>
-              <MenuItem key="expert" value="expert">
-                {t('sophistication_expert')}
-              </MenuItem>
-              <MenuItem key="innovator" value="innovator">
-                {t('sophistication_innovator')}
-              </MenuItem>
-              <MenuItem key="strategic" value="strategic">
-                {t('sophistication_strategic')}
-              </MenuItem>
-            </SelectField>
-            <SelectField
+            <Field
+              component={SelectField}
               name="resource_level"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -203,8 +172,9 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="government" value="government">
                 {t('resource_government')}
               </MenuItem>
-            </SelectField>
-            <SelectField
+            </Field>
+            <Field
+              component={SelectField}
               name="primary_motivation"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
@@ -254,18 +224,20 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="unpredictable" value="unpredictable">
                 {t('motivation_unpredictable')}
               </MenuItem>
-            </SelectField>
-            <SelectField
-              name="secondary_motivation"
+            </Field>
+            <Field
+              component={SelectField}
+              name="secondary_motivations"
               onFocus={this.handleChangeFocus.bind(this)}
               onChange={this.handleSubmitField.bind(this)}
-              label={t('Secondary motivation')}
+              label={t('Secondary motivations')}
               fullWidth={true}
+              multiple={true}
               containerstyle={{ width: '100%', marginTop: 20 }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="secondary_motivation"
+                  fieldName="secondary_motivations"
                 />
               }
             >
@@ -305,7 +277,7 @@ class IntrusionSetEditionDetailsComponent extends Component {
               <MenuItem key="unpredictable" value="unpredictable">
                 {t('motivation_unpredictable')}
               </MenuItem>
-            </SelectField>
+            </Field>
           </Form>
         )}
       </Formik>
@@ -327,10 +299,9 @@ const IntrusionSetEditionDetails = createFragmentContainer(
         id
         first_seen
         last_seen
-        sophistication
         resource_level
         primary_motivation
-        secondary_motivation
+        secondary_motivations
       }
     `,
   },

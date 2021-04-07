@@ -6,17 +6,17 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import Grid from '@material-ui/core/Grid';
 import inject18n from '../../../../components/i18n';
-import SectorOverview from './SectorOverview';
-import SectorSubSectors from './SectorSubSectors';
-import SectorParentSectors from './SectorParentSectors';
+import SectorDetails from './SectorDetails';
 import SectorEdition from './SectorEdition';
 import SectorPopover from './SectorPopover';
-import EntityLastReports from '../../reports/EntityLastReports';
-import EntityCampaignsChart from '../../threats/campaigns/EntityCampaignsChart';
-import EntityReportsChart from '../../reports/EntityReportsChart';
-import EntityIncidentsChart from '../../threats/incidents/EntityIncidentsChart';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 
 const styles = () => ({
   container: {
@@ -32,8 +32,9 @@ class SectorComponent extends Component {
     const { classes, sector } = this.props;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={sector}
+        <StixDomainObjectHeader
+          stixDomainObject={sector}
+          isOpenctiAlias={true}
           PopoverComponent={<SectorPopover />}
         />
         <Grid
@@ -41,36 +42,47 @@ class SectorComponent extends Component {
           spacing={3}
           classes={{ container: classes.gridContainer }}
         >
-          <Grid item={true} xs={3}>
-            <SectorOverview sector={sector} />
-          </Grid>
-          <Grid item={true} xs={3}>
-            {sector.isSubSector ? (
-              <SectorParentSectors sector={sector} />
-            ) : (
-              <SectorSubSectors sector={sector} />
-            )}
+          <Grid item={true} xs={6}>
+            <StixDomainObjectOverview stixDomainObject={sector} />
           </Grid>
           <Grid item={true} xs={6}>
-            <EntityLastReports entityId={sector.id} />
+            <SectorDetails sector={sector} />
           </Grid>
         </Grid>
         <Grid
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 25 }}
         >
-          <Grid item={true} xs={4}>
-            <EntityCampaignsChart entityId={sector.id} />
+          <Grid item={true} xs={6}>
+            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+              stixObjectOrStixRelationshipId={sector.id}
+              stixObjectOrStixRelationshipLink={`/dashboard/entities/sectors/${sector.id}/knowledge`}
+            />
           </Grid>
-          <Grid item={true} xs={4}>
-            <EntityIncidentsChart entityId={sector.id} />
-          </Grid>
-          <Grid item={true} xs={4}>
-            <EntityReportsChart entityId={sector.id} />
+          <Grid item={true} xs={6}>
+            <StixCoreObjectOrStixCoreRelationshipLastReports
+              stixCoreObjectOrStixCoreRelationshipId={sector.id}
+            />
           </Grid>
         </Grid>
+        <Grid
+          container={true}
+          spacing={3}
+          classes={{ container: classes.gridContainer }}
+          style={{ marginTop: 25 }}
+        >
+          <Grid item={true} xs={6}>
+            <StixCoreObjectExternalReferences stixCoreObjectId={sector.id} />
+          </Grid>
+          <Grid item={true} xs={6}>
+            <StixCoreObjectLatestHistory stixCoreObjectId={sector.id} />
+          </Grid>
+        </Grid>
+        <StixCoreObjectOrStixCoreRelationshipNotes
+          stixCoreObjectOrStixCoreRelationshipId={sector.id}
+        />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SectorEdition sectorId={sector.id} />
         </Security>
@@ -89,19 +101,47 @@ const Sector = createFragmentContainer(SectorComponent, {
   sector: graphql`
     fragment Sector_sector on Sector {
       id
-      isSubSector
-      subSectors {
+      standard_id
+      x_opencti_stix_ids
+      spec_version
+      revoked
+      confidence
+      created
+      modified
+      created_at
+      updated_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      creator {
+        id
+        name
+      }
+      objectMarking {
         edges {
           node {
             id
+            definition
+            x_opencti_color
+          }
+        }
+      }
+      objectLabel {
+        edges {
+          node {
+            id
+            value
+            color
           }
         }
       }
       name
-      alias
-      ...SectorOverview_sector
-      ...SectorSubSectors_sector
-      ...SectorParentSectors_sector
+      x_opencti_aliases
+      ...SectorDetails_sector
     }
   `,
 });

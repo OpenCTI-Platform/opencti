@@ -7,8 +7,8 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { KeyboardArrowRight } from '@material-ui/icons';
-import { CityVariant } from 'mdi-material-ui';
+import { KeyboardArrowRightOutlined } from '@material-ui/icons';
+import { CityVariantOutline } from 'mdi-material-ui';
 import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
 
@@ -30,8 +30,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -57,7 +56,7 @@ class CityLineComponent extends Component {
         to={`/dashboard/entities/cities/${node.id}`}
       >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <CityVariant />
+          <CityVariantOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -84,7 +83,7 @@ class CityLineComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );
@@ -120,7 +119,7 @@ class CityLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <CityVariant />
+          <CityVariantOutline />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -147,7 +146,7 @@ class CityLineDummyComponent extends Component {
           }
         />
         <ListItemIcon classes={{ root: classes.goIcon }}>
-          <KeyboardArrowRight />
+          <KeyboardArrowRightOutlined />
         </ListItemIcon>
       </ListItem>
     );

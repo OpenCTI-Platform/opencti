@@ -1,20 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc,
-  compose,
-  dissoc,
-  head,
-  last,
-  map,
-  pipe,
-  propOr,
-  toPairs,
+  assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -42,7 +35,7 @@ class IntrusionSets extends Component {
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('cards', 'view', params),
-      filters: {},
+      filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -53,7 +46,7 @@ class IntrusionSets extends Component {
       this.props.history,
       this.props.location,
       'view-intrusion_sets',
-      dissoc('filters', this.state),
+      this.state,
     );
   }
 
@@ -73,16 +66,34 @@ class IntrusionSets extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleAddFilter(key, id, value, event) {
-    event.stopPropagation();
-    event.preventDefault();
-    this.setState({
-      filters: assoc(key, [{ id, value }], this.state.filters),
-    });
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: assoc(
+            key,
+            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) });
+    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -102,9 +113,6 @@ class IntrusionSets extends Component {
       name: {
         label: 'Name',
       },
-      tags: {
-        label: 'Tags',
-      },
       created: {
         label: 'Creation date',
       },
@@ -120,6 +128,7 @@ class IntrusionSets extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
@@ -128,6 +137,13 @@ class IntrusionSets extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'labelledBy',
+          'markedBy',
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={intrusionSetsCardsQuery}
@@ -137,7 +153,7 @@ class IntrusionSets extends Component {
               data={props}
               paginationOptions={paginationOptions}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -161,10 +177,10 @@ class IntrusionSets extends Component {
         width: '35%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      objectLabel: {
+        label: 'Labels',
         width: '25%',
-        isSortable: true,
+        isSortable: false,
       },
       created: {
         label: 'Creation date',
@@ -185,6 +201,7 @@ class IntrusionSets extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         handleChangeView={this.handleChangeView.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
@@ -193,6 +210,13 @@ class IntrusionSets extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'labelledBy',
+          'markedBy',
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={intrusionSetsLinesQuery}
@@ -203,7 +227,7 @@ class IntrusionSets extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -216,19 +240,12 @@ class IntrusionSets extends Component {
     const {
       view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
-    const buildQueryFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: buildQueryFilters,
+      filters: finalFilters,
     };
     return (
       <div>

@@ -6,7 +6,7 @@ import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { RoleLine, RoleLineDummy } from './RoleLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class RolesLines extends Component {
   render() {
@@ -72,13 +72,13 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment RolesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "RolesOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "RolesOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         roles(
           search: $search
           first: $count

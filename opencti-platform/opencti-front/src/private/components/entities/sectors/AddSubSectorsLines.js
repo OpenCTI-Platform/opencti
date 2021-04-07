@@ -27,9 +27,9 @@ const styles = (theme) => ({
 
 const addSubSectorsLinesMutationRelationAdd = graphql`
   mutation AddSubSectorsLinesRelationAddMutation(
-    $input: StixRelationAddInput!
+    $input: StixCoreRelationshipAddInput
   ) {
-    stixRelationAdd(input: $input) {
+    stixCoreRelationshipAdd(input: $input) {
       to {
         ...SectorSubSectors_sector
       }
@@ -38,10 +38,16 @@ const addSubSectorsLinesMutationRelationAdd = graphql`
 `;
 
 export const addSubSectorsMutationRelationDelete = graphql`
-  mutation AddSubSectorsLinesRelationDeleteMutation($id: ID!) {
-    stixRelationEdit(id: $id) {
-      delete
-    }
+  mutation AddSubSectorsLinesRelationDeleteMutation(
+    $fromId: String!
+    $toId: String!
+    $relationship_type: String!
+  ) {
+    stixCoreRelationshipDelete(
+      fromId: $fromId
+      toId: $toId
+      relationship_type: $relationship_type
+    )
   }
 `;
 
@@ -57,13 +63,18 @@ class AddSubSectorsLinesContainer extends Component {
       );
       commitMutation({
         mutation: addSubSectorsMutationRelationDelete,
-        variables: { id: existingSubSector.relation.id },
+        variables: {
+          fromId: existingSubSector.node.id,
+          toId: sectorId,
+          relationship_type: 'part-of',
+        },
         updater: (store) => {
           const node = store.get(this.props.sectorId);
           const subSectors = node.getLinkedRecord('subSectors');
           const edges = subSectors.getLinkedRecords('edges');
           const newEdges = filter(
-            (n) => n.getLinkedRecord('node').getValue('id') !== existingSubSector.node.id,
+            (n) => n.getLinkedRecord('node').getValue('id')
+              !== existingSubSector.node.id,
             edges,
           );
           subSectors.setLinkedRecords(newEdges, 'edges');
@@ -71,11 +82,9 @@ class AddSubSectorsLinesContainer extends Component {
       });
     } else {
       const input = {
-        relationship_type: 'gathering',
+        relationship_type: 'part-of',
         fromId: subSector.id,
-        fromRole: 'part_of',
         toId: sectorId,
-        toRole: 'gather',
       };
       commitMutation({
         mutation: addSubSectorsLinesMutationRelationAdd,
@@ -104,7 +113,7 @@ class AddSubSectorsLinesContainer extends Component {
                 {alreadyAdded ? (
                   <CheckCircle classes={{ root: classes.icon }} />
                 ) : (
-                  <Domain classes={{ root: classes.icon }} />
+                  <Domain />
                 )}
               </ListItemIcon>
               <ListItemText
@@ -138,11 +147,11 @@ const AddSubSectorsLines = createPaginationContainer(
   {
     data: graphql`
       fragment AddSubSectorsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         sectors(search: $search, first: $count, after: $cursor)
           @connection(key: "Pagination_sectors") {
           edges {

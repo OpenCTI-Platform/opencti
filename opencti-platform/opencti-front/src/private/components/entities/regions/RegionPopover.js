@@ -20,7 +20,9 @@ import { QueryRenderer, commitMutation } from '../../../../relay/environment';
 import { regionEditionQuery } from './RegionEdition';
 import RegionEditionContainer from './RegionEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security, { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/Security';
+import Security, {
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   container: {
@@ -91,7 +93,7 @@ class RegionPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/dashboard/entities/regions');
+        this.props.history.push('/dashboard/entities/countries');
       },
     });
   }
@@ -109,7 +111,11 @@ class RegionPopover extends Component {
     const { classes, t, id } = this.props;
     return (
       <div className={classes.container}>
-        <IconButton onClick={this.handleOpen.bind(this)} aria-haspopup="true">
+        <IconButton
+          onClick={this.handleOpen.bind(this)}
+          aria-haspopup="true"
+          style={{ marginTop: 1 }}
+        >
           <MoreVert />
         </IconButton>
         <Menu
@@ -167,7 +173,8 @@ class RegionPopover extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <RegionEditionContainer region={props.region}
+                  <RegionEditionContainer
+                    region={props.region}
                     handleClose={this.handleCloseEdit.bind(this)}
                   />
                 );

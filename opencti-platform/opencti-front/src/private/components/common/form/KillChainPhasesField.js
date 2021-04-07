@@ -9,10 +9,11 @@ import {
   path,
   union,
 } from 'ramda';
+import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import { Launch } from 'mdi-material-ui';
 import { fetchQuery } from '../../../../relay/environment';
-import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import { killChainPhasesSearchQuery } from '../../settings/KillChainPhases';
 
@@ -42,7 +43,7 @@ class KillChainPhasesField extends Component {
     }).then((data) => {
       const killChainPhases = pipe(
         pathOr([], ['killChainPhases', 'edges']),
-        sortWith([ascend(path(['node', 'order']))]),
+        sortWith([ascend(path(['node', 'x_opencti_order']))]),
         map((n) => ({
           label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
           value: n.node.id,
@@ -59,7 +60,8 @@ class KillChainPhasesField extends Component {
       t, name, style, classes, onChange, helpertext,
     } = this.props;
     return (
-      <Autocomplete
+      <Field
+        component={AutocompleteField}
         style={style}
         name={name}
         multiple={true}

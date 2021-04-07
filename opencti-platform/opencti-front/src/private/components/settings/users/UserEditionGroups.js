@@ -10,9 +10,9 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
-import Avatar from '@material-ui/core/Avatar';
+import { GroupOutlined } from '@material-ui/icons';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { groupsSearchQuery } from '../Groups';
@@ -31,7 +31,7 @@ const styles = (theme) => ({
 const userMutationRelationAdd = graphql`
   mutation UserEditionGroupsRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: InternalRelationshipAddInput
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {
@@ -44,9 +44,13 @@ const userMutationRelationAdd = graphql`
 `;
 
 const userMutationRelationDelete = graphql`
-  mutation UserEditionGroupsRelationDeleteMutation($id: ID!, $relationId: ID!) {
+  mutation UserEditionGroupsRelationDeleteMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
     userEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...UserEditionGroups_user
       }
     }
@@ -61,10 +65,8 @@ class UserEditionGroupsComponent extends Component {
         variables: {
           id: this.props.user.id,
           input: {
-            fromRole: 'member',
             toId: groupId,
-            toRole: 'grouping',
-            through: 'membership',
+            relationship_type: 'member-of',
           },
         },
       });
@@ -73,7 +75,8 @@ class UserEditionGroupsComponent extends Component {
         mutation: userMutationRelationDelete,
         variables: {
           id: this.props.user.id,
-          relationId: userGroup.relation,
+          toId: userGroup.id,
+          relationship_type: 'member-of',
         },
       });
     }
@@ -83,9 +86,8 @@ class UserEditionGroupsComponent extends Component {
     const { classes, user } = this.props;
     const userGroups = pipe(
       pathOr([], ['groups', 'edges']),
-      map((n) => ({ id: n.node.id, relation: n.relation.id })),
+      map((n) => ({ id: n.node.id })),
     )(user);
-
     return (
       <div>
         <QueryRenderer
@@ -99,16 +101,14 @@ class UserEditionGroupsComponent extends Component {
                 map((n) => n.node),
               )(props);
               return (
-                <List dense={true} className={classes.root}>
+                <List className={classes.root}>
                   {groups.map((group) => {
                     const userGroup = find(propEq('id', group.id))(userGroups);
                     return (
                       <ListItem key={group.id} divider={true}>
-                        <ListItemAvatar>
-                          <Avatar className={classes.avatar}>
-                            {group.name.charAt(0)}
-                          </Avatar>
-                        </ListItemAvatar>
+                        <ListItemIcon color="primary">
+                          <GroupOutlined />
+                        </ListItemIcon>
                         <ListItemText
                           primary={group.name}
                           secondary={propOr('-', 'description', group)}
@@ -156,9 +156,6 @@ const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
           node {
             id
             name
-          }
-          relation {
-            id
           }
         }
       }

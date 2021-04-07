@@ -1,24 +1,18 @@
-import {
-  createEntity,
-  listEntities,
-  loadEntityById,
-  loadEntityByStixId,
-  TYPE_STIX_DOMAIN_ENTITY
-} from '../database/grakn';
+import { createEntity, listEntities, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
+import { ENTITY_TYPE_TOOL } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 
-export const findById = toolId => {
-  if (toolId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(toolId, 'Tool');
-  }
-  return loadEntityById(toolId, 'Tool');
+export const findById = (user, toolId) => {
+  return loadById(user, toolId, ENTITY_TYPE_TOOL);
 };
-export const findAll = args => {
-  return listEntities(['Tool'], ['name', 'alias'], args);
+
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_TOOL], args);
 };
 
 export const addTool = async (user, tool) => {
-  const created = await createEntity(tool, 'Tool', TYPE_STIX_DOMAIN_ENTITY);
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(user, tool, ENTITY_TYPE_TOOL);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };

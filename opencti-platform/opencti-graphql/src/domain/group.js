@@ -1,68 +1,94 @@
+import { assoc } from 'ramda';
 import {
   createEntity,
   createRelation,
-  deleteEntityById,
-  deleteRelationById,
-  escapeString,
-  executeWrite,
-  findWithConnectedRelations,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
   listEntities,
-  loadEntityById,
-  TYPE_OPENCTI_INTERNAL,
-  updateAttribute
-} from '../database/grakn';
+  batchListThroughGetFrom,
+  batchListThroughGetTo,
+  loadById,
+  updateAttribute,
+} from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
+import { delEditContext, notify, setEditContext } from '../database/redis';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { FunctionalError } from '../config/errors';
+import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
+import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 
-export const findById = groupId => {
-  return loadEntityById(groupId, 'Group');
-};
-export const findAll = args => {
-  return listEntities(['Group'], ['name'], args);
+export const findById = (user, groupId) => {
+  return loadById(user, groupId, ENTITY_TYPE_GROUP);
 };
 
-export const members = async groupId => {
-  return findWithConnectedRelations(
-    `match $to isa User; $rel(member:$to, grouping:$from) isa membership;
-   $from isa Group, has internal_id_key "${escapeString(groupId)}";
-   get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then(data => buildPagination(0, 0, data, data.length));
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_GROUP], args);
 };
-export const permissions = async groupId => {
-  return findWithConnectedRelations(
-    `match $to isa Marking-Definition; $rel(allow:$to, allowed:$from) isa permission;
-   $from isa Group, has internal_id_key "${escapeString(groupId)}";
-   get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then(data => buildPagination(0, 0, data, data.length));
+
+export const batchMembers = async (user, groupIds) => {
+  return batchListThroughGetFrom(user, groupIds, RELATION_MEMBER_OF, ENTITY_TYPE_USER);
+};
+
+export const batchMarkingDefinitions = async (user, groupIds) => {
+  const opts = { paginate: false };
+  return batchListThroughGetTo(user, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
 };
 
 export const addGroup = async (user, group) => {
-  const created = await createEntity(group, 'Group', { modelType: TYPE_OPENCTI_INTERNAL });
-  return notify(BUS_TOPICS.Group.ADDED_TOPIC, created, user);
+  const created = await createEntity(user, group, ENTITY_TYPE_GROUP);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].ADDED_TOPIC, created, user);
 };
-export const groupDelete = groupId => deleteEntityById(groupId, 'Group');
 
-export const groupEditField = (user, groupId, input) => {
-  return executeWrite(wTx => {
-    return updateAttribute(groupId, 'Group', input, wTx);
-  }).then(async () => {
-    const group = await loadEntityById(groupId, 'Group');
-    return notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user);
-  });
+export const groupDelete = (user, groupId) => deleteElementById(user, groupId, ENTITY_TYPE_GROUP);
+
+export const groupEditField = async (user, groupId, input) => {
+  const group = await updateAttribute(user, groupId, ENTITY_TYPE_GROUP, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
 
 export const groupAddRelation = async (user, groupId, input) => {
-  const data = await createRelation(groupId, input, {}, 'Group', null);
-  return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
+  const group = await loadById(user, groupId, ENTITY_TYPE_GROUP);
+  if (!group) {
+    throw FunctionalError('Cannot add the relation, Group cannot be found.');
+  }
+  if (!isInternalRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be added through this method.`);
+  }
+  let finalInput;
+  if (input.fromId) {
+    finalInput = assoc('toId', groupId, input);
+  } else if (input.toId) {
+    finalInput = assoc('fromId', groupId, input);
+  }
+  return createRelation(user, finalInput).then((relationData) => {
+    notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, relationData, user);
+    return relationData;
+  });
 };
 
-export const groupDeleteRelation = async (user, groupId, relationId) => {
-  await deleteRelationById(relationId, 'relation');
-  const data = await loadEntityById(groupId, 'Group');
-  return notify(BUS_TOPICS.Group.EDIT_TOPIC, data, user);
+export const groupDeleteRelation = async (user, groupId, fromId, toId, relationshipType) => {
+  const group = await loadById(user, groupId, ENTITY_TYPE_GROUP);
+  if (!group) {
+    throw FunctionalError('Cannot delete the relation, Group cannot be found.');
+  }
+  if (!isInternalRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
+  }
+  if (fromId) {
+    await deleteRelationsByFromAndTo(user, fromId, groupId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  } else if (toId) {
+    await deleteRelationsByFromAndTo(user, groupId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
+};
+
+export const groupCleanContext = async (user, groupId) => {
+  await delEditContext(user, groupId);
+  return loadById(user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
+};
+
+export const groupEditContext = async (user, groupId, input) => {
+  await setEditContext(user, groupId, input);
+  return loadById(user, groupId, ENTITY_TYPE_GROUP).then((group) => notify(BUS_TOPICS.Group.EDIT_TOPIC, group, user));
 };

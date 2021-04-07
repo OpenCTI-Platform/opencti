@@ -44,7 +44,7 @@ class Groups extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Groups-view',
+      'view-groups',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -58,7 +58,7 @@ class Groups extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Groups-view',
+      'view-groups',
       this.state,
     );
   }
@@ -76,7 +76,12 @@ class Groups extends Component {
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '60%',
+        width: '45%',
+        isSortable: true,
+      },
+      default_assignation: {
+        label: 'Default membership',
+        width: '15%',
         isSortable: true,
       },
       created_at: {
@@ -144,8 +149,4 @@ Groups.propTypes = {
   location: PropTypes.object,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(Groups);
+export default compose(inject18n, withRouter, withStyles(styles))(Groups);

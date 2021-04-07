@@ -1,35 +1,23 @@
-import {
-  createEntity,
-  escapeString,
-  findWithConnectedRelations,
-  listEntities,
-  loadEntityById,
-  loadEntityByStixId
-} from '../database/grakn';
+import { createEntity, listEntities, batchListThroughGetTo, loadById } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
-import { buildPagination } from '../database/utils';
+import { ENTITY_TYPE_ATTACK_PATTERN, ENTITY_TYPE_COURSE_OF_ACTION } from '../schema/stixDomainObject';
+import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
+import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';
 
-export const findById = courseOfActionId => {
-  if (courseOfActionId.match(/[a-z-]+--[\w-]{36}/g)) {
-    return loadEntityByStixId(courseOfActionId, 'Course-Of-Action');
-  }
-  return loadEntityById(courseOfActionId, 'Course-Of-Action');
+export const findById = (user, courseOfActionId) => {
+  return loadById(user, courseOfActionId, ENTITY_TYPE_COURSE_OF_ACTION);
 };
-export const findAll = args => {
-  return listEntities(['Course-Of-Action'], ['name', 'alias'], args);
+
+export const findAll = (user, args) => {
+  return listEntities(user, [ENTITY_TYPE_COURSE_OF_ACTION], args);
 };
 
 export const addCourseOfAction = async (user, courseOfAction) => {
-  const created = await createEntity(courseOfAction, 'Course-Of-Action');
-  return notify(BUS_TOPICS.StixDomainEntity.ADDED_TOPIC, created, user);
+  const created = await createEntity(user, courseOfAction, ENTITY_TYPE_COURSE_OF_ACTION);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
-export const attackPatterns = async courseOfActionId => {
-  return findWithConnectedRelations(
-    `match $to isa Attack-Pattern; $rel(problem:$to, mitigation:$from) isa mitigates;
-    $from has internal_id_key "${escapeString(courseOfActionId)}"; get;`,
-    'to',
-    { extraRelKey: 'rel' }
-  ).then(data => buildPagination(0, 0, data, data.length));
+export const batchAttackPatterns = async (user, courseOfActionIds) => {
+  return batchListThroughGetTo(user, courseOfActionIds, RELATION_MITIGATES, ENTITY_TYPE_ATTACK_PATTERN);
 };

@@ -4,16 +4,17 @@ import { Switch, Redirect } from 'react-router-dom';
 import { BoundaryRoute } from '../Error';
 import Sectors from './Sectors';
 import RootSector from './sectors/Root';
-import Regions from './Regions';
-import RootRegion from './regions/Root';
 import Countries from './Countries';
+import RootRegion from './regions/Root';
 import RootCountry from './countries/Root';
 import Cities from './Cities';
 import RootCity from './cities/Root';
+import Positions from './Positions';
+import RootPosition from './positions/Root';
 import Organizations from './Organizations';
 import RootOrganization from './organizations/Root';
-import Persons from './Persons';
-import RootPerson from './persons/Root';
+import Individuals from './Individuals';
+import RootIndividual from './individuals/Root';
 
 class Root extends Component {
   render() {
@@ -36,17 +37,12 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/dashboard/entities/regions"
-          component={Regions}
+          path="/dashboard/entities/countries"
+          component={Countries}
         />
         <BoundaryRoute
           path="/dashboard/entities/regions/:regionId"
           render={(routeProps) => <RootRegion {...routeProps} me={me} />}
-        />
-        <BoundaryRoute
-          exact
-          path="/dashboard/entities/countries"
-          component={Countries}
         />
         <BoundaryRoute
           path="/dashboard/entities/countries/:countryId"
@@ -63,6 +59,15 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
+          path="/dashboard/entities/positions"
+          component={Positions}
+        />
+        <BoundaryRoute
+          path="/dashboard/entities/positions/:positionId"
+          render={(routeProps) => <RootPosition {...routeProps} me={me} />}
+        />
+        <BoundaryRoute
+          exact
           path="/dashboard/entities/organizations"
           component={Organizations}
         />
@@ -72,12 +77,12 @@ class Root extends Component {
         />
         <BoundaryRoute
           exact
-          path="/dashboard/entities/persons"
-          component={Persons}
+          path="/dashboard/entities/individuals"
+          component={Individuals}
         />
         <BoundaryRoute
-          path="/dashboard/entities/persons/:personId"
-          render={(routeProps) => <RootPerson {...routeProps} me={me} />}
+          path="/dashboard/entities/individuals/:individualId"
+          render={(routeProps) => <RootIndividual {...routeProps} me={me} />}
         />
       </Switch>
     );

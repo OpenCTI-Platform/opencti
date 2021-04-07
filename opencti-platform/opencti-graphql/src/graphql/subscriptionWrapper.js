@@ -11,7 +11,7 @@ const withCancel = (asyncIterator, onCancel) => {
     },
     throw(error) {
       return asyncIterator.throw(error);
-    }
+    },
   };
   return { [$$asyncIterator]: () => updatedAsyncIterator };
 };

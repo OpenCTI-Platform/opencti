@@ -7,7 +7,7 @@ import ListCardsContent from '../../../../components/list_cards/ListCardsContent
 import { CampaignCard, CampaignCardDummy } from './CampaignCard';
 import { setNumberOfElements } from '../../../../utils/Number';
 
-const nbOfCardsToLoad = 25;
+const nbOfCardsToLoad = 50;
 
 class CampaignsCards extends Component {
   componentDidUpdate(prevProps) {
@@ -20,7 +20,7 @@ class CampaignsCards extends Component {
   }
 
   render() {
-    const { initialLoading, relay, onTagClick } = this.props;
+    const { initialLoading, relay, onLabelClick } = this.props;
     return (
       <ListCardsContent
         initialLoading={initialLoading}
@@ -36,7 +36,7 @@ class CampaignsCards extends Component {
         CardComponent={<CampaignCard />}
         DummyCardComponent={<CampaignCardDummy />}
         nbOfCardsToLoad={nbOfCardsToLoad}
-        onTagClick={onTagClick.bind(this)}
+        onLabelClick={onLabelClick.bind(this)}
       />
     );
   }
@@ -46,7 +46,7 @@ CampaignsCards.propTypes = {
   data: PropTypes.object,
   relay: PropTypes.object,
   initialLoading: PropTypes.bool,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
   setNumberOfElements: PropTypes.func,
 };
 
@@ -76,14 +76,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment CampaignsCards_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "CampaignsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[CampaignsFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "CampaignsOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[CampaignsFiltering]" }
+      ) {
         campaigns(
           search: $search
           first: $count

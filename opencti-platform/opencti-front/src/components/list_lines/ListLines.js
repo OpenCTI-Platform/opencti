@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, map, toPairs } from 'ramda';
+import {
+  compose, last, map, toPairs,
+} from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -11,16 +13,19 @@ import IconButton from '@material-ui/core/IconButton';
 import {
   ArrowDropDown,
   ArrowDropUp,
-  Dashboard,
-  TableChart,
+  DashboardOutlined,
+  TableChartOutlined,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
 import { FileExportOutline } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
-import StixDomainEntitiesExports from '../../private/components/common/stix_domain_entities/StixDomainEntitiesExports';
+import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security, { KNOWLEDGE_KNGETEXPORT } from '../../utils/Security';
+import Filters from '../../private/components/common/lists/Filters';
+import StixObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import { truncate } from '../../utils/String';
 
 const styles = (theme) => ({
   container: {
@@ -29,6 +34,13 @@ const styles = (theme) => ({
       duration: theme.transitions.duration.leavingScreen,
     }),
     padding: '0 0 50px 0',
+  },
+  containerNoPadding: {
+    transition: theme.transitions.create('padding', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    padding: '0 0 0 0',
   },
   containerOpenExports: {
     flexGrow: 1,
@@ -78,6 +90,14 @@ const styles = (theme) => ({
     float: 'left',
     margin: '2px 0 0 10px',
   },
+  filter: {
+    marginRight: 10,
+  },
+  operator: {
+    fontFamily: 'Consolas, monaco, monospace',
+    backgroundColor: 'rgba(64, 193, 255, 0.2)',
+    marginRight: 10,
+  },
 });
 
 class ListLines extends Component {
@@ -122,10 +142,12 @@ class ListLines extends Component {
       handleChangeView,
       disableCards,
       enableDuplicates,
+      handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
       openExports,
       noPadding,
+      noBottomPadding,
       dataColumns,
       secondaryAction,
       paginationOptions,
@@ -136,15 +158,17 @@ class ListLines extends Component {
       exportEntityType,
       exportContext,
       numberOfElements,
+      availableFilterKeys,
+      noHeaders,
     } = this.props;
+    let className = classes.container;
+    if (noBottomPadding) {
+      className = classes.containerWithoutPadding;
+    } else if (openExports && !noPadding) {
+      className = classes.containerOpenExports;
+    }
     return (
-      <div
-        className={
-          openExports && !noPadding
-            ? classes.containerOpenExports
-            : classes.container
-        }
-      >
+      <div className={className}>
         <div className={classes.parameters}>
           {typeof handleSearch === 'function' ? (
             <div style={{ float: 'left', marginRight: 20 }}>
@@ -157,23 +181,62 @@ class ListLines extends Component {
           ) : (
             ''
           )}
-          <div className={classes.filters}>
-            {map(
-              (filter) => map(
-                (f) => (
-                    <Chip
-                      key={filter[0]}
-                      classes={{ root: classes.filter }}
-                      label={`${filter[0]}: ${
-                        f.value === null ? t('No tag') : f.value
-                      }`}
-                      onDelete={handleRemoveFilter.bind(this, filter[0])}
-                    />
-                ),
-                filter[1],
-              ),
-              toPairs(filters),
+          {availableFilterKeys && availableFilterKeys.length > 0 ? (
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              handleAddFilter={handleAddFilter}
+              currentFilters={filters}
+            />
+          ) : (
+            ''
+          )}
+          {(!availableFilterKeys || availableFilterKeys.length === 0)
+          && !noHeaders ? (
+            <div style={{ height: 38 }}> &nbsp; </div>
+            ) : (
+              ''
             )}
+          <div className={classes.filters}>
+            {map((currentFilter) => {
+              const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
+              const values = (
+                <span>
+                  {map(
+                    (n) => (
+                      <span key={n.value}>
+                        {n.value && n.value.length > 0
+                          ? truncate(n.value, 15)
+                          : t('No label')}{' '}
+                        {last(currentFilter[1]).value !== n.value && (
+                          <code>OR</code>
+                        )}
+                      </span>
+                    ),
+                    currentFilter[1],
+                  )}
+                </span>
+              );
+              return (
+                <span>
+                  <Chip
+                    key={currentFilter[0]}
+                    classes={{ root: classes.filter }}
+                    label={
+                      <div>
+                        <strong>{label}</strong>: {values}
+                      </div>
+                    }
+                    onDelete={handleRemoveFilter.bind(this, currentFilter[0])}
+                  />
+                  {last(toPairs(filters))[0] !== currentFilter[0] && (
+                    <Chip
+                      classes={{ root: classes.operator }}
+                      label={t('AND')}
+                    />
+                  )}
+                </span>
+              );
+            }, toPairs(filters))}
           </div>
         </div>
         <div className={classes.views}>
@@ -192,7 +255,7 @@ class ListLines extends Component {
                   color="primary"
                   onClick={handleChangeView.bind(this, 'cards')}
                 >
-                  <Dashboard />
+                  <DashboardOutlined />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -204,7 +267,7 @@ class ListLines extends Component {
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'lines')}
                 >
-                  <TableChart />
+                  <TableChartOutlined />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -216,7 +279,7 @@ class ListLines extends Component {
                   color="secondary"
                   onClick={handleChangeView.bind(this, 'duplicates')}
                 >
-                  <TableChart />
+                  <TableChartOutlined />
                 </IconButton>
               </Tooltip>
             ) : (
@@ -246,45 +309,50 @@ class ListLines extends Component {
               : classes.linesContainer,
           }}
         >
-          <ListItem
-            classes={{ root: classes.item }}
-            divider={false}
-            style={{ paddingTop: 0 }}
-          >
-            <ListItemIcon>
-              <span
-                style={{
-                  padding: '0 8px 0 8px',
-                  fontWeight: 700,
-                  fontSize: 12,
-                }}
-              >
-                &nbsp;
-              </span>
-            </ListItemIcon>
-            <ListItemText
-              primary={
-                <div>
-                  {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
-                    dataColumn[0],
-                    dataColumn[1].label,
-                    dataColumn[1].width,
-                    dataColumn[1].isSortable,
-                  ))}
-                </div>
-              }
-            />
-            {secondaryAction ? (
-              <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
-            ) : (
-              ''
-            )}
-          </ListItem>
+          {!noHeaders ? (
+            <ListItem
+              classes={{ root: classes.item }}
+              divider={false}
+              style={{ paddingTop: 0 }}
+            >
+              <ListItemIcon>
+                <span
+                  style={{
+                    padding: '0 8px 0 8px',
+                    fontWeight: 700,
+                    fontSize: 12,
+                  }}
+                >
+                  &nbsp;
+                </span>
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  <div>
+                    {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
+                      dataColumn[0],
+                      dataColumn[1].label,
+                      dataColumn[1].width,
+                      dataColumn[1].isSortable,
+                    ))}
+                  </div>
+                }
+              />
+              {secondaryAction ? (
+                <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+              ) : (
+                ''
+              )}
+            </ListItem>
+          ) : (
+            ''
+          )}
           {children}
         </List>
-        {typeof handleToggleExports === 'function' ? (
+        {typeof handleToggleExports === 'function'
+        && exportEntityType !== 'Stix-Cyber-Observable' ? (
           <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
-            <StixDomainEntitiesExports
+            <StixDomainObjectsExports
               open={openExports}
               handleToggle={handleToggleExports.bind(this)}
               paginationOptions={paginationOptions}
@@ -292,9 +360,22 @@ class ListLines extends Component {
               context={exportContext}
             />
           </Security>
-        ) : (
-          ''
-        )}
+          ) : (
+            ''
+          )}
+        {typeof handleToggleExports === 'function'
+        && exportEntityType === 'Stix-Cyber-Observable' ? (
+          <Security needs={[KNOWLEDGE_KNGETEXPORT]}>
+            <StixObservablesExports
+              open={openExports}
+              handleToggle={handleToggleExports.bind(this)}
+              paginationOptions={paginationOptions}
+              context={exportContext}
+            />
+          </Security>
+          ) : (
+            ''
+          )}
       </div>
     );
   }
@@ -305,26 +386,30 @@ ListLines.propTypes = {
   t: PropTypes.func,
   children: PropTypes.object,
   handleSearch: PropTypes.func,
-  handleSort: PropTypes.func.isRequired,
+  handleSort: PropTypes.func,
   handleChangeView: PropTypes.func,
   disableCards: PropTypes.bool,
   enableDuplicates: PropTypes.bool,
+  handleAddFilter: PropTypes.func,
   handleRemoveFilter: PropTypes.func,
   handleToggleExports: PropTypes.func,
   openExports: PropTypes.bool,
   noPadding: PropTypes.bool,
+  noBottomPadding: PropTypes.bool,
   views: PropTypes.array,
   exportEntityType: PropTypes.string,
   exportContext: PropTypes.string,
   keyword: PropTypes.string,
   filters: PropTypes.object,
   sortBy: PropTypes.string,
-  orderAsc: PropTypes.bool.isRequired,
+  orderAsc: PropTypes.bool,
   dataColumns: PropTypes.object.isRequired,
   paginationOptions: PropTypes.object,
   secondaryAction: PropTypes.bool,
   bottomNav: PropTypes.bool,
   numberOfElements: PropTypes.object,
+  availableFilterKeys: PropTypes.array,
+  noHeaders: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

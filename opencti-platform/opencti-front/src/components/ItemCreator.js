@@ -1,34 +1,52 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Link } from 'react-router-dom';
 import Button from '@material-ui/core/Button';
-import { resolveLink } from '../utils/Entity';
+import { Link } from 'react-router-dom';
+import Security, { SETTINGS_SETACCESSES } from '../utils/Security';
 
 class ItemCreator extends Component {
   render() {
-    const { createdByRef } = this.props;
+    const { creator } = this.props;
     return (
       <div>
-        {createdByRef ? (
-          <Button
-            variant="outlined"
-            color="secondary"
-            size="small"
-            component={Link}
-            to={`${resolveLink(createdByRef.entity_type)}/${createdByRef.id}`}
-          >
-            {createdByRef.name}
-          </Button>
-        ) : (
-          '-'
-        )}
+        <Security
+          needs={[SETTINGS_SETACCESSES]}
+          placeholder={
+            <Button
+              variant="outlined"
+              size="small"
+              style={{ cursor: 'default' }}
+            >
+              {creator.name}
+            </Button>
+          }
+        >
+          {creator.id === '6a4b11e1-90ca-4e42-ba42-db7bc7f7d505' ? (
+            <Button
+              variant="outlined"
+              size="small"
+              style={{ cursor: 'default' }}
+            >
+              {creator.name}
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              component={Link}
+              to={`/dashboard/settings/accesses/users/${creator.id}`}
+            >
+              {creator.name}
+            </Button>
+          )}
+        </Security>
       </div>
     );
   }
 }
 
 ItemCreator.propTypes = {
-  createdByRef: PropTypes.object,
+  creator: PropTypes.object,
 };
 
 export default ItemCreator;

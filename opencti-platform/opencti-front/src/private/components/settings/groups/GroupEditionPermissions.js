@@ -10,10 +10,10 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemAvatar from '@material-ui/core/ListItemAvatar';
+import ListItemIcon from '@material-ui/core/ListItemIcon';
 import Checkbox from '@material-ui/core/Checkbox';
-import Avatar from '@material-ui/core/Avatar';
 import Alert from '@material-ui/lab/Alert/Alert';
+import { CenterFocusStrongOutlined } from '@material-ui/icons';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
@@ -32,7 +32,7 @@ const styles = (theme) => ({
 const groupMutationRelationAdd = graphql`
   mutation GroupEditionPermissionsMarkingDefinitionsRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: InternalRelationshipAddInput
   ) {
     groupEdit(id: $id) {
       relationAdd(input: $input) {
@@ -47,10 +47,11 @@ const groupMutationRelationAdd = graphql`
 const groupMutationRelationDelete = graphql`
   mutation GroupEditionPermissionsMarkingDefinitionsRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     groupEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...GroupEditionPermissions_group
       }
     }
@@ -65,10 +66,8 @@ class GroupEditionPermissionsComponent extends Component {
         variables: {
           id: this.props.group.id,
           input: {
-            fromRole: 'allowed',
             toId: markingDefinitionId,
-            toRole: 'allow',
-            through: 'permission',
+            relationship_type: 'accesses-to',
           },
         },
       });
@@ -77,7 +76,8 @@ class GroupEditionPermissionsComponent extends Component {
         mutation: groupMutationRelationDelete,
         variables: {
           id: this.props.group.id,
-          relationId: groupMarkingDefinition.relation,
+          toId: markingDefinitionId,
+          relationship_type: 'accesses-to',
         },
       });
     }
@@ -85,16 +85,12 @@ class GroupEditionPermissionsComponent extends Component {
 
   render() {
     const { classes, group, t } = this.props;
-    const groupMarkingDefinitions = pipe(
-      pathOr([], ['permissions', 'edges']),
-      map((n) => ({ id: n.node.id, relation: n.relation.id })),
-    )(group);
-
+    const groupMarkingDefinitions = group.allowed_marking || [];
     return (
       <div style={{ paddingTop: 15 }}>
         <Alert severity="warning" style={{ marginBottom: 10 }}>
           {t(
-            'Groups permissions on data marking is not fully implemented yet.',
+            'All users of this group will be able to view entities and relationships marked with checked marking definitions, including statements and special markings.',
           )}
         </Alert>
         <QueryRenderer
@@ -108,18 +104,16 @@ class GroupEditionPermissionsComponent extends Component {
                 map((n) => n.node),
               )(props);
               return (
-                <List dense={true} className={classes.root}>
+                <List className={classes.root}>
                   {markingDefinitions.map((markingDefinition) => {
                     const groupMarkingDefinition = find(
                       propEq('id', markingDefinition.id),
                     )(groupMarkingDefinitions);
                     return (
                       <ListItem key={markingDefinition.id} divider={true}>
-                        <ListItemAvatar>
-                          <Avatar className={classes.avatar}>
-                            {markingDefinition.definition.charAt(0)}
-                          </Avatar>
-                        </ListItemAvatar>
+                        <ListItemIcon color="primary">
+                          <CenterFocusStrongOutlined />
+                        </ListItemIcon>
                         <ListItemText primary={markingDefinition.definition} />
                         <ListItemSecondaryAction>
                           <Checkbox
@@ -159,17 +153,9 @@ const GroupEditionPermissions = createFragmentContainer(
     group: graphql`
       fragment GroupEditionPermissions_group on Group {
         id
-        permissions {
-          edges {
-            node {
-              id
-              definition
-              definition_type
-            }
-            relation {
-              id
-            }
-          }
+        default_assignation
+        allowed_marking {
+          id
         }
       }
     `,

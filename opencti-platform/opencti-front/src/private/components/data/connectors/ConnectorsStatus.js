@@ -1,7 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  ascend, compose, descend, prop, sortWith,
+  ascend,
+  compose,
+  descend,
+  prop,
+  sortWith,
+  map,
+  assoc,
+  filter,
+  propOr,
 } from 'ramda';
 import { interval } from 'rxjs';
 import graphql from 'babel-plugin-relay/macro';
@@ -16,14 +24,18 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import List from '@material-ui/core/List';
-import Chip from '@material-ui/core/Chip';
 import Tooltip from '@material-ui/core/Tooltip';
-import { RotateLeft, Delete } from 'mdi-material-ui';
+import { LayersRemove, Delete } from 'mdi-material-ui';
 import IconButton from '@material-ui/core/IconButton';
+import { Link, withRouter } from 'react-router-dom';
 import { FIVE_SECONDS } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import Security, { MODULES_MODMANAGE } from '../../../../utils/Security';
+import {
+  connectorDeletionMutation,
+  connectorResetStateMutation,
+} from './Connector';
 
 const interval$ = interval(FIVE_SECONDS);
 
@@ -39,7 +51,6 @@ const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   bodyItem: {
     height: '100%',
@@ -50,8 +61,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   inputLabel: {
     float: 'left',
@@ -62,12 +72,6 @@ const styles = (theme) => ({
   },
   icon: {
     color: theme.palette.primary.main,
-  },
-  chip: {
-    fontSize: 12,
-    height: 20,
-    float: 'left',
-    marginRight: 7,
   },
 });
 
@@ -80,19 +84,19 @@ const inlineStylesHeaders = {
   },
   name: {
     float: 'left',
-    width: '20%',
+    width: '35%',
     fontSize: 12,
     fontWeight: '700',
   },
   connector_type: {
     float: 'left',
-    width: '15%',
+    width: '25%',
     fontSize: 12,
     fontWeight: '700',
   },
-  connector_scope: {
+  messages: {
     float: 'left',
-    width: '45%',
+    width: '10%',
     fontSize: 12,
     fontWeight: '700',
   },
@@ -106,7 +110,7 @@ const inlineStylesHeaders = {
 const inlineStyles = {
   name: {
     float: 'left',
-    width: '20%',
+    width: '35%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -114,15 +118,15 @@ const inlineStyles = {
   },
   connector_type: {
     float: 'left',
-    width: '15%',
+    width: '25%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  connector_scope: {
+  messages: {
     float: 'left',
-    width: '45%',
+    width: '10%',
     height: 20,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
@@ -136,20 +140,6 @@ const inlineStyles = {
     textOverflow: 'ellipsis',
   },
 };
-
-const connectorsStatusResetStateMutation = graphql`
-  mutation ConnectorsStatusResetStateMutation($id: ID!) {
-    resetStateConnector(id: $id) {
-      id
-    }
-  }
-`;
-
-const connectorsStatusDeletionMutation = graphql`
-  mutation ConnectorsStatusDeletionMutation($id: ID!) {
-    deleteConnector(id: $id)
-  }
-`;
 
 class ConnectorsStatusComponent extends Component {
   constructor(props) {
@@ -167,9 +157,10 @@ class ConnectorsStatusComponent extends Component {
     this.subscription.unsubscribe();
   }
 
+  // eslint-disable-next-line class-methods-use-this
   handleResetState(connectorId) {
     commitMutation({
-      mutation: connectorsStatusResetStateMutation,
+      mutation: connectorResetStateMutation,
       variables: {
         id: connectorId,
       },
@@ -181,12 +172,13 @@ class ConnectorsStatusComponent extends Component {
 
   handleDelete(connectorId) {
     commitMutation({
-      mutation: connectorsStatusDeletionMutation,
+      mutation: connectorDeletionMutation,
       variables: {
         id: connectorId,
       },
       onCompleted: () => {
         MESSAGING$.notifySuccess('The connector has been cleared');
+        this.props.history.push('/dashboard/data/connectors');
       },
     });
   }
@@ -222,26 +214,41 @@ class ConnectorsStatusComponent extends Component {
 
   render() {
     const {
-      classes, t, nsdt, data,
+      classes, t, n, nsdt, data,
     } = this.props;
+    const { queues } = data.rabbitMQMetrics;
+    const connectors = map(
+      (i) => assoc(
+        'messages',
+        propOr(
+          0,
+          'messages',
+          filter(
+            (o) => o.name
+                === (i.connector_type === 'INTERNAL_ENRICHMENT'
+                  ? `listen_${i.id}`
+                  : `push_${i.id}`),
+            queues,
+          )[0],
+        ),
+        i,
+      ),
+      data.connectors,
+    );
     const sort = sortWith(
       this.state.orderAsc
         ? [ascend(prop(this.state.sortBy))]
         : [descend(prop(this.state.sortBy))],
     );
-    const sortedConnectors = sort(data.connectors);
+    const sortedConnectors = sort(connectors);
     return (
-      <Card
-        raised={true}
-        classes={{ root: classes.card }}
-        style={{ maxHeight: '100vh', height: '100%' }}
-      >
+      <Card>
         <CardHeader
           avatar={<Extension className={classes.icon} />}
           title={t('Registered connectors')}
           style={{ paddingBottom: 0 }}
         />
-        <CardContent style={{ paddingTop: 0, height: '100%' }}>
+        <CardContent style={{ paddingTop: 0 }}>
           <List classes={{ root: classes.linesContainer }}>
             <ListItem
               classes={{ root: classes.itemHead }}
@@ -264,7 +271,7 @@ class ConnectorsStatusComponent extends Component {
                   <div>
                     {this.SortHeader('name', 'Name', true)}
                     {this.SortHeader('connector_type', 'Type', true)}
-                    {this.SortHeader('connector_scope', 'Scope', true)}
+                    {this.SortHeader('messages', 'Messages', true)}
                     {this.SortHeader('updated_at', 'Modified', true)}
                   </div>
                 }
@@ -277,6 +284,8 @@ class ConnectorsStatusComponent extends Component {
                 classes={{ root: classes.item }}
                 divider={true}
                 button={true}
+                component={Link}
+                to={`/dashboard/data/connectors/${connector.id}`}
               >
                 <ListItemIcon
                   style={{ color: connector.active ? '#4caf50' : '#f44336' }}
@@ -296,19 +305,17 @@ class ConnectorsStatusComponent extends Component {
                         className={classes.bodyItem}
                         style={inlineStyles.connector_type}
                       >
-                        {connector.connector_type}
+                        {connector.connector_type === 'INTERNAL_ENRICHMENT'
+                          ? `${t(connector.connector_type)} (${t('auto:')} ${t(
+                            connector.auto.toString(),
+                          )})`
+                          : t(connector.connector_type)}
                       </div>
                       <div
                         className={classes.bodyItem}
-                        style={inlineStyles.connector_scope}
+                        style={inlineStyles.messages}
                       >
-                        {connector.connector_scope.map((scope) => (
-                          <Chip
-                            key={scope}
-                            classes={{ root: classes.chip }}
-                            label={scope}
-                          />
-                        ))}
+                        {n(connector.messages)}
                       </div>
                       <div
                         className={classes.bodyItem}
@@ -327,7 +334,7 @@ class ConnectorsStatusComponent extends Component {
                         aria-haspopup="true"
                         color="primary"
                       >
-                        <RotateLeft />
+                        <LayersRemove />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title={t('Clear this connector')}>
@@ -354,8 +361,10 @@ class ConnectorsStatusComponent extends Component {
 ConnectorsStatusComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
+  n: PropTypes.func,
   nsdt: PropTypes.func,
   data: PropTypes.object,
+  history: PropTypes.object,
 };
 
 export const connectorsStatusQuery = graphql`
@@ -373,9 +382,32 @@ const ConnectorsStatus = createRefetchContainer(
           id
           name
           active
+          auto
           connector_type
           connector_scope
           updated_at
+          config {
+            listen
+            listen_exchange
+            push
+            push_exchange
+          }
+        }
+        rabbitMQMetrics {
+          queues {
+            name
+            messages
+            messages_ready
+            messages_unacknowledged
+            consumers
+            idle_since
+            message_stats {
+              ack
+              ack_details {
+                rate
+              }
+            }
+          }
         }
       }
     `,
@@ -383,4 +415,8 @@ const ConnectorsStatus = createRefetchContainer(
   connectorsStatusQuery,
 );
 
-export default compose(inject18n, withStyles(styles))(ConnectorsStatus);
+export default compose(
+  inject18n,
+  withRouter,
+  withStyles(styles),
+)(ConnectorsStatus);

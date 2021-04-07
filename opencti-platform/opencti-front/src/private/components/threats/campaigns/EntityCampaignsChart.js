@@ -2,12 +2,14 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
-import LineChart from 'recharts/lib/chart/LineChart';
-import ResponsiveContainer from 'recharts/lib/component/ResponsiveContainer';
-import CartesianGrid from 'recharts/lib/cartesian/CartesianGrid';
-import Line from 'recharts/lib/cartesian/Line';
-import XAxis from 'recharts/lib/cartesian/XAxis';
-import YAxis from 'recharts/lib/cartesian/YAxis';
+import {
+  LineChart,
+  ResponsiveContainer,
+  CartesianGrid,
+  Line,
+  XAxis,
+  YAxis,
+} from 'recharts';
 import { withStyles } from '@material-ui/core/styles';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
@@ -17,13 +19,13 @@ import IconButton from '@material-ui/core/IconButton';
 import { SettingsInputComponent } from '@material-ui/icons';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
-import Theme from '../../../../components/Theme';
+import Theme from '../../../../components/ThemeDark';
 import inject18n from '../../../../components/i18n';
 import Security, { EXPLORE_EXUPDATE } from '../../../../utils/Security';
 
 const styles = () => ({
   paper: {
-    minHeight: 300,
+    minHeight: 280,
     height: '100%',
     margin: '4px 0 0 0',
     padding: 0,
@@ -54,8 +56,7 @@ const entityCampaignsChartCampaignsTimeSeriesQuery = graphql`
     $startDate: DateTime!
     $endDate: DateTime!
     $interval: String!
-    $inferred: Boolean
-    $relationType: String!
+    $relationship_type: String!
   ) {
     campaignsTimeSeries(
       objectId: $objectId
@@ -64,8 +65,7 @@ const entityCampaignsChartCampaignsTimeSeriesQuery = graphql`
       startDate: $startDate
       endDate: $endDate
       interval: $interval
-      inferred: $inferred
-      relationType: $relationType
+      relationship_type: $relationship_type
     ) {
       date
       value
@@ -99,7 +99,12 @@ class EntityCampaignsChart extends Component {
 
   renderContent() {
     const {
-      t, md, entityId, relationType, variant, inferred,
+      t,
+      md,
+      entityId,
+      // eslint-disable-next-line camelcase
+      relationship_type,
+      variant,
     } = this.props;
     const campaignsTimeSeriesVariables = {
       objectId: entityId,
@@ -108,8 +113,8 @@ class EntityCampaignsChart extends Component {
       startDate: monthsAgo(this.state.period),
       endDate: now(),
       interval: 'month',
-      relationType: relationType || 'targets',
-      inferred,
+      // eslint-disable-next-line camelcase
+      relationship_type: relationship_type || 'targets',
     };
     return (
       <QueryRenderer
@@ -119,7 +124,7 @@ class EntityCampaignsChart extends Component {
           if (props && props.campaignsTimeSeries) {
             return (
               <ResponsiveContainer
-                height={variant === 'explore' ? '90%' : 330}
+                height={variant === 'explore' ? '90%' : 280}
                 width="100%"
               >
                 <LineChart
@@ -127,7 +132,7 @@ class EntityCampaignsChart extends Component {
                   margin={{
                     top: 20,
                     right: 50,
-                    bottom: 20,
+                    bottom: 0,
                     left: -10,
                   }}
                 >
@@ -203,11 +208,13 @@ class EntityCampaignsChart extends Component {
             {title || t('Campaigns')}
           </Typography>
           <Security needs={[EXPLORE_EXUPDATE]}>
-            <IconButton color="secondary"
+            <IconButton
+              color="secondary"
               aria-label="Update"
               size="small"
               classes={{ root: classes.updateButton }}
-              onClick={handleOpenConfig.bind(this, configuration)}>
+              onClick={handleOpenConfig.bind(this, configuration)}
+            >
               <SettingsInputComponent fontSize="inherit" />
             </IconButton>
           </Security>
@@ -268,8 +275,7 @@ EntityCampaignsChart.propTypes = {
   md: PropTypes.func,
   configuration: PropTypes.object,
   handleOpenConfig: PropTypes.func,
-  inferred: PropTypes.bool,
-  relationType: PropTypes.string,
+  relationship_type: PropTypes.string,
 };
 
 export default compose(inject18n, withStyles(styles))(EntityCampaignsChart);

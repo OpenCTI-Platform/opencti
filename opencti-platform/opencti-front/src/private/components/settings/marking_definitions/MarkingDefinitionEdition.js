@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Form, Formik } from 'formik';
+import { Form, Formik, Field } from 'formik';
 import { compose, pick } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
@@ -13,7 +13,6 @@ import inject18n from '../../../../components/i18n';
 import {
   commitMutation,
   requestSubscription,
-  WS_ACTIVATED,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
@@ -89,8 +88,8 @@ const markingDefinitionEditionFocus = graphql`
 const markingDefinitionValidation = (t) => Yup.object().shape({
   definition_type: Yup.string().required(t('This field is required')),
   definition: Yup.string().required(t('This field is required')),
-  color: Yup.string().required(t('This field is required')),
-  level: Yup.number()
+  x_opencti_color: Yup.string().required(t('This field is required')),
+  x_opencti_order: Yup.number()
     .typeError(t('The value must be a number'))
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
@@ -110,17 +109,15 @@ class MarkingDefinitionEditionContainer extends Component {
   }
 
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: markingDefinitionEditionFocus,
-        variables: {
-          id: this.props.markingDefinition.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: markingDefinitionEditionFocus,
+      variables: {
+        id: this.props.markingDefinition.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
@@ -144,7 +141,7 @@ class MarkingDefinitionEditionContainer extends Component {
     } = this.props;
     const { editContext } = markingDefinition;
     const initialValues = pick(
-      ['definition_type', 'definition', 'color', 'level'],
+      ['definition_type', 'definition', 'x_opencti_color', 'x_opencti_order'],
       markingDefinition,
     );
     return (
@@ -171,7 +168,8 @@ class MarkingDefinitionEditionContainer extends Component {
           >
             {() => (
               <Form style={{ margin: '20px 0 20px 0' }}>
-                <TextField
+                <Field
+                  component={TextField}
                   name="definition_type"
                   label={t('Type')}
                   fullWidth={true}
@@ -184,7 +182,8 @@ class MarkingDefinitionEditionContainer extends Component {
                     />
                   }
                 />
-                <TextField
+                <Field
+                  component={TextField}
                   name="definition"
                   label={t('Definition')}
                   fullWidth={true}
@@ -198,8 +197,9 @@ class MarkingDefinitionEditionContainer extends Component {
                     />
                   }
                 />
-                <ColorPickerField
-                  name="color"
+                <Field
+                  component={ColorPickerField}
+                  name="x_opencti_color"
                   label={t('Color')}
                   fullWidth={true}
                   style={{ marginTop: 20 }}
@@ -208,13 +208,14 @@ class MarkingDefinitionEditionContainer extends Component {
                   helperText={
                     <SubscriptionFocus
                       context={editContext}
-                      fieldName="color"
+                      fieldName="x_opencti_color"
                     />
                   }
                 />
-                <TextField
-                  name="level"
-                  label={t('Level')}
+                <Field
+                  component={TextField}
+                  name="x_opencti_order"
+                  label={t('Order')}
                   fullWidth={true}
                   type="number"
                   style={{ marginTop: 20 }}
@@ -223,7 +224,7 @@ class MarkingDefinitionEditionContainer extends Component {
                   helperText={
                     <SubscriptionFocus
                       context={editContext}
-                      fieldName="level"
+                      fieldName="x_opencti_order"
                     />
                   }
                 />
@@ -252,8 +253,8 @@ const MarkingDefinitionEditionFragment = createFragmentContainer(
         id
         definition_type
         definition
-        color
-        level
+        x_opencti_color
+        x_opencti_order
         editContext {
           name
           focusOn

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -18,9 +18,11 @@ import * as Yup from 'yup';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import { commitMutation } from '../../../../relay/environment';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -55,6 +57,7 @@ const intrusionSetMutationFieldPatch = graphql`
     intrusionSetEdit(id: $id) {
       fieldPatch(input: $input) {
         ...IntrusionSetEditionOverview_intrusionSet
+        ...IntrusionSet_intrusionSet
       }
     }
   }
@@ -76,7 +79,7 @@ export const intrusionSetEditionOverviewFocus = graphql`
 const intrusionSetMutationRelationAdd = graphql`
   mutation IntrusionSetEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     intrusionSetEdit(id: $id) {
       relationAdd(input: $input) {
@@ -91,10 +94,11 @@ const intrusionSetMutationRelationAdd = graphql`
 const intrusionSetMutationRelationDelete = graphql`
   mutation IntrusionSetEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     intrusionSetEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...IntrusionSetEditionOverview_intrusionSet
       }
     }
@@ -103,6 +107,7 @@ const intrusionSetMutationRelationDelete = graphql`
 
 const intrusionSetValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  confidence: Yup.number(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -111,17 +116,15 @@ const intrusionSetValidation = (t) => Yup.object().shape({
 
 class IntrusionSetEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: intrusionSetEditionOverviewFocus,
-        variables: {
-          id: this.props.intrusionSet.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: intrusionSetEditionOverviewFocus,
+      variables: {
+        id: this.props.intrusionSet.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
@@ -139,33 +142,31 @@ class IntrusionSetEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { intrusionSet } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], intrusionSet),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], intrusionSet),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], intrusionSet),
+      value: pathOr(null, ['createdBy', 'id'], intrusionSet),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: intrusionSetMutationRelationAdd,
         variables: {
           id: this.props.intrusionSet.id,
           input: {
-            fromRole: 'so',
             toId: value.value,
-            toRole: 'creator',
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: intrusionSetMutationRelationDelete,
         variables: {
           id: this.props.intrusionSet.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -174,10 +175,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
           variables: {
             id: this.props.intrusionSet.id,
             input: {
-              fromRole: 'so',
               toId: value.value,
-              toRole: 'creator',
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -185,14 +184,13 @@ class IntrusionSetEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { intrusionSet } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(intrusionSet);
     const added = difference(values, currentMarkingDefinitions);
@@ -204,10 +202,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
         variables: {
           id: this.props.intrusionSet.id,
           input: {
-            fromRole: 'so',
             toId: head(added).value,
-            toRole: 'marking',
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -218,7 +214,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
         mutation: intrusionSetMutationRelationDelete,
         variables: {
           id: this.props.intrusionSet.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -226,16 +223,11 @@ class IntrusionSetEditionOverviewComponent extends Component {
 
   render() {
     const { t, intrusionSet, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], intrusionSet) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], intrusionSet),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], intrusionSet),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          intrusionSet,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], intrusionSet),
+        value: pathOr(null, ['createdBy', 'id'], intrusionSet),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
@@ -245,24 +237,24 @@ class IntrusionSetEditionOverviewComponent extends Component {
         relationId: n.relation.id,
       })),
     )(intrusionSet);
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(intrusionSet);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
       pick([
         'name',
+        'confidence',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(intrusionSet);
     return (
@@ -274,7 +266,8 @@ class IntrusionSetEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -284,7 +277,18 @@ class IntrusionSetEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
-            <TextField
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              editContext={context}
+              variant="edit"
+            />
+            <Field
+              component={MarkDownField}
               name="description"
               label={t('Description')}
               fullWidth={true}
@@ -297,25 +301,25 @@ class IntrusionSetEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -339,26 +343,21 @@ const IntrusionSetEditionOverview = createFragmentContainer(
       fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
         id
         name
+        confidence
         description
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

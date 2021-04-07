@@ -3,32 +3,60 @@ import {
   connectors,
   connectorsForExport,
   connectorsForImport,
+  loadConnectorById,
   pingConnector,
   registerConnector,
-  resetStateConnector
+  resetStateConnector,
 } from '../domain/connector';
-import { computeWorkStatus, connectorForWork, deleteWork, initiateJob, jobsForWork, updateJob } from '../domain/work';
+import {
+  connectorForWork,
+  createWork,
+  deleteWork,
+  reportActionImport,
+  updateProcessedTime,
+  updateReceivedTime,
+  worksForConnector,
+  findAll,
+} from '../domain/work';
+import { findById as findUserById } from '../domain/user';
+import { redisGetWork, redisUpdateActionExpectation } from '../database/redis';
+import { now } from '../utils/format';
 
 const connectorResolvers = {
   Query: {
-    connectors: () => connectors(),
-    connectorsForExport: () => connectorsForExport(),
-    connectorsForImport: () => connectorsForImport()
+    connector: (_, { id }, { user }) => loadConnectorById(user, id),
+    connectors: (_, __, { user }) => connectors(user),
+    connectorsForExport: (_, __, { user }) => connectorsForExport(user),
+    connectorsForImport: (_, __, { user }) => connectorsForImport(user),
+    works: (_, args, { user }) => findAll(user, args),
+  },
+  Connector: {
+    connector_user: (connector, _, { user }) => findUserById(user, connector.connector_user_id),
+    works: (connector, args, { user }) => worksForConnector(connector.id, user, args),
   },
   Work: {
-    jobs: work => jobsForWork(work.id),
-    status: work => computeWorkStatus(work.id),
-    connector: work => connectorForWork(work.id)
+    connector: (work, _, { user }) => connectorForWork(user, work.id),
+    user: (work, _, { user }) => findUserById(user, work.user_id),
+    tracking: (work) => redisGetWork(work.id),
   },
   Mutation: {
-    deleteConnector: (_, { id }) => connectorDelete(id),
-    registerConnector: (_, { input }) => registerConnector(input),
-    resetStateConnector: (_, { id }) => resetStateConnector(id),
-    pingConnector: (_, { id, state }) => pingConnector(id, state),
-    initiateJob: (_, { workId }) => initiateJob(workId),
-    updateJob: (_, { jobId, status, messages }) => updateJob(jobId, status, messages),
-    deleteWork: (_, { id }) => deleteWork(id)
-  }
+    deleteConnector: (_, { id }, { user }) => connectorDelete(user, id),
+    registerConnector: (_, { input }, { user }) => registerConnector(user, input),
+    resetStateConnector: (_, { id }, { user }) => resetStateConnector(user, id),
+    pingConnector: (_, { id, state }, { user }) => pingConnector(user, id, state),
+    // Work part
+    workAdd: async (_, { connectorId, friendlyName }, { user }) => {
+      const connector = await loadConnectorById(user, connectorId);
+      return createWork(user, connector, friendlyName, connector.id, { receivedTime: now() });
+    },
+    workEdit: (_, { id }, { user }) => ({
+      delete: () => deleteWork(user, id),
+      reportExpectation: ({ error }) => reportActionImport(user, id, error),
+      addExpectations: ({ expectations }) => redisUpdateActionExpectation(user, id, expectations),
+      toReceived: ({ message }) => updateReceivedTime(user, id, message),
+      toProcessed: ({ message, inError }) => updateProcessedTime(user, id, message, inError),
+    }),
+  },
 };
 
 export default connectorResolvers;

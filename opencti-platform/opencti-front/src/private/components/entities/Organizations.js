@@ -1,20 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  assoc,
-  compose,
-  dissoc,
-  head,
-  last,
-  map,
-  pipe,
-  propOr,
-  toPairs,
+  assoc, compose, dissoc, propOr, uniqBy, prop,
 } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../relay/environment';
 import {
   buildViewParamsFromUrlAndStorage,
+  convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
 import inject18n from '../../../components/i18n';
@@ -31,14 +24,14 @@ class Organizations extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'Organizations-view',
+      'view-organizations',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
       orderAsc: propOr(true, 'orderAsc', params),
       searchTerm: propOr('', 'searchTerm', params),
       view: propOr('lines', 'view', params),
-      filters: {},
+      filters: propOr({}, 'filters', params),
       openExports: false,
       numberOfElements: { number: 0, symbol: '' },
     };
@@ -48,8 +41,8 @@ class Organizations extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'Organizations-view',
-      dissoc('filters', this.state),
+      'view-organizations',
+      this.state,
     );
   }
 
@@ -65,16 +58,34 @@ class Organizations extends Component {
     this.setState({ openExports: !this.state.openExports });
   }
 
-  handleAddFilter(key, id, value, event) {
-    event.stopPropagation();
-    event.preventDefault();
-    this.setState({
-      filters: assoc(key, [{ id, value }], this.state.filters),
-    });
+  handleAddFilter(key, id, value, event = null) {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    if (this.state.filters[key] && this.state.filters[key].length > 0) {
+      this.setState(
+        {
+          filters: assoc(
+            key,
+            uniqBy(prop('id'), [{ id, value }, ...this.state.filters[key]]),
+            this.state.filters,
+          ),
+        },
+        () => this.saveView(),
+      );
+    } else {
+      this.setState(
+        {
+          filters: assoc(key, [{ id, value }], this.state.filters),
+        },
+        () => this.saveView(),
+      );
+    }
   }
 
   handleRemoveFilter(key) {
-    this.setState({ filters: dissoc(key, this.state.filters) });
+    this.setState({ filters: dissoc(key, this.state.filters) }, () => this.saveView());
   }
 
   setNumberOfElements(numberOfElements) {
@@ -96,15 +107,15 @@ class Organizations extends Component {
         width: '23%',
         isSortable: true,
       },
-      organization_class: {
+      x_opencti_organization_type: {
         label: 'Type',
         width: '15%',
         isSortable: true,
       },
-      tags: {
-        label: 'Tags',
+      objectLabel: {
+        label: 'Labels',
         width: '23%',
-        isSortable: true,
+        isSortable: false,
       },
       created: {
         label: 'Creation date',
@@ -124,6 +135,7 @@ class Organizations extends Component {
         dataColumns={dataColumns}
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
+        handleAddFilter={this.handleAddFilter.bind(this)}
         handleRemoveFilter={this.handleRemoveFilter.bind(this)}
         handleToggleExports={this.handleToggleExports.bind(this)}
         openExports={openExports}
@@ -132,6 +144,14 @@ class Organizations extends Component {
         filters={filters}
         paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'x_opencti_organization_type',
+          'labelledBy',
+          'markedBy',
+          'created_start_date',
+          'created_end_date',
+          'createdBy',
+        ]}
       >
         <QueryRenderer
           query={organizationsLinesQuery}
@@ -142,7 +162,7 @@ class Organizations extends Component {
               paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               initialLoading={props === null}
-              onTagClick={this.handleAddFilter.bind(this)}
+              onLabelClick={this.handleAddFilter.bind(this)}
               setNumberOfElements={this.setNumberOfElements.bind(this)}
             />
           )}
@@ -155,19 +175,12 @@ class Organizations extends Component {
     const {
       view, sortBy, orderAsc, searchTerm, filters,
     } = this.state;
-    const buildQueryFilters = pipe(
-      toPairs,
-      map((pair) => {
-        const values = last(pair);
-        const valIds = map((v) => v.id, values);
-        return { key: head(pair), values: valIds };
-      }),
-    )(filters);
+    const finalFilters = convertFilters(filters);
     const paginationOptions = {
       search: searchTerm,
       orderBy: sortBy,
       orderMode: orderAsc ? 'asc' : 'desc',
-      filters: buildQueryFilters,
+      filters: finalFilters,
     };
     return (
       <div>

@@ -5,10 +5,20 @@ import graphql from 'babel-plugin-relay/macro';
 import { pathOr } from 'ramda';
 import ListLinesContent from '../../../components/list_lines/ListLinesContent';
 import { WorkspaceLine, WorkspaceLineDummy } from './WorkspaceLine';
+import { setNumberOfElements } from '../../../utils/Number';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class WorkspacesLines extends Component {
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'workspaces',
+      this.props.setNumberOfElements.bind(this),
+    );
+  }
+
   render() {
     const {
       initialLoading,
@@ -44,8 +54,9 @@ WorkspacesLines.propTypes = {
   dataColumns: PropTypes.object.isRequired,
   data: PropTypes.object,
   relay: PropTypes.object,
-  workspaces: PropTypes.object,
   initialLoading: PropTypes.bool,
+  onLabelClick: PropTypes.func,
+  setNumberOfElements: PropTypes.func,
 };
 
 export const workspacesLinesQuery = graphql`
@@ -74,14 +85,14 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment WorkspacesLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "WorkspacesOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-          filters: { type: "[WorkspacesFiltering]" }
-        ) {
+      @argumentDefinitions(
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "WorkspacesOrdering", defaultValue: name }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[WorkspacesFiltering]" }
+      ) {
         workspaces(
           search: $search
           first: $count
@@ -92,6 +103,7 @@ export default createPaginationContainer(
         ) @connection(key: "Pagination_workspaces") {
           edges {
             node {
+              id
               ...WorkspaceLine_node
             }
           }
@@ -117,8 +129,6 @@ export default createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
-        workspaceType: fragmentVariables.workspaceType,
-        search: fragmentVariables.search,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,

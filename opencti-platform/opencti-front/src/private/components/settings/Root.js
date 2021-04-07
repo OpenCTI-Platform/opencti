@@ -1,24 +1,20 @@
 import React from 'react';
 import { Switch, Redirect } from 'react-router-dom';
 import Settings from './Settings';
-import Inferences from './Inferences';
 import Users from './Users';
+import RootUser from './users/Root';
 import Groups from './Groups';
 import Roles from './Roles';
+import Sessions from './Sessions';
 import MarkingDefinitions from './MarkingDefinitions';
 import KillChainPhases from './KillChainPhases';
 import Attributes from './Attributes';
-import Tags from './Tags';
+import Labels from './Labels';
 import { BoundaryRoute } from '../Error';
 
 const Root = () => (
   <Switch>
     <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
-    <BoundaryRoute
-      exact
-      path="/dashboard/settings/inferences"
-      component={Inferences}
-    />
     <BoundaryRoute
       exact
       path="/dashboard/settings/accesses"
@@ -30,6 +26,10 @@ const Root = () => (
       component={Users}
     />
     <BoundaryRoute
+      path="/dashboard/settings/accesses/users/:userId"
+      render={(routeProps) => <RootUser {...routeProps} />}
+    />
+    <BoundaryRoute
       exact
       path="/dashboard/settings/accesses/roles"
       component={Roles}
@@ -38,6 +38,11 @@ const Root = () => (
       exact
       path="/dashboard/settings/accesses/groups"
       component={Groups}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/settings/accesses/sessions"
+      component={Sessions}
     />
     <BoundaryRoute
       exact
@@ -52,16 +57,16 @@ const Root = () => (
     <BoundaryRoute
       exact
       path="/dashboard/settings/attributes"
-      render={() => <Redirect to="/dashboard/settings/attributes/tags" />}
+      render={() => <Redirect to="/dashboard/settings/attributes/labels" />}
     />
     <BoundaryRoute
       exact
-      path="/dashboard/settings/attributes/tags"
-      component={Tags}
+      path="/dashboard/settings/attributes/labels"
+      component={Labels}
     />
     <BoundaryRoute
       exact
-      path="/dashboard/settings/attributes/:attributeLabel"
+      path="/dashboard/settings/attributes/:attributeKey"
       component={Attributes}
     />
   </Switch>

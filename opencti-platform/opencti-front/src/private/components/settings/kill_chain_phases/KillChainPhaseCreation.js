@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import Drawer from '@material-ui/core/Drawer';
 import Typography from '@material-ui/core/Typography';
@@ -98,7 +98,7 @@ class KillChainPhaseCreation extends Component {
 
   onSubmit(values, { setSubmitting, resetForm }) {
     const finalValues = pipe(
-      assoc('phase_order', parseInt(values.phase_order, 10)),
+      assoc('x_opencti_order', parseInt(values.x_opencti_order, 10)),
     )(values);
     commitMutation({
       mutation: killChainPhaseMutation,
@@ -164,7 +164,7 @@ class KillChainPhaseCreation extends Component {
               initialValues={{
                 kill_chain_name: '',
                 phase_name: '',
-                phase_order: '',
+                x_opencti_order: '',
               }}
               validationSchema={killChainPhaseValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -172,19 +172,22 @@ class KillChainPhaseCreation extends Component {
             >
               {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="kill_chain_name"
                     label={t('Kill chain name')}
                     fullWidth={true}
                   />
-                  <TextField
+                  <Field
+                    component={TextField}
                     name="phase_name"
                     label={t('Phase name')}
                     fullWidth={true}
                     style={{ marginTop: 20 }}
                   />
-                  <TextField
-                    name="phase_order"
+                  <Field
+                    component={TextField}
+                    name="x_opencti_order"
                     label={t('Order')}
                     fullWidth={true}
                     type="number"

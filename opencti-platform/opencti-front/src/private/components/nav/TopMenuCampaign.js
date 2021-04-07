@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { ChessKnight } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
@@ -60,7 +60,10 @@ class TopMenuCampaign extends Component {
           <ChessKnight className={classes.icon} fontSize="small" />
           {t('Campaigns')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/threats/campaigns/${campaignId}`}
@@ -103,23 +106,23 @@ class TopMenuCampaign extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/campaigns/${campaignId}/reports`}
+          to={`/dashboard/threats/campaigns/${campaignId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/reports`
+            === `/dashboard/threats/campaigns/${campaignId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/campaigns/${campaignId}/reports`
+            === `/dashboard/threats/campaigns/${campaignId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}
@@ -165,6 +168,26 @@ class TopMenuCampaign extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/campaigns/${campaignId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/campaigns/${campaignId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

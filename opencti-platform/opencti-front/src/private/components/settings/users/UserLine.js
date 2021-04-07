@@ -6,17 +6,19 @@ import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
-import { MoreVert, Person, PermIdentity } from '@material-ui/icons';
+import {
+  PersonOutlined,
+  PermIdentityOutlined,
+  KeyboardArrowRightOutlined,
+} from '@material-ui/icons';
 import { compose } from 'ramda';
+import { Link } from 'react-router-dom';
 import inject18n from '../../../../components/i18n';
-import UserPopover from './UserPopover';
 
 const styles = (theme) => ({
   item: {
     paddingLeft: 10,
     height: 50,
-    cursor: 'default',
   },
   itemIcon: {
     color: theme.palette.primary.main,
@@ -31,8 +33,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -47,13 +48,19 @@ const styles = (theme) => ({
 class UserLineComponent extends Component {
   render() {
     const {
-      fd, classes, dataColumns, node, paginationOptions,
+      fd, classes, dataColumns, node,
     } = this.props;
     const external = node.external === true;
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component={Link}
+        to={`/dashboard/settings/accesses/users/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          {external ? <PermIdentity /> : <Person />}
+          {external ? <PermIdentityOutlined /> : <PersonOutlined />}
         </ListItemIcon>
         <ListItemText
           primary={
@@ -84,16 +91,16 @@ class UserLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
-                {fd(node.created)}
+                {fd(node.created_at)}
               </div>
             </div>
           }
         />
-        <ListItemSecondaryAction>
-          <UserPopover userId={node.id} paginationOptions={paginationOptions} />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }
@@ -117,7 +124,7 @@ const UserLineFragment = createFragmentContainer(UserLineComponent, {
       firstname
       external
       lastname
-      created
+      created_at
     }
   `,
 });
@@ -133,7 +140,7 @@ class UserLineDummyComponent extends Component {
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
         <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-          <Person />
+          <PersonOutlined />
         </ListItemIcon>
         <ListItemText
           primary={
@@ -164,16 +171,16 @@ class UserLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.created.width }}
+                style={{ width: dataColumns.created_at.width }}
               >
                 <div className="fakeItem" style={{ width: 140 }} />
               </div>
             </div>
           }
         />
-        <ListItemSecondaryAction classes={{ root: classes.itemIconDisabled }}>
-          <MoreVert />
-        </ListItemSecondaryAction>
+        <ListItemIcon classes={{ root: classes.goIcon }}>
+          <KeyboardArrowRightOutlined />
+        </ListItemIcon>
       </ListItem>
     );
   }

@@ -8,10 +8,6 @@ import IntrusionSets from './IntrusionSets';
 import RootIntrusionSet from './intrusion_sets/Root';
 import Campaigns from './Campaigns';
 import RootCampaign from './campaigns/Root';
-import Incidents from './Incidents';
-import RootIncident from './incidents/Root';
-import Malwares from './Malwares';
-import RootMalware from './malwares/Root';
 
 class Root extends Component {
   render() {
@@ -49,24 +45,6 @@ class Root extends Component {
         <BoundaryRoute
           path="/dashboard/threats/campaigns/:campaignId"
           render={(routeProps) => <RootCampaign {...routeProps} me={me} />}
-        />
-        <BoundaryRoute
-          exact
-          path="/dashboard/threats/incidents"
-          component={Incidents}
-        />
-        <BoundaryRoute
-          path="/dashboard/threats/incidents/:incidentId"
-          render={(routeProps) => <RootIncident {...routeProps} me={me} />}
-        />
-        <BoundaryRoute
-          exact
-          path="/dashboard/threats/malwares"
-          component={Malwares}
-        />
-        <BoundaryRoute
-          path="/dashboard/threats/malwares/:malwareId"
-          render={(routeProps) => <RootMalware {...routeProps} me={me} />}
         />
       </Switch>
     );

@@ -6,44 +6,52 @@ import { withStyles } from '@material-ui/core/styles';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import IconButton from '@material-ui/core/IconButton';
-import { AccountCircle } from '@material-ui/icons';
-import { UploadNetworkOutline } from 'mdi-material-ui';
+import {
+  AccountCircleOutlined,
+  ExploreOutlined,
+  InsertChartOutlined,
+} from '@material-ui/icons';
+import { UploadOutline } from 'mdi-material-ui';
 import Menu from '@material-ui/core/Menu';
+import Divider from '@material-ui/core/Divider';
 import MenuItem from '@material-ui/core/MenuItem';
 import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
-import logo from '../../../resources/images/logo.png';
+import logo from '../../../resources/images/logo_text.png';
 import inject18n from '../../../components/i18n';
 import SearchInput from '../../../components/SearchInput';
 import TopMenuDashboard from './TopMenuDashboard';
 import TopMenuSearch from './TopMenuSearch';
-import TopMenuExplore from './TopMenuExplore';
-import TopMenuExploreWorkspace from './TopMenuExploreWorkspace';
-import TopMenuInvestigate from './TopMenuInvestigate';
-import TopMenuInvestigateWorkspace from './TopMenuInvestigateWorkspace';
-import TopMenuKnowledge from './TopMenuThreats';
+import TopMenuAnalysis from './TopMenuAnalysis';
+import TopMenuReport from './TopMenuReport';
+import TopMenuNote from './TopMenuNote';
+import TopMenuOpinion from './TopMenuOpinion';
+import TopMenuExternalReference from './TopMenuExternalReference';
+import TopMenuEvents from './TopMenuEvents';
+import TopMenuXOpenCTIIncident from './TopMenuXOpenCTIIncident';
+import TopMenuObservedData from './TopMenuObservedData';
+import TopMenuStixRelationshipSighting from './TopMenuStixRelationshipSighting';
+import TopMenuObservations from './TopMenuObservations';
+import TopMenuIndicator from './TopMenuIndicator';
+import TopMenuInfrastructure from './TopMenuInfrastructure';
+import TopMenuStixCyberObservable from './TopMenuStixCyberObservable';
+import TopMenuThreats from './TopMenuThreats';
 import TopMenuThreatActor from './TopMenuThreatActor';
-import TopMenuSector from './TopMenuSector';
 import TopMenuIntrusionSet from './TopMenuIntrusionSet';
 import TopMenuCampaign from './TopMenuCampaign';
-import TopMenuIncident from './TopMenuIncident';
+import TopMenuArsenal from './TopMenuArsenal';
 import TopMenuMalware from './TopMenuMalware';
-import TopMenuTechniques from './TopMenuTechniques';
-import TopMenuAttackPattern from './TopMenuAttackPattern';
-import TopMenuCourseOfAction from './TopMenuCourseOfAction';
 import TopMenuTool from './TopMenuTool';
+import TopMenuAttackPattern from './TopMenuAttackPattern';
 import TopMenuVulnerability from './TopMenuVulnerability';
-import TopMenuRegion from './TopMenuRegion';
-import TopMenuSignatures from './TopMenuSignatures';
-import TopMenuObservable from './TopMenuObservable';
-import TopMenuIndicator from './TopMenuIndicator';
-import TopMenuReports from './TopMenuReports';
-import TopMenuReport from './TopMenuReport';
 import TopMenuEntities from './TopMenuEntities';
+import TopMenuSector from './TopMenuSector';
+import TopMenuOrganization from './TopMenuOrganization';
+import TopMenuIndividual from './TopMenuIndividual';
+import TopMenuRegion from './TopMenuRegion';
 import TopMenuCountry from './TopMenuCountry';
 import TopMenuCity from './TopMenuCity';
-import TopMenuOrganization from './TopMenuOrganization';
-import TopMenuPerson from './TopMenuPerson';
+import TopMenuPosition from './TopMenuPosition';
 import TopMenuData from './TopMenuData';
 import TopMenuSettings from './TopMenuSettings';
 import TopMenuProfile from './TopMenuProfile';
@@ -51,7 +59,12 @@ import { commitMutation } from '../../../relay/environment';
 import Security, {
   KNOWLEDGE,
   KNOWLEDGE_KNASKIMPORT,
+  EXPLORE,
 } from '../../../utils/Security';
+import TopMenuCourseOfAction from './TopMenuCourseOfAction';
+import TopMenuWorkspacesDashboards from './TopMenuWorkspacesDashboards';
+import TopMenuWorkspacesInvestigations from './TopMenuWorkspacesInvestigations';
+import Filters from '../common/lists/Filters';
 
 const styles = (theme) => ({
   appBar: {
@@ -63,31 +76,43 @@ const styles = (theme) => ({
   flex: {
     flexGrow: 1,
   },
-  logoButton: {
-    marginLeft: -20,
-    marginRight: 20,
+  logoContainer: {
+    marginLeft: -10,
   },
   logo: {
     cursor: 'pointer',
     height: 35,
   },
-  progressBar: {
-    height: 2,
-  },
   menuContainer: {
     float: 'left',
+    marginLeft: 40,
   },
   barRight: {
     position: 'absolute',
     right: 5,
+    verticalAlign: 'middle',
+    height: '100%',
+  },
+  barContainer: {
+    display: 'table-cell',
+    float: 'left',
+    paddingTop: 10,
+  },
+  divider: {
+    display: 'table-cell',
+    float: 'left',
+    height: '100%',
+    margin: '0 5px 0 5px',
   },
   searchContainer: {
-    display: 'inline-block',
-    verticalAlign: 'middle',
-    marginRight: 20,
+    display: 'table-cell',
+    float: 'left',
+    marginRight: 5,
+    paddingTop: 9,
   },
   button: {
-    display: 'inline-block',
+    display: 'table-cell',
+    float: 'left',
   },
 });
 
@@ -112,7 +137,7 @@ const TopBar = ({
     commitMutation({
       mutation: logoutMutation,
       variables: {},
-      onCompleted: () => history.push('/login?message=You have successfully logged out.'),
+      onCompleted: () => history.push('/'),
     });
   };
   const handleSearch = (searchKeyword) => {
@@ -124,238 +149,253 @@ const TopBar = ({
     }
   };
   return (
-    <AppBar position="fixed" className={classes.appBar}>
+    <AppBar
+      position="fixed"
+      className={classes.appBar}
+      style={{ backgroundColor: '#1b2226' }}
+    >
       <Toolbar>
-        <IconButton
-          classes={{ root: classes.logoButton }}
-          color="inherit"
-          aria-label="Menu"
-          component={Link}
-          to="/dashboard"
-        >
-          <img src={logo} alt="logo" className={classes.logo} />
-        </IconButton>
+        <div className={classes.logoContainer}>
+          <Link to="/dashboard">
+            <img src={logo} alt="logo" className={classes.logo} />
+          </Link>
+        </div>
         <div className={classes.menuContainer}>
-          {location.pathname === '/dashboard'
-          || location.pathname === '/dashboard/entities'
-          || location.pathname === '/dashboard/import' ? (
-            <TopMenuDashboard />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes('/dashboard/search/') ? (
-            <TopMenuSearch />
-          ) : (
-            ''
+          {(location.pathname === '/dashboard'
+            || location.pathname === '/dashboard/import') && <TopMenuDashboard />}
+          {location.pathname.includes('/dashboard/search') && <TopMenuSearch />}
+          {(location.pathname === '/dashboard/analysis'
+            || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
+            <TopMenuAnalysis />
           )}
-          {location.pathname === '/dashboard/explore' ? <TopMenuExplore /> : ''}
-          {location.pathname.includes('/dashboard/explore/') ? (
-            <TopMenuExploreWorkspace />
-          ) : (
-            ''
-          )}
-          {location.pathname === '/dashboard/investigate' ? (
-            <TopMenuInvestigate />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/investigate/') ? (
-            <TopMenuInvestigateWorkspace />
-          ) : (
-            ''
-          )}
-          {location.pathname === '/dashboard/threats'
-          || location.pathname.match('/dashboard/threats/[a-z_]+$') ? (
-            <TopMenuKnowledge />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes('/dashboard/threats/threat_actors/') ? (
-            <TopMenuThreatActor />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/threats/intrusion_sets/') ? (
-            <TopMenuIntrusionSet />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/threats/campaigns/') ? (
-            <TopMenuCampaign />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/threats/incidents/') ? (
-            <TopMenuIncident />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/threats/malwares/') ? (
-            <TopMenuMalware />
-          ) : (
-            ''
-          )}
-          {location.pathname === '/dashboard/techniques'
-          || location.pathname.match('/dashboard/techniques/[a-z_]+$') ? (
-            <TopMenuTechniques />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes(
-            '/dashboard/techniques/attack_patterns/',
-          ) ? (
-            <TopMenuAttackPattern />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes(
-            '/dashboard/techniques/courses_of_action/',
-          ) ? (
-            <TopMenuCourseOfAction />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes('/dashboard/techniques/tools/') ? (
-            <TopMenuTool />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes(
-            '/dashboard/techniques/vulnerabilities/',
-          ) ? (
-            <TopMenuVulnerability />
-            ) : (
-              ''
-            )}
-          {location.pathname === '/dashboard/signatures'
-          || location.pathname.match('/dashboard/signatures/[a-z1-9_]+$') ? (
-            <TopMenuSignatures />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes('/dashboard/signatures/observables/') ? (
-            <TopMenuObservable />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/signatures/indicators/') ? (
-            <TopMenuIndicator />
-          ) : (
-            ''
-          )}
-          {location.pathname === '/dashboard/reports'
-          || location.pathname.match('/dashboard/reports/[a-zA-Z1-9_-]+$') ? (
-            <TopMenuReports />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes('/dashboard/reports/all/') ? (
+          {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
-          ) : (
-            ''
           )}
-          {location.pathname === '/dashboard/entities'
-          || location.pathname.match('/dashboard/entities/[a-z_]+$') ? (
+          {location.pathname.includes('/dashboard/analysis/notes/') && (
+            <TopMenuNote />
+          )}
+          {location.pathname.includes('/dashboard/analysis/opinions/') && (
+            <TopMenuOpinion />
+          )}
+          {location.pathname.includes(
+            '/dashboard/analysis/external_references/',
+          ) && <TopMenuExternalReference />}
+          {(location.pathname === '/dashboard/events'
+            || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
+            <TopMenuEvents />
+          )}
+          {location.pathname.includes('/dashboard/events/incidents/') && (
+            <TopMenuXOpenCTIIncident />
+          )}
+          {location.pathname.includes('/dashboard/events/observed_data/') && (
+            <TopMenuObservedData />
+          )}
+          {location.pathname.includes('/dashboard/events/sightings/') && (
+            <TopMenuStixRelationshipSighting />
+          )}
+          {(location.pathname === '/dashboard/observations'
+            || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
+            <TopMenuObservations />
+          )}
+          {location.pathname.includes(
+            '/dashboard/observations/indicators/',
+          ) && <TopMenuIndicator />}
+          {location.pathname.includes(
+            '/dashboard/observations/infrastructures/',
+          ) && <TopMenuInfrastructure />}
+          {location.pathname.includes(
+            '/dashboard/observations/observables/',
+          ) && <TopMenuStixCyberObservable />}
+          {(location.pathname === '/dashboard/threats'
+            || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
+            <TopMenuThreats />
+          )}
+          {location.pathname.includes('/dashboard/threats/threat_actors/') && (
+            <TopMenuThreatActor />
+          )}
+          {location.pathname.includes('/dashboard/threats/intrusion_sets/') && (
+            <TopMenuIntrusionSet />
+          )}
+          {location.pathname.includes('/dashboard/threats/campaigns/') && (
+            <TopMenuCampaign />
+          )}
+          {(location.pathname === '/dashboard/arsenal'
+            || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
+            <TopMenuArsenal />
+          )}
+          {location.pathname.includes('/dashboard/arsenal/malwares/') && (
+            <TopMenuMalware />
+          )}
+          {location.pathname.includes('/dashboard/arsenal/tools/') && (
+            <TopMenuTool />
+          )}
+          {location.pathname.includes(
+            '/dashboard/arsenal/attack_patterns/',
+          ) && <TopMenuAttackPattern />}
+          {location.pathname.includes(
+            '/dashboard/arsenal/courses_of_action/',
+          ) && <TopMenuCourseOfAction />}
+          {location.pathname.includes(
+            '/dashboard/arsenal/vulnerabilities/',
+          ) && <TopMenuVulnerability />}
+          {(location.pathname === '/dashboard/entities'
+            || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
             <TopMenuEntities />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes('/dashboard/entities/sectors/') ? (
+          )}
+          {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
-          ) : (
-            ''
           )}
-          {location.pathname.includes('/dashboard/entities/regions/') ? (
-            <TopMenuRegion />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/entities/countries/') ? (
-            <TopMenuCountry />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/entities/cities/') ? (
-            <TopMenuCity />
-          ) : (
-            ''
-          )}
-          {location.pathname.includes('/dashboard/entities/organizations/') ? (
+          {location.pathname.includes('/dashboard/entities/organizations/') && (
             <TopMenuOrganization />
-          ) : (
-            ''
           )}
-          {location.pathname.includes('/dashboard/entities/persons/') ? (
-            <TopMenuPerson />
-          ) : (
-            ''
+          {location.pathname.includes('/dashboard/entities/individuals/') && (
+            <TopMenuIndividual />
           )}
-          {location.pathname === '/dashboard/data'
-          || location.pathname.match('/dashboard/data/[a-z_]+$') ? (
-            <TopMenuData />
-            ) : (
-              ''
-            )}
-          {location.pathname.includes('/dashboard/settings') ? (
+          {location.pathname.includes('/dashboard/entities/regions/') && (
+            <TopMenuRegion />
+          )}
+          {location.pathname.includes('/dashboard/entities/countries/') && (
+            <TopMenuCountry />
+          )}
+          {location.pathname.includes('/dashboard/entities/cities/') && (
+            <TopMenuCity />
+          )}
+          {location.pathname.includes('/dashboard/entities/positions/') && (
+            <TopMenuPosition />
+          )}
+          {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
+          {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
-          ) : (
-            ''
           )}
+          {location.pathname.includes('/dashboard/workspaces/dashboards') && (
+            <TopMenuWorkspacesDashboards />
+          )}
+          {location.pathname.includes(
+            '/dashboard/workspaces/investigations',
+          ) && <TopMenuWorkspacesInvestigations />}
           {location.pathname === '/dashboard/profile' ? <TopMenuProfile /> : ''}
         </div>
         <div className={classes.barRight}>
-          <Security needs={[KNOWLEDGE]}>
-            <div className={classes.searchContainer}>
-              <SearchInput onSubmit={handleSearch} keyword={keyword} />
-            </div>
-          </Security>
-          <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
-            <Tooltip title={t('Data import')}>
-              <IconButton
-                component={Link}
-                to="/dashboard/import"
-                variant={
-                  location.pathname === '/dashboard/import'
-                    ? 'contained'
-                    : 'text'
-                }
-                color={
-                  location.pathname === '/dashboard/import'
-                    ? 'primary'
-                    : 'inherit'
-                }
-                classes={{ root: classes.button }}
-              >
-                <UploadNetworkOutline fontSize="large" />
-              </IconButton>
-            </Tooltip>
-          </Security>
-          <IconButton
-            size="medium"
-            classes={{ root: classes.button }}
-            aria-owns={menuOpen.open ? 'menu-appbar' : null}
-            aria-haspopup="true"
-            onClick={handleOpenMenu}
-            color="inherit"
-          >
-            <AccountCircle fontSize="large" />
-          </IconButton>
-          <Menu
-            id="menu-appbar"
-            style={{ marginTop: 40, zIndex: 2100 }}
-            anchorEl={menuOpen.anchorEl}
-            open={menuOpen.open}
-            onClose={handleCloseMenu}
-          >
-            <MenuItem
-              component={Link}
-              to="/dashboard/profile"
-              onClick={handleCloseMenu}
+          <div className={classes.barContainer}>
+            <Security needs={[KNOWLEDGE]}>
+              <div className={classes.searchContainer}>
+                <SearchInput onSubmit={handleSearch} keyword={keyword} />
+              </div>
+              <Filters
+                variant="dialog"
+                availableFilterKeys={[
+                  'entity_type',
+                  'markedBy',
+                  'labelledBy',
+                  'createdBy',
+                  'confidence_gt',
+                  'x_opencti_organization_type',
+                  'created_at_start_date',
+                  'created_at_end_date',
+                ]}
+                currentFilters={{}}
+                disabled={location.pathname.includes('/dashboard/search')}
+              />
+            </Security>
+          </div>
+          <Divider className={classes.divider} orientation="vertical" />
+          <div className={classes.barContainer}>
+            <Security needs={[EXPLORE]}>
+              <Tooltip title={t('Custom dashboards')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/workspaces/dashboards"
+                  variant={
+                    location.pathname.includes(
+                      '/dashboard/workspaces/dashboards',
+                    )
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    location.pathname.includes(
+                      '/dashboard/workspaces/dashboards',
+                    )
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <InsertChartOutlined fontSize="default" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={t('Investigations')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/workspaces/investigations"
+                  variant={
+                    location.pathname.includes(
+                      '/dashboard/workspaces/investigations',
+                    )
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    location.pathname.includes(
+                      '/dashboard/workspaces/investigations',
+                    )
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <ExploreOutlined fontSize="default" />
+                </IconButton>
+              </Tooltip>
+            </Security>
+            <Security needs={[KNOWLEDGE_KNASKIMPORT]}>
+              <Tooltip title={t('Data import')}>
+                <IconButton
+                  component={Link}
+                  to="/dashboard/import"
+                  variant={
+                    location.pathname === '/dashboard/import'
+                      ? 'contained'
+                      : 'text'
+                  }
+                  color={
+                    location.pathname === '/dashboard/import'
+                      ? 'primary'
+                      : 'inherit'
+                  }
+                  classes={{ root: classes.button }}
+                >
+                  <UploadOutline fontSize="default" />
+                </IconButton>
+              </Tooltip>
+            </Security>
+            <IconButton
+              size="medium"
+              classes={{ root: classes.button }}
+              aria-owns={menuOpen.open ? 'menu-appbar' : null}
+              aria-haspopup="true"
+              onClick={handleOpenMenu}
+              color="inherit"
             >
-              {t('Profile')}
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
-          </Menu>
+              <AccountCircleOutlined fontSize="default" />
+            </IconButton>
+            <Menu
+              id="menu-appbar"
+              style={{ marginTop: 40, zIndex: 2100 }}
+              anchorEl={menuOpen.anchorEl}
+              open={menuOpen.open}
+              onClose={handleCloseMenu}
+            >
+              <MenuItem
+                component={Link}
+                to="/dashboard/profile"
+                onClick={handleCloseMenu}
+              >
+                {t('Profile')}
+              </MenuItem>
+              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+            </Menu>
+          </div>
         </div>
       </Toolbar>
     </AppBar>

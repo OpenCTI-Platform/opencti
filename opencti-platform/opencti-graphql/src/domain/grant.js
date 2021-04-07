@@ -1,38 +1,31 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
-import uuidv5 from 'uuid/v5';
-import { createEntity, createRelation, deleteEntityById, TYPE_OPENCTI_INTERNAL } from '../database/grakn';
+import { createEntity, createRelation, deleteElementById } from '../database/middleware';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
+import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
+import { generateStandardId } from '../schema/identifier';
 
-export const addCapability = async capability => {
-  const capabilityToCreate = assoc('internal_id_key', uuidv5(capability.name, uuidv5.DNS), capability);
-  return createEntity(capabilityToCreate, 'Capability', { modelType: TYPE_OPENCTI_INTERNAL });
+export const addCapability = async (user, capability) => {
+  return createEntity(user, capability, ENTITY_TYPE_CAPABILITY);
 };
 
-export const addRole = async role => {
+export const addRole = async (user, role) => {
   const capabilities = propOr([], 'capabilities', role);
   const roleToCreate = pipe(
-    assoc('internal_id_key', uuidv5(role.name, uuidv5.DNS)),
     assoc('description', role.description ? role.description : ''),
     assoc('default_assignation', role.default_assignation ? role.default_assignation : false),
     dissoc('capabilities')
   )(role);
-  const roleEntity = await createEntity(roleToCreate, 'Role', { modelType: TYPE_OPENCTI_INTERNAL });
-  const relationPromises = map(
-    capabilityName =>
-      createRelation(
-        roleEntity.id,
-        {
-          toId: uuidv5(capabilityName, uuidv5.DNS),
-          fromRole: 'position',
-          toRole: 'capability',
-          through: 'role_capability'
-        },
-        {},
-        'Role',
-        'Capability'
-      ),
-    capabilities
-  );
+  const roleEntity = await createEntity(user, roleToCreate, ENTITY_TYPE_ROLE);
+  const relationPromises = map(async (capabilityName) => {
+    const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
+    return createRelation(user, {
+      fromId: roleEntity.id,
+      toId: generateToId,
+      relationship_type: RELATION_HAS_CAPABILITY,
+    });
+  }, capabilities);
   await Promise.all(relationPromises);
   return roleEntity;
 };
-export const roleDelete = roleId => deleteEntityById(roleId, 'Role');
+
+export const roleDelete = (user, roleId) => deleteElementById(user, roleId, ENTITY_TYPE_ROLE);

@@ -1,29 +1,38 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  Flag,
-  Person,
-  AccountBalance,
-  Domain,
-  Public,
-  Help,
-  BugReport,
-  Description,
-  Map,
+  FlagOutlined,
+  PersonOutlined,
+  AccountBalanceOutlined,
+  DomainOutlined,
+  PublicOutlined,
+  HelpOutlined,
+  BugReportOutlined,
+  DescriptionOutlined,
+  MapOutlined,
+  CenterFocusStrongOutlined,
+  ShortTextOutlined,
+  WorkOutline,
+  FeedbackOutlined,
+  LanguageOutlined,
+  WifiTetheringOutlined,
+  Visibility,
+  PlaceOutlined,
 } from '@material-ui/icons';
 import {
   Biohazard,
-  Diamond,
+  DiamondOutline,
   ChessKnight,
   LockPattern,
   Application,
   Fire,
-  CityVariant,
-  Tag,
+  CityVariantOutline,
+  LabelOutline,
   ProgressWrench,
   HexagonOutline,
   VectorRadius,
   ShieldSearch,
+  ServerNetwork,
 } from 'mdi-material-ui';
 
 const iconSelector = (type, variant, fontSize, color) => {
@@ -45,69 +54,108 @@ const iconSelector = (type, variant, fontSize, color) => {
   }
 
   switch (type) {
-    case 'region':
-      return <Map style={style} fontSize={fontSize} role="img" />;
-    case 'country':
-      return <Flag style={style} fontSize={fontSize} role="img" />;
-    case 'sector':
-      return <Domain style={style} fontSize={fontSize} role="img" />;
-    case 'city':
-      return <CityVariant style={style} fontSize={fontSize} role="img" />;
-    case 'threat-actor':
-      return <Public style={style} fontSize={fontSize} role="img" />;
-    case 'intrusion-set':
-      return <Diamond style={style} fontSize={fontSize} role="img" />;
-    case 'campaign':
-      return <ChessKnight style={style} fontSize={fontSize} role="img" />;
-    case 'incident':
-      return <Fire style={style} fontSize={fontSize} role="img" />;
-    case 'user':
-      return <Person style={style} fontSize={fontSize} role="img" />;
-    case 'organization':
-      return <AccountBalance style={style} fontSize={fontSize} role="img" />;
-    case 'attack-pattern':
+    case 'attribute':
+      return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Marking-Definition':
+      return (
+        <CenterFocusStrongOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
+    case 'External-Reference':
+      return <LanguageOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Label':
+      return <LabelOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Attack-Pattern':
       return <LockPattern style={style} fontSize={fontSize} role="img" />;
-    case 'course-of-action':
+    case 'Campaign':
+      return <ChessKnight style={style} fontSize={fontSize} role="img" />;
+    case 'Note':
+      return <WorkOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Observed-Data':
+      return (
+        <WifiTetheringOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Opinion':
+      return <FeedbackOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Report':
+      return (
+        <DescriptionOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Course-Of-Action':
       return <ProgressWrench style={style} fontSize={fontSize} role="img" />;
-    case 'malware':
-      return <Biohazard style={style} fontSize={fontSize} role="img" />;
-    case 'tool':
-      return <Application style={style} fontSize={fontSize} role="img" />;
-    case 'vulnerability':
-      return <BugReport style={style} fontSize={fontSize} role="img" />;
-    case 'report':
-      return <Description style={style} fontSize={fontSize} role="img" />;
-    case 'indicator':
+    case 'Individual':
+      return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Organization':
+      return (
+        <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Sector':
+      return <DomainOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Indicator':
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
-    case 'tag':
-      return <Tag style={style} fontSize={fontSize} role="img" />;
-    case 'autonomous-system':
-    case 'domain':
-    case 'ipv4-addr':
-    case 'ipv6-addr':
-    case 'url':
-    case 'email-address':
-    case 'email-subject':
-    case 'mutex':
-    case 'file':
-    case 'file-name':
-    case 'file-path':
-    case 'file-md5':
-    case 'file-sha1':
-    case 'file-sha256':
-    case 'pdb-path':
-    case 'registry-key':
-    case 'registry-key-value':
-    case 'windows-service-name':
-    case 'windows-service-display-name':
-    case 'windows-scheduled-task':
-    case 'x509-certificate-issuer':
-    case 'x509-certificate-serial-number':
+    case 'Infrastructure':
+      return <ServerNetwork style={style} fontSize={fontSize} role="img" />;
+    case 'Intrusion-Set':
+      return <DiamondOutline style={style} fontSize={fontSize} role="img" />;
+    case 'City':
+      return (
+        <CityVariantOutline style={style} fontSize={fontSize} role="img" />
+      );
+    case 'Position':
+      return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Country':
+      return <FlagOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Region':
+      return <MapOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Malware':
+      return <Biohazard style={style} fontSize={fontSize} role="img" />;
+    case 'Threat-Actor':
+      return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Tool':
+      return <Application style={style} fontSize={fontSize} role="img" />;
+    case 'Vulnerability':
+      return <BugReportOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'X-OpenCTI-Incident':
+      return <Fire style={style} fontSize={fontSize} role="img" />;
+    case 'Stix-Cyber-Observable':
+    case 'Autonomous-System':
+    case 'Directory':
+    case 'Domain-Name':
+    case 'Email-Addr':
+    case 'Email-Message':
+    case 'Email-Mime-Part-Type':
+    case 'Artifact':
+    case 'StixFile':
+    case 'X509-Certificate':
+    case 'IPv4-Addr':
+    case 'IPv6-Addr':
+    case 'Mac-Addr':
+    case 'Mutex':
+    case 'Network-Traffic':
+    case 'Process':
+    case 'Software':
+    case 'Url':
+    case 'User-Account':
+    case 'Windows-Registry-Key':
+    case 'Windows-Registry-Value-Type':
+    case 'X509-V3-Extensions-Type':
+    case 'X-OpenCTI-Cryptographic-Key':
+    case 'X-OpenCTI-Cryptocurrency-Wallet':
+    case 'X-OpenCTI-Hostname':
+    case 'X-OpenCTI-Text':
+    case 'X-OpenCTI-User-Agent':
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
-    case 'stix_relation':
-    case 'stix-relation':
+    case 'stix-sighting-relationship':
+      return <Visibility style={style} fontSize={fontSize} role="img" />;
+    case 'Stix-Core-Relationship':
+    case 'Relationship':
+    case 'stix-core-relationship':
     case 'targets':
     case 'uses':
+    case 'located-at':
     case 'related-to':
     case 'mitigates':
     case 'impersonates':
@@ -116,11 +164,11 @@ const iconSelector = (type, variant, fontSize, color) => {
     case 'attributed-to':
     case 'variant-of':
     case 'localization':
-    case 'gathering':
+    case 'part-of':
     case 'drops':
       return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     default:
-      return <Help style={style} fontSize={fontSize} role="img" />;
+      return <HelpOutlined style={style} fontSize={fontSize} role="img" />;
   }
 };
 

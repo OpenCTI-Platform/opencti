@@ -1,32 +1,36 @@
-import { addCountry, findAll, findById, region } from '../domain/country';
+import { addCountry, findAll, findById, batchRegion } from '../domain/country';
 import {
-  stixDomainEntityEditContext,
-  stixDomainEntityCleanContext,
-  stixDomainEntityEditField,
-  stixDomainEntityAddRelation,
-  stixDomainEntityDeleteRelation,
-  stixDomainEntityDelete
-} from '../domain/stixDomainEntity';
+  stixDomainObjectEditContext,
+  stixDomainObjectCleanContext,
+  stixDomainObjectEditField,
+  stixDomainObjectAddRelation,
+  stixDomainObjectDeleteRelation,
+  stixDomainObjectDelete,
+} from '../domain/stixDomainObject';
+import { batchLoader } from '../database/middleware';
+
+const batchRegionLoader = batchLoader(batchRegion);
 
 const countryResolvers = {
   Query: {
-    country: (_, { id }) => findById(id),
-    countries: (_, args) => findAll(args)
+    country: (_, { id }, { user }) => findById(user, id),
+    countries: (_, args, { user }) => findAll(user, args),
   },
   Country: {
-    region: country => region(country.id)
+    region: (country, _, { user }) => batchRegionLoader.load(country.id, user),
   },
   Mutation: {
     countryEdit: (_, { id }, { user }) => ({
-      delete: () => stixDomainEntityDelete(id),
-      fieldPatch: ({ input }) => stixDomainEntityEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      relationAdd: ({ input }) => stixDomainEntityAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => stixDomainEntityDeleteRelation(user, id, relationId)
+      delete: () => stixDomainObjectDelete(user, id),
+      fieldPatch: ({ input }) => stixDomainObjectEditField(user, id, input),
+      contextPatch: ({ input }) => stixDomainObjectEditContext(user, id, input),
+      contextClean: () => stixDomainObjectCleanContext(user, id),
+      relationAdd: ({ input }) => stixDomainObjectAddRelation(user, id, input),
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        stixDomainObjectDeleteRelation(user, id, toId, relationshipType),
     }),
-    countryAdd: (_, { input }, { user }) => addCountry(user, input)
-  }
+    countryAdd: (_, { input }, { user }) => addCountry(user, input),
+  },
 };
 
 export default countryResolvers;

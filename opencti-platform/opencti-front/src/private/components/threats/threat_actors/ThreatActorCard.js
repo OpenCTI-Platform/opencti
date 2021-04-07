@@ -13,7 +13,7 @@ import CardContent from '@material-ui/core/CardContent';
 import Avatar from '@material-ui/core/Avatar';
 import { Public } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
-import StixObjectTags from '../../common/stix_object/StixObjectTags';
+import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 
 const styles = (theme) => ({
   card: {
@@ -55,7 +55,7 @@ const styles = (theme) => ({
     height: 70,
     overflow: 'hidden',
   },
-  tags: {
+  objectLabel: {
     height: 45,
     paddingTop: 7,
   },
@@ -85,7 +85,7 @@ const styles = (theme) => ({
 class ThreatActorCardComponent extends Component {
   render() {
     const {
-      t, fsd, classes, node, onTagClick,
+      t, fsd, classes, node, onLabelClick,
     } = this.props;
     return (
       <Card classes={{ root: classes.card }} raised={true}>
@@ -111,10 +111,10 @@ class ThreatActorCardComponent extends Component {
                 unwrapDisallowed={true}
               />
             </div>
-            <div className={classes.tags}>
-              <StixObjectTags
-                tags={node.tags}
-                onClick={onTagClick.bind(this)}
+            <div className={classes.objectLabel}>
+              <StixCoreObjectLabels
+                labels={node.objectLabel}
+                onClick={onLabelClick.bind(this)}
               />
             </div>
           </CardContent>
@@ -129,7 +129,7 @@ ThreatActorCardComponent.propTypes = {
   classes: PropTypes.object,
   t: PropTypes.func,
   fsd: PropTypes.func,
-  onTagClick: PropTypes.func,
+  onLabelClick: PropTypes.func,
 };
 
 const ThreatActorCardFragment = createFragmentContainer(
@@ -142,20 +142,16 @@ const ThreatActorCardFragment = createFragmentContainer(
         description
         created
         modified
-        tags {
+        objectLabel {
           edges {
             node {
               id
-              tag_type
               value
               color
             }
-            relation {
-              id
-            }
           }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id

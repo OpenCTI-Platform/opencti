@@ -6,17 +6,19 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixDomainEntityKnowledge from '../../common/stix_domain_entities/StixDomainEntityKnowledge';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixDomainObjectKnowledge from '../../common/stix_domain_objects/StixDomainObjectKnowledge';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import CityPopover from './CityPopover';
-import CityKnowledgeBar from './CityKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
+    padding: '0 200px 0 0',
   },
 });
 
@@ -26,16 +28,29 @@ class CityKnowledgeComponent extends Component {
     const link = `/dashboard/entities/cities/${city.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={city}
+        <StixDomainObjectHeader
+          stixDomainObject={city}
           PopoverComponent={<CityPopover />}
+          variant="noaliases"
         />
-        <CityKnowledgeBar cityId={city.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'organizations',
+            'threat_actors',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={city.id}
               paddingRight={true}
               {...routeProps}
@@ -46,44 +61,118 @@ class CityKnowledgeComponent extends Component {
           exact
           path="/dashboard/entities/cities/:cityId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityKnowledge
-              stixDomainEntityId={city.id}
-              stixDomainEntityType="city"
+            <StixDomainObjectKnowledge
+              stixDomainObjectId={city.id}
+              stixDomainObjectType="City"
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/entities/cities/:cityId/knowledge/countries"
+          path="/dashboard/entities/cities/:cityId/knowledge/organizations"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={city.id}
-              relationType="localization"
-              targetEntityTypes={['Country']}
+              relationshipTypes={['located-at']}
+              targetStixDomainObjectTypes={['Organization']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
               {...routeProps}
             />
           )}
         />
         <Route
           exact
-          path="/dashboard/entities/cities/:cityId/knowledge/threats"
+          path="/dashboard/entities/cities/:cityId/knowledge/threat_actors"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={city.id}
-              relationType="targets"
-              targetEntityTypes={[
-                'Country',
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Incident',
-                'Malware',
-              ]}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Threat-Actor']}
               entityLink={link}
-              creationIsFrom={false}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/cities/:cityId/knowledge/intrusion_sets"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Intrusion-Set']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/cities/:cityId/knowledge/campaigns"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Campaign']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/cities/:cityId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/cities/:cityId/knowledge/malwares"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={city.id}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Malware']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/cities/:cityId/knowledge/observables"
+          render={(routeProps) => (
+            <StixCoreObjectStixCyberObservables
+              stixCoreObjectId={city.id}
+              stixCoreObjectLink={link}
+              noRightBar={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/entities/cities/:cityId/knowledge/sightings"
+          render={(routeProps) => (
+            <EntityStixSightingRelationships
+              entityId={city.id}
+              entityLink={link}
+              noRightBar={true}
+              isTo={true}
               {...routeProps}
             />
           )}
@@ -104,7 +193,7 @@ const CityKnowledge = createFragmentContainer(CityKnowledgeComponent, {
     fragment CityKnowledge_city on City {
       id
       name
-      alias
+      x_opencti_aliases
     }
   `,
 });

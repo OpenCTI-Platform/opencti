@@ -32,8 +32,7 @@ const styles = (theme) => ({
   },
   goIcon: {
     position: 'absolute',
-    right: 10,
-    marginRight: 0,
+    right: -10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -72,9 +71,9 @@ class KillChainPhaseLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.phase_order.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
-                {node.phase_order}
+                {node.x_opencti_order}
               </div>
               <div
                 className={classes.bodyItem}
@@ -113,7 +112,7 @@ const KillChainPhaseLineFragment = createFragmentContainer(
         id
         kill_chain_name
         phase_name
-        phase_order
+        x_opencti_order
         created
         modified
       }
@@ -151,7 +150,7 @@ class KillChainPhaseLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.phase_order.width }}
+                style={{ width: dataColumns.x_opencti_order.width }}
               >
                 <div className="fakeItem" style={{ width: '90%' }} />
               </div>

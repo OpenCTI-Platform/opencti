@@ -1,64 +1,55 @@
+import * as R from 'ramda';
 import {
-  deleteAttributeById,
-  escapeString,
-  executeWrite,
-  queryAttributeValueById,
-  queryAttributeValues,
-  reindexEntityByAttribute,
-  reindexRelationByAttribute
-} from '../database/grakn';
-import { logger } from '../config/conf';
+  loadById,
+  listEntities,
+  createEntity,
+  deleteElementById,
+  updateAttribute,
+  queryAttributes,
+  loadEntity,
+} from '../database/middleware';
+import { ENTITY_TYPE_ATTRIBUTE } from '../schema/internalObject';
+import { notify } from '../database/redis';
+import { BUS_TOPICS } from '../config/conf';
+import { elAttributeValues, elUpdateAttributeValue } from '../database/elasticSearch';
 
-export const findById = attributeId => queryAttributeValueById(attributeId);
-
-export const findAll = args => queryAttributeValues(args.type);
-
-export const addAttribute = async attribute => {
-  return executeWrite(async wTx => {
-    const query = `insert $attribute isa ${attribute.type}; $attribute "${escapeString(attribute.value)}";`;
-    logger.debug(`[GRAKN - infer: false] addAttribute > ${query}`);
-    const attributeIterator = await wTx.tx.query(query);
-    const createdAttribute = await attributeIterator.next();
-    const createdAttributeId = await createdAttribute.map().get('attribute').id;
-    return {
-      id: createdAttributeId,
-      type: attribute.type,
-      value: attribute.value
-    };
-  });
+export const findById = (user, attributeId) => {
+  return loadById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);
 };
 
-export const attributeDelete = async id => {
-  return deleteAttributeById(id);
+export const find = (user, attributeKey, attributeValue) => {
+  const filters = [
+    { key: 'key', values: [attributeKey] },
+    { key: 'value', values: [attributeValue] },
+  ];
+  return loadEntity(user, [ENTITY_TYPE_ATTRIBUTE], { filters });
 };
 
-export const attributeUpdate = async (id, input) => {
-  // Add the new attribute
-  const newAttribute = await addAttribute({
-    type: input.type,
-    value: input.newValue
-  });
-  // Link new attribute to every entities
-  await executeWrite(async wTx => {
-    const writeQuery = `match $e isa entity, has ${escape(input.type)} $a; $a "${escapeString(
-      input.value
-    )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
-    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${writeQuery}`);
-    await wTx.tx.query(writeQuery);
-  });
-  // Link new attribute to every relations
-  await executeWrite(async wTx => {
-    const writeQuery = `match $e isa relation, has ${escape(input.type)} $a; $a "${escapeString(
-      input.value
-    )}"; insert $e has ${escape(input.type)} $attribute; $attribute "${escapeString(input.newValue)}";`;
-    logger.debug(`[GRAKN - infer: false] attributeUpdate > ${writeQuery}`);
-    await wTx.tx.query(writeQuery);
-  });
-  // Delete old attribute
-  await deleteAttributeById(id);
-  // Reindex all entities using this attribute
-  await reindexEntityByAttribute(input.type, input.newValue);
-  await reindexRelationByAttribute(input.type, input.newValue);
-  // Return the new attribute
-  return newAttribute;
+export const findAll = (user, args) => {
+  if (args.fieldKey) {
+    return elAttributeValues(user, args.fieldKey);
+  }
+  if (args.elementType) {
+    return queryAttributes(args.elementType);
+  }
+  const filters = [];
+  if (args.key) {
+    filters.push({ key: 'key', values: [args.key] });
+  }
+  return listEntities(user, [ENTITY_TYPE_ATTRIBUTE], R.pipe(R.assoc('filters', filters), R.dissoc('key'))(args));
+};
+
+export const addAttribute = async (user, attribute) => {
+  const created = await createEntity(user, attribute, ENTITY_TYPE_ATTRIBUTE);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ATTRIBUTE].ADDED_TOPIC, created, user);
+};
+
+export const attributeDelete = (user, attributeId) => deleteElementById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);
+
+export const attributeEditField = async (user, attributeId, input) => {
+  const previous = await loadById(user, attributeId, ENTITY_TYPE_ATTRIBUTE);
+  const { value } = input;
+  await elUpdateAttributeValue(previous.key, previous.value, R.head(value));
+  const attribute = await updateAttribute(user, attributeId, ENTITY_TYPE_ATTRIBUTE, input);
+  return notify(BUS_TOPICS[ENTITY_TYPE_ATTRIBUTE].EDIT_TOPIC, attribute, user);
 };

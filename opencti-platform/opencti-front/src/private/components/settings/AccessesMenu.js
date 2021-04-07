@@ -33,32 +33,44 @@ class SettingsMenu extends Component {
         <div className={classes.toolbar} />
         <MenuList component="nav">
           <MenuItem
-              component={Link}
-              to={'/dashboard/settings/accesses/roles'}
-              selected={
-                location.pathname === '/dashboard/settings/accesses/roles'
-              }
-              dense={false}>
+            component={Link}
+            to={'/dashboard/settings/accesses/roles'}
+            selected={
+              location.pathname === '/dashboard/settings/accesses/roles'
+            }
+            dense={false}
+          >
             <ListItemText primary={t('Roles')} />
           </MenuItem>
           <MenuItem
             component={Link}
             to={'/dashboard/settings/accesses/users'}
-            selected={
-              location.pathname === '/dashboard/settings/accesses/users'
-            }
-            dense={false}>
+            selected={location.pathname.includes(
+              '/dashboard/settings/accesses/users',
+            )}
+            dense={false}
+          >
             <ListItemText primary={t('Users')} />
           </MenuItem>
           <MenuItem
             component={Link}
             to={'/dashboard/settings/accesses/groups'}
             selected={
-              location.pathname
-              === '/dashboard/settings/accesses/groups'
+              location.pathname === '/dashboard/settings/accesses/groups'
             }
-            dense={false}>
+            dense={false}
+          >
             <ListItemText primary={t('Groups')} />
+          </MenuItem>
+          <MenuItem
+            component={Link}
+            to={'/dashboard/settings/accesses/sessions'}
+            selected={
+              location.pathname === '/dashboard/settings/accesses/sessions'
+            }
+            dense={false}
+          >
+            <ListItemText primary={t('Sessions')} />
           </MenuItem>
         </MenuList>
       </Drawer>
@@ -72,8 +84,4 @@ SettingsMenu.propTypes = {
   t: PropTypes.func,
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(SettingsMenu);
+export default compose(inject18n, withRouter, withStyles(styles))(SettingsMenu);

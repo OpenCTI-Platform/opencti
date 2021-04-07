@@ -6,19 +6,21 @@ import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import inject18n from '../../../../components/i18n';
-import EntityStixRelations from '../../common/stix_relations/EntityStixRelations';
-import StixRelation from '../../common/stix_relations/StixRelation';
+import EntityStixCoreRelationships from '../../common/stix_core_relationships/EntityStixCoreRelationships';
+import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import ThreatActorPopover from './ThreatActorPopover';
-import ThreatActorKnowledgeBar from './ThreatActorKnowledgeBar';
-import StixDomainEntityHeader from '../../common/stix_domain_entities/StixDomainEntityHeader';
-import StixDomainEntityKillChain from '../../common/stix_domain_entities/StixDomainEntityKillChain';
-import StixDomainEntityThreatKnowledge from '../../common/stix_domain_entities/StixDomainEntityThreatKnowledge';
-import StixDomainEntityVictimology from '../../common/stix_domain_entities/StixDomainEntityVictimology';
+import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
+import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
+import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
+import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
+import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
+import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
+import EntityStixSightingRelationships from '../../events/stix_sighting_relationships/EntityStixSightingRelationships';
 
 const styles = () => ({
   container: {
     margin: 0,
-    padding: '0 260px 0 0',
+    padding: '0 200px 0 0',
   },
 });
 
@@ -28,16 +30,30 @@ class ThreatActorKnowledgeComponent extends Component {
     const link = `/dashboard/threats/threat_actors/${threatActor.id}/knowledge`;
     return (
       <div className={classes.container}>
-        <StixDomainEntityHeader
-          stixDomainEntity={threatActor}
+        <StixDomainObjectHeader
+          stixDomainObject={threatActor}
           PopoverComponent={<ThreatActorPopover />}
         />
-        <ThreatActorKnowledgeBar threatActorId={threatActor.id} />
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'victimology',
+            'intrusion_sets',
+            'campaigns',
+            'incidents',
+            'malwares',
+            'attack_patterns',
+            'tools',
+            'vulnerabilities',
+            'observables',
+            'sightings',
+          ]}
+        />
         <Route
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixRelation
+            <StixCoreRelationship
               entityId={threatActor.id}
               paddingRight={true}
               {...routeProps}
@@ -48,51 +64,9 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/overview"
           render={(routeProps) => (
-            <StixDomainEntityThreatKnowledge
-              stixDomainEntityId={threatActor.id}
-              stixDomainEntityType="threat-actor"
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/intrusion_sets"
-          render={(routeProps) => (
-            <EntityStixRelations
-              entityId={threatActor.id}
-              relationType="attributed-to"
-              targetEntityTypes={['Intrusion-Set']}
-              entityLink={link}
-              creationIsFrom={false}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/campaigns"
-          render={(routeProps) => (
-            <EntityStixRelations
-              entityId={threatActor.id}
-              relationType="attributed-to"
-              targetEntityTypes={['Campaign']}
-              entityLink={link}
-              creationIsFrom={false}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/incidents"
-          render={(routeProps) => (
-            <EntityStixRelations
-              entityId={threatActor.id}
-              relationType="attributed-to"
-              targetEntityTypes={['Incident']}
-              entityLink={link}
-              creationIsFrom={false}
+            <StixDomainObjectThreatKnowledge
+              stixDomainObjectId={threatActor.id}
+              stixDomainObjectType="Threat-Actor"
               {...routeProps}
             />
           )}
@@ -101,8 +75,47 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/victimology"
           render={(routeProps) => (
-            <StixDomainEntityVictimology
-              stixDomainEntityId={threatActor.id}
+            <StixDomainObjectVictimology
+              stixDomainObjectId={threatActor.id}
+              entityLink={link}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/intrusion_sets"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['attributed-to']}
+              targetStixDomainObjectTypes={['Intrusion-Set']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/campaigns"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['attributed-to']}
+              targetStixDomainObjectTypes={['Campaign']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/attack_patterns"
+          render={(routeProps) => (
+            <StixDomainObjectKillChain
+              stixDomainObjectId={threatActor.id}
               entityLink={link}
               {...routeProps}
             />
@@ -112,22 +125,10 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/malwares"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="uses"
-              targetEntityTypes={['Malware']}
-              entityLink={link}
-              creationIsFrom={true}
-              {...routeProps}
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/ttp"
-          render={(routeProps) => (
-            <StixDomainEntityKillChain
-              stixDomainEntityId={threatActor.id}
+              relationshipTypes={['uses']}
+              targetStixDomainObjectTypes={['Malware']}
               entityLink={link}
               {...routeProps}
             />
@@ -137,12 +138,11 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/tools"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="uses"
-              targetEntityTypes={['Tool']}
+              relationshipTypes={['uses']}
+              targetStixDomainObjectTypes={['Tool']}
               entityLink={link}
-              creationIsFrom={true}
               {...routeProps}
             />
           )}
@@ -151,12 +151,58 @@ class ThreatActorKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/threat_actors/:threatActorId/knowledge/vulnerabilities"
           render={(routeProps) => (
-            <EntityStixRelations
+            <EntityStixCoreRelationships
               entityId={threatActor.id}
-              relationType="targets"
-              targetEntityTypes={['Vulnerability']}
+              relationshipTypes={['targets']}
+              targetStixDomainObjectTypes={['Vulnerability']}
               entityLink={link}
-              creationIsFrom={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/incidents"
+          render={(routeProps) => (
+            <EntityStixCoreRelationships
+              entityId={threatActor.id}
+              relationshipTypes={['attributed-to']}
+              targetStixDomainObjectTypes={['X-OpenCTI-Incident']}
+              entityLink={link}
+              isRelationReversed={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/observables"
+          render={(routeProps) => (
+            <StixCoreObjectStixCyberObservables
+              stixCoreObjectId={threatActor.id}
+              stixCoreObjectLink={link}
+              noRightBar={true}
+              {...routeProps}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/threats/threat_actors/:threatActorId/knowledge/sightings"
+          render={(routeProps) => (
+            <EntityStixSightingRelationships
+              entityId={threatActor.id}
+              entityLink={link}
+              noRightBar={true}
+              targetStixDomainObjectTypes={[
+                'Region',
+                'Country',
+                'City',
+                'Position',
+                'Sector',
+                'Organization',
+                'Individual',
+              ]}
               {...routeProps}
             />
           )}
@@ -179,7 +225,7 @@ const ThreatActorKnowledge = createFragmentContainer(
       fragment ThreatActorKnowledge_threatActor on ThreatActor {
         id
         name
-        alias
+        aliases
       }
     `,
   },

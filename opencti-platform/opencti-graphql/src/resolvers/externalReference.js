@@ -9,42 +9,44 @@ import {
   externalReferenceEditContext,
   externalReferenceEditField,
   findAll,
-  findById
+  findById,
 } from '../domain/externalReference';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
+import { REL_INDEX_PREFIX } from '../schema/general';
 
 const externalReferenceResolvers = {
   Query: {
-    externalReference: (_, { id }) => findById(id),
-    externalReferences: (_, args) => findAll(args)
+    externalReference: (_, { id }, { user }) => findById(user, id),
+    externalReferences: (_, args, { user }) => findAll(user, args),
   },
   ExternalReferencesFilter: {
-    usedBy: `${REL_INDEX_PREFIX}external_references.internal_id_key`
+    usedBy: `${REL_INDEX_PREFIX}${RELATION_EXTERNAL_REFERENCE}.internal_id`,
   },
   ExternalReference: {
-    editContext: externalReference => fetchEditContext(externalReference.id)
+    editContext: (externalReference) => fetchEditContext(externalReference.id),
   },
   Mutation: {
     externalReferenceEdit: (_, { id }, { user }) => ({
-      delete: () => externalReferenceDelete(id),
+      delete: () => externalReferenceDelete(user, id),
       fieldPatch: ({ input }) => externalReferenceEditField(user, id, input),
       contextPatch: ({ input }) => externalReferenceEditContext(user, id, input),
       contextClean: () => externalReferenceCleanContext(user, id),
       relationAdd: ({ input }) => externalReferenceAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => externalReferenceDeleteRelation(user, id, relationId)
+      relationDelete: ({ fromId, relationship_type: relationshipType }) =>
+        externalReferenceDeleteRelation(user, id, fromId, relationshipType),
     }),
-    externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input)
+    externalReferenceAdd: (_, { input }, { user }) => addExternalReference(user, input),
   },
   Subscription: {
     externalReference: {
-      resolve: payload => payload.instance,
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         externalReferenceEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.ExternalReference.EDIT_TOPIC),
-          payload => {
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -52,9 +54,9 @@ const externalReferenceResolvers = {
         return withCancel(filtering, () => {
           externalReferenceCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export default externalReferenceResolvers;

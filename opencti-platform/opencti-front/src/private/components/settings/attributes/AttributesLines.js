@@ -6,7 +6,7 @@ import { pathOr } from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { AttributeLine, AttributeLineDummy } from './AttributeLine';
 
-const nbOfRowsToLoad = 25;
+const nbOfRowsToLoad = 50;
 
 class AttributesLines extends Component {
   render() {
@@ -49,12 +49,12 @@ AttributesLines.propTypes = {
 };
 
 export const attributesQuery = graphql`
-  query AttributesLinesAttributesQuery($type: String!) {
-    attributes(type: $type) {
+  query AttributesLinesAttributesQuery($key: String!) {
+    attributes(key: $key) {
       edges {
         node {
           id
-          type
+          key
           value
         }
       }
@@ -64,7 +64,7 @@ export const attributesQuery = graphql`
 
 export const attributesLinesQuery = graphql`
   query AttributesLinesPaginationQuery(
-    $type: String!
+    $key: String!
     $search: String
     $count: Int
     $cursor: ID
@@ -73,7 +73,7 @@ export const attributesLinesQuery = graphql`
   ) {
     ...AttributesLines_data
       @arguments(
-        type: $type
+        key: $key
         search: $search
         count: $count
         cursor: $cursor
@@ -88,16 +88,16 @@ export default createPaginationContainer(
   {
     data: graphql`
       fragment AttributesLines_data on Query
-        @argumentDefinitions(
-          type: { type: "String!" }
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "AttributesOrdering", defaultValue: "value" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-        ) {
+      @argumentDefinitions(
+        key: { type: "String!" }
+        search: { type: "String" }
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+        orderBy: { type: "AttributesOrdering", defaultValue: value }
+        orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         attributes(
-          type: $type
+          key: $key
           search: $search
           first: $count
           after: $cursor

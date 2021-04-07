@@ -5,7 +5,7 @@ import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
 import { ArrowForwardIos } from '@material-ui/icons';
-import { Diamond } from 'mdi-material-ui';
+import { DiamondOutline } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -57,7 +57,7 @@ class TopMenuIntrusionSet extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Diamond className={classes.icon} fontSize="small" />
+          <DiamondOutline className={classes.icon} fontSize="small" />
           {t('Intrusion sets')}
         </Button>
         <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
@@ -105,23 +105,23 @@ class TopMenuIntrusionSet extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/reports`
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
         </Button>
         <Button
           component={Link}
@@ -167,6 +167,26 @@ class TopMenuIntrusionSet extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/threats/intrusion_sets/${intrusionSetId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/threats/intrusion_sets/${intrusionSetId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

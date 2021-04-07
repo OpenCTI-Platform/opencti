@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { Flag, ArrowForwardIos } from '@material-ui/icons';
+import { MapOutlined, ArrowForwardIosOutlined } from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -50,16 +50,19 @@ class TopMenuRegion extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/entities/regions"
+          to="/dashboard/entities/countries"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Flag className={classes.icon} fontSize="small" />
-          {t('Regions')}
+          <MapOutlined className={classes.icon} fontSize="small" />
+          {t('Countries')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/regions/${regionId}`}
@@ -102,45 +105,23 @@ class TopMenuRegion extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/regions/${regionId}/reports`}
+          to={`/dashboard/entities/regions/${regionId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/reports`
+            === `/dashboard/entities/regions/${regionId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/regions/${regionId}/reports`
+            === `/dashboard/entities/regions/${regionId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/regions/${regionId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/regions/${regionId}/observables`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
+          {t('Analysis')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
@@ -164,6 +145,26 @@ class TopMenuRegion extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/regions/${regionId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/regions/${regionId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/regions/${regionId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

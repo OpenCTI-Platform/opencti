@@ -6,11 +6,7 @@ import Drawer from '@material-ui/core/Drawer';
 import Fab from '@material-ui/core/Fab';
 import { Edit } from '@material-ui/icons';
 import graphql from 'babel-plugin-relay/macro';
-import {
-  commitMutation,
-  QueryRenderer,
-  WS_ACTIVATED,
-} from '../../../../relay/environment';
+import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import RegionEditionContainer from './RegionEditionContainer';
 import { regionEditionOverviewFocus } from './RegionEditionOverview';
@@ -55,15 +51,13 @@ class RegionEdition extends Component {
   }
 
   handleClose() {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: regionEditionOverviewFocus,
-        variables: {
-          id: this.props.regionId,
-          input: { focusOn: '' },
-        },
-      });
-    }
+    commitMutation({
+      mutation: regionEditionOverviewFocus,
+      variables: {
+        id: this.props.regionId,
+        input: { focusOn: '' },
+      },
+    });
     this.setState({ open: false });
   }
 

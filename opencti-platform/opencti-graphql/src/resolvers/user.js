@@ -1,6 +1,6 @@
 import { filter } from 'ramda';
+import { withFilter } from 'graphql-subscriptions';
 import {
-  addPerson,
   addUser,
   findAll,
   findById,
@@ -8,129 +8,145 @@ import {
   findRoles,
   findRoleById,
   getCapabilities,
-  getRoleCapabilities,
-  getRoles,
+  batchRoleCapabilities,
+  batchRoles,
   logout,
   meEditField,
-  removeRole,
-  roleRemoveCapability,
-  setAuthenticationCookie,
   token,
   roleEditField,
   roleDelete,
   userDelete,
-  personDelete,
   userEditField,
-  personEditField,
   roleAddRelation,
+  roleDeleteRelation,
   userAddRelation,
-  personAddRelation,
   userDeleteRelation,
-  personDeleteRelation,
   userRenewToken,
-  organizations,
-  groups
+  batchGroups,
+  roleEditContext,
+  roleCleanContext,
+  userEditContext,
+  userCleanContext,
+  getMarkings,
+  authenticateUser,
+  findSessions,
+  fetchSessionTtl,
+  killSession,
+  findUserSessions,
+  killUserSessions,
 } from '../domain/user';
-import { logger } from '../config/conf';
-import { stixDomainEntityCleanContext, stixDomainEntityEditContext } from '../domain/stixDomainEntity';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
-import passport, { PROVIDERS } from '../config/security';
+import { BUS_TOPICS, logger } from '../config/conf';
+import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
-import { fetchEditContext } from '../database/redis';
+import { fetchEditContext, pubsub } from '../database/redis';
+import withCancel from '../graphql/subscriptionWrapper';
+import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { batchLoader } from '../database/middleware';
+
+const groupsLoader = batchLoader(batchGroups);
+const rolesLoader = batchLoader(batchRoles);
+const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 
 const userResolvers = {
   Query: {
-    user: (_, { id }) => findById(id, { isUser: true }),
-    users: (_, args) => findAll(args, true),
-    person: (_, { id }) => findById(id),
-    persons: (_, args) => findAll(args),
-    role: (_, { id }) => findRoleById(id),
-    roles: (_, args) => findRoles(args),
-    capabilities: (_, args) => findCapabilities(args),
-    me: (_, args, { user }) => findById(user.id, { isUser: true })
-  },
-  UsersOrdering: {
-    markingDefinitions: `${REL_INDEX_PREFIX}object_marking_refs.definition`,
-    tags: `${REL_INDEX_PREFIX}tagged.value`
-  },
-  UsersFilter: {
-    tags: `${REL_INDEX_PREFIX}tagged.internal_id_key`
+    user: (_, { id }, { user }) => findById(user, id),
+    users: (_, args, { user }) => findAll(user, args),
+    role: (_, { id }, { user }) => findRoleById(user, id),
+    roles: (_, args, { user }) => findRoles(user, args),
+    sessions: () => findSessions(),
+    capabilities: (_, args, { user }) => findCapabilities(user, args),
+    me: (_, args, { user }) => findById(user, user.id),
   },
   User: {
-    organizations: user => organizations(user.id),
-    groups: user => groups(user.id),
-    roles: user => getRoles(user.id),
-    capabilities: user => getCapabilities(user.id),
-    token: (user, args, context) => token(user.id, args, context)
+    groups: (current, _, { user }) => groupsLoader.load(current.id, user),
+    roles: (current, _, { user }) => rolesLoader.load(current.id, user),
+    allowed_marking: (current, _, { user }) => getMarkings(current.id, user.capabilities),
+    capabilities: (current) => getCapabilities(current.id),
+    token: (current, _, { user }) => token(user, current.id),
+    editContext: (current) => fetchEditContext(current.id),
+    sessions: (current) => findUserSessions(current.id),
+  },
+  UserSession: {
+    user: (session, _, { user }) => findById(user, session.user_id),
+  },
+  SessionDetail: {
+    ttl: (session) => fetchSessionTtl(session),
   },
   Role: {
-    editContext: role => fetchEditContext(role.id),
-    capabilities: role => getRoleCapabilities(role.id)
+    editContext: (role) => fetchEditContext(role.id),
+    capabilities: (role, _, { user }) => rolesCapabilitiesLoader.load(role.id, user),
   },
   Mutation: {
-    token: async (_, { input }, context) => {
+    token: async (_, { input }, { req }) => {
       // We need to iterate on each provider to find one that validated the credentials
-      const formProviders = filter(p => p.type === 'FORM', PROVIDERS);
+      const formProviders = filter((p) => p.type === 'FORM', PROVIDERS);
       if (formProviders.length === 0) {
-        logger.error('[Configuration] Cant authenticate without any form providers');
+        logger.error('[AUTH] Cant authenticate without any form providers');
       }
       for (let index = 0; index < formProviders.length; index += 1) {
         const auth = formProviders[index];
-        // eslint-disable-next-line no-await-in-loop
-        const loginToken = await new Promise(resolve => {
-          try {
-            passport.authenticate(auth.provider, (err, tokenObject) => {
-              resolve(tokenObject);
-            })({ body: { username: input.email, password: input.password } });
-          } catch (e) {
-            logger.error(`[Configuration] Cant authenticate with ${auth.provider}`, e);
-            resolve(null);
-          }
+        const loginToken = await new Promise((resolve) => {
+          passport.authenticate(auth.provider, {}, (err, tokenAuth, info) => {
+            if (err || info) {
+              logger.warn(`[AUTH] ${auth.provider}`, { error: err, info });
+            }
+            resolve(tokenAuth);
+          })({ body: { username: input.email, password: input.password } });
         });
         // As soon as credential is validated, set the cookie and return.
         if (loginToken) {
-          setAuthenticationCookie(loginToken, context.res);
+          await authenticateUser(req, loginToken.uuid);
           return loginToken.uuid;
         }
       }
       // User cannot be authenticated in any providers
-      throw new AuthenticationFailure();
+      throw AuthenticationFailure();
     },
-    logout: (_, args, context) => logout(context.user, context.res),
+    sessionKill: (_, { id }) => killSession(id),
+    userSessionsKill: (_, { id }) => killUserSessions(id),
+    logout: (_, args, context) => logout(context.user, context.req, context.res),
     roleEdit: (_, { id }, { user }) => ({
-      delete: () => roleDelete(id),
+      delete: () => roleDelete(user, id),
       fieldPatch: ({ input }) => roleEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
+      contextPatch: ({ input }) => roleEditContext(user, id, input),
+      contextClean: () => roleCleanContext(user, id),
       relationAdd: ({ input }) => roleAddRelation(user, id, input),
-      removeCapability: ({ name }) => roleRemoveCapability(id, name)
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        roleDeleteRelation(user, id, toId, relationshipType),
     }),
-    roleAdd: (_, { input }) => addRole(input),
+    roleAdd: (_, { input }, { user }) => addRole(user, input),
     userEdit: (_, { id }, { user }) => ({
-      delete: () => userDelete(id),
+      delete: () => userDelete(user, id),
       fieldPatch: ({ input }) => userEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      tokenRenew: () => userRenewToken(id),
-      removeRole: ({ name }) => removeRole(id, name),
+      contextPatch: ({ input }) => userEditContext(user, id, input),
+      contextClean: () => userCleanContext(user, id),
+      tokenRenew: () => userRenewToken(user, id),
       relationAdd: ({ input }) => userAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => userDeleteRelation(user, id, relationId)
-    }),
-    personEdit: (_, { id }, { user }) => ({
-      delete: () => personDelete(id),
-      fieldPatch: ({ input }) => personEditField(user, id, input),
-      contextPatch: ({ input }) => stixDomainEntityEditContext(user, id, input),
-      contextClean: () => stixDomainEntityCleanContext(user, id),
-      tokenRenew: () => userRenewToken(id),
-      removeRole: ({ name }) => removeRole(id, name),
-      relationAdd: ({ input }) => personAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => personDeleteRelation(user, id, relationId)
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        userDeleteRelation(user, id, toId, relationshipType),
     }),
     meEdit: (_, { input }, { user }) => meEditField(user, user.id, input),
-    personAdd: (_, { input }, { user }) => addPerson(user, input),
-    userAdd: (_, { input }, { user }) => addUser(user, input)
-  }
+    userAdd: (_, { input }, { user }) => addUser(user, input),
+  },
+  Subscription: {
+    user: {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
+        userEditContext(user, id);
+        const filtering = withFilter(
+          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC),
+          (payload) => {
+            if (!payload) return false; // When disconnect, an empty payload is dispatched.
+            return payload.user.id !== user.id && payload.instance.id === id;
+          }
+        )(_, { id }, { user });
+        return withCancel(filtering, () => {
+          userCleanContext(user, id);
+        });
+      },
+    },
+  },
 };
 
 export default userResolvers;

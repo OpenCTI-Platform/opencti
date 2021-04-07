@@ -1,107 +1,168 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { createPaginationContainer } from 'react-relay';
+import {
+  compose,
+  pipe,
+  map,
+  propOr,
+  pathOr,
+  sortBy,
+  toLower,
+  prop,
+  filter,
+  join,
+  assoc,
+  flatten,
+} from 'ramda';
+import { createRefetchContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
-import { pathOr } from 'ramda';
-import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import { withStyles } from '@material-ui/core';
+import List from '@material-ui/core/List';
 import { RegionLine, RegionLineDummy } from './RegionLine';
-import { setNumberOfElements } from '../../../../utils/Number';
+import inject18n from '../../../../components/i18n';
+import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
+import RegionOrCountryCreation from '../common/RegionOrCountryCreation';
 
-const nbOfRowsToLoad = 25;
+const styles = () => ({
+  root: {
+    margin: 0,
+  },
+});
 
-class RegionsLines extends Component {
-  componentDidUpdate(prevProps) {
-    setNumberOfElements(
-      prevProps,
-      this.props,
-      'regions',
-      this.props.setNumberOfElements.bind(this),
-    );
-  }
-
+class RegionsLinesComponent extends Component {
   render() {
-    const {
-      initialLoading,
-      dataColumns,
-      relay,
-      paginationOptions,
-    } = this.props;
+    const { data, keyword, classes } = this.props;
+    const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
+    const filterSubregion = (n) => n.isSubRegion === false;
+    const filterByKeyword = (n) => keyword === ''
+      || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
+      || propOr('', 'subregions_text', n)
+        .toLowerCase()
+        .indexOf(keyword.toLowerCase()) !== -1
+      || propOr('', 'countries_text', n)
+        .toLowerCase()
+        .indexOf(keyword.toLowerCase()) !== -1;
+    const regions = pipe(
+      pathOr([], ['regions', 'edges']),
+      map((n) => n.node),
+      map((n) => assoc(
+        'subregions_text',
+        pipe(
+          map((o) => `${o.node.name} ${o.node.description}`),
+          join(' | '),
+        )(pathOr([], ['subRegions', 'edges'], n)),
+        n,
+      )),
+      map((n) => assoc(
+        'countries_text',
+        pipe(
+          map((o) => o.node.countries.edges),
+          flatten,
+          map((o) => `${o.node.name} ${o.node.description}`),
+          join(' | '),
+        )(pathOr([], ['subRegions', 'edges'], n)),
+        n,
+      )),
+      filter(filterSubregion),
+      filter(filterByKeyword),
+      sortByNameCaseInsensitive,
+    )(data);
     return (
-      <ListLinesContent
-        initialLoading={initialLoading}
-        loadMore={relay.loadMore.bind(this)}
-        hasMore={relay.hasMore.bind(this)}
-        isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['regions', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['regions', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
-        LineComponent={<RegionLine />}
-        DummyLineComponent={<RegionLineDummy />}
-        dataColumns={dataColumns}
-        nbOfRowsToLoad={nbOfRowsToLoad}
-        paginationOptions={paginationOptions}
-      />
+      <div>
+        <List
+          component="nav"
+          aria-labelledby="nested-list-subheader"
+          className={classes.root}
+        >
+          {data
+            ? map((region) => {
+              const subRegions = pipe(
+                pathOr([], ['subRegions', 'edges']),
+                map((n) => n.node),
+                map((n) => assoc(
+                  'countries_text',
+                  pipe(
+                    map((o) => `${o.node.name} ${o.node.description}`),
+                    join(' | '),
+                  )(pathOr([], ['countries', 'edges'], n)),
+                  n,
+                )),
+                filter(filterByKeyword),
+                sortByNameCaseInsensitive,
+              )(region);
+              const countries = pipe(
+                pathOr([], ['countries', 'edges']),
+                map((n) => n.node),
+                filter(filterByKeyword),
+                sortByNameCaseInsensitive,
+              )(region);
+              return (
+                  <RegionLine
+                    key={region.id}
+                    node={region}
+                    countries={countries}
+                    subRegions={subRegions}
+                    keyword={keyword}
+                  />
+              );
+            }, regions)
+            : Array.from(Array(20), (e, i) => <RegionLineDummy key={i} />)}
+        </List>
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <RegionOrCountryCreation onCreate={this.props.relay.refetch} />
+        </Security>
+      </div>
     );
   }
 }
 
-RegionsLines.propTypes = {
+RegionsLinesComponent.propTypes = {
   classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
+  keyword: PropTypes.string,
   data: PropTypes.object,
-  relay: PropTypes.object,
-  initialLoading: PropTypes.bool,
-  setNumberOfElements: PropTypes.func,
 };
 
 export const regionsLinesQuery = graphql`
-  query RegionsLinesPaginationQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-    $orderBy: RegionsOrdering
-    $orderMode: OrderingMode
-  ) {
+  query RegionsLinesPaginationQuery($count: Int!, $cursor: ID) {
     ...RegionsLines_data
-      @arguments(
-        search: $search
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
   }
 `;
 
-export default createPaginationContainer(
-  RegionsLines,
+const RegionsLinesFragment = createRefetchContainer(
+  RegionsLinesComponent,
   {
     data: graphql`
-      fragment RegionsLines_data on Query
-        @argumentDefinitions(
-          search: { type: "String" }
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-          orderBy: { type: "RegionsOrdering", defaultValue: "name" }
-          orderMode: { type: "OrderingMode", defaultValue: "asc" }
-        ) {
-        regions(
-          search: $search
-          first: $count
-          after: $cursor
-          orderBy: $orderBy
-          orderMode: $orderMode
-        ) @connection(key: "Pagination_regions") {
+      fragment RegionsLines_data on Query {
+        regions(first: $count, after: $cursor) {
           edges {
             node {
               id
               name
-              description
-              ...RegionLine_node
+              isSubRegion
+              subRegions {
+                edges {
+                  node {
+                    id
+                    name
+                    countries {
+                      edges {
+                        node {
+                          id
+                          name
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              countries {
+                edges {
+                  node {
+                    id
+                    name
+                  }
+                }
+              }
             }
           }
           pageInfo {
@@ -113,25 +174,7 @@ export default createPaginationContainer(
       }
     `,
   },
-  {
-    direction: 'forward',
-    getConnectionFromProps(props) {
-      return props.data && props.data.regions;
-    },
-    getFragmentVariables(prevVars, totalCount) {
-      return {
-        ...prevVars,
-        count: totalCount,
-      };
-    },
-    getVariables(props, { count, cursor }, fragmentVariables) {
-      return {
-        count,
-        cursor,
-        orderBy: fragmentVariables.orderBy,
-        orderMode: fragmentVariables.orderMode,
-      };
-    },
-    query: regionsLinesQuery,
-  },
+  regionsLinesQuery,
 );
+
+export default compose(inject18n, withStyles(styles))(RegionsLinesFragment);

@@ -4,11 +4,11 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
-const styles = theme => ({
+const styles = (theme) => ({
   buttonHome: {
     marginRight: theme.spacing(2),
     padding: '2px 5px 2px 5px',
@@ -47,7 +47,7 @@ class TopMenuAttackPattern extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/techniques/attack_patterns"
+          to="/dashboard/arsenal/attack_patterns"
           variant="contained"
           size="small"
           color="inherit"
@@ -56,20 +56,23 @@ class TopMenuAttackPattern extends Component {
           <LockPattern className={classes.icon} fontSize="small" />
           {t('Attack patterns')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
-          to={`/dashboard/techniques/attack_patterns/${attackPatternId}`}
+          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}`}
           variant={
             location.pathname
-            === `/dashboard/techniques/attack_patterns/${attackPatternId}`
+            === `/dashboard/arsenal/attack_patterns/${attackPatternId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/attack_patterns/${attackPatternId}`
+            === `/dashboard/arsenal/attack_patterns/${attackPatternId}`
               ? 'primary'
               : 'inherit'
           }
@@ -79,10 +82,10 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`}
+          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`,
+              `/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -90,7 +93,7 @@ class TopMenuAttackPattern extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/dashboard/techniques/attack_patterns/${attackPatternId}/knowledge`,
+              `/dashboard/arsenal/attack_patterns/${attackPatternId}/knowledge`,
             )
               ? 'primary'
               : 'inherit'
@@ -101,23 +104,65 @@ class TopMenuAttackPattern extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/techniques/attack_patterns/${attackPatternId}/reports`}
+          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
+            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/techniques/attack_patterns/${attackPatternId}/reports`
+            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
+          {t('Analysis')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/arsenal/attack_patterns/${attackPatternId}/indicators`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Indicators')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/arsenal/attack_patterns/${attackPatternId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/arsenal/attack_patterns/${attackPatternId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
         </Button>
       </div>
     );

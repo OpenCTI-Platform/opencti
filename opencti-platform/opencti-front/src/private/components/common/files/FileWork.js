@@ -1,9 +1,7 @@
-import React, { Component } from 'react';
+import React from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  propOr, compose, last, join,
-} from 'ramda';
-import uuid from 'uuid/v4';
+import { propOr, compose } from 'ramda';
+import { v4 as uuid } from 'uuid';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core';
@@ -12,8 +10,11 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import { CheckCircle, Delete, Warning } from '@material-ui/icons';
-
+import {
+  CheckCircleOutlined,
+  DeleteOutlined,
+  WarningOutlined,
+} from '@material-ui/icons';
 import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import Tooltip from '@material-ui/core/Tooltip';
@@ -28,73 +29,97 @@ const styles = (theme) => ({
 
 const fileWorkDeleteMutation = graphql`
   mutation FileWorkDeleteMutation($workId: ID!) {
-    deleteWork(id: $workId)
+    workEdit(id: $workId) {
+      delete
+    }
   }
 `;
 
-class FileWorkComponent extends Component {
-  deleteWork(workId) {
+const FileWorkComponent = (props) => {
+  const deleteWork = (workId) => {
     commitMutation({
       mutation: fileWorkDeleteMutation,
       variables: { workId },
     });
-  }
-
-  render() {
-    const {
-      t,
-      nsdt,
-      classes,
-      file: { works },
-    } = this.props;
-    return (
-      <List component="div" disablePadding={true}>
-        {works
-          && works.map((work) => {
-            const message = join(
-              ' | ',
-              propOr([], 'messages', last(propOr([], 'jobs', work))),
-            );
-            return (
-              <Tooltip title={message} key={uuid()}>
-                <ListItem
-                  dense={true}
-                  button={true}
-                  divider={true}
-                  classes={{ root: classes.nested }}
-                >
-                  <ListItemIcon>
-                    {(work.status === 'error' || work.status === 'partial') && (
-                      <Warning style={{ fontSize: 15, color: '#f44336' }} />
-                    )}
-                    {work.status === 'complete' && (
-                      <CheckCircle style={{ fontSize: 15, color: '#4caf50' }} />
-                    )}
-                    {work.status === 'progress' && (
-                      <CircularProgress
-                        size={20}
-                        thickness={2}
-                        style={{ marginRight: 10 }}
-                      />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={propOr(t('Deleted'), 'name', work.connector)}
-                    secondary={nsdt(work.created_at)}
-                  />
-                  <ListItemSecondaryAction style={{ right: 0 }}>
-                    <IconButton onClick={this.deleteWork.bind(this, work.id)}>
-                      <Delete color="primary" />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              </Tooltip>
-            );
-          })}
-      </List>
-    );
-  }
-}
+  };
+  const {
+    t,
+    nsdt,
+    classes,
+    file: { works },
+  } = props;
+  return (
+    <List component="div" disablePadding={true}>
+      {works
+        && works.map((work) => {
+          const message = work.messages.map((s) => s.message).join('\r\n');
+          const numberOfError = work.errors.length;
+          const secondaryLabel = `${nsdt(work.timestamp)} `;
+          const { tracking } = work;
+          const computeLabel = () => {
+            let statusText = '';
+            if (!work.received_time) {
+              statusText = ' (Pending)';
+            } else if (tracking.import_expected_number > 0) {
+              statusText = ` (${tracking.import_processed_number}/${tracking.import_expected_number})`;
+            }
+            if (numberOfError > 0) {
+              statusText += ` - [ ${numberOfError} error${
+                numberOfError > 1 ? 's' : ''
+              } ]`;
+            }
+            return `${propOr(
+              t('Deleted'),
+              'name',
+              work.connector,
+            )}${statusText}`;
+          };
+          return (
+            <Tooltip title={message} key={uuid()}>
+              <ListItem
+                dense={true}
+                button={true}
+                divider={true}
+                classes={{ root: classes.nested }}
+              >
+                <ListItemIcon>
+                  {work.status === 'complete' && numberOfError === 0 && (
+                    <CheckCircleOutlined
+                      style={{ fontSize: 15, color: '#4caf50' }}
+                    />
+                  )}
+                  {work.status === 'complete' && numberOfError > 0 && (
+                    <WarningOutlined
+                      style={{ fontSize: 15, color: '#f44336' }}
+                    />
+                  )}
+                  {(work.status === 'progress' || work.status === 'wait') && (
+                    <CircularProgress
+                      size={20}
+                      thickness={2}
+                      style={{ marginRight: 10 }}
+                    />
+                  )}
+                </ListItemIcon>
+                <ListItemText
+                  primary={computeLabel()}
+                  secondary={secondaryLabel}
+                />
+                <ListItemSecondaryAction style={{ right: 0 }}>
+                  <IconButton
+                    color="primary"
+                    onClick={() => deleteWork(work.id)}
+                  >
+                    <DeleteOutlined />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
+            </Tooltip>
+          );
+        })}
+    </List>
+  );
+};
 
 FileWorkComponent.propTypes = {
   classes: PropTypes.object,
@@ -111,13 +136,24 @@ const FileWork = createFragmentContainer(FileWorkComponent, {
         connector {
           name
         }
-        jobs {
-          created_at
-          messages
+        user {
+          name
+        }
+        received_time
+        tracking {
+          import_expected_number
+          import_processed_number
+        }
+        messages {
+          timestamp
+          message
+        }
+        errors {
+          timestamp
+          message
         }
         status
-        work_type
-        created_at
+        timestamp
       }
     }
   `,

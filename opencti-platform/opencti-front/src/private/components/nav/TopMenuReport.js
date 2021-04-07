@@ -4,7 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos, Description } from '@material-ui/icons';
+import {
+  ArrowForwardIosOutlined,
+  DescriptionOutlined,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -50,27 +53,30 @@ class TopMenuReport extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/reports/all"
+          to="/dashboard/analysis/reports"
           variant="contained"
           size="small"
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <Description className={classes.icon} fontSize="small" />
+          <DescriptionOutlined className={classes.icon} fontSize="small" />
           {t('Reports')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
-          to={`/dashboard/reports/all/${reportId}`}
+          to={`/dashboard/analysis/reports/${reportId}`}
           variant={
-            location.pathname === `/dashboard/reports/all/${reportId}`
+            location.pathname === `/dashboard/analysis/reports/${reportId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/reports/all/${reportId}`
+            location.pathname === `/dashboard/analysis/reports/${reportId}`
               ? 'primary'
               : 'inherit'
           }
@@ -80,15 +86,17 @@ class TopMenuReport extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/reports/all/${reportId}/entities`}
+          to={`/dashboard/analysis/reports/${reportId}/entities`}
           variant={
-            location.pathname === `/dashboard/reports/all/${reportId}/entities`
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/entities`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/reports/all/${reportId}/entities`
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/entities`
               ? 'primary'
               : 'inherit'
           }
@@ -98,17 +106,17 @@ class TopMenuReport extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/reports/all/${reportId}/observables`}
+          to={`/dashboard/analysis/reports/${reportId}/observables`}
           variant={
             location.pathname
-            === `/dashboard/reports/all/${reportId}/observables`
+            === `/dashboard/analysis/reports/${reportId}/observables`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/reports/all/${reportId}/observables`
+            === `/dashboard/analysis/reports/${reportId}/observables`
               ? 'primary'
               : 'inherit'
           }
@@ -118,15 +126,17 @@ class TopMenuReport extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/reports/all/${reportId}/knowledge`}
+          to={`/dashboard/analysis/reports/${reportId}/knowledge`}
           variant={
-            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/knowledge`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/dashboard/reports/all/${reportId}/knowledge`
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/knowledge`
               ? 'primary'
               : 'inherit'
           }
@@ -137,15 +147,17 @@ class TopMenuReport extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/dashboard/reports/all/${reportId}/files`}
+            to={`/dashboard/analysis/reports/${reportId}/files`}
             variant={
-              location.pathname === `/dashboard/reports/all/${reportId}/files`
+              location.pathname
+              === `/dashboard/analysis/reports/${reportId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === `/dashboard/reports/all/${reportId}/files`
+              location.pathname
+              === `/dashboard/analysis/reports/${reportId}/files`
                 ? 'primary'
                 : 'inherit'
             }
@@ -154,6 +166,26 @@ class TopMenuReport extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/analysis/reports/${reportId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/analysis/reports/${reportId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

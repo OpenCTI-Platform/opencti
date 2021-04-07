@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -21,9 +21,10 @@ import { Security } from '@material-ui/icons';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
-import Autocomplete from '../../../../components/Autocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import MarkDownField from '../../../../components/MarkDownField';
 
 const styles = () => ({
   icon: {
@@ -73,7 +74,7 @@ export const userEditionOverviewRolesSearchQuery = graphql`
 const userEditionOverviewAddRole = graphql`
   mutation UserEditionOverviewAddRoleMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: InternalRelationshipAddInput
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {
@@ -86,9 +87,13 @@ const userEditionOverviewAddRole = graphql`
 `;
 
 const userEditionOverviewDeleteRole = graphql`
-  mutation UserEditionOverviewDeleteRoleMutation($id: ID!, $name: String!) {
+  mutation UserEditionOverviewDeleteRoleMutation(
+    $id: ID!
+    $toId: String!
+    $relationship_type: String!
+  ) {
     userEdit(id: $id) {
-      removeRole(name: $name) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...UserEditionOverview_user
       }
     }
@@ -164,10 +169,8 @@ class UserEditionOverviewComponent extends Component {
         variables: {
           id: user.id,
           input: {
-            fromRole: 'client',
-            toRole: 'position',
             toId: head(added).id,
-            through: 'user_role',
+            relationship_type: 'has-role',
           },
         },
       });
@@ -177,7 +180,8 @@ class UserEditionOverviewComponent extends Component {
         mutation: userEditionOverviewDeleteRole,
         variables: {
           id: user.id,
-          name: head(removed).name,
+          toId: head(removed).id,
+          relationship_type: 'has-role',
         },
       });
     }
@@ -195,12 +199,12 @@ class UserEditionOverviewComponent extends Component {
       assoc('roles', userRoles),
       pick([
         'name',
-        'description',
         'user_email',
         'firstname',
         'lastname',
         'language',
         'roles',
+        'token',
       ]),
     )(user);
     return (
@@ -212,7 +216,8 @@ class UserEditionOverviewComponent extends Component {
         >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
-              <TextField
+              <Field
+                component={TextField}
                 name="name"
                 label={t('name')}
                 disabled={external}
@@ -223,7 +228,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="name" />
                 }
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="user_email"
                 disabled={external}
                 label={t('Email address')}
@@ -235,7 +241,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="user_email" />
                 }
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="firstname"
                 label={t('Firstname')}
                 fullWidth={true}
@@ -246,7 +253,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="firstname" />
                 }
               />
-              <TextField
+              <Field
+                component={TextField}
                 name="lastname"
                 label={t('Lastname')}
                 fullWidth={true}
@@ -257,7 +265,8 @@ class UserEditionOverviewComponent extends Component {
                   <SubscriptionFocus context={context} fieldName="lastname" />
                 }
               />
-              <SelectField
+              <Field
+                component={SelectField}
                 name="language"
                 label={t('Language')}
                 fullWidth={true}
@@ -273,8 +282,9 @@ class UserEditionOverviewComponent extends Component {
                 </MenuItem>
                 <MenuItem value="en">English</MenuItem>
                 <MenuItem value="fr">Français</MenuItem>
-              </SelectField>
-              <Autocomplete
+              </Field>
+              <Field
+                component={AutocompleteField}
                 name="roles"
                 multiple={true}
                 noOptionsText={t('No available options')}
@@ -298,7 +308,21 @@ class UserEditionOverviewComponent extends Component {
                 )}
                 style={{ marginTop: 20, width: '100%' }}
               />
-              <TextField
+              <Field
+                component={TextField}
+                name="token"
+                disabled={true}
+                label={t('Token')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={this.handleChangeFocus.bind(this)}
+                onSubmit={this.handleSubmitField.bind(this)}
+                helperText={
+                  <SubscriptionFocus context={context} fieldName="token" />
+                }
+              />
+              <Field
+                component={MarkDownField}
                 name="description"
                 label={t('Description')}
                 fullWidth={true}
@@ -343,6 +367,7 @@ const UserEditionOverview = createFragmentContainer(
         firstname
         lastname
         language
+        token
         roles {
           id
           name

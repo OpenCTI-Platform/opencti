@@ -29,12 +29,7 @@ const styles = () => ({
 class SectorsLinesComponent extends Component {
   render() {
     const { data, keyword, classes } = this.props;
-    const sortByNameCaseInsensitive = sortBy(
-      compose(
-        toLower,
-        prop('name'),
-      ),
-    );
+    const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
     const filterSubsector = (n) => n.isSubSector === false;
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
@@ -102,10 +97,10 @@ const SectorsLinesFragment = createPaginationContainer(
   {
     data: graphql`
       fragment SectorsLines_data on Query
-        @argumentDefinitions(
-          count: { type: "Int", defaultValue: 25 }
-          cursor: { type: "ID" }
-        ) {
+      @argumentDefinitions(
+        count: { type: "Int", defaultValue: 25 }
+        cursor: { type: "ID" }
+      ) {
         sectors(first: $count, after: $cursor)
           @connection(key: "Pagination_sectors") {
           edges {
@@ -155,7 +150,4 @@ const SectorsLinesFragment = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(SectorsLinesFragment);
+export default compose(inject18n, withStyles(styles))(SectorsLinesFragment);

@@ -4,46 +4,41 @@ import {
   addMarkingDefinition,
   findAll,
   findById,
-  markingDefinitionAddRelation,
   markingDefinitionCleanContext,
   markingDefinitionDelete,
-  markingDefinitionDeleteRelation,
   markingDefinitionEditContext,
-  markingDefinitionEditField
+  markingDefinitionEditField,
 } from '../domain/markingDefinition';
 import { fetchEditContext, pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { REL_INDEX_PREFIX } from '../database/elasticSearch';
+import { convertDataToStix } from '../database/stix';
 
 const markingDefinitionResolvers = {
   Query: {
-    markingDefinition: (_, { id }) => findById(id),
-    markingDefinitions: (_, args) => findAll(args)
-  },
-  MarkingDefinitionsFilter: {
-    markedBy: `${REL_INDEX_PREFIX}object_marking_refs.internal_id_key`
+    markingDefinition: (_, { id }, { user }) => findById(user, id),
+    markingDefinitions: (_, args, { user }) => findAll(user, args),
   },
   MarkingDefinition: {
-    editContext: markingDefinition => fetchEditContext(markingDefinition.id)
+    toStix: (markingDefinition) => JSON.stringify(convertDataToStix(markingDefinition)),
+    editContext: (markingDefinition) => fetchEditContext(markingDefinition.id),
   },
   Mutation: {
     markingDefinitionEdit: (_, { id }, { user }) => ({
-      delete: () => markingDefinitionDelete(id),
+      delete: () => markingDefinitionDelete(user, id),
       fieldPatch: ({ input }) => markingDefinitionEditField(user, id, input),
       contextPatch: ({ input }) => markingDefinitionEditContext(user, id, input),
-      relationAdd: ({ input }) => markingDefinitionAddRelation(user, id, input),
-      relationDelete: ({ relationId }) => markingDefinitionDeleteRelation(user, id, relationId)
+      contextClean: () => markingDefinitionCleanContext(user, id),
     }),
-    markingDefinitionAdd: (_, { input }, { user }) => addMarkingDefinition(user, input)
+    markingDefinitionAdd: (_, { input }, { user }) => addMarkingDefinition(user, input),
   },
   Subscription: {
     markingDefinition: {
-      resolve: payload => payload.instance,
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         markingDefinitionEditContext(user, id);
         const filtering = withFilter(
           () => pubsub.asyncIterator(BUS_TOPICS.MarkingDefinition.EDIT_TOPIC),
-          payload => {
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -51,9 +46,9 @@ const markingDefinitionResolvers = {
         return withCancel(filtering, () => {
           markingDefinitionCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
 export default markingDefinitionResolvers;

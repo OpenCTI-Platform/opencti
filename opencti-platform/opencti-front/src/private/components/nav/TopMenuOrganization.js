@@ -4,7 +4,10 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { AccountBalance, ArrowForwardIos } from '@material-ui/icons';
+import {
+  AccountBalanceOutlined,
+  ArrowForwardIosOutlined,
+} from '@material-ui/icons';
 import inject18n from '../../../components/i18n';
 import Security, {
   KNOWLEDGE_KNGETEXPORT,
@@ -56,10 +59,13 @@ class TopMenuOrganization extends Component {
           color="inherit"
           classes={{ root: classes.buttonHome }}
         >
-          <AccountBalance className={classes.icon} fontSize="small" />
+          <AccountBalanceOutlined className={classes.icon} fontSize="small" />
           {t('Organizations')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
           to={`/dashboard/entities/organizations/${organizationId}`}
@@ -104,45 +110,23 @@ class TopMenuOrganization extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/entities/organizations/${organizationId}/reports`}
+          to={`/dashboard/entities/organizations/${organizationId}/analysis`}
           variant={
             location.pathname
-            === `/dashboard/entities/organizations/${organizationId}/reports`
+            === `/dashboard/entities/organizations/${organizationId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/entities/organizations/${organizationId}/reports`
+            === `/dashboard/entities/organizations/${organizationId}/analysis`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Reports')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/entities/organizations/${organizationId}/observables`}
-          variant={
-            location.pathname.includes(
-              `/dashboard/entities/organizations/${organizationId}/observables`,
-            )
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname.includes(
-              `/dashboard/entities/organizations/${organizationId}/observables`,
-            )
-              ? 'primary'
-              : 'inherit'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Observables')}
+          {t('Analysis')}
         </Button>
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
@@ -166,6 +150,26 @@ class TopMenuOrganization extends Component {
             {t('Files')}
           </Button>
         </Security>
+        <Button
+          component={Link}
+          to={`/dashboard/entities/organizations/${organizationId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/entities/organizations/${organizationId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
+        </Button>
       </div>
     );
   }

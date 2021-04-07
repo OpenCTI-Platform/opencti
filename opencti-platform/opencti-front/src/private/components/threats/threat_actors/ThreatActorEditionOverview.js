@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
-import { Formik, Form } from 'formik';
+import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import {
   assoc,
@@ -15,12 +15,16 @@ import {
   head,
 } from 'ramda';
 import * as Yup from 'yup';
+import MenuItem from '@material-ui/core/MenuItem';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation, WS_ACTIVATED } from '../../../../relay/environment';
-import CreatedByRefField from '../../common/form/CreatedByRefField';
-import MarkingDefinitionsField from '../../common/form/MarkingDefinitionsField';
+import { commitMutation } from '../../../../relay/environment';
+import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
+import SelectField from '../../../../components/SelectField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -55,6 +59,7 @@ const threatActorMutationFieldPatch = graphql`
     threatActorEdit(id: $id) {
       fieldPatch(input: $input) {
         ...ThreatActorEditionOverview_threatActor
+        ...ThreatActor_threatActor
       }
     }
   }
@@ -76,7 +81,7 @@ export const threatActorEditionOverviewFocus = graphql`
 const threatActorMutationRelationAdd = graphql`
   mutation ThreatActorEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: RelationAddInput!
+    $input: StixMetaRelationshipAddInput
   ) {
     threatActorEdit(id: $id) {
       relationAdd(input: $input) {
@@ -91,10 +96,11 @@ const threatActorMutationRelationAdd = graphql`
 const threatActorMutationRelationDelete = graphql`
   mutation ThreatActorEditionOverviewRelationDeleteMutation(
     $id: ID!
-    $relationId: ID!
+    $toId: String!
+    $relationship_type: String!
   ) {
     threatActorEdit(id: $id) {
-      relationDelete(relationId: $relationId) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...ThreatActorEditionOverview_threatActor
       }
     }
@@ -103,6 +109,8 @@ const threatActorMutationRelationDelete = graphql`
 
 const threatActorValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  threat_actor_types: Yup.array(),
+  confidence: Yup.number(),
   description: Yup.string()
     .min(3, t('The value is too short'))
     .max(5000, t('The value is too long'))
@@ -111,17 +119,15 @@ const threatActorValidation = (t) => Yup.object().shape({
 
 class ThreatActorEditionOverviewComponent extends Component {
   handleChangeFocus(name) {
-    if (WS_ACTIVATED) {
-      commitMutation({
-        mutation: threatActorEditionOverviewFocus,
-        variables: {
-          id: this.props.threatActor.id,
-          input: {
-            focusOn: name,
-          },
+    commitMutation({
+      mutation: threatActorEditionOverviewFocus,
+      variables: {
+        id: this.props.threatActor.id,
+        input: {
+          focusOn: name,
         },
-      });
-    }
+      },
+    });
   }
 
   handleSubmitField(name, value) {
@@ -139,33 +145,31 @@ class ThreatActorEditionOverviewComponent extends Component {
       .catch(() => false);
   }
 
-  handleChangeCreatedByRef(name, value) {
+  handleChangeCreatedBy(name, value) {
     const { threatActor } = this.props;
-    const currentCreatedByRef = {
-      label: pathOr(null, ['createdByRef', 'node', 'name'], threatActor),
-      value: pathOr(null, ['createdByRef', 'node', 'id'], threatActor),
-      relation: pathOr(null, ['createdByRef', 'relation', 'id'], threatActor),
+    const currentCreatedBy = {
+      label: pathOr(null, ['createdBy', 'name'], threatActor),
+      value: pathOr(null, ['createdBy', 'id'], threatActor),
     };
 
-    if (currentCreatedByRef.value === null) {
+    if (currentCreatedBy.value === null) {
       commitMutation({
         mutation: threatActorMutationRelationAdd,
         variables: {
           id: this.props.threatActor.id,
           input: {
-            fromRole: 'so',
-            toRole: 'creator',
             toId: value.value,
-            through: 'created_by_ref',
+            relationship_type: 'created-by',
           },
         },
       });
-    } else if (currentCreatedByRef.value !== value.value) {
+    } else if (currentCreatedBy.value !== value.value) {
       commitMutation({
         mutation: threatActorMutationRelationDelete,
         variables: {
           id: this.props.threatActor.id,
-          relationId: currentCreatedByRef.relation,
+          toId: currentCreatedBy.value,
+          relationship_type: 'created-by',
         },
       });
       if (value.value) {
@@ -174,10 +178,8 @@ class ThreatActorEditionOverviewComponent extends Component {
           variables: {
             id: this.props.threatActor.id,
             input: {
-              fromRole: 'so',
-              toRole: 'creator',
               toId: value.value,
-              through: 'created_by_ref',
+              relationship_type: 'created-by',
             },
           },
         });
@@ -185,14 +187,13 @@ class ThreatActorEditionOverviewComponent extends Component {
     }
   }
 
-  handleChangeMarkingDefinitions(name, values) {
+  handleChangeObjectMarking(name, values) {
     const { threatActor } = this.props;
     const currentMarkingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
 
@@ -205,10 +206,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         variables: {
           id: this.props.threatActor.id,
           input: {
-            fromRole: 'so',
-            toRole: 'marking',
             toId: head(added).value,
-            through: 'object_marking_refs',
+            relationship_type: 'object-marking',
           },
         },
       });
@@ -219,7 +218,8 @@ class ThreatActorEditionOverviewComponent extends Component {
         mutation: threatActorMutationRelationDelete,
         variables: {
           id: this.props.threatActor.id,
-          relationId: head(removed).relationId,
+          toId: head(removed).value,
+          relationship_type: 'object-marking',
         },
       });
     }
@@ -227,43 +227,42 @@ class ThreatActorEditionOverviewComponent extends Component {
 
   render() {
     const { t, threatActor, context } = this.props;
-    const createdByRef = pathOr(null, ['createdByRef', 'node', 'name'], threatActor) === null
+    const createdBy = pathOr(null, ['createdBy', 'name'], threatActor) === null
       ? ''
       : {
-        label: pathOr(null, ['createdByRef', 'node', 'name'], threatActor),
-        value: pathOr(null, ['createdByRef', 'node', 'id'], threatActor),
-        relation: pathOr(
-          null,
-          ['createdByRef', 'relation', 'id'],
-          threatActor,
-        ),
+        label: pathOr(null, ['createdBy', 'name'], threatActor),
+        value: pathOr(null, ['createdBy', 'id'], threatActor),
       };
     const killChainPhases = pipe(
       pathOr([], ['killChainPhases', 'edges']),
       map((n) => ({
         label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
-    const markingDefinitions = pipe(
-      pathOr([], ['markingDefinitions', 'edges']),
+    const objectMarking = pipe(
+      pathOr([], ['objectMarking', 'edges']),
       map((n) => ({
         label: n.node.definition,
         value: n.node.id,
-        relationId: n.relation.id,
       })),
     )(threatActor);
     const initialValues = pipe(
-      assoc('createdByRef', createdByRef),
+      assoc('createdBy', createdBy),
       assoc('killChainPhases', killChainPhases),
-      assoc('markingDefinitions', markingDefinitions),
+      assoc('objectMarking', objectMarking),
+      assoc(
+        'threat_actor_types',
+        threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
+      ),
       pick([
         'name',
+        'threat_actor_types',
+        'confidence',
         'description',
-        'createdByRef',
+        'createdBy',
         'killChainPhases',
-        'markingDefinitions',
+        'objectMarking',
       ]),
     )(threatActor);
     return (
@@ -275,7 +274,8 @@ class ThreatActorEditionOverviewComponent extends Component {
       >
         {({ setFieldValue }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <TextField
+            <Field
+              component={TextField}
               name="name"
               label={t('Name')}
               fullWidth={true}
@@ -285,7 +285,71 @@ class ThreatActorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="name" />
               }
             />
-            <TextField
+            <Field
+              component={SelectField}
+              name="threat_actor_types"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Threat actor types')}
+              fullWidth={true}
+              multiple={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="threat_actor_types"
+                />
+              }
+            >
+              <MenuItem key="activist" value="activist">
+                {t('activist')}
+              </MenuItem>
+              <MenuItem key="competitor" value="competitor">
+                {t('competitor')}
+              </MenuItem>
+              <MenuItem key="crime-syndicate" value="crime-syndicate">
+                {t('crime-syndicate')}
+              </MenuItem>
+              <MenuItem key="criminal'" value="criminal'">
+                {t('criminal')}
+              </MenuItem>
+              <MenuItem key="hacker" value="hacker">
+                {t('hacker')}
+              </MenuItem>
+              <MenuItem key="insider-accidental" value="insider-accidental">
+                {t('insider-accidental')}
+              </MenuItem>
+              <MenuItem key="insider-disgruntled" value="insider-disgruntled">
+                {t('insider-disgruntled')}
+              </MenuItem>
+              <MenuItem key="nation-state" value="nation-state">
+                {t('nation-state')}
+              </MenuItem>
+              <MenuItem key="sensationalist" value="sensationalist">
+                {t('sensationalist')}
+              </MenuItem>
+              <MenuItem key="spy" value="spy">
+                {t('spy')}
+              </MenuItem>
+              <MenuItem key="terrorist" value="terrorist">
+                {t('terrorist')}
+              </MenuItem>
+              <MenuItem key="unknown" value="unknown">
+                {t('unknown')}
+              </MenuItem>
+            </Field>
+            <ConfidenceField
+              name="confidence"
+              onFocus={this.handleChangeFocus.bind(this)}
+              onChange={this.handleSubmitField.bind(this)}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerstyle={{ width: '100%', marginTop: 20 }}
+              editContext={context}
+              variant="edit"
+            />
+            <Field
+              component={MarkDownField}
               name="description"
               label={t('Description')}
               fullWidth={true}
@@ -298,25 +362,25 @@ class ThreatActorEditionOverviewComponent extends Component {
                 <SubscriptionFocus context={context} fieldName="description" />
               }
             />
-            <CreatedByRefField
-              name="createdByRef"
+            <CreatedByField
+              name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdByRef" />
+                <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={this.handleChangeCreatedByRef.bind(this)}
+              onChange={this.handleChangeCreatedBy.bind(this)}
             />
-            <MarkingDefinitionsField
-              name="markingDefinitions"
+            <ObjectMarkingField
+              name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
                 <SubscriptionFocus
                   context={context}
-                  fieldName="markingDefinitions"
+                  fieldname="objectMarking"
                 />
               }
-              onChange={this.handleChangeMarkingDefinitions.bind(this)}
+              onChange={this.handleChangeObjectMarking.bind(this)}
             />
           </Form>
         )}
@@ -340,26 +404,22 @@ const ThreatActorEditionOverview = createFragmentContainer(
       fragment ThreatActorEditionOverview_threatActor on ThreatActor {
         id
         name
+        threat_actor_types
+        confidence
         description
-        createdByRef {
-          node {
+        createdBy {
+          ... on Identity {
             id
             name
             entity_type
           }
-          relation {
-            id
-          }
         }
-        markingDefinitions {
+        objectMarking {
           edges {
             node {
               id
               definition
               definition_type
-            }
-            relation {
-              id
             }
           }
         }

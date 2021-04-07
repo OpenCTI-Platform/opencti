@@ -1,56 +1,57 @@
-import { withFilter } from 'graphql-subscriptions/dist/index';
+import { withFilter } from 'graphql-subscriptions';
 import {
   addWorkspace,
-  workspaceDelete,
   findAll,
   findById,
-  workspacesNumber,
-  ownedBy,
-  objectRefs,
+  objects,
+  workspaceCleanContext,
+  workspaceDelete,
   workspaceEditContext,
   workspaceEditField,
   workspaceAddRelation,
   workspaceAddRelations,
   workspaceDeleteRelation,
-  workspaceCleanContext
 } from '../domain/workspace';
+import { SYSTEM_USER, findById as findUserById } from '../domain/user';
 import { fetchEditContext, pubsub } from '../database/redis';
-import withCancel from '../graphql/subscriptionWrapper';
 import { BUS_TOPICS } from '../config/conf';
-import { markingDefinitions, tags } from '../domain/stixEntity';
+import { ENTITY_TYPE_WORKSPACE } from '../schema/internalObject';
+import withCancel from '../graphql/subscriptionWrapper';
 
-const workspaceResolvers = {
+const toolResolvers = {
   Query: {
-    workspace: (_, { id }) => findById(id),
-    workspaces: (_, args) => findAll(args),
-    workspacesNumber: (_, args) => workspacesNumber(args)
+    workspace: (_, { id }, { user }) => findById(user, id),
+    workspaces: (_, args, { user }) => findAll(user, args),
   },
   Workspace: {
-    ownedBy: workspace => ownedBy(workspace.id),
-    markingDefinitions: workspace => markingDefinitions(workspace.id),
-    tags: workspace => tags(workspace.id),
-    objectRefs: (workspace, args) => objectRefs(workspace.id, args),
-    editContext: workspace => fetchEditContext(workspace.id)
+    owner: async (workspace, { user }) => {
+      const findUser = await findUserById(user, workspace.owner);
+      return findUser || SYSTEM_USER;
+    },
+    objects: (workspace, args, { user }) => objects(user, workspace.id, args),
+    editContext: (workspace) => fetchEditContext(workspace.id),
   },
   Mutation: {
     workspaceEdit: (_, { id }, { user }) => ({
-      delete: () => workspaceDelete(id),
+      delete: () => workspaceDelete(user, id),
       fieldPatch: ({ input }) => workspaceEditField(user, id, input),
       contextPatch: ({ input }) => workspaceEditContext(user, id, input),
+      contextClean: () => workspaceCleanContext(user, id),
       relationAdd: ({ input }) => workspaceAddRelation(user, id, input),
       relationsAdd: ({ input }) => workspaceAddRelations(user, id, input),
-      relationDelete: ({ relationId }) => workspaceDeleteRelation(user, id, relationId)
+      relationDelete: ({ toId, relationship_type: relationshipType }) =>
+        workspaceDeleteRelation(user, id, toId, relationshipType),
     }),
-    workspaceAdd: (_, { input }, { user }) => addWorkspace(user, input)
+    workspaceAdd: (_, { input }, { user }) => addWorkspace(user, input),
   },
   Subscription: {
     workspace: {
-      resolve: payload => payload.instance,
-      subscribe: (_, { id }, { user }) => {
+      resolve: /* istanbul ignore next */ (payload) => payload.instance,
+      subscribe: /* istanbul ignore next */ (_, { id }, { user }) => {
         workspaceEditContext(user, id);
         const filtering = withFilter(
-          () => pubsub.asyncIterator(BUS_TOPICS.Workspace.EDIT_TOPIC),
-          payload => {
+          () => pubsub.asyncIterator(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC),
+          (payload) => {
             if (!payload) return false; // When disconnect, an empty payload is dispatched.
             return payload.user.id !== user.id && payload.instance.id === id;
           }
@@ -58,9 +59,9 @@ const workspaceResolvers = {
         return withCancel(filtering, () => {
           workspaceCleanContext(user, id);
         });
-      }
-    }
-  }
+      },
+    },
+  },
 };
 
-export default workspaceResolvers;
+export default toolResolvers;

@@ -4,7 +4,7 @@ import { withRouter, Link } from 'react-router-dom';
 import { compose } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import Button from '@material-ui/core/Button';
-import { ArrowForwardIos } from '@material-ui/icons';
+import { ArrowForwardIosOutlined } from '@material-ui/icons';
 import { ShieldSearch } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
 
@@ -47,7 +47,7 @@ class TopMenuIndicator extends Component {
       <div>
         <Button
           component={Link}
-          to="/dashboard/signatures/indicators"
+          to="/dashboard/observations/indicators"
           variant="contained"
           size="small"
           color="inherit"
@@ -56,20 +56,23 @@ class TopMenuIndicator extends Component {
           <ShieldSearch className={classes.icon} fontSize="small" />
           {t('Indicators')}
         </Button>
-        <ArrowForwardIos color="inherit" classes={{ root: classes.arrow }} />
+        <ArrowForwardIosOutlined
+          color="inherit"
+          classes={{ root: classes.arrow }}
+        />
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}`}
+          to={`/dashboard/observations/indicators/${indicatorId}`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}`
+            === `/dashboard/observations/indicators/${indicatorId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}`
+            === `/dashboard/observations/indicators/${indicatorId}`
               ? 'primary'
               : 'inherit'
           }
@@ -79,23 +82,65 @@ class TopMenuIndicator extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/dashboard/signatures/indicators/${indicatorId}/observables`}
+          to={`/dashboard/observations/indicators/${indicatorId}/knowledge`}
+          variant={
+            location.pathname.includes(
+              `/dashboard/observations/indicators/${indicatorId}/knowledge`,
+            )
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes(
+              `/dashboard/observations/indicators/${indicatorId}/knowledge`,
+            )
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('Knowledge')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/observations/indicators/${indicatorId}/sightings`}
           variant={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/observables`
+            === `/dashboard/observations/indicators/${indicatorId}/sightings`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/dashboard/signatures/indicators/${indicatorId}/observables`
+            === `/dashboard/observations/indicators/${indicatorId}/sightings`
               ? 'primary'
               : 'inherit'
           }
           classes={{ root: classes.button }}
         >
-          {t('Observables')}
+          {t('Sightings')}
+        </Button>
+        <Button
+          component={Link}
+          to={`/dashboard/observations/indicators/${indicatorId}/history`}
+          variant={
+            location.pathname
+            === `/dashboard/observations/indicators/${indicatorId}/history`
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname
+            === `/dashboard/observations/indicators/${indicatorId}/history`
+              ? 'primary'
+              : 'inherit'
+          }
+          classes={{ root: classes.button }}
+        >
+          {t('History')}
         </Button>
       </div>
     );
