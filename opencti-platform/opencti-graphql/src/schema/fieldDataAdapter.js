@@ -93,6 +93,7 @@ export const numericAttributes = [
   'attribute_count',
 ];
 export const booleanAttributes = [
+  'completed',
   'revoked',
   'x_opencti_negative',
   'external',

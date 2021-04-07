@@ -31,6 +31,10 @@
       "token": "ChangeMe"
     }
   },
+  "task_scheduler": {
+    "lock_key": "task_manager_lock",
+    "interval": 10000
+  },
   "expiration_scheduler": {
     "lock_key": "expired_manager_lock",
     "interval": 300000

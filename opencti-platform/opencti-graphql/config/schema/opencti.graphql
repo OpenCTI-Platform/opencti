@@ -459,6 +459,97 @@ type FileConnection {
   pageInfo: PageInfo!
   edges: [FileEdge]
 }
+
+############## Task
+enum TaskType {
+  QUERY
+  LIST
+}
+type TaskError {
+  timestamp: DateTime
+  message: String
+}
+enum TaskActionType {
+  DELETE
+  ADD
+  REMOVE
+  REPLACE
+}
+enum TaskContextType {
+  ATTRIBUTE
+  RELATION
+}
+type TaskContext {
+  field: String!
+  type: TaskContextType!,
+  values: [String]!
+}
+type TaskAction {
+  type: TaskActionType
+  context: TaskContext
+}
+
+interface Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int,
+  task_processed_number: Int,
+  errors: [TaskError]
+}
+
+type ListTask implements Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int,
+  task_processed_number: Int,
+  errors: [TaskError]
+  # ListTask
+  task_ids: [ID!]
+}
+
+type QueryTask implements Task {
+  id: ID!
+  type: TaskType
+  initiator: User
+  actions: [TaskAction]
+  created_at: DateTime
+  last_execution_date: DateTime
+  completed: Boolean
+  task_expected_number: Int,
+  task_processed_number: Int,
+  errors: [TaskError]
+  # QueryTask
+  task_filters: String!
+}
+
+input TaskContextInput {
+  field: String!
+  type: TaskContextType!,
+  values: [String]!
+}
+input TaskActionInput {
+  type: TaskActionType!
+  context: TaskContextInput
+}
+input ListTaskAddInput {
+  ids: [ID!]
+  actions: [TaskActionInput]!
+}
+input QueryTaskAddInput {
+  filters: String!
+  actions: [TaskActionInput]!
+}
+
 ###### ENTITIES
 
 interface BasicObject {
@@ -7457,6 +7548,7 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  tasks: [Task] @auth(for: [KNOWLEDGE])
 
   ######## STIX OBJECT ENTITIES
 
@@ -8571,6 +8663,11 @@ type Mutation {
   workAdd(connectorId: String!, friendlyName: String): Work!
     @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   workEdit(id: ID!): WorkEditMutations @auth(for: [KNOWLEDGE_KNASKIMPORT, KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
+
+  ### TASK
+  deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
+  listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+  queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## INTERNAL OBJECT ENTITIES
   token(input: UserLoginInput): String

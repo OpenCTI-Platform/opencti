@@ -6,17 +6,11 @@ import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, listEntities, loadById, stixLoadById, updateAttribute } from '../database/middleware';
 import { buildStixData } from '../database/stix';
-import { REL_INDEX_PREFIX } from '../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
+import { GlobalFilters } from '../utils/filtering';
 
-const GlobalFilters = {
-  createdBy: `${REL_INDEX_PREFIX}${RELATION_CREATED_BY}.internal_id`,
-  markedBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_MARKING}.internal_id`,
-  labelledBy: `${REL_INDEX_PREFIX}${RELATION_OBJECT_LABEL}.internal_id`,
-};
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
 // Taxii graphQL handlers
