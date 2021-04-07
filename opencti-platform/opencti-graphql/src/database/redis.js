@@ -483,12 +483,17 @@ export const getStreamRange = async (from, limit, callback) => {
   const client = await createRedisClient();
   const size = limit > MAX_RANGE_MESSAGES ? MAX_RANGE_MESSAGES : limit;
   return client.call('XRANGE', OPENCTI_STREAM, from, '+', 'COUNT', size).then(async (results) => {
+    let lastEventId;
     if (results && results.length > 0) {
       await processStreamResult(results, callback);
+      const lastResult = R.last(results);
+      lastEventId = R.head(lastResult);
+    } else {
+      const streamInfo = await fetchStreamInfo();
+      lastEventId = streamInfo.lastEventId;
     }
     await client.disconnect();
-    const lastResult = R.last(results);
-    return { lastEventId: R.head(lastResult) };
+    return { lastEventId };
   });
 };
 // endregion
