@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { now } from '../utils/format';
 import { elIndex, elPaginate } from '../database/elasticSearch';
@@ -6,10 +7,19 @@ import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, listEntities, loadById, patchAttribute } from '../database/middleware';
 import { SYSTEM_USER } from './user';
 import { GlobalFilters } from '../utils/filtering';
+import { BYPASS } from '../schema/general';
+import { ForbiddenAccess } from '../config/errors';
+import { KNOWLEDGE_DELETE } from '../initialization';
 
 export const MAX_TASK_ELEMENTS = 500;
+
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_LIST = 'LIST';
+
+export const ACTION_TYPE_DELETE = 'DELETE';
+export const ACTION_TYPE_ADD = 'ADD';
+export const ACTION_TYPE_REMOVE = 'REMOVE';
+export const ACTION_TYPE_REPLACE = 'REPLACE';
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();
@@ -34,8 +44,9 @@ const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
 export const findById = async (user, taskId) => {
   return loadById(user, taskId, ENTITY_TYPE_TASK);
 };
+
 export const findAll = (user, args) => {
-  return listEntities(user, [ENTITY_TYPE_TASK], { ...args, connectionFormat: false });
+  return listEntities(user, [ENTITY_TYPE_TASK], args);
 };
 
 const buildQueryFilters = (rawFilters, taskPosition) => {
@@ -67,8 +78,21 @@ export const executeTaskQuery = async (user, filters, start = null) => {
   return elPaginate(user, READ_STIX_INDICES, options);
 };
 
+const checkActionValidity = (user, actions) => {
+  const askForDeletion = actions.filter((a) => a.type === ACTION_TYPE_DELETE).length > 0;
+  if (askForDeletion) {
+    // If deletion action available, user need to have the right capability
+    const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
+    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
+    if (!isAuthorized) {
+      throw ForbiddenAccess();
+    }
+  }
+};
+
 export const createQueryTask = async (user, input) => {
   const { actions, filters } = input;
+  checkActionValidity(user, actions);
   const queryData = await executeTaskQuery(user, filters);
   const countExpected = queryData.pageInfo.globalCount;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
@@ -79,6 +103,7 @@ export const createQueryTask = async (user, input) => {
 
 export const createListTask = async (user, input) => {
   const { actions, ids } = input;
+  checkActionValidity(user, actions);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length);
   const listTask = { ...task, actions, task_ids: ids };
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);

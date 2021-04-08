@@ -1,8 +1,9 @@
-import { deleteTask, createListTask, createQueryTask, findAll } from '../domain/task';
+import { deleteTask, createListTask, createQueryTask, findAll, findById } from '../domain/task';
 import { findById as findUser } from '../domain/user';
 
 const taskResolvers = {
   Query: {
+    task: (_, { id }, { user }) => findById(user, id),
     tasks: (_, args, { user }) => findAll(user, args),
   },
   Mutation: {

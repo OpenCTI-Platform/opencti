@@ -3,6 +3,10 @@ import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic
 import * as R from 'ramda';
 import { lockResource } from '../database/redis';
 import {
+  ACTION_TYPE_ADD,
+  ACTION_TYPE_DELETE,
+  ACTION_TYPE_REMOVE,
+  ACTION_TYPE_REPLACE,
   executeTaskQuery,
   findAll,
   MAX_TASK_ELEMENTS,
@@ -31,11 +35,6 @@ import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('task_scheduler:interval');
 const TASK_MANAGER_KEY = conf.get('task_scheduler:lock_key');
-
-const ACTION_TYPE_DELETE = 'DELETE';
-const ACTION_TYPE_ADD = 'ADD';
-const ACTION_TYPE_REMOVE = 'REMOVE';
-const ACTION_TYPE_REPLACE = 'REPLACE';
 
 const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
 const ACTION_TYPE_RELATION = 'RELATION';
@@ -76,7 +75,9 @@ const computeListTaskElements = async (user, task) => {
   for (let elementId = 0; elementId < ids.length; elementId += 1) {
     const elementToResolve = task_ids[elementId];
     const element = await internalLoadById(user, elementToResolve);
-    processingElements.push({ element, actions, next: element.id });
+    if (element) {
+      processingElements.push({ element, actions, next: element.id });
+    }
   }
   return processingElements;
 };
@@ -173,12 +174,12 @@ const executeProcessing = async (user, processingElements) => {
 };
 
 const taskHandler = async () => {
-  logger.info('[OPENCTI] Running Expiration manager');
+  logger.debug('[OPENCTI] Running Expiration manager');
   let lock;
   try {
     // Lock the manager
     lock = await lockResource([TASK_MANAGER_KEY]);
-    logger.info('[OPENCTI] Task manager lock acquired');
+    logger.debug('[OPENCTI] Task manager lock acquired');
     const task = await findTaskToExecute();
     // region Task checking
     if (!task) {
@@ -219,12 +220,12 @@ const taskHandler = async () => {
   } catch (e) {
     // We dont care about failing to get the lock.
     if (e.name === TYPE_LOCK_ERROR) {
-      logger.info('[OPENCTI] Task manager already in progress by another API');
+      logger.debug('[OPENCTI] Task manager already in progress by another API');
     } else {
       logger.error('[OPENCTI] Task manager fail to execute', { error: e });
     }
   } finally {
-    logger.info('[OPENCTI] Task manager done');
+    logger.debug('[OPENCTI] Task manager done');
     if (lock) await lock.unlock();
   }
 };

@@ -533,6 +533,16 @@ type QueryTask implements Task {
   task_filters: String!
 }
 
+type TaskConnectionEdge {
+  cursor: String!
+  node: Task!
+}
+
+type TaskConnection {
+  pageInfo: PageInfo!
+  edges: [TaskConnectionEdge]
+}
+
 input TaskContextInput {
   field: String!
   type: TaskContextType!,
@@ -7549,7 +7559,8 @@ type Query {
     orderMode: OrderingMode
     search: String
   ): TaxiiCollectionConnection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  tasks: [Task] @auth(for: [KNOWLEDGE])
+  task(id: String!): Task @auth(for: [KNOWLEDGE])
+  tasks: TaskConnection @auth(for: [KNOWLEDGE])
 
   ######## STIX OBJECT ENTITIES
 
