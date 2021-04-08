@@ -28,6 +28,7 @@ export const TAXII_CAPABILITIES = {
   description: 'Access Taxii feed',
   dependencies: [{ name: 'SETCOLLECTIONS', description: 'Manage Taxii collections', attribute_order: 2510 }],
 };
+export const KNOWLEDGE_DELETE = 'KNDELETE';
 const KNOWLEDGE_CAPABILITIES = {
   name: KNOWLEDGE_CAPABILITY,
   description: 'Access knowledge',
@@ -37,7 +38,7 @@ const KNOWLEDGE_CAPABILITIES = {
       name: 'KNUPDATE',
       description: 'Create / Update knowledge',
       attribute_order: 200,
-      dependencies: [{ name: 'KNDELETE', description: 'Delete knowledge', attribute_order: 300 }],
+      dependencies: [{ name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }],
     },
     { name: 'KNUPLOAD', description: 'Upload knowledge files', attribute_order: 400 },
     { name: 'KNASKIMPORT', description: 'Import knowledge', attribute_order: 500 },

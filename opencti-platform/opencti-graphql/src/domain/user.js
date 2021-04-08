@@ -456,26 +456,53 @@ export const userRenewToken = async (user, userId, newToken = generateOpenCTIWeb
   return loadById(user, userId, ENTITY_TYPE_USER);
 };
 
-const findByTokenUUID = async (tokenValue) => {
+const buildSessionUser = (user, tokenUUID = null) => {
+  return {
+    id: user.id,
+    token_uuid: tokenUUID,
+    session_creation: now(),
+    internal_id: user.internal_id,
+    user_email: user.user_email,
+    capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
+    allowed_marking: user.allowed_marking.map((m) => ({
+      id: m.id,
+      internal_id: m.internal_id,
+      definition_type: m.definition_type,
+    })),
+    all_marking: user.all_marking.map((m) => ({
+      id: m.id,
+      internal_id: m.internal_id,
+      definition_type: m.definition_type,
+    })),
+  };
+};
+const resolveUserByToken = async (tokenValue) => {
   const userToken = await elLoadBy(SYSTEM_USER, 'uuid', tokenValue, ENTITY_TYPE_TOKEN);
-  // If token is revoked
+  // Check token
   if (!userToken || userToken.revoked === true) return undefined;
-  // If token is expired
-  //  TODO
+  const { created_at: createdAt, duration } = userToken;
+  const maxDuration = moment.duration(duration);
+  const currentDuration = moment.duration(moment().diff(createdAt));
+  if (currentDuration > maxDuration) return undefined;
+  // Build user
   const users = await listThroughGetFrom(SYSTEM_USER, userToken.id, RELATION_AUTHORIZED_BY, ENTITY_TYPE_USER);
   if (users.length === 0 || users.length > 1) return undefined;
   const client = R.head(users);
   const capabilities = await getCapabilities(client.id);
   const marking = await getUserAndGlobalMarkings(client.id, capabilities);
-  const user = { ...client, token: userToken, capabilities, allowed_marking: marking.user, all_marking: marking.all };
-  const { created_at: createdAt } = user.token;
-  const maxDuration = moment.duration(user.token.duration);
-  const currentDuration = moment.duration(moment().diff(createdAt));
-  if (currentDuration > maxDuration) return undefined;
-  return user;
+  const user = { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
+  return buildSessionUser(user, tokenValue);
+};
+export const resolveUserById = async (id) => {
+  const client = await loadById(SYSTEM_USER, id, ENTITY_TYPE_USER);
+  const capabilities = await getCapabilities(client.id);
+  const marking = await getUserAndGlobalMarkings(client.id, capabilities);
+  const user = { ...client, capabilities, allowed_marking: marking.user, all_marking: marking.all };
+  return buildSessionUser(user);
 };
 
 // Authentication process
+
 export const authenticateUser = async (req, resolvedTokenUuid = null) => {
   const auth = req?.session?.user;
   if (auth) {
@@ -495,27 +522,10 @@ export const authenticateUser = async (req, resolvedTokenUuid = null) => {
   // Get user from the token if found
   if (tokenUUID) {
     try {
-      const user = await findByTokenUUID(tokenUUID);
+      const user = await resolveUserByToken(tokenUUID);
       if (req && user) {
         // Build the user session with only required fields
-        req.session.user = {
-          id: user.id,
-          token_uuid: tokenUUID,
-          session_creation: now(),
-          internal_id: user.internal_id,
-          user_email: user.user_email,
-          capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
-          allowed_marking: user.allowed_marking.map((m) => ({
-            id: m.id,
-            internal_id: m.internal_id,
-            definition_type: m.definition_type,
-          })),
-          all_marking: user.all_marking.map((m) => ({
-            id: m.id,
-            internal_id: m.internal_id,
-            definition_type: m.definition_type,
-          })),
-        };
+        req.session.user = user;
       }
       return user;
     } catch (err) {
