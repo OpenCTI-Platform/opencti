@@ -433,7 +433,7 @@ export const loadEntity = async (user, entityTypes, args = {}) => {
 // endregion
 
 // region Loader element
-const internalFindByIds = (user, ids, args = {}) => {
+export const internalFindByIds = (user, ids, args = {}) => {
   return elFindByIds(user, ids, args);
 };
 export const internalLoadById = (user, id, args = {}) => {

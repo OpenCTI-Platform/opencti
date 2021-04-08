@@ -11,7 +11,6 @@ import conf, { logger } from '../config/conf';
 // Expired manager responsible to monitor expired elements
 // In order to change the revoked attribute to true
 // Each API will start is manager.
-// When manager do it scan it take a lock and periodically renew it until the job is done.
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('expiration_scheduler:interval');
 const EXPIRED_MANAGER_KEY = conf.get('expiration_scheduler:lock_key');

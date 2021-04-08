@@ -7,15 +7,9 @@ import { deleteElementById, listEntities, loadById, patchAttribute } from '../da
 import { SYSTEM_USER } from './user';
 import { GlobalFilters } from '../utils/filtering';
 
-export const MAX_TASK_ELEMENTS = 5;
+export const MAX_TASK_ELEMENTS = 500;
 export const TASK_TYPE_QUERY = 'QUERY';
 export const TASK_TYPE_LIST = 'LIST';
-
-// taskDefinition
-// { type: delete, data: [] }
-// { type: add_relation, data: [{ relation_type, targetId }] }
-// { type: remove_relation, data: [{ relation_type, targetId }] }
-// { type: update_attribute, data: { field, value } }
 
 const createDefaultTask = (user, input, taskType, taskExpectedNumber) => {
   const taskId = generateInternalId();

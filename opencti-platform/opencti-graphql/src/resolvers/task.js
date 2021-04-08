@@ -1,4 +1,5 @@
 import { deleteTask, createListTask, createQueryTask, findAll } from '../domain/task';
+import { findById as findUser } from '../domain/user';
 
 const taskResolvers = {
   Query: {
@@ -17,6 +18,7 @@ const taskResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
+    initiator: (task, _, { user }) => findUser(user, task.initiator_id),
   },
 };
 

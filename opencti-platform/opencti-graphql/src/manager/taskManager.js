@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
+import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/dynamic';
 import * as R from 'ramda';
 import { lockResource } from '../database/redis';
 import {
@@ -12,13 +12,22 @@ import {
 } from '../domain/task';
 import conf, { logger } from '../config/conf';
 import { resolveUserById, SYSTEM_USER } from '../domain/user';
-import { deleteElementById, internalLoadById } from '../database/middleware';
+import {
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  internalLoadById,
+  listAllRelations,
+  patchAttribute,
+} from '../database/middleware';
 import { now } from '../utils/format';
+import { INDEX_INTERNAL_OBJECTS, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import { elUpdate } from '../database/elasticSearch';
+import { TYPE_LOCK_ERROR } from '../config/errors';
+import { ABSTRACT_BASIC_RELATIONSHIP } from '../schema/general';
 
-// Expired manager responsible to monitor expired elements
-// In order to change the revoked attribute to true
-// Each API will start is manager.
-// When manager do it scan it take a lock and periodically renew it until the job is done.
+// Task manager responsible to execute long manual tasks
+// Each API will start is task manager.
 // If the lock is free, every API as the right to take it.
 const SCHEDULE_TIME = conf.get('task_scheduler:interval');
 const TASK_MANAGER_KEY = conf.get('task_scheduler:lock_key');
@@ -27,6 +36,9 @@ const ACTION_TYPE_DELETE = 'DELETE';
 const ACTION_TYPE_ADD = 'ADD';
 const ACTION_TYPE_REMOVE = 'REMOVE';
 const ACTION_TYPE_REPLACE = 'REPLACE';
+
+const ACTION_TYPE_ATTRIBUTE = 'ATTRIBUTE';
+const ACTION_TYPE_RELATION = 'RELATION';
 
 const findTaskToExecute = async () => {
   const tasks = await findAll(SYSTEM_USER, {
@@ -45,19 +57,19 @@ const computeQueryTaskElements = async (user, task) => {
   const processingElements = [];
   // Fetch the information
   const data = await executeTaskQuery(user, task_filters, task_position);
-  const expectedNumber = data.pageInfo.globalCount;
+  // const expectedNumber = data.pageInfo.globalCount;
   const elements = data.edges;
   // Apply the actions for each element
   for (let elementIndex = 0; elementIndex < elements.length; elementIndex += 1) {
     const element = elements[elementIndex];
     processingElements.push({ element: element.node, actions, next: element.cursor });
   }
-  return { processingElements, expectedNumber };
+  return processingElements;
 };
 const computeListTaskElements = async (user, task) => {
   const { actions, task_position, task_ids } = task;
   const processingElements = [];
-  const expectedNumber = task_ids.length;
+  // const expectedNumber = task_ids.length;
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
   const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex(task_position);
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
@@ -66,7 +78,71 @@ const computeListTaskElements = async (user, task) => {
     const element = await internalLoadById(user, elementToResolve);
     processingElements.push({ element, actions, next: element.id });
   }
-  return { processingElements, expectedNumber };
+  return processingElements;
+};
+const appendTaskErrors = async (taskId, errors) => {
+  if (errors.length === 0) {
+    return;
+  }
+  let source = '';
+  const params = { received_time: now() };
+  for (let index = 0; index < errors.length; index += 1) {
+    const error = errors[index];
+    source += `ctx._source.errors.add(["timestamp": params.received_time, "id": "${error.id}", "message": "${error.message}"]); `;
+  }
+  await elUpdate(INDEX_INTERNAL_OBJECTS, taskId, {
+    script: { source, lang: 'painless', params },
+  });
+};
+
+const executeDelete = async (user, element) => {
+  await deleteElementById(user, element.internal_id, element.entity_type);
+};
+const executeAdd = async (user, context, element) => {
+  const { field, type: contextType, values } = context;
+  if (contextType === ACTION_TYPE_RELATION) {
+    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+      const target = values[indexCreate];
+      await createRelation(user, { fromId: element.id, toId: target, relationship_type: field });
+    }
+  }
+  if (contextType === ACTION_TYPE_ATTRIBUTE) {
+    const patch = { [field]: values };
+    await patchAttribute(user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_ADD });
+  }
+};
+const executeRemove = async (user, context, element) => {
+  const { field, type: contextType, values } = context;
+  if (contextType === ACTION_TYPE_RELATION) {
+    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+      const target = values[indexCreate];
+      await deleteRelationsByFromAndTo(user, element.id, target, field, ABSTRACT_BASIC_RELATIONSHIP);
+    }
+  }
+  if (contextType === ACTION_TYPE_ATTRIBUTE) {
+    const patch = { [field]: values };
+    await patchAttribute(user, element.id, element.entity_type, patch, { operation: UPDATE_OPERATION_REMOVE });
+  }
+};
+const executeReplace = async (user, context, element) => {
+  const { field, type: contextType, values } = context;
+  if (contextType === ACTION_TYPE_RELATION) {
+    // 01 - Delete all relations of the element
+    const rels = await listAllRelations(user, field, { fromId: element.id });
+    for (let indexRel = 0; indexRel < rels.length; indexRel += 1) {
+      const rel = rels[indexRel];
+      await deleteElementById(user, rel.id, rel.entity_type);
+    }
+    // 02 - Create new ones
+    for (let indexCreate = 0; indexCreate < values.length; indexCreate += 1) {
+      const target = values[indexCreate];
+      await createRelation(user, { fromId: element.id, toId: target, relationship_type: field });
+    }
+  }
+  if (contextType === ACTION_TYPE_ATTRIBUTE) {
+    const patch = { [field]: values };
+    await patchAttribute(user, element.id, element.entity_type, patch);
+  }
 };
 const executeProcessing = async (user, processingElements) => {
   const errors = [];
@@ -74,21 +150,19 @@ const executeProcessing = async (user, processingElements) => {
     const { element, actions } = processingElements[index];
     try {
       for (let actionIndex = 0; actionIndex < actions.length; actionIndex += 1) {
-        // eslint-disable-next-line no-unused-vars
         const { type, context } = actions[actionIndex];
         if (type === ACTION_TYPE_DELETE) {
-          await deleteElementById(user, element.internal_id, element.entity_type);
-          // You cant have multiple actions on deletion, just stopping the loop.
-          break;
+          await executeDelete(user, element);
+          break; // You cant have multiple actions on deletion, just stopping the loop.
         }
         if (type === ACTION_TYPE_ADD) {
-          // TODO
+          await executeAdd(user, context, element);
         }
         if (type === ACTION_TYPE_REMOVE) {
-          // TODO
+          await executeRemove(user, context, element);
         }
         if (type === ACTION_TYPE_REPLACE) {
-          // TODO
+          await executeReplace(user, context, element);
         }
       }
     } catch (err) {
@@ -119,42 +193,41 @@ const taskHandler = async () => {
     }
     // endregion
     // Fetch the user responsible for the task
-    let expectedNumber = 0;
     const user = await resolveUserById(task.initiator_id);
     let processingElements;
     if (isQueryTask) {
-      const data = await computeQueryTaskElements(user, task);
-      expectedNumber = data.expectedNumber;
-      processingElements = data.processingElements;
+      processingElements = await computeQueryTaskElements(user, task);
     }
     if (isListTask) {
-      const data = await computeListTaskElements(user, task);
-      expectedNumber = data.expectedNumber;
-      processingElements = data.processingElements;
+      processingElements = await computeListTaskElements(user, task);
     }
-    // Process the elements
-    await executeProcessing(user, processingElements);
+    // Process the elements (empty = end of execution)
+    if (processingElements.length > 0) {
+      const errors = await executeProcessing(user, processingElements);
+      await appendTaskErrors(task.id, errors);
+    }
     // Update the task
     // Get the last element processed and update task_position+ task_processed_number
     const processedNumber = task.task_processed_number + processingElements.length;
     const patch = {
       task_position: R.last(processingElements).next,
       task_processed_number: processedNumber,
-      task_expected_number: expectedNumber,
       last_execution_date: now(),
       completed: processingElements.length < MAX_TASK_ELEMENTS,
     };
     await updateTask(task.id, patch);
-    console.log(patch);
   } catch (e) {
     // We dont care about failing to get the lock.
-    logger.info('[OPENCTI] Task manager already in progress by another API');
+    if (e.name === TYPE_LOCK_ERROR) {
+      logger.info('[OPENCTI] Task manager already in progress by another API');
+    } else {
+      logger.error('[OPENCTI] Task manager fail to execute', { error: e });
+    }
   } finally {
     logger.info('[OPENCTI] Task manager done');
     if (lock) await lock.unlock();
   }
 };
-
 const initTaskManager = () => {
   let scheduler;
   return {

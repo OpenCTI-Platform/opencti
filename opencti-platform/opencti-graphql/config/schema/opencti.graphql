@@ -466,6 +466,7 @@ enum TaskType {
   LIST
 }
 type TaskError {
+  id: ID!
   timestamp: DateTime
   message: String
 }
