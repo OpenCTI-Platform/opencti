@@ -61,6 +61,16 @@ export const reportKnowledgeAttackPatternsGraphQuery = graphql`
               x_mitre_id
               x_mitre_detection
               isSubAttackPattern
+              parentAttackPatterns {
+                edges {
+                  node {
+                    id
+                    name
+                    description
+                    x_mitre_id
+                  }
+                }
+              }
               subAttackPatterns {
                 edges {
                   node {
@@ -150,6 +160,7 @@ class ReportKnowledgeComponent extends Component {
                     <AttackPatternsMatrix
                       entity={report}
                       attackPatterns={attackPatterns}
+                      searchTerm=''
                     />
                   );
                 }

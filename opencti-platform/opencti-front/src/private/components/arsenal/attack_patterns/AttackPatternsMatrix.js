@@ -1,13 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import { withRouter } from 'react-router-dom';
 import { withStyles } from '@material-ui/core';
 import { QueryRenderer } from '../../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrixColumns, {
@@ -24,34 +20,10 @@ const styles = () => ({
 });
 
 class AttackPatternsMatrix extends Component {
-  constructor(props) {
-    super(props);
-    const params = buildViewParamsFromUrlAndStorage(
-      props.history,
-      props.location,
-      `view-entity-${this.props.entity.id}-matrix`,
-    );
-    this.state = {
-      searchTerm: propOr('', 'searchTerm', params),
-      openExports: false,
-    };
-  }
-
-  saveView() {
-    saveViewParameters(
-      this.props.history,
-      this.props.location,
-      `view-entity-${this.props.entity.id}-matrix`,
-      this.state,
-    );
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value }, () => this.saveView());
-  }
-
   render() {
-    const { classes, attackPatterns } = this.props;
+    const {
+      classes, attackPatterns, marginRight, searchTerm,
+    } = this.props;
     return (
       <div className={classes.container}>
         <QueryRenderer
@@ -66,6 +38,8 @@ class AttackPatternsMatrix extends Component {
                 <AttackPatternsMatrixColumns
                   data={props}
                   attackPatterns={attackPatterns}
+                  marginRight={marginRight}
+                  searchTerm={searchTerm}
                 />
               );
             }
@@ -79,11 +53,12 @@ class AttackPatternsMatrix extends Component {
 
 AttackPatternsMatrix.propTypes = {
   t: PropTypes.func,
+  marginRight: PropTypes.bool,
   history: PropTypes.object,
   location: PropTypes.object,
   classes: PropTypes.object,
   attackPatterns: PropTypes.array,
-  entity: PropTypes.object,
+  searchTerm: PropTypes.string,
 };
 
 export default compose(

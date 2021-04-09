@@ -128,15 +128,17 @@ class TopMenuReport extends Component {
           component={Link}
           to={`/dashboard/analysis/reports/${reportId}/knowledge`}
           variant={
-            location.pathname
-            === `/dashboard/analysis/reports/${reportId}/knowledge`
+            location.pathname.includes(
+              `/dashboard/analysis/reports/${reportId}/knowledge`,
+            )
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname
-            === `/dashboard/analysis/reports/${reportId}/knowledge`
+            location.pathname.includes(
+              `/dashboard/analysis/reports/${reportId}/knowledge`,
+            )
               ? 'primary'
               : 'inherit'
           }

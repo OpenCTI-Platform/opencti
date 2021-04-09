@@ -2,25 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
 import Markdown from 'react-markdown';
-import {
-  compose,
-  pipe,
-  map,
-  assoc,
-  groupBy,
-  path,
-  mapObjIndexed,
-  uniq,
-  indexBy,
-  prop,
-  values,
-  sortWith,
-  ascend,
-  descend,
-  take,
-  pathOr,
-} from 'ramda';
-import graphql from 'babel-plugin-relay/macro';
+import * as R from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import List from '@material-ui/core/List';
@@ -31,14 +13,10 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Collapse from '@material-ui/core/Collapse';
 import { Launch, LockPattern } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@material-ui/icons';
-import { createRefetchContainer } from 'react-relay';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
-import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/StixCoreRelationshipCreationFromEntity';
 import ItemYears from '../../../../components/ItemYears';
-import SearchInput from '../../../../components/SearchInput';
-import Security, { KNOWLEDGE_KNUPDATE } from '../../../../utils/Security';
 import ItemMarking from '../../../../components/ItemMarking';
 
 const styles = (theme) => ({
@@ -53,19 +31,15 @@ const styles = (theme) => ({
   },
 });
 
-class StixDomainObjectKillChainLinesComponent extends Component {
+class StixDomainObjectAttackPatternsKillChainLines extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedLines: {}, searchTerm: '' };
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
+    this.state = { expandedLines: {} };
   }
 
   handleToggleLine(lineKey) {
     this.setState({
-      expandedLines: assoc(
+      expandedLines: R.assoc(
         lineKey,
         this.state.expandedLines[lineKey] !== undefined
           ? !this.state.expandedLines[lineKey]
@@ -82,31 +56,39 @@ class StixDomainObjectKillChainLinesComponent extends Component {
       data,
       entityLink,
       paginationOptions,
-      stixDomainObjectId,
+      onDelete,
+      searchTerm,
     } = this.props;
     // Extract all kill chain phases
-    const killChainPhases = pipe(
+    const filterByKeyword = (n) => searchTerm === ''
+      || n.to.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.to.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.to.x_mitre_id.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || R.propOr('', 'subattackPatterns_text', n)
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1;
+    const killChainPhases = R.pipe(
       // eslint-disable-next-line no-nested-ternary
-      map((n) => (n.node.killChainPhases.edges.length > 0
+      R.map((n) => (n.node.killChainPhases.edges.length > 0
         ? n.node.killChainPhases.edges[0].node
         : n.node.to.killChainPhases.edges.length > 0
           ? n.node.to.killChainPhases.edges[0].node
           : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 })),
-      uniq,
-      indexBy(prop('id')),
+      R.uniq,
+      R.indexBy(R.prop('id')),
     )(data.stixCoreRelationships.edges);
-    const stixCoreRelationships = pipe(
-      map((n) => n.node),
-      map((n) => assoc('startTimeYear', yearFormat(n.start_time), n)),
-      map((n) => assoc('stopTimeYear', yearFormat(n.stop_time), n)),
-      map((n) => assoc(
+    const stixCoreRelationships = R.pipe(
+      R.map((n) => n.node),
+      R.map((n) => R.assoc('startTimeYear', yearFormat(n.start_time), n)),
+      R.map((n) => R.assoc('stopTimeYear', yearFormat(n.stop_time), n)),
+      R.map((n) => R.assoc(
         'years',
         n.startTimeYear === n.stopTimeYear
           ? n.startTimeYear
           : `${n.startTimeYear} - ${n.stopTimeYear}`,
         n,
       )),
-      map((n) => assoc(
+      R.map((n) => R.assoc(
         'killChainPhase',
         // eslint-disable-next-line no-nested-ternary
         n.killChainPhases.edges.length > 0
@@ -116,15 +98,25 @@ class StixDomainObjectKillChainLinesComponent extends Component {
             : { id: 'unknown', phase_name: t('Unknown'), x_opencti_order: 99 },
         n,
       )),
-      sortWith([descend(prop('years'))]),
-      groupBy(path(['killChainPhase', 'id'])),
-      mapObjIndexed((value, key) => assoc('attackPatterns', value, killChainPhases[key])),
-      values,
-      sortWith([ascend(prop('x_opencti_order'))]),
+      R.map((n) => R.assoc(
+        'subattackPatterns_text',
+        R.pipe(
+          R.map(
+            (o) => `${o.node.x_mitre_id} ${o.node.name} ${o.node.description}`,
+          ),
+          R.join(' | '),
+        )(R.pathOr([], ['subAttackPatterns', 'edges'], n.to)),
+        n,
+      )),
+      R.sortWith([R.descend(R.prop('years'))]),
+      R.filter(filterByKeyword),
+      R.groupBy(R.path(['killChainPhase', 'id'])),
+      R.mapObjIndexed((value, key) => R.assoc('attackPatterns', value, killChainPhases[key])),
+      R.values,
+      R.sortWith([R.ascend(R.prop('x_opencti_order'))]),
     )(data.stixCoreRelationships.edges);
     return (
       <div>
-        <SearchInput variant="small" onSubmit={this.handleSearch.bind(this)} />
         <div className={classes.container} id="container">
           <List id="test">
             {stixCoreRelationships.map((stixCoreRelationship) => (
@@ -199,9 +191,9 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                                   )
                               }
                             />
-                            {take(
+                            {R.take(
                               1,
-                              pathOr(
+                              R.pathOr(
                                 [],
                                 ['markingDefinitions', 'edges'],
                                 attackPattern,
@@ -222,7 +214,7 @@ class StixDomainObjectKillChainLinesComponent extends Component {
                               <StixCoreRelationshipPopover
                                 stixCoreRelationshipId={attackPattern.id}
                                 paginationOptions={paginationOptions}
-                                onDelete={this.props.relay.refetch.bind(this)}
+                                onDelete={onDelete}
                               />
                             </ListItemSecondaryAction>
                           </ListItem>
@@ -235,23 +227,15 @@ class StixDomainObjectKillChainLinesComponent extends Component {
             ))}
           </List>
         </div>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipCreationFromEntity
-            entityId={stixDomainObjectId}
-            isRelationReversed={false}
-            paddingRight={220}
-            onCreate={this.props.relay.refetch.bind(this)}
-            targetStixDomainObjectTypes={['Attack-Pattern']}
-            paginationOptions={paginationOptions}
-          />
-        </Security>
       </div>
     );
   }
 }
 
-StixDomainObjectKillChainLinesComponent.propTypes = {
+StixDomainObjectAttackPatternsKillChainLines.propTypes = {
   stixDomainObjectId: PropTypes.string,
+  searchTerm: PropTypes.string,
+  handleDelete: PropTypes.func,
   data: PropTypes.object,
   entityLink: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -259,136 +243,7 @@ StixDomainObjectKillChainLinesComponent.propTypes = {
   t: PropTypes.func,
 };
 
-export const stixDomainObjectKillChainLinesStixCoreRelationshipsQuery = graphql`
-  query StixDomainObjectKillChainLinesStixCoreRelationshipsQuery(
-    $fromId: String
-    $toTypes: [String]
-    $relationship_type: String
-    $first: Int
-  ) {
-    ...StixDomainObjectKillChainLines_data
-  }
-`;
-
-const StixDomainObjectKillChainLines = createRefetchContainer(
-  StixDomainObjectKillChainLinesComponent,
-  {
-    data: graphql`
-      fragment StixDomainObjectKillChainLines_data on Query {
-        stixCoreRelationships(
-          fromId: $fromId
-          toTypes: $toTypes
-          relationship_type: $relationship_type
-          first: $first
-        ) {
-          edges {
-            node {
-              id
-              description
-              start_time
-              stop_time
-              to {
-                ... on BasicObject {
-                  id
-                  entity_type
-                }
-                ... on BasicRelationship {
-                  id
-                  entity_type
-                }
-                ... on AttackPattern {
-                  name
-                  x_mitre_id
-                  killChainPhases {
-                    edges {
-                      node {
-                        id
-                        phase_name
-                        x_opencti_order
-                      }
-                    }
-                  }
-                }
-                ... on Campaign {
-                  name
-                }
-                ... on CourseOfAction {
-                  name
-                }
-                ... on Individual {
-                  name
-                }
-                ... on Organization {
-                  name
-                }
-                ... on Sector {
-                  name
-                }
-                ... on Indicator {
-                  name
-                }
-                ... on Infrastructure {
-                  name
-                }
-                ... on IntrusionSet {
-                  name
-                }
-                ... on Position {
-                  name
-                }
-                ... on City {
-                  name
-                }
-                ... on Country {
-                  name
-                }
-                ... on Region {
-                  name
-                }
-                ... on Malware {
-                  name
-                }
-                ... on ThreatActor {
-                  name
-                }
-                ... on Tool {
-                  name
-                }
-                ... on Vulnerability {
-                  name
-                }
-                ... on XOpenCTIIncident {
-                  name
-                }
-              }
-              killChainPhases {
-                edges {
-                  node {
-                    id
-                    phase_name
-                    x_opencti_order
-                  }
-                }
-              }
-              objectMarking {
-                edges {
-                  node {
-                    id
-                    definition
-                    x_opencti_color
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    `,
-  },
-  stixDomainObjectKillChainLinesStixCoreRelationshipsQuery,
-);
-
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
-)(StixDomainObjectKillChainLines);
+)(StixDomainObjectAttackPatternsKillChainLines);

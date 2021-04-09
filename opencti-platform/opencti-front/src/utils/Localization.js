@@ -285,6 +285,8 @@ const i18n = {
       'Export the entity': "Exporter l'entité",
       'Cards view': 'Vue cartes',
       'Lines view': 'Vue lignes',
+      'Kill chain view': 'Vue kill chain',
+      'Matrix view': 'Vue matricielle',
       'Exports panel': 'Volet exports',
       'Exports list': 'Liste des exports',
       'Export as image': 'Exporter comme image',

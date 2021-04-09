@@ -11,7 +11,7 @@ import EntityStixCoreRelationships from '../../common/stix_core_relationships/En
 import StixDomainObjectThreatKnowledge from '../../common/stix_domain_objects/StixDomainObjectThreatKnowledge';
 import StixCoreRelationship from '../../common/stix_core_relationships/StixCoreRelationship';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
-import StixDomainObjectKillChain from '../../common/stix_domain_objects/StixDomainObjectKillChain';
+import StixDomainObjectAttackPatterns from '../../common/stix_domain_objects/StixDomainObjectAttackPatterns';
 import StixDomainObjectVictimology from '../../common/stix_domain_objects/StixDomainObjectVictimology';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixCoreObjectStixCyberObservables from '../../observations/stix_cyber_observables/StixCoreObjectStixCyberObservables';
@@ -115,7 +115,7 @@ class IntrusionSetKnowledgeComponent extends Component {
           exact
           path="/dashboard/threats/intrusion_sets/:intrusionSetId/knowledge/attack_patterns"
           render={(routeProps) => (
-            <StixDomainObjectKillChain
+            <StixDomainObjectAttackPatterns
               stixDomainObjectId={intrusionSet.id}
               entityLink={link}
               {...routeProps}

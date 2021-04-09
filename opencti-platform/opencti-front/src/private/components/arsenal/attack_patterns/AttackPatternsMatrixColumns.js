@@ -21,6 +21,18 @@ const styles = (theme) => ({
     maxWidth: 'calc(100vw - 245px)',
     maxHeight: 'calc(100vh - 155px)',
   },
+  containerWithMarginRight: {
+    margin: '15px 0 -24px 0',
+    overflow: 'scroll',
+    whiteSpace: 'nowrap',
+    paddingBottom: 20,
+    minWidth: 'calc(100vw - 430px)',
+    minHeight: 'calc(100vh - 180px)',
+    width: 'calc(100vw - 430px)',
+    height: 'calc(100vh - 180px)',
+    maxWidth: 'calc(100vw - 430px)',
+    maxHeight: 'calc(100vh - 180px)',
+  },
   header: {
     borderBottom: theme.palette.divider,
     marginBottom: 10,
@@ -70,45 +82,75 @@ const colors = [
   ['#d95f00', 'rgba(217,95,0,0.2)'],
   ['#e64a19', 'rgba(230,74,25,0.2)'],
   ['#f44336', 'rgba(244,67,54,0.2)'],
-  ['#d32f2f', 'rgba(211,47,47,0.45)'],
-  ['#b71c1c', 'rgba(183,28,28,0.67)'],
+  ['#d32f2f', 'rgba(211,47,47,0.2)'],
+  ['#b71c1c', 'rgba(183,28,28,0.2)'],
 ];
 
 class AttackPatternsMatrixColumnsComponent extends Component {
   level(attackPattern, maxNumberOfSameAttackPattern) {
     const { attackPatterns } = this.props;
-    console.log(attackPattern);
-    console.log(attackPatterns);
     const numberOfCorrespondingAttackPatterns = R.filter(
       (n) => n.id === attackPattern.id
         || (attackPattern.subAttackPatternsIds
           && R.includes(n.id, attackPattern.subAttackPatternsIds)),
       attackPatterns,
     ).length;
-    console.log(numberOfCorrespondingAttackPatterns);
     return computeLevel(
       numberOfCorrespondingAttackPatterns,
       0,
       maxNumberOfSameAttackPattern,
       0,
-      3,
+      10,
     );
   }
 
   render() {
     const {
-      t, data, classes, attackPatterns: selectedPatterns,
+      t,
+      data,
+      classes,
+      attackPatterns: selectedPatterns,
+      marginRight,
+      searchTerm,
     } = this.props;
     const sortByOrder = R.sortBy(R.prop('x_opencti_order'));
     const sortByName = R.sortBy(R.prop('name'));
-    const maxNumberOfSameAttackPattern = R.max(
-      ...R.values(R.countBy((n) => n.id)(selectedPatterns)),
+    const filterByKeyword = (n) => searchTerm === ''
+      || n.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || n.x_mitre_id.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || R.propOr('', 'subattackPatterns_text', n)
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1;
+    const maxNumberOfSameAttackPattern = Math.max(
+      ...R.pipe(
+        R.map((n) => [
+          n,
+          ...R.map((o) => o.node, n.parentAttackPatterns.edges),
+        ]),
+        R.flatten,
+        R.countBy(R.prop('id')),
+        R.values,
+      )(selectedPatterns),
     );
     const filterSubattackPattern = (n) => n.isSubAttackPattern === false;
     const attackPatterns = R.pipe(
       R.map((n) => ({
         ...n.node,
-        level: this.level(n.node, maxNumberOfSameAttackPattern),
+        subAttackPatternsIds: R.map(
+          (o) => o.node.id,
+          n.node.subAttackPatterns.edges,
+        ),
+      })),
+      R.map((n) => ({
+        ...n,
+        level: this.level(n, maxNumberOfSameAttackPattern),
+        subattackPatterns_text: R.pipe(
+          R.map(
+            (o) => `${o.node.x_mitre_id} ${o.node.name} ${o.node.description}`,
+          ),
+          R.join(' | '),
+        )(R.pathOr([], ['subAttackPatterns', 'edges'], n)),
         subAttackPatterns: R.pipe(
           R.map((o) => R.assoc(
             'level',
@@ -116,17 +158,11 @@ class AttackPatternsMatrixColumnsComponent extends Component {
             o.node,
           )),
           sortByName,
-        )(n.node.subAttackPatterns.edges),
-        subAttackPatternsIds: R.map(
-          (o) => o.node.id,
-          n.node.subAttackPatterns.edges,
-        ),
-        killChainPhasesIds: R.map(
-          (o) => o.node.id,
-          n.node.killChainPhases.edges,
-        ),
+        )(n.subAttackPatterns.edges),
+        killChainPhasesIds: R.map((o) => o.node.id, n.killChainPhases.edges),
       })),
       R.filter(filterSubattackPattern),
+      R.filter(filterByKeyword),
     )(data.attackPatterns.edges);
     const killChainPhases = R.pipe(
       R.map((n) => R.map((o) => o.node, n.node.killChainPhases.edges)),
@@ -146,7 +182,11 @@ class AttackPatternsMatrixColumnsComponent extends Component {
       killChainPhases,
     );
     return (
-      <div className={classes.container}>
+      <div
+        className={
+          marginRight ? classes.containerWithMarginRight : classes.container
+        }
+      >
         <div className={classes.header}>
           {attackPatternsOfPhases.map((k) => (
             <div key={k.id} className={classes.headerElement}>
@@ -186,6 +226,8 @@ AttackPatternsMatrixColumnsComponent.propTypes = {
   t: PropTypes.func,
   fld: PropTypes.func,
   attackPatterns: PropTypes.array,
+  marginRight: PropTypes.bool,
+  searchTerm: PropTypes.string,
 };
 
 export const attackPatternsMatrixColumnsQuery = graphql`
