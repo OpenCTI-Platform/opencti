@@ -16,6 +16,7 @@ import StixCyberObservableLinks, {
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { ignoredAttributes } from './StixCyberObservableCreation';
 import { QueryRenderer } from '../../../../relay/environment';
+import StixCyberObservableIndicators from './StixCyberObservableIndicators';
 
 const styles = () => ({
   paper: {
@@ -35,7 +36,11 @@ class StixCyberObservableDetailsComponent extends Component {
       dissoc('entity_type'),
       toPairs,
       map((n) => ({ key: n[0], value: n[1] })),
-      filter((n) => n.value && !includes(n.key, ignoredAttributes)),
+      filter(
+        (n) => n.value
+          && !includes(n.key, ignoredAttributes)
+          && !n.key.startsWith('__'),
+      ),
     )(stixCyberObservable);
     const paginationOptions = {
       elementId: stixCyberObservable.id,
@@ -99,6 +104,11 @@ class StixCyberObservableDetailsComponent extends Component {
                 data={props}
               />
             )}
+          />
+          <br />
+          <StixCyberObservableIndicators
+            paginationOptions={paginationOptions}
+            stixCyberObservable={stixCyberObservable}
           />
         </Paper>
       </div>
@@ -295,6 +305,7 @@ const StixCyberObservableDetails = createFragmentContainer(
         ... on XOpenCTIUserAgent {
           value
         }
+        ...StixCyberObservableIndicators_stixCyberObservable
       }
     `,
   },

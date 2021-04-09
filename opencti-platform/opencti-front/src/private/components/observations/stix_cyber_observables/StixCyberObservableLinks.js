@@ -97,7 +97,7 @@ class StixCyberObservableLinksComponent extends Component {
           entityType={stixCyberObservableType}
         />
         <div className="clearfix" />
-        <List>
+        <List style={{ marginTop: -10 }}>
           {data && data.stixCyberObservableRelationships
             ? data.stixCyberObservableRelationships.edges.map(
               (stixCyberObservableRelationEdge) => {

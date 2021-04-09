@@ -482,7 +482,7 @@ enum TaskContextType {
 }
 type TaskContext {
   field: String!
-  type: TaskContextType!,
+  type: TaskContextType!
   values: [String]!
 }
 type TaskAction {
@@ -498,8 +498,8 @@ interface Task {
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
-  task_expected_number: Int,
-  task_processed_number: Int,
+  task_expected_number: Int
+  task_processed_number: Int
   errors: [TaskError]
 }
 
@@ -511,8 +511,8 @@ type ListTask implements Task {
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
-  task_expected_number: Int,
-  task_processed_number: Int,
+  task_expected_number: Int
+  task_processed_number: Int
   errors: [TaskError]
   # ListTask
   task_ids: [ID!]
@@ -526,8 +526,8 @@ type QueryTask implements Task {
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
-  task_expected_number: Int,
-  task_processed_number: Int,
+  task_expected_number: Int
+  task_processed_number: Int
   errors: [TaskError]
   # QueryTask
   task_filters: String!
@@ -545,7 +545,7 @@ type TaskConnection {
 
 input TaskContextInput {
   field: String!
-  type: TaskContextType!,
+  type: TaskContextType!
   values: [String]!
 }
 input TaskActionInput {
@@ -8069,7 +8069,8 @@ type Query {
     toStix: Boolean
   ): StixCyberObservableConnection @auth(for: [KNOWLEDGE])
   stixCyberObservablesExportFiles(first: Int, context: String): FileConnection
-  stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime): Number
+    @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesTimeSeries(type: String): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCyberObservablesDistribution(objectId: String, field: String!, operation: String!): [Distribution]
     @auth(for: [KNOWLEDGE, EXPLORE])
@@ -8629,6 +8630,7 @@ type StixCyberObservableEditMutations {
   relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   relationDelete(toId: String!, relationship_type: String!): StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
+  promote: StixCyberObservable @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 
 ######## STIX RELATIONSHIPS

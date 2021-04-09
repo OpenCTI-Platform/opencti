@@ -23,6 +23,7 @@ import {
   stixCyberObservableDistributionByEntity,
   stixCyberObservablesExportPush,
   stixCyberObservablesExportAsk,
+  promoteObservableToIndicator,
 } from '../domain/stixCyberObservable';
 import { pubsub } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -85,6 +86,7 @@ const stixCyberObservableResolvers = {
       exportAsk: (args) => stixCyberObservableExportAsk(user, assoc('stixCyberObservableId', id, args)),
       exportPush: ({ file }) => stixCyberObservableExportPush(user, id, file),
       askEnrichment: ({ connectorId }) => stixCyberObservableAskEnrichment(user, id, connectorId),
+      promote: () => promoteObservableToIndicator(user, id),
     }),
     stixCyberObservableAdd: (_, args, { user }) => addStixCyberObservable(user, args),
     stixCyberObservablesExportAsk: (_, args, { user }) => stixCyberObservablesExportAsk(user, args),
