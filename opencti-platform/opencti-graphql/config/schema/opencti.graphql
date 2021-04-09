@@ -1341,6 +1341,7 @@ enum AttackPatternsFilter {
   markedBy
   labelledBy
   mitigatedBy
+  revoked
 }
 input AttackPatternsFiltering {
   key: AttackPatternsFilter!

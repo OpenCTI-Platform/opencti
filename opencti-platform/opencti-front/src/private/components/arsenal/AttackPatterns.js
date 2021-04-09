@@ -85,7 +85,7 @@ class AttackPatterns extends Component {
         <div className="clearfix" />
         <QueryRenderer
           query={attackPatternsLinesQuery}
-          variables={{ count: 500 }}
+          variables={{ count: 1500 }}
           render={({ props }) => (
             <AttackPatternsLines data={props} keyword={searchTerm} />
           )}

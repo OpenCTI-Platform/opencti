@@ -424,6 +424,7 @@ const i18n = {
       'Targeting through time': 'Ciblage à travers le temps',
       'TTPs through time': 'TTPs à travers le temps',
       Graph: 'Graph',
+      'Techniques matrix': 'Matrice des techniques',
       'Targeting knowledge': 'Connaissance du ciblage',
       'TTPs knowledge': 'Connaissance des TTPs',
       Compare: 'Comparer',

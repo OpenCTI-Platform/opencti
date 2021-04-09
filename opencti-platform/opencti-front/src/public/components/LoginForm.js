@@ -57,7 +57,7 @@ const LoginForm = (props) => {
         validationSchema={loginValidation(t)}
         onSubmit={onSubmit}
       >
-        {({ submitForm, isSubmitting }) => (
+        {({ isSubmitting }) => (
           <Form>
             <Field
               component={TextField}
@@ -74,10 +74,10 @@ const LoginForm = (props) => {
               style={{ marginTop: 20 }}
             />
             <Button
+              type="submit"
               variant="contained"
               color="primary"
               disabled={isSubmitting}
-              onClick={submitForm}
               style={{ marginTop: 30 }}
             >
               {t('Sign in')}

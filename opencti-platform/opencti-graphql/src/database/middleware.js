@@ -209,6 +209,7 @@ const batchListThrough = async (user, sources, sourceSide, relationType, targetE
   const filters = [directionInternalIdFilter, oppositeTypeFilter];
   // Resolve all relations
   const relations = await elPaginate(user, READ_RELATIONSHIPS_INDICES, {
+    first: 5000,
     connectionFormat: false,
     filters,
     types: [relationType],

@@ -13,6 +13,7 @@ import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObject
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import ReportPopover from '../reports/ReportPopover';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const subscription = graphql`
   subscription RootNoteSubscription($id: ID!) {
@@ -80,54 +81,57 @@ class RootNote extends Component {
           query={noteQuery}
           variables={{ id: noteId }}
           render={({ props }) => {
-            if (props && props.note) {
-              return (
-                <div>
-                  <Route
-                    exact
-                    path="/dashboard/analysis/notes/:noteId"
-                    render={(routeProps) => (
-                      <Note {...routeProps} note={props.note} />
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/notes/:noteId/files"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.note}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <FileManager
-                          {...routeProps}
-                          id={noteId}
-                          connectorsExport={props.connectorsForExport}
-                          connectorsImport={props.connectorsForImport}
-                          entity={props.note}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                  <Route
-                    exact
-                    path="/dashboard/analysis/notes/:noteId/history"
-                    render={(routeProps) => (
-                      <React.Fragment>
-                        <ContainerHeader
-                          container={props.note}
-                          PopoverComponent={<ReportPopover />}
-                        />
-                        <StixCoreObjectHistory
-                          {...routeProps}
-                          stixCoreObjectId={noteId}
-                          withoutRelations={true}
-                        />
-                      </React.Fragment>
-                    )}
-                  />
-                </div>
-              );
+            if (props) {
+              if (props.note) {
+                return (
+                  <div>
+                    <Route
+                      exact
+                      path="/dashboard/analysis/notes/:noteId"
+                      render={(routeProps) => (
+                        <Note {...routeProps} note={props.note} />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/notes/:noteId/files"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.note}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <FileManager
+                            {...routeProps}
+                            id={noteId}
+                            connectorsExport={props.connectorsForExport}
+                            connectorsImport={props.connectorsForImport}
+                            entity={props.note}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/notes/:noteId/history"
+                      render={(routeProps) => (
+                        <React.Fragment>
+                          <ContainerHeader
+                            container={props.note}
+                            PopoverComponent={<ReportPopover />}
+                          />
+                          <StixCoreObjectHistory
+                            {...routeProps}
+                            stixCoreObjectId={noteId}
+                            withoutRelations={true}
+                          />
+                        </React.Fragment>
+                      )}
+                    />
+                  </div>
+                );
+              }
+              return <ErrorNotFound />;
             }
             return <Loader />;
           }}

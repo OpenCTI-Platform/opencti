@@ -1,6 +1,23 @@
 * {
   font-size: 100%;
   font-family: "Roboto", sans-serif;
+  scrollbar-width: thin;
+  scrollbar-color: #14262c #2d4b5b;
+}
+
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #2d4b5b;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #14262c;
+  border-radius: 20px;
+  border: 3px solid #2d4b5b;
 }
 
 :focus {

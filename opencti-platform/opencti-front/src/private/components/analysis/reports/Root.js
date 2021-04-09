@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Route, withRouter } from 'react-router-dom';
+import { Redirect, Route, withRouter } from 'react-router-dom';
 import graphql from 'babel-plugin-relay/macro';
 import {
   QueryRenderer,
@@ -132,6 +132,15 @@ class RootReport extends Component {
                     <Route
                       exact
                       path="/dashboard/analysis/reports/:reportId/knowledge"
+                      render={() => (
+                        <Redirect
+                          to={`/dashboard/analysis/reports/${reportId}/knowledge/graph`}
+                        />
+                      )}
+                    />
+                    <Route
+                      exact
+                      path="/dashboard/analysis/reports/:reportId/knowledge/:mode"
                       render={(routeProps) => (
                         <ReportKnowledge
                           {...routeProps}
