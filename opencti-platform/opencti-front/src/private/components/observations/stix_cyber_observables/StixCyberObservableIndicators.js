@@ -24,9 +24,6 @@ import MenuItem from '@material-ui/core/MenuItem';
 import ItemPatternType from '../../../../components/ItemPatternType';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import Security, {
-  KNOWLEDGE_KNUPDATE_KNDELETE,
-} from '../../../../utils/Security';
 
 const styles = (theme) => ({
   paper: {
